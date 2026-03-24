@@ -13,34 +13,32 @@ export interface PyramidSelection {
 
 /** Hook that manages Pyramid game state, card selection, hints, and removal actions. */
 export function usePyramidGame() {
-  const { state, loading, error, exec: rawExec } = useGameApi(pyramidApi.exec);
+  const { state, loading, error, exec } = useGameApi(pyramidApi.exec);
   const [selectedCard, setSelectedCard] = useState<PyramidSelection | null>(null);
   const [hint, setHint] = useState<PyramidHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
 
-  const callApi = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
   useEffect(() => {
-    callApi('reset');
-  }, [callApi]);
+    exec('reset');
+  }, [exec]);
 
   const handleDraw = useCallback(() => {
     setSelectedCard(null);
     setHint(null);
-    callApi('draw');
-  }, [callApi]);
+    exec('draw');
+  }, [exec]);
 
   const handleReset = useCallback(() => {
     setSelectedCard(null);
     setHint(null);
-    callApi('reset');
-  }, [callApi]);
+    exec('reset');
+  }, [exec]);
 
   const handleGiveUp = useCallback(() => {
     setSelectedCard(null);
     setHint(null);
-    callApi('giveup');
-  }, [callApi]);
+    exec('giveup');
+  }, [exec]);
 
   const handleHint = useCallback(async () => {
     try {
@@ -55,8 +53,8 @@ export function usePyramidGame() {
   const handleUndo = useCallback(() => {
     setSelectedCard(null);
     setHint(null);
-    callApi('undo');
-  }, [callApi]);
+    exec('undo');
+  }, [exec]);
 
   const selectionToRemoveCard = useCallback((sel: PyramidSelection): PyramidRemoveCard => {
     return { zone: sel.zone, row: sel.row, col: sel.col };
@@ -67,7 +65,7 @@ export function usePyramidGame() {
       // King (value 13) - remove solo immediately
       if (cardValue === 13) {
         setHint(null);
-        callApi('remove', selectionToRemoveCard(sel));
+        exec('remove', selectionToRemoveCard(sel));
         setSelectedCard(null);
         return;
       }
@@ -86,10 +84,10 @@ export function usePyramidGame() {
 
       // Second card selected - attempt to remove pair
       setHint(null);
-      callApi('remove', selectionToRemoveCard(selectedCard), selectionToRemoveCard(sel));
+      exec('remove', selectionToRemoveCard(selectedCard), selectionToRemoveCard(sel));
       setSelectedCard(null);
     },
-    [selectedCard, callApi, selectionToRemoveCard],
+    [selectedCard, exec, selectionToRemoveCard],
   );
 
   return {

@@ -239,6 +239,8 @@ func (p *Pyramid) RemoveWasteKing() error {
 	p.waste = p.waste[:len(p.waste)-1]
 	p.moveCount++
 	p.appendLog("remove", "ウェイストのキング除去", []*Card{wasteCard})
+	// checkGameClear is intentionally omitted here: AllRemoved only checks pyramid cards,
+	// so removing a waste King can never trigger a game clear.
 	p.checkStalemate()
 	return nil
 }

@@ -19,6 +19,12 @@
   "gameOver": "Game Over",
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
+  "hintType": {
+    "pair": "Remove pyramid pair",
+    "king": "Remove pyramid King",
+    "waste_pair": "Remove waste + pyramid pair",
+    "waste_king": "Remove waste King"
+  },
   "tutorial": {
     "pyramid": "This is the pyramid. Click exposed cards to select them.",
     "stockWaste": "Click the stock pile to draw cards.",
