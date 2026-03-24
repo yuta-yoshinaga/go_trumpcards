@@ -1173,6 +1173,39 @@ export interface EuchreResponse {
   hint?: EuchreHint;
 }
 
+// --- Pyramid Solitaire (ピラミッド) ---
+
+/** A card in the pyramid with removal and exposure status. */
+export interface PyramidCard {
+  card: Card | null;
+  removed: boolean;
+  exposed: boolean;
+}
+
+/** A suggested pair/king removal hint in Pyramid. */
+export interface PyramidHint {
+  type: string;
+  row1: number;
+  col1: number;
+  row2: number;
+  col2: number;
+}
+
+/** Full Pyramid game state returned from the API. */
+export interface PyramidResponse {
+  pyramid: PyramidCard[][];
+  stockCount: number;
+  waste: Card[];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: PyramidHint;
+}
+
 /** Full Video Poker game state returned from the API. */
 export interface VideoPokerResponse {
   hand: Card[];

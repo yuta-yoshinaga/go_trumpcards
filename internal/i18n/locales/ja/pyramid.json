@@ -1,0 +1,10 @@
+{
+  "helpTitle": "Pyramid (ピラミッド)",
+  "helpDraw": "  d                        ストックからカードを引く",
+  "helpRemoveKing": "  rm <row> <col>            キングを除去",
+  "helpRemovePair": "  rm <r1> <c1> <r2> <c2>    ペアを除去 (合計13)",
+  "helpRemoveWaste": "  rm w <row> <col>          ウェイスト+ピラミッドのペア除去",
+  "helpRemoveWasteKing": "  rm w                      ウェイストのキングを除去",
+  "helpGiveUp": "  g                        ギブアップ",
+  "helpHint": "  h                        ヒント"
+}

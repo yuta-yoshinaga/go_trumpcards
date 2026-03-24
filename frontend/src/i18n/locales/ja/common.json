@@ -31,7 +31,8 @@
     "napoleon": "ナポレオン",
     "indianpoker": "インディアンポーカー",
     "videopoker": "ビデオポーカー",
-    "euchre": "ユーカー"
+    "euchre": "ユーカー",
+    "pyramid": "ピラミッド"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -171,6 +172,12 @@
     "freecell.gameOver": "ゲームオーバー",
     "freecell.hintAvailable": "ヒントがあります",
     "freecell.noHint": "ヒントはありません",
-    "freecell.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
+    "freecell.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "pyramid.playing": "プレイ中",
+    "pyramid.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "pyramid.gameOver": "ゲームオーバー",
+    "pyramid.hintAvailable": "ヒントがあります",
+    "pyramid.noHint": "ヒントはありません",
+    "pyramid.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
   }
 }

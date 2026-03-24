@@ -20,6 +20,7 @@ import enNapoleon from './locales/en/napoleon.json';
 import enOldmaid from './locales/en/oldmaid.json';
 import enOmaha from './locales/en/omaha.json';
 import enPoker from './locales/en/poker.json';
+import enPyramid from './locales/en/pyramid.json';
 import enSevens from './locales/en/sevens.json';
 import enSpades from './locales/en/spades.json';
 import enSpider from './locales/en/spider.json';
@@ -43,6 +44,7 @@ import jaNapoleon from './locales/ja/napoleon.json';
 import jaOldmaid from './locales/ja/oldmaid.json';
 import jaOmaha from './locales/ja/omaha.json';
 import jaPoker from './locales/ja/poker.json';
+import jaPyramid from './locales/ja/pyramid.json';
 import jaSevens from './locales/ja/sevens.json';
 import jaSpades from './locales/ja/spades.json';
 import jaSpider from './locales/ja/spider.json';
@@ -76,6 +78,7 @@ i18n
         ginrummy: jaGinrummy,
         spider: jaSpider,
         indianpoker: jaIndianpoker,
+        pyramid: jaPyramid,
         videopoker: jaVideopoker,
         tutorial: jaTutorial,
       },
@@ -101,6 +104,7 @@ i18n
         ginrummy: enGinrummy,
         spider: enSpider,
         indianpoker: enIndianpoker,
+        pyramid: enPyramid,
         videopoker: enVideopoker,
         tutorial: enTutorial,
       },
@@ -129,6 +133,7 @@ i18n
       'ginrummy',
       'spider',
       'indianpoker',
+      'pyramid',
       'videopoker',
       'tutorial',
     ],
