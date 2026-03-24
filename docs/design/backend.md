@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全23ゲーム)](#12-ゲームドメイン-全23ゲーム)
+  - [1.2 ゲームドメイン (全24ゲーム)](#12-ゲームドメイン-全24ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -33,6 +33,7 @@
   - [3.15 Euchre フェーズ遷移](#315-euchre-フェーズ遷移)
   - [3.16 Pyramid フェーズ遷移](#316-pyramid-フェーズ遷移)
   - [3.17 Cribbage フェーズ遷移](#317-cribbage-フェーズ遷移)
+  - [3.18 ShortDeck フェーズ遷移](#318-shortdeck-フェーズ遷移)
 
 ---
 
@@ -100,7 +101,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全23ゲーム)
+### 1.2 ゲームドメイン (全24ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -370,6 +371,25 @@ classDiagram
     HoldemPlayer --> "1" ChipHolder
     Omaha --> "*" OmahaPlayer
     OmahaPlayer --|> GamePlayer
+
+    class ShortDeck {
+        -trumpCards *TrumpCards
+        -players []*ShortDeckPlayer
+        -config HoldemConfig
+        -communityCards []*Card
+        -phase int
+        +Reset()
+        +PlayerFold() error
+        +PlayerCheck() error
+        +PlayerCall() error
+        +PlayerBet(amount int) error
+        +PlayerRaise(amount int) error
+        +PlayerAllIn() error
+        +Phase() int
+    }
+
+    ShortDeck --> "*" ShortDeckPlayer
+    ShortDeckPlayer --|> GamePlayer
 ```
 
 #### インディアンポーカー
@@ -782,8 +802,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "23ゲーム × CUI/Web = 46 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "23ゲーム × CUI/Web = 46 Presenter 実装"
+    note for GameCuiController "24ゲーム × CUI/Web = 48 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "24ゲーム × CUI/Web = 48 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -799,6 +819,7 @@ classDiagram
         -doubt *DoubtWebController
         -holdem *HoldemWebController
         -omaha *OmahaWebController
+        -shortdeck *ShortDeckWebController
         -hearts *HeartsWebController
         -memory *MemoryWebController
         -klondike *KlondikeWebController
@@ -835,8 +856,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 23 controllers
-    GameManager --> "*" CuiExecer : holds 23 games
+    TrumpCardsWeb --> "*" GameWebController : holds 24 controllers
+    GameManager --> "*" CuiExecer : holds 24 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1013,7 +1034,7 @@ stateDiagram-v2
 
 ### 3.3 Texas Hold'em フェーズ遷移
 
-Omaha Hold'em も同一のフェーズ遷移を共有します。
+Omaha Hold'em および Short Deck Hold'em も同一のフェーズ遷移を共有します。
 
 ```mermaid
 stateDiagram-v2
@@ -1252,5 +1273,11 @@ stateDiagram-v2
     note right of RoundEnd : CribbagePhaseRoundEnd = 4
     note right of GameEnd : CribbagePhaseGameEnd = 5
 ```
+
+### 3.18 ShortDeck フェーズ遷移
+
+Short Deck Hold'em は Texas Hold'em と同一のフェーズ遷移を使用します（[3.3 Texas Hold'em フェーズ遷移](#33-texas-holdem-フェーズ遷移)を参照）。
+
+主な違いはデッキ構成（36枚、2〜5除去）とハンドランキング（フラッシュ > フルハウス、最低ストレート = A-6-7-8-9）のみで、フェーズ遷移ロジックは共通です。
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

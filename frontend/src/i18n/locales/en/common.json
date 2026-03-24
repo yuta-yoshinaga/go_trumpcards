@@ -33,7 +33,8 @@
     "videopoker": "Video Poker",
     "euchre": "Euchre",
     "pyramid": "Pyramid",
-    "cribbage": "Cribbage"
+    "cribbage": "Cribbage",
+    "shortdeck": "Short Deck"
   },
   "sound": {
     "mute": "Mute sound",
@@ -129,6 +130,12 @@
     "holdem.result.lose": "You lose.",
     "holdem.result.mucked": "You mucked.",
     "holdem.muck.prompt": "Muck or show your hand.",
+    "shortdeck.result.gameOver": "Game over.",
+    "shortdeck.result.win": "You are the winner.",
+    "shortdeck.result.folded": "You folded.",
+    "shortdeck.result.lose": "You lose.",
+    "shortdeck.result.mucked": "You mucked.",
+    "shortdeck.muck.prompt": "Muck or show your hand.",
     "hearts.result.humanWin": "Game over! You win!",
     "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "spades.result.humanWin": "Game over! You win!",

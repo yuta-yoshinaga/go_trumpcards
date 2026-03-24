@@ -128,6 +128,24 @@ func NewTrumpCardsEuchre() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsShortDeck ショートデック(6+)用36枚デッキコンストラクタ
+// A,6,7,8,9,10,J,Q,K (値: 1,6,7,8,9,10,11,12,13) × 4スート = 36枚
+func NewTrumpCardsShortDeck() *TrumpCards {
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(ShortDeckValues) * len(suits) // 36
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range ShortDeckValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deckInit()
+	return t
+}
+
 // DrawCard 山札配る
 func (t *TrumpCards) DrawCard() *Card {
 	var res *Card = nil

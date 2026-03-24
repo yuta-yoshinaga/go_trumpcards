@@ -33,7 +33,8 @@
     "videopoker": "ビデオポーカー",
     "euchre": "ユーカー",
     "pyramid": "ピラミッド",
-    "cribbage": "クリベッジ"
+    "cribbage": "クリベッジ",
+    "shortdeck": "ショートデック"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -129,6 +130,12 @@
     "holdem.result.lose": "あなたの負けです。",
     "holdem.result.mucked": "マックしました。",
     "holdem.muck.prompt": "マックしますか?",
+    "shortdeck.result.gameOver": "ゲーム終了。",
+    "shortdeck.result.win": "あなたの勝ちです。",
+    "shortdeck.result.folded": "フォールドしました。",
+    "shortdeck.result.lose": "あなたの負けです。",
+    "shortdeck.result.mucked": "マックしました。",
+    "shortdeck.muck.prompt": "マックしますか?",
     "hearts.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "hearts.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "spades.result.humanWin": "ゲーム終了！ あなたの勝ち！",

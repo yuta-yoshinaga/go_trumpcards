@@ -23,6 +23,7 @@ import enOmaha from './locales/en/omaha.json';
 import enPoker from './locales/en/poker.json';
 import enPyramid from './locales/en/pyramid.json';
 import enSevens from './locales/en/sevens.json';
+import enShortdeck from './locales/en/shortdeck.json';
 import enSpades from './locales/en/spades.json';
 import enSpider from './locales/en/spider.json';
 import enTutorial from './locales/en/tutorial.json';
@@ -48,6 +49,7 @@ import jaOmaha from './locales/ja/omaha.json';
 import jaPoker from './locales/ja/poker.json';
 import jaPyramid from './locales/ja/pyramid.json';
 import jaSevens from './locales/ja/sevens.json';
+import jaShortdeck from './locales/ja/shortdeck.json';
 import jaSpades from './locales/ja/spades.json';
 import jaSpider from './locales/ja/spider.json';
 import jaTutorial from './locales/ja/tutorial.json';
@@ -69,6 +71,7 @@ i18n
         euchre: jaEuchre,
         holdem: jaHoldem,
         omaha: jaOmaha,
+        shortdeck: jaShortdeck,
         hearts: jaHearts,
         spades: jaSpades,
         napoleon: jaNapoleon,
@@ -96,6 +99,7 @@ i18n
         euchre: enEuchre,
         holdem: enHoldem,
         omaha: enOmaha,
+        shortdeck: enShortdeck,
         hearts: enHearts,
         spades: enSpades,
         napoleon: enNapoleon,
@@ -126,6 +130,7 @@ i18n
       'euchre',
       'holdem',
       'omaha',
+      'shortdeck',
       'hearts',
       'spades',
       'napoleon',
