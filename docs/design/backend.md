@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全20ゲーム)](#12-ゲームドメイン-全20ゲーム)
+  - [1.2 ゲームドメイン (全21ゲーム)](#12-ゲームドメイン-全21ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -30,6 +30,7 @@
   - [3.12 Napoleon フェーズ遷移](#312-napoleon-フェーズ遷移)
   - [3.13 IndianPoker フェーズ遷移](#313-indianpoker-フェーズ遷移)
   - [3.14 VideoPoker フェーズ遷移](#314-videopoker-フェーズ遷移)
+  - [3.15 Euchre フェーズ遷移](#315-euchre-フェーズ遷移)
 
 ---
 
@@ -97,7 +98,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全20ゲーム)
+### 1.2 ゲームドメイン (全21ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -264,15 +265,44 @@ classDiagram
         +*Card Card
     }
 
+    class Euchre {
+        -trumpCards *TrumpCards
+        -players []*EuchrePlayer
+        -config EuchreConfig
+        -phase EuchrePhase
+        -trickCards []*EuchreTrickCard
+        -turnedUpCard *Card
+        -trumpSuit int
+        -dealerIdx int
+        +Reset()
+        +OrderUp(alone bool) error
+        +Pass() error
+        +CallTrump(suit int, alone bool) error
+        +Discard(index int) error
+        +PlayCard(index int) error
+        +NextTrick() error
+        +NextRound() error
+        +Hint() *EuchreHint
+        +Phase() EuchrePhase
+    }
+
+    class EuchreTrickCard {
+        +int PlayerIdx
+        +*Card Card
+    }
+
     Hearts --> "4" HeartsPlayer
     Hearts --> "*" HeartsTrickCard
     Spades --> "4" SpadesPlayer
     Spades --> "*" SpadesTrickCard
     Napoleon --> "4" NapoleonPlayer
     Napoleon --> "*" NapoleonTrickCard
+    Euchre --> "4" EuchrePlayer
+    Euchre --> "*" EuchreTrickCard
     HeartsPlayer --|> GamePlayer
     SpadesPlayer --|> GamePlayer
     NapoleonPlayer --|> GamePlayer
+    EuchrePlayer --|> GamePlayer
 ```
 
 #### ホールデム系ゲーム
@@ -706,8 +736,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "20ゲーム × CUI/Web = 40 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "20ゲーム × CUI/Web = 40 Presenter 実装"
+    note for GameCuiController "21ゲーム × CUI/Web = 42 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "21ゲーム × CUI/Web = 42 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -735,6 +765,7 @@ classDiagram
         -napoleon *NapoleonWebController
         -indianpoker *IndianPokerWebController
         -videopoker *VideoPokerWebController
+        -euchre *EuchreWebController
         +Exec()
     }
 
@@ -756,8 +787,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 20 controllers
-    GameManager --> "*" CuiExecer : holds 20 games
+    TrumpCardsWeb --> "*" GameWebController : holds 21 controllers
+    GameManager --> "*" CuiExecer : holds 21 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1108,6 +1139,32 @@ stateDiagram-v2
     note right of Bet : VideoPokerPhaseBet = 0
     note right of Draw : VideoPokerPhaseDraw = 1
     note right of Result : VideoPokerPhaseResult = 2
+```
+
+### 3.15 Euchre フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> PickUp : Reset()
+    PickUp --> CallTrump : 全員パス
+    PickUp --> Discard : オーダーアップ(ディーラーが拾う)
+    CallTrump --> Discard : トランプ宣言(ディーラーが拾う)
+    CallTrump --> PickUp : 全員パス(ディーラー強制コール)
+    Discard --> Play : ディーラーが1枚捨てる
+    Play --> TrickEnd : 参加者全員カード出し完了
+    TrickEnd --> Play : 次トリック開始
+    TrickEnd --> RoundEnd : 5トリック完了
+    RoundEnd --> PickUp : 次ラウンド開始
+    RoundEnd --> GameEnd : 目標点到達
+    GameEnd --> [*]
+
+    note right of PickUp : EuchrePhasePickUp = 0
+    note right of CallTrump : EuchrePhaseCallTrump = 1
+    note right of Discard : EuchrePhaseDiscard = 2
+    note right of Play : EuchrePhasePlay = 3
+    note right of TrickEnd : EuchrePhaseTrickEnd = 4
+    note right of RoundEnd : EuchrePhaseRoundEnd = 5
+    note right of GameEnd : EuchrePhaseGameEnd = 6
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

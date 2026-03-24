@@ -1,0 +1,153 @@
+package presenter
+
+import (
+	"fmt"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+// EuchreWebPresenter ユーカーWebプレゼンタークラス
+type EuchreWebPresenter struct{}
+
+// Output ゲーム状態をJSON出力
+func (p *EuchreWebPresenter) Output(e interfaces.EuchreGame, lastErr error) string {
+	resObj := new(controller.EuchreWebOutput)
+	resObj.Phase = int(e.GetPhase())
+	resObj.RoundNumber = e.GetRoundNumber()
+	resObj.TrickNumber = e.GetTrickNumber()
+	resObj.CurrentPlayerIdx = e.GetCurrentPlayerIdx()
+	resObj.BidPlayerIdx = e.GetBidPlayerIdx()
+	resObj.DealerIdx = e.GetDealerIdx()
+	resObj.TrumpSuit = e.GetTrumpSuit()
+	resObj.FaceUpCard = cardToOutput(e.GetFaceUpCard())
+	resObj.MakerTeam = e.GetMakerTeam()
+	resObj.GoingAlone = e.GetGoingAlone()
+	resObj.GoingAlonePlayerIdx = e.GetGoingAlonePlayerIdx()
+	resObj.TeamScores = [2]int{e.GetTeamScore(0), e.GetTeamScore(1)}
+	resObj.GameEndFlag = e.GetGameEndFlag()
+	resObj.WinnerTeam = e.GetWinnerTeam()
+	resObj.LeadPlayerIdx = e.GetLeadPlayerIdx()
+
+	// 設定
+	cfg := e.GetConfig()
+	resObj.Config = controller.EuchreWebOutputConfig{
+		CpuDifficulty: int(cfg.CpuDifficulty),
+		PointLimit:    cfg.PointLimit,
+	}
+
+	trick := e.GetCurrentTrick()
+	resObj.CurrentTrick = p.buildTrickOutput(trick)
+	resObj.Players = p.buildPlayersOutput(e)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(e, trick, lastErr)
+
+	return marshalOrError(resObj)
+}
+
+// buildTrickOutput 現在のトリック情報を構築
+func (p *EuchreWebPresenter) buildTrickOutput(trick []*domain.EuchreTrickCard) []*controller.EuchreWebOutputTrickCard {
+	out := make([]*controller.EuchreWebOutputTrickCard, 0)
+	for _, tc := range trick {
+		out = append(out, &controller.EuchreWebOutputTrickCard{
+			PlayerIdx: tc.PlayerIdx,
+			Card:      cardToOutput(tc.Card),
+		})
+	}
+	return out
+}
+
+// buildPlayersOutput プレイヤー情報を構築
+func (p *EuchreWebPresenter) buildPlayersOutput(e interfaces.EuchreGame) []*controller.EuchreWebOutputPlayer {
+	out := make([]*controller.EuchreWebOutputPlayer, 0)
+	for i := 0; i < e.GetPlayerCnt(); i++ {
+		player := e.GetPlayer(i)
+		pObj := &controller.EuchreWebOutputPlayer{
+			ID:         i,
+			IsHuman:    player.GetIsHuman(),
+			CardCount:  player.GetCardsSize(),
+			Cards:      playerCardsToOutput(player, player.GetIsHuman()),
+			Team:       player.GetTeam(),
+			TrickCount: player.GetTrickCount(),
+		}
+		out = append(out, pObj)
+	}
+	return out
+}
+
+// buildMessage ゲーム結果メッセージを構築
+func (p *EuchreWebPresenter) buildMessage(e interfaces.EuchreGame, trick []*domain.EuchreTrickCard, lastErr error) (string, string, map[string]string) {
+	if lastErr != nil {
+		return lastErr.Error(), "", nil
+	}
+	if e.GetGameEndFlag() {
+		winnerTeam := e.GetWinnerTeam()
+		msg := fmt.Sprintf("ゲーム終了！ チーム%dの勝ち！", winnerTeam)
+		code := fmt.Sprintf("euchre.result.team%dWin", winnerTeam)
+		params := map[string]string{"team": fmt.Sprintf("%d", winnerTeam)}
+		return msg, code, params
+	}
+	switch e.GetPhase() {
+	case domain.EuchrePhasePickUp:
+		return "", "euchre.pickUpPhase", nil
+	case domain.EuchrePhaseCallTrump:
+		return "", "euchre.callTrumpPhase", nil
+	case domain.EuchrePhaseDiscard:
+		return "", "euchre.discardPhase", nil
+	case domain.EuchrePhasePlay:
+		if len(trick) == 0 {
+			return "", "euchre.playPhase.lead", nil
+		}
+		return "", "euchre.playPhase.follow", nil
+	case domain.EuchrePhaseTrickEnd:
+		return "", "euchre.trickEnd", nil
+	case domain.EuchrePhaseRoundEnd:
+		return "", "euchre.roundEnd", nil
+	}
+	return "", "", nil
+}
+
+// HintOutput ヒント情報をJSON出力する
+func (p *EuchreWebPresenter) HintOutput(e interfaces.EuchreGame) string {
+	hint := e.GetHint()
+	resObj := new(controller.EuchreWebOutput)
+	resObj.Phase = int(e.GetPhase())
+	resObj.RoundNumber = e.GetRoundNumber()
+	resObj.TrickNumber = e.GetTrickNumber()
+	resObj.CurrentPlayerIdx = e.GetCurrentPlayerIdx()
+	resObj.BidPlayerIdx = e.GetBidPlayerIdx()
+	resObj.DealerIdx = e.GetDealerIdx()
+	resObj.TrumpSuit = e.GetTrumpSuit()
+	resObj.FaceUpCard = cardToOutput(e.GetFaceUpCard())
+	resObj.MakerTeam = e.GetMakerTeam()
+	resObj.GoingAlone = e.GetGoingAlone()
+	resObj.GoingAlonePlayerIdx = e.GetGoingAlonePlayerIdx()
+	resObj.TeamScores = [2]int{e.GetTeamScore(0), e.GetTeamScore(1)}
+	resObj.GameEndFlag = e.GetGameEndFlag()
+	resObj.WinnerTeam = e.GetWinnerTeam()
+	resObj.LeadPlayerIdx = e.GetLeadPlayerIdx()
+	cfg := e.GetConfig()
+	resObj.Config = controller.EuchreWebOutputConfig{
+		CpuDifficulty: int(cfg.CpuDifficulty),
+		PointLimit:    cfg.PointLimit,
+	}
+	trick := e.GetCurrentTrick()
+	resObj.CurrentTrick = p.buildTrickOutput(trick)
+	resObj.Players = p.buildPlayersOutput(e)
+
+	if hint != nil {
+		resObj.Hint = &controller.EuchreWebOutputHint{
+			CardIndex: hint.CardIndex,
+			OrderUp:   hint.OrderUp,
+			Suit:      hint.Suit,
+			GoAlone:   hint.GoAlone,
+			Reason:    hint.Reason,
+		}
+	}
+	return marshalOrError(resObj)
+}
+
+// ActionLogOutput 棋譜をJSON出力
+func (p *EuchreWebPresenter) ActionLogOutput(e interfaces.EuchreGame) string {
+	return actionLogOutputJSON(e)
+}

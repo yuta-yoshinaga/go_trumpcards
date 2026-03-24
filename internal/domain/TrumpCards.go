@@ -109,6 +109,25 @@ func NewTrumpCardsWithSuits(totalCards int, suits []int) *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsEuchre ユーカー用24枚デッキコンストラクタ
+// 9,10,J,Q,K,A (値: 1,9,10,11,12,13) × 4スート = 24枚
+func NewTrumpCardsEuchre() *TrumpCards {
+	euchreValues := []int{1, 9, 10, 11, 12, 13} // A,9,10,J,Q,K
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(euchreValues) * len(suits) // 24
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for _, suit := range suits {
+		for _, val := range euchreValues {
+			t.deck = append(t.deck, NewCard(suit, val, false))
+		}
+	}
+	t.deckInit()
+	return t
+}
+
 // DrawCard 山札配る
 func (t *TrumpCards) DrawCard() *Card {
 	var res *Card = nil

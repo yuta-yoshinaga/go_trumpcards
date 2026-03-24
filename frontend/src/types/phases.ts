@@ -12,6 +12,7 @@
  *   - CrazyEights: internal/domain/CrazyEights.go (CrazyEightsPhasePlay, CrazyEightsPhaseChooseSuit, CrazyEightsPhaseRoundEnd, CrazyEightsPhaseGameEnd)
  *   - GinRummy:  internal/domain/GinRummy.go   (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
  *   - Baccarat:   internal/domain/Baccarat.go  (BaccaratPhaseBet, BaccaratPhaseEnd)
+ *   - Euchre:     internal/domain/Euchre.go    (EuchrePhasePickUp, EuchrePhaseCallTrump, EuchrePhaseDiscard, EuchrePhasePlay, EuchrePhaseTrickEnd, EuchrePhaseRoundEnd, EuchrePhaseGameEnd)
  */
 
 /** BlackJack phase constants (sync: internal/domain/BlackJack.go). */
@@ -183,4 +184,15 @@ export const VideoPokerPhase = {
   BET: 1,
   DRAW: 2,
   RESULT: 3,
+} as const;
+
+/** Euchre phase constants (sync: internal/domain/Euchre.go). */
+export const EuchrePhase = {
+  PICK_UP: 0,
+  CALL_TRUMP: 1,
+  DISCARD: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
 } as const;

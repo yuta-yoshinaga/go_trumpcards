@@ -10,6 +10,7 @@ import { BlackJackPage } from './pages/BlackJackPage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
+import { EuchrePage } from './pages/EuchrePage';
 import { FreeCellPage } from './pages/FreeCellPage';
 import { GinRummyPage } from './pages/GinRummyPage';
 import { HeartsPage } from './pages/HeartsPage';
@@ -34,6 +35,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/daifugo': <DaifugoPage />,
   '/sevens': <SevensPage />,
   '/doubt': <DoubtPage />,
+  '/euchre': <EuchrePage />,
   '/holdem': <HoldemPage />,
   '/omaha': <OmahaPage />,
   '/hearts': <HeartsPage />,
