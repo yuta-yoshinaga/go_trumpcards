@@ -76,11 +76,11 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
   return (
     <div className="my-1 px-1">
       {badges.map((b) => (
-        <span
+        <button
           key={b.label}
+          type="button"
           className="relative group/badge inline-block cursor-help"
-          style={{ ...badgeStyle, background: b.bg, color: b.color }}
-          role="img"
+          style={{ ...badgeStyle, background: b.bg, color: b.color, border: 'none' }}
           aria-label={`${b.label}: ${b.description}`}
         >
           {b.label}
@@ -90,7 +90,7 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
           >
             {b.description}
           </span>
-        </span>
+        </button>
       ))}
     </div>
   );

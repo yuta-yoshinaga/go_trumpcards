@@ -67,7 +67,7 @@ describe('DaifugoRulesBadges', () => {
 
   it('shows tooltip description on revolution badge', () => {
     render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
-    const badge = screen.getByLabelText(/革命中/);
+    const badge = screen.getByRole('button');
     expect(badge).toHaveAttribute('aria-label', expect.stringContaining('カードの強さが逆転しています'));
     expect(screen.getByRole('tooltip')).toHaveTextContent('カードの強さが逆転しています');
   });
@@ -134,9 +134,9 @@ describe('DaifugoRulesBadges', () => {
     expect(tooltips).toHaveLength(3);
   });
 
-  it('badges have aria-label with description for screen readers', () => {
+  it('badges are focusable buttons with aria-label for keyboard access', () => {
     render(<DaifugoRulesBadges state={makeState({ numberLocked: true })} />);
-    const badge = screen.getByLabelText(/数縛り/);
+    const badge = screen.getByRole('button');
     expect(badge).toHaveAttribute('aria-label', expect.stringContaining('同じ数字のカードしか出せません'));
     expect(badge).toHaveClass('cursor-help');
   });
