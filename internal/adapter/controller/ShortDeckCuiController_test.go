@@ -116,7 +116,7 @@ func TestShortDeckCuiController_AllIn(t *testing.T) {
 func TestShortDeckCuiController_Empty(t *testing.T) {
 	mi := new(usecase.MockShortDeckInteractor)
 	c := NewShortDeckCuiController(mi)
-	assert.Contains(t, c.Exec(""), "コマンドが不明です")
+	assert.Contains(t, c.Exec(""), "'help' でコマンド一覧を表示します。")
 }
 
 func TestShortDeckCuiController_Unknown(t *testing.T) {

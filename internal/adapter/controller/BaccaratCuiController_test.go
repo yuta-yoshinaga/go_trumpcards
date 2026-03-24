@@ -133,5 +133,5 @@ func TestBaccaratCuiController_Empty(t *testing.T) {
 	c := controller.NewBaccaratCuiController(m)
 
 	result := c.Exec("")
-	assert.Contains(t, result, "コマンドが不明です")
+	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 }

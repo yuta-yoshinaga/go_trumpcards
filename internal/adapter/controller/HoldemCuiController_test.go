@@ -116,7 +116,7 @@ func TestHoldemCuiController_AllIn(t *testing.T) {
 func TestHoldemCuiController_Empty(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec(""), "コマンドが不明です")
+	assert.Contains(t, c.Exec(""), "'help' でコマンド一覧を表示します。")
 }
 
 func TestHoldemCuiController_Unknown(t *testing.T) {

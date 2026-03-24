@@ -182,5 +182,5 @@ func TestSpiderCuiControllerEmpty(t *testing.T) {
 	si := newMockSpiderInteractor()
 	c := NewSpiderCuiController(si)
 	result := c.Exec("")
-	assert.Contains(t, result, "コマンドが不明です")
+	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 }

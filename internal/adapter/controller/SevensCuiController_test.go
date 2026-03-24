@@ -106,7 +106,7 @@ func TestSevensCuiController_Exec(t *testing.T) {
 	t.Run("empty command", func(t *testing.T) {
 		c := controller.NewSevensCuiController(newMock())
 		result := c.Exec("")
-		assert.Contains(t, result, "コマンドが不明です")
+		assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 	})
 
 	t.Run("reset with tunnel flag", func(t *testing.T) {

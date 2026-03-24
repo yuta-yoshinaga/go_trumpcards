@@ -40,12 +40,12 @@ func TestExecCuiCommand(t *testing.T) {
 
 	t.Run("empty input", func(t *testing.T) {
 		result := execCuiCommand("", resetFn, validCmds, gameHandler)
-		assert.Equal(t, "コマンドが不明です: ", result)
+		assert.Equal(t, "'help' でコマンド一覧を表示します。", result)
 	})
 
 	t.Run("whitespace only input", func(t *testing.T) {
 		result := execCuiCommand("   ", resetFn, validCmds, gameHandler)
-		assert.Equal(t, "コマンドが不明です: ", result)
+		assert.Equal(t, "'help' でコマンド一覧を表示します。", result)
 	})
 
 	t.Run("q command", func(t *testing.T) {

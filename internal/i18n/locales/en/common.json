@@ -32,6 +32,8 @@
   "cliUnknownGame": "Error: unknown game \"{{name}}\"",
   "cliDidYouMean": "\n  Did you mean \"{{name}}\"?",
   "cliUnsupportedLang": "Warning: unsupported language \"{{lang}}\", defaulting to ja",
+  "emptyInputHint": "Type 'help' for available commands.",
+  "cliExtraArgsWarning": "Warning: extra arguments ignored: {{args}}",
   "metaAIRequired": "Meta-AI setting is required (0=off, 1=on).",
   "invalidMetaAI": "Invalid value: {{val}}. Please enter 0 or 1."
 }

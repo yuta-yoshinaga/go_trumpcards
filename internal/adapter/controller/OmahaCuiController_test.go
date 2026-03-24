@@ -116,7 +116,7 @@ func TestOmahaCuiController_AllIn(t *testing.T) {
 func TestOmahaCuiController_Empty(t *testing.T) {
 	mi := new(usecase.MockOmahaInteractor)
 	c := NewOmahaCuiController(mi)
-	assert.Contains(t, c.Exec(""), "コマンドが不明です")
+	assert.Contains(t, c.Exec(""), "'help' でコマンド一覧を表示します。")
 }
 
 func TestOmahaCuiController_Unknown(t *testing.T) {

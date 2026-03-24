@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -102,7 +103,11 @@ func (m *GameManager) initGame(name string) string {
 func (m *GameManager) switchGame(name string) string {
 	name = strings.ToLower(name)
 	if _, ok := m.games[name]; !ok {
-		return i18n.Tf("unknownGame", "name", name)
+		msg := i18n.Tf("unknownGame", "name", name)
+		if suggestion := cuiutil.SuggestCommand(name, m.gameOrder, 2); suggestion != "" {
+			msg += "\n" + i18n.Tf("cliDidYouMean", "name", suggestion)
+		}
+		return msg
 	}
 	if name == m.currentGame {
 		return i18n.Tf("alreadyPlaying", "name", name)

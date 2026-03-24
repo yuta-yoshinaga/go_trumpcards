@@ -207,7 +207,7 @@ func TestKlondikeCuiControllerEmpty(t *testing.T) {
 	ki := newMockKlondikeInteractor()
 	c := NewKlondikeCuiController(ki)
 	result := c.Exec("")
-	assert.Contains(t, result, "コマンドが不明です")
+	assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 }
 
 func TestKlondikeCuiControllerResetWithConfig(t *testing.T) {

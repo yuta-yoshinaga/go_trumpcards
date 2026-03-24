@@ -231,7 +231,7 @@ func TestIndianPokerCuiController_ActionLog(t *testing.T) {
 func TestIndianPokerCuiController_Empty(t *testing.T) {
 	mi := new(usecase.MockIndianPokerInteractor)
 	c := NewIndianPokerCuiController(mi)
-	assert.Contains(t, c.Exec(""), "コマンドが不明です")
+	assert.Contains(t, c.Exec(""), "'help' でコマンド一覧を表示します。")
 }
 
 func TestIndianPokerCuiController_Unknown(t *testing.T) {

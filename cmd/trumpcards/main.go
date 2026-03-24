@@ -173,6 +173,13 @@ ENVIRONMENT VARIABLES:
 
 	arg := strings.ToLower(flag.Arg(0))
 	if handler, ok := commands[arg]; ok {
+		if flag.NArg() > 1 {
+			extras := make([]string, 0, flag.NArg()-1)
+			for idx := 1; idx < flag.NArg(); idx++ {
+				extras = append(extras, flag.Arg(idx))
+			}
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(extras, " ")))
+		}
 		return handler()
 	}
 

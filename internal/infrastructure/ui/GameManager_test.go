@@ -106,6 +106,16 @@ func TestGameManager_ExecSwitchUnknown(t *testing.T) {
 	assert.Contains(t, res, "Unknown game")
 }
 
+func TestGameManager_ExecSwitchUnknownWithSuggestion(t *testing.T) {
+	// Use NewGameManager with real game names so Levenshtein can find a match.
+	mgr := NewGameManager("blackjack")
+	res := mgr.Exec("switch pokr") // typo for "poker"
+	assert.Equal(t, "blackjack", mgr.CurrentGame())
+	assert.Contains(t, res, "Unknown game")
+	assert.Contains(t, res, "Did you mean")
+	assert.Contains(t, res, "poker")
+}
+
 func TestGameManager_ExecSwitchNoName(t *testing.T) {
 	mgr, _, _ := newTestManager("a")
 	res := mgr.Exec("switch")
