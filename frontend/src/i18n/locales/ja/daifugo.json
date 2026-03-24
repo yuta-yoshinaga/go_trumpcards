@@ -27,7 +27,14 @@
     "nineReverse": "9リバース",
     "numberLock": "数縛り",
     "sequenceLock": "階段縛り",
-    "illegalFinishPenalty": "反則上がり"
+    "illegalFinishPenalty": "反則上がり",
+    "revolutionDesc": "カードの強さが逆転しています（3が最強、2が最弱）",
+    "elevenBackDesc": "Jが出されたため、一時的に強さが逆転しています",
+    "suitLockDesc": "同じスートのカードしか出せません",
+    "sequenceDesc": "階段（連続した数字）で出す必要があります",
+    "nineReverseDesc": "9が出されたため、出す順番が逆回りになっています",
+    "numberLockDesc": "同じ数字のカードしか出せません",
+    "sequenceLockDesc": "同じ長さの階段しか出せません"
   },
   "exchange": {
     "title": "[カード交換]",

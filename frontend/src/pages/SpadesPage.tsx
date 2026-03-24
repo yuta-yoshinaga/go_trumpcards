@@ -19,7 +19,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
 import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import { selectedCardStyle } from '../styles/cardStyles';
+import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { SpadesPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -322,7 +322,7 @@ function SpadesPageContent() {
                 onClick={() => toggleCard(idx)}
                 aria-label={cardAlt(card)}
                 aria-pressed={selectedCardIndices.includes(idx)}
-                className="transition-transform"
+                className={`transition-transform ${focusRingCard}`}
                 style={{
                   background: 'none',
                   padding: 0,

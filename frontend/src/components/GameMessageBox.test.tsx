@@ -18,6 +18,13 @@ describe('GameMessageBox', () => {
     expect(screen.getByText('テスト結果')).toBeInTheDocument();
   });
 
+  it('has role="status" and aria-live="polite" for screen reader announcements', () => {
+    render(<GameMessageBox message="勝ちました" />);
+    const el = screen.getByRole('status');
+    expect(el).toBeInTheDocument();
+    expect(el).toHaveAttribute('aria-live', 'polite');
+  });
+
   it('renders empty div when message is undefined and alwaysVisible is true', () => {
     const { container } = render(<GameMessageBox message={undefined} alwaysVisible />);
     const div = container.firstChild as HTMLElement;

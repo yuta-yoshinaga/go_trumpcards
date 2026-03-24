@@ -368,8 +368,8 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(elevenBackState);
     renderWithProviders(<DaifugoPage />);
-    // Use selector:'span' to find the badge (not the settings panel label)
-    await waitFor(() => expect(screen.getByText('11バック', { selector: 'span' })).toBeInTheDocument());
+    // Use selector:'button' to find the badge (not the settings panel label)
+    await waitFor(() => expect(screen.getByText('11バック', { selector: 'button' })).toBeInTheDocument());
   });
 
   it('shows suit lock badge when suitLocked is true', async () => {
@@ -390,8 +390,8 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(seqState);
     renderWithProviders(<DaifugoPage />);
-    // Use selector:'span' to find the badge (not the settings panel label)
-    await waitFor(() => expect(screen.getByText('階段', { selector: 'span' })).toBeInTheDocument());
+    // Use selector:'button' to find the badge (not the settings panel label)
+    await waitFor(() => expect(screen.getByText('階段', { selector: 'button' })).toBeInTheDocument());
   });
 
   it('shows card exchange log when exchangeActions is non-empty', async () => {
@@ -790,7 +790,7 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(reverseState);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText('9リバース', { selector: 'span' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('9リバース', { selector: 'button' })).toBeInTheDocument());
   });
 
   it('shows 数縛り badge when numberLocked is true', async () => {
@@ -802,9 +802,9 @@ describe('DaifugoPage', () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => {
       const badges = screen.getAllByText('数縛り');
-      // Badge span + settings checkbox label
+      // Badge button + settings checkbox label
       expect(badges.length).toBeGreaterThanOrEqual(1);
-      expect(badges[0].tagName).toBe('SPAN');
+      expect(badges[0].tagName).toBe('BUTTON');
     });
   });
 
@@ -1123,7 +1123,7 @@ describe('DaifugoPage', () => {
     await waitFor(() => {
       const badges = screen.getAllByText('階段縛り');
       expect(badges.length).toBeGreaterThanOrEqual(1);
-      expect(badges[0].tagName).toBe('SPAN');
+      expect(badges[0].tagName).toBe('BUTTON');
     });
   });
 

@@ -27,7 +27,14 @@
     "nineReverse": "9-Reverse",
     "numberLock": "Number Lock",
     "sequenceLock": "Sequence Lock",
-    "illegalFinishPenalty": "Illegal Finish"
+    "illegalFinishPenalty": "Illegal Finish",
+    "revolutionDesc": "Card strength is reversed (3 is strongest, 2 is weakest)",
+    "elevenBackDesc": "A Jack was played, temporarily reversing card strength",
+    "suitLockDesc": "Only cards of the same suit can be played",
+    "sequenceDesc": "Cards must be played as a sequence (consecutive numbers)",
+    "nineReverseDesc": "A 9 was played, reversing the turn order",
+    "numberLockDesc": "Only cards of the same number can be played",
+    "sequenceLockDesc": "Only sequences of the same length can be played"
   },
   "exchange": {
     "title": "[Card Exchange]",
