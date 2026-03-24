@@ -70,6 +70,11 @@ export const OmahaPhase = HoldemPhase;
 /** Omaha Hold'em rebuy phase type constants (same as Holdem). */
 export const OmahaRebuyPhaseType = HoldemRebuyPhaseType;
 
+/** Short Deck Hold'em phase constants (same as Holdem). */
+export const ShortDeckPhase = HoldemPhase;
+/** Short Deck Hold'em rebuy phase type constants (same as Holdem). */
+export const ShortDeckRebuyPhaseType = HoldemRebuyPhaseType;
+
 /** Hearts phase constants (sync: internal/domain/Hearts.go). */
 export const HeartsPhase = {
   PASS: 0,

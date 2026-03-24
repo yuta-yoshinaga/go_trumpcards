@@ -25,6 +25,7 @@ import { OmahaPage } from './pages/OmahaPage';
 import { PokerPage } from './pages/PokerPage';
 import { PyramidPage } from './pages/PyramidPage';
 import { SevensPage } from './pages/SevensPage';
+import { ShortDeckPage } from './pages/ShortDeckPage';
 import { SpadesPage } from './pages/SpadesPage';
 import { SpiderPage } from './pages/SpiderPage';
 import { VideoPokerPage } from './pages/VideoPokerPage';
@@ -40,6 +41,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/euchre': <EuchrePage />,
   '/holdem': <HoldemPage />,
   '/omaha': <OmahaPage />,
+  '/shortdeck': <ShortDeckPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,
   '/napoleon': <NapoleonPage />,

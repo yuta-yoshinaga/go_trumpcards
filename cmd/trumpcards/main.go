@@ -42,6 +42,7 @@ GAMES:
   doubt        Doubt (ダウト)
   holdem       Texas Hold'em (テキサスホールデム)
   omaha        Omaha Hold'em (オマハホールデム)
+  shortdeck    Short Deck (6+ Hold'em) (ショートデック)
   hearts       Hearts (ハーツ)
   memory       Memory / Concentration (神経衰弱)
   klondike     Klondike Solitaire (ソリティア)
@@ -136,6 +137,7 @@ ENVIRONMENT VARIABLES:
 		"doubt":       func() int { ui.NewDoubtCui().Exec(); return 0 },
 		"holdem":      func() int { ui.NewHoldemCui().Exec(); return 0 },
 		"omaha":       func() int { ui.NewOmahaCui().Exec(); return 0 },
+		"shortdeck":   func() int { ui.NewShortDeckCui().Exec(); return 0 },
 		"hearts":      func() int { ui.NewHeartsCui().Exec(); return 0 },
 		"memory":      func() int { ui.NewMemoryCui().Exec(); return 0 },
 		"klondike":    func() int { ui.NewKlondikeCui().Exec(); return 0 },

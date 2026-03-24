@@ -22,6 +22,7 @@ import type {
   PokerResponse,
   PyramidResponse,
   SevensResponse,
+  ShortDeckResponse,
   SpadesResponse,
   SpiderResponse,
   VideoPokerResponse,
@@ -278,6 +279,40 @@ export const omahaApi = {
     profile?: unknown,
   ) =>
     gameExec<OmahaResponse>('omaha', {
+      command,
+      amount,
+      humanPlayMs,
+      profile,
+      ...config,
+    }),
+};
+
+/** Configuration options for Short Deck Hold'em (same as Hold'em). */
+export type ShortDeckConfigInput = HoldemConfigInput;
+
+/** API client for the Short Deck Hold'em /shortdeck/exec endpoint. */
+export const shortdeckApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'fold'
+      | 'check'
+      | 'call'
+      | 'bet'
+      | 'raise'
+      | 'allin'
+      | 'rebuy'
+      | 'skiprebuy'
+      | 'addon'
+      | 'skipaddon'
+      | 'muck'
+      | 'show',
+    amount?: number,
+    config?: ShortDeckConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) =>
+    gameExec<ShortDeckResponse>('shortdeck', {
       command,
       amount,
       humanPlayMs,
@@ -627,6 +662,7 @@ const games = [
   'doubt',
   'holdem',
   'omaha',
+  'shortdeck',
   'hearts',
   'spades',
   'napoleon',

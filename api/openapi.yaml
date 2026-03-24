@@ -30,6 +30,8 @@ tags:
     description: Texas Hold'em game
   - name: omaha
     description: Omaha Hold'em game
+  - name: shortdeck
+    description: Short Deck (6+ Hold'em) game
   - name: hearts
     description: Hearts game
   - name: memory
@@ -923,6 +925,51 @@ paths:
         The game uses the same phases, commands, and configuration options as
         Texas Hold'em.  See the `/holdem/exec` endpoint for full documentation.
       operationId: omahaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
+  /shortdeck/exec:
+    post:
+      tags:
+        - shortdeck
+      summary: Execute a Short Deck (6+ Hold'em) game command
+      description: |
+        Send a command to advance the Short Deck Hold'em game session identified by
+        `sessionId`.  Short Deck (6+ Hold'em) is a variant of Texas Hold'em that uses
+        a 36-card deck (2–5 of each suit removed).  Flush beats Full House, and
+        the lowest straight is A-6-7-8-9.
+
+        The game uses the same phases, commands, and configuration options as
+        Texas Hold'em.  See the `/holdem/exec` endpoint for full documentation.
+      operationId: shortdeckExec
       requestBody:
         required: true
         content:

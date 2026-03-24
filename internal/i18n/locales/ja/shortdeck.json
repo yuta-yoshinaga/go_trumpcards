@@ -1,0 +1,11 @@
+{
+  "helpTitle": "ショートデック (6+ホールデム)",
+  "helpFold": "  f                    フォールド",
+  "helpCheck": "  ck                   チェック",
+  "helpCall": "  c                    コール",
+  "helpBet": "  b <amount>           ベット",
+  "helpRaise": "  ra <amount>          レイズ",
+  "helpAllIn": "  a                    オールイン",
+  "helpBettingLimit": "  bl [0-2]             ベッティングリミット (0=Fixed, 1=PotLimit, 2=NoLimit)",
+  "helpTournament": "  tm [0-1]             トーナメントモード"
+}
