@@ -21,6 +21,8 @@ The test stack is **Vitest + React Testing Library + jest-dom**.
 | API client | `src/api/*.test.ts` | Correct URL, request body, and error handling for every API method |
 | Components | `src/components/*.test.tsx` | Rendered output, props, event handlers |
 | Pages | `src/pages/*.test.tsx` | On-mount API calls, rendering for each game phase/state, button interactions |
+| Hooks | `src/hooks/*.test.ts` | State transitions, localStorage persistence, return values |
+| Utils | `src/utils/**/*.test.ts` | Pure function input/output, edge cases |
 
 **Branch coverage (C1) must be 80% or higher** for `src/api`, `src/components`, `src/pages`, and `src/utils`. Focus testing effort on business logic and critical paths rather than exhaustively covering every conditional branch.
 
