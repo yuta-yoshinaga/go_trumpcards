@@ -29,7 +29,7 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 				if pc.Removed {
 					b.WriteString("    ")
 				} else {
-					b.WriteString(fmt.Sprintf("(%d,%d)%s", row, col, cuiCardStr(pc.Card)))
+					fmt.Fprintf(b, "(%d,%d)%s", row, col, cuiCardStr(pc.Card))
 				}
 			}
 			b.WriteString("\n")
