@@ -222,8 +222,8 @@ func (owp *ShortDeckWebPresenter) ActionLogOutput(o interfaces.ShortDeckGame) st
 }
 
 func (owp *ShortDeckWebPresenter) getHandName(rank int) string {
-	if rank >= 0 && rank < len(domain.PokerHandNames) {
-		return domain.PokerHandNames[rank]
+	if rank >= 0 && rank < len(domain.ShortDeckHandNames) {
+		return domain.ShortDeckHandNames[rank]
 	}
 	return "Unknown"
 }

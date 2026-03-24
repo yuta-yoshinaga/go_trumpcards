@@ -56,3 +56,12 @@ func (sd *ShortDeck) SetHumanProfile(profile *BettingHumanProfile) { sd.humanPro
 
 // GetLastHumanPlayMs 最後の人間プレイ時間取得（テスト用）
 func (sd *ShortDeck) GetLastHumanPlayMs() int { return sd.lastHumanPlayMs }
+
+// SetActedFlags actedフラグ設定（テスト用）
+func (sd *ShortDeck) SetActedFlags(flags []bool) { sd.actedFlags = flags }
+
+// SetRaiseCount レイズ回数設定（テスト用）
+func (sd *ShortDeck) SetRaiseCount(count int) { sd.raiseCount = count }
+
+// SetStartingChips 開始時チップ設定（テスト用）
+func (sd *ShortDeck) SetStartingChips(chips []int) { sd.startingChips = chips }

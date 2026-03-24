@@ -414,6 +414,674 @@ func TestShortDeck_MetaAI_LastHumanPlayMsResetOnReset(t *testing.T) {
 	assert.Equal(t, 0, sd.GetLastHumanPlayMs(), "lastHumanPlayMs should be reset to 0 on Reset")
 }
 
+// ---------------------------------------------------------------------------
+// Showdown tests
+// ---------------------------------------------------------------------------
+
+func TestShortDeck_Showdown(t *testing.T) {
+	sd := newTestShortDeck()
+	for i := 0; i < sd.GetPlayerCnt(); i++ {
+		sd.GetPlayer(i).SetChips(1000)
+	}
+	sd.SetPhase(domain.ShortDeckPhaseRiver)
+	sd.SetPot(200)
+	sd.SetCurrentTurn(0)
+	sd.SetLastBet(0)
+	sd.SetMinRaise(10)
+	sd.SetActedFlags([]bool{false, true, true, true})
+	sd.SetStartingChips([]int{1000, 1000, 1000, 1000})
+
+	// Player 0: pocket aces (strong)
+	sd.GetPlayer(0).Reset()
+	sd.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	sd.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+
+	// Player 1: weaker hand
+	sd.GetPlayer(1).Reset()
+	sd.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+	sd.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+
+	// Players 2, 3: folded
+	for i := 2; i < 4; i++ {
+		sd.GetPlayer(i).SetFolded(true)
+		sd.GetPlayer(i).Reset()
+		sd.GetPlayer(i).AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		sd.GetPlayer(i).AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	}
+
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 8, false),
+		domain.NewCard(domain.CardDesignDiamond, 9, false),
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 12, false),
+		domain.NewCard(domain.CardDesignClover, 13, false),
+	})
+
+	// Human checks → triggers advancePhase → showdown
+	err := sd.PlayerAction(domain.ShortDeckActionCheck, 0, 0)
+	assert.NoError(t, err)
+
+	// Handle muck/show
+	if sd.IsMuckAvailable() {
+		err = sd.Muck()
+		assert.NoError(t, err)
+	} else if sd.GetPhase() == domain.ShortDeckPhaseShowdown {
+		err = sd.ShowHand()
+		assert.NoError(t, err)
+	}
+
+	assert.True(t, sd.GetGameEndFlag())
+	assert.True(t, len(sd.GetRoundResults()) > 0)
+
+	// Verify hand names are populated (covers getHandName)
+	for _, r := range sd.GetRoundResults() {
+		assert.NotEmpty(t, r.HandName)
+	}
+}
+
+func TestShortDeck_Showdown_HumanWins(t *testing.T) {
+	sd := newTestShortDeck()
+	for i := 0; i < sd.GetPlayerCnt(); i++ {
+		sd.GetPlayer(i).SetChips(1000)
+	}
+	sd.SetPhase(domain.ShortDeckPhaseRiver)
+	sd.SetPot(400)
+	sd.SetCurrentTurn(0)
+	sd.SetLastBet(0)
+	sd.SetMinRaise(10)
+	sd.SetActedFlags([]bool{false, true, true, true})
+	sd.SetStartingChips([]int{1000, 1000, 1000, 1000})
+
+	// Player 0 (human): pocket aces → three of a kind with community ace
+	sd.GetPlayer(0).Reset()
+	sd.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	sd.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+
+	// Player 1: weak hand (6, 7 no straight possible)
+	sd.GetPlayer(1).Reset()
+	sd.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+	sd.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+
+	// Players 2, 3: folded
+	for i := 2; i < 4; i++ {
+		sd.GetPlayer(i).SetFolded(true)
+		sd.GetPlayer(i).Reset()
+		sd.GetPlayer(i).AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		sd.GetPlayer(i).AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	}
+
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 1, false), // ace → trips for human
+		domain.NewCard(domain.CardDesignDiamond, 13, false),
+		domain.NewCard(domain.CardDesignSpade, 12, false),
+		domain.NewCard(domain.CardDesignHeart, 11, false),
+		domain.NewCard(domain.CardDesignClover, 7, false),
+	})
+
+	err := sd.PlayerAction(domain.ShortDeckActionCheck, 0, 0)
+	assert.NoError(t, err)
+
+	// Human won → no muck, goes directly to end
+	assert.True(t, sd.GetGameEndFlag())
+	assert.False(t, sd.IsMuckAvailable())
+
+	// Verify won amount exists
+	wonTotal := 0
+	for _, r := range sd.GetRoundResults() {
+		wonTotal += r.WonAmount
+	}
+	assert.True(t, wonTotal > 0)
+}
+
+// ---------------------------------------------------------------------------
+// Phase transition tests (advancePhase + dealRemainingCommunity)
+// ---------------------------------------------------------------------------
+
+func TestShortDeck_AdvancePhase_PreFlopToFlop(t *testing.T) {
+	sd := newTestShortDeck()
+	for i := 0; i < sd.GetPlayerCnt(); i++ {
+		sd.GetPlayer(i).SetChips(1000)
+	}
+	sd.SetPhase(domain.ShortDeckPhasePreFlop)
+	sd.SetPot(30)
+	sd.SetCurrentTurn(0)
+	sd.SetLastBet(0)
+	sd.SetMinRaise(10)
+	sd.SetActedFlags([]bool{false, true, true, true})
+
+	for i := 0; i < sd.GetPlayerCnt(); i++ {
+		sd.GetPlayer(i).Reset()
+		sd.GetPlayer(i).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		sd.GetPlayer(i).AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+	}
+
+	// Human checks → should advance to flop (CPU acts then turn comes back)
+	err := sd.PlayerAction(domain.ShortDeckActionCheck, 0, 0)
+	assert.NoError(t, err)
+
+	// Phase should be flop or beyond (CPU might have advanced further)
+	assert.True(t, sd.GetPhase() >= domain.ShortDeckPhaseFlop || sd.GetGameEndFlag())
+}
+
+func TestShortDeck_AdvancePhase_FlopToTurn(t *testing.T) {
+	sd := setupShortDeckForHumanAction(domain.ShortDeckPhaseFlop)
+	sd.SetActedFlags([]bool{false, true, true, true})
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+	})
+
+	err := sd.PlayerAction(domain.ShortDeckActionCheck, 0, 0)
+	assert.NoError(t, err)
+
+	// Should advance beyond flop
+	assert.True(t, sd.GetPhase() >= domain.ShortDeckPhaseTurn || sd.GetGameEndFlag())
+}
+
+func TestShortDeck_AdvancePhase_TurnToRiver(t *testing.T) {
+	sd := setupShortDeckForHumanAction(domain.ShortDeckPhaseTurn)
+	sd.SetActedFlags([]bool{false, true, true, true})
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+		domain.NewCard(domain.CardDesignDiamond, 9, false),
+	})
+
+	err := sd.PlayerAction(domain.ShortDeckActionCheck, 0, 0)
+	assert.NoError(t, err)
+
+	assert.True(t, sd.GetPhase() >= domain.ShortDeckPhaseRiver || sd.GetGameEndFlag())
+}
+
+func TestShortDeck_AdvancePhase_RiverToShowdown(t *testing.T) {
+	sd := setupShortDeckForHumanAction(domain.ShortDeckPhaseRiver)
+	sd.SetActedFlags([]bool{false, true, true, true})
+	sd.SetStartingChips([]int{1000, 1000, 1000, 1000})
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+		domain.NewCard(domain.CardDesignDiamond, 9, false),
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+	})
+
+	err := sd.PlayerAction(domain.ShortDeckActionCheck, 0, 0)
+	assert.NoError(t, err)
+
+	assert.True(t, sd.GetPhase() >= domain.ShortDeckPhaseShowdown)
+	assert.True(t, len(sd.GetRoundResults()) > 0)
+}
+
+func TestShortDeck_DealRemainingCommunity_AllInAtFlop(t *testing.T) {
+	sd := newTestShortDeck()
+	for i := 0; i < sd.GetPlayerCnt(); i++ {
+		sd.GetPlayer(i).SetChips(1000)
+	}
+	sd.SetPhase(domain.ShortDeckPhaseFlop)
+	sd.SetPot(4000)
+	sd.SetCurrentTurn(0)
+	sd.SetLastBet(0)
+	sd.SetMinRaise(10)
+	sd.SetStartingChips([]int{1000, 1000, 1000, 1000})
+
+	// All players are all-in except one non-folded
+	for i := 0; i < sd.GetPlayerCnt(); i++ {
+		sd.GetPlayer(i).Reset()
+		sd.GetPlayer(i).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		sd.GetPlayer(i).AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		if i > 0 {
+			sd.GetPlayer(i).SetAllIn(true)
+		}
+	}
+
+	sd.SetActedFlags([]bool{false, true, true, true})
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+	})
+
+	// Human checks → only 1 active (non-all-in) player → dealRemainingCommunity + showdown
+	err := sd.PlayerAction(domain.ShortDeckActionCheck, 0, 0)
+	assert.NoError(t, err)
+
+	// Should go to showdown with 5 community cards
+	assert.True(t, sd.GetPhase() >= domain.ShortDeckPhaseShowdown)
+}
+
+// ---------------------------------------------------------------------------
+// GTO CPU player tests
+// ---------------------------------------------------------------------------
+
+func TestShortDeck_GTO_FullGame(t *testing.T) {
+	// Create a game with GTO-style CPU players to exercise cpuDecidePreFlopGTO and cpuDecidePostFlopGTO
+	players := []*domain.ShortDeckPlayer{
+		domain.NewShortDeckPlayer(true, domain.HoldemStyleTAG),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
+	}
+	cfg := domain.DefaultShortDeckConfig()
+	tc := domain.NewTrumpCardsShortDeck()
+	sd := domain.NewShortDeck(tc, players, cfg)
+
+	// Run multiple hands to cover GTO pre-flop and post-flop paths
+	for i := 0; i < 10; i++ {
+		err := sd.Reset()
+		assert.NoError(t, err)
+
+		if sd.GetGameEndFlag() {
+			continue
+		}
+
+		// Play up to 20 actions per hand to avoid infinite loops
+		for attempt := 0; attempt < 20 && !sd.GetGameEndFlag(); attempt++ {
+			if !sd.IsHumanTurn() {
+				break
+			}
+			phase := sd.GetPhase()
+			if phase < domain.ShortDeckPhasePreFlop || phase > domain.ShortDeckPhaseRiver {
+				break
+			}
+			callAmt := sd.GetLastBet() - sd.GetPlayer(0).GetCurrentBet()
+			if callAmt > 0 {
+				_ = sd.PlayerAction(domain.ShortDeckActionCall, 0, 0)
+			} else {
+				_ = sd.PlayerAction(domain.ShortDeckActionCheck, 0, 0)
+			}
+		}
+		if sd.GetPhase() == domain.ShortDeckPhaseShowdown {
+			_ = sd.ShowHand()
+		}
+	}
+}
+
+func TestShortDeck_GTO_PreFlop(t *testing.T) {
+	players := []*domain.ShortDeckPlayer{
+		domain.NewShortDeckPlayer(true, domain.HoldemStyleTAG),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
+	}
+	cfg := domain.DefaultShortDeckConfig()
+	tc := domain.NewTrumpCardsShortDeck()
+	sd := domain.NewShortDeck(tc, players, cfg)
+
+	// Run many hands to hit various GTO branches
+	for i := 0; i < 20; i++ {
+		err := sd.Reset()
+		assert.NoError(t, err)
+
+		if sd.GetGameEndFlag() {
+			continue
+		}
+		if sd.IsHumanTurn() && sd.GetPhase() == domain.ShortDeckPhasePreFlop {
+			_ = sd.PlayerAction(domain.ShortDeckActionFold, 0, 0)
+		}
+	}
+}
+
+func TestShortDeck_GTO_PostFlop(t *testing.T) {
+	players := []*domain.ShortDeckPlayer{
+		domain.NewShortDeckPlayer(true, domain.HoldemStyleTAG),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
+	}
+	cfg := domain.DefaultShortDeckConfig()
+	tc := domain.NewTrumpCardsShortDeck()
+	sd := domain.NewShortDeck(tc, players, cfg)
+
+	// Play enough hands so GTO CPUs reach post-flop
+	for i := 0; i < 30; i++ {
+		err := sd.Reset()
+		assert.NoError(t, err)
+
+		if sd.GetGameEndFlag() {
+			continue
+		}
+
+		// Keep playing human actions to advance through phases
+		for attempt := 0; attempt < 20 && !sd.GetGameEndFlag(); attempt++ {
+			if !sd.IsHumanTurn() {
+				break
+			}
+			phase := sd.GetPhase()
+			if phase < domain.ShortDeckPhasePreFlop || phase > domain.ShortDeckPhaseRiver {
+				break
+			}
+			if sd.GetLastBet() > sd.GetPlayer(0).GetCurrentBet() {
+				_ = sd.PlayerAction(domain.ShortDeckActionCall, 0, 0)
+			} else {
+				_ = sd.PlayerAction(domain.ShortDeckActionCheck, 0, 0)
+			}
+		}
+
+		if sd.GetPhase() == domain.ShortDeckPhaseShowdown {
+			_ = sd.ShowHand()
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Rebuy / Addon success tests
+// ---------------------------------------------------------------------------
+
+func newTestShortDeckWithRebuy() *domain.ShortDeck {
+	players := []*domain.ShortDeckPlayer{
+		domain.NewShortDeckPlayer(true, domain.HoldemStyleTAG),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleTAG),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleLAP),
+		domain.NewShortDeckPlayer(false, domain.HoldemStyleLAG),
+	}
+	cfg := domain.DefaultShortDeckConfig()
+	cfg.RebuyEnabled = true
+	cfg.RebuyMaxCount = 3
+	cfg.RebuyChips = 1000
+	cfg.RebuyPeriodHands = 20
+	tc := domain.NewTrumpCardsShortDeck()
+	return domain.NewShortDeck(tc, players, cfg)
+}
+
+func TestShortDeck_Rebuy_Success(t *testing.T) {
+	sd := newTestShortDeckWithRebuy()
+	// Bust human, trigger rebuy phase
+	sd.GetPlayer(0).SetChips(0)
+	_ = sd.Reset()
+	assert.Equal(t, domain.ShortDeckPhaseRebuy, sd.GetPhase())
+	assert.Equal(t, domain.ShortDeckRebuyPhaseRebuy, sd.GetRebuyPhaseType())
+
+	// Execute rebuy
+	err := sd.Rebuy()
+	assert.NoError(t, err)
+	// Human should have chips now
+	assert.True(t, sd.GetPlayer(0).GetChips() > 0)
+	// Rebuy count incremented
+	assert.Equal(t, 1, sd.GetRebuyCounts()[0])
+	// Should have continued to deal
+	assert.NotEqual(t, domain.ShortDeckPhaseRebuy, sd.GetPhase())
+}
+
+func TestShortDeck_SkipRebuy_Success(t *testing.T) {
+	sd := newTestShortDeckWithRebuy()
+	sd.GetPlayer(0).SetChips(0)
+	_ = sd.Reset()
+	assert.Equal(t, domain.ShortDeckPhaseRebuy, sd.GetPhase())
+
+	err := sd.SkipRebuy()
+	assert.NoError(t, err)
+	// Human has no chips → game ends
+	assert.True(t, sd.GetGameEndFlag())
+	assert.Equal(t, domain.ShortDeckPhaseEnd, sd.GetPhase())
+}
+
+func TestShortDeck_SkipRebuy_HumanHasChips(t *testing.T) {
+	sd := newTestShortDeckWithRebuy()
+	// CPU busted, not human
+	sd.GetPlayer(1).SetChips(0)
+	sd.GetPlayer(0).SetChips(1000)
+	_ = sd.Reset()
+
+	// If rebuy phase triggered, skip it
+	if sd.GetPhase() == domain.ShortDeckPhaseRebuy && sd.GetRebuyPhaseType() == domain.ShortDeckRebuyPhaseRebuy {
+		err := sd.SkipRebuy()
+		assert.NoError(t, err)
+		// Human has chips, game should continue
+		assert.False(t, sd.GetGameEndFlag() && sd.GetPhase() == domain.ShortDeckPhaseEnd)
+	}
+}
+
+func TestShortDeck_Rebuy_ThenAddon(t *testing.T) {
+	sd := newTestShortDeckWithRebuy()
+	cfg := sd.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1 // addon at hand 1
+	cfg.AddonChips = 500
+	sd.SetConfig(cfg)
+	// Bust human
+	sd.GetPlayer(0).SetChips(0)
+	_ = sd.Reset()
+	assert.Equal(t, domain.ShortDeckPhaseRebuy, sd.GetPhase())
+	assert.Equal(t, domain.ShortDeckRebuyPhaseRebuy, sd.GetRebuyPhaseType())
+
+	// Do rebuy → should transition to addon phase
+	err := sd.Rebuy()
+	assert.NoError(t, err)
+	assert.Equal(t, domain.ShortDeckPhaseRebuy, sd.GetPhase())
+	assert.Equal(t, domain.ShortDeckRebuyPhaseAddon, sd.GetRebuyPhaseType())
+}
+
+func TestShortDeck_Addon_Success(t *testing.T) {
+	sd := newTestShortDeckWithRebuy()
+	cfg := sd.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	cfg.AddonChips = 500
+	sd.SetConfig(cfg)
+	// Bust human to trigger rebuy then addon
+	sd.GetPlayer(0).SetChips(0)
+	_ = sd.Reset()
+	// Rebuy first
+	if sd.GetRebuyPhaseType() == domain.ShortDeckRebuyPhaseRebuy {
+		_ = sd.Rebuy()
+	}
+	// Now should be at addon phase
+	if sd.GetPhase() == domain.ShortDeckPhaseRebuy && sd.GetRebuyPhaseType() == domain.ShortDeckRebuyPhaseAddon {
+		chipsBefore := sd.GetPlayer(0).GetChips()
+		err := sd.Addon()
+		assert.NoError(t, err)
+		assert.Equal(t, chipsBefore+500, sd.GetPlayer(0).GetChips())
+		assert.True(t, sd.GetAddonUsed()[0])
+	}
+}
+
+func TestShortDeck_SkipAddon_Success(t *testing.T) {
+	sd := newTestShortDeckWithRebuy()
+	cfg := sd.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	cfg.AddonChips = 500
+	sd.SetConfig(cfg)
+	sd.GetPlayer(0).SetChips(0)
+	_ = sd.Reset()
+	if sd.GetRebuyPhaseType() == domain.ShortDeckRebuyPhaseRebuy {
+		_ = sd.Rebuy()
+	}
+	if sd.GetPhase() == domain.ShortDeckPhaseRebuy && sd.GetRebuyPhaseType() == domain.ShortDeckRebuyPhaseAddon {
+		err := sd.SkipAddon()
+		assert.NoError(t, err)
+		// Should continue to deal
+		assert.NotEqual(t, domain.ShortDeckPhaseRebuy, sd.GetPhase())
+	}
+}
+
+func TestShortDeck_IsRebuyAvailable_Enabled(t *testing.T) {
+	sd := newTestShortDeckWithRebuy()
+	sd.GetPlayer(0).SetChips(0)
+	sd.SetHandCount(1)
+	assert.True(t, sd.IsRebuyAvailable())
+}
+
+func TestShortDeck_IsAddonAvailable_Enabled(t *testing.T) {
+	sd := newTestShortDeckWithRebuy()
+	cfg := sd.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	cfg.AddonChips = 500
+	sd.SetConfig(cfg)
+	sd.SetHandCount(1)
+	assert.True(t, sd.IsAddonAvailable())
+}
+
+// ---------------------------------------------------------------------------
+// cpuBetOrAllIn test
+// ---------------------------------------------------------------------------
+
+func TestShortDeck_PlayerAction_AllIn(t *testing.T) {
+	sd := setupShortDeckForHumanAction(domain.ShortDeckPhaseFlop)
+	sd.GetPlayer(0).SetChips(15) // less than big blind
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+	})
+
+	err := sd.PlayerAction(domain.ShortDeckActionAllIn, 0, 0)
+	assert.NoError(t, err)
+}
+
+// ---------------------------------------------------------------------------
+// All-fold (resolveLastPlayer) test
+// ---------------------------------------------------------------------------
+
+func TestShortDeck_AllFold(t *testing.T) {
+	sd := setupShortDeckForHumanAction(domain.ShortDeckPhaseFlop)
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+	})
+
+	// Fold players 1-3 manually
+	for i := 1; i < 4; i++ {
+		sd.GetPlayer(i).SetFolded(true)
+	}
+	sd.SetActedFlags([]bool{false, true, true, true})
+	sd.SetLastBet(50)
+	sd.GetPlayer(0).SetCurrentBet(0)
+
+	// Human folds → last remaining player wins
+	err := sd.PlayerAction(domain.ShortDeckActionFold, 0, 0)
+	assert.NoError(t, err)
+	assert.True(t, sd.GetGameEndFlag())
+}
+
+// ---------------------------------------------------------------------------
+// Tournament blind escalation test
+// ---------------------------------------------------------------------------
+
+func TestShortDeck_TournamentBlindEscalation(t *testing.T) {
+	sd := newTestShortDeck()
+	cfg := sd.GetConfig()
+	cfg.TournamentMode = true
+	cfg.BlindLevelHands = 2
+	cfg.BlindMultiplier = 200 // double
+	sd.SetConfig(cfg)
+
+	origSB := cfg.SmallBlind
+	origBB := cfg.BigBlind
+
+	// Play hands to trigger blind escalation
+	_ = sd.Reset() // hand 1
+	_ = sd.Reset() // hand 2 → should escalate
+
+	newCfg := sd.GetConfig()
+	assert.True(t, newCfg.SmallBlind >= origSB)
+	assert.True(t, newCfg.BigBlind >= origBB)
+}
+
+// ---------------------------------------------------------------------------
+// Equity and PotOdds
+// ---------------------------------------------------------------------------
+
+func TestShortDeck_GetEquity(t *testing.T) {
+	sd := setupShortDeckForHumanAction(domain.ShortDeckPhaseFlop)
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+	})
+
+	eq := sd.GetEquity()
+	assert.NotNil(t, eq)
+	assert.True(t, eq.Equity >= 0)
+}
+
+func TestShortDeck_GetEquity_WrongPhase(t *testing.T) {
+	sd := newTestShortDeck()
+	sd.SetPhase(domain.ShortDeckPhaseShowdown)
+	assert.Nil(t, sd.GetEquity())
+}
+
+func TestShortDeck_GetPotOdds(t *testing.T) {
+	sd := setupShortDeckForHumanAction(domain.ShortDeckPhaseFlop)
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+	})
+	sd.SetLastBet(20)
+	sd.GetPlayer(0).SetCurrentBet(0)
+
+	odds := sd.GetPotOdds()
+	assert.True(t, odds > 0)
+}
+
+func TestShortDeck_GetPotOdds_WrongPhase(t *testing.T) {
+	sd := newTestShortDeck()
+	sd.SetPhase(domain.ShortDeckPhaseShowdown)
+	assert.Equal(t, 0.0, sd.GetPotOdds())
+}
+
+// ---------------------------------------------------------------------------
+// Export/Import profile
+// ---------------------------------------------------------------------------
+
+func TestShortDeck_ExportImportProfile(t *testing.T) {
+	sd := newTestShortDeck()
+	cfg := sd.GetConfig()
+	cfg.CpuMetaAI = true
+	sd.SetConfig(cfg)
+	_ = sd.Reset()
+
+	exported := sd.ExportProfile()
+	assert.NotNil(t, exported)
+
+	sd2 := newTestShortDeck()
+	assert.Nil(t, sd2.ExportProfile())
+}
+
+func TestShortDeck_ImportProfile(t *testing.T) {
+	sd := newTestShortDeck()
+	err := sd.ImportProfile([]byte{})
+	assert.NoError(t, err)
+	assert.Nil(t, sd.GetHumanProfile())
+}
+
+// ---------------------------------------------------------------------------
+// PlayerAction with Call
+// ---------------------------------------------------------------------------
+
+func TestShortDeck_PlayerAction_Call(t *testing.T) {
+	sd := setupShortDeckForHumanAction(domain.ShortDeckPhaseFlop)
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+	})
+	sd.SetLastBet(20)
+	sd.GetPlayer(0).SetCurrentBet(0)
+
+	err := sd.PlayerAction(domain.ShortDeckActionCall, 0, 0)
+	assert.NoError(t, err)
+}
+
+func TestShortDeck_PlayerAction_Raise(t *testing.T) {
+	sd := setupShortDeckForHumanAction(domain.ShortDeckPhaseFlop)
+	sd.SetCommunityCards([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+		domain.NewCard(domain.CardDesignClover, 8, false),
+	})
+	sd.SetLastBet(20)
+	sd.GetPlayer(0).SetCurrentBet(0)
+
+	err := sd.PlayerAction(domain.ShortDeckActionRaise, 40, 0)
+	assert.NoError(t, err)
+}
+
 func TestShortDeck_MetaAI_PlayerActionRecordsAction(t *testing.T) {
 	t.Run("aggressive action is recorded", func(t *testing.T) {
 		sd := setupShortDeckForHumanAction(domain.ShortDeckPhaseFlop)

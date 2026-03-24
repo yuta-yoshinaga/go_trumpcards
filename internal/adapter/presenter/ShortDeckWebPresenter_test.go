@@ -214,7 +214,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h.SetRoundResults([]domain.ShortDeckResult{
 			{
 				PlayerIdx: 0,
-				HandRank:  domain.PokerHandFlush,
+				HandRank:  domain.ShortDeckHandFlush,
 				HandName:  "Flush",
 				WonAmount: 200,
 				BestHand: []*domain.Card{
@@ -230,7 +230,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 
 		assert.Len(t, out.RoundResults, 1)
 		assert.Equal(t, 0, out.RoundResults[0].PlayerIdx)
-		assert.Equal(t, domain.PokerHandFlush, out.RoundResults[0].HandRank)
+		assert.Equal(t, domain.ShortDeckHandFlush, out.RoundResults[0].HandRank)
 		assert.Equal(t, "Flush", out.RoundResults[0].HandName)
 		assert.Equal(t, "", out.RoundResults[0].Kickers)
 		assert.Equal(t, 200, out.RoundResults[0].WonAmount)
@@ -275,14 +275,14 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		cpu := out.Players[1]
-		assert.Equal(t, "Full House", cpu.HandName)
+		assert.Equal(t, "Flush", cpu.HandName)
 		assert.Len(t, cpu.BestHand, 3)
 	})
 
 	t.Run("best hand empty when not showdown", func(t *testing.T) {
 		h, players := setup()
 		h.SetPhase(domain.ShortDeckPhaseFlop)
-		players[1].SetHandRank(domain.PokerHandFlush)
+		players[1].SetHandRank(domain.ShortDeckHandFlush)
 
 		result := p.Output(h, nil)
 		var out controller.ShortDeckWebOutput
@@ -756,7 +756,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
 		h.SetRoundResults([]domain.ShortDeckResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
-			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -770,7 +770,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetRoundResults([]domain.ShortDeckResult{
-			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 0, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -787,7 +787,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 13}, WonAmount: 0, Mucked: true, BestHand: []*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 8, false),
 			}},
-			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -800,7 +800,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 		assert.Len(t, out.RoundResults[0].BestHand, 0)
 		assert.True(t, out.RoundResults[0].Mucked)
 		// non-mucked result is normal
-		assert.Equal(t, domain.PokerHandFlush, out.RoundResults[1].HandRank)
+		assert.Equal(t, domain.ShortDeckHandFlush, out.RoundResults[1].HandRank)
 		assert.False(t, out.RoundResults[1].Mucked)
 	})
 
@@ -809,7 +809,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
 		h.SetRoundResults([]domain.ShortDeckResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
-			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
@@ -841,7 +841,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 		h.SetGameEndFlag(true)
 		h.SetRoundResults([]domain.ShortDeckResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
-			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
