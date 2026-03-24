@@ -135,9 +135,11 @@ function PyramidPageContent() {
     selectedCard !== null && selectedCard.zone === zone && selectedCard.row === row && selectedCard.col === col;
 
   // Calculate pyramid layout dimensions
-  const maxCols = 7; // row 7 has 7 cards
+  const maxCols = 7; // bottom row has 7 cards
   const cardGap = 4;
-  const rowOverlap = cardHeight * 0.35;
+  /** Fraction of card height used for vertical overlap between rows */
+  const ROW_OVERLAP_RATIO = 0.35;
+  const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
   const pyramidWidth = maxCols * (cardWidth + cardGap) - cardGap;
 
   return (

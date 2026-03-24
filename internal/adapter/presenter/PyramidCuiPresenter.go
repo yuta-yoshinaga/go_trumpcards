@@ -14,20 +14,22 @@ type PyramidCuiPresenter struct{}
 
 // Output ゲーム状態を文字列出力
 func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) string {
+	const pyramidIndent = "  "
+	const pyramidRemovedPlaceholder = "    "
 	return buildCuiOutput("Pyramid (ピラミッド)", func(b *strings.Builder) {
 		// ピラミッド表示
 		pyramid := p.GetPyramid()
 		for row := range domain.PyramidRowCnt {
 			// インデント（三角形の形にする）
-			indent := strings.Repeat("  ", domain.PyramidRowCnt-1-row)
+			indent := strings.Repeat(pyramidIndent, domain.PyramidRowCnt-1-row)
 			b.WriteString(indent)
 			for col := range row + 1 {
 				if col > 0 {
-					b.WriteString("  ")
+					b.WriteString(pyramidIndent)
 				}
 				pc := pyramid[row][col]
 				if pc.Removed {
-					b.WriteString("    ")
+					b.WriteString(pyramidRemovedPlaceholder)
 				} else {
 					fmt.Fprintf(b, "(%d,%d)%s", row, col, cuiCardStr(pc.Card))
 				}
