@@ -47,7 +47,11 @@
     "nobs": "ノブ",
     "total": "合計"
   },
-  "handScoreLabels": ["あなたのハンド", "CPUのハンド", "クリブ"],
+  "handScoreLabels": {
+    "you": "あなたのハンド",
+    "cpu": "CPUのハンド",
+    "crib": "クリブ"
+  },
   "result": {
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！"

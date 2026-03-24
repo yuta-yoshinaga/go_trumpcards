@@ -72,6 +72,7 @@ const peggingPhaseState: CribbageResponse = {
 const showPhaseState: CribbageResponse = {
   ...discardPhaseState,
   phase: 3,
+  dealerIdx: 1,
   starter: { design: 'SPADE', value: 10 },
   handScoreDetails: [{ fifteens: 2, pairs: 0, runs: 3, flush: 0, nobs: 0, total: 5 }, null, null],
   players: [
@@ -141,7 +142,7 @@ describe('CribbagePage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<CribbagePage />);
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
         cpuDifficulty: 1,
         pointLimit: 121,
       }),
@@ -187,7 +188,7 @@ describe('CribbagePage', () => {
     mockExec.mockResolvedValue(peggingPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'クリブに捨てる' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, undefined, [0, 1]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, [0, 1]));
   });
 
   it('renders peg and go buttons when human pegging turn', async () => {
@@ -219,12 +220,25 @@ describe('CribbagePage', () => {
   });
 
   it('calls go command when go button is clicked', async () => {
-    mockExec.mockResolvedValue(peggingPhaseState);
+    // Go is only enabled when no playable cards (pegCount high, only high cards left)
+    const goState: CribbageResponse = {
+      ...peggingPhaseState,
+      pegCount: 28,
+      players: [
+        {
+          ...peggingPhaseState.players[0],
+          cardCount: 1,
+          cards: [{ design: 'HEART', value: 10 }], // 10 value, 28+10=38>31 → can't play
+        },
+        peggingPhaseState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(goState);
     renderWithProviders(<CribbagePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Go' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Go' })).toBeEnabled());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(peggingPhaseState);
+    mockExec.mockResolvedValue(goState);
     fireEvent.click(screen.getByRole('button', { name: 'Go' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('go'));
@@ -351,7 +365,7 @@ describe('CribbagePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
         cpuDifficulty: 1,
         pointLimit: 121,
       }),
@@ -391,7 +405,7 @@ describe('CribbagePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
         cpuDifficulty: 2,
         pointLimit: 121,
       }),
@@ -412,7 +426,7 @@ describe('CribbagePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
         cpuDifficulty: 1,
         pointLimit: 61,
       }),
@@ -578,7 +592,7 @@ describe('CribbagePage', () => {
     mockExec.mockResolvedValue(peggingPhaseState);
 
     fireEvent.keyDown(document, { key: 'Enter' });
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, undefined, [0, 1]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', undefined, [0, 1]));
   });
 
   it('Escape key clears selection', async () => {

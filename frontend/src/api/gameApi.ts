@@ -454,8 +454,8 @@ export const cribbageApi = {
   exec: (
     command: 'reset' | 'discard' | 'peg' | 'go' | 'shownext' | 'nextround' | 'log',
     cardIndex?: number,
-    config?: CribbageConfigInput,
     cardIndices?: number[],
+    config?: CribbageConfigInput,
   ) =>
     gameExec<CribbageResponse>('cribbage', {
       command,

@@ -181,8 +181,20 @@ function CribbagePageContent() {
   const isRoundEnd = state.phase === CribbagePhase.ROUND_END;
   const isGameEnd = state.phase === CribbagePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDiscardPhase || isPeggingPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const canHumanPeg =
+    isPeggingPhase &&
+    isHumanTurn &&
+    humanPlayer?.cards?.some((c) => {
+      const cv = c.value >= 10 ? 10 : c.value;
+      return state.pegCount + cv <= 31;
+    });
 
-  const scoreLabels = t('handScoreLabels', { returnObjects: true }) as string[];
+  const nonDealerIsHuman = state.players[1 - state.dealerIdx]?.isHuman === true;
+  const scoreLabels = [
+    nonDealerIsHuman ? t('handScoreLabels.you') : t('handScoreLabels.cpu'),
+    nonDealerIsHuman ? t('handScoreLabels.cpu') : t('handScoreLabels.you'),
+    t('handScoreLabels.crib'),
+  ];
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
@@ -411,7 +423,7 @@ function CribbagePageContent() {
               >
                 {t('pegButton')}
               </button>
-              <button type="button" className={btnPrimary} onClick={handleGo} disabled={loading}>
+              <button type="button" className={btnPrimary} onClick={handleGo} disabled={loading || !!canHumanPeg}>
                 {t('goButton')}
               </button>
             </>
@@ -433,7 +445,7 @@ function CribbagePageContent() {
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();
-                return gameExec('reset', undefined, {
+                return gameExec('reset', undefined, undefined, {
                   cpuDifficulty: cribbageConfig.cpuDifficulty,
                   pointLimit: cribbageConfig.pointLimit,
                 });

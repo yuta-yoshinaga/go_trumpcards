@@ -696,10 +696,13 @@ func (g *Cribbage) cpuPegHard(playerIdx int, hand []*Card) {
 }
 
 // addScore プレイヤーにスコアを加算
-func (g *Cribbage) addScore(playerIdx int, points int, _ string) {
+func (g *Cribbage) addScore(playerIdx int, points int, reason string) {
 	p := g.players[playerIdx]
 	p.SetRoundScore(p.GetRoundScore() + points)
 	p.SetCumulativeScore(p.GetCumulativeScore() + points)
+	if reason != "" {
+		g.addLog(playerIdx, "score", reason, nil)
+	}
 }
 
 // checkWin 勝利条件を確認

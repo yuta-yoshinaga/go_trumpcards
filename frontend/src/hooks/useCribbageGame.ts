@@ -34,12 +34,12 @@ export function useCribbageGame() {
   const gameExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
   useEffect(() => {
-    gameExec('reset', undefined, DEFAULT_CRIBBAGE_CONFIG);
+    gameExec('reset', undefined, undefined, DEFAULT_CRIBBAGE_CONFIG);
   }, [gameExec]);
 
   const handleDiscard = useCallback(() => {
     if (selectedCardIndices.length !== 2) return;
-    gameExec('discard', undefined, undefined, selectedCardIndices);
+    gameExec('discard', undefined, selectedCardIndices);
   }, [gameExec, selectedCardIndices]);
 
   const handlePeg = useCallback(() => {

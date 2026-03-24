@@ -47,7 +47,11 @@
     "nobs": "Nobs",
     "total": "Total"
   },
-  "handScoreLabels": ["Your Hand", "CPU Hand", "Crib"],
+  "handScoreLabels": {
+    "you": "Your Hand",
+    "cpu": "CPU Hand",
+    "crib": "Crib"
+  },
   "result": {
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"
