@@ -32,7 +32,8 @@
     "indianpoker": "インディアンポーカー",
     "videopoker": "ビデオポーカー",
     "euchre": "ユーカー",
-    "pyramid": "ピラミッド"
+    "pyramid": "ピラミッド",
+    "cribbage": "クリベッジ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -173,6 +174,12 @@
     "freecell.hintAvailable": "ヒントがあります",
     "freecell.noHint": "ヒントはありません",
     "freecell.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "cribbage.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "cribbage.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "cribbage.discardPhase": "クリブに捨てるカードを2枚選んでください",
+    "cribbage.peggingPhase": "カードを1枚選んで出してください",
+    "cribbage.showPhase": "スコアを計算中",
+    "cribbage.roundEnd": "ラウンド終了",
     "pyramid.playing": "プレイ中",
     "pyramid.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "pyramid.gameOver": "ゲームオーバー",

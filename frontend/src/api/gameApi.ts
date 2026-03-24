@@ -3,6 +3,7 @@ import type {
   BaccaratResponse,
   BlackJackResponse,
   CrazyEightsResponse,
+  CribbageResponse,
   DaifugoConfigInput,
   DaifugoResponse,
   DoubtConfig,
@@ -442,6 +443,28 @@ export const ginrummyApi = {
     }),
 };
 
+/** Configuration options for Cribbage game settings. */
+export interface CribbageConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Cribbage /cribbage/exec endpoint. */
+export const cribbageApi = {
+  exec: (
+    command: 'reset' | 'discard' | 'peg' | 'go' | 'shownext' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: CribbageConfigInput,
+    cardIndices?: number[],
+  ) =>
+    gameExec<CribbageResponse>('cribbage', {
+      command,
+      cardIndex,
+      cardIndices,
+      config,
+    }),
+};
+
 /** API client for the Baccarat /baccarat/exec endpoint. */
 export const baccaratApi = {
   exec: (
@@ -618,6 +641,7 @@ const games = [
   'videopoker',
   'euchre',
   'pyramid',
+  'cribbage',
 ] as const;
 type Game = (typeof games)[number];
 

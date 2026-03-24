@@ -1,0 +1,62 @@
+{
+  "phase": {
+    "discard": "捨て札",
+    "cut": "カット",
+    "pegging": "ペギング",
+    "show": "ショー",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "dealer": "ディーラー: {{name}}",
+  "pegCount": "ペグカウント: {{count}}/31",
+  "discardButton": "クリブに捨てる",
+  "pegButton": "カードを出す",
+  "goButton": "Go",
+  "showNextButton": "次を表示",
+  "nextRound": "次のラウンド",
+  "discardPhase": "クリブに捨てるカードを2枚選んでください",
+  "peggingPhase": "カードを1枚選んで出してください",
+  "showPhase": "スコアを計算中",
+  "roundEnd": "ラウンド終了",
+  "starter": "スターター",
+  "crib": "クリブ",
+  "pegPlayedCards": "ペギングエリア",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "pegBoard": "ペグボード",
+  "score": "スコア",
+  "scoreDetail": {
+    "fifteens": "15s",
+    "pairs": "ペア",
+    "runs": "ラン",
+    "flush": "フラッシュ",
+    "nobs": "ノブ",
+    "total": "合計"
+  },
+  "handScoreLabels": ["あなたのハンド", "CPUのハンド", "クリブ"],
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "tutorial": {
+    "playerHand": "あなたの手札です。クリブに捨てる2枚を選びましょう。",
+    "discardButton": "2枚選んでクリブに捨てます。",
+    "peggingArea": "交互にカードを出して31を目指します。",
+    "pegBoard": "各プレイヤーのスコアが表示されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

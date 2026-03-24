@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した22種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した23種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -41,6 +41,7 @@ Go + Clean Architecture で実装した22種類のトランプゲーム。CLI �
 | ビデオポーカー (Video Poker) | `videopoker` | [CUI](docs/manual/cui/videopoker.md) / [Web](docs/manual/web/videopoker.md) |
 | ユーカー (Euchre) | `euchre` | [CUI](docs/manual/cui/euchre.md) / [Web](docs/manual/web/euchre.md) |
 | ピラミッド (Pyramid) | `pyramid` | [CUI](docs/manual/cui/pyramid.md) / [Web](docs/manual/web/pyramid.md) |
+| クリベッジ (Cribbage) | `cribbage` | [CUI](docs/manual/cui/cribbage.md) / [Web](docs/manual/web/cribbage.md) |
 
 ## Demo
 
