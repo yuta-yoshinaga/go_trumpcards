@@ -1205,9 +1205,9 @@ stateDiagram-v2
     Result --> Bet : 次ラウンド (Reset)
     Result --> [*] : チップ0 (ゲーム終了)
 
-    note right of Bet : VideoPokerPhaseBet = 0
-    note right of Draw : VideoPokerPhaseDraw = 1
-    note right of Result : VideoPokerPhaseResult = 2
+    note right of Bet : VideoPokerPhaseBet = 1
+    note right of Draw : VideoPokerPhaseDraw = 2
+    note right of Result : VideoPokerPhaseResult = 3
 ```
 
 ### 3.15 Euchre フェーズ遷移
