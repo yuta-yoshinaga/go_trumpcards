@@ -5,11 +5,12 @@ test.describe('FreeCell E2E', () => {
   test('navigates, resets, and plays basic moves', async ({ page }) => {
     await navigateTo(page, '/freecell');
 
-    // Verify foundation suit symbols
-    await expect(page.getByText('♠')).toBeVisible();
-    await expect(page.getByText('♣')).toBeVisible();
-    await expect(page.getByText('♥')).toBeVisible();
-    await expect(page.getByText('♦')).toBeVisible();
+    // Verify foundation suit symbols (scoped to game area to exclude nav icons)
+    const gameArea = page.locator('[aria-busy]');
+    await expect(gameArea.getByText('♠', { exact: true })).toBeVisible();
+    await expect(gameArea.getByText('♣', { exact: true })).toBeVisible();
+    await expect(gameArea.getByText('♥', { exact: true })).toBeVisible();
+    await expect(gameArea.getByText('♦', { exact: true })).toBeVisible();
 
     // Verify move count is displayed
     await expect(page.getByText(/手数/)).toBeVisible();
