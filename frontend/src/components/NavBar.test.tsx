@@ -210,6 +210,26 @@ describe('NavBar', () => {
     });
   });
 
+  describe('collapsible categories', () => {
+    it('auto-opens details for the active category', () => {
+      renderNavBar('/poker');
+      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details');
+      expect(pokerDetails).toHaveAttribute('open');
+    });
+
+    it('keeps other categories closed by default', () => {
+      renderNavBar('/poker');
+      const trickDetails = screen.getByText(labelFor('nav.category.trickTaking')).closest('details');
+      expect(trickDetails).not.toHaveAttribute('open');
+    });
+
+    it('auto-opens home category when on root path', () => {
+      renderNavBar('/');
+      const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details');
+      expect(tableDetails).toHaveAttribute('open');
+    });
+  });
+
   describe('SoundToggle', () => {
     it('does not render SoundToggle when props not provided', () => {
       renderNavBar();

@@ -163,6 +163,23 @@ input[type="text"] {
   animation: sweat-drop 2s ease-in-out;
 }
 
+/* Force nav category details open on desktop (sm+) */
+@media (min-width: 640px) {
+  .nav-category > summary {
+    pointer-events: none;
+    list-style: none;
+  }
+
+  .nav-category > summary::marker,
+  .nav-category > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-category:not([open]) > *:not(summary) {
+    display: flex;
+  }
+}
+
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse,

@@ -2,11 +2,15 @@
 export interface GameRoute {
   path: string;
   labelKey: string;
+  /** Emoji icon displayed next to the game name in navigation. */
+  icon: string;
 }
 
 /** A category grouping related game routes with a category label i18n key. */
 export interface GameCategory {
   labelKey: string;
+  /** Emoji icon displayed next to the category name in navigation. */
+  icon: string;
   routes: readonly GameRoute[];
 }
 
@@ -14,58 +18,64 @@ export interface GameCategory {
 export const gameCategories: readonly GameCategory[] = [
   {
     labelKey: 'nav.category.table',
+    icon: '🎰',
     routes: [
-      { path: '/', labelKey: 'nav.blackjack' },
-      { path: '/baccarat', labelKey: 'nav.baccarat' },
+      { path: '/', labelKey: 'nav.blackjack', icon: '🃏' },
+      { path: '/baccarat', labelKey: 'nav.baccarat', icon: '💎' },
     ],
   },
   {
     labelKey: 'nav.category.poker',
+    icon: '♠️',
     routes: [
-      { path: '/poker', labelKey: 'nav.poker' },
-      { path: '/holdem', labelKey: 'nav.holdem' },
-      { path: '/omaha', labelKey: 'nav.omaha' },
-      { path: '/shortdeck', labelKey: 'nav.shortdeck' },
-      { path: '/indianpoker', labelKey: 'nav.indianpoker' },
-      { path: '/videopoker', labelKey: 'nav.videopoker' },
-      { path: '/deuceswild', labelKey: 'nav.deuceswild' },
-      { path: '/jokerpoker', labelKey: 'nav.jokerpoker' },
+      { path: '/poker', labelKey: 'nav.poker', icon: '🂡' },
+      { path: '/holdem', labelKey: 'nav.holdem', icon: '🤠' },
+      { path: '/omaha', labelKey: 'nav.omaha', icon: '4️⃣' },
+      { path: '/shortdeck', labelKey: 'nav.shortdeck', icon: '6️⃣' },
+      { path: '/indianpoker', labelKey: 'nav.indianpoker', icon: '🙈' },
+      { path: '/videopoker', labelKey: 'nav.videopoker', icon: '📺' },
+      { path: '/deuceswild', labelKey: 'nav.deuceswild', icon: '2️⃣' },
+      { path: '/jokerpoker', labelKey: 'nav.jokerpoker', icon: '🤡' },
     ],
   },
   {
     labelKey: 'nav.category.trickTaking',
+    icon: '🏆',
     routes: [
-      { path: '/hearts', labelKey: 'nav.hearts' },
-      { path: '/spades', labelKey: 'nav.spades' },
-      { path: '/euchre', labelKey: 'nav.euchre' },
-      { path: '/napoleon', labelKey: 'nav.napoleon' },
+      { path: '/hearts', labelKey: 'nav.hearts', icon: '♥️' },
+      { path: '/spades', labelKey: 'nav.spades', icon: '♠️' },
+      { path: '/euchre', labelKey: 'nav.euchre', icon: '🎩' },
+      { path: '/napoleon', labelKey: 'nav.napoleon', icon: '👑' },
     ],
   },
   {
     labelKey: 'nav.category.matching',
+    icon: '🔄',
     routes: [
-      { path: '/oldmaid', labelKey: 'nav.oldmaid' },
-      { path: '/doubt', labelKey: 'nav.doubt' },
-      { path: '/daifugo', labelKey: 'nav.daifugo' },
-      { path: '/sevens', labelKey: 'nav.sevens' },
-      { path: '/crazyeights', labelKey: 'nav.crazyeights' },
+      { path: '/oldmaid', labelKey: 'nav.oldmaid', icon: '👵' },
+      { path: '/doubt', labelKey: 'nav.doubt', icon: '🤥' },
+      { path: '/daifugo', labelKey: 'nav.daifugo', icon: '💰' },
+      { path: '/sevens', labelKey: 'nav.sevens', icon: '7️⃣' },
+      { path: '/crazyeights', labelKey: 'nav.crazyeights', icon: '8️⃣' },
     ],
   },
   {
     labelKey: 'nav.category.solitaire',
+    icon: '🏔️',
     routes: [
-      { path: '/klondike', labelKey: 'nav.klondike' },
-      { path: '/freecell', labelKey: 'nav.freecell' },
-      { path: '/spider', labelKey: 'nav.spider' },
-      { path: '/pyramid', labelKey: 'nav.pyramid' },
-      { path: '/memory', labelKey: 'nav.memory' },
+      { path: '/klondike', labelKey: 'nav.klondike', icon: '⛏️' },
+      { path: '/freecell', labelKey: 'nav.freecell', icon: '🔲' },
+      { path: '/spider', labelKey: 'nav.spider', icon: '🕷️' },
+      { path: '/pyramid', labelKey: 'nav.pyramid', icon: '🔺' },
+      { path: '/memory', labelKey: 'nav.memory', icon: '🧠' },
     ],
   },
   {
     labelKey: 'nav.category.rummy',
+    icon: '🍸',
     routes: [
-      { path: '/ginrummy', labelKey: 'nav.ginrummy' },
-      { path: '/cribbage', labelKey: 'nav.cribbage' },
+      { path: '/ginrummy', labelKey: 'nav.ginrummy', icon: '🫐' },
+      { path: '/cribbage', labelKey: 'nav.cribbage', icon: '📌' },
     ],
   },
 ] as const;
