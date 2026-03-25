@@ -37,7 +37,7 @@ ALL_GAMES=$(grep -oP "path:\s*'/\K[^']*" frontend/src/constants/gameRoutes.ts | 
 GAMES="${ARGUMENTS:-$ALL_GAMES}"
 for game in $GAMES; do
   path="/#/$game"
-  [ "$game" = "blackjack" ] && path="/"
+  [ "$game" = "$ROOT_GAME" ] && path="/"
   PLAYWRIGHT_BROWSERS_PATH=~/.cache/ms-playwright bunx playwright screenshot \
     --browser chromium --viewport-size "1280,800" --full-page \
     "http://localhost:8080$path" "/tmp/desktop-screenshots/${game}.png" 2>&1
