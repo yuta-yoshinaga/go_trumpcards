@@ -141,25 +141,35 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         onKeyDown={handleNavKeyDown}
         className={`${isOpen ? 'flex' : 'hidden'} flex-col gap-2 mx-2.5 mb-2 sm:flex sm:flex-row sm:flex-wrap sm:items-start sm:justify-end sm:my-2`}
       >
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3">
-          {gameCategories.map(({ labelKey, routes }) => (
-            <div key={labelKey} className="flex flex-col gap-1 sm:flex-row sm:items-center">
-              <span className="text-gray-400 text-xs uppercase tracking-wider px-1 shrink-0">{t(labelKey)}</span>
-              <div className="flex flex-col gap-1 sm:flex-row">
-                {routes.map(({ path, labelKey: routeLabel }) => (
-                  <Link
-                    key={path}
-                    to={path}
-                    aria-current={pathname === path ? 'page' : undefined}
-                    onClick={() => setIsOpen(false)}
-                    className={`inline-flex items-center px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-colors${pathname === path ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
-                  >
-                    {t(routeLabel)}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3">
+          {gameCategories.map(({ labelKey, icon: catIcon, routes }) => {
+            const hasActivePage = routes.some(({ path }) => path === pathname);
+            return (
+              <details
+                key={labelKey}
+                className="nav-category sm:flex sm:items-center"
+                open={hasActivePage || undefined}
+              >
+                <summary className="text-gray-300 text-xs uppercase tracking-wider px-1 py-2 cursor-pointer select-none min-h-[44px] flex items-center gap-1 sm:cursor-default sm:py-0 sm:min-h-0 shrink-0">
+                  <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
+                </summary>
+                <div className="flex flex-col gap-1 pl-2 pb-1 sm:flex-row sm:pl-0 sm:pb-0">
+                  {routes.map(({ path, labelKey: routeLabel, icon }) => (
+                    <Link
+                      key={path}
+                      to={path}
+                      aria-current={pathname === path ? 'page' : undefined}
+                      onClick={() => setIsOpen(false)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-colors${pathname === path ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
+                    >
+                      <span aria-hidden="true">{icon}</span>
+                      {t(routeLabel)}
+                    </Link>
+                  ))}
+                </div>
+              </details>
+            );
+          })}
         </div>
         <TutorialProgressPanel />
         <div className="hidden sm:flex sm:items-center sm:gap-2">
