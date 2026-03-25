@@ -32,7 +32,8 @@ HashRouter (`/#/path`) を使用。全ゲーム画面のフルページスクリ
 ```sh
 mkdir -p /tmp/mobile-screenshots
 # ゲーム一覧を gameRoutes.ts から動的に取得（信頼できるソース）
-ALL_GAMES=$(grep -oP "path:\s*'/\K[^']*" frontend/src/constants/gameRoutes.ts | sed 's/^$/blackjack/' | tr '\n' ' ' | sed 's/ $//')
+ROOT_GAME=$(grep -P "path:\s*'/'" frontend/src/constants/gameRoutes.ts | grep -oP "labelKey:\s*'nav\.\K[^']*")
+ALL_GAMES=$(grep -oP "path:\s*'/\K[^']*" frontend/src/constants/gameRoutes.ts | sed "s/^$/$ROOT_GAME/" | tr '\n' ' ' | sed 's/ $//')
 GAMES="${ARGUMENTS:-$ALL_GAMES}"
 for game in $GAMES; do
   path="/#/$game"
@@ -66,8 +67,10 @@ const { chromium } = require('playwright');
   // ゲーム一覧を gameRoutes.ts から動的に取得（信頼できるソース）
   const fs = require('fs');
   const src = fs.readFileSync('frontend/src/constants/gameRoutes.ts', 'utf8');
+  const rootLabel = src.match(/path:\s*'\/'\s*,\s*labelKey:\s*'nav\.([^']*)'/);
+  const rootGame = rootLabel ? rootLabel[1] : 'blackjack';
   const allGames = [...src.matchAll(/path:\s*'\/([^']*)'/g)].map(m => ({
-    name: m[1] || 'blackjack',
+    name: m[1] || rootGame,
     path: m[1] ? `/#/${m[1]}` : '/',
   }));
 
