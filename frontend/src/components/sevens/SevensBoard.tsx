@@ -73,8 +73,8 @@ function Board({
                       type="button"
                       onClick={() => onJokerPlace?.(idx, v)}
                       aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
-                      className="border border-blue-400"
-                      style={{ ...cellStyle, cursor: 'pointer', padding: 0 }}
+                      className="border border-blue-400 min-w-[44px] min-h-[44px]"
+                      style={{ ...cellStyle, cursor: 'pointer', padding: 0, minWidth: 44, minHeight: 44 }}
                     >
                       {valueName(v)}
                     </button>

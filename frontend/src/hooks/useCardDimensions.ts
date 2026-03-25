@@ -6,12 +6,12 @@ const MOBILE_BREAKPOINT = 640;
 export const CARD_DIMENSIONS = {
   mobile: {
     cardHeight: 60,
-    cardOverlap: 16,
+    cardOverlap: 20,
     cardWidth: 40,
     cpuCardWidth: 34,
     footerCardWidth: 36,
-    sevensCellSize: 20,
-    sevensFontSize: '0.6em',
+    sevensCellSize: 24,
+    sevensFontSize: '0.65em',
   },
   desktop: {
     cardHeight: 84,

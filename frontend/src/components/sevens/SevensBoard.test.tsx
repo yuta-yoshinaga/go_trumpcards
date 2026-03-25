@@ -56,9 +56,9 @@ describe('SevensBoard', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     const { container } = render(<SevensBoard {...defaultProps} />);
     const cell = container.querySelector('span[style*="width"]') as HTMLElement;
-    expect(cell.style.width).toBe('20px');
-    expect(cell.style.height).toBe('20px');
-    expect(cell.style.fontSize).toBe('0.6em');
+    expect(cell.style.width).toBe('24px');
+    expect(cell.style.height).toBe('24px');
+    expect(cell.style.fontSize).toBe('0.65em');
   });
 
   it('renders responsive grid classes', () => {
