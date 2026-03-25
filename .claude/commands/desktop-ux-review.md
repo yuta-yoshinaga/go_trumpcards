@@ -31,11 +31,13 @@ HashRouter (`/#/path`) を使用。全ゲーム画面のフルページスクリ
 
 ```sh
 mkdir -p /tmp/desktop-screenshots
-ALL_GAMES="blackjack baccarat poker holdem omaha shortdeck indianpoker videopoker deuceswild jokerpoker hearts spades euchre napoleon oldmaid doubt daifugo sevens crazyeights klondike freecell spider pyramid memory ginrummy cribbage"
+# ゲーム一覧を gameRoutes.ts から動的に取得（信頼できるソース）
+ROOT_GAME=$(grep -P "path:\s*'/'" frontend/src/constants/gameRoutes.ts | grep -oP "labelKey:\s*'nav\.\K[^']*")
+ALL_GAMES=$(grep -oP "path:\s*'/\K[^']*" frontend/src/constants/gameRoutes.ts | sed "s/^$/$ROOT_GAME/" | tr '\n' ' ' | sed 's/ $//')
 GAMES="${ARGUMENTS:-$ALL_GAMES}"
 for game in $GAMES; do
   path="/#/$game"
-  [ "$game" = "blackjack" ] && path="/"
+  [ "$game" = "$ROOT_GAME" ] && path="/"
   PLAYWRIGHT_BROWSERS_PATH=~/.cache/ms-playwright bunx playwright screenshot \
     --browser chromium --viewport-size "1280,800" --full-page \
     "http://localhost:8080$path" "/tmp/desktop-screenshots/${game}.png" 2>&1
@@ -62,35 +64,15 @@ const { chromium } = require('playwright');
     }
   }
 
-  // 全ゲームでチュートリアルスキップ → スクリーンショット
-  const allGames = [
-    { name: 'blackjack', path: '/' },
-    { name: 'baccarat', path: '/#/baccarat' },
-    { name: 'poker', path: '/#/poker' },
-    { name: 'holdem', path: '/#/holdem' },
-    { name: 'omaha', path: '/#/omaha' },
-    { name: 'shortdeck', path: '/#/shortdeck' },
-    { name: 'indianpoker', path: '/#/indianpoker' },
-    { name: 'videopoker', path: '/#/videopoker' },
-    { name: 'deuceswild', path: '/#/deuceswild' },
-    { name: 'jokerpoker', path: '/#/jokerpoker' },
-    { name: 'hearts', path: '/#/hearts' },
-    { name: 'spades', path: '/#/spades' },
-    { name: 'euchre', path: '/#/euchre' },
-    { name: 'napoleon', path: '/#/napoleon' },
-    { name: 'oldmaid', path: '/#/oldmaid' },
-    { name: 'doubt', path: '/#/doubt' },
-    { name: 'daifugo', path: '/#/daifugo' },
-    { name: 'sevens', path: '/#/sevens' },
-    { name: 'crazyeights', path: '/#/crazyeights' },
-    { name: 'klondike', path: '/#/klondike' },
-    { name: 'freecell', path: '/#/freecell' },
-    { name: 'spider', path: '/#/spider' },
-    { name: 'pyramid', path: '/#/pyramid' },
-    { name: 'memory', path: '/#/memory' },
-    { name: 'ginrummy', path: '/#/ginrummy' },
-    { name: 'cribbage', path: '/#/cribbage' },
-  ];
+  // ゲーム一覧を gameRoutes.ts から動的に取得（信頼できるソース）
+  const fs = require('fs');
+  const src = fs.readFileSync('frontend/src/constants/gameRoutes.ts', 'utf8');
+  const rootLabel = src.match(/path:\s*'\/'\s*,\s*labelKey:\s*'nav\.([^']*)'/);
+  const rootGame = rootLabel ? rootLabel[1] : 'blackjack';
+  const allGames = [...src.matchAll(/path:\s*'\/([^']*)'/g)].map(m => ({
+    name: m[1] || rootGame,
+    path: m[1] ? `/#/${m[1]}` : '/',
+  }));
 
   // $ARGUMENTS で指定されたゲームのみにフィルタ（未指定時は全ゲーム）
   const args = process.env.REVIEW_GAMES;
@@ -228,7 +210,7 @@ rm -rf /tmp/desktop-screenshots /tmp/desktop-play-screenshots.js /tmp/desktop-na
 - **チュートリアルダイアログ**: 初回表示時にほぼ全ゲームで表示される。スキップ状態はlocalStorageに保存される
 - **ヘッドレスChromium**: `/opt/google/chrome/chrome` ではなく `~/.cache/ms-playwright/` のChromiumを使う。`PLAYWRIGHT_BROWSERS_PATH` 環境変数で指定する
 - **catbox.moe**: 永続的な無料ホスティング。APIキー不要。1ファイル200MBまで
-- ゲームルート一覧は `frontend/src/constants/gameRoutes.ts` で管理されている。新ゲーム追加時はここを確認する
+- ゲームルート一覧は `frontend/src/constants/gameRoutes.ts` で管理されており、本コマンドは同ファイルから動的に取得するため、ゲームの追加・削除時にこのコマンドファイルの更新は不要
 - モバイル版のレビュー結果と照合し、PC・モバイル共通の課題は既存Issueにデスクトップのスクリーンショットを追記する（重複Issue作成を避ける）
 
 ## 引数
