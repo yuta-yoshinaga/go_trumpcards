@@ -232,7 +232,7 @@ function HoldemPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: community cards + CPU players */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5">
+      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8">
         {/* Community cards */}
         <div className="mb-4" data-tutorial="he-community-cards">
           <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>

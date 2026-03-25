@@ -176,7 +176,7 @@ function KlondikePageContent() {
       </PhaseIndicator>
 
       {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Foundation + Stock/Waste row */}
         <div className="flex gap-2 mb-3 items-start flex-wrap">
           {/* Stock + Waste */}

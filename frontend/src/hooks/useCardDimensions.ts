@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 
-const MOBILE_BREAKPOINT = 640;
+/** Breakpoint between mobile and desktop layouts (px). */
+export const SM_BREAKPOINT = 640;
+/** Breakpoint between desktop and large-desktop layouts (px). */
+export const LG_BREAKPOINT = 1024;
 
-/** Card dimension presets for mobile and desktop viewports. */
+/** Card dimension presets for mobile, desktop, and large-desktop viewports. */
 export const CARD_DIMENSIONS = {
   mobile: {
     cardHeight: 60,
@@ -22,6 +25,15 @@ export const CARD_DIMENSIONS = {
     sevensCellSize: 26,
     sevensFontSize: '0.75em',
   },
+  largeDesktop: {
+    cardHeight: 120,
+    cardOverlap: 28,
+    cardWidth: 80,
+    cpuCardWidth: 66,
+    footerCardWidth: 72,
+    sevensCellSize: 32,
+    sevensFontSize: '0.85em',
+  },
 } as const;
 
 /** Hook that returns responsive card dimensions based on viewport width. */
@@ -34,5 +46,20 @@ export function useCardDimensions() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  return width < MOBILE_BREAKPOINT ? CARD_DIMENSIONS.mobile : CARD_DIMENSIONS.desktop;
+  if (width >= LG_BREAKPOINT) return CARD_DIMENSIONS.largeDesktop;
+  if (width >= SM_BREAKPOINT) return CARD_DIMENSIONS.desktop;
+  return CARD_DIMENSIONS.mobile;
+}
+
+/** Hook that returns true when viewport width is at or above the large-desktop breakpoint. */
+export function useIsLargeDesktop(): boolean {
+  const [width, setWidth] = useState(() => window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return width >= LG_BREAKPOINT;
 }

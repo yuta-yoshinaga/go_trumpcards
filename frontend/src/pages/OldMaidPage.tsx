@@ -166,7 +166,7 @@ function OldMaidPageContent() {
     >
       <GamePageHeading title={tc('nav.oldmaid')} />
       {/* Scrollable: CPU rows + discard + status + logs + result */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Mode badge */}
         {state.mode === OldMaidMode.JijiNuki && (
           <div className="text-center mb-1">

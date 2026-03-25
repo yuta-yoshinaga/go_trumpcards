@@ -221,7 +221,7 @@ function DoubtPageContent() {
       />
 
       {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* CPU player areas */}
         <div className="flex gap-2 flex-wrap mb-3">
           {cpuPlayers.map((player) => (

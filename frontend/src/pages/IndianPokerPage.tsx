@@ -176,7 +176,7 @@ function IndianPokerPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: opponent cards + CPU players */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5">
+      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8">
         {/* CPU players - show cards face-up (opponents can see each other's cards) */}
         <div data-tutorial="ip-cpu-cards">
           {state.players
