@@ -1,5 +1,5 @@
 const base =
-  'px-3 py-1.5 text-sm font-medium rounded disabled:opacity-70 disabled:cursor-not-allowed disabled:saturate-50 mx-1.5 transition-transform duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black min-h-[44px]';
+  'px-3 py-1.5 text-sm font-medium rounded disabled:opacity-70 disabled:cursor-not-allowed disabled:saturate-50 mx-1.5 transition-[transform,box-shadow] duration-150 active:scale-95 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black min-h-[44px]';
 
 /** Primary (blue) button style. */
 export const btnPrimary = `${base} text-white bg-blue-600 hover:bg-blue-700`;

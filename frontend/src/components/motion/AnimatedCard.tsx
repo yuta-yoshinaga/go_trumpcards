@@ -28,6 +28,7 @@ export function AnimatedCard({ dealDelay = 0, isSelected = false, layoutId, ...r
         y: isSelected ? -8 : 0,
         scale: isSelected ? 1.02 : 1,
       }}
+      whileHover={{ y: -4, scale: 1.05 }}
       transition={{
         type: 'spring',
         stiffness: 300,

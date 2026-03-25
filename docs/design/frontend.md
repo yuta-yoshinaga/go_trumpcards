@@ -394,9 +394,20 @@ classDiagram
     }
 
     class useCardDimensions {
-        +number width
-        +number height
+        +number cardWidth
+        +number cardHeight
+        +number cardOverlap
+        +number cpuCardWidth
+        +number footerCardWidth
+        +number sevensCellSize
+        +string sevensFontSize
     }
+    note for useCardDimensions "3-tier responsive = mobile/desktop/largeDesktop (640px/1024px)"
+
+    class useIsLargeDesktop {
+        +boolean isLargeDesktop
+    }
+    note for useIsLargeDesktop "Returns true when viewport >= 1024px"
 
     class useActionKeyboardNav {
         +(bindings: KeyBinding[]) void

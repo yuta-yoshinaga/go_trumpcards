@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsLargeDesktop } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -35,11 +35,11 @@ export interface VideoPokerGameContentProps {
 }
 
 /** Payout table display component. */
-function PayoutTable({ t, rows }: { t: (key: string) => string; rows: string[] }) {
+function PayoutTable({ t, rows, expanded }: { t: (key: string) => string; rows: string[]; expanded?: boolean }) {
   return (
-    <details className="mb-3 text-center">
-      <summary className="text-yellow-300 text-sm cursor-pointer">{t('payoutTable.title')}</summary>
-      <ul className="text-gray-300 text-xs mt-1 space-y-0.5">
+    <details className="mb-3 text-center" open={expanded}>
+      <summary className="text-yellow-300 text-sm cursor-pointer lg:text-base">{t('payoutTable.title')}</summary>
+      <ul className="text-gray-300 text-xs mt-1 space-y-0.5 lg:text-sm lg:space-y-1">
         {rows.map((row) => (
           <li key={row}>{t(`payoutTable.${row}`)}</li>
         ))}
@@ -63,6 +63,7 @@ export function VideoPokerGameContent({
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
 
   const { cardWidth } = useCardDimensions();
+  const isLgDesktop = useIsLargeDesktop();
   const { state, loading, error, exec: execApi } = useGameApi(apiExec);
 
   useEffect(() => {
@@ -139,7 +140,7 @@ export function VideoPokerGameContent({
         <TutorialButton />
       </PhaseIndicator>
 
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
         {state.hand.length > 0 && (
@@ -168,7 +169,7 @@ export function VideoPokerGameContent({
           <div className="text-white text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
         )}
 
-        <PayoutTable t={tNs} rows={payoutTableRows} />
+        <PayoutTable t={tNs} rows={payoutTableRows} expanded={isLgDesktop && isBetPhase} />
 
         {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>

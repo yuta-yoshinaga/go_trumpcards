@@ -228,6 +228,50 @@ describe('NavBar', () => {
       const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details');
       expect(tableDetails).toHaveAttribute('open');
     });
+
+    it('forces details open on medium desktop (sm-lg) when toggled closed', () => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar('/');
+      const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details') as HTMLDetailsElement;
+      expect(tableDetails).toHaveAttribute('open');
+
+      // Simulate toggle to close — the onToggle handler should force it back open
+      tableDetails.open = false;
+      fireEvent(tableDetails, new Event('toggle'));
+      expect(tableDetails).toHaveAttribute('open');
+    });
+
+    it('closes open dropdown when clicking outside on large desktop', () => {
+      renderNavBar('/poker');
+      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
+      expect(pokerDetails).toHaveAttribute('open');
+
+      // Click outside the nav — handleOutsideClick should close the details
+      fireEvent.mouseDown(document.body);
+
+      expect(pokerDetails).not.toHaveAttribute('open');
+    });
+
+    it('does not close dropdown when clicking inside it', () => {
+      renderNavBar('/poker');
+      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
+      expect(pokerDetails).toHaveAttribute('open');
+
+      // Click inside the open dropdown — should stay open
+      const pokerLink = screen.getByRole('link', { name: labelFor('nav.poker') });
+      fireEvent.mouseDown(pokerLink);
+
+      expect(pokerDetails).toHaveAttribute('open');
+    });
+
+    it('removes outside click listener on unmount', () => {
+      vi.spyOn(document, 'removeEventListener');
+      const { unmount } = renderNavBar();
+      unmount();
+      expect(document.removeEventListener).toHaveBeenCalledWith('mousedown', expect.any(Function));
+      vi.restoreAllMocks();
+    });
   });
 
   describe('SoundToggle', () => {

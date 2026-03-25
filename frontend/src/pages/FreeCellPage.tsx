@@ -138,7 +138,7 @@ function FreeCellPageContent() {
         <TutorialButton />
       </PhaseIndicator>
 
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Free cells + Foundation row */}
         <div className="flex gap-2 mb-3 items-start flex-wrap">
           {/* Free cells */}

@@ -141,7 +141,7 @@ function MemoryPageContent() {
       />
 
       {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Player scores */}
         <div className="my-2 p-2 rounded bg-black/30 text-white text-sm" data-tutorial="mem-score-table">
           <div className="mb-1">{t('scores')}</div>

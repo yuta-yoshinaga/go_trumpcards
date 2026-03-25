@@ -225,7 +225,7 @@ function SevensPageContent() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.sevens')} />
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {state.config &&
           (state.config.tunnelEnabled ||
             state.config.tunnelSkipWidth >= 2 ||

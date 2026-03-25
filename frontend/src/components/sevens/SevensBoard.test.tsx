@@ -44,7 +44,7 @@ describe('SevensBoard', () => {
   });
 
   it('uses desktop cell dimensions on wide viewport', () => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
     const { container } = render(<SevensBoard {...defaultProps} />);
     const cell = container.querySelector('span[style*="width"]') as HTMLElement;
     expect(cell.style.width).toBe('26px');
@@ -115,7 +115,7 @@ describe('SevensBoard', () => {
   });
 
   it('joker playable button uses desktop dimensions on wide viewport', () => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
     render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
     const button = screen.getByLabelText('SPADE 6 に配置') as HTMLElement;
     expect(button.style.width).toBe('26px');

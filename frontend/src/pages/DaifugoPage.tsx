@@ -168,7 +168,7 @@ function DaifugoPageContent() {
       <div className="flex items-center justify-end px-4 pt-2">
         <TutorialButton />
       </div>
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (
             <DaifugoCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />

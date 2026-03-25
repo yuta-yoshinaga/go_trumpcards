@@ -163,8 +163,8 @@ input[type="text"] {
   animation: sweat-drop 2s ease-in-out;
 }
 
-/* Force nav category details open on desktop (sm+) */
-@media (min-width: 640px) {
+/* Force nav category details open on tablet/small desktop (sm to lg) */
+@media (min-width: 640px) and (max-width: 1023px) {
   .nav-category > summary {
     pointer-events: none;
     list-style: none;
@@ -177,6 +177,38 @@ input[type="text"] {
 
   .nav-category:not([open]) > *:not(summary) {
     display: flex;
+  }
+}
+
+/* Dropdown nav on large desktop (lg+) */
+@media (min-width: 1024px) {
+  .nav-category {
+    position: relative;
+  }
+
+  .nav-category > summary {
+    cursor: pointer;
+  }
+
+  .nav-category > .nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: max-content;
+    z-index: 50;
+    background: rgba(31, 41, 55, 0.95);
+    border: 1px solid var(--color-glass-border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-category[open] > .nav-dropdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
 }
 
