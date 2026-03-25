@@ -6,6 +6,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -90,7 +91,7 @@ function PyramidPageContent() {
     handleUndo,
     handleSelectCard,
   } = usePyramidGame();
-  const { cardHeight, cardWidth } = useCardDimensions();
+  const { cardHeight, cardWidth, isMobile } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === PyramidPhase.PLAYING;
 
@@ -122,8 +123,8 @@ function PyramidPageContent() {
   // Calculate pyramid layout dimensions
   const maxCols = 7; // bottom row has 7 cards
   const cardGap = 4;
-  /** Fraction of card height used for vertical overlap between rows */
-  const ROW_OVERLAP_RATIO = 0.35;
+  /** Fraction of card height used for vertical overlap between rows (less on mobile for bigger tap targets) */
+  const ROW_OVERLAP_RATIO = isMobile ? 0.3 : 0.35;
   const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
   const pyramidWidth = maxCols * (cardWidth + cardGap) - cardGap;
 
@@ -139,6 +140,8 @@ function PyramidPageContent() {
         </span>
         <TutorialButton />
       </PhaseIndicator>
+
+      <LandscapeBanner message={t('landscapeBanner')} />
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">

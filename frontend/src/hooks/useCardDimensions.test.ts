@@ -53,82 +53,82 @@ describe('useCardDimensions', () => {
   it('returns mobile dimensions when width is 0 (jsdom default)', () => {
     setWidth(0);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual(CARD_DIMENSIONS.mobile);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.mobile, isMobile: true });
   });
 
   it('returns mobile dimensions when width is below breakpoint (375px)', () => {
     setWidth(375);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual(CARD_DIMENSIONS.mobile);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.mobile, isMobile: true });
   });
 
   it('returns mobile dimensions when width equals 639px (just below sm breakpoint)', () => {
     setWidth(639);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual(CARD_DIMENSIONS.mobile);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.mobile, isMobile: true });
   });
 
   it('returns desktop dimensions when width equals sm breakpoint (640px)', () => {
     setWidth(640);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual(CARD_DIMENSIONS.desktop);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.desktop, isMobile: false });
   });
 
   it('returns desktop dimensions when width is just below lg breakpoint (1023px)', () => {
     setWidth(1023);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual(CARD_DIMENSIONS.desktop);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.desktop, isMobile: false });
   });
 
   it('returns largeDesktop dimensions when width equals lg breakpoint (1024px)', () => {
     setWidth(1024);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual(CARD_DIMENSIONS.largeDesktop);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.largeDesktop, isMobile: false });
   });
 
   it('returns largeDesktop dimensions when width is above lg breakpoint (1280px)', () => {
     setWidth(1280);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual(CARD_DIMENSIONS.largeDesktop);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.largeDesktop, isMobile: false });
   });
 
   it('updates dimensions when window is resized to mobile', () => {
     setWidth(1024);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual(CARD_DIMENSIONS.largeDesktop);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.largeDesktop, isMobile: false });
 
     act(() => {
       setWidth(375);
       window.dispatchEvent(new Event('resize'));
     });
 
-    expect(result.current).toEqual(CARD_DIMENSIONS.mobile);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.mobile, isMobile: true });
   });
 
   it('updates dimensions when window is resized to desktop', () => {
     setWidth(375);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual(CARD_DIMENSIONS.mobile);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.mobile, isMobile: true });
 
     act(() => {
       setWidth(800);
       window.dispatchEvent(new Event('resize'));
     });
 
-    expect(result.current).toEqual(CARD_DIMENSIONS.desktop);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.desktop, isMobile: false });
   });
 
   it('updates dimensions when window is resized to largeDesktop', () => {
     setWidth(375);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual(CARD_DIMENSIONS.mobile);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.mobile, isMobile: true });
 
     act(() => {
       setWidth(1280);
       window.dispatchEvent(new Event('resize'));
     });
 
-    expect(result.current).toEqual(CARD_DIMENSIONS.largeDesktop);
+    expect(result.current).toEqual({ ...CARD_DIMENSIONS.largeDesktop, isMobile: false });
   });
 
   it('removes resize listener on unmount', () => {

@@ -36,5 +36,6 @@
     "playerHand": "This is the Player's hand. The hand closest to 9 wins.",
     "bankerHand": "This is the Banker's hand. Compare values to determine the winner.",
     "resetButton": "Press the reset button to start a new game."
-  }
+  },
+  "betGuide": "Place your bet to start"
 }

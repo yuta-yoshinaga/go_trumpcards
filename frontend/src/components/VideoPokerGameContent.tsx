@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useIsLargeDesktop } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -63,7 +63,6 @@ export function VideoPokerGameContent({
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
 
   const { cardWidth } = useCardDimensions();
-  const isLgDesktop = useIsLargeDesktop();
   const { state, loading, error, exec: execApi } = useGameApi(apiExec);
 
   useEffect(() => {
@@ -169,7 +168,7 @@ export function VideoPokerGameContent({
           <div className="text-white text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
         )}
 
-        <PayoutTable t={tNs} rows={payoutTableRows} expanded={isLgDesktop && isBetPhase} />
+        <PayoutTable t={tNs} rows={payoutTableRows} expanded={isBetPhase} />
 
         {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
@@ -198,6 +197,7 @@ export function VideoPokerGameContent({
             <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
               {t('button.deal')}
             </button>
+            <p className="text-gray-400 text-xs mt-1">{tNs('dealGuide')}</p>
           </div>
         )}
         {isDrawPhase && (

@@ -341,8 +341,8 @@ function PokerPageContent() {
         )}
 
         {/* Settings + Reset */}
-        <div className="text-center flex items-center justify-center gap-3">
-          <label className="text-white text-sm flex items-center gap-1">
+        <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+          <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
             {tc('betting.bettingLimit')}
             <select
               value={bettingLimit}
@@ -354,18 +354,20 @@ function PokerPageContent() {
               <option value={2}>{tc('betting.noLimit')}</option>
             </select>
           </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={isLowball} onChange={(e) => setIsLowball(e.target.checked)} />
-            {t('lowball')}
-          </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-            {t('settings.cpuMetaAI')}
-          </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('hint.toggle', { ns: 'tutorial' })}
-          </label>
+          <div className="flex items-center gap-3">
+            <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
+              <input type="checkbox" checked={isLowball} onChange={(e) => setIsLowball(e.target.checked)} />
+              {t('lowball')}
+            </label>
+            <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
+              <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+              {t('settings.cpuMetaAI')}
+            </label>
+            <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
+              <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+          </div>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
