@@ -52,10 +52,11 @@ export function useWindowWidth(): number {
 /** Hook that returns responsive card dimensions based on viewport width. */
 export function useCardDimensions() {
   const width = useWindowWidth();
+  const isMobile = width < SM_BREAKPOINT;
 
-  if (width >= LG_BREAKPOINT) return CARD_DIMENSIONS.largeDesktop;
-  if (width >= SM_BREAKPOINT) return CARD_DIMENSIONS.desktop;
-  return CARD_DIMENSIONS.mobile;
+  if (width >= LG_BREAKPOINT) return { ...CARD_DIMENSIONS.largeDesktop, isMobile };
+  if (width >= SM_BREAKPOINT) return { ...CARD_DIMENSIONS.desktop, isMobile };
+  return { ...CARD_DIMENSIONS.mobile, isMobile };
 }
 
 /** Hook that returns true when viewport width is at or above the large-desktop breakpoint. */

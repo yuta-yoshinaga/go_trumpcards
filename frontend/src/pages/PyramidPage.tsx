@@ -14,7 +14,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PyramidSkeleton } from '../components/skeleton/PyramidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { SM_BREAKPOINT, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePyramidGame } from '../hooks/usePyramidGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -91,9 +91,7 @@ function PyramidPageContent() {
     handleUndo,
     handleSelectCard,
   } = usePyramidGame();
-  const { cardHeight, cardWidth } = useCardDimensions();
-  const viewportWidth = useWindowWidth();
-  const isMobile = viewportWidth < SM_BREAKPOINT;
+  const { cardHeight, cardWidth, isMobile } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === PyramidPhase.PLAYING;
 
