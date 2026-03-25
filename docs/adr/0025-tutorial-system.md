@@ -51,8 +51,8 @@ Accepted
 ### 段階的展開
 
 - Phase 1: 基盤コンポーネント + BlackJack（本ADR）
-- Phase 2: 全ゲームへの展開（Issue #860）
-- Phase 3: ヒント表示・自動提案・進捗管理（Issue #861）
+- Phase 2: 全ゲームへの展開（完了済）
+- Phase 3: ヒント表示・自動提案・進捗管理（完了済）
 
 ## Consequences
 
