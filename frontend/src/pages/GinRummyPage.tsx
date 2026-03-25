@@ -10,13 +10,14 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GinRummySkeleton } from '../components/skeleton/GinRummySkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '../hooks/useGinRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { GinRummyPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -71,23 +72,6 @@ const GR_TUTORIAL_CONFIG: TutorialConfig = {
   gameName: 'ginrummy',
   steps: GR_TUTORIAL_STEPS,
 };
-
-/** Tutorial button that starts the Gin Rummy tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** Renders the Gin Rummy game page with draw, discard, knock, and layoff phases. */
 export function GinRummyPage() {

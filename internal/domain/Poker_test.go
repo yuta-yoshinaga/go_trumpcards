@@ -1850,7 +1850,7 @@ func TestPoker_GettersSetters(t *testing.T) {
 	pk.SetConfig(cfg)
 	assert.Equal(t, 20, pk.GetConfig().Ante)
 
-	pk.lastCpuError = nil
+	pk.round.lastCpuError = nil
 	assert.Nil(t, pk.GetLastCpuError())
 }
 

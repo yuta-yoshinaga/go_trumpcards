@@ -7,40 +7,40 @@ package domain
 // and are not part of the production game logic.
 
 // SetPhase フェーズ設定（テスト用）
-func (p *Poker) SetPhase(phase int) { p.phase = phase }
+func (p *Poker) SetPhase(phase int) { p.round.phase = phase }
 
 // SetCurrentTurn 現在のターン設定（テスト用）
-func (p *Poker) SetCurrentTurn(turn int) { p.currentTurn = turn }
+func (p *Poker) SetCurrentTurn(turn int) { p.round.currentTurn = turn }
 
 // SetPot ポット設定（テスト用）
-func (p *Poker) SetPot(pot int) { p.pot = pot }
+func (p *Poker) SetPot(pot int) { p.round.pot = pot }
 
 // SetDealerIdx ディーラーインデックス設定（テスト用）
 func (p *Poker) SetDealerIdx(idx int) { p.dealerIdx = idx }
 
 // SetGameEndFlag ゲーム終了フラグ設定（テスト用）
-func (p *Poker) SetGameEndFlag(flag bool) { p.gameEndFlag = flag }
+func (p *Poker) SetGameEndFlag(flag bool) { p.round.gameEndFlag = flag }
 
 // SetLastBet 最後のベット設定（テスト用）
-func (p *Poker) SetLastBet(bet int) { p.lastBet = bet }
+func (p *Poker) SetLastBet(bet int) { p.round.lastBet = bet }
 
 // SetMinRaise 最小レイズ額設定（テスト用）
-func (p *Poker) SetMinRaise(raise int) { p.minRaise = raise }
+func (p *Poker) SetMinRaise(raise int) { p.round.minRaise = raise }
 
 // SetRoundResults ラウンド結果設定（テスト用）
-func (p *Poker) SetRoundResults(results []PokerResult) { p.roundResults = results }
+func (p *Poker) SetRoundResults(results []PokerResult) { p.round.roundResults = results }
 
 // SetCpuActions CPU行動記録設定（テスト用）
-func (p *Poker) SetCpuActions(actions []PokerCpuAction) { p.cpuActions = actions }
+func (p *Poker) SetCpuActions(actions []PokerCpuAction) { p.round.cpuActions = actions }
 
 // SetCpuExchanges CPU交換記録設定（テスト用）
-func (p *Poker) SetCpuExchanges(exchanges []PokerCpuExchange) { p.cpuExchanges = exchanges }
+func (p *Poker) SetCpuExchanges(exchanges []PokerCpuExchange) { p.round.cpuExchanges = exchanges }
 
 // SetSidePots サイドポット設定（テスト用）
-func (p *Poker) SetSidePots(pots []PokerSidePot) { p.sidePots = pots }
+func (p *Poker) SetSidePots(pots []PokerSidePot) { p.round.sidePots = pots }
 
 // SetHumanProfile メタAIプロファイル設定（テスト用）
 func (p *Poker) SetHumanProfile(profile *BettingHumanProfile) { p.humanProfile = profile }
 
 // GetLastHumanPlayMs 最後の人間プレイ時間取得（テスト用）
-func (p *Poker) GetLastHumanPlayMs() int { return p.lastHumanPlayMs }
+func (p *Poker) GetLastHumanPlayMs() int { return p.round.lastHumanPlayMs }

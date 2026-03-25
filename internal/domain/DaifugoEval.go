@@ -31,7 +31,7 @@ func IsJoker(card *Card) bool {
 // cardStrength 現在の革命・11バック状態に応じたカード値の強さを返す
 func (d *Daifugo) cardStrength(v int) int {
 	// 革命と11バックのXOR: 両方有効なら打ち消し合う
-	reversed := d.revolutionActive != d.elevenBackActive
+	reversed := d.round.revolutionActive != d.round.elevenBackActive
 	if reversed {
 		return DaifugoCardStrengthRevolution(v)
 	}
@@ -148,9 +148,9 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 		return false
 	}
 
-	if d.tableCards == nil {
+	if d.round.tableCards == nil {
 		// 階段縛り中は階段またはエンペラーのみ
-		if d.sequenceLocked {
+		if d.round.sequenceLocked {
 			return validSeq || validEmperor
 		}
 		// 場がクリアなら何でも出せる
@@ -158,16 +158,16 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 	}
 
 	// 枚数が一致しているか
-	if len(cards) != len(d.tableCards) {
+	if len(cards) != len(d.round.tableCards) {
 		return false
 	}
 
 	// 場が階段の場合
-	if d.tableIsSequence {
+	if d.round.tableIsSequence {
 		if !validSeq {
 			return false
 		}
-		tableMin := d.getSequenceMinStrength(d.tableCards)
+		tableMin := d.getSequenceMinStrength(d.round.tableCards)
 		playMin := d.getSequenceMinStrength(cards)
 		return playMin > tableMin
 	}
@@ -178,23 +178,23 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 	}
 
 	// スート縛りチェック
-	if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
+	if d.round.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
 		if d.config.SuitLockMode == DaifugoSuitLockFull {
 			// 両縛り: 全てのカードがロックされたスートに一致する必要がある
 			newSuit := d.getNonJokerSuit(cards)
-			if newSuit > 0 && newSuit != d.lockedSuit {
+			if newSuit > 0 && newSuit != d.round.lockedSuit {
 				return false
 			}
 		} else {
 			// 片縛り: 少なくとも1枚がロックされたスートに一致する必要がある
-			if !d.hasMatchingSuit(cards, d.lockedSuit) {
+			if !d.hasMatchingSuit(cards, d.round.lockedSuit) {
 				return false
 			}
 		}
 	}
 
 	// 強さ比較
-	tableBase := getBaseValue(d.tableCards)
+	tableBase := getBaseValue(d.round.tableCards)
 	playBase := getBaseValue(cards)
 
 	var tableStrength, playStrength int
@@ -211,7 +211,7 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 
 	// 数縛り: 連番縛り発動中は強さの差が1でなければ出せない
 	// ジョーカーは連番縛りをバイパスし、通常の強さ比較のみ適用
-	if d.numberLocked && d.config.NumberLockEnabled {
+	if d.round.numberLocked && d.config.NumberLockEnabled {
 		if playBase > 0 && tableBase > 0 {
 			return playStrength-tableStrength == 1
 		}

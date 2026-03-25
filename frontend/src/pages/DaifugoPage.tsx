@@ -13,11 +13,12 @@ import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { DaifugoSkeleton } from '../components/skeleton/DaifugoSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { DaifugoAction } from '../types/card';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -69,23 +70,6 @@ const DF_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
-
-/** Tutorial button that starts the Daifugo tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** Daifugo tutorial configuration. */
 const DF_TUTORIAL_CONFIG: TutorialConfig = {

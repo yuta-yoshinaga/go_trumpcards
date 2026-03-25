@@ -86,14 +86,10 @@ func findOpenEndedDraw(cards []straightDrawCardInfo, check func(remaining []int)
 	return -1
 }
 
-// Poker ポーカークラス (5枚ドローポーカー・マルチプレイヤー)
-type Poker struct {
-	trumpCards      *TrumpCards
-	players         []*PokerPlayer
-	config          PokerConfig
+// pokerRoundState ラウンドごとにリセットされる状態
+type pokerRoundState struct {
 	phase           int
 	pot             int
-	dealerIdx       int
 	currentTurn     int
 	lastBet         int
 	minRaise        int
@@ -107,41 +103,49 @@ type Poker struct {
 	actionLog       []*ActionLogEntry
 	gameEndFlag     bool
 	lastCpuError    error // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
-	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
+}
+
+// Poker ポーカークラス (5枚ドローポーカー・マルチプレイヤー)
+type Poker struct {
+	trumpCards   *TrumpCards
+	players      []*PokerPlayer
+	config       PokerConfig
+	dealerIdx    int
+	humanProfile *BettingHumanProfile
+	round        pokerRoundState
 }
 
 // NewPoker コンストラクタ
 func NewPoker(trumpCards *TrumpCards, players []*PokerPlayer, config PokerConfig) *Poker {
 	return &Poker{
-		trumpCards:    trumpCards,
-		players:       players,
-		config:        config,
-		phase:         PokerPhaseInit,
-		sidePots:      make([]PokerSidePot, 0),
-		actedFlags:    make([]bool, len(players)),
-		roundResults:  make([]PokerResult, 0),
-		cpuActions:    make([]PokerCpuAction, 0),
-		cpuExchanges:  make([]PokerCpuExchange, 0),
-		startingChips: make([]int, len(players)),
+		trumpCards: trumpCards,
+		players:    players,
+		config:     config,
+		round: pokerRoundState{
+			phase:         PokerPhaseInit,
+			sidePots:      make([]PokerSidePot, 0),
+			actedFlags:    make([]bool, len(players)),
+			roundResults:  make([]PokerResult, 0),
+			cpuActions:    make([]PokerCpuAction, 0),
+			cpuExchanges:  make([]PokerCpuExchange, 0),
+			startingChips: make([]int, len(players)),
+		},
 	}
 }
 
 // Reset ゲーム初期化
 func (p *Poker) Reset() error {
-	p.phase = PokerPhaseInit
-	p.pot = 0
-	p.sidePots = make([]PokerSidePot, 0)
-	p.gameEndFlag = false
-	p.lastBet = 0
-	p.minRaise = p.config.MinBet
-	p.raiseCount = 0
-	p.actedFlags = make([]bool, len(p.players))
-	p.roundResults = make([]PokerResult, 0)
-	p.cpuActions = make([]PokerCpuAction, 0)
-	p.cpuExchanges = make([]PokerCpuExchange, 0)
-	p.actionLog = nil
-	p.lastHumanPlayMs = 0
+	p.round = pokerRoundState{
+		phase:         PokerPhaseInit,
+		minRaise:      p.config.MinBet,
+		sidePots:      make([]PokerSidePot, 0),
+		actedFlags:    make([]bool, len(p.players)),
+		roundResults:  make([]PokerResult, 0),
+		cpuActions:    make([]PokerCpuAction, 0),
+		cpuExchanges:  make([]PokerCpuExchange, 0),
+		startingChips: make([]int, len(p.players)),
+	}
 
 	// メタAI: プロファイル初期化
 	if p.config.CpuMetaAI {
@@ -187,9 +191,8 @@ func (p *Poker) Reset() error {
 	}
 
 	// ハンド開始時のチップを記録 (サイドポット計算用)
-	p.startingChips = make([]int, len(p.players))
 	for i, pl := range p.players {
-		p.startingChips[i] = pl.GetChips()
+		p.round.startingChips[i] = pl.GetChips()
 	}
 
 	// アンティ徴収
@@ -209,9 +212,9 @@ func (p *Poker) Reset() error {
 		}
 	}
 
-	p.phase = PokerPhaseDeal
+	p.round.phase = PokerPhaseDeal
 	// ディーラーの左からアクティブプレイヤーを開始
-	p.currentTurn = p.findNextActive(p.dealerIdx)
+	p.round.currentTurn = p.findNextActive(p.dealerIdx)
 
 	// CPU第1ベットアクション実行
 	p.runCpuActions()
@@ -229,7 +232,7 @@ func (p *Poker) collectAntes() {
 			ante = pl.GetChips()
 		}
 		pl.SubtractChips(ante)
-		p.pot += ante
+		p.round.pot += ante
 		p.appendLog(i, "ante", fmt.Sprintf("ante %d chips", ante), nil)
 	}
 }
@@ -237,30 +240,30 @@ func (p *Poker) collectAntes() {
 // PlayerAction 人間プレイヤーのアクション実行
 // humanPlayMs: 迷い時間(ms, 0=計測なし)
 func (p *Poker) PlayerAction(action, amount, humanPlayMs int) error {
-	if p.gameEndFlag {
+	if p.round.gameEndFlag {
 		return NewDomainError(ErrGameEnded, "Game has already ended.")
 	}
-	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
+	if p.round.phase != PokerPhaseDeal && p.round.phase != PokerPhaseSecondBet {
 		return NewDomainError(ErrWrongPhase, "Action is not allowed now.")
 	}
-	if !p.players[p.currentTurn].GetIsHuman() {
+	if !p.players[p.round.currentTurn].GetIsHuman() {
 		return NewDomainError(ErrNotHumanTurn, "It is not your turn.")
 	}
 
 	// メタAI: 人間アクション記録
-	p.lastHumanPlayMs = humanPlayMs
+	p.round.lastHumanPlayMs = humanPlayMs
 	if p.config.CpuMetaAI && p.humanProfile != nil {
-		pl := p.players[p.currentTurn]
+		pl := p.players[p.round.currentTurn]
 		pl.EvalHand()
 		handRank := pl.GetHandRank()
 		p.humanProfile.RecordAction(handRank, action)
 		p.humanProfile.RecordHesitation(humanPlayMs)
-		if p.lastBet > pl.GetCurrentBet() {
+		if p.round.lastBet > pl.GetCurrentBet() {
 			p.humanProfile.RecordFoldToBet(action == PokerActionFold)
 		}
 	}
 
-	err := p.executeAction(p.currentTurn, action, amount)
+	err := p.executeAction(p.round.currentTurn, action, amount)
 	if err != nil {
 		return err
 	}
@@ -272,10 +275,10 @@ func (p *Poker) PlayerAction(action, amount, humanPlayMs int) error {
 
 // PlayerExchange プレイヤーカード交換
 func (p *Poker) PlayerExchange(indices []int) error {
-	if p.phase != PokerPhaseExchange {
+	if p.round.phase != PokerPhaseExchange {
 		return NewDomainError(ErrWrongPhase, "Exchange is not allowed now.")
 	}
-	if !p.players[p.currentTurn].GetIsHuman() {
+	if !p.players[p.round.currentTurn].GetIsHuman() {
 		return NewDomainError(ErrNotHumanTurn, "It is not your turn.")
 	}
 
@@ -283,12 +286,12 @@ func (p *Poker) PlayerExchange(indices []int) error {
 	for _, idx := range indices {
 		newCard := p.trumpCards.DrawCard()
 		if newCard != nil {
-			p.players[p.currentTurn].ExchangeCard(idx, newCard)
+			p.players[p.round.currentTurn].ExchangeCard(idx, newCard)
 		}
 	}
-	p.players[p.currentTurn].SetExchangeCount(len(indices))
-	p.appendLog(p.currentTurn, "exchange", fmt.Sprintf("exchange %d card(s)", len(indices)), nil)
-	p.actedFlags[p.currentTurn] = true
+	p.players[p.round.currentTurn].SetExchangeCount(len(indices))
+	p.appendLog(p.round.currentTurn, "exchange", fmt.Sprintf("exchange %d card(s)", len(indices)), nil)
+	p.round.actedFlags[p.round.currentTurn] = true
 
 	// 残りのCPU交換を実行
 	p.advanceTurn()
@@ -304,16 +307,16 @@ func (p *Poker) PlayerExchange(indices []int) error {
 
 // PlayerStand カード交換なし
 func (p *Poker) PlayerStand() error {
-	if p.phase != PokerPhaseExchange {
+	if p.round.phase != PokerPhaseExchange {
 		return NewDomainError(ErrWrongPhase, "Stand is not allowed now.")
 	}
-	if !p.players[p.currentTurn].GetIsHuman() {
+	if !p.players[p.round.currentTurn].GetIsHuman() {
 		return NewDomainError(ErrNotHumanTurn, "It is not your turn.")
 	}
 
-	p.players[p.currentTurn].SetExchangeCount(0)
-	p.appendLog(p.currentTurn, "exchange", "exchange 0 card(s)", nil)
-	p.actedFlags[p.currentTurn] = true
+	p.players[p.round.currentTurn].SetExchangeCount(0)
+	p.appendLog(p.round.currentTurn, "exchange", "exchange 0 card(s)", nil)
+	p.round.actedFlags[p.round.currentTurn] = true
 
 	// 残りのCPU交換を実行
 	p.advanceTurn()
@@ -339,17 +342,17 @@ func (p *Poker) bettingPlayers() []BettingPlayer {
 // executeAction 指定プレイヤーのアクション実行
 func (p *Poker) executeAction(playerIdx, action, amount int) error {
 	bp := p.bettingPlayers()
-	// ActedFlags はスライス参照を共有: ExecuteBettingAction 内の変更が p.actedFlags に直接反映される
+	// ActedFlags はスライス参照を共有: ExecuteBettingAction 内の変更が p.round.actedFlags に直接反映される
 	state := &BettingState{
-		Pot: p.pot, LastBet: p.lastBet, MinRaise: p.minRaise,
-		RaiseCount: p.raiseCount, ActedFlags: p.actedFlags,
+		Pot: p.round.pot, LastBet: p.round.lastBet, MinRaise: p.round.minRaise,
+		RaiseCount: p.round.raiseCount, ActedFlags: p.round.actedFlags,
 	}
 	maxRaises, maxBetAmount := p.bettingLimits()
 	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, p.config.MinBet, maxRaises, maxBetAmount)
-	p.pot = state.Pot
-	p.lastBet = state.LastBet
-	p.minRaise = state.MinRaise
-	p.raiseCount = state.RaiseCount
+	p.round.pot = state.Pot
+	p.round.lastBet = state.LastBet
+	p.round.minRaise = state.MinRaise
+	p.round.raiseCount = state.RaiseCount
 	if err != nil {
 		return err
 	}
@@ -366,12 +369,12 @@ func (p *Poker) executeAction(playerIdx, action, amount int) error {
 
 // advanceTurn 次のプレイヤーに進める
 func (p *Poker) advanceTurn() {
-	if p.gameEndFlag {
+	if p.round.gameEndFlag {
 		return
 	}
 
 	// ベッティングラウンド終了チェック
-	if p.phase == PokerPhaseDeal || p.phase == PokerPhaseSecondBet {
+	if p.round.phase == PokerPhaseDeal || p.round.phase == PokerPhaseSecondBet {
 		if p.isBettingRoundComplete() {
 			p.advancePhase()
 			return
@@ -379,7 +382,7 @@ func (p *Poker) advanceTurn() {
 	}
 
 	// 交換フェーズでの終了チェック
-	if p.phase == PokerPhaseExchange {
+	if p.round.phase == PokerPhaseExchange {
 		if p.isExchangeComplete() {
 			return
 		}
@@ -387,9 +390,9 @@ func (p *Poker) advanceTurn() {
 
 	// 次のアクティブプレイヤーを探す
 	for i := 1; i <= len(p.players); i++ {
-		next := (p.currentTurn + i) % len(p.players)
-		if !p.players[next].GetFolded() && !p.players[next].GetAllIn() && !p.actedFlags[next] {
-			p.currentTurn = next
+		next := (p.round.currentTurn + i) % len(p.players)
+		if !p.players[next].GetFolded() && !p.players[next].GetAllIn() && !p.round.actedFlags[next] {
+			p.round.currentTurn = next
 			return
 		}
 	}
@@ -401,7 +404,7 @@ func (p *Poker) isRoundComplete() bool {
 		if pl.GetFolded() || pl.GetAllIn() {
 			continue
 		}
-		if !p.actedFlags[i] {
+		if !p.round.actedFlags[i] {
 			return false
 		}
 	}
@@ -420,25 +423,25 @@ func (p *Poker) isExchangeComplete() bool {
 
 // advancePhase 次のフェーズに進める
 func (p *Poker) advancePhase() {
-	switch p.phase {
+	switch p.round.phase {
 	case PokerPhaseDeal:
 		// ベッティングラウンド1完了 → 交換フェーズへ
-		p.phase = PokerPhaseExchange
+		p.round.phase = PokerPhaseExchange
 		// ラウンドベットリセット
 		for _, pl := range p.players {
 			pl.SetCurrentBet(0)
 		}
-		p.lastBet = 0
-		p.minRaise = p.config.MinBet
-		p.raiseCount = 0
-		p.actedFlags = make([]bool, len(p.players))
+		p.round.lastBet = 0
+		p.round.minRaise = p.config.MinBet
+		p.round.raiseCount = 0
+		p.round.actedFlags = make([]bool, len(p.players))
 		for i, pl := range p.players {
 			if pl.GetFolded() || pl.GetAllIn() {
-				p.actedFlags[i] = true
+				p.round.actedFlags[i] = true
 			}
 		}
 		// ディーラーの左から開始
-		p.currentTurn = p.findNextActive(p.dealerIdx)
+		p.round.currentTurn = p.findNextActive(p.dealerIdx)
 
 	case PokerPhaseSecondBet:
 		// ベッティングラウンド2完了 → ショーダウン
@@ -448,18 +451,18 @@ func (p *Poker) advancePhase() {
 
 // startSecondBettingRound 第2ベッティングラウンド開始
 func (p *Poker) startSecondBettingRound() {
-	p.phase = PokerPhaseSecondBet
+	p.round.phase = PokerPhaseSecondBet
 	// ラウンドベットリセット
 	for _, pl := range p.players {
 		pl.SetCurrentBet(0)
 	}
-	p.lastBet = 0
-	p.minRaise = p.config.MinBet
-	p.raiseCount = 0
-	p.actedFlags = make([]bool, len(p.players))
+	p.round.lastBet = 0
+	p.round.minRaise = p.config.MinBet
+	p.round.raiseCount = 0
+	p.round.actedFlags = make([]bool, len(p.players))
 	for i, pl := range p.players {
 		if pl.GetFolded() || pl.GetAllIn() {
-			p.actedFlags[i] = true
+			p.round.actedFlags[i] = true
 		}
 	}
 
@@ -476,7 +479,7 @@ func (p *Poker) startSecondBettingRound() {
 	}
 
 	// ディーラーの左から開始
-	p.currentTurn = p.findNextActive(p.dealerIdx)
+	p.round.currentTurn = p.findNextActive(p.dealerIdx)
 
 	// CPU第2ベットアクション実行
 	p.runCpuActions()
@@ -508,17 +511,17 @@ func (p *Poker) countActivePlayers() int {
 func (p *Poker) resolveLastPlayer() {
 	for i, pl := range p.players {
 		if !pl.GetFolded() {
-			pl.AddChips(p.pot)
-			p.roundResults = []PokerResult{{
+			pl.AddChips(p.round.pot)
+			p.round.roundResults = []PokerResult{{
 				PlayerIdx: i,
-				WonAmount: p.pot,
+				WonAmount: p.round.pot,
 			}}
-			p.pot = 0
+			p.round.pot = 0
 			break
 		}
 	}
-	p.phase = PokerPhaseEnd
-	p.gameEndFlag = true
+	p.round.phase = PokerPhaseEnd
+	p.round.gameEndFlag = true
 	p.dealerIdx = (p.dealerIdx + 1) % len(p.players)
 }
 
@@ -538,16 +541,16 @@ func (p *Poker) resolveShowdown() {
 
 	// サイドポット計算・配分
 	bp := p.bettingPlayers()
-	p.sidePots = CalculateSidePots(bp, p.pot, p.startingChips)
+	p.round.sidePots = CalculateSidePots(bp, p.round.pot, p.round.startingChips)
 	var wonAmounts map[int]int
 	if p.config.IsLowball {
-		wonAmounts = DistributePotsWithWinnerFunc(bp, p.sidePots, FindPotWinnersLowball)
+		wonAmounts = DistributePotsWithWinnerFunc(bp, p.round.sidePots, FindPotWinnersLowball)
 	} else {
-		wonAmounts = DistributePots(bp, p.sidePots)
+		wonAmounts = DistributePots(bp, p.round.sidePots)
 	}
 
 	// 結果を構築
-	p.roundResults = make([]PokerResult, 0)
+	p.round.roundResults = make([]PokerResult, 0)
 	for i, pl := range p.players {
 		if pl.GetFolded() {
 			continue
@@ -559,44 +562,44 @@ func (p *Poker) resolveShowdown() {
 			Kickers:   ExtractKickers(pl.GetComparisonCards(), pl.GetHandRank()),
 			WonAmount: wonAmounts[i],
 		}
-		p.roundResults = append(p.roundResults, result)
+		p.round.roundResults = append(p.round.roundResults, result)
 	}
 
-	p.phase = PokerPhaseEnd
-	p.gameEndFlag = true
+	p.round.phase = PokerPhaseEnd
+	p.round.gameEndFlag = true
 	p.dealerIdx = (p.dealerIdx + 1) % len(p.players)
 }
 
 // runCpuActions CPUプレイヤーのアクションを実行
 func (p *Poker) runCpuActions() {
-	if p.gameEndFlag {
+	if p.round.gameEndFlag {
 		return
 	}
-	for !p.gameEndFlag && (p.phase == PokerPhaseDeal || p.phase == PokerPhaseSecondBet) {
-		if p.players[p.currentTurn].GetIsHuman() {
+	for !p.round.gameEndFlag && (p.round.phase == PokerPhaseDeal || p.round.phase == PokerPhaseSecondBet) {
+		if p.players[p.round.currentTurn].GetIsHuman() {
 			return
 		}
-		if p.players[p.currentTurn].GetFolded() || p.players[p.currentTurn].GetAllIn() {
+		if p.players[p.round.currentTurn].GetFolded() || p.players[p.round.currentTurn].GetAllIn() {
 			p.advanceTurn()
 			continue
 		}
-		action, amount := p.cpuDecide(p.currentTurn)
-		p.cpuActions = append(p.cpuActions, PokerCpuAction{
-			PlayerIdx: p.currentTurn,
+		action, amount := p.cpuDecide(p.round.currentTurn)
+		p.round.cpuActions = append(p.round.cpuActions, PokerCpuAction{
+			PlayerIdx: p.round.currentTurn,
 			Action:    action,
 			Amount:    amount,
 		})
-		err := p.executeAction(p.currentTurn, action, amount)
+		err := p.executeAction(p.round.currentTurn, action, amount)
 		if err != nil {
-			p.lastCpuError = fmt.Errorf("CPU player %d action %d failed: %w", p.currentTurn, action, err)
-			callAmt := p.lastBet - p.players[p.currentTurn].GetCurrentBet()
+			p.round.lastCpuError = fmt.Errorf("CPU player %d action %d failed: %w", p.round.currentTurn, action, err)
+			callAmt := p.round.lastBet - p.players[p.round.currentTurn].GetCurrentBet()
 			if callAmt > 0 {
-				_ = p.executeAction(p.currentTurn, PokerActionFold, 0)
+				_ = p.executeAction(p.round.currentTurn, PokerActionFold, 0)
 			} else {
-				_ = p.executeAction(p.currentTurn, PokerActionCheck, 0)
+				_ = p.executeAction(p.round.currentTurn, PokerActionCheck, 0)
 			}
 		}
-		if p.gameEndFlag {
+		if p.round.gameEndFlag {
 			return
 		}
 		p.advanceTurn()
@@ -605,18 +608,18 @@ func (p *Poker) runCpuActions() {
 
 // runCpuExchanges CPUプレイヤーのカード交換を実行
 func (p *Poker) runCpuExchanges() {
-	if p.gameEndFlag {
+	if p.round.gameEndFlag {
 		return
 	}
-	for p.phase == PokerPhaseExchange {
+	for p.round.phase == PokerPhaseExchange {
 		if p.isExchangeComplete() {
 			return
 		}
-		if p.players[p.currentTurn].GetIsHuman() {
+		if p.players[p.round.currentTurn].GetIsHuman() {
 			return
 		}
-		if p.players[p.currentTurn].GetFolded() || p.players[p.currentTurn].GetAllIn() {
-			p.actedFlags[p.currentTurn] = true
+		if p.players[p.round.currentTurn].GetFolded() || p.players[p.round.currentTurn].GetAllIn() {
+			p.round.actedFlags[p.round.currentTurn] = true
 			p.advanceTurn()
 			continue
 		}
@@ -624,37 +627,37 @@ func (p *Poker) runCpuExchanges() {
 		// CPU交換AI
 		var indices []int
 		if p.config.IsLowball {
-			indices = p.cpuDecideExchangeLowball(p.currentTurn)
+			indices = p.cpuDecideExchangeLowball(p.round.currentTurn)
 		} else {
-			indices = p.cpuDecideExchange(p.currentTurn)
+			indices = p.cpuDecideExchange(p.round.currentTurn)
 		}
 		for _, idx := range indices {
 			newCard := p.trumpCards.DrawCard()
 			if newCard != nil {
-				p.players[p.currentTurn].ExchangeCard(idx, newCard)
+				p.players[p.round.currentTurn].ExchangeCard(idx, newCard)
 			}
 		}
-		p.players[p.currentTurn].SetExchangeCount(len(indices))
-		p.appendLog(p.currentTurn, "exchange", fmt.Sprintf("exchange %d card(s)", len(indices)), nil)
-		p.cpuExchanges = append(p.cpuExchanges, PokerCpuExchange{
-			PlayerIdx:     p.currentTurn,
+		p.players[p.round.currentTurn].SetExchangeCount(len(indices))
+		p.appendLog(p.round.currentTurn, "exchange", fmt.Sprintf("exchange %d card(s)", len(indices)), nil)
+		p.round.cpuExchanges = append(p.round.cpuExchanges, PokerCpuExchange{
+			PlayerIdx:     p.round.currentTurn,
 			ExchangeCount: len(indices),
 		})
-		p.actedFlags[p.currentTurn] = true
+		p.round.actedFlags[p.round.currentTurn] = true
 		p.advanceTurn()
 	}
 }
 
 // bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
 func (p *Poker) bettingLimits() (maxRaises, maxBetAmount int) {
-	return CalculateBettingLimits(p.config.BettingLimit, p.pot, p.lastBet)
+	return CalculateBettingLimits(p.config.BettingLimit, p.round.pot, p.round.lastBet)
 }
 
 // cpuDecide CPUプレイヤーの意思決定
 func (p *Poker) cpuDecide(idx int) (int, int) {
 	pl := p.players[idx]
 	style := pl.GetPlayStyle()
-	callAmount := p.lastBet - pl.GetCurrentBet()
+	callAmount := p.round.lastBet - pl.GetCurrentBet()
 
 	params, ok := pokerStyleParamsMap[style]
 	if !ok {
@@ -679,17 +682,17 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 	exchangeWarning := p.calcExchangeWarning(idx, params.exchangeReadWeight)
 
 	var action, amount int
-	if p.phase == PokerPhaseDeal {
+	if p.round.phase == PokerPhaseDeal {
 		action, amount = p.cpuDecideFirstBet(idx, params, callAmount, handRank)
 	} else {
 		action, amount = p.cpuDecideSecondBet(idx, params, callAmount, handRank, exchangeWarning)
 	}
 
 	// メタAI: 人間のベット/レイズに対してコール確率を調整
-	if p.config.CpuMetaAI && p.humanProfile != nil && p.lastHumanPlayMs > 0 {
+	if p.config.CpuMetaAI && p.humanProfile != nil && p.round.lastHumanPlayMs > 0 {
 		if action == PokerActionFold && callAmount > 0 {
 			bracket := bettingHandBracket(handRank)
-			adjustedCall := p.humanProfile.AdjustedCallChance(0.0, bracket, p.lastHumanPlayMs)
+			adjustedCall := p.humanProfile.AdjustedCallChance(0.0, bracket, p.round.lastHumanPlayMs)
 			if adjustedCall > 0 && rand.Float64() < adjustedCall {
 				action = PokerActionCall
 				amount = 0
@@ -705,7 +708,7 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 	}
 
 	// レイズ上限に達したら変更
-	if maxRaises > 0 && p.raiseCount >= maxRaises {
+	if maxRaises > 0 && p.round.raiseCount >= maxRaises {
 		if action == PokerActionRaise || action == PokerActionBet {
 			if callAmount > 0 {
 				return PokerActionCall, 0
@@ -718,7 +721,7 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 
 // calcExchangeWarning 他プレイヤーの交換枚数から警戒度を計算 (0-100)
 func (p *Poker) calcExchangeWarning(idx, weight int) int {
-	if p.phase != PokerPhaseSecondBet {
+	if p.round.phase != PokerPhaseSecondBet {
 		return 0
 	}
 	minExchange := 5
@@ -1012,46 +1015,46 @@ func (p *Poker) findStraightDrawDiscard(playerIdx int) int {
 // --- ゲッター ---
 
 // GetPhase フェーズ取得
-func (p *Poker) GetPhase() int { return p.phase }
+func (p *Poker) GetPhase() int { return p.round.phase }
 
 // GetPlayers プレイヤー一覧取得
 func (p *Poker) GetPlayers() []*PokerPlayer { return p.players }
 
 // GetPot ポット取得
-func (p *Poker) GetPot() int { return p.pot }
+func (p *Poker) GetPot() int { return p.round.pot }
 
 // GetSidePots サイドポット取得
-func (p *Poker) GetSidePots() []PokerSidePot { return p.sidePots }
+func (p *Poker) GetSidePots() []PokerSidePot { return p.round.sidePots }
 
 // GetDealerIdx ディーラーインデックス取得
 func (p *Poker) GetDealerIdx() int { return p.dealerIdx }
 
 // GetCurrentTurn 現在のターン取得
-func (p *Poker) GetCurrentTurn() int { return p.currentTurn }
+func (p *Poker) GetCurrentTurn() int { return p.round.currentTurn }
 
 // GetGameEndFlag ゲーム終了フラグ取得
-func (p *Poker) GetGameEndFlag() bool { return p.gameEndFlag }
+func (p *Poker) GetGameEndFlag() bool { return p.round.gameEndFlag }
 
 // GetLastBet 最後のベット取得
-func (p *Poker) GetLastBet() int { return p.lastBet }
+func (p *Poker) GetLastBet() int { return p.round.lastBet }
 
 // GetMinRaise 最小レイズ額取得
-func (p *Poker) GetMinRaise() int { return p.minRaise }
+func (p *Poker) GetMinRaise() int { return p.round.minRaise }
 
 // GetRaiseCount 現在のレイズ回数取得
-func (p *Poker) GetRaiseCount() int { return p.raiseCount }
+func (p *Poker) GetRaiseCount() int { return p.round.raiseCount }
 
 // GetAnte アンティ取得
 func (p *Poker) GetAnte() int { return p.config.Ante }
 
 // GetRoundResults ラウンド結果取得
-func (p *Poker) GetRoundResults() []PokerResult { return p.roundResults }
+func (p *Poker) GetRoundResults() []PokerResult { return p.round.roundResults }
 
 // GetCpuActions CPU行動記録取得
-func (p *Poker) GetCpuActions() []PokerCpuAction { return p.cpuActions }
+func (p *Poker) GetCpuActions() []PokerCpuAction { return p.round.cpuActions }
 
 // GetCpuExchanges CPU交換記録取得
-func (p *Poker) GetCpuExchanges() []PokerCpuExchange { return p.cpuExchanges }
+func (p *Poker) GetCpuExchanges() []PokerCpuExchange { return p.round.cpuExchanges }
 
 // GetConfig 設定取得
 func (p *Poker) GetConfig() PokerConfig { return p.config }
@@ -1060,7 +1063,7 @@ func (p *Poker) GetConfig() PokerConfig { return p.config }
 func (p *Poker) SetConfig(cfg PokerConfig) { p.config = cfg }
 
 // GetLastCpuError 最後のCPUアクションエラー取得 (テスト・デバッグ用)
-func (p *Poker) GetLastCpuError() error { return p.lastCpuError }
+func (p *Poker) GetLastCpuError() error { return p.round.lastCpuError }
 
 // GetHumanProfile メタAIプロファイル取得
 func (p *Poker) GetHumanProfile() *BettingHumanProfile { return p.humanProfile }
@@ -1092,12 +1095,12 @@ func (p *Poker) ImportProfile(data []byte) error {
 }
 
 // GetActionLog 棋譜を取得する
-func (p *Poker) GetActionLog() []*ActionLogEntry { return p.actionLog }
+func (p *Poker) GetActionLog() []*ActionLogEntry { return p.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
 func (p *Poker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog) + 1,
+	p.round.actionLog = append(p.round.actionLog, &ActionLogEntry{
+		TurnNumber: len(p.round.actionLog) + 1,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,

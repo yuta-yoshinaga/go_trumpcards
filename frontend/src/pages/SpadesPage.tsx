@@ -11,14 +11,15 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SpadesSkeleton } from '../components/skeleton/SpadesSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { SpadesPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -70,23 +71,6 @@ const SP_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
-
-/** Tutorial button that starts the Spades tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** Spades tutorial configuration. */
 const SP_TUTORIAL_CONFIG: TutorialConfig = {

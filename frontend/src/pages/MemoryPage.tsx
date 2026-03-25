@@ -10,13 +10,14 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { MemorySkeleton } from '../components/skeleton/MemorySkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnSecondary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { playerName } from '../utils/playerUtils';
@@ -54,23 +55,6 @@ const MEM_TUTORIAL_CONFIG: TutorialConfig = {
   gameName: 'memory',
   steps: MEM_TUTORIAL_STEPS,
 };
-
-/** Tutorial button that starts the Memory tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
   [MemoryPhase.FLIP1]: 'flip1',
