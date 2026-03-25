@@ -59,7 +59,7 @@ bun run e2e:ui       # Run with Playwright UI
 The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with **i18next-browser-languagedetector**.
 
 - **Config**: `src/i18n/index.ts`
-- **Translation files**: `src/i18n/locales/{ja,en}/{common,blackjack,poker,oldmaid,daifugo,sevens,doubt,holdem,omaha,shortdeck,hearts,memory,klondike,freecell,baccarat,spades,crazyeights,ginrummy,spider,napoleon,indianpoker,videopoker,euchre,pyramid,cribbage,tutorial}.json`
+- **Translation files**: `src/i18n/locales/{ja,en}/{common,blackjack,poker,oldmaid,daifugo,sevens,doubt,holdem,omaha,shortdeck,hearts,memory,klondike,freecell,baccarat,spades,crazyeights,ginrummy,spider,napoleon,indianpoker,videopoker,deuceswild,jokerpoker,euchre,pyramid,cribbage,tutorial}.json`
 - **In components**: use the `useTranslation()` hook
 - **In non-component files** (e.g., `playerUtils.ts`, `messages.ts`, `gameConstants.ts`): import the `i18n` instance directly
 - **Tests**: i18n is initialized in `src/test/setup.ts` with ja translations loaded
@@ -101,7 +101,7 @@ Interactive step-by-step tutorial system for guiding new players through game me
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| `TutorialButton` | `src/components/tutorial/TutorialButton.tsx` | Shared tutorial start button (imported by all 24 game pages) |
+| `TutorialButton` | `src/components/tutorial/TutorialButton.tsx` | Shared tutorial start button (imported by all 26 game pages) |
 | `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; wraps game page, renders overlay when active |
 | `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight and focus trap |
 | `TutorialTooltip` | `src/components/tutorial/TutorialTooltip.tsx` | Glass-panel tooltip with step indicator and nav buttons |
@@ -129,5 +129,5 @@ Interactive step-by-step tutorial system for guiding new players through game me
 
 - **Hint display**: `useGameHint` hook provides frontend-only hints for BlackJack, Poker, Hearts, Spades. Toggle via SettingsPanel checkbox. `HintTooltip` shows reasoning with confidence indicator.
 - **First-visit suggestion**: `TutorialSuggestDialog` automatically shown on first visit to any game page. Controlled by `useFirstVisit` hook. Users can dismiss permanently.
-- **Progress tracking**: `TutorialProgressPanel` in NavBar shows completion icons for all 24 games with a progress bar.
+- **Progress tracking**: `TutorialProgressPanel` in NavBar shows completion icons for all 26 games with a progress bar.
 - **Resume/restart**: `useTutorial` hook supports `canResume`, `start()` (resumes from saved step), and `restart()` (always step 0). Progress saved to localStorage on skip.

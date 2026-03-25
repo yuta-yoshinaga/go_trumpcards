@@ -1,0 +1,46 @@
+{
+  "title": "Joker Poker (ジョーカーポーカー)",
+  "label": {
+    "chips": "チップ: {{chips}}",
+    "bet": "ベット: {{bet}}コイン",
+    "payout": "配当: {{payout}}",
+    "betAmount": "コイン数"
+  },
+  "button": {
+    "deal": "ディール",
+    "draw": "ドロー",
+    "reset": "次のハンド"
+  },
+  "phase": {
+    "bet": "ベット",
+    "draw": "ホールド / ドロー",
+    "result": "結果"
+  },
+  "hold": "ホールド",
+  "result": {
+    "win": "{{handName}}! {{payout}}コイン獲得!",
+    "lose": "役なし。次のハンドで頑張りましょう!"
+  },
+  "payoutTable": {
+    "title": "配当表",
+    "naturalRoyalFlush5": "ナチュラルロイヤルフラッシュ (5コイン): 4000",
+    "naturalRoyalFlush": "ナチュラルロイヤルフラッシュ: 250倍",
+    "fiveOfAKind": "ファイブカード: 200倍",
+    "wildRoyalFlush": "ワイルドロイヤルフラッシュ: 100倍",
+    "straightFlush": "ストレートフラッシュ: 50倍",
+    "fourOfAKind": "フォーカード: 20倍",
+    "fullHouse": "フルハウス: 7倍",
+    "flush": "フラッシュ: 5倍",
+    "straight": "ストレート: 3倍",
+    "threeOfAKind": "スリーカード: 2倍",
+    "twoPair": "ツーペア: 1倍",
+    "kingsOrBetter": "キングス・オア・ベター: 1倍"
+  },
+  "tutorial": {
+    "betControls": "1〜5コインを賭けます。ジョーカーがワイルドカードとして使われます!",
+    "hand": "カードをクリックしてホールド。ジョーカーは必ずホールドしましょう。",
+    "drawButton": "ドローを押してホールドしていないカードを交換。キングス・オア・ベター以上で配当獲得!",
+    "resetButton": "次のハンドを押して次のラウンドを始めます。"
+  },
+  "card": "カード {{index}}"
+}

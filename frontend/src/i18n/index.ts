@@ -8,6 +8,7 @@ import enCommon from './locales/en/common.json';
 import enCrazyeights from './locales/en/crazyeights.json';
 import enCribbage from './locales/en/cribbage.json';
 import enDaifugo from './locales/en/daifugo.json';
+import enDeuceswild from './locales/en/deuceswild.json';
 import enDoubt from './locales/en/doubt.json';
 import enEuchre from './locales/en/euchre.json';
 import enFreecell from './locales/en/freecell.json';
@@ -15,6 +16,7 @@ import enGinrummy from './locales/en/ginrummy.json';
 import enHearts from './locales/en/hearts.json';
 import enHoldem from './locales/en/holdem.json';
 import enIndianpoker from './locales/en/indianpoker.json';
+import enJokerpoker from './locales/en/jokerpoker.json';
 import enKlondike from './locales/en/klondike.json';
 import enMemory from './locales/en/memory.json';
 import enNapoleon from './locales/en/napoleon.json';
@@ -34,6 +36,7 @@ import jaCommon from './locales/ja/common.json';
 import jaCrazyeights from './locales/ja/crazyeights.json';
 import jaCribbage from './locales/ja/cribbage.json';
 import jaDaifugo from './locales/ja/daifugo.json';
+import jaDeuceswild from './locales/ja/deuceswild.json';
 import jaDoubt from './locales/ja/doubt.json';
 import jaEuchre from './locales/ja/euchre.json';
 import jaFreecell from './locales/ja/freecell.json';
@@ -41,6 +44,7 @@ import jaGinrummy from './locales/ja/ginrummy.json';
 import jaHearts from './locales/ja/hearts.json';
 import jaHoldem from './locales/ja/holdem.json';
 import jaIndianpoker from './locales/ja/indianpoker.json';
+import jaJokerpoker from './locales/ja/jokerpoker.json';
 import jaKlondike from './locales/ja/klondike.json';
 import jaMemory from './locales/ja/memory.json';
 import jaNapoleon from './locales/ja/napoleon.json';
@@ -86,6 +90,8 @@ i18n
         indianpoker: jaIndianpoker,
         pyramid: jaPyramid,
         videopoker: jaVideopoker,
+        deuceswild: jaDeuceswild,
+        jokerpoker: jaJokerpoker,
         tutorial: jaTutorial,
       },
       en: {
@@ -114,6 +120,8 @@ i18n
         indianpoker: enIndianpoker,
         pyramid: enPyramid,
         videopoker: enVideopoker,
+        deuceswild: enDeuceswild,
+        jokerpoker: enJokerpoker,
         tutorial: enTutorial,
       },
     },
@@ -145,6 +153,8 @@ i18n
       'indianpoker',
       'pyramid',
       'videopoker',
+      'deuceswild',
+      'jokerpoker',
       'tutorial',
     ],
     detection: {

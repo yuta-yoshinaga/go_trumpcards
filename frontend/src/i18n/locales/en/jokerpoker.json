@@ -1,0 +1,46 @@
+{
+  "title": "Joker Poker (Kings or Better)",
+  "label": {
+    "chips": "Chips: {{chips}}",
+    "bet": "Bet: {{bet}} coin(s)",
+    "payout": "Payout: {{payout}}",
+    "betAmount": "Coins"
+  },
+  "button": {
+    "deal": "Deal",
+    "draw": "Draw",
+    "reset": "New Hand"
+  },
+  "phase": {
+    "bet": "Bet",
+    "draw": "Hold / Draw",
+    "result": "Result"
+  },
+  "hold": "HOLD",
+  "result": {
+    "win": "{{handName}}! You win {{payout}} coins!",
+    "lose": "No winning hand."
+  },
+  "payoutTable": {
+    "title": "Payout Table",
+    "naturalRoyalFlush5": "Natural Royal Flush (5 coins): 4000",
+    "naturalRoyalFlush": "Natural Royal Flush: 250x",
+    "fiveOfAKind": "Five of a Kind: 200x",
+    "wildRoyalFlush": "Wild Royal Flush: 100x",
+    "straightFlush": "Straight Flush: 50x",
+    "fourOfAKind": "Four of a Kind: 20x",
+    "fullHouse": "Full House: 7x",
+    "flush": "Flush: 5x",
+    "straight": "Straight: 3x",
+    "threeOfAKind": "Three of a Kind: 2x",
+    "twoPair": "Two Pair: 1x",
+    "kingsOrBetter": "Kings or Better: 1x"
+  },
+  "tutorial": {
+    "betControls": "Place 1–5 coins. The Joker acts as a wild card!",
+    "hand": "Click cards to HOLD. Always hold the Joker — it's wild!",
+    "drawButton": "Press Draw to replace unheld cards. Kings or Better wins!",
+    "resetButton": "Press New Hand to start the next round."
+  },
+  "card": "Card {{index}}"
+}

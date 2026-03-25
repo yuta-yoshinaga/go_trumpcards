@@ -1230,6 +1230,7 @@ export interface VideoPokerResponse {
   handRank: number;
   handName: string;
   heldIndices: boolean[];
+  variantName: string;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;

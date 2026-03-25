@@ -45,6 +45,9 @@ func evalFiveCardHand(cards []*Card) int {
 		}
 		return PokerHandStraightFlush
 	}
+	if counts[0] == 5 {
+		return PokerHandFiveOfAKind
+	}
 	if counts[0] == 4 {
 		return PokerHandFourOfAKind
 	}

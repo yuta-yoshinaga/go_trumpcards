@@ -1,0 +1,45 @@
+{
+  "title": "Deuces Wild (デューシーズワイルド)",
+  "label": {
+    "chips": "チップ: {{chips}}",
+    "bet": "ベット: {{bet}}コイン",
+    "payout": "配当: {{payout}}",
+    "betAmount": "コイン数"
+  },
+  "button": {
+    "deal": "ディール",
+    "draw": "ドロー",
+    "reset": "次のハンド"
+  },
+  "phase": {
+    "bet": "ベット",
+    "draw": "ホールド / ドロー",
+    "result": "結果"
+  },
+  "hold": "ホールド",
+  "result": {
+    "win": "{{handName}}! {{payout}}コイン獲得!",
+    "lose": "役なし。次のハンドで頑張りましょう!"
+  },
+  "payoutTable": {
+    "title": "配当表",
+    "naturalRoyalFlush5": "ナチュラルロイヤルフラッシュ (5コイン): 4000",
+    "naturalRoyalFlush": "ナチュラルロイヤルフラッシュ: 250倍",
+    "fourDeuces": "フォーデューシーズ: 200倍",
+    "wildRoyalFlush": "ワイルドロイヤルフラッシュ: 25倍",
+    "fiveOfAKind": "ファイブカード: 15倍",
+    "straightFlush": "ストレートフラッシュ: 9倍",
+    "fourOfAKind": "フォーカード: 5倍",
+    "fullHouse": "フルハウス: 3倍",
+    "flush": "フラッシュ: 2倍",
+    "straight": "ストレート: 2倍",
+    "threeOfAKind": "スリーカード: 1倍"
+  },
+  "tutorial": {
+    "betControls": "1〜5コインを賭けます。2は全てワイルドカードです!",
+    "hand": "カードをクリックしてホールド。2はワイルドなので必ずホールドしましょう。",
+    "drawButton": "ドローを押してホールドしていないカードを交換。スリーカード以上で配当獲得!",
+    "resetButton": "次のハンドを押して次のラウンドを始めます。"
+  },
+  "card": "カード {{index}}"
+}

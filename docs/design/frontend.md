@@ -136,7 +136,7 @@ classDiagram
         +object config
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全24ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全26ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -325,7 +325,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全24ゲーム()
+        ...全26ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -337,7 +337,7 @@ classDiagram
     actionLogApi --> gameApi : uses gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全24ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, euchre,\npyramid, cribbage)"
+    note for BlackJackApi "全26ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, cribbage)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -543,7 +543,7 @@ classDiagram
     useDoubtGame --> useGameApi : uses
     useDoubtGame --> useCardSelection : uses
 
-    note for useBlackJackGame "全24ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全26ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -727,6 +727,18 @@ classDiagram
         +役名・配当表示
     }
 
+    class DeucesWildPage {
+        +Deuces Wild配当表表示
+        +VideoPokerGameContent再利用
+        +ワイルドカード(2)ハイライト
+    }
+
+    class JokerPokerPage {
+        +Joker Poker配当表表示
+        +VideoPokerGameContent再利用
+        +ジョーカーワイルドカード表示
+    }
+
     class EuchrePage {
         +チーム別スコア表示
         +ビッドUI (オーダーアップ/パス/コール)
@@ -759,6 +771,10 @@ classDiagram
     NapoleonPage --|> GamePage : follows pattern
     IndianPokerPage --|> GamePage : follows pattern
     VideoPokerPage --|> GamePage : follows pattern
+    DeucesWildPage --|> GamePage : follows pattern
+    JokerPokerPage --|> GamePage : follows pattern
+    DeucesWildPage --> VideoPokerPage : reuses VideoPokerGameContent
+    JokerPokerPage --> VideoPokerPage : reuses VideoPokerGameContent
     EuchrePage --|> GamePage : follows pattern
     PyramidPage --|> GamePage : follows pattern
     class ShortDeckPage {
@@ -780,7 +796,7 @@ classDiagram
     GamePage --> ConfirmDialog : renders
     GamePage --> ErrorAlert : renders
 
-    note for GamePage "全24ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全26ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -803,11 +819,11 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (24ゲーム)
+        +Routes (26ゲーム)
     }
 
     class gameCategories {
-        +table: [BlackJack, Baccarat, VideoPoker]
+        +table: [BlackJack, Baccarat, VideoPoker, DeucesWild, JokerPoker]
         +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker]
         +trickTaking: [Hearts, Spades, Napoleon, Euchre]
         +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights]
@@ -826,11 +842,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 24 pages
+    App --> GamePage : routes to 26 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "26名前空間: common + 24ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "28名前空間: common + 26ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---

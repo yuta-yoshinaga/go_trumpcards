@@ -28,6 +28,8 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/shortdeck', labelKey: 'nav.shortdeck' },
       { path: '/indianpoker', labelKey: 'nav.indianpoker' },
       { path: '/videopoker', labelKey: 'nav.videopoker' },
+      { path: '/deuceswild', labelKey: 'nav.deuceswild' },
+      { path: '/jokerpoker', labelKey: 'nav.jokerpoker' },
     ],
   },
   {

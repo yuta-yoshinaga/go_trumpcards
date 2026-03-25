@@ -44,3 +44,4 @@ Each ADR follows the format:
 | [ADR-0025](0025-tutorial-system.md) | インタラクティブチュートリアルシステム | Accepted | 2026-03-23 |
 | [ADR-0026](0026-relax-coverage-target.md) | ブランチカバレッジ基準を100%から80%に緩和 | Accepted | 2026-03-23 |
 | [ADR-0027](0027-video-poker.md) | Video Poker (Jacks or Better) の追加 | Accepted | 2026-03-24 |
+| [ADR-0028](0028-video-poker-variants.md) | Video Poker バリアント（Deuces Wild・Joker Poker）の追加 | Accepted | 2026-03-25 |

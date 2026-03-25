@@ -39,5 +39,6 @@
     "hand": "Click cards to mark them as HOLD. Unmarked cards will be replaced when you draw.",
     "drawButton": "Press Draw to replace unheld cards. Aim for Jacks or Better to win!",
     "resetButton": "Press New Hand to start the next round."
-  }
+  },
+  "card": "Card {{index}}"
 }

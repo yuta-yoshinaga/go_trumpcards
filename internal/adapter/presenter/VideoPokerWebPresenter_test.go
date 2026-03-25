@@ -23,6 +23,7 @@ func setupVideoPokerWebMockDefaults(m *interfaces.MockVideoPokerGame) {
 	m.On("GetHandName").Return("").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetVariantName").Return("jacksorbetter").Maybe()
 }
 
 func parseVideoPokerOutput(t *testing.T, jsonStr string) *controller.VideoPokerWebOutput {
@@ -65,6 +66,7 @@ func TestVideoPokerWebPresenter_Output_Win(t *testing.T) {
 	m.On("GetHandName").Return("Four of a Kind").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{true, true, true, true, false}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetVariantName").Return("jacksorbetter").Maybe()
 
 	result := parseVideoPokerOutput(t, p.Output(m, nil))
 	assert.Equal(t, "Four of a Kind! You win!", result.Message)
@@ -95,6 +97,7 @@ func TestVideoPokerWebPresenter_Output_Lose(t *testing.T) {
 	m.On("GetHandName").Return("").Maybe()
 	m.On("GetHeldIndices").Return([domain.VideoPokerHandSize]bool{}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetVariantName").Return("jacksorbetter").Maybe()
 
 	result := parseVideoPokerOutput(t, p.Output(m, nil))
 	assert.Equal(t, "No winning hand.", result.Message)

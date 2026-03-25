@@ -36,10 +36,29 @@ func TestNewDefaultVideoPoker(t *testing.T) {
 
 func TestNewVideoPoker(t *testing.T) {
 	tc := NewTrumpCards(0)
-	vp := NewVideoPoker(tc)
+	vp := NewVideoPoker(tc, JacksOrBetterConfig())
 	assert.NotNil(t, vp)
 	assert.Equal(t, VideoPokerPhaseBet, vp.GetPhase())
 	assert.Equal(t, 0, vp.GetChips()) // chips not set by NewVideoPoker
+}
+
+func TestNewDeucesWildVideoPoker(t *testing.T) {
+	vp := NewDeucesWildVideoPoker()
+	assert.NotNil(t, vp)
+	assert.Equal(t, VideoPokerDefaultChips, vp.GetChips())
+	assert.Equal(t, "deuceswild", vp.GetVariantName())
+}
+
+func TestNewJokerPokerVideoPoker(t *testing.T) {
+	vp := NewJokerPokerVideoPoker()
+	assert.NotNil(t, vp)
+	assert.Equal(t, VideoPokerDefaultChips, vp.GetChips())
+	assert.Equal(t, "jokerpoker", vp.GetVariantName())
+}
+
+func TestVideoPoker_GetVariantName(t *testing.T) {
+	vp := NewDefaultVideoPoker()
+	assert.Equal(t, "jacksorbetter", vp.GetVariantName())
 }
 
 // --- Bet ---

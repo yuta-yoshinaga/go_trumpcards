@@ -1,25 +1,26 @@
 import { useTranslation } from 'react-i18next';
-import { videopokerApi } from '../api/gameApi';
+import { deuceswildApi } from '../api/gameApi';
 import { VideoPokerGameContent } from '../components/VideoPokerGameContent';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 
-/** Jacks or Better payout table rows. */
-const JOB_PAYOUT_ROWS = [
-  'royalFlush5',
-  'royalFlush',
+/** Deuces Wild payout table rows. */
+const DW_PAYOUT_ROWS = [
+  'naturalRoyalFlush5',
+  'naturalRoyalFlush',
+  'fourDeuces',
+  'wildRoyalFlush',
+  'fiveOfAKind',
   'straightFlush',
   'fourOfAKind',
   'fullHouse',
   'flush',
   'straight',
   'threeOfAKind',
-  'twoPair',
-  'jacksOrBetter',
 ];
 
-/** Video Poker tutorial step definitions. */
-const VP_TUTORIAL_STEPS: TutorialStep[] = [
+/** Deuces Wild tutorial step definitions. */
+const DW_TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: '[data-tutorial="vp-bet-controls"]',
     messageKey: 'tutorial.betControls',
@@ -46,22 +47,22 @@ const VP_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Video Poker tutorial configuration. */
-const VP_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'videopoker',
-  steps: VP_TUTORIAL_STEPS,
+/** Deuces Wild tutorial configuration. */
+const DW_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'deuceswild',
+  steps: DW_TUTORIAL_STEPS,
 };
 
-/** Renders the Video Poker (Jacks or Better) game page. */
-export function VideoPokerPage() {
-  const { t: tVp } = useTranslation('videopoker');
+/** Renders the Deuces Wild game page. */
+export function DeucesWildPage() {
+  const { t: tDw } = useTranslation('deuceswild');
   return (
-    <TutorialProvider config={VP_TUTORIAL_CONFIG} translateMessage={tVp}>
+    <TutorialProvider config={DW_TUTORIAL_CONFIG} translateMessage={tDw}>
       <VideoPokerGameContent
-        gameName="videopoker"
-        i18nNamespace="videopoker"
-        apiExec={videopokerApi.exec}
-        payoutTableRows={JOB_PAYOUT_ROWS}
+        gameName="deuceswild"
+        i18nNamespace="deuceswild"
+        apiExec={deuceswildApi.exec}
+        payoutTableRows={DW_PAYOUT_ROWS}
       />
     </TutorialProvider>
   );

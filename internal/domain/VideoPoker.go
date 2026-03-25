@@ -17,22 +17,6 @@ const (
 	VideoPokerHandSize     = 5    // ハンドサイズ
 )
 
-// videoPokerPayouts ペイアウト倍率テーブル（PokerHand定数でインデックス）
-// OnePairはJacks or Better条件で別途判定する
-var videoPokerPayouts = [11]int{
-	0,   // HighCard
-	1,   // OnePair (Jacks or Better時のみ)
-	2,   // TwoPair
-	3,   // ThreeOfAKind
-	4,   // Straight
-	6,   // Flush
-	9,   // FullHouse
-	25,  // FourOfAKind
-	50,  // StraightFlush
-	250, // RoyalFlush (5コインベット時は800x)
-	0,   // FiveOfAKind (ビデオポーカーではジョーカー無し)
-}
-
 // VideoPoker ビデオポーカークラス
 type VideoPoker struct {
 	trumpCards  *TrumpCards
@@ -47,20 +31,36 @@ type VideoPoker struct {
 	handRank    int
 	handName    string
 	actionLog   []*ActionLogEntry
+	config      *VideoPokerVariantConfig
 }
 
 // NewVideoPoker コンストラクタ
-func NewVideoPoker(trumpCards *TrumpCards) *VideoPoker {
+func NewVideoPoker(trumpCards *TrumpCards, config *VideoPokerVariantConfig) *VideoPoker {
 	trumpCards.Shuffle()
 	return &VideoPoker{
 		trumpCards: trumpCards,
 		phase:      VideoPokerPhaseBet,
+		config:     config,
 	}
 }
 
-// NewDefaultVideoPoker デフォルト設定のビデオポーカーを生成するファクトリ関数
+// NewDefaultVideoPoker デフォルト設定のビデオポーカー（Jacks or Better）を生成するファクトリ関数
 func NewDefaultVideoPoker() *VideoPoker {
-	vp := NewVideoPoker(NewTrumpCards(0))
+	vp := NewVideoPoker(NewTrumpCards(0), JacksOrBetterConfig())
+	vp.chips.SetChips(VideoPokerDefaultChips)
+	return vp
+}
+
+// NewDeucesWildVideoPoker Deuces Wildバリアントを生成するファクトリ関数
+func NewDeucesWildVideoPoker() *VideoPoker {
+	vp := NewVideoPoker(NewTrumpCards(0), DeucesWildConfig())
+	vp.chips.SetChips(VideoPokerDefaultChips)
+	return vp
+}
+
+// NewJokerPokerVideoPoker Joker Pokerバリアントを生成するファクトリ関数
+func NewJokerPokerVideoPoker() *VideoPoker {
+	vp := NewVideoPoker(NewTrumpCards(1), JokerPokerConfig())
 	vp.chips.SetChips(VideoPokerDefaultChips)
 	return vp
 }
@@ -80,7 +80,7 @@ func (vp *VideoPoker) Reset() {
 	if vp.chips.GetChips() < VideoPokerMinBet {
 		vp.chips.SetChips(VideoPokerDefaultChips)
 	}
-	vp.trumpCards = NewTrumpCards(0)
+	vp.trumpCards = NewTrumpCards(vp.config.JokerCount)
 	vp.trumpCards.Shuffle()
 }
 
@@ -151,68 +151,25 @@ func (vp *VideoPoker) Hold(indices []int) error {
 
 // evaluate ハンド評価＆配当計算
 func (vp *VideoPoker) evaluate() {
-	vp.handRank = evalFiveCardHand(vp.hand)
-	multiplier := vp.getPayoutMultiplier()
+	rank, multiplier, handName := vp.config.GetResult(vp.hand, vp.betAmount)
+	vp.handRank = rank
 	vp.payout = vp.betAmount * multiplier
 	vp.chips.AddChips(vp.payout)
 
 	if vp.payout > 0 {
 		vp.result = GameResultWin
-		vp.handName = vp.getHandDisplayName()
+		vp.handName = handName
 	} else {
 		vp.result = GameResultLose
 		vp.handName = ""
 	}
-	vp.appendLog(0, "result", fmt.Sprintf("%s payout=%d", vp.getHandDisplayName(), vp.payout), vp.hand)
-}
-
-// getPayoutMultiplier ペイアウト倍率を取得する
-func (vp *VideoPoker) getPayoutMultiplier() int {
-	rank := vp.handRank
-	if rank < 0 || rank >= len(videoPokerPayouts) {
-		return 0
-	}
-	// OnePairはJacks or Better条件をチェック
-	if rank == PokerHandOnePair {
-		if !vp.isJacksOrBetter() {
-			return 0
-		}
-		return videoPokerPayouts[rank]
-	}
-	// Royal Flushで5コインベット時はボーナス倍率
-	if rank == PokerHandRoyalFlush && vp.betAmount == VideoPokerMaxBet {
-		return 800
-	}
-	return videoPokerPayouts[rank]
-}
-
-// isJacksOrBetter ペアがJ以上かどうかを判定する
-func (vp *VideoPoker) isJacksOrBetter() bool {
-	valueCounts := make(map[int]int)
-	for _, card := range vp.hand {
-		valueCounts[card.GetValue()]++
-	}
-	for value, count := range valueCounts {
-		if count >= 2 {
-			// A=1, J=11, Q=12, K=13
-			if value == 1 || value >= 11 {
-				return true
-			}
+	displayName := handName
+	if displayName == "" {
+		if rank >= 0 && rank < len(PokerHandNames) {
+			displayName = PokerHandNames[rank]
 		}
 	}
-	return false
-}
-
-// getHandDisplayName ハンドの表示名を取得する
-func (vp *VideoPoker) getHandDisplayName() string {
-	rank := vp.handRank
-	if rank == PokerHandOnePair && vp.isJacksOrBetter() {
-		return "Jacks or Better"
-	}
-	if rank >= 0 && rank < len(PokerHandNames) {
-		return PokerHandNames[rank]
-	}
-	return "Unknown"
+	vp.appendLog(0, "result", fmt.Sprintf("%s payout=%d", displayName, vp.payout), vp.hand)
 }
 
 // appendLog 棋譜にエントリを追加する
@@ -260,6 +217,9 @@ func (vp *VideoPoker) GetHeldIndices() [VideoPokerHandSize]bool { return vp.held
 
 // GetActionLog 棋譜を取得する
 func (vp *VideoPoker) GetActionLog() []*ActionLogEntry { return vp.actionLog }
+
+// GetVariantName バリアント名を取得する
+func (vp *VideoPoker) GetVariantName() string { return vp.config.Name }
 
 // --- Test helpers ---
 

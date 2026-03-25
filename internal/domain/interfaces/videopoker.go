@@ -33,4 +33,6 @@ type VideoPokerGame interface {
 	GetHeldIndices() [domain.VideoPokerHandSize]bool
 	// GetActionLog 棋譜を取得する
 	GetActionLog() []*domain.ActionLogEntry
+	// GetVariantName バリアント名を取得する
+	GetVariantName() string
 }

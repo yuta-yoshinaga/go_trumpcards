@@ -1,0 +1,41 @@
+import { screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { jokerpokerApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { VideoPokerResponse } from '../types/card';
+import { JokerPokerPage } from './JokerPokerPage';
+
+vi.mock('../api/gameApi', () => ({
+  jokerpokerApi: { exec: vi.fn() },
+  actionLogApi: { jokerpoker: vi.fn() },
+}));
+
+const mockExec = vi.mocked(jokerpokerApi.exec);
+
+const betPhaseState: VideoPokerResponse = {
+  hand: [],
+  phase: 1,
+  chips: 1000,
+  betAmount: 0,
+  result: 0,
+  payout: 0,
+  handRank: 0,
+  handName: '',
+  heldIndices: [false, false, false, false, false],
+  variantName: 'jokerpoker',
+  message: '',
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe('JokerPokerPage', () => {
+  it('calls reset on mount and renders bet phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<JokerPokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByText(/チップ.*1000/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ディール/ })).toBeInTheDocument();
+  });
+});
