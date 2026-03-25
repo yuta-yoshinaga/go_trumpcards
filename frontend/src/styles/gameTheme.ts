@@ -1,0 +1,35 @@
+/** Background and footer theme classes for each game, organized by category. */
+export const gameTheme: Record<string, { bg: string; footer: string }> = {
+  // Table games
+  blackjack: { bg: 'bg-game-bg-green-bright', footer: 'bg-game-bg-green-bright-dark border-white/15' },
+  baccarat: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  // Poker
+  poker: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
+  holdem: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
+  omaha: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
+  shortdeck: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
+  indianpoker: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
+  videopoker: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  deuceswild: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  jokerpoker: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  // Trick-taking
+  hearts: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  spades: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  euchre: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  napoleon: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  // Matching/Pass — unified to green
+  oldmaid: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  doubt: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  daifugo: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  sevens: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  crazyeights: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  // Solitaire — unified to casino
+  klondike: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  freecell: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  spider: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  pyramid: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  memory: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  // Rummy — unified to blue
+  ginrummy: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  cribbage: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+} as const;

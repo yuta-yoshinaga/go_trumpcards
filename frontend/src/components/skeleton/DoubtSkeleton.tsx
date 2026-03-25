@@ -7,8 +7,8 @@ export function DoubtSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();
   return (
     <GameSkeleton
-      bgClass="bg-game-bg-blue"
-      footerClassName="bg-game-bg-blue-dark border-white/20 px-4 py-2.5"
+      bgClass="bg-game-bg-green"
+      footerClassName="bg-game-bg-green-dark border-white/20 px-4 py-2.5"
       footer={
         <>
           <div className="mb-2">

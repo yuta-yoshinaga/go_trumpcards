@@ -5,8 +5,8 @@ import { SkeletonGrid } from './SkeletonGrid';
 export function MemorySkeleton() {
   return (
     <GameSkeleton
-      bgClass="bg-game-bg-blue"
-      footerClassName="bg-game-bg-blue-dark border-white/20 px-4 py-2.5"
+      bgClass="bg-game-bg-casino"
+      footerClassName="bg-game-bg-casino-dark border-white/20 px-4 py-2.5"
       footer={<div className="h-8 w-24 rounded bg-white/10 animate-pulse" />}
     >
       <div className="my-2 p-2 rounded bg-black/30">

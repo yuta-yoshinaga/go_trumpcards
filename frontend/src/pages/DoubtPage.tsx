@@ -158,7 +158,7 @@ function DoubtPageContent() {
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.doubt')} />
       {/* Phase indicator */}
       <PhaseIndicator
@@ -358,7 +358,7 @@ function DoubtPageContent() {
       </div>
 
       {/* Sticky footer: human player hand + action buttons */}
-      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
         {/* Human player info */}
         {humanPlayer && (
           <div className="mb-2" data-tutorial="dt-player-hand">

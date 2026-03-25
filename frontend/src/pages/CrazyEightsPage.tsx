@@ -140,7 +140,7 @@ function CrazyEightsPageContent() {
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.crazyeights')} />
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn || isChooseSuit}>
         <TutorialButton />
@@ -243,7 +243,7 @@ function CrazyEightsPageContent() {
         />
       </div>
 
-      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
         {humanPlayer && (
           <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
             {humanPlayer.cards.map((card, idx) => (
