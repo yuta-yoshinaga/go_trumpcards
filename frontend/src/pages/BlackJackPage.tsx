@@ -264,9 +264,9 @@ function BlackJackPageContent() {
               {t('dealerHand')}
               {dealerHitsSoft17 ? ' (H17)' : ' (S17)'}
             </h2>
-            <h2 className="text-white">
+            <p className="text-white">
               {t('score')} {state.dealer.score ? state.dealer.score : ''}
-            </h2>
+            </p>
             <div className="flex flex-wrap gap-2">
               {state.dealer.cards?.map((card, idx) => (
                 <AnimatedCard key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={cardWidth} />
@@ -337,9 +337,9 @@ function BlackJackPageContent() {
                     surrendered={hand.surrendered}
                   />
                 </h2>
-                <h2 className="text-white mt-0 mb-0.5">
+                <p className="text-white mt-0 mb-0.5">
                   {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
-                </h2>
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {hand.cards.map((card, cardIdx) => (
                     <AnimatedCard
