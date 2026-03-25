@@ -40,6 +40,7 @@ for game in $GAMES; do
   [ "$game" = "$ROOT_GAME" ] && path="/"
   PLAYWRIGHT_BROWSERS_PATH=~/.cache/ms-playwright bunx playwright screenshot \
     --browser chromium --viewport-size "1280,800" --full-page \
+    --wait-for-selector '[aria-live="polite"]' \
     "http://localhost:8080$path" "/tmp/desktop-screenshots/${game}.png" 2>&1
 done
 ```
@@ -82,8 +83,10 @@ const { chromium } = require('playwright');
 
   for (const { name, path } of games) {
     await page.goto(`http://localhost:8080${path}`);
+    // Wait for game content to render (skeleton disappears, real content with aria-live appears)
+    await page.waitForSelector('[aria-live="polite"]', { timeout: 10000 });
     await dismissTutorial(page);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
     await page.screenshot({ path: `/tmp/desktop-screenshots/${name}-play.png`, fullPage: true });
   }
 
@@ -104,6 +107,8 @@ const { chromium } = require('playwright');
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   await page.goto('http://localhost:8080/');
+  // Wait for game content to render
+  await page.waitForSelector('[aria-live="polite"]', { timeout: 10000 });
   const skipBtn = page.getByRole('button', { name: 'スキップ' });
   if (await skipBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
     await skipBtn.click();
