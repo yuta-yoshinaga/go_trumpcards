@@ -150,7 +150,7 @@ export function VideoPokerGameContent({
                     onClick={() => toggleHold(i)}
                     disabled={!isDrawPhase}
                     className={`rounded transition-transform ${displayHeld[i] ? 'ring-2 ring-yellow-400 -translate-y-2' : ''}`}
-                    aria-label={displayHeld[i] ? `${tNs('hold')} ${i}` : `Card ${i}`}
+                    aria-label={displayHeld[i] ? `${tNs('hold')} ${i}` : tNs('card', { index: i })}
                     aria-pressed={displayHeld[i] ?? false}
                   >
                     <AnimatedCard card={card} width={cardWidth} />

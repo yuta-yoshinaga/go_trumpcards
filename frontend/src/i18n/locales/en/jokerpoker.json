@@ -41,5 +41,6 @@
     "hand": "Click cards to HOLD. Always hold the Joker — it's wild!",
     "drawButton": "Press Draw to replace unheld cards. Kings or Better wins!",
     "resetButton": "Press New Hand to start the next round."
-  }
+  },
+  "card": "Card {{index}}"
 }

@@ -68,6 +68,9 @@ func evalWildHand(cards []*Card, isWild func(*Card) bool) (bestRank int, usedWil
 		}
 		for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
 			for val := 1; val <= 13; val++ {
+				if bestRank == PokerHandRoyalFlush {
+					return // early exit: can't improve beyond Royal Flush
+				}
 				allSubs[depth] = NewCard(suit, val, false)
 				enumerate(depth + 1)
 			}
