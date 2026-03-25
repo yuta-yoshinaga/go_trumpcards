@@ -183,9 +183,11 @@ describe('VideoPokerGameContent', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /次のハンド/ })).toBeInTheDocument());
     const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
     expect(cardButtons.length).toBe(5);
+    // heldIndices[0] is true in resultPhaseWin, so aria-pressed starts as "true"
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(cardButtons[0]);
-    // Should remain not-held because toggleHold returns early when not in draw phase
-    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false');
+    // Should remain held because toggleHold returns early when not in draw phase
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('shows action log panel when view log button is clicked', async () => {

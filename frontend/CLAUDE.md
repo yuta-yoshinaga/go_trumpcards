@@ -59,7 +59,7 @@ bun run e2e:ui       # Run with Playwright UI
 The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with **i18next-browser-languagedetector**.
 
 - **Config**: `src/i18n/index.ts`
-- **Translation files**: `src/i18n/locales/{ja,en}/{common,blackjack,poker,oldmaid,daifugo,sevens,doubt,holdem,omaha,shortdeck,hearts,memory,klondike,freecell,baccarat,spades,crazyeights,ginrummy,spider,napoleon,indianpoker,videopoker,deuceswild,jokerpoker,euchre,pyramid,cribbage,tutorial}.json`
+- **Translation files**: `src/i18n/locales/{ja,en}/<game>.json` (each game name + `common.json`, `tutorial.json`)
 - **In components**: use the `useTranslation()` hook
 - **In non-component files** (e.g., `playerUtils.ts`, `messages.ts`, `gameConstants.ts`): import the `i18n` instance directly
 - **Tests**: i18n is initialized in `src/test/setup.ts` with ja translations loaded
@@ -95,28 +95,17 @@ bun run test -- --pool-options.threads.maxThreads=2
 
 ## Tutorial System
 
-Interactive step-by-step tutorial system for guiding new players through game mechanics.
-
-### Architecture
+### Key components
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| `TutorialButton` | `src/components/tutorial/TutorialButton.tsx` | Shared tutorial start button (imported by all 26 game pages) |
-| `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; wraps game page, renders overlay when active |
-| `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight and focus trap |
-| `TutorialTooltip` | `src/components/tutorial/TutorialTooltip.tsx` | Glass-panel tooltip with step indicator and nav buttons |
-| `useTutorial` | `src/hooks/useTutorial.ts` | State management hook (step progression, localStorage persistence, resume/restart) |
-| Tutorial types | `src/types/tutorial.ts` | `TutorialStep`, `TutorialConfig` type definitions |
-| `TutorialSuggestDialog` | `src/components/tutorial/TutorialSuggestDialog.tsx` | First-visit dialog suggesting tutorial start |
-| `TutorialProgressPanel` | `src/components/tutorial/TutorialProgressPanel.tsx` | Progress overview panel in NavBar |
-| `useFirstVisit` | `src/hooks/useFirstVisit.ts` | First-visit detection hook (localStorage-based) |
-| `useTutorialProgress` | `src/hooks/useTutorialProgress.ts` | Aggregates tutorial completion across all games |
-| `HintPulse` | `src/components/hint/HintPulse.tsx` | Pulse animation wrapper for hint-targeted buttons |
-| `HintTooltip` | `src/components/hint/HintTooltip.tsx` | Tooltip showing hint reasoning and confidence |
-| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hint computation hook (BlackJack, Poker, Hearts, Spades) |
-| Hint logic | `src/utils/hints/{blackjack,poker,hearts,spades}Hint.ts` | Pure functions computing `HintResult` from game state |
-| Hint types | `src/types/hint.ts` | `HintResult`, `HintConfidence` type definitions |
-| `useLocalStorageToggle` | `src/hooks/useLocalStorageToggle.ts` | Reusable boolean toggle persisted in localStorage |
+| `TutorialButton` | `src/components/tutorial/TutorialButton.tsx` | Shared tutorial start button |
+| `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; wraps game page, renders overlay |
+| `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight |
+| `useTutorial` | `src/hooks/useTutorial.ts` | State management (step progression, localStorage, resume/restart) |
+| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints for BlackJack, Poker, Hearts, Spades |
+| `TutorialSuggestDialog` | `src/components/tutorial/TutorialSuggestDialog.tsx` | First-visit dialog; controlled by `useFirstVisit` hook |
+| `TutorialProgressPanel` | `src/components/tutorial/TutorialProgressPanel.tsx` | Progress overview in NavBar |
 
 ### Adding a tutorial to a new game
 
@@ -124,10 +113,3 @@ Interactive step-by-step tutorial system for guiding new players through game me
 2. Add `data-tutorial="<step-name>"` attributes to the game page's key UI elements
 3. Add tutorial step text to `src/i18n/locales/{ja,en}/<game>.json` under a `tutorial` key
 4. Wrap the page content with `<TutorialProvider config={config} translateMessage={t}>` and import `TutorialButton` from `../components/tutorial/TutorialButton`
-
-### Phase 3 features
-
-- **Hint display**: `useGameHint` hook provides frontend-only hints for BlackJack, Poker, Hearts, Spades. Toggle via SettingsPanel checkbox. `HintTooltip` shows reasoning with confidence indicator.
-- **First-visit suggestion**: `TutorialSuggestDialog` automatically shown on first visit to any game page. Controlled by `useFirstVisit` hook. Users can dismiss permanently.
-- **Progress tracking**: `TutorialProgressPanel` in NavBar shows completion icons for all 26 games with a progress bar.
-- **Resume/restart**: `useTutorial` hook supports `canResume`, `start()` (resumes from saved step), and `restart()` (always step 0). Progress saved to localStorage on skip.

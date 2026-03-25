@@ -13,6 +13,13 @@ Each ADR follows the format:
 
 **記述言語: 日本語**（タイトル `# ADR-NNNN:` のみ英語可）。新規ADR追加時は本インデックスも更新すること。
 
+**ADR作成基準**: 以下の3つ全てに該当する場合のみADRを作成する（詳細は [`CLAUDE.md`](../../CLAUDE.md) の「ADR記録のリトマステスト」を参照）:
+1. 他の選択肢を真剣に検討した
+2. 覆すと複数ファイル/レイヤーの変更が必要
+3. 6ヶ月後の新メンバーが「なぜ？」と疑問に思う
+
+ADR番号は連番ではない — 欠番はリトマステスト導入時に非アーキテクチャ的と判断され削除されたレコード。
+
 ## Index
 
 | ADR | Title | Status | Date |
@@ -30,18 +37,10 @@ Each ADR follows the format:
 | [ADR-0011](0011-i18n-react-i18next.md) | i18n with react-i18next and browser language detection | Accepted | 2026-03-05 |
 | [ADR-0012](0012-playwright-e2e.md) | Playwright for E2E testing | Accepted | 2026-03-04 |
 | [ADR-0013](0013-docker-distroless.md) | Multi-stage Docker build with distroless image | Accepted | 2026-02-20 |
-| [ADR-0014](0014-shared-ui-components.md) | Shared UI component and hook extraction | Accepted | 2026-03-02 |
 | [ADR-0015](0015-accessibility-wcag.md) | WCAG accessibility compliance | Accepted | 2026-03-11 |
 | [ADR-0016](0016-production-middleware.md) | Production middleware stack (CORS, security headers) | Accepted | 2026-03-01 |
-| [ADR-0017](0017-interactive-cli-mode.md) | Interactive CLI mode with game switching | Accepted | 2026-03-11 |
-| [ADR-0018](0018-ansi-color-output.md) | ANSI color output for CLI with TTY auto-detection | Accepted | 2026-03-14 |
 | [ADR-0019](0019-ci-cd-pipeline.md) | CI/CD pipeline (CodeQL, golangci-lint, auto-tagging) | Accepted | 2021-04-15 |
-| [ADR-0020](0020-domain-helper-extraction.md) | Domain helper extraction and DRY refactoring | Accepted | 2026-03-14 |
 | [ADR-0021](0021-bun-package-manager.md) | Migrate package manager from npm to bun | Accepted | 2026-03-15 |
 | [ADR-0022](0022-automated-quality-gates.md) | Automated quality gates via Claude Code hooks | Accepted | 2026-03-20 |
 | [ADR-0023](0023-api-documentation.md) | GoDoc/TSDoc + GitHub PagesによるAPIドキュメント自動生成 | Accepted | 2026-03-20 |
-| [ADR-0024](0024-fluid-tactile-ui-redesign.md) | Fluid & Tactile UIリデザイン | Accepted | 2026-03-21 |
-| [ADR-0025](0025-tutorial-system.md) | インタラクティブチュートリアルシステム | Accepted | 2026-03-23 |
 | [ADR-0026](0026-relax-coverage-target.md) | ブランチカバレッジ基準を100%から80%に緩和 | Accepted | 2026-03-23 |
-| [ADR-0027](0027-video-poker.md) | Video Poker (Jacks or Better) の追加 | Accepted | 2026-03-24 |
-| [ADR-0028](0028-video-poker-variants.md) | Video Poker バリアント（Deuces Wild・Joker Poker）の追加 | Accepted | 2026-03-25 |
