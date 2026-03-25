@@ -6,6 +6,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -155,6 +156,8 @@ function SpiderPageContent() {
         </span>
       </PhaseIndicator>
 
+      <LandscapeBanner message={t('landscapeBanner')} />
+
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Stock row */}
@@ -181,7 +184,7 @@ function SpiderPageContent() {
         </div>
 
         {/* Tableau (10 columns) */}
-        <div className="flex gap-1 mb-3" data-tutorial="spd-tableau">
+        <div className="flex gap-0.5 sm:gap-1 mb-3 overflow-x-auto" data-tutorial="spd-tableau">
           {state.tableau.map((col, colIdx) => (
             <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
               <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>

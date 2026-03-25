@@ -31,5 +31,6 @@
     "controls": "Control buttons.",
     "hintDisplay": "Press the Hint button to see available moves.",
     "resetButton": "Press the reset button to start a new game."
-  }
+  },
+  "landscapeBanner": "Rotate to landscape for easier play"
 }

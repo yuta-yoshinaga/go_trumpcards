@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -112,11 +113,7 @@ function MemoryPageContent() {
         <TutorialButton />
       </PhaseIndicator>
 
-      {/* Landscape orientation banner (visible on small portrait screens) */}
-      <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-yellow-500/90 text-black text-sm font-medium">
-        <span aria-hidden="true">&#8635;</span>
-        <span>{t('landscapeBanner')}</span>
-      </div>
+      <LandscapeBanner message={t('landscapeBanner')} />
 
       {/* Settings */}
       <SettingsPanel

@@ -6,6 +6,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -138,6 +139,8 @@ function FreeCellPageContent() {
         <TutorialButton />
       </PhaseIndicator>
 
+      <LandscapeBanner message={t('landscapeBanner')} />
+
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Free cells + Foundation row */}
         <div className="flex gap-2 mb-3 items-start flex-wrap">
@@ -146,7 +149,13 @@ function FreeCellPageContent() {
             {state.freeCells.map((card: Card | null, idx: number) => (
               <div key={`fc-${idx.toString()}`} className="text-center">
                 <div className="text-game-text-muted text-xs mb-1">
-                  {t('freecell')} {idx}
+                  <span className="hidden sm:inline">
+                    {t('freecell')} {idx}
+                  </span>
+                  <span className="sm:hidden">
+                    {t('freecellShort')}
+                    {idx}
+                  </span>
                 </div>
                 {card ? (
                   <button

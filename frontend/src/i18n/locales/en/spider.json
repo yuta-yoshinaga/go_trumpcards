@@ -34,5 +34,6 @@
     "controls": "Control buttons: Undo, Hint, Auto-complete.",
     "difficulty": "Choose difficulty: 1 suit (easy), 2 suits (medium), 4 suits (hard).",
     "resetButton": "Press the reset button to start a new game."
-  }
+  },
+  "landscapeBanner": "Rotate to landscape for easier play"
 }

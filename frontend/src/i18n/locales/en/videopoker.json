@@ -40,5 +40,6 @@
     "drawButton": "Press Draw to replace unheld cards. Aim for Jacks or Better to win!",
     "resetButton": "Press New Hand to start the next round."
   },
-  "card": "Card {{index}}"
+  "card": "Card {{index}}",
+  "dealGuide": "Select coins and deal to start"
 }

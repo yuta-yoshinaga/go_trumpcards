@@ -40,5 +40,6 @@
     "drawButton": "ドローを押してホールドしていないカードを交換。Jacks or Better以上の役を目指しましょう!",
     "resetButton": "次のハンドを押して次のラウンドを始めます。"
   },
-  "card": "カード {{index}}"
+  "card": "カード {{index}}",
+  "dealGuide": "コイン数を選んでディールしてゲーム開始"
 }
