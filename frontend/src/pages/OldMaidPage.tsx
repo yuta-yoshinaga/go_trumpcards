@@ -13,11 +13,12 @@ import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
 import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import type { CpuAction } from '../types/card';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -57,23 +58,6 @@ const OM_TUTORIAL_CONFIG: TutorialConfig = {
   gameName: 'oldmaid',
   steps: OM_TUTORIAL_STEPS,
 };
-
-/** Tutorial button that starts the Old Maid tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** Renders the Old Maid game page with setup screen, player areas, and draw history. */
 export function OldMaidPage() {

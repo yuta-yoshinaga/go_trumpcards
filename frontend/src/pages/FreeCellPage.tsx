@@ -9,12 +9,13 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { FreeCellSkeleton } from '../components/skeleton/FreeCellSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import type { Card } from '../types/card';
 import { FreeCellPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -61,23 +62,6 @@ const FC_TUTORIAL_CONFIG: TutorialConfig = {
   gameName: 'freecell',
   steps: FC_TUTORIAL_STEPS,
 };
-
-/** Tutorial button that starts the FreeCell tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** Renders the FreeCell solitaire game page with tableau, free cells, and foundation. */
 export function FreeCellPage() {

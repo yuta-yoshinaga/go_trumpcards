@@ -12,17 +12,17 @@ type PokerDrawOdds struct {
 // CalcDrawOdds 交換候補のカードインデックスに基づくドローオッズを計算する
 // indices: 交換するカードのインデックス (0-4)
 func (p *Poker) CalcDrawOdds(indices []int) ([]PokerDrawOdds, error) {
-	if p.phase != PokerPhaseExchange {
+	if p.round.phase != PokerPhaseExchange {
 		return nil, NewDomainError(ErrWrongPhase, "Odds calculation is only available during exchange phase.")
 	}
-	if !p.players[p.currentTurn].GetIsHuman() {
+	if !p.players[p.round.currentTurn].GetIsHuman() {
 		return nil, NewDomainError(ErrNotHumanTurn, "It is not your turn.")
 	}
 
 	// インデックスバリデーション
 	seen := make(map[int]bool)
 	for _, idx := range indices {
-		if idx < 0 || idx >= p.players[p.currentTurn].GetCardsSize() {
+		if idx < 0 || idx >= p.players[p.round.currentTurn].GetCardsSize() {
 			return nil, NewDomainError(ErrInvalidIndices, "Card index out of range.")
 		}
 		if seen[idx] {
@@ -31,7 +31,7 @@ func (p *Poker) CalcDrawOdds(indices []int) ([]PokerDrawOdds, error) {
 		seen[idx] = true
 	}
 
-	human := p.players[p.currentTurn]
+	human := p.players[p.round.currentTurn]
 	hand := make([]*Card, human.GetCardsSize())
 	for i := 0; i < human.GetCardsSize(); i++ {
 		hand[i] = human.GetCard(i)

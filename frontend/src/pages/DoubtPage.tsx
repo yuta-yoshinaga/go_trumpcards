@@ -12,6 +12,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { DoubtSkeleton } from '../components/skeleton/DoubtSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import {
@@ -22,8 +23,8 @@ import {
   useDoubtGame,
 } from '../hooks/useDoubtGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import type { DoubtCpuAction } from '../types/card';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
@@ -74,23 +75,6 @@ const DT_TUTORIAL_CONFIG: TutorialConfig = {
   gameName: 'doubt',
   steps: DT_TUTORIAL_STEPS,
 };
-
-/** Tutorial button that starts the Doubt tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** Renders the Doubt game page with card play, doubt window countdown, and config. */
 export function DoubtPage() {

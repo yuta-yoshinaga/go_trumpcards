@@ -66,11 +66,8 @@ type NapoleonTrickCard struct {
 	Card      *Card
 }
 
-// Napoleon ナポレオンゲームクラス
-type Napoleon struct {
-	trumpCards       *TrumpCards
-	players          []*NapoleonPlayer
-	config           NapoleonConfig
+// napoleonRoundState ラウンドごとにリセットされる状態
+type napoleonRoundState struct {
 	phase            NapoleonPhase
 	roundNumber      int
 	trickNumber      int
@@ -92,40 +89,40 @@ type Napoleon struct {
 	actionLog        []*ActionLogEntry
 }
 
+// Napoleon ナポレオンゲームクラス
+type Napoleon struct {
+	trumpCards *TrumpCards
+	players    []*NapoleonPlayer
+	config     NapoleonConfig
+	round      napoleonRoundState
+}
+
 // NewNapoleon コンストラクタ
 func NewNapoleon(trumpCards *TrumpCards, players []*NapoleonPlayer, config NapoleonConfig) *Napoleon {
 	return &Napoleon{
-		trumpCards:    trumpCards,
-		players:       players,
-		config:        config,
-		winnerTeam:    NapoleonWinnerUndecided,
-		napoleonIdx:   -1,
-		adjutantIdx:   -1,
-		highestBidder: -1,
-		roundNumber:   0,
+		trumpCards: trumpCards,
+		players:    players,
+		config:     config,
+		round: napoleonRoundState{
+			winnerTeam:    NapoleonWinnerUndecided,
+			napoleonIdx:   -1,
+			adjutantIdx:   -1,
+			highestBidder: -1,
+		},
 	}
 }
 
 // Reset ゲーム初期化
 func (n *Napoleon) Reset() {
-	n.gameEndFlag = false
-	n.winnerTeam = NapoleonWinnerUndecided
-	n.roundNumber = 1
-	n.trickNumber = 0
-	n.currentTrick = nil
-	n.leadPlayerIdx = -1
-	n.currentPlayerIdx = -1
-	n.bidPlayerIdx = 0
-	n.trumpSuit = 0
-	n.adjutantCard = nil
-	n.napoleonIdx = -1
-	n.adjutantIdx = -1
-	n.adjutantRevealed = false
-	n.kitty = nil
-	n.highestBid = 0
-	n.highestBidder = -1
-	n.passCount = 0
-	n.actionLog = nil
+	n.round = napoleonRoundState{
+		roundNumber:      1,
+		leadPlayerIdx:    -1,
+		currentPlayerIdx: -1,
+		napoleonIdx:      -1,
+		adjutantIdx:      -1,
+		highestBidder:    -1,
+		winnerTeam:       NapoleonWinnerUndecided,
+	}
 
 	for _, p := range n.players {
 		p.bid = -1
@@ -143,30 +140,25 @@ func (n *Napoleon) Reset() {
 	n.dealCards()
 	n.sortAllHands()
 
-	n.phase = NapoleonPhaseBid
+	n.round.phase = NapoleonPhaseBid
 }
 
 // NextRound 次のラウンドを開始する
 func (n *Napoleon) NextRound() {
-	if n.phase != NapoleonPhaseRoundEnd {
+	if n.round.phase != NapoleonPhaseRoundEnd {
 		return
 	}
 
-	n.roundNumber++
-	n.trickNumber = 0
-	n.currentTrick = nil
-	n.leadPlayerIdx = -1
-	n.currentPlayerIdx = -1
-	n.bidPlayerIdx = 0
-	n.trumpSuit = 0
-	n.adjutantCard = nil
-	n.napoleonIdx = -1
-	n.adjutantIdx = -1
-	n.adjutantRevealed = false
-	n.kitty = nil
-	n.highestBid = 0
-	n.highestBidder = -1
-	n.passCount = 0
+	prevRound := n.round.roundNumber
+	n.round = napoleonRoundState{
+		roundNumber:      prevRound + 1,
+		leadPlayerIdx:    -1,
+		currentPlayerIdx: -1,
+		napoleonIdx:      -1,
+		adjutantIdx:      -1,
+		highestBidder:    -1,
+		winnerTeam:       NapoleonWinnerUndecided,
+	}
 
 	for _, p := range n.players {
 		p.ResetRound()
@@ -175,20 +167,20 @@ func (n *Napoleon) NextRound() {
 	n.dealCards()
 	n.sortAllHands()
 
-	n.phase = NapoleonPhaseBid
+	n.round.phase = NapoleonPhaseBid
 }
 
 // PlayerBid 人間プレイヤーがビッドする (0 = パス)
 func (n *Napoleon) PlayerBid(bid int) error {
-	if n.gameEndFlag {
+	if n.round.gameEndFlag {
 		return ErrGameEnded
 	}
-	if n.phase != NapoleonPhaseBid {
+	if n.round.phase != NapoleonPhaseBid {
 		return ErrWrongPhase
 	}
 
 	humanIdx := n.findHumanIdx()
-	if humanIdx < 0 || n.bidPlayerIdx != humanIdx {
+	if humanIdx < 0 || n.round.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
 
@@ -196,8 +188,8 @@ func (n *Napoleon) PlayerBid(bid int) error {
 		if bid < n.config.MinBid || bid > NapoleonMaxPictureCards {
 			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは%d〜%dで指定してください（0でパス）", n.config.MinBid, NapoleonMaxPictureCards))
 		}
-		if bid <= n.highestBid {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("現在の最高ビッド%dより高い値を指定してください", n.highestBid))
+		if bid <= n.round.highestBid {
+			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("現在の最高ビッド%dより高い値を指定してください", n.round.highestBid))
 		}
 	}
 
@@ -207,29 +199,29 @@ func (n *Napoleon) PlayerBid(bid int) error {
 
 // CpuBid 現在のビッドプレイヤーがCPUの場合にビッドする
 func (n *Napoleon) CpuBid() {
-	if n.gameEndFlag || n.phase != NapoleonPhaseBid {
+	if n.round.gameEndFlag || n.round.phase != NapoleonPhaseBid {
 		return
 	}
-	if n.bidPlayerIdx >= NapoleonPlayerCnt {
+	if n.round.bidPlayerIdx >= NapoleonPlayerCnt {
 		return
 	}
-	if n.players[n.bidPlayerIdx].GetIsHuman() {
+	if n.players[n.round.bidPlayerIdx].GetIsHuman() {
 		return
 	}
 
-	bid := n.cpuSelectBid(n.bidPlayerIdx)
-	n.applyBid(n.bidPlayerIdx, bid)
+	bid := n.cpuSelectBid(n.round.bidPlayerIdx)
+	n.applyBid(n.round.bidPlayerIdx, bid)
 }
 
 // PlayerDeclareTrump 人間プレイヤーが切り札と副官を宣言する
 func (n *Napoleon) PlayerDeclareTrump(suit int, adjSuit int, adjVal int) error {
-	if n.gameEndFlag {
+	if n.round.gameEndFlag {
 		return ErrGameEnded
 	}
-	if n.phase != NapoleonPhaseTrumpDeclaration {
+	if n.round.phase != NapoleonPhaseTrumpDeclaration {
 		return ErrWrongPhase
 	}
-	if n.napoleonIdx < 0 || !n.players[n.napoleonIdx].GetIsHuman() {
+	if n.round.napoleonIdx < 0 || !n.players[n.round.napoleonIdx].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
 
@@ -256,30 +248,30 @@ func (n *Napoleon) PlayerDeclareTrump(suit int, adjSuit int, adjVal int) error {
 
 // CpuDeclareTrump CPUナポレオンが切り札と副官を宣言する
 func (n *Napoleon) CpuDeclareTrump() {
-	if n.gameEndFlag || n.phase != NapoleonPhaseTrumpDeclaration {
+	if n.round.gameEndFlag || n.round.phase != NapoleonPhaseTrumpDeclaration {
 		return
 	}
-	if n.napoleonIdx < 0 || n.players[n.napoleonIdx].GetIsHuman() {
+	if n.round.napoleonIdx < 0 || n.players[n.round.napoleonIdx].GetIsHuman() {
 		return
 	}
 
-	suit, adjSuit, adjVal := n.cpuSelectTrump(n.napoleonIdx)
+	suit, adjSuit, adjVal := n.cpuSelectTrump(n.round.napoleonIdx)
 	n.applyDeclareTrump(suit, adjSuit, adjVal)
 }
 
 // PlayerExchangeKitty 人間ナポレオンが場札を交換する (捨てるカードのインデックス指定)
 func (n *Napoleon) PlayerExchangeKitty(discardIndex int) error {
-	if n.gameEndFlag {
+	if n.round.gameEndFlag {
 		return ErrGameEnded
 	}
-	if n.phase != NapoleonPhaseKittyExchange {
+	if n.round.phase != NapoleonPhaseKittyExchange {
 		return ErrWrongPhase
 	}
-	if n.napoleonIdx < 0 || !n.players[n.napoleonIdx].GetIsHuman() {
+	if n.round.napoleonIdx < 0 || !n.players[n.round.napoleonIdx].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
 
-	player := n.players[n.napoleonIdx]
+	player := n.players[n.round.napoleonIdx]
 	// 場札はすでに手札に追加されている (14枚)
 	if discardIndex < 0 || discardIndex >= player.GetCardsSize() {
 		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
@@ -291,68 +283,68 @@ func (n *Napoleon) PlayerExchangeKitty(discardIndex int) error {
 
 // CpuExchangeKitty CPUナポレオンが場札を交換する
 func (n *Napoleon) CpuExchangeKitty() {
-	if n.gameEndFlag || n.phase != NapoleonPhaseKittyExchange {
+	if n.round.gameEndFlag || n.round.phase != NapoleonPhaseKittyExchange {
 		return
 	}
-	if n.napoleonIdx < 0 || n.players[n.napoleonIdx].GetIsHuman() {
+	if n.round.napoleonIdx < 0 || n.players[n.round.napoleonIdx].GetIsHuman() {
 		return
 	}
 
-	discardIdx := n.cpuSelectDiscard(n.napoleonIdx)
+	discardIdx := n.cpuSelectDiscard(n.round.napoleonIdx)
 	n.applyExchangeKitty(discardIdx)
 }
 
 // PlayerPlay 人間プレイヤーがカードをプレイする
 func (n *Napoleon) PlayerPlay(cardIndex int) error {
-	if n.gameEndFlag {
+	if n.round.gameEndFlag {
 		return ErrGameEnded
 	}
-	if n.phase != NapoleonPhasePlay {
+	if n.round.phase != NapoleonPhasePlay {
 		return ErrWrongPhase
 	}
-	if !n.players[n.currentPlayerIdx].GetIsHuman() {
+	if !n.players[n.round.currentPlayerIdx].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
 
-	player := n.players[n.currentPlayerIdx]
+	player := n.players[n.round.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
 		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
 	}
 
 	card := player.GetCard(cardIndex)
-	if err := n.validatePlay(n.currentPlayerIdx, card); err != nil {
+	if err := n.validatePlay(n.round.currentPlayerIdx, card); err != nil {
 		return err
 	}
 
 	played := player.RemoveCard(cardIndex)
-	n.playCard(n.currentPlayerIdx, played)
+	n.playCard(n.round.currentPlayerIdx, played)
 	return nil
 }
 
 // CpuPlay 現在の手番がCPUの場合に1ターン実行
 func (n *Napoleon) CpuPlay() {
-	if n.gameEndFlag || n.phase != NapoleonPhasePlay {
+	if n.round.gameEndFlag || n.round.phase != NapoleonPhasePlay {
 		return
 	}
-	if n.players[n.currentPlayerIdx].GetIsHuman() {
+	if n.players[n.round.currentPlayerIdx].GetIsHuman() {
 		return
 	}
 
-	player := n.players[n.currentPlayerIdx]
-	cardIdx := n.cpuSelectPlayCard(n.currentPlayerIdx)
+	player := n.players[n.round.currentPlayerIdx]
+	cardIdx := n.cpuSelectPlayCard(n.round.currentPlayerIdx)
 	played := player.RemoveCard(cardIdx)
-	n.playCard(n.currentPlayerIdx, played)
+	n.playCard(n.round.currentPlayerIdx, played)
 }
 
 // ResolveTrick トリックを解決して勝者を決定する
 func (n *Napoleon) ResolveTrick() {
-	if n.phase != NapoleonPhaseTrickEnd || len(n.currentTrick) != NapoleonPlayerCnt {
+	if n.round.phase != NapoleonPhaseTrickEnd || len(n.round.currentTrick) != NapoleonPlayerCnt {
 		return
 	}
 
 	winnerIdx := n.trickWinner()
-	trickCards := make([]*Card, len(n.currentTrick))
-	for i, tc := range n.currentTrick {
+	trickCards := make([]*Card, len(n.round.currentTrick))
+	for i, tc := range n.round.currentTrick {
 		trickCards[i] = tc.Card
 	}
 
@@ -363,35 +355,35 @@ func (n *Napoleon) ResolveTrick() {
 	n.players[winnerIdx].pictureCards += picCount
 
 	winnerName := n.playerName(winnerIdx)
-	s := fmt.Sprintf("%s wins trick %d", winnerName, n.trickNumber)
+	s := fmt.Sprintf("%s wins trick %d", winnerName, n.round.trickNumber)
 	if picCount > 0 {
 		s += fmt.Sprintf(" (+%d picture cards)", picCount)
 	}
 	n.appendLog(winnerIdx, "trick_win", s, trickCards)
 
-	n.leadPlayerIdx = winnerIdx
+	n.round.leadPlayerIdx = winnerIdx
 
-	if n.trickNumber >= NapoleonHandSize {
-		n.phase = NapoleonPhaseRoundEnd
+	if n.round.trickNumber >= NapoleonHandSize {
+		n.round.phase = NapoleonPhaseRoundEnd
 	} else {
-		n.phase = NapoleonPhaseTrickEnd
+		n.round.phase = NapoleonPhaseTrickEnd
 	}
 }
 
 // NextTrick 次のトリックを開始する
 func (n *Napoleon) NextTrick() {
-	if n.phase != NapoleonPhaseTrickEnd {
+	if n.round.phase != NapoleonPhaseTrickEnd {
 		return
 	}
-	n.currentTrick = nil
-	n.currentPlayerIdx = n.leadPlayerIdx
-	n.trickNumber++
-	n.phase = NapoleonPhasePlay
+	n.round.currentTrick = nil
+	n.round.currentPlayerIdx = n.round.leadPlayerIdx
+	n.round.trickNumber++
+	n.round.phase = NapoleonPhasePlay
 }
 
 // ScoreRound ラウンドのスコアを確定し、ゲーム終了判定を行う
 func (n *Napoleon) ScoreRound() {
-	if n.phase != NapoleonPhaseRoundEnd {
+	if n.round.phase != NapoleonPhaseRoundEnd {
 		return
 	}
 
@@ -403,14 +395,14 @@ func (n *Napoleon) ScoreRound() {
 		}
 	}
 
-	bid := n.highestBid
+	bid := n.round.highestBid
 	napoleonWon := napoleonTeamPictures >= bid
 
 	if napoleonWon {
-		n.winnerTeam = NapoleonWinnerNapoleon
+		n.round.winnerTeam = NapoleonWinnerNapoleon
 		n.appendLog(-1, "round_result", fmt.Sprintf("Napoleon's team wins! (%d/%d picture cards)", napoleonTeamPictures, bid), nil)
 	} else {
-		n.winnerTeam = NapoleonWinnerAllied
+		n.round.winnerTeam = NapoleonWinnerAllied
 		n.appendLog(-1, "round_result", fmt.Sprintf("Allied forces win! (%d/%d picture cards)", napoleonTeamPictures, bid), nil)
 	}
 
@@ -456,73 +448,73 @@ func (n *Napoleon) ScoreRound() {
 // --- State getters ---
 
 // GetPhase 現在のフェーズ取得
-func (n *Napoleon) GetPhase() NapoleonPhase { return n.phase }
+func (n *Napoleon) GetPhase() NapoleonPhase { return n.round.phase }
 
 // SetPhase フェーズ設定 (テスト用)
-func (n *Napoleon) SetPhase(phase NapoleonPhase) { n.phase = phase }
+func (n *Napoleon) SetPhase(phase NapoleonPhase) { n.round.phase = phase }
 
 // GetRoundNumber 現在のラウンド番号取得
-func (n *Napoleon) GetRoundNumber() int { return n.roundNumber }
+func (n *Napoleon) GetRoundNumber() int { return n.round.roundNumber }
 
 // SetRoundNumber ラウンド番号設定 (テスト用)
-func (n *Napoleon) SetRoundNumber(n2 int) { n.roundNumber = n2 }
+func (n *Napoleon) SetRoundNumber(n2 int) { n.round.roundNumber = n2 }
 
 // GetTrickNumber 現在のトリック番号取得
-func (n *Napoleon) GetTrickNumber() int { return n.trickNumber }
+func (n *Napoleon) GetTrickNumber() int { return n.round.trickNumber }
 
 // SetTrickNumber トリック番号設定 (テスト用)
-func (n *Napoleon) SetTrickNumber(t int) { n.trickNumber = t }
+func (n *Napoleon) SetTrickNumber(t int) { n.round.trickNumber = t }
 
 // GetCurrentPlayerIdx 現在のプレイヤーインデックス取得
-func (n *Napoleon) GetCurrentPlayerIdx() int { return n.currentPlayerIdx }
+func (n *Napoleon) GetCurrentPlayerIdx() int { return n.round.currentPlayerIdx }
 
 // SetCurrentPlayerIdx プレイヤーインデックス設定 (テスト用)
-func (n *Napoleon) SetCurrentPlayerIdx(idx int) { n.currentPlayerIdx = idx }
+func (n *Napoleon) SetCurrentPlayerIdx(idx int) { n.round.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
-func (n *Napoleon) GetCurrentTrick() []*NapoleonTrickCard { return n.currentTrick }
+func (n *Napoleon) GetCurrentTrick() []*NapoleonTrickCard { return n.round.currentTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
-func (n *Napoleon) SetCurrentTrick(trick []*NapoleonTrickCard) { n.currentTrick = trick }
+func (n *Napoleon) SetCurrentTrick(trick []*NapoleonTrickCard) { n.round.currentTrick = trick }
 
 // GetTrumpSuit 切り札スート取得
-func (n *Napoleon) GetTrumpSuit() int { return n.trumpSuit }
+func (n *Napoleon) GetTrumpSuit() int { return n.round.trumpSuit }
 
 // SetTrumpSuit 切り札スート設定 (テスト用)
-func (n *Napoleon) SetTrumpSuit(suit int) { n.trumpSuit = suit }
+func (n *Napoleon) SetTrumpSuit(suit int) { n.round.trumpSuit = suit }
 
 // GetAdjutantCard 副官カード取得
-func (n *Napoleon) GetAdjutantCard() *Card { return n.adjutantCard }
+func (n *Napoleon) GetAdjutantCard() *Card { return n.round.adjutantCard }
 
 // SetAdjutantCard 副官カード設定 (テスト用)
-func (n *Napoleon) SetAdjutantCard(card *Card) { n.adjutantCard = card }
+func (n *Napoleon) SetAdjutantCard(card *Card) { n.round.adjutantCard = card }
 
 // GetNapoleonIdx ナポレオンインデックス取得
-func (n *Napoleon) GetNapoleonIdx() int { return n.napoleonIdx }
+func (n *Napoleon) GetNapoleonIdx() int { return n.round.napoleonIdx }
 
 // SetNapoleonIdx ナポレオンインデックス設定 (テスト用)
-func (n *Napoleon) SetNapoleonIdx(idx int) { n.napoleonIdx = idx }
+func (n *Napoleon) SetNapoleonIdx(idx int) { n.round.napoleonIdx = idx }
 
 // GetAdjutantIdx 副官インデックス取得
-func (n *Napoleon) GetAdjutantIdx() int { return n.adjutantIdx }
+func (n *Napoleon) GetAdjutantIdx() int { return n.round.adjutantIdx }
 
 // SetAdjutantIdx 副官インデックス設定 (テスト用)
-func (n *Napoleon) SetAdjutantIdx(idx int) { n.adjutantIdx = idx }
+func (n *Napoleon) SetAdjutantIdx(idx int) { n.round.adjutantIdx = idx }
 
 // GetAdjutantRevealed 副官公開状態取得
-func (n *Napoleon) GetAdjutantRevealed() bool { return n.adjutantRevealed }
+func (n *Napoleon) GetAdjutantRevealed() bool { return n.round.adjutantRevealed }
 
 // SetAdjutantRevealed 副官公開状態設定 (テスト用)
-func (n *Napoleon) SetAdjutantRevealed(v bool) { n.adjutantRevealed = v }
+func (n *Napoleon) SetAdjutantRevealed(v bool) { n.round.adjutantRevealed = v }
 
 // GetGameEndFlag ゲーム終了フラグ取得
-func (n *Napoleon) GetGameEndFlag() bool { return n.gameEndFlag }
+func (n *Napoleon) GetGameEndFlag() bool { return n.round.gameEndFlag }
 
 // SetGameEndFlag ゲーム終了フラグ設定 (テスト用)
-func (n *Napoleon) SetGameEndFlag(flag bool) { n.gameEndFlag = flag }
+func (n *Napoleon) SetGameEndFlag(flag bool) { n.round.gameEndFlag = flag }
 
 // GetWinnerTeam 勝利チーム取得 (-1 = 未確定)
-func (n *Napoleon) GetWinnerTeam() int { return n.winnerTeam }
+func (n *Napoleon) GetWinnerTeam() int { return n.round.winnerTeam }
 
 // GetPlayerCnt プレイヤー数取得
 func (n *Napoleon) GetPlayerCnt() int { return len(n.players) }
@@ -536,71 +528,71 @@ func (n *Napoleon) GetPlayer(i int) *NapoleonPlayer {
 }
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
-func (n *Napoleon) GetLeadPlayerIdx() int { return n.leadPlayerIdx }
+func (n *Napoleon) GetLeadPlayerIdx() int { return n.round.leadPlayerIdx }
 
 // SetLeadPlayerIdx リードプレイヤーインデックス設定 (テスト用)
-func (n *Napoleon) SetLeadPlayerIdx(idx int) { n.leadPlayerIdx = idx }
+func (n *Napoleon) SetLeadPlayerIdx(idx int) { n.round.leadPlayerIdx = idx }
 
 // GetBidPlayerIdx ビッドプレイヤーインデックス取得
-func (n *Napoleon) GetBidPlayerIdx() int { return n.bidPlayerIdx }
+func (n *Napoleon) GetBidPlayerIdx() int { return n.round.bidPlayerIdx }
 
 // SetBidPlayerIdx ビッドプレイヤーインデックス設定 (テスト用)
-func (n *Napoleon) SetBidPlayerIdx(idx int) { n.bidPlayerIdx = idx }
+func (n *Napoleon) SetBidPlayerIdx(idx int) { n.round.bidPlayerIdx = idx }
 
 // GetKitty 場札取得
-func (n *Napoleon) GetKitty() []*Card { return n.kitty }
+func (n *Napoleon) GetKitty() []*Card { return n.round.kitty }
 
 // SetKitty 場札設定 (テスト用)
-func (n *Napoleon) SetKitty(kitty []*Card) { n.kitty = kitty }
+func (n *Napoleon) SetKitty(kitty []*Card) { n.round.kitty = kitty }
 
 // GetHighestBid 現在の最高ビッド取得
-func (n *Napoleon) GetHighestBid() int { return n.highestBid }
+func (n *Napoleon) GetHighestBid() int { return n.round.highestBid }
 
 // SetHighestBid 最高ビッド設定 (テスト用)
-func (n *Napoleon) SetHighestBid(bid int) { n.highestBid = bid }
+func (n *Napoleon) SetHighestBid(bid int) { n.round.highestBid = bid }
 
 // GetHighestBidder 最高ビッドプレイヤー取得
-func (n *Napoleon) GetHighestBidder() int { return n.highestBidder }
+func (n *Napoleon) GetHighestBidder() int { return n.round.highestBidder }
 
 // SetHighestBidder 最高ビッドプレイヤー設定 (テスト用)
-func (n *Napoleon) SetHighestBidder(idx int) { n.highestBidder = idx }
+func (n *Napoleon) SetHighestBidder(idx int) { n.round.highestBidder = idx }
 
 // GetPassCount パス数取得
-func (n *Napoleon) GetPassCount() int { return n.passCount }
+func (n *Napoleon) GetPassCount() int { return n.round.passCount }
 
 // SetPassCount パス数設定 (テスト用)
-func (n *Napoleon) SetPassCount(cnt int) { n.passCount = cnt }
+func (n *Napoleon) SetPassCount(cnt int) { n.round.passCount = cnt }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (n *Napoleon) IsHumanTurn() bool {
-	if n.currentPlayerIdx < 0 || n.currentPlayerIdx >= len(n.players) {
+	if n.round.currentPlayerIdx < 0 || n.round.currentPlayerIdx >= len(n.players) {
 		return false
 	}
-	return n.players[n.currentPlayerIdx].GetIsHuman()
+	return n.players[n.round.currentPlayerIdx].GetIsHuman()
 }
 
 // IsHumanBidTurn 現在のビッド手番が人間かどうか
 func (n *Napoleon) IsHumanBidTurn() bool {
-	if n.bidPlayerIdx < 0 || n.bidPlayerIdx >= len(n.players) {
+	if n.round.bidPlayerIdx < 0 || n.round.bidPlayerIdx >= len(n.players) {
 		return false
 	}
-	return n.players[n.bidPlayerIdx].GetIsHuman()
+	return n.players[n.round.bidPlayerIdx].GetIsHuman()
 }
 
 // IsHumanDeclareTurn 切り札宣言が人間の番かどうか
 func (n *Napoleon) IsHumanDeclareTurn() bool {
-	if n.napoleonIdx < 0 || n.napoleonIdx >= len(n.players) {
+	if n.round.napoleonIdx < 0 || n.round.napoleonIdx >= len(n.players) {
 		return false
 	}
-	return n.players[n.napoleonIdx].GetIsHuman()
+	return n.players[n.round.napoleonIdx].GetIsHuman()
 }
 
 // IsHumanExchangeTurn 場札交換が人間の番かどうか
 func (n *Napoleon) IsHumanExchangeTurn() bool {
-	if n.napoleonIdx < 0 || n.napoleonIdx >= len(n.players) {
+	if n.round.napoleonIdx < 0 || n.round.napoleonIdx >= len(n.players) {
 		return false
 	}
-	return n.players[n.napoleonIdx].GetIsHuman()
+	return n.players[n.round.napoleonIdx].GetIsHuman()
 }
 
 // GetConfig 設定取得
@@ -610,7 +602,7 @@ func (n *Napoleon) GetConfig() NapoleonConfig { return n.config }
 func (n *Napoleon) SetConfig(cfg NapoleonConfig) { n.config = cfg }
 
 // GetActionLog 棋譜取得
-func (n *Napoleon) GetActionLog() []*ActionLogEntry { return n.actionLog }
+func (n *Napoleon) GetActionLog() []*ActionLogEntry { return n.round.actionLog }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
 func (n *Napoleon) GetValidPlayIndices(playerIdx int) []int {
@@ -624,30 +616,30 @@ func (n *Napoleon) GetHint() *NapoleonHint {
 		return nil
 	}
 
-	switch n.phase {
+	switch n.round.phase {
 	case NapoleonPhaseBid:
-		if n.bidPlayerIdx != humanIdx {
+		if n.round.bidPlayerIdx != humanIdx {
 			return nil
 		}
 		bid := n.cpuBidHard(humanIdx)
 		return &NapoleonHint{Bid: &bid, Reason: "strategic_bid"}
 
 	case NapoleonPhaseTrumpDeclaration:
-		if n.napoleonIdx != humanIdx {
+		if n.round.napoleonIdx != humanIdx {
 			return nil
 		}
 		suit, adjSuit, adjVal := n.cpuSelectTrumpHard(humanIdx)
 		return &NapoleonHint{TrumpSuit: &suit, AdjutantSuit: &adjSuit, AdjutantValue: &adjVal, Reason: "strategic_declare"}
 
 	case NapoleonPhaseKittyExchange:
-		if n.napoleonIdx != humanIdx {
+		if n.round.napoleonIdx != humanIdx {
 			return nil
 		}
 		discardIdx := n.cpuSelectDiscardHard(humanIdx)
 		return &NapoleonHint{DiscardIndex: &discardIdx, Reason: "strategic_discard"}
 
 	case NapoleonPhasePlay:
-		if n.currentPlayerIdx != humanIdx {
+		if n.round.currentPlayerIdx != humanIdx {
 			return nil
 		}
 		validIndices := n.getValidPlayIndices(humanIdx)
@@ -688,7 +680,7 @@ func (n *Napoleon) dealCards() {
 	// 残り1枚を場札に
 	kittyCard := n.trumpCards.DrawCard()
 	if kittyCard != nil {
-		n.kitty = []*Card{kittyCard}
+		n.round.kitty = []*Card{kittyCard}
 	}
 }
 
@@ -698,80 +690,80 @@ func (n *Napoleon) applyBid(playerIdx int, bid int) {
 
 	if bid == 0 {
 		n.appendLog(playerIdx, "bid", fmt.Sprintf("%s passes", n.playerName(playerIdx)), nil)
-		n.passCount++
+		n.round.passCount++
 	} else {
 		n.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %d", n.playerName(playerIdx), bid), nil)
-		n.highestBid = bid
-		n.highestBidder = playerIdx
+		n.round.highestBid = bid
+		n.round.highestBidder = playerIdx
 	}
 
-	n.bidPlayerIdx++
+	n.round.bidPlayerIdx++
 	n.checkBidComplete()
 }
 
 // checkBidComplete 全員がビッドしたかチェック
 func (n *Napoleon) checkBidComplete() {
-	if n.bidPlayerIdx < NapoleonPlayerCnt {
+	if n.round.bidPlayerIdx < NapoleonPlayerCnt {
 		return
 	}
 
-	if n.highestBidder < 0 {
+	if n.round.highestBidder < 0 {
 		// 全員パス: 最初のプレイヤーが最低ビッドで強制ナポレオン
-		n.highestBid = n.config.MinBid
-		n.highestBidder = 0
+		n.round.highestBid = n.config.MinBid
+		n.round.highestBidder = 0
 		n.players[0].SetBid(n.config.MinBid)
 		n.appendLog(0, "forced_bid", fmt.Sprintf("%s is forced to bid %d (all pass)", n.playerName(0), n.config.MinBid), nil)
 	}
 
-	n.napoleonIdx = n.highestBidder
-	n.players[n.napoleonIdx].SetIsNapoleon(true)
-	n.appendLog(n.napoleonIdx, "napoleon", fmt.Sprintf("%s becomes Napoleon (bid %d)", n.playerName(n.napoleonIdx), n.highestBid), nil)
+	n.round.napoleonIdx = n.round.highestBidder
+	n.players[n.round.napoleonIdx].SetIsNapoleon(true)
+	n.appendLog(n.round.napoleonIdx, "napoleon", fmt.Sprintf("%s becomes Napoleon (bid %d)", n.playerName(n.round.napoleonIdx), n.round.highestBid), nil)
 
-	n.phase = NapoleonPhaseTrumpDeclaration
+	n.round.phase = NapoleonPhaseTrumpDeclaration
 }
 
 // applyDeclareTrump 切り札宣言を適用する
 func (n *Napoleon) applyDeclareTrump(suit int, adjSuit int, adjVal int) {
-	n.trumpSuit = suit
-	n.adjutantCard = NewCard(adjSuit, adjVal, false)
+	n.round.trumpSuit = suit
+	n.round.adjutantCard = NewCard(adjSuit, adjVal, false)
 
 	suitNames := map[int]string{
 		CardDesignSpade: "Spade", CardDesignClover: "Club",
 		CardDesignHeart: "Heart", CardDesignDiamond: "Diamond",
 		CardDesignJoker: "Joker",
 	}
-	n.appendLog(n.napoleonIdx, "declare_trump",
-		fmt.Sprintf("%s declares %s as trump", n.playerName(n.napoleonIdx), suitNames[suit]), nil)
-	n.appendLog(n.napoleonIdx, "declare_adjutant",
-		fmt.Sprintf("%s names %s as adjutant card", n.playerName(n.napoleonIdx), napoleonCardStr(n.adjutantCard)), nil)
+	n.appendLog(n.round.napoleonIdx, "declare_trump",
+		fmt.Sprintf("%s declares %s as trump", n.playerName(n.round.napoleonIdx), suitNames[suit]), nil)
+	n.appendLog(n.round.napoleonIdx, "declare_adjutant",
+		fmt.Sprintf("%s names %s as adjutant card", n.playerName(n.round.napoleonIdx), napoleonCardStr(n.round.adjutantCard)), nil)
 
 	// 副官を特定
-	n.adjutantIdx = n.findAdjutantHolder()
-	if n.adjutantIdx >= 0 {
-		n.players[n.adjutantIdx].SetIsAdjutant(true)
+	n.round.adjutantIdx = n.findAdjutantHolder()
+	if n.round.adjutantIdx >= 0 {
+		n.players[n.round.adjutantIdx].SetIsAdjutant(true)
 		// 自分自身を指名した場合
-		if n.adjutantIdx == n.napoleonIdx {
-			n.adjutantRevealed = true
-			n.players[n.adjutantIdx].SetAdjutantRevealed(true)
+		if n.round.adjutantIdx == n.round.napoleonIdx {
+			n.round.adjutantRevealed = true
+			n.players[n.round.adjutantIdx].SetAdjutantRevealed(true)
 		}
 	}
 
 	// 場札をナポレオンの手札に追加
-	for _, c := range n.kitty {
-		n.players[n.napoleonIdx].AddCard(c)
+	for _, c := range n.round.kitty {
+		n.players[n.round.napoleonIdx].AddCard(c)
 	}
-	n.sortHand(n.players[n.napoleonIdx])
+	n.sortHand(n.players[n.round.napoleonIdx])
 
-	n.phase = NapoleonPhaseKittyExchange
+	n.round.phase = NapoleonPhaseKittyExchange
 }
 
 // applyExchangeKitty 場札交換を適用する
 func (n *Napoleon) applyExchangeKitty(discardIndex int) {
-	player := n.players[n.napoleonIdx]
+	player := n.players[n.round.napoleonIdx]
 	discarded := player.RemoveCard(discardIndex)
-	n.kitty = []*Card{discarded}
+	n.round.kitty = []*Card{discarded}
 
-	n.appendLog(n.napoleonIdx, "exchange", fmt.Sprintf("%s exchanges kitty card", n.playerName(n.napoleonIdx)), nil)
+	n.appendLog(n.round.napoleonIdx, "exchange", fmt.Sprintf("%s exchanges kitty card", n.playerName(n.round.napoleonIdx)), nil)
 
 	n.sortHand(player)
 	n.startPlayPhase()
@@ -779,16 +771,16 @@ func (n *Napoleon) applyExchangeKitty(discardIndex int) {
 
 // startPlayPhase プレイフェーズ開始: ナポレオンがリード
 func (n *Napoleon) startPlayPhase() {
-	n.leadPlayerIdx = n.napoleonIdx
-	n.currentPlayerIdx = n.napoleonIdx
-	n.trickNumber = 1
-	n.currentTrick = nil
-	n.phase = NapoleonPhasePlay
+	n.round.leadPlayerIdx = n.round.napoleonIdx
+	n.round.currentPlayerIdx = n.round.napoleonIdx
+	n.round.trickNumber = 1
+	n.round.currentTrick = nil
+	n.round.phase = NapoleonPhasePlay
 }
 
 // playCard カードをプレイする共通処理
 func (n *Napoleon) playCard(playerIdx int, card *Card) {
-	n.currentTrick = append(n.currentTrick, &NapoleonTrickCard{
+	n.round.currentTrick = append(n.round.currentTrick, &NapoleonTrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
@@ -798,21 +790,21 @@ func (n *Napoleon) playCard(playerIdx int, card *Card) {
 	// 副官カードが出されたら公開
 	n.checkAdjutantReveal(playerIdx, card)
 
-	if len(n.currentTrick) == NapoleonPlayerCnt {
-		n.phase = NapoleonPhaseTrickEnd
+	if len(n.round.currentTrick) == NapoleonPlayerCnt {
+		n.round.phase = NapoleonPhaseTrickEnd
 	} else {
-		n.currentPlayerIdx = (n.currentPlayerIdx + 1) % NapoleonPlayerCnt
+		n.round.currentPlayerIdx = (n.round.currentPlayerIdx + 1) % NapoleonPlayerCnt
 	}
 }
 
 // validatePlay カードのプレイが有効か検証する
 func (n *Napoleon) validatePlay(playerIdx int, card *Card) error {
-	if len(n.currentTrick) == 0 {
+	if len(n.round.currentTrick) == 0 {
 		// リード: 制限なし
 		return nil
 	}
 
-	leadCard := n.currentTrick[0].Card
+	leadCard := n.round.currentTrick[0].Card
 	// ジョーカーがリードされた場合、何でも出せる
 	if leadCard.GetDesign() == CardDesignJoker {
 		return nil
@@ -837,14 +829,14 @@ func (n *Napoleon) validatePlay(playerIdx int, card *Card) error {
 
 // trickWinner トリックの勝者を決定する
 func (n *Napoleon) trickWinner() int {
-	if len(n.currentTrick) == 0 {
+	if len(n.round.currentTrick) == 0 {
 		return 0
 	}
 
 	// ジョーカーとスペード3の特殊判定
 	jokerIdx := -1
 	spade3Idx := -1
-	for _, tc := range n.currentTrick {
+	for _, tc := range n.round.currentTrick {
 		if tc.Card.GetDesign() == CardDesignJoker {
 			jokerIdx = tc.PlayerIdx
 		}
@@ -863,14 +855,14 @@ func (n *Napoleon) trickWinner() int {
 	}
 
 	// リードスートを特定
-	leadSuit := n.currentTrick[0].Card.GetDesign()
+	leadSuit := n.round.currentTrick[0].Card.GetDesign()
 
-	winnerIdx := n.currentTrick[0].PlayerIdx
-	winnerValue := n.cardStrength(n.currentTrick[0].Card)
-	winnerIsTrump := n.currentTrick[0].Card.GetDesign() == n.trumpSuit
+	winnerIdx := n.round.currentTrick[0].PlayerIdx
+	winnerValue := n.cardStrength(n.round.currentTrick[0].Card)
+	winnerIsTrump := n.round.currentTrick[0].Card.GetDesign() == n.round.trumpSuit
 
-	for _, tc := range n.currentTrick[1:] {
-		isTrump := tc.Card.GetDesign() == n.trumpSuit
+	for _, tc := range n.round.currentTrick[1:] {
+		isTrump := tc.Card.GetDesign() == n.round.trumpSuit
 		value := n.cardStrength(tc.Card)
 
 		if isTrump && !winnerIsTrump {
@@ -923,20 +915,20 @@ func (n *Napoleon) countPictureCards(cards []*Card) int {
 
 // findAdjutantHolder 副官カードの所有者を探す
 func (n *Napoleon) findAdjutantHolder() int {
-	if n.adjutantCard == nil {
+	if n.round.adjutantCard == nil {
 		return -1
 	}
 	for i, p := range n.players {
 		for j := 0; j < p.GetCardsSize(); j++ {
 			c := p.GetCard(j)
-			if c.GetDesign() == n.adjutantCard.GetDesign() && c.GetValue() == n.adjutantCard.GetValue() {
+			if c.GetDesign() == n.round.adjutantCard.GetDesign() && c.GetValue() == n.round.adjutantCard.GetValue() {
 				return i
 			}
 		}
 	}
 	// 場札にあるかもしれない (まだ配られていない)
-	for _, c := range n.kitty {
-		if c.GetDesign() == n.adjutantCard.GetDesign() && c.GetValue() == n.adjutantCard.GetValue() {
+	for _, c := range n.round.kitty {
+		if c.GetDesign() == n.round.adjutantCard.GetDesign() && c.GetValue() == n.round.adjutantCard.GetValue() {
 			// 場札にある場合、ナポレオンが場札交換時に取得する
 			return -1
 		}
@@ -946,11 +938,11 @@ func (n *Napoleon) findAdjutantHolder() int {
 
 // checkAdjutantReveal 副官カードが出されたか確認
 func (n *Napoleon) checkAdjutantReveal(playerIdx int, card *Card) {
-	if n.adjutantRevealed || n.adjutantCard == nil {
+	if n.round.adjutantRevealed || n.round.adjutantCard == nil {
 		return
 	}
-	if card.GetDesign() == n.adjutantCard.GetDesign() && card.GetValue() == n.adjutantCard.GetValue() {
-		n.adjutantRevealed = true
+	if card.GetDesign() == n.round.adjutantCard.GetDesign() && card.GetValue() == n.round.adjutantCard.GetValue() {
+		n.round.adjutantRevealed = true
 		n.players[playerIdx].SetAdjutantRevealed(true)
 		// 副官が場札交換で入れ替わった可能性があるので再設定
 		if !n.players[playerIdx].isAdjutant {
@@ -958,7 +950,7 @@ func (n *Napoleon) checkAdjutantReveal(playerIdx int, card *Card) {
 			for _, p := range n.players {
 				p.isAdjutant = false
 			}
-			n.adjutantIdx = playerIdx
+			n.round.adjutantIdx = playerIdx
 			n.players[playerIdx].SetIsAdjutant(true)
 		}
 		n.appendLog(playerIdx, "adjutant_reveal", fmt.Sprintf("%s is revealed as the adjutant!", n.playerName(playerIdx)), []*Card{card})
@@ -999,8 +991,8 @@ func (n *Napoleon) checkGameEnd() {
 		return
 	}
 
-	n.gameEndFlag = true
-	n.phase = NapoleonPhaseGameEnd
+	n.round.gameEndFlag = true
+	n.round.phase = NapoleonPhaseGameEnd
 
 	// 最高スコアのプレイヤーが勝者
 	maxScore := n.players[0].cumulativeScore
@@ -1053,8 +1045,8 @@ func (n *Napoleon) playerName(idx int) string {
 
 // appendLog 棋譜にエントリを追加する
 func (n *Napoleon) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	n.actionLog = append(n.actionLog, &ActionLogEntry{
-		TurnNumber: len(n.actionLog) + 1,
+	n.round.actionLog = append(n.round.actionLog, &ActionLogEntry{
+		TurnNumber: len(n.round.actionLog) + 1,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,
@@ -1075,18 +1067,18 @@ func (n *Napoleon) playHintReason(chosenIdx int) string {
 	player := n.players[n.findHumanIdx()]
 	card := player.GetCard(chosenIdx)
 
-	if len(n.currentTrick) == 0 {
+	if len(n.round.currentTrick) == 0 {
 		if n.isPictureCard(card) {
 			return "lead_strong"
 		}
 		return "lead_low"
 	}
 
-	leadCard := n.currentTrick[0].Card
+	leadCard := n.round.currentTrick[0].Card
 	if leadCard.GetDesign() != CardDesignJoker && card.GetDesign() == leadCard.GetDesign() {
 		return "follow_suit"
 	}
-	if card.GetDesign() == n.trumpSuit {
+	if card.GetDesign() == n.round.trumpSuit {
 		return "trump_cut"
 	}
 	if card.GetDesign() == CardDesignJoker {
@@ -1130,7 +1122,7 @@ func (n *Napoleon) cpuBidEasy(_ int) int {
 	}
 	// MinBid〜MinBid+2のランダムビッド
 	bid := n.config.MinBid + rand.Intn(3)
-	if bid <= n.highestBid {
+	if bid <= n.round.highestBid {
 		return 0 // 最高ビッドを超えられなければパス
 	}
 	if bid > NapoleonMaxPictureCards {
@@ -1159,7 +1151,7 @@ func (n *Napoleon) cpuBidNormal(playerIdx int) int {
 	if bid < n.config.MinBid {
 		return 0 // 弱ければパス
 	}
-	if bid <= n.highestBid {
+	if bid <= n.round.highestBid {
 		return 0
 	}
 	if bid > NapoleonMaxPictureCards {
@@ -1212,10 +1204,10 @@ func (n *Napoleon) cpuBidHard(playerIdx int) int {
 	if bid < n.config.MinBid {
 		return 0
 	}
-	if bid <= n.highestBid {
+	if bid <= n.round.highestBid {
 		// 半分の確率でもう1上げる
-		if n.highestBid+1 <= NapoleonMaxPictureCards && rand.Intn(2) == 0 && strength >= 6 {
-			return n.highestBid + 1
+		if n.round.highestBid+1 <= NapoleonMaxPictureCards && rand.Intn(2) == 0 && strength >= 6 {
+			return n.round.highestBid + 1
 		}
 		return 0
 	}
@@ -1386,7 +1378,7 @@ func (n *Napoleon) cpuSelectDiscardNormal(playerIdx int) int {
 			score += 50
 		}
 		// 切り札は捨てたくない
-		if card.GetDesign() == n.trumpSuit {
+		if card.GetDesign() == n.round.trumpSuit {
 			score += 30
 		}
 		// ジョーカーは絶対捨てない
@@ -1415,14 +1407,14 @@ func (n *Napoleon) cpuSelectDiscardHard(playerIdx int) int {
 		if n.isPictureCard(card) {
 			score += 50
 		}
-		if card.GetDesign() == n.trumpSuit {
+		if card.GetDesign() == n.round.trumpSuit {
 			score += 30
 		}
 		if card.GetDesign() == CardDesignJoker {
 			score += 100
 		}
 		// 副官カードは絶対捨てない
-		if n.adjutantCard != nil && card.GetDesign() == n.adjutantCard.GetDesign() && card.GetValue() == n.adjutantCard.GetValue() {
+		if n.round.adjutantCard != nil && card.GetDesign() == n.round.adjutantCard.GetDesign() && card.GetValue() == n.round.adjutantCard.GetValue() {
 			score += 200
 		}
 
@@ -1464,7 +1456,7 @@ func (n *Napoleon) cpuPlayNormal(playerIdx int, validIndices []int) int {
 	player := n.players[playerIdx]
 	isNapoleonTeam := n.players[playerIdx].isNapoleon || n.players[playerIdx].isAdjutant
 
-	if len(n.currentTrick) == 0 {
+	if len(n.round.currentTrick) == 0 {
 		// リード
 		if isNapoleonTeam {
 			// ナポレオン軍: 高いカード/絵札でリード
@@ -1476,7 +1468,7 @@ func (n *Napoleon) cpuPlayNormal(playerIdx int, validIndices []int) int {
 				if n.isPictureCard(card) {
 					score += 20
 				}
-				if card.GetDesign() == n.trumpSuit {
+				if card.GetDesign() == n.round.trumpSuit {
 					score += 10
 				}
 				if score > bestScore {
@@ -1500,7 +1492,7 @@ func (n *Napoleon) cpuPlayNormal(playerIdx int, validIndices []int) int {
 	}
 
 	// フォロー
-	leadCard := n.currentTrick[0].Card
+	leadCard := n.round.currentTrick[0].Card
 	leadSuit := leadCard.GetDesign()
 	if leadSuit == CardDesignJoker {
 		// ジョーカーリード: 低いカードを出す
@@ -1518,7 +1510,7 @@ func (n *Napoleon) cpuPlayNormal(playerIdx int, validIndices []int) int {
 
 	// トリック内の絵札があるかチェック
 	hasPictureInTrick := false
-	for _, tc := range n.currentTrick {
+	for _, tc := range n.round.currentTrick {
 		if n.isPictureCard(tc.Card) {
 			hasPictureInTrick = true
 			break
@@ -1553,7 +1545,7 @@ func (n *Napoleon) cpuPlayHard(playerIdx int, validIndices []int) int {
 	player := n.players[playerIdx]
 	isNapoleonTeam := n.players[playerIdx].isNapoleon || n.players[playerIdx].isAdjutant
 
-	if len(n.currentTrick) == 0 {
+	if len(n.round.currentTrick) == 0 {
 		// リード
 		if isNapoleonTeam {
 			// 切り札でリードして絵札を回収
@@ -1562,7 +1554,7 @@ func (n *Napoleon) cpuPlayHard(playerIdx int, validIndices []int) int {
 			for _, idx := range validIndices {
 				card := player.GetCard(idx)
 				score := n.cardStrength(card)
-				if card.GetDesign() == n.trumpSuit {
+				if card.GetDesign() == n.round.trumpSuit {
 					score += 100
 				}
 				if card.GetDesign() == CardDesignJoker {
@@ -1581,7 +1573,7 @@ func (n *Napoleon) cpuPlayHard(playerIdx int, validIndices []int) int {
 		for _, idx := range validIndices {
 			card := player.GetCard(idx)
 			score := n.cardStrength(card)
-			if card.GetDesign() == n.trumpSuit {
+			if card.GetDesign() == n.round.trumpSuit {
 				score += 100
 			}
 			if card.GetDesign() == CardDesignJoker {
@@ -1597,7 +1589,7 @@ func (n *Napoleon) cpuPlayHard(playerIdx int, validIndices []int) int {
 
 	// フォロー (絵札のあるトリックを制する戦略)
 	hasPictureInTrick := false
-	for _, tc := range n.currentTrick {
+	for _, tc := range n.round.currentTrick {
 		if n.isPictureCard(tc.Card) {
 			hasPictureInTrick = true
 			break
@@ -1617,7 +1609,7 @@ func (n *Napoleon) cpuPlayHard(playerIdx int, validIndices []int) int {
 		if n.isPictureCard(card) {
 			score += 50
 		}
-		if card.GetDesign() == n.trumpSuit {
+		if card.GetDesign() == n.round.trumpSuit {
 			score += 30
 		}
 		if card.GetDesign() == CardDesignJoker {
@@ -1636,7 +1628,7 @@ func (n *Napoleon) cpuTryWinTrick(playerIdx int, validIndices []int) int {
 	player := n.players[playerIdx]
 
 	// 現在のトリック勝者を判定するために仮のトリックを見る
-	leadCard := n.currentTrick[0].Card
+	leadCard := n.round.currentTrick[0].Card
 	leadSuit := leadCard.GetDesign()
 	if leadSuit == CardDesignJoker {
 		// ジョーカーリード: 低いカードを出す（勝てない）
@@ -1695,7 +1687,7 @@ func (n *Napoleon) cpuTryWinTrick(playerIdx int, validIndices []int) int {
 func (n *Napoleon) wouldWinTrick(card *Card) bool {
 	if card.GetDesign() == CardDesignJoker {
 		// ジョーカーは勝てるが、スペ3がすでに出ている場合は負ける
-		for _, tc := range n.currentTrick {
+		for _, tc := range n.round.currentTrick {
 			if tc.Card.GetDesign() == CardDesignSpade && tc.Card.GetValue() == 3 {
 				return false
 			}
@@ -1705,14 +1697,14 @@ func (n *Napoleon) wouldWinTrick(card *Card) bool {
 
 	// スペ3でジョーカーに勝てるか
 	if card.GetDesign() == CardDesignSpade && card.GetValue() == 3 {
-		for _, tc := range n.currentTrick {
+		for _, tc := range n.round.currentTrick {
 			if tc.Card.GetDesign() == CardDesignJoker {
 				return true
 			}
 		}
 	}
 
-	leadSuit := n.currentTrick[0].Card.GetDesign()
+	leadSuit := n.round.currentTrick[0].Card.GetDesign()
 	if leadSuit == CardDesignJoker {
 		return false // ジョーカーリードには勝てない
 	}
@@ -1720,11 +1712,11 @@ func (n *Napoleon) wouldWinTrick(card *Card) bool {
 	// 現在の最強カードを特定
 	currentWinnerIsTrump := false
 	currentWinnerValue := 0
-	for _, tc := range n.currentTrick {
+	for _, tc := range n.round.currentTrick {
 		if tc.Card.GetDesign() == CardDesignJoker {
 			return false // ジョーカーがいれば勝てない
 		}
-		isTrump := tc.Card.GetDesign() == n.trumpSuit
+		isTrump := tc.Card.GetDesign() == n.round.trumpSuit
 		val := n.cardStrength(tc.Card)
 		if isTrump && !currentWinnerIsTrump {
 			currentWinnerIsTrump = true
@@ -1736,7 +1728,7 @@ func (n *Napoleon) wouldWinTrick(card *Card) bool {
 		}
 	}
 
-	isTrump := card.GetDesign() == n.trumpSuit
+	isTrump := card.GetDesign() == n.round.trumpSuit
 	val := n.cardStrength(card)
 
 	if isTrump && !currentWinnerIsTrump {

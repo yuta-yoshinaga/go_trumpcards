@@ -54,7 +54,7 @@ func (d *Daifugo) shouldStrategicPass(player *DaifugoPlayer, indices []int) bool
 	if player.GetCardsSize() <= 5 {
 		return false
 	}
-	tableBase := getBaseValue(d.tableCards)
+	tableBase := getBaseValue(d.round.tableCards)
 	var tableStrength int
 	if tableBase < 0 {
 		tableStrength = DaifugoJokerStrength
@@ -77,9 +77,9 @@ func (d *Daifugo) shouldStrategicPass(player *DaifugoPlayer, indices []int) bool
 	return false
 }
 
-// calcTableStrength 場のカードの強さを計算する (d.tableCards が非nil前提)
+// calcTableStrength 場のカードの強さを計算する (d.round.tableCards が非nil前提)
 func (d *Daifugo) calcTableStrength() int {
-	tableBase := getBaseValue(d.tableCards)
+	tableBase := getBaseValue(d.round.tableCards)
 	if tableBase < 0 {
 		return DaifugoJokerStrength
 	}
@@ -91,11 +91,11 @@ func (d *Daifugo) calcTableStrength() int {
 // 片縛り: グループ内に少なくとも1枚ロックスートと一致するカードがあればOK
 func (d *Daifugo) searchCardGroupSuitCheck(player *DaifugoPlayer, start, end int) bool {
 	if d.config.SuitLockMode == DaifugoSuitLockFull {
-		return player.GetCard(start).GetDesign() == d.lockedSuit
+		return player.GetCard(start).GetDesign() == d.round.lockedSuit
 	}
 	// 片縛り
 	for k := start; k < end; k++ {
-		if player.GetCard(k).GetDesign() == d.lockedSuit {
+		if player.GetCard(k).GetDesign() == d.round.lockedSuit {
 			return true
 		}
 	}
@@ -123,12 +123,12 @@ func (d *Daifugo) searchCardGroup(player *DaifugoPlayer, needed int, tableStreng
 		count := j - i
 		if count >= needed && d.cardStrength(v) > tableStrength {
 			// 革命防止: 4枚以上かつ革命未発動かつ出した後も手札が残る場合はスキップ
-			if opts.skipRevolution && count >= 4 && !d.revolutionActive && player.GetCardsSize() > count {
+			if opts.skipRevolution && count >= 4 && !d.round.revolutionActive && player.GetCardsSize() > count {
 				i = j
 				continue
 			}
 			// スート縛りチェック
-			if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
+			if d.round.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
 				if !d.searchCardGroupSuitCheck(player, i, j) {
 					i = j
 					continue
@@ -147,7 +147,7 @@ func (d *Daifugo) searchCardGroup(player *DaifugoPlayer, needed int, tableStreng
 		if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
 			if count+len(jokerIndices) >= needed {
 				// スート縛りチェック
-				if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
+				if d.round.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
 					if !d.searchCardGroupSuitCheck(player, i, j) {
 						i = j
 						continue
@@ -273,7 +273,7 @@ func (d *Daifugo) findJokerSinglePlay(player *DaifugoPlayer, tableStrength int) 
 
 // findBestPlayNormal 通常難易度: 既存ロジック (最弱のカードを出す、8/ジョーカー温存)
 func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
-	if d.tableCards == nil {
+	if d.round.tableCards == nil {
 		return d.findNormalOpeningPlay(player)
 	}
 	return d.findNormalResponsePlay(player)
@@ -286,7 +286,7 @@ func (d *Daifugo) findNormalOpeningPlay(player *DaifugoPlayer) []int {
 			return emperorIndices
 		}
 	}
-	if d.sequenceLocked {
+	if d.round.sequenceLocked {
 		return d.findOpeningSequencePlay(player)
 	}
 	return d.findOpeningSingleCard(player, []func(*Card) bool{
@@ -297,11 +297,11 @@ func (d *Daifugo) findNormalOpeningPlay(player *DaifugoPlayer) []int {
 
 // findNormalResponsePlay Normal AIの応手プレイ: 階段 → 最弱グループ → ジョーカー単体
 func (d *Daifugo) findNormalResponsePlay(player *DaifugoPlayer) []int {
-	if d.tableIsSequence && d.config.SequenceEnabled {
+	if d.round.tableIsSequence && d.config.SequenceEnabled {
 		return d.findBestSequencePlay(player)
 	}
 
-	needed := len(d.tableCards)
+	needed := len(d.round.tableCards)
 	tableStrength := d.calcTableStrength()
 
 	if indices := d.searchCardGroup(player, needed, tableStrength, cardSearchOpts{skipRevolution: true}); indices != nil {
@@ -320,9 +320,9 @@ func (d *Daifugo) findNormalResponsePlay(player *DaifugoPlayer) []int {
 
 // findBestPlayEasy 簡単難易度: 単純に出せる最弱のカードを出す (8/ジョーカー温存なし、エンペラー探索なし、革命防止なし)
 func (d *Daifugo) findBestPlayEasy(player *DaifugoPlayer) []int {
-	if d.tableCards == nil {
+	if d.round.tableCards == nil {
 		// 階段縛り中は階段を探す
-		if d.sequenceLocked {
+		if d.round.sequenceLocked {
 			return d.findOpeningSequencePlay(player)
 		}
 		// 場がクリアなら最弱の1枚を出す (温存戦略なし、反則上がりチェックなし: Easy AIは戦略なしで失敗もする)
@@ -333,11 +333,11 @@ func (d *Daifugo) findBestPlayEasy(player *DaifugoPlayer) []int {
 	}
 
 	// 場が階段の場合
-	if d.tableIsSequence && d.config.SequenceEnabled {
+	if d.round.tableIsSequence && d.config.SequenceEnabled {
 		return d.findBestSequencePlay(player)
 	}
 
-	needed := len(d.tableCards)
+	needed := len(d.round.tableCards)
 	tableStrength := d.calcTableStrength()
 
 	// 最弱のグループを探す (革命防止なし、ジョーカー温存なし)
@@ -360,7 +360,7 @@ func (d *Daifugo) findBestPlayHard(player *DaifugoPlayer) []int {
 	if indices := d.trySolveEndgame(player); indices != nil {
 		return indices
 	}
-	if d.tableCards == nil {
+	if d.round.tableCards == nil {
 		return d.findHardOpeningPlay(player)
 	}
 	return d.findHardResponsePlay(player)
@@ -373,7 +373,7 @@ func (d *Daifugo) findHardOpeningPlay(player *DaifugoPlayer) []int {
 			return emperorIndices
 		}
 	}
-	if d.sequenceLocked {
+	if d.round.sequenceLocked {
 		return d.findOpeningSequencePlay(player)
 	}
 	if d.isUrgent(player) {
@@ -386,11 +386,11 @@ func (d *Daifugo) findHardOpeningPlay(player *DaifugoPlayer) []int {
 
 // findHardResponsePlay Hard AIの応手プレイ: 緊急時は最強グループ / 非緊急時はNormal+戦略的パス
 func (d *Daifugo) findHardResponsePlay(player *DaifugoPlayer) []int {
-	if d.tableIsSequence && d.config.SequenceEnabled {
+	if d.round.tableIsSequence && d.config.SequenceEnabled {
 		return d.findBestSequencePlayHard(player)
 	}
 
-	needed := len(d.tableCards)
+	needed := len(d.round.tableCards)
 	tableStrength := d.calcTableStrength()
 
 	if d.isUrgent(player) {
@@ -436,8 +436,8 @@ func (d *Daifugo) findBestSequencePlay(player *DaifugoPlayer) []int {
 
 // findSequencePlay 階段モードで出せる階段を探す (selectStrongest=true で最強、false で最弱)
 func (d *Daifugo) findSequencePlay(player *DaifugoPlayer, selectStrongest bool) []int {
-	needed := len(d.tableCards)
-	tableMinStr := d.getSequenceMinStrength(d.tableCards)
+	needed := len(d.round.tableCards)
+	tableMinStr := d.getSequenceMinStrength(d.round.tableCards)
 	jokerIndices := d.findJokerIndices(player)
 
 	var bestIndices []int
@@ -505,7 +505,7 @@ func (d *Daifugo) findOpeningSequencePlay(player *DaifugoPlayer) []int {
 
 // findEmperorPlay エンペラーの組み合わせを探す (場がクリアの時のみ)
 func (d *Daifugo) findEmperorPlay(player *DaifugoPlayer) []int {
-	if !d.config.EmperorEnabled || d.tableCards != nil {
+	if !d.config.EmperorEnabled || d.round.tableCards != nil {
 		return nil
 	}
 	n := player.GetCardsSize()
@@ -555,36 +555,36 @@ func (d *Daifugo) findWeakestNonJokerIndex(player *DaifugoPlayer) int {
 
 // cpuResolvePendingAction CPUがペンディングアクションを自動解決する
 func (d *Daifugo) cpuResolvePendingAction() {
-	player := d.players[d.currentTurn]
+	player := d.players[d.round.currentTurn]
 
 	var idx int
-	switch d.pendingActionType {
+	switch d.round.pendingActionType {
 	case DaifugoPendingSevenPass:
 		// 7渡し: 最強の非ジョーカーカードを渡す
 		idx = d.findStrongestNonJokerIndex(player)
 		removed := player.RemoveCards([]int{idx})
-		target := d.players[d.pendingActionTarget]
+		target := d.players[d.round.pendingActionTarget]
 		target.AddCard(removed[0])
 		target.SortCardsByStrength(d.cardStrengthForCard)
-		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
-		d.cpuActions = append(d.cpuActions, action)
+		action := &DaifugoCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: removed}
+		d.round.cpuActions = append(d.round.cpuActions, action)
 	case DaifugoPendingTenDiscard:
 		// 10捨て: 最弱の非ジョーカーカードを捨てる
 		idx = d.findWeakestNonJokerIndex(player)
 		removed := player.RemoveCards([]int{idx})
-		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
-		d.cpuActions = append(d.cpuActions, action)
+		action := &DaifugoCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: removed}
+		d.round.cpuActions = append(d.round.cpuActions, action)
 	case DaifugoPendingQueenBomber:
 		// 12ボンバー: 対戦相手から最も多くカードを除去できる値を選ぶ
 		bestValue := d.cpuChooseQueenBomberValue(player)
 		d.resolveQueenBomber(bestValue)
 		d.finishEmptyPlayers()
-		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
-		d.cpuActions = append(d.cpuActions, action)
+		action := &DaifugoCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: nil}
+		d.round.cpuActions = append(d.round.cpuActions, action)
 	}
 
-	d.pendingActionType = DaifugoPendingNone
-	d.pendingActionTarget = -1
+	d.round.pendingActionType = DaifugoPendingNone
+	d.round.pendingActionTarget = -1
 
 	if d.checkGameEnd() {
 		return

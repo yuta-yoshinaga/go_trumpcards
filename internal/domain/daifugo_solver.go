@@ -21,9 +21,9 @@ type daifugoSolver struct {
 func newDaifugoSolver(d *Daifugo, oppHands [][]*Card) *daifugoSolver {
 	return &daifugoSolver{
 		oppHands:       oppHands,
-		revolution:     d.revolutionActive,
-		elevenBack:     d.elevenBackActive,
-		sequenceLocked: d.sequenceLocked,
+		revolution:     d.round.revolutionActive,
+		elevenBack:     d.round.elevenBackActive,
+		sequenceLocked: d.round.sequenceLocked,
 		config:         d.config,
 	}
 }
@@ -751,8 +751,8 @@ func (d *Daifugo) trySolveEndgame(player *DaifugoPlayer) []int {
 	}
 
 	solver := newDaifugoSolver(d, oppHands)
-	result := solver.solve(cpuHand, d.tableCards, d.tableIsSequence,
-		d.suitLocked, d.lockedSuit, d.numberLocked)
+	result := solver.solve(cpuHand, d.round.tableCards, d.round.tableIsSequence,
+		d.round.suitLocked, d.round.lockedSuit, d.round.numberLocked)
 	if result == nil {
 		return nil
 	}

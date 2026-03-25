@@ -14,19 +14,41 @@ func isRedSuit(design int) bool {
 	return design == domain.CardDesignHeart || design == domain.CardDesignDiamond
 }
 
-// cuiCardList is the minimal type constraint required by cuiCardListStr.
+// cuiCardList is the minimal type constraint required by formatCardList.
 type cuiCardList interface {
 	GetCardsSize() int
 	GetCard(idx int) *domain.Card
 }
 
-// cuiCardListStr returns a comma-separated card string for all cards in hand.
-func cuiCardListStr(hand cuiCardList) string {
+// cardFormatter formats a single card into a string.
+type cardFormatter func(card *domain.Card) string
+
+// formatCardList formats all cards in a cuiCardList using the given formatter and separator.
+// When indexed is true, each card is prefixed with "[N]".
+func formatCardList(hand cuiCardList, fmtCard cardFormatter, sep string, indexed bool) string {
 	parts := make([]string, hand.GetCardsSize())
 	for i := range parts {
-		parts[i] = cuiCardStr(hand.GetCard(i))
+		s := fmtCard(hand.GetCard(i))
+		if indexed {
+			s = fmt.Sprintf("[%d]%s", i, s)
+		}
+		parts[i] = s
 	}
-	return strings.Join(parts, ",")
+	return strings.Join(parts, sep)
+}
+
+// formatCardSlice formats a card slice using the given formatter and separator.
+func formatCardSlice(cards []*domain.Card, fmtCard cardFormatter, sep string) string {
+	parts := make([]string, len(cards))
+	for i, c := range cards {
+		parts[i] = fmtCard(c)
+	}
+	return strings.Join(parts, sep)
+}
+
+// cuiCardListStr returns a comma-separated card string for all cards in hand.
+func cuiCardListStr(hand cuiCardList) string {
+	return formatCardList(hand, cuiCardStr, ",", false)
 }
 
 // cuiPlayer is the minimal type constraint required by cuiPlayerName.
@@ -139,49 +161,29 @@ func cuiBettingActionName(action int) string {
 // cuiIndexedCardListStr returns a double-space separated indexed card string.
 // e.g. "[0]SPADE 5  [1]HEART 3"
 func cuiIndexedCardListStr(hand cuiCardList) string {
-	parts := make([]string, hand.GetCardsSize())
-	for i := range parts {
-		parts[i] = fmt.Sprintf("[%d]%s", i, cuiCardStr(hand.GetCard(i)))
-	}
-	return strings.Join(parts, "  ")
+	return formatCardList(hand, cuiCardStr, "  ", true)
 }
 
 // cuiCardListStrEmoji returns a double-space separated emoji card string (no index).
 // e.g. "♠5  ♥3"
 func cuiCardListStrEmoji(hand cuiCardList) string {
-	parts := make([]string, hand.GetCardsSize())
-	for i := range parts {
-		parts[i] = cuiCardStrEmoji(hand.GetCard(i))
-	}
-	return strings.Join(parts, "  ")
+	return formatCardList(hand, cuiCardStrEmoji, "  ", false)
 }
 
 // cuiIndexedCardListStrEmoji returns a double-space separated indexed emoji card string.
 // e.g. "[0]♠5  [1]♥3"
 func cuiIndexedCardListStrEmoji(hand cuiCardList) string {
-	parts := make([]string, hand.GetCardsSize())
-	for i := range parts {
-		parts[i] = fmt.Sprintf("[%d]%s", i, cuiCardStrEmoji(hand.GetCard(i)))
-	}
-	return strings.Join(parts, "  ")
+	return formatCardList(hand, cuiCardStrEmoji, "  ", true)
 }
 
 // cuiCardSliceStr returns a comma-space separated card string from a card slice.
 // e.g. "SPADE 5, HEART 3"
 func cuiCardSliceStr(cards []*domain.Card) string {
-	parts := make([]string, len(cards))
-	for i, c := range cards {
-		parts[i] = cuiCardStr(c)
-	}
-	return strings.Join(parts, ", ")
+	return formatCardSlice(cards, cuiCardStr, ", ")
 }
 
 // cuiCardSliceStrEmoji returns a double-space separated emoji card string from a card slice.
 // e.g. "♠5  ♥3"
 func cuiCardSliceStrEmoji(cards []*domain.Card) string {
-	parts := make([]string, len(cards))
-	for i, c := range cards {
-		parts[i] = cuiCardStrEmoji(c)
-	}
-	return strings.Join(parts, "  ")
+	return formatCardSlice(cards, cuiCardStrEmoji, "  ")
 }

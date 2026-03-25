@@ -286,6 +286,70 @@ func TestCuiCardSliceStrEmoji(t *testing.T) {
 	}
 }
 
+func TestFormatCardList(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	hand := &mockCardList{cards: []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignHeart, 5, false),
+	}}
+
+	tests := []struct {
+		name     string
+		fmtCard  cardFormatter
+		sep      string
+		indexed  bool
+		expected string
+	}{
+		{"text no-index comma", cuiCardStr, ",", false, "SPADE 1,HEART 5"},
+		{"text indexed double-space", cuiCardStr, "  ", true, "[0]SPADE 1  [1]HEART 5"},
+		{"emoji no-index", cuiCardStrEmoji, "  ", false, "♠1  ♥5"},
+		{"emoji indexed", cuiCardStrEmoji, "  ", true, "[0]♠1  [1]♥5"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, formatCardList(hand, tt.fmtCard, tt.sep, tt.indexed))
+		})
+	}
+}
+
+func TestFormatCardList_Empty(t *testing.T) {
+	hand := &mockCardList{cards: []*domain.Card{}}
+	assert.Equal(t, "", formatCardList(hand, cuiCardStr, ",", false))
+}
+
+func TestFormatCardSlice(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignHeart, 5, false),
+	}
+
+	tests := []struct {
+		name     string
+		fmtCard  cardFormatter
+		sep      string
+		expected string
+	}{
+		{"text comma-space", cuiCardStr, ", ", "SPADE 1, HEART 5"},
+		{"emoji double-space", cuiCardStrEmoji, "  ", "♠1  ♥5"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, formatCardSlice(cards, tt.fmtCard, tt.sep))
+		})
+	}
+}
+
+func TestFormatCardSlice_Empty(t *testing.T) {
+	assert.Equal(t, "", formatCardSlice([]*domain.Card{}, cuiCardStr, ", "))
+}
+
 func TestCuiBettingActionName(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

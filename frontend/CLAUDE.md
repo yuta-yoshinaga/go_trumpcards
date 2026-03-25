@@ -101,6 +101,7 @@ Interactive step-by-step tutorial system for guiding new players through game me
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
+| `TutorialButton` | `src/components/tutorial/TutorialButton.tsx` | Shared tutorial start button (imported by all 24 game pages) |
 | `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; wraps game page, renders overlay when active |
 | `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight and focus trap |
 | `TutorialTooltip` | `src/components/tutorial/TutorialTooltip.tsx` | Glass-panel tooltip with step indicator and nav buttons |
@@ -122,7 +123,7 @@ Interactive step-by-step tutorial system for guiding new players through game me
 1. Define `TutorialStep[]` array with `target` (CSS selector using `data-tutorial` attributes), `messageKey`, `placement`, and `advanceOn`
 2. Add `data-tutorial="<step-name>"` attributes to the game page's key UI elements
 3. Add tutorial step text to `src/i18n/locales/{ja,en}/<game>.json` under a `tutorial` key
-4. Wrap the page content with `<TutorialProvider config={config} translateMessage={t}>` and add a `TutorialButton` component
+4. Wrap the page content with `<TutorialProvider config={config} translateMessage={t}>` and import `TutorialButton` from `../components/tutorial/TutorialButton`
 
 ### Phase 3 features
 

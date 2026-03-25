@@ -149,7 +149,9 @@ classDiagram
         -trumpCards *TrumpCards
         -players []*PokerPlayer
         -config PokerConfig
-        -phase int
+        -dealerIdx int
+        -humanProfile *BettingHumanProfile
+        -round pokerRoundState
         +Reset()
         +PlayerExchange(indices []int) error
         +PlayerFold() error
@@ -246,12 +248,7 @@ classDiagram
         -trumpCards *TrumpCards
         -players []*NapoleonPlayer
         -config NapoleonConfig
-        -phase NapoleonPhase
-        -trickCards []*NapoleonTrickCard
-        -kitty []*Card
-        -napoleonIdx int
-        -adjutantCard *Card
-        -trumpSuit int
+        -round napoleonRoundState
         +Reset()
         +Bid(amount int) error
         +DeclareTrump(suit int) error
@@ -463,8 +460,8 @@ classDiagram
         -trumpCards *TrumpCards
         -players []*DaifugoPlayer
         -config DaifugoConfig
-        -currentTurn int
-        -tableCards []*Card
+        -sortMode DaifugoSortMode
+        -round daifugoRoundState
         +Reset()
         +Play(indices []int) error
         +Pass() error

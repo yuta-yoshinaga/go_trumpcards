@@ -15,7 +15,7 @@ func (d *Daifugo) triggerRevolutionIfNeeded(cards []*Card, isSeq bool) {
 	if isSeq && !d.config.SequenceRevolutionEnabled {
 		return
 	}
-	d.revolutionActive = !d.revolutionActive
+	d.round.revolutionActive = !d.round.revolutionActive
 	d.appendLog(-1, "revolution", "revolution!", nil)
 	d.sortAllActiveHands()
 }
@@ -53,7 +53,7 @@ func (d *Daifugo) triggerSandstorm(cards []*Card) bool {
 
 // isValidEmperor エンペラー判定: 4枚の連番カード(全スート異なる)を場がクリアの時に出す
 func (d *Daifugo) isValidEmperor(cards []*Card) bool {
-	if !d.config.EmperorEnabled || len(cards) != 4 || d.tableCards != nil {
+	if !d.config.EmperorEnabled || len(cards) != 4 || d.round.tableCards != nil {
 		return false
 	}
 	return d.isEmperorCards(cards)
@@ -110,7 +110,7 @@ func (d *Daifugo) triggerEmperor(cards []*Card) bool {
 	if !d.isEmperorCards(cards) {
 		return false
 	}
-	d.revolutionActive = !d.revolutionActive
+	d.round.revolutionActive = !d.round.revolutionActive
 	d.appendLog(-1, "revolution", "revolution!", nil)
 	d.sortAllActiveHands()
 	d.clearTableState()
@@ -124,7 +124,7 @@ func (d *Daifugo) triggerElevenBack(cards []*Card) {
 	}
 	for _, c := range cards {
 		if !IsJoker(c) && c.GetValue() == 11 {
-			d.elevenBackActive = !d.elevenBackActive
+			d.round.elevenBackActive = !d.round.elevenBackActive
 			d.sortAllActiveHands()
 			return
 		}
@@ -138,7 +138,7 @@ func (d *Daifugo) triggerNineReverseIfNeeded(cards []*Card, isSeq bool) {
 	}
 	for _, c := range cards {
 		if !IsJoker(c) && c.GetValue() == 9 {
-			d.reverseDirection = !d.reverseDirection
+			d.round.reverseDirection = !d.round.reverseDirection
 			return
 		}
 	}
@@ -157,7 +157,7 @@ func (d *Daifugo) triggerCoupDetatIfNeeded(cards []*Card) {
 			return
 		}
 	}
-	d.revolutionActive = !d.revolutionActive
+	d.round.revolutionActive = !d.round.revolutionActive
 	d.appendLog(-1, "revolution", "revolution!", nil)
 	d.sortAllActiveHands()
 }
@@ -169,19 +169,19 @@ func (d *Daifugo) updateSuitLock(cards []*Card) {
 		d.updateNumberLock(cards)
 		return
 	}
-	if len(d.tableCards) == 0 {
+	if len(d.round.tableCards) == 0 {
 		// 場がクリアだった → 縛りなし、今出したカードのスートを記録のみ
-		d.suitLocked = false
-		d.lockedSuit = 0
+		d.round.suitLocked = false
+		d.round.lockedSuit = 0
 		return
 	}
 	// 前の場のカードと今出したカードのスートが一致するか確認 (ジョーカー除く)
-	prevSuit := d.getNonJokerSuit(d.tableCards)
+	prevSuit := d.getNonJokerSuit(d.round.tableCards)
 	newSuit := d.getNonJokerSuit(cards)
 	if prevSuit > 0 && newSuit > 0 && prevSuit == newSuit {
-		if !d.suitLocked {
-			d.suitLocked = true
-			d.lockedSuit = prevSuit
+		if !d.round.suitLocked {
+			d.round.suitLocked = true
+			d.round.lockedSuit = prevSuit
 			d.updateNumberLock(cards)
 		}
 	}
@@ -192,8 +192,8 @@ func (d *Daifugo) updateSequenceLock(isSeq bool) {
 	if !d.config.SequenceLockEnabled {
 		return
 	}
-	if d.tableIsSequence && isSeq {
-		d.sequenceLocked = true
+	if d.round.tableIsSequence && isSeq {
+		d.round.sequenceLocked = true
 	}
 }
 
@@ -202,16 +202,16 @@ func (d *Daifugo) updateNumberLock(cards []*Card) {
 	if !d.config.NumberLockEnabled {
 		return
 	}
-	if len(d.tableCards) == 0 {
+	if len(d.round.tableCards) == 0 {
 		return
 	}
-	prevBase := getBaseValue(d.tableCards)
+	prevBase := getBaseValue(d.round.tableCards)
 	newBase := getBaseValue(cards)
 	if prevBase > 0 && newBase > 0 {
 		prevStr := d.cardStrength(prevBase)
 		newStr := d.cardStrength(newBase)
 		if newStr-prevStr == 1 {
-			d.numberLocked = true
+			d.round.numberLocked = true
 		}
 	}
 }
@@ -252,7 +252,7 @@ func (d *Daifugo) triggerSevenPassIfNeeded(cards []*Card, isSeq bool) {
 	if !d.config.SevenPassEnabled || isSeq {
 		return
 	}
-	player := d.players[d.currentTurn]
+	player := d.players[d.round.currentTurn]
 	// 出した後に手札が残っている場合のみ
 	if player.GetCardsSize() == 0 {
 		return
@@ -260,10 +260,10 @@ func (d *Daifugo) triggerSevenPassIfNeeded(cards []*Card, isSeq bool) {
 	for _, c := range cards {
 		if !IsJoker(c) && c.GetValue() == 7 {
 			// 渡す対象: 次のアクティブなプレイヤー (自分以外)
-			target := d.getNextActivePlayer(d.currentTurn)
-			if target >= 0 && target != d.currentTurn {
-				d.pendingActionType = DaifugoPendingSevenPass
-				d.pendingActionTarget = target
+			target := d.getNextActivePlayer(d.round.currentTurn)
+			if target >= 0 && target != d.round.currentTurn {
+				d.round.pendingActionType = DaifugoPendingSevenPass
+				d.round.pendingActionTarget = target
 			}
 			return
 		}
@@ -275,15 +275,15 @@ func (d *Daifugo) triggerTenDiscardIfNeeded(cards []*Card, isSeq bool) {
 	if !d.config.TenDiscardEnabled || isSeq {
 		return
 	}
-	player := d.players[d.currentTurn]
+	player := d.players[d.round.currentTurn]
 	// 出した後に手札が残っている場合のみ
 	if player.GetCardsSize() == 0 {
 		return
 	}
 	for _, c := range cards {
 		if !IsJoker(c) && c.GetValue() == 10 {
-			d.pendingActionType = DaifugoPendingTenDiscard
-			d.pendingActionTarget = -1
+			d.round.pendingActionType = DaifugoPendingTenDiscard
+			d.round.pendingActionTarget = -1
 			return
 		}
 	}
@@ -294,15 +294,15 @@ func (d *Daifugo) triggerQueenBomberIfNeeded(cards []*Card, isSeq bool) {
 	if !d.config.QueenBomberEnabled || isSeq {
 		return
 	}
-	player := d.players[d.currentTurn]
+	player := d.players[d.round.currentTurn]
 	// 出した後に手札が残っている場合のみ
 	if player.GetCardsSize() == 0 {
 		return
 	}
 	for _, c := range cards {
 		if !IsJoker(c) && c.GetValue() == 12 {
-			d.pendingActionType = DaifugoPendingQueenBomber
-			d.pendingActionTarget = -1
+			d.round.pendingActionType = DaifugoPendingQueenBomber
+			d.round.pendingActionTarget = -1
 			return
 		}
 	}
@@ -314,7 +314,7 @@ func (d *Daifugo) isSpadeThreeCounter(cards []*Card) bool {
 		return false
 	}
 	// 場がジョーカー1枚のみ
-	if len(d.tableCards) != 1 || !IsJoker(d.tableCards[0]) {
+	if len(d.round.tableCards) != 1 || !IsJoker(d.round.tableCards[0]) {
 		return false
 	}
 	// 出すカードがスペードの3を1枚のみ
@@ -328,7 +328,7 @@ func (d *Daifugo) isSpadeThreeCounter(cards []*Card) bool {
 // resolvePendingAction ペンディングアクションを解決する
 func (d *Daifugo) resolvePendingAction(indices []int) error {
 	// 12ボンバーは indices[0] をカード値 (1-13) として解釈する
-	if d.pendingActionType == DaifugoPendingQueenBomber {
+	if d.round.pendingActionType == DaifugoPendingQueenBomber {
 		if len(indices) != 1 {
 			return NewDomainError(ErrInvalidPlay, "queen bomber requires exactly 1 card value")
 		}
@@ -338,10 +338,10 @@ func (d *Daifugo) resolvePendingAction(indices []int) error {
 		}
 		d.resolveQueenBomber(v)
 		d.finishEmptyPlayers()
-		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
+		d.round.humanAction = &DaifugoCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: nil}
 
-		d.pendingActionType = DaifugoPendingNone
-		d.pendingActionTarget = -1
+		d.round.pendingActionType = DaifugoPendingNone
+		d.round.pendingActionTarget = -1
 
 		if !d.checkGameEnd() {
 			d.advanceTurn()
@@ -353,28 +353,28 @@ func (d *Daifugo) resolvePendingAction(indices []int) error {
 	if len(indices) != 1 {
 		return NewDomainError(ErrInvalidPlay, "pending action requires exactly 1 card index")
 	}
-	player := d.players[d.currentTurn]
+	player := d.players[d.round.currentTurn]
 	card := player.GetCard(indices[0])
 	if card == nil {
 		return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", indices[0]))
 	}
 
-	switch d.pendingActionType {
+	switch d.round.pendingActionType {
 	case DaifugoPendingSevenPass:
 		// 7渡し: カードを対象プレイヤーに渡す
 		removed := player.RemoveCards([]int{indices[0]})
-		target := d.players[d.pendingActionTarget]
+		target := d.players[d.round.pendingActionTarget]
 		target.AddCard(removed[0])
 		target.SortCardsByStrength(d.cardStrengthForCard)
-		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
+		d.round.humanAction = &DaifugoCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: removed}
 	case DaifugoPendingTenDiscard:
 		// 10捨て: カードを捨てる
 		removed := player.RemoveCards([]int{indices[0]})
-		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
+		d.round.humanAction = &DaifugoCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: removed}
 	}
 
-	d.pendingActionType = DaifugoPendingNone
-	d.pendingActionTarget = -1
+	d.round.pendingActionType = DaifugoPendingNone
+	d.round.pendingActionTarget = -1
 
 	d.advanceTurn()
 	d.checkPassClear()
@@ -510,7 +510,7 @@ func (d *Daifugo) applyCapitalFall() {
 
 // performCardExchange 前回のランクに基づいてカード交換を行う
 func (d *Daifugo) performCardExchange() {
-	d.exchangeActions = make([]*DaifugoExchangeAction, 0)
+	d.round.exchangeActions = make([]*DaifugoExchangeAction, 0)
 
 	// 前回のランクからプレイヤーインデックスのマッピングを作成
 	rankToPlayer := make(map[int]int) // rank → current player index
@@ -535,7 +535,7 @@ func (d *Daifugo) performCardExchange() {
 	}
 
 	// 交換記録を棋譜に追加
-	for _, ex := range d.exchangeActions {
+	for _, ex := range d.round.exchangeActions {
 		d.appendLog(ex.FromPlayerIdx, "exchange", fmt.Sprintf("exchanged %d card(s) with player %d", len(ex.Cards), ex.ToPlayerIdx), ex.Cards)
 	}
 
@@ -584,12 +584,12 @@ func (d *Daifugo) exchangeCardsBetween(upperIdx, lowerIdx, count int) {
 	}
 
 	// 交換記録
-	d.exchangeActions = append(d.exchangeActions, &DaifugoExchangeAction{
+	d.round.exchangeActions = append(d.round.exchangeActions, &DaifugoExchangeAction{
 		FromPlayerIdx: lowerIdx,
 		ToPlayerIdx:   upperIdx,
 		Cards:         lowerBestCards,
 	})
-	d.exchangeActions = append(d.exchangeActions, &DaifugoExchangeAction{
+	d.round.exchangeActions = append(d.round.exchangeActions, &DaifugoExchangeAction{
 		FromPlayerIdx: upperIdx,
 		ToPlayerIdx:   lowerIdx,
 		Cards:         upperWorstCards,
@@ -609,7 +609,7 @@ func (d *Daifugo) getActivePlayerCnt() int {
 // getNextActivePlayer fromの次のアクティブなプレイヤーインデックスを取得
 func (d *Daifugo) getNextActivePlayer(from int) int {
 	direction := 1
-	if d.reverseDirection {
+	if d.round.reverseDirection {
 		direction = -1
 	}
 	return nextActivePlayer(d.players, from, direction)
@@ -625,7 +625,7 @@ func (d *Daifugo) checkGameEnd() bool {
 				break
 			}
 		}
-		d.gameEndFlag = true
+		d.round.gameEndFlag = true
 		d.applyCapitalFall()
 		d.applyIllegalFinishPenalty()
 		return true
@@ -641,7 +641,7 @@ func (d *Daifugo) finishPlayer(idx int) {
 	d.players[idx].SetRank(rank)
 	d.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
 	// 上がったプレイヤーが最後に出したプレイヤーなら場をクリア
-	if d.lastPlayPlayerIdx == idx {
+	if d.round.lastPlayPlayerIdx == idx {
 		d.clearTableState()
 	}
 }
@@ -657,7 +657,7 @@ func (d *Daifugo) finishEmptyPlayers() {
 
 // SortHumanHand 人間プレイヤーの手札を指定モードでソートする
 func (d *Daifugo) SortHumanHand(mode DaifugoSortMode) error {
-	if d.gameEndFlag {
+	if d.round.gameEndFlag {
 		return ErrGameEnded
 	}
 	d.sortMode = mode
