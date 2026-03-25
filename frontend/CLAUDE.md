@@ -95,11 +95,21 @@ bun run test -- --pool-options.threads.maxThreads=2
 
 ## Tutorial System
 
-Adding a tutorial to a new game:
+### Key components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `TutorialButton` | `src/components/tutorial/TutorialButton.tsx` | Shared tutorial start button |
+| `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; wraps game page, renders overlay |
+| `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight |
+| `useTutorial` | `src/hooks/useTutorial.ts` | State management (step progression, localStorage, resume/restart) |
+| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints for BlackJack, Poker, Hearts, Spades |
+| `TutorialSuggestDialog` | `src/components/tutorial/TutorialSuggestDialog.tsx` | First-visit dialog; controlled by `useFirstVisit` hook |
+| `TutorialProgressPanel` | `src/components/tutorial/TutorialProgressPanel.tsx` | Progress overview in NavBar |
+
+### Adding a tutorial to a new game
 
 1. Define `TutorialStep[]` array with `target` (CSS selector using `data-tutorial` attributes), `messageKey`, `placement`, and `advanceOn`
 2. Add `data-tutorial="<step-name>"` attributes to the game page's key UI elements
 3. Add tutorial step text to `src/i18n/locales/{ja,en}/<game>.json` under a `tutorial` key
 4. Wrap the page content with `<TutorialProvider config={config} translateMessage={t}>` and import `TutorialButton` from `../components/tutorial/TutorialButton`
-
-Key components: `TutorialProvider` (context), `TutorialOverlay` (spotlight), `useTutorial` (state), `useGameHint` (hints for BlackJack/Poker/Hearts/Spades).
