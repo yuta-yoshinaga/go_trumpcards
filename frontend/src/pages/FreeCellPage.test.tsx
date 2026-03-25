@@ -596,4 +596,10 @@ describe('FreeCellPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
 });

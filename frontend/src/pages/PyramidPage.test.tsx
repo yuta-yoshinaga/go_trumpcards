@@ -431,4 +431,10 @@ describe('PyramidPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
   });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
 });

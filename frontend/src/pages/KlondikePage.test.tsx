@@ -787,4 +787,10 @@ describe('KlondikePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
 });

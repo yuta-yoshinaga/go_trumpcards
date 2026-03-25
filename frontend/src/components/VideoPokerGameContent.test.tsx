@@ -210,4 +210,10 @@ describe('VideoPokerGameContent', () => {
     const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
     expect(cardButtons.every((b) => b.getAttribute('aria-pressed') === 'false')).toBe(true);
   });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
 });

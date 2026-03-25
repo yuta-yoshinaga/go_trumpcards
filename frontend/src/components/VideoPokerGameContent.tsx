@@ -11,6 +11,7 @@ import { ActionLogPanel } from './ActionLogPanel';
 import { ErrorAlert } from './ErrorAlert';
 import { GameFooter } from './GameFooter';
 import { GameMessageBox } from './GameMessageBox';
+import { GamePageHeading } from './GamePageHeading';
 import { GameResetDialog } from './GameResetDialog';
 import { AnimatedCard } from './motion/AnimatedCard';
 import { WinCelebration } from './motion/WinCelebration';
@@ -131,7 +132,8 @@ export function VideoPokerGameContent({
   const displayHeld = isDrawPhase ? heldCards : (state.heldIndices ?? []);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading}>
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading} aria-live="polite">
+      <GamePageHeading title={tc(`nav.${gameName}`)} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isBetPhase || isDrawPhase}>
         <span>{t('label.chips', { chips: state.chips })}</span>
         <TutorialButton />
