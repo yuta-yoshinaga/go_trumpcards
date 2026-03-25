@@ -38,4 +38,10 @@ describe('DeucesWildPage', () => {
     expect(screen.getByText(/チップ.*1000/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /ディール/ })).toBeInTheDocument();
   });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<DeucesWildPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
 });

@@ -632,6 +632,11 @@ classDiagram
         +アクセシビリティ スキップリンク
     }
 
+    class GamePageHeading {
+        +string title
+        +visually-hidden h1 (WCAG 2.4.6)
+    }
+
     class TutorialOverlay {
         +TutorialStep step
         +number stepIndex
@@ -795,6 +800,7 @@ classDiagram
     GamePage --> GameMessageBox : renders
     GamePage --> ConfirmDialog : renders
     GamePage --> ErrorAlert : renders
+    GamePage --> GamePageHeading : renders
 
     note for GamePage "全26ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```

@@ -113,4 +113,10 @@ describe('VideoPokerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /次のハンド/ }));
     await waitFor(() => expect(screen.getByText(/リセットしますか/)).toBeInTheDocument());
   });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<VideoPokerPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
 });

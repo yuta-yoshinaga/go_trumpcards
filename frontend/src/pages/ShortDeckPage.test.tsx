@@ -1067,4 +1067,10 @@ describe('ShortDeckPage', () => {
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     expect(screen.queryByTestId('hud-stats')).not.toBeInTheDocument();
   });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(initState);
+    renderWithProviders(<ShortDeckPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
 });
