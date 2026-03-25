@@ -36,8 +36,8 @@ export const CARD_DIMENSIONS = {
   },
 } as const;
 
-/** Hook that returns responsive card dimensions based on viewport width. */
-export function useCardDimensions() {
+/** Shared hook that tracks viewport width with resize listener. */
+export function useWindowWidth(): number {
   const [width, setWidth] = useState(() => window.innerWidth);
 
   useEffect(() => {
@@ -45,6 +45,13 @@ export function useCardDimensions() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  return width;
+}
+
+/** Hook that returns responsive card dimensions based on viewport width. */
+export function useCardDimensions() {
+  const width = useWindowWidth();
 
   if (width >= LG_BREAKPOINT) return CARD_DIMENSIONS.largeDesktop;
   if (width >= SM_BREAKPOINT) return CARD_DIMENSIONS.desktop;
@@ -53,13 +60,11 @@ export function useCardDimensions() {
 
 /** Hook that returns true when viewport width is at or above the large-desktop breakpoint. */
 export function useIsLargeDesktop(): boolean {
-  const [width, setWidth] = useState(() => window.innerWidth);
+  return useWindowWidth() >= LG_BREAKPOINT;
+}
 
-  useEffect(() => {
-    const handleResize = () => setWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return width >= LG_BREAKPOINT;
+/** Hook that returns true when viewport is between sm and lg breakpoints (tablet/small desktop). */
+export function useIsMediumDesktop(): boolean {
+  const width = useWindowWidth();
+  return width >= SM_BREAKPOINT && width < LG_BREAKPOINT;
 }

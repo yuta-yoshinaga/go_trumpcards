@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
-import { LG_BREAKPOINT, SM_BREAKPOINT } from '../hooks/useCardDimensions';
+import { useIsMediumDesktop } from '../hooks/useCardDimensions';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { SoundToggle } from './SoundToggle';
 import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
@@ -88,6 +88,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
   const { t, i18n } = useTranslation('common');
   const currentLang = i18n.language;
   const [isOpen, setIsOpen] = useState(false);
+  const isMediumDesktop = useIsMediumDesktop();
   const navRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
@@ -102,6 +103,21 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
     }
     wasOpen.current = isOpen;
   }, [isOpen]);
+
+  // Close nav dropdown on outside click (large desktop only)
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (!navRef.current) return;
+      const openDetails = navRef.current.querySelectorAll('details[open]');
+      for (const details of openDetails) {
+        if (!details.contains(e.target as Node)) {
+          details.removeAttribute('open');
+        }
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   const handleNavKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -151,12 +167,8 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
                 className="nav-category sm:flex sm:items-center"
                 open={hasActivePage}
                 onToggle={(e) => {
-                  // On desktop (sm+), force details to stay open
-                  if (
-                    window.innerWidth >= SM_BREAKPOINT &&
-                    window.innerWidth < LG_BREAKPOINT &&
-                    !e.currentTarget.open
-                  ) {
+                  // On medium desktop (sm-lg), force details to stay open
+                  if (isMediumDesktop && !e.currentTarget.open) {
                     e.currentTarget.open = true;
                   }
                 }}

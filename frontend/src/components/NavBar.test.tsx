@@ -228,6 +228,19 @@ describe('NavBar', () => {
       const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details');
       expect(tableDetails).toHaveAttribute('open');
     });
+
+    it('forces details open on medium desktop (sm-lg) when toggled closed', () => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar('/');
+      const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details') as HTMLDetailsElement;
+      expect(tableDetails).toHaveAttribute('open');
+
+      // Simulate toggle to close — the onToggle handler should force it back open
+      tableDetails.open = false;
+      fireEvent(tableDetails, new Event('toggle'));
+      expect(tableDetails).toHaveAttribute('open');
+    });
   });
 
   describe('SoundToggle', () => {
