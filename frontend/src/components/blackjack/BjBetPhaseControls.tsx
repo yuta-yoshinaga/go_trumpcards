@@ -12,6 +12,7 @@ const VALID_DECK_COUNTS = [1, 2, 4, 6, 8] as const;
 const VALID_CPU_COUNTS = [0, 1, 2, 3] as const;
 const VALID_HAND_COUNTS = [1, 2, 3] as const;
 const COUNTING_SYSTEMS = [BJ_COUNTING_HILO, BJ_COUNTING_KO, BJ_COUNTING_ZEN, BJ_COUNTING_OMEGA2] as const;
+const VALID_SURRENDER_RULES = [0, 1, 2] as const;
 
 /** Props for BlackJack bet phase controls. */
 export interface BjBetPhaseControlsProps {
@@ -237,7 +238,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               className="px-2 py-1 rounded text-sm"
               disabled={props.loading}
             >
-              {[0, 1, 2].map((r) => (
+              {VALID_SURRENDER_RULES.map((r) => (
                 <option key={r} value={r}>
                   {t(`surrenderRuleNames.${r}`)}
                 </option>

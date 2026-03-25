@@ -12,7 +12,16 @@ describe('PhaseIndicator', () => {
     render(<PhaseIndicator phaseName="アクション" isHumanTurn={true} />);
     expect(screen.getByText('あなたのターン')).toBeInTheDocument();
     const turnSpan = screen.getByText('あなたのターン');
-    expect(turnSpan).toHaveClass('text-green-400', 'animate-pulse', 'font-bold', 'text-base', 'bg-green-900/40', 'px-2', 'py-0.5', 'rounded-full');
+    expect(turnSpan).toHaveClass(
+      'text-green-400',
+      'animate-pulse',
+      'font-bold',
+      'text-base',
+      'bg-green-900/40',
+      'px-2',
+      'py-0.5',
+      'rounded-full',
+    );
   });
 
   it('shows waiting indicator when isHumanTurn is false', () => {
