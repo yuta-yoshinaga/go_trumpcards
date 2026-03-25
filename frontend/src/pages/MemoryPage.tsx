@@ -19,6 +19,7 @@ import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { playerName } from '../utils/playerUtils';
@@ -104,7 +105,7 @@ function MemoryPageContent() {
   const isHumanTurn = (isFlip1 || isFlip2) && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.memory.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.memory')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
@@ -202,7 +203,7 @@ function MemoryPageContent() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.memory.footer} px-4 py-2.5`}>
         <ErrorAlert message={error} />
         <div className="flex gap-2 items-center">
           {isResult && (
