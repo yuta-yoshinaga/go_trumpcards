@@ -6,6 +6,11 @@ import type { Card, CardDesign, VideoPokerResponse } from '../types/card';
 import type { TutorialConfig } from '../types/tutorial';
 import { VideoPokerGameContent } from './VideoPokerGameContent';
 
+vi.mock('../api/gameApi', () => ({
+  videopokerApi: { exec: vi.fn() },
+  actionLogApi: { videopoker: vi.fn().mockResolvedValue([]) },
+}));
+
 const mockExec = vi.fn();
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
@@ -170,5 +175,37 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
     await waitFor(() => expect(screen.getByText(/配当表/)).toBeInTheDocument());
+  });
+
+  it('clicking card in result phase does not toggle hold', async () => {
+    mockExec.mockResolvedValue(resultPhaseWin);
+    renderContent();
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のハンド/ })).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    expect(cardButtons.length).toBe(5);
+    fireEvent.click(cardButtons[0]);
+    // Should remain not-held because toggleHold returns early when not in draw phase
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('shows action log panel when view log button is clicked', async () => {
+    mockExec.mockResolvedValue(resultPhaseWin);
+    renderContent();
+    await waitFor(() => expect(screen.getByRole('button', { name: /棋譜を見る/ })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /棋譜を見る/ }));
+    // After clicking, the action log panel should appear (even if empty)
+    await waitFor(() => expect(screen.getByText(/棋譜/)).toBeInTheDocument());
+  });
+
+  it('renders result phase with undefined heldIndices (falls back to empty)', async () => {
+    const resultNoHeld = {
+      ...resultPhaseLose,
+      heldIndices: undefined,
+    } as unknown as VideoPokerResponse;
+    mockExec.mockResolvedValue(resultNoHeld);
+    renderContent();
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のハンド/ })).toBeInTheDocument());
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    expect(cardButtons.every((b) => b.getAttribute('aria-pressed') === 'false')).toBe(true);
   });
 });
