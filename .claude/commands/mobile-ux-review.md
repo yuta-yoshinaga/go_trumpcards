@@ -31,7 +31,8 @@ HashRouter (`/#/path`) を使用。全ゲーム画面のフルページスクリ
 
 ```sh
 mkdir -p /tmp/mobile-screenshots
-ALL_GAMES="blackjack baccarat poker holdem omaha shortdeck indianpoker videopoker deuceswild jokerpoker hearts spades euchre napoleon oldmaid doubt daifugo sevens crazyeights klondike freecell spider pyramid memory ginrummy cribbage"
+# ゲーム一覧を gameRoutes.ts から動的に取得（信頼できるソース）
+ALL_GAMES=$(grep -oP "path:\s*'/\K[^']*" frontend/src/constants/gameRoutes.ts | sed 's/^$/blackjack/' | tr '\n' ' ' | sed 's/ $//')
 GAMES="${ARGUMENTS:-$ALL_GAMES}"
 for game in $GAMES; do
   path="/#/$game"
@@ -62,35 +63,13 @@ const { chromium } = require('playwright');
     }
   }
 
-  // 全ゲームでチュートリアルスキップ → スクリーンショット
-  const allGames = [
-    { name: 'blackjack', path: '/' },
-    { name: 'baccarat', path: '/#/baccarat' },
-    { name: 'poker', path: '/#/poker' },
-    { name: 'holdem', path: '/#/holdem' },
-    { name: 'omaha', path: '/#/omaha' },
-    { name: 'shortdeck', path: '/#/shortdeck' },
-    { name: 'indianpoker', path: '/#/indianpoker' },
-    { name: 'videopoker', path: '/#/videopoker' },
-    { name: 'deuceswild', path: '/#/deuceswild' },
-    { name: 'jokerpoker', path: '/#/jokerpoker' },
-    { name: 'hearts', path: '/#/hearts' },
-    { name: 'spades', path: '/#/spades' },
-    { name: 'euchre', path: '/#/euchre' },
-    { name: 'napoleon', path: '/#/napoleon' },
-    { name: 'oldmaid', path: '/#/oldmaid' },
-    { name: 'doubt', path: '/#/doubt' },
-    { name: 'daifugo', path: '/#/daifugo' },
-    { name: 'sevens', path: '/#/sevens' },
-    { name: 'crazyeights', path: '/#/crazyeights' },
-    { name: 'klondike', path: '/#/klondike' },
-    { name: 'freecell', path: '/#/freecell' },
-    { name: 'spider', path: '/#/spider' },
-    { name: 'pyramid', path: '/#/pyramid' },
-    { name: 'memory', path: '/#/memory' },
-    { name: 'ginrummy', path: '/#/ginrummy' },
-    { name: 'cribbage', path: '/#/cribbage' },
-  ];
+  // ゲーム一覧を gameRoutes.ts から動的に取得（信頼できるソース）
+  const fs = require('fs');
+  const src = fs.readFileSync('frontend/src/constants/gameRoutes.ts', 'utf8');
+  const allGames = [...src.matchAll(/path:\s*'\/([^']*)'/g)].map(m => ({
+    name: m[1] || 'blackjack',
+    path: m[1] ? `/#/${m[1]}` : '/',
+  }));
 
   // $ARGUMENTS で指定されたゲームのみにフィルタ（未指定時は全ゲーム）
   const args = process.env.REVIEW_GAMES;
