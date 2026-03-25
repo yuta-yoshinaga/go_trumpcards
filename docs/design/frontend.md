@@ -554,6 +554,20 @@ classDiagram
         +gameCategories: GameCategory[]
         +言語切替 (JA/EN)
         +レスポンシブ ハンバーガーメニュー
+        +カテゴリ折りたたみ (モバイル)
+        +絵文字アイコン表示
+    }
+
+    class GameRoute {
+        +string path
+        +string labelKey
+        +string icon
+    }
+
+    class GameCategory {
+        +string labelKey
+        +string icon
+        +GameRoute[] routes
     }
 
     class PhaseIndicator {

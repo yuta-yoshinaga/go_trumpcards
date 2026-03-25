@@ -2,12 +2,14 @@
 export interface GameRoute {
   path: string;
   labelKey: string;
+  /** Emoji icon displayed next to the game name in navigation. */
   icon: string;
 }
 
 /** A category grouping related game routes with a category label i18n key. */
 export interface GameCategory {
   labelKey: string;
+  /** Emoji icon displayed next to the category name in navigation. */
   icon: string;
   routes: readonly GameRoute[];
 }

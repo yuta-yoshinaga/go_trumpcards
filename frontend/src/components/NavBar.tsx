@@ -148,7 +148,13 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
               <details
                 key={labelKey}
                 className="nav-category sm:flex sm:items-center"
-                open={hasActivePage || undefined}
+                open={hasActivePage}
+                onToggle={(e) => {
+                  // On desktop (sm+), force details to stay open
+                  if (window.innerWidth >= 640 && !e.currentTarget.open) {
+                    e.currentTarget.open = true;
+                  }
+                }}
               >
                 <summary className="text-gray-300 text-xs uppercase tracking-wider px-1 py-2 cursor-pointer select-none min-h-[44px] flex items-center gap-1 sm:cursor-default sm:py-0 sm:min-h-0 shrink-0">
                   <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
