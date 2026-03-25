@@ -1,13 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import { videopokerApi } from '../api/gameApi';
+import { jokerpokerApi } from '../api/gameApi';
 import { VideoPokerGameContent } from '../components/VideoPokerGameContent';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 
-/** Jacks or Better payout table rows. */
-const JOB_PAYOUT_ROWS = [
-  'royalFlush5',
-  'royalFlush',
+/** Joker Poker payout table rows. */
+const JP_PAYOUT_ROWS = [
+  'naturalRoyalFlush5',
+  'naturalRoyalFlush',
+  'fiveOfAKind',
+  'wildRoyalFlush',
   'straightFlush',
   'fourOfAKind',
   'fullHouse',
@@ -15,11 +17,11 @@ const JOB_PAYOUT_ROWS = [
   'straight',
   'threeOfAKind',
   'twoPair',
-  'jacksOrBetter',
+  'kingsOrBetter',
 ];
 
-/** Video Poker tutorial step definitions. */
-const VP_TUTORIAL_STEPS: TutorialStep[] = [
+/** Joker Poker tutorial step definitions. */
+const JP_TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: '[data-tutorial="vp-bet-controls"]',
     messageKey: 'tutorial.betControls',
@@ -46,22 +48,22 @@ const VP_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Video Poker tutorial configuration. */
-const VP_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'videopoker',
-  steps: VP_TUTORIAL_STEPS,
+/** Joker Poker tutorial configuration. */
+const JP_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'jokerpoker',
+  steps: JP_TUTORIAL_STEPS,
 };
 
-/** Renders the Video Poker (Jacks or Better) game page. */
-export function VideoPokerPage() {
-  const { t: tVp } = useTranslation('videopoker');
+/** Renders the Joker Poker (Kings or Better) game page. */
+export function JokerPokerPage() {
+  const { t: tJp } = useTranslation('jokerpoker');
   return (
-    <TutorialProvider config={VP_TUTORIAL_CONFIG} translateMessage={tVp}>
+    <TutorialProvider config={JP_TUTORIAL_CONFIG} translateMessage={tJp}>
       <VideoPokerGameContent
-        gameName="videopoker"
-        i18nNamespace="videopoker"
-        apiExec={videopokerApi.exec}
-        payoutTableRows={JOB_PAYOUT_ROWS}
+        gameName="jokerpoker"
+        i18nNamespace="jokerpoker"
+        apiExec={jokerpokerApi.exec}
+        payoutTableRows={JP_PAYOUT_ROWS}
       />
     </TutorialProvider>
   );

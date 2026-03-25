@@ -182,11 +182,22 @@ classDiagram
         -handRank int
         -handName string
         -payout int
+        -variantConfig *VideoPokerVariantConfig
         +Reset()
         +PlayerBet(amount int) error
         +PlayerHold(indices []int) error
         +Phase() int
         +ActionLog() []*ActionLogEntry
+    }
+
+    class VideoPokerVariantConfig {
+        +string Name
+        +int DeckSize
+        +bool UseJoker
+        +func IsWild func(*Card) bool
+        +func EvalHand func([]*Card) (int, string)
+        +func PayTable func(int, int) int
+        +func MinQualifying func(int) bool
     }
 
     BlackJack --> "*" BlackJackPlayer
@@ -198,6 +209,7 @@ classDiagram
     Baccarat --> "1" TrumpCards
     VideoPoker --> "1" TrumpCards
     VideoPoker --> "1" ChipHolder
+    VideoPoker --> "0..1" VideoPokerVariantConfig
 ```
 
 #### トリックテイキング系ゲーム
@@ -829,6 +841,8 @@ classDiagram
         -napoleon *NapoleonWebController
         -indianpoker *IndianPokerWebController
         -videopoker *VideoPokerWebController
+        -deuceswild *DeucesWildWebController
+        -jokerpoker *JokerPokerWebController
         -euchre *EuchreWebController
         -pyramid *PyramidWebController
         -cribbage *CribbageWebController
@@ -853,8 +867,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 24 controllers
-    GameManager --> "*" CuiExecer : holds 24 games
+    TrumpCardsWeb --> "*" GameWebController : holds 26 controllers
+    GameManager --> "*" CuiExecer : holds 26 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```

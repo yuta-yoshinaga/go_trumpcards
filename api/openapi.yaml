@@ -56,6 +56,10 @@ tags:
     description: Indian Poker (インディアンポーカー) game
   - name: videopoker
     description: "Video Poker (Jacks or Better)"
+  - name: deuceswild
+    description: "Deuces Wild (デューシーズワイルド) - Video Poker variant"
+  - name: jokerpoker
+    description: "Joker Poker (ジョーカーポーカー) - Video Poker variant"
   - name: euchre
     description: Euchre (ユーカー) game
   - name: pyramid
@@ -1965,6 +1969,152 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VideoPokerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoPokerResponse'
+
+  /deuceswild/exec:
+    post:
+      tags:
+        - deuceswild
+      summary: Execute a Deuces Wild game command
+      description: |
+        Send a command to advance the Deuces Wild game session identified by
+        `sessionId`.  Deuces Wild is a Video Poker variant using a standard
+        52-card deck where all 2s are wild cards.  The player bets 1-5 coins,
+        receives 5 cards, chooses which cards to hold, then draws replacements.
+        The final hand is evaluated using wild card substitution and paid
+        according to the Deuces Wild pay table.
+
+        The game proceeds through these phases:
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Bet     | `1`   | Place a bet (1-5 coins) |
+        | Draw    | `2`   | Choose cards to hold, then draw replacements |
+        | Result  | `3`   | Final hand evaluated; payout displayed |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place a bet (requires `amount`: 1-5) |
+        | `hold`  | `h`     | Hold cards and draw (requires `indices`: array of card positions 0-4) |
+        | `log`   | `l`     | View action log |
+      operationId: deucesWildExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VideoPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 3 coins
+                value:
+                  command: bet
+                  amount: 3
+                  sessionId: my-session-001
+              hold:
+                summary: Hold cards at positions 0, 2, and 4
+                value:
+                  command: hold
+                  indices: [0, 2, 4]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/VideoPokerResponse'
+                  - type: object
+                    properties:
+                      variantName:
+                        type: string
+                        description: Name of the Video Poker variant
+                        example: deuceswild
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoPokerResponse'
+
+  /jokerpoker/exec:
+    post:
+      tags:
+        - jokerpoker
+      summary: Execute a Joker Poker game command
+      description: |
+        Send a command to advance the Joker Poker game session identified by
+        `sessionId`.  Joker Poker is a Video Poker variant using a 53-card deck
+        (standard 52 + 1 joker).  The joker acts as a wild card.  The player
+        bets 1-5 coins, receives 5 cards, chooses which cards to hold, then
+        draws replacements.  The final hand is evaluated using wild card
+        substitution and paid according to the Joker Poker pay table.
+
+        The game proceeds through these phases:
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Bet     | `1`   | Place a bet (1-5 coins) |
+        | Draw    | `2`   | Choose cards to hold, then draw replacements |
+        | Result  | `3`   | Final hand evaluated; payout displayed |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place a bet (requires `amount`: 1-5) |
+        | `hold`  | `h`     | Hold cards and draw (requires `indices`: array of card positions 0-4) |
+        | `log`   | `l`     | View action log |
+      operationId: jokerPokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VideoPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 3 coins
+                value:
+                  command: bet
+                  amount: 3
+                  sessionId: my-session-001
+              hold:
+                summary: Hold cards at positions 0, 2, and 4
+                value:
+                  command: hold
+                  indices: [0, 2, 4]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/VideoPokerResponse'
+                  - type: object
+                    properties:
+                      variantName:
+                        type: string
+                        description: Name of the Video Poker variant
+                        example: jokerpoker
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
           content:

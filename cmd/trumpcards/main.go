@@ -150,6 +150,8 @@ ENVIRONMENT VARIABLES:
 		"napoleon":    func() int { ui.NewNapoleonCui().Exec(); return 0 },
 		"indianpoker": func() int { ui.NewIndianPokerCui().Exec(); return 0 },
 		"videopoker":  func() int { ui.NewVideoPokerCui().Exec(); return 0 },
+		"deuceswild":  func() int { ui.NewDeucesWildCui().Exec(); return 0 },
+		"jokerpoker":  func() int { ui.NewJokerPokerCui().Exec(); return 0 },
 		"euchre":      func() int { ui.NewEuchreCui().Exec(); return 0 },
 		"pyramid":     func() int { ui.NewPyramidCui().Exec(); return 0 },
 		"cribbage":    func() int { ui.NewCribbageCui().Exec(); return 0 },

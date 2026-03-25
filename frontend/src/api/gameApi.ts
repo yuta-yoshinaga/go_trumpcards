@@ -653,6 +653,18 @@ export const videopokerApi = {
     gameExec<VideoPokerResponse>('videopoker', { command, amount, indices }),
 };
 
+/** API client for the Deuces Wild /deuceswild/exec endpoint. */
+export const deuceswildApi = {
+  exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
+    gameExec<VideoPokerResponse>('deuceswild', { command, amount, indices }),
+};
+
+/** API client for the Joker Poker /jokerpoker/exec endpoint. */
+export const jokerpokerApi = {
+  exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
+    gameExec<VideoPokerResponse>('jokerpoker', { command, amount, indices }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -675,6 +687,8 @@ const games = [
   'spider',
   'indianpoker',
   'videopoker',
+  'deuceswild',
+  'jokerpoker',
   'euchre',
   'pyramid',
   'cribbage',

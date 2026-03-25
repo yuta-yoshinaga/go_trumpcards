@@ -23,30 +23,32 @@ import (
 
 // TrumpCardsWeb トランプカードゲームWebクラス
 type TrumpCardsWeb struct {
-	bjc *controller.BlackJackWebController
-	pkc *controller.PokerWebController
-	omc *controller.OldMaidWebController
-	dgc *controller.DaifugoWebController
-	sgc *controller.SevensWebController
-	dwc *controller.DoubtWebController
-	hmc *controller.HoldemWebController
-	ohc *controller.OmahaWebController
-	skc *controller.ShortDeckWebController
-	htc *controller.HeartsWebController
-	myc *controller.MemoryWebController
-	klc *controller.KlondikeWebController
-	fcc *controller.FreeCellWebController
-	bcc *controller.BaccaratWebController
-	spc *controller.SpadesWebController
-	cec *controller.CrazyEightsWebController
-	grc *controller.GinRummyWebController
-	sdc *controller.SpiderWebController
-	npc *controller.NapoleonWebController
-	ipc *controller.IndianPokerWebController
-	vpc *controller.VideoPokerWebController
-	euc *controller.EuchreWebController
-	pyc *controller.PyramidWebController
-	cbc *controller.CribbageWebController
+	bjc  *controller.BlackJackWebController
+	pkc  *controller.PokerWebController
+	omc  *controller.OldMaidWebController
+	dgc  *controller.DaifugoWebController
+	sgc  *controller.SevensWebController
+	dwc  *controller.DoubtWebController
+	hmc  *controller.HoldemWebController
+	ohc  *controller.OmahaWebController
+	skc  *controller.ShortDeckWebController
+	htc  *controller.HeartsWebController
+	myc  *controller.MemoryWebController
+	klc  *controller.KlondikeWebController
+	fcc  *controller.FreeCellWebController
+	bcc  *controller.BaccaratWebController
+	spc  *controller.SpadesWebController
+	cec  *controller.CrazyEightsWebController
+	grc  *controller.GinRummyWebController
+	sdc  *controller.SpiderWebController
+	npc  *controller.NapoleonWebController
+	ipc  *controller.IndianPokerWebController
+	vpc  *controller.VideoPokerWebController
+	dwwc *controller.VideoPokerWebController
+	jpwc *controller.VideoPokerWebController
+	euc  *controller.EuchreWebController
+	pyc  *controller.PyramidWebController
+	cbc  *controller.CribbageWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -217,6 +219,18 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				new(presenter.VideoPokerWebPresenter),
 			)
 		}),
+		dwwc: controller.NewVideoPokerWebController(func() usecase.VideoPokerInteractorIF {
+			return usecase.NewVideoPokerInteractor(
+				domain.NewDeucesWildVideoPoker(),
+				new(presenter.VideoPokerWebPresenter),
+			)
+		}),
+		jpwc: controller.NewVideoPokerWebController(func() usecase.VideoPokerInteractorIF {
+			return usecase.NewVideoPokerInteractor(
+				domain.NewJokerPokerVideoPoker(),
+				new(presenter.VideoPokerWebPresenter),
+			)
+		}),
 		euc: controller.NewEuchreWebController(func() usecase.EuchreInteractorIF {
 			config := domain.DefaultEuchreConfig()
 			players := []*domain.EuchrePlayer{
@@ -300,6 +314,8 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/napoleon/exec", web.npc.Exec},
 		{"/indianpoker/exec", web.ipc.Exec},
 		{"/videopoker/exec", web.vpc.Exec},
+		{"/deuceswild/exec", web.dwwc.Exec},
+		{"/jokerpoker/exec", web.jpwc.Exec},
 		{"/euchre/exec", web.euc.Exec},
 		{"/pyramid/exec", web.pyc.Exec},
 		{"/cribbage/exec", web.cbc.Exec},

@@ -85,3 +85,8 @@ func (m *MockVideoPokerGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return args.Get(0).([]*domain.ActionLogEntry)
 }
+
+func (m *MockVideoPokerGame) GetVariantName() string {
+	args := m.Called()
+	return args.String(0)
+}

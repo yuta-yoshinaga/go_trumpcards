@@ -1,0 +1,44 @@
+{
+  "title": "Deuces Wild",
+  "label": {
+    "chips": "Chips: {{chips}}",
+    "bet": "Bet: {{bet}} coin(s)",
+    "payout": "Payout: {{payout}}",
+    "betAmount": "Coins"
+  },
+  "button": {
+    "deal": "Deal",
+    "draw": "Draw",
+    "reset": "New Hand"
+  },
+  "phase": {
+    "bet": "Bet",
+    "draw": "Hold / Draw",
+    "result": "Result"
+  },
+  "hold": "HOLD",
+  "result": {
+    "win": "{{handName}}! You win {{payout}} coins!",
+    "lose": "No winning hand."
+  },
+  "payoutTable": {
+    "title": "Payout Table",
+    "naturalRoyalFlush5": "Natural Royal Flush (5 coins): 4000",
+    "naturalRoyalFlush": "Natural Royal Flush: 250x",
+    "fourDeuces": "Four Deuces: 200x",
+    "wildRoyalFlush": "Wild Royal Flush: 25x",
+    "fiveOfAKind": "Five of a Kind: 15x",
+    "straightFlush": "Straight Flush: 9x",
+    "fourOfAKind": "Four of a Kind: 5x",
+    "fullHouse": "Full House: 3x",
+    "flush": "Flush: 2x",
+    "straight": "Straight: 2x",
+    "threeOfAKind": "Three of a Kind: 1x"
+  },
+  "tutorial": {
+    "betControls": "Place 1–5 coins. All 2s are wild cards!",
+    "hand": "Click cards to HOLD. Always hold your 2s — they're wild!",
+    "drawButton": "Press Draw to replace unheld cards. Three of a Kind or better wins!",
+    "resetButton": "Press New Hand to start the next round."
+  }
+}
