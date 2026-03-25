@@ -1766,15 +1766,8 @@ func TestOmaha_CpuDecidePostFlop_AllStyles_Detailed(t *testing.T) {
 		params := holdemStyleParamsMap[HoldemStyleTAP]
 
 		// postFlopPassFoldMult=-1 → always fold with HighCard regardless of callAmount
-		hitFold := false
-		for i := 0; i < 1000; i++ {
-			action, _ := o.cpuDecidePostFlop(1, params, 10)
-			if action == OmahaActionFold {
-				hitFold = true
-				break
-			}
-		}
-		assert.True(t, hitFold, "TAP should fold weak hand with any call")
+		action, _ := o.cpuDecidePostFlop(1, params, 10)
+		assert.Equal(t, OmahaActionFold, action, "TAP should fold weak hand with any call")
 	})
 }
 

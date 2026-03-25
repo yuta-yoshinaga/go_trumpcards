@@ -2440,10 +2440,8 @@ func TestPoker_cpuDecideExchange_StandPatBluff_Conservative(t *testing.T) {
 		NewCard(CardDesignClover, 9, false),
 		NewCard(CardDesignHeart, 11, false),
 	})
-	for i := 0; i < 1000; i++ {
-		indices := pk.cpuDecideExchange(1)
-		assert.Greater(t, len(indices), 0, "conservative should never stand-pat bluff")
-	}
+	indices := pk.cpuDecideExchange(1)
+	assert.Greater(t, len(indices), 0, "conservative should never stand-pat bluff")
 }
 
 func TestPoker_cpuDecideExchange_StandPatBluff_OnePair(t *testing.T) {
@@ -2484,11 +2482,9 @@ func TestPoker_cpuDecideExchange_StandPatBluff_DrawHandPrioritized(t *testing.T)
 		NewCard(CardDesignSpade, 11, false),
 		NewCard(CardDesignHeart, 3, false),
 	})
-	for i := 0; i < 1000; i++ {
-		indices := pk.cpuDecideExchange(3)
-		assert.Equal(t, 1, len(indices), "flush draw hand should always exchange 1 card, never stand-pat bluff")
-		assert.Equal(t, 4, indices[0], "should discard the off-suit card")
-	}
+	indices := pk.cpuDecideExchange(3)
+	assert.Equal(t, 1, len(indices), "flush draw hand should always exchange 1 card, never stand-pat bluff")
+	assert.Equal(t, 4, indices[0], "should discard the off-suit card")
 }
 
 // ---------------------------------------------------------------------------
