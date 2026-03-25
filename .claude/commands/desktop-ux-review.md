@@ -18,7 +18,7 @@ PC画面（1280x800, 一般的なラップトップ相当）で全ゲーム画�
 ```sh
 pkill -f 'go run' || true; pkill -f vitest || true; pkill -f 'bun run' || true
 sleep 1
-cd /home/yuta/work/go_trumpcards && PORT=8080 go run ./cmd/server &
+PORT=8080 go run ./cmd/server &
 # サーバー起動待ち（最大10秒）
 for i in $(seq 1 10); do curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/ | grep -q 200 && break; sleep 1; done
 ```
@@ -31,7 +31,8 @@ HashRouter (`/#/path`) を使用。全ゲーム画面のフルページスクリ
 
 ```sh
 mkdir -p /tmp/desktop-screenshots
-GAMES="blackjack baccarat poker holdem omaha shortdeck indianpoker videopoker deuceswild jokerpoker hearts spades euchre napoleon oldmaid doubt daifugo sevens crazyeights klondike freecell spider pyramid memory ginrummy cribbage"
+ALL_GAMES="blackjack baccarat poker holdem omaha shortdeck indianpoker videopoker deuceswild jokerpoker hearts spades euchre napoleon oldmaid doubt daifugo sevens crazyeights klondike freecell spider pyramid memory ginrummy cribbage"
+GAMES="${ARGUMENTS:-$ALL_GAMES}"
 for game in $GAMES; do
   path="/#/$game"
   [ "$game" = "blackjack" ] && path="/"
@@ -61,15 +62,41 @@ const { chromium } = require('playwright');
     }
   }
 
-  // 各ゲームでチュートリアルスキップ → スクリーンショット
-  const games = [
+  // 全ゲームでチュートリアルスキップ → スクリーンショット
+  const allGames = [
     { name: 'blackjack', path: '/' },
+    { name: 'baccarat', path: '/#/baccarat' },
+    { name: 'poker', path: '/#/poker' },
     { name: 'holdem', path: '/#/holdem' },
-    { name: 'klondike', path: '/#/klondike' },
-    { name: 'memory', path: '/#/memory' },
+    { name: 'omaha', path: '/#/omaha' },
+    { name: 'shortdeck', path: '/#/shortdeck' },
+    { name: 'indianpoker', path: '/#/indianpoker' },
+    { name: 'videopoker', path: '/#/videopoker' },
+    { name: 'deuceswild', path: '/#/deuceswild' },
+    { name: 'jokerpoker', path: '/#/jokerpoker' },
+    { name: 'hearts', path: '/#/hearts' },
+    { name: 'spades', path: '/#/spades' },
+    { name: 'euchre', path: '/#/euchre' },
+    { name: 'napoleon', path: '/#/napoleon' },
+    { name: 'oldmaid', path: '/#/oldmaid' },
+    { name: 'doubt', path: '/#/doubt' },
     { name: 'daifugo', path: '/#/daifugo' },
-    // 他のゲームも必要に応じて追加
+    { name: 'sevens', path: '/#/sevens' },
+    { name: 'crazyeights', path: '/#/crazyeights' },
+    { name: 'klondike', path: '/#/klondike' },
+    { name: 'freecell', path: '/#/freecell' },
+    { name: 'spider', path: '/#/spider' },
+    { name: 'pyramid', path: '/#/pyramid' },
+    { name: 'memory', path: '/#/memory' },
+    { name: 'ginrummy', path: '/#/ginrummy' },
+    { name: 'cribbage', path: '/#/cribbage' },
   ];
+
+  // $ARGUMENTS で指定されたゲームのみにフィルタ（未指定時は全ゲーム）
+  const args = process.env.REVIEW_GAMES;
+  const games = args
+    ? allGames.filter(g => args.split(/\s+/).includes(g.name))
+    : allGames;
 
   for (const { name, path } of games) {
     await page.goto(`http://localhost:8080${path}`);
@@ -82,7 +109,7 @@ const { chromium } = require('playwright');
 })();
 ```
 
-実行: `PLAYWRIGHT_BROWSERS_PATH=~/.cache/ms-playwright bun /tmp/desktop-play-screenshots.js`
+実行: `PLAYWRIGHT_BROWSERS_PATH=~/.cache/ms-playwright REVIEW_GAMES="$ARGUMENTS" bun /tmp/desktop-play-screenshots.js`
 
 **2c. ナビゲーションメニュー展開状態の撮影**
 
@@ -95,8 +122,11 @@ const { chromium } = require('playwright');
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   await page.goto('http://localhost:8080/');
-  await page.getByRole('button', { name: 'スキップ' }).click();
-  await page.waitForTimeout(300);
+  const skipBtn = page.getByRole('button', { name: 'スキップ' });
+  if (await skipBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
+    await skipBtn.click();
+    await page.waitForTimeout(300);
+  }
   // ハンバーガーメニューが存在する場合はクリック（PC版ではメニューバーかもしれない）
   const menuBtn = page.getByRole('button', { name: 'メニューを開く' });
   if (await menuBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
