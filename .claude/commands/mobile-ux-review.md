@@ -194,7 +194,7 @@ rm -rf /tmp/mobile-screenshots /tmp/mobile-play-screenshots.js /tmp/mobile-nav-s
 - **チュートリアルダイアログ**: 初回表示時にほぼ全ゲームで表示される。スキップ状態はlocalStorageに保存される
 - **ヘッドレスChromium**: `/opt/google/chrome/chrome` ではなく `~/.cache/ms-playwright/` のChromiumを使う。`PLAYWRIGHT_BROWSERS_PATH` 環境変数で指定する
 - **catbox.moe**: 永続的な無料ホスティング。APIキー不要。1ファイル200MBまで
-- ゲームルート一覧は `frontend/src/constants/gameRoutes.ts` で管理されている。新ゲーム追加時はここを確認する
+- ゲームルート一覧は `frontend/src/constants/gameRoutes.ts` で管理されており、本コマンドは同ファイルから動的に取得するため、ゲームの追加・削除時にこのコマンドファイルの更新は不要
 
 ## 引数
 
