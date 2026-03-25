@@ -1,4 +1,5 @@
 import { useCardDimensions } from '../../hooks/useCardDimensions';
+import { gameTheme } from '../../styles/gameTheme';
 import { GameSkeleton } from './GameSkeleton';
 import { SkeletonHand } from './SkeletonHand';
 
@@ -7,8 +8,8 @@ export function DoubtSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();
   return (
     <GameSkeleton
-      bgClass="bg-game-bg-green"
-      footerClassName="bg-game-bg-green-dark border-white/20 px-4 py-2.5"
+      bgClass={gameTheme.doubt.bg}
+      footerClassName={`${gameTheme.doubt.footer} px-4 py-2.5`}
       footer={
         <>
           <div className="mb-2">

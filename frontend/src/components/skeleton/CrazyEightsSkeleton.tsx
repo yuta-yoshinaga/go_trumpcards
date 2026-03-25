@@ -1,4 +1,5 @@
 import { useCardDimensions } from '../../hooks/useCardDimensions';
+import { gameTheme } from '../../styles/gameTheme';
 import { GameSkeleton } from './GameSkeleton';
 import { SkeletonHand } from './SkeletonHand';
 
@@ -7,8 +8,8 @@ export function CrazyEightsSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();
   return (
     <GameSkeleton
-      bgClass="bg-game-bg-green"
-      footerClassName="bg-game-bg-green-dark border-white/20 px-4 py-2.5"
+      bgClass={gameTheme.crazyeights.bg}
+      footerClassName={`${gameTheme.crazyeights.footer} px-4 py-2.5`}
       footer={
         <>
           <SkeletonHand cardWidth={cardWidth} cardHeight={cardHeight} count={5} className="mb-2" />
