@@ -26,7 +26,7 @@ export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, 
   const { t } = useTranslation('common');
   const { cpuCardWidth } = useCardDimensions();
   return (
-    <div className="mb-3">
+    <div className="mb-3 rounded-lg p-2 bg-black/20 border border-white/10">
       <div className="text-white text-sm mb-1">
         {t('player.cpu', { id: player.id })} <span className="text-gray-300 text-xs">({player.playStyleName})</span>
         <span className="ml-2 text-xs">

@@ -81,7 +81,15 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
       width={CARD_NATURAL_WIDTH}
       height={CARD_NATURAL_HEIGHT}
       loading="lazy"
-      style={{ width: w, maxWidth: '100%', borderRadius: 6, display: 'block', ...style }}
+      style={{
+        width: w,
+        maxWidth: '100%',
+        borderRadius: 6,
+        display: 'block',
+        border: '1px solid rgba(255,255,255,0.4)',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
+        ...style,
+      }}
       className={className}
     />
   );
