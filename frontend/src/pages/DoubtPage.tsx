@@ -7,11 +7,13 @@ import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { DoubtSkeleton } from '../components/skeleton/DoubtSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import {
@@ -22,8 +24,9 @@ import {
   useDoubtGame,
 } from '../hooks/useDoubtGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { DoubtCpuAction } from '../types/card';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
@@ -74,23 +77,6 @@ const DT_TUTORIAL_CONFIG: TutorialConfig = {
   gameName: 'doubt',
   steps: DT_TUTORIAL_STEPS,
 };
-
-/** Tutorial button that starts the Doubt tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** Renders the Doubt game page with card play, doubt window countdown, and config. */
 export function DoubtPage() {
@@ -173,7 +159,8 @@ function DoubtPageContent() {
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.doubt.bg}`} aria-busy={loading} aria-live="polite">
+      <GamePageHeading title={tc('nav.doubt')} />
       {/* Phase indicator */}
       <PhaseIndicator
         phaseName={state.gameEndFlag ? t('phase.end') : state.phase === 1 ? t('phase.doubt') : t('phase.play')}
@@ -234,7 +221,7 @@ function DoubtPageContent() {
       />
 
       {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* CPU player areas */}
         <div className="flex gap-2 flex-wrap mb-3">
           {cpuPlayers.map((player) => (
@@ -372,7 +359,7 @@ function DoubtPageContent() {
       </div>
 
       {/* Sticky footer: human player hand + action buttons */}
-      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.doubt.footer} px-4 py-2.5`}>
         {/* Human player info */}
         {humanPlayer && (
           <div className="mb-2" data-tutorial="dt-player-hand">

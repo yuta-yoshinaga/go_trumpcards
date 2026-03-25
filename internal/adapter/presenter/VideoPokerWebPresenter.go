@@ -25,6 +25,7 @@ func (vpp *VideoPokerWebPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	resObj.HandRank = vp.GetHandRank()
 	resObj.HandName = vp.GetHandName()
 	resObj.HeldIndices = vp.GetHeldIndices()
+	resObj.VariantName = vp.GetVariantName()
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

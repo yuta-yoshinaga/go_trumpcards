@@ -173,11 +173,7 @@ describe('SpadesPage', () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<SpadesPage />);
     await waitFor(() => {
-      expect(
-        screen.getByText(
-          '\u30d3\u30c3\u30c9\u3092\u5ba3\u8a00\u3057\u3066\u304f\u3060\u3055\u3044 (0=\u30cb\u30eb, 1-13)',
-        ),
-      ).toBeInTheDocument();
+      expect(screen.getByText('\u30d3\u30c3\u30c9\u5ba3\u8a00 (0=\u30cb\u30eb, 1-13)')).toBeInTheDocument();
     });
   });
 
@@ -750,5 +746,11 @@ describe('SpadesPage', () => {
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 });

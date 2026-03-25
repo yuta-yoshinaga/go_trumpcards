@@ -1,5 +1,5 @@
 import { useCardDimensions } from '../../hooks/useCardDimensions';
-import { selectedCardStyle } from '../../styles/cardStyles';
+import { focusRingCard, selectedCardStyle } from '../../styles/cardStyles';
 import type { Card } from '../../types/card';
 import { CardImage } from '../CardImage';
 
@@ -20,6 +20,7 @@ export function DoubtHandCard({ card, index, selected, selectable, onToggle }: H
       data-testid="hand-card"
       aria-pressed={selected}
       disabled={!selectable}
+      className={focusRingCard}
       onClick={() => onToggle(index)}
       style={{
         background: 'none',

@@ -5,11 +5,13 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { NapoleonSkeleton } from '../components/skeleton/NapoleonSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -20,9 +22,9 @@ import {
   useNapoleonGame,
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import { selectedCardStyle } from '../styles/cardStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { NapoleonPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -80,23 +82,6 @@ const NP_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
-
-/** Tutorial button that starts the Napoleon tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** Napoleon tutorial configuration. */
 const NP_TUTORIAL_CONFIG: TutorialConfig = {
@@ -201,7 +186,8 @@ function NapoleonPageContent() {
   const trumpLabel = state.trumpSuit > 0 ? t(`suitName.${SUIT_KEYS[state.trumpSuit]}`) : '';
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
+      <GamePageHeading title={tc('nav.napoleon')} />
       {/* Phase indicator */}
       <PhaseIndicator
         phaseName={phaseNames[state.phase]}
@@ -249,7 +235,7 @@ function NapoleonPageContent() {
       />
 
       {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Round/Trick info */}
         <div className="text-white text-center mb-2">
           <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
@@ -399,7 +385,7 @@ function NapoleonPageContent() {
                 onClick={() => toggleCard(idx)}
                 aria-label={cardAlt(card)}
                 aria-pressed={selectedCardIndices.includes(idx)}
-                className="transition-transform"
+                className={`transition-transform ${focusRingCard}`}
                 style={{
                   background: 'none',
                   padding: 0,

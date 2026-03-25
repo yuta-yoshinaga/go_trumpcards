@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
+import { useIsMediumDesktop } from '../hooks/useCardDimensions';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { SoundToggle } from './SoundToggle';
 import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
@@ -87,6 +88,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
   const { t, i18n } = useTranslation('common');
   const currentLang = i18n.language;
   const [isOpen, setIsOpen] = useState(false);
+  const isMediumDesktop = useIsMediumDesktop();
   const navRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
@@ -101,6 +103,21 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
     }
     wasOpen.current = isOpen;
   }, [isOpen]);
+
+  // Close nav dropdown on outside click (large desktop only)
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (!navRef.current) return;
+      const openDetails = navRef.current.querySelectorAll('details[open]');
+      for (const details of openDetails) {
+        if (!details.contains(e.target as Node)) {
+          details.removeAttribute('open');
+        }
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   const handleNavKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -141,25 +158,41 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         onKeyDown={handleNavKeyDown}
         className={`${isOpen ? 'flex' : 'hidden'} flex-col gap-2 mx-2.5 mb-2 sm:flex sm:flex-row sm:flex-wrap sm:items-start sm:justify-end sm:my-2`}
       >
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3">
-          {gameCategories.map(({ labelKey, routes }) => (
-            <div key={labelKey} className="flex flex-col gap-1 sm:flex-row sm:items-center">
-              <span className="text-gray-400 text-xs uppercase tracking-wider px-1 shrink-0">{t(labelKey)}</span>
-              <div className="flex flex-col gap-1 sm:flex-row">
-                {routes.map(({ path, labelKey: routeLabel }) => (
-                  <Link
-                    key={path}
-                    to={path}
-                    aria-current={pathname === path ? 'page' : undefined}
-                    onClick={() => setIsOpen(false)}
-                    className={`inline-flex items-center px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-colors${pathname === path ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
-                  >
-                    {t(routeLabel)}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3 lg:flex-nowrap lg:gap-1">
+          {gameCategories.map(({ labelKey, icon: catIcon, routes }) => {
+            const hasActivePage = routes.some(({ path }) => path === pathname);
+            return (
+              <details
+                key={labelKey}
+                className="nav-category sm:flex sm:items-center"
+                open={hasActivePage}
+                onToggle={(e) => {
+                  // On medium desktop (sm-lg), force details to stay open
+                  if (isMediumDesktop && !e.currentTarget.open) {
+                    e.currentTarget.open = true;
+                  }
+                }}
+              >
+                <summary className="text-gray-300 text-xs uppercase tracking-wider px-1 py-2 cursor-pointer select-none min-h-[44px] flex items-center gap-1 sm:cursor-default sm:py-0 sm:min-h-0 lg:cursor-pointer lg:py-2 lg:min-h-[44px] lg:hover:text-white lg:transition-colors shrink-0">
+                  <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
+                </summary>
+                <div className="nav-dropdown flex flex-col gap-1 pl-2 pb-1 sm:flex-row sm:pl-0 sm:pb-0 lg:flex-col">
+                  {routes.map(({ path, labelKey: routeLabel, icon }) => (
+                    <Link
+                      key={path}
+                      to={path}
+                      aria-current={pathname === path ? 'page' : undefined}
+                      onClick={() => setIsOpen(false)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150${pathname === path ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500 hover:shadow-md'}`}
+                    >
+                      <span aria-hidden="true">{icon}</span>
+                      {t(routeLabel)}
+                    </Link>
+                  ))}
+                </div>
+              </details>
+            );
+          })}
         </div>
         <TutorialProgressPanel />
         <div className="hidden sm:flex sm:items-center sm:gap-2">

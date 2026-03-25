@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import type { Card } from '../types/card';
 import { CardBack, CardImage } from './CardImage';
@@ -23,8 +24,9 @@ interface CpuPlayerCardProps {
 /** Renders a CPU player's info area with cards (face-up or face-down) and status. */
 export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, extraInfo }: CpuPlayerCardProps) {
   const { t } = useTranslation('common');
+  const { cpuCardWidth } = useCardDimensions();
   return (
-    <div className="mb-3">
+    <div className="mb-3 rounded-lg p-2 bg-black/20 border border-white/10">
       <div className="text-white text-sm mb-1">
         {t('player.cpu', { id: player.id })} <span className="text-gray-300 text-xs">({player.playStyleName})</span>
         <span className="ml-2 text-xs">
@@ -50,11 +52,11 @@ export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, 
               <CardImage
                 key={`${card.design}-${card.value}`}
                 card={card}
-                width={50}
+                width={cpuCardWidth}
                 style={{ border: '3px solid transparent' }}
               />
             ))
-          : Array.from({ length: faceDownCount }).map((_, i) => <CardBack key={i} width={50} />)}
+          : Array.from({ length: faceDownCount }).map((_, i) => <CardBack key={i} width={cpuCardWidth} />)}
       </div>
     </div>
   );

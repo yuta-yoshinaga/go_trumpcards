@@ -6,13 +6,10 @@ go_trumpcards へのコントリビューションに興味を持っていただ
 
 ### 前提条件
 
-| Tool | Version |
-|------|---------|
-| [Go](https://go.dev/) | 1.26.x |
-| [Node.js](https://nodejs.org/) | 24.x |
-| [Bun](https://bun.sh/) | 1.3.10 |
-| [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) | latest |
-| [golangci-lint](https://golangci-lint.run/) | latest |
+[CLAUDE.md の Requirements](CLAUDE.md#requirements) を参照してください。加えて以下のツールが必要です:
+
+- [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) (latest)
+- [golangci-lint](https://golangci-lint.run/) (latest)
 
 ### セットアップ
 
@@ -70,22 +67,7 @@ bun run test    # ユニットテスト
 
 ### 5. コミットする
 
-[Conventional Commits](https://www.conventionalcommits.org/) 形式に従ってください:
-
-```
-<type>: <description>
-```
-
-| Type | 用途 |
-|------|------|
-| `feat` | 新機能 |
-| `fix` | バグ修正 |
-| `docs` | ドキュメントのみの変更 |
-| `test` | テストの追加・修正 |
-| `refactor` | リファクタリング |
-| `perf` | パフォーマンス改善 |
-| `chore` | ビルドプロセスや補助ツールの変更 |
-| `ci` | CI/CD の変更 |
+[CLAUDE.md の Commit Message Format](CLAUDE.md#commit-message-format) に従ってください。
 
 ### 6. Pull Request を作成する
 
@@ -105,15 +87,7 @@ infrastructure → adapter → usecase → domain
 
 ## Quality Standards
 
-### カバレッジ
-
-- **Go**: `cmd/` と `internal/infrastructure/` を除く全パッケージでブランチカバレッジ (C1) 100%
-- **Frontend**: `src/{api,components,pages,utils}` でブランチカバレッジ (C1) 100%
-
-### ドキュメント
-
-- 新しいエクスポートされたシンボルには GoDoc / TSDoc コメントを付けてください
-- コード変更に伴うドキュメント更新については [CLAUDE.md の Documentation Maintenance](CLAUDE.md#documentation-maintenance) を参照してください
+[CLAUDE.md の Testing](CLAUDE.md#testing) および [CLAUDE.md の Documentation Maintenance](CLAUDE.md#documentation-maintenance) を参照してください。
 
 ## Adding a New Game
 

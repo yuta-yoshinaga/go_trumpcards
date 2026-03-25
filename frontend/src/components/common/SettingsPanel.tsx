@@ -30,7 +30,24 @@ interface SettingsPanelProps {
 export function SettingsPanel({ title, groups }: SettingsPanelProps) {
   return (
     <details className="px-4 pt-2">
-      <summary className="text-white/70 text-xs cursor-pointer select-none">{title}</summary>
+      <summary className="text-white/80 text-sm cursor-pointer select-none inline-flex items-center gap-1.5 hover:text-white transition-colors py-1">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        {title}
+      </summary>
       <div className="glass-panel rounded-lg p-3 mt-1 text-xs text-white">
         {groups.map((group, gi) => {
           const content = (
@@ -48,10 +65,15 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       checked={item.checked ?? false}
                       disabled={item.disabled}
                       onChange={(e) => item.onToggle?.(e.target.checked)}
+                      aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
                     />
                     {item.label}
                     {item.tooltip && (
-                      <span className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                      <span
+                        id={`${item.id}-tooltip`}
+                        role="tooltip"
+                        className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10"
+                      >
                         {item.tooltip}
                       </span>
                     )}
@@ -65,6 +87,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       onChange={(e) => item.onSelect?.(e.target.value)}
                       className="bg-black/50 text-white disabled:text-gray-300 disabled:opacity-70 rounded px-1 py-0.5"
                       disabled={item.disabled}
+                      aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
                     >
                       {item.options?.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -73,7 +96,11 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       ))}
                     </select>
                     {item.tooltip && (
-                      <span className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                      <span
+                        id={`${item.id}-tooltip`}
+                        role="tooltip"
+                        className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10"
+                      >
                         {item.tooltip}
                       </span>
                     )}

@@ -96,10 +96,8 @@ type DaifugoExchangeAction struct {
 	Cards         []*Card // 交換されたカード
 }
 
-// Daifugo 大富豪ゲームクラス
-type Daifugo struct {
-	trumpCards          *TrumpCards
-	players             []*DaifugoPlayer
+// daifugoRoundState ラウンドごとにリセットされる状態
+type daifugoRoundState struct {
 	currentTurn         int                      // 現在の手番プレイヤーインデックス
 	tableCards          []*Card                  // 場に出されているカード (nil = 場はクリア)
 	lastPlayPlayerIdx   int                      // 最後にカードを出したプレイヤーインデックス (-1 = なし)
@@ -108,7 +106,6 @@ type Daifugo struct {
 	cpuActions          []*DaifugoCpuAction      // 人間ターン後のCPUの行動履歴
 	humanAction         *DaifugoCpuAction        // 人間の最後の行動
 	revolutionActive    bool                     // 革命フラグ (true = 革命中)
-	config              DaifugoConfig            // ローカルルール設定
 	suitLocked          bool                     // スート縛り発動中
 	lockedSuit          int                      // 縛られているスート (CardDesignSpade等)
 	elevenBackActive    bool                     // 11バック発動中
@@ -119,31 +116,28 @@ type Daifugo struct {
 	reverseDirection    bool                     // 9リバース: ターン方向が逆か
 	numberLocked        bool                     // 激シバ: 連番縛り発動中
 	sequenceLocked      bool                     // 階段縛り: 階段のみ出せる
-	sortMode            DaifugoSortMode          // 手札ソートモード
 	actionLog           []*ActionLogEntry        // 棋譜
+}
+
+// Daifugo 大富豪ゲームクラス
+type Daifugo struct {
+	trumpCards *TrumpCards
+	players    []*DaifugoPlayer
+	config     DaifugoConfig   // ローカルルール設定
+	sortMode   DaifugoSortMode // 手札ソートモード (ラウンド間で維持)
+	round      daifugoRoundState
 }
 
 // NewDaifugo コンストラクタ
 func NewDaifugo(trumpCards *TrumpCards, players []*DaifugoPlayer, config DaifugoConfig) *Daifugo {
 	return &Daifugo{
-		trumpCards:          trumpCards,
-		players:             players,
-		currentTurn:         0,
-		tableCards:          nil,
-		lastPlayPlayerIdx:   -1,
-		gameEndFlag:         false,
-		passCount:           0,
-		cpuActions:          nil,
-		humanAction:         nil,
-		revolutionActive:    false,
-		config:              config,
-		suitLocked:          false,
-		lockedSuit:          0,
-		elevenBackActive:    false,
-		tableIsSequence:     false,
-		exchangeActions:     nil,
-		pendingActionType:   DaifugoPendingNone,
-		pendingActionTarget: -1,
+		trumpCards: trumpCards,
+		players:    players,
+		config:     config,
+		round: daifugoRoundState{
+			lastPlayPlayerIdx:   -1,
+			pendingActionTarget: -1,
+		},
 	}
 }
 
@@ -161,25 +155,10 @@ func (d *Daifugo) Reset() {
 		}
 	}
 
-	d.gameEndFlag = false
-	d.currentTurn = 0
-	d.tableCards = nil
-	d.lastPlayPlayerIdx = -1
-	d.passCount = 0
-	d.cpuActions = nil
-	d.humanAction = nil
-	d.revolutionActive = false
-	d.suitLocked = false
-	d.lockedSuit = 0
-	d.elevenBackActive = false
-	d.tableIsSequence = false
-	d.exchangeActions = nil
-	d.pendingActionType = DaifugoPendingNone
-	d.pendingActionTarget = -1
-	d.reverseDirection = false
-	d.numberLocked = false
-	d.sequenceLocked = false
-	d.actionLog = nil
+	d.round = daifugoRoundState{
+		lastPlayPlayerIdx:   -1,
+		pendingActionTarget: -1,
+	}
 	// sortMode は意図的にリセットしない: ユーザーの好みをラウンド間で維持する
 
 	// シャッフル
@@ -211,26 +190,26 @@ func (d *Daifugo) Reset() {
 // PlayerPlay 人間プレイヤーがカードを出す (または パスする)
 // indices: 出すカードのインデックス。空の場合はパス。
 func (d *Daifugo) PlayerPlay(indices []int) error {
-	if d.gameEndFlag {
+	if d.round.gameEndFlag {
 		return ErrGameEnded
 	}
-	if !d.players[d.currentTurn].GetIsHuman() {
+	if !d.players[d.round.currentTurn].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
 
 	// ペンディングアクションがある場合はそちらを先に解決
-	if d.pendingActionType != DaifugoPendingNone {
+	if d.round.pendingActionType != DaifugoPendingNone {
 		return d.resolvePendingAction(indices)
 	}
 
 	// 人間のターン開始時にCPU行動履歴をリセット
-	d.cpuActions = nil
+	d.round.cpuActions = nil
 
 	if len(indices) == 0 {
 		// パス
-		d.passCount++
-		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
-		d.appendLog(d.currentTurn, "pass", "pass", nil)
+		d.round.passCount++
+		d.round.humanAction = &DaifugoCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: nil}
+		d.appendLog(d.round.currentTurn, "pass", "pass", nil)
 		d.advanceTurn()
 		d.checkPassClear()
 		return nil
@@ -251,7 +230,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 	}
 
 	// 指定カードを収集
-	player := d.players[d.currentTurn]
+	player := d.players[d.round.currentTurn]
 	selectedCards := make([]*Card, len(indices))
 	for i, idx := range indices {
 		card := player.GetCard(idx)
@@ -275,19 +254,19 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 
 	// カードを出す
 	cards := player.RemoveCards(indices)
-	d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: cards}
-	d.appendLog(d.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
-	d.playCards(d.currentTurn, cards, isSeq, spadeThree)
+	d.round.humanAction = &DaifugoCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: cards}
+	d.appendLog(d.round.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	d.playCards(d.round.currentTurn, cards, isSeq, spadeThree)
 	return nil
 }
 
 // playCards はカードプレイ後の共通処理を実行する
 func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree bool) {
 	d.updateSequenceLock(isSeq)
-	d.tableCards = cards
-	d.lastPlayPlayerIdx = playerIdx
-	d.passCount = 0
-	d.tableIsSequence = isSeq
+	d.round.tableCards = cards
+	d.round.lastPlayPlayerIdx = playerIdx
+	d.round.passCount = 0
+	d.round.tableIsSequence = isSeq
 
 	emperor := d.triggerEmperor(cards)
 	if !emperor {
@@ -312,14 +291,14 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 	d.triggerTenDiscardIfNeeded(cards, isSeq)
 	d.triggerQueenBomberIfNeeded(cards, isSeq)
 
-	if d.pendingActionType != DaifugoPendingNone {
+	if d.round.pendingActionType != DaifugoPendingNone {
 		return
 	}
 
 	if !d.checkGameEnd() {
 		if (!eightCut && !sandstorm && !emperor && !spadeThree) || d.players[playerIdx].GetIsFinished() {
 			d.advanceTurn()
-			for i := 0; i < fiveSkipCount && !d.gameEndFlag; i++ {
+			for i := 0; i < fiveSkipCount && !d.round.gameEndFlag; i++ {
 				d.advanceTurn()
 			}
 			d.checkPassClear()
@@ -329,17 +308,17 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 
 // CpuPlay 現在の手番がCPUの場合に1ターン実行
 func (d *Daifugo) CpuPlay() {
-	if d.gameEndFlag || d.players[d.currentTurn].GetIsHuman() {
+	if d.round.gameEndFlag || d.players[d.round.currentTurn].GetIsHuman() {
 		return
 	}
 
 	// ペンディングアクションがある場合はCPUが自動解決
-	if d.pendingActionType != DaifugoPendingNone {
+	if d.round.pendingActionType != DaifugoPendingNone {
 		d.cpuResolvePendingAction()
 		return
 	}
 
-	playerIdx := d.currentTurn
+	playerIdx := d.round.currentTurn
 	player := d.players[playerIdx]
 
 	// 出せる最弱のカードセットを探す
@@ -347,9 +326,9 @@ func (d *Daifugo) CpuPlay() {
 
 	if len(playIndices) == 0 {
 		// パス
-		d.passCount++
+		d.round.passCount++
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: nil}
-		d.cpuActions = append(d.cpuActions, action)
+		d.round.cpuActions = append(d.round.cpuActions, action)
 		d.appendLog(playerIdx, "pass", "pass", nil)
 		d.advanceTurn()
 		d.checkPassClear()
@@ -371,7 +350,7 @@ func (d *Daifugo) CpuPlay() {
 
 		cards := player.RemoveCards(playIndices)
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: cards}
-		d.cpuActions = append(d.cpuActions, action)
+		d.round.cpuActions = append(d.round.cpuActions, action)
 		d.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
 		d.playCards(playerIdx, cards, isSeq, spadeThree)
 	}
@@ -379,54 +358,54 @@ func (d *Daifugo) CpuPlay() {
 
 // advanceTurn 手番を次のアクティブなプレイヤーへ進める
 func (d *Daifugo) advanceTurn() {
-	if d.gameEndFlag {
+	if d.round.gameEndFlag {
 		return
 	}
-	next := d.getNextActivePlayer(d.currentTurn)
+	next := d.getNextActivePlayer(d.round.currentTurn)
 	if next >= 0 {
-		d.currentTurn = next
+		d.round.currentTurn = next
 	}
 }
 
 // checkPassClear 全員パスしたら場をクリアする
 func (d *Daifugo) checkPassClear() {
-	if d.tableCards == nil || d.lastPlayPlayerIdx < 0 {
+	if d.round.tableCards == nil || d.round.lastPlayPlayerIdx < 0 {
 		return
 	}
 	// 手番が最後に出したプレイヤーに戻ってきたら全員パス
-	if d.currentTurn == d.lastPlayPlayerIdx {
+	if d.round.currentTurn == d.round.lastPlayPlayerIdx {
 		d.clearTableState()
 	}
 }
 
 // clearTableState 場の状態をクリア (8切り、上がり時等に使用)
 func (d *Daifugo) clearTableState() {
-	d.tableCards = nil
-	d.lastPlayPlayerIdx = -1
-	d.passCount = 0
-	d.suitLocked = false
-	d.lockedSuit = 0
-	d.elevenBackActive = false
-	d.tableIsSequence = false
-	d.numberLocked = false
+	d.round.tableCards = nil
+	d.round.lastPlayPlayerIdx = -1
+	d.round.passCount = 0
+	d.round.suitLocked = false
+	d.round.lockedSuit = 0
+	d.round.elevenBackActive = false
+	d.round.tableIsSequence = false
+	d.round.numberLocked = false
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
 func (d *Daifugo) IsHumanTurn() bool {
-	return d.players[d.currentTurn].GetIsHuman()
+	return d.players[d.round.currentTurn].GetIsHuman()
 }
 
 // GetCurrentTurn 現在の手番プレイヤーインデックス取得
-func (d *Daifugo) GetCurrentTurn() int { return d.currentTurn }
+func (d *Daifugo) GetCurrentTurn() int { return d.round.currentTurn }
 
 // GetGameEndFlag ゲーム終了フラグ取得
-func (d *Daifugo) GetGameEndFlag() bool { return d.gameEndFlag }
+func (d *Daifugo) GetGameEndFlag() bool { return d.round.gameEndFlag }
 
 // GetTableCards 場のカード取得 (nil = クリア)
-func (d *Daifugo) GetTableCards() []*Card { return d.tableCards }
+func (d *Daifugo) GetTableCards() []*Card { return d.round.tableCards }
 
 // GetLastPlayPlayerIdx 最後にカードを出したプレイヤーインデックス取得 (-1 = なし)
-func (d *Daifugo) GetLastPlayPlayerIdx() int { return d.lastPlayPlayerIdx }
+func (d *Daifugo) GetLastPlayPlayerIdx() int { return d.round.lastPlayPlayerIdx }
 
 // GetPlayer プレイヤー取得
 func (d *Daifugo) GetPlayer(idx int) *DaifugoPlayer {
@@ -440,66 +419,66 @@ func (d *Daifugo) GetPlayer(idx int) *DaifugoPlayer {
 func (d *Daifugo) GetPlayerCnt() int { return len(d.players) }
 
 // GetCpuActions CPUターンの行動履歴取得
-func (d *Daifugo) GetCpuActions() []*DaifugoCpuAction { return d.cpuActions }
+func (d *Daifugo) GetCpuActions() []*DaifugoCpuAction { return d.round.cpuActions }
 
 // GetHumanAction 人間の最後の行動取得
-func (d *Daifugo) GetHumanAction() *DaifugoCpuAction { return d.humanAction }
+func (d *Daifugo) GetHumanAction() *DaifugoCpuAction { return d.round.humanAction }
 
 // GetPassCount 現在のパスカウント取得
-func (d *Daifugo) GetPassCount() int { return d.passCount }
+func (d *Daifugo) GetPassCount() int { return d.round.passCount }
 
 // GetRevolutionActive 革命フラグ取得
-func (d *Daifugo) GetRevolutionActive() bool { return d.revolutionActive }
+func (d *Daifugo) GetRevolutionActive() bool { return d.round.revolutionActive }
 
 // GetConfig ローカルルール設定取得
 func (d *Daifugo) GetConfig() DaifugoConfig { return d.config }
 
 // GetSuitLocked スート縛り発動中か取得
-func (d *Daifugo) GetSuitLocked() bool { return d.suitLocked }
+func (d *Daifugo) GetSuitLocked() bool { return d.round.suitLocked }
 
 // GetLockedSuit 縛られているスート取得
-func (d *Daifugo) GetLockedSuit() int { return d.lockedSuit }
+func (d *Daifugo) GetLockedSuit() int { return d.round.lockedSuit }
 
 // GetElevenBackActive 11バック発動中か取得
-func (d *Daifugo) GetElevenBackActive() bool { return d.elevenBackActive }
+func (d *Daifugo) GetElevenBackActive() bool { return d.round.elevenBackActive }
 
 // GetTableIsSequence 場が階段プレイか取得
-func (d *Daifugo) GetTableIsSequence() bool { return d.tableIsSequence }
+func (d *Daifugo) GetTableIsSequence() bool { return d.round.tableIsSequence }
 
 // GetExchangeActions カード交換記録取得
-func (d *Daifugo) GetExchangeActions() []*DaifugoExchangeAction { return d.exchangeActions }
+func (d *Daifugo) GetExchangeActions() []*DaifugoExchangeAction { return d.round.exchangeActions }
 
 // GetPendingActionType ペンディングアクションの種類取得
-func (d *Daifugo) GetPendingActionType() DaifugoPendingAction { return d.pendingActionType }
+func (d *Daifugo) GetPendingActionType() DaifugoPendingAction { return d.round.pendingActionType }
 
 // GetPendingActionTarget ペンディングアクションの対象プレイヤーインデックス取得
-func (d *Daifugo) GetPendingActionTarget() int { return d.pendingActionTarget }
+func (d *Daifugo) GetPendingActionTarget() int { return d.round.pendingActionTarget }
 
 // HasPendingAction ペンディングアクションがあるか取得
-func (d *Daifugo) HasPendingAction() bool { return d.pendingActionType != DaifugoPendingNone }
+func (d *Daifugo) HasPendingAction() bool { return d.round.pendingActionType != DaifugoPendingNone }
 
 // SetConfig ローカルルール設定を変更（ResetWithConfig用）
 func (d *Daifugo) SetConfig(config DaifugoConfig) { d.config = config }
 
 // GetReverseDirection 9リバースの方向取得
-func (d *Daifugo) GetReverseDirection() bool { return d.reverseDirection }
+func (d *Daifugo) GetReverseDirection() bool { return d.round.reverseDirection }
 
 // GetNumberLocked 連番縛り発動中か取得
-func (d *Daifugo) GetNumberLocked() bool { return d.numberLocked }
+func (d *Daifugo) GetNumberLocked() bool { return d.round.numberLocked }
 
 // GetSequenceLocked 階段縛り発動中か取得
-func (d *Daifugo) GetSequenceLocked() bool { return d.sequenceLocked }
+func (d *Daifugo) GetSequenceLocked() bool { return d.round.sequenceLocked }
 
 // GetSortMode 手札ソートモード取得
 func (d *Daifugo) GetSortMode() DaifugoSortMode { return d.sortMode }
 
 // GetActionLog 棋譜を取得する
-func (d *Daifugo) GetActionLog() []*ActionLogEntry { return d.actionLog }
+func (d *Daifugo) GetActionLog() []*ActionLogEntry { return d.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
 func (d *Daifugo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.actionLog = append(d.actionLog, &ActionLogEntry{
-		TurnNumber: len(d.actionLog) + 1,
+	d.round.actionLog = append(d.round.actionLog, &ActionLogEntry{
+		TurnNumber: len(d.round.actionLog) + 1,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,

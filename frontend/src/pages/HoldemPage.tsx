@@ -9,6 +9,7 @@ import { EquityDisplay } from '../components/EquityDisplay';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -16,12 +17,13 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
@@ -73,23 +75,6 @@ const HE_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Tutorial button that starts the Texas Hold'em tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
-
 /** Texas Hold'em tutorial configuration. */
 const HE_TUTORIAL_CONFIG: TutorialConfig = {
   gameName: 'holdem',
@@ -128,7 +113,7 @@ function StatTooltip({ id, label, tooltipText }: { id: string; label: string; to
 function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; threeBet: number; af: string }) {
   const { t } = useTranslation('holdem');
   return (
-    <span className="ml-2 text-cyan-300 text-[0.8em]" data-testid="hud-stats">
+    <span className="ml-2 text-cyan-300 text-[0.8em] hidden sm:inline" data-testid="hud-stats">
       <StatTooltip id="tooltip-vpip" label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:{vpip}%{' '}
       <StatTooltip id="tooltip-pfr" label={t('stats.pfr')} tooltipText={t('stats.pfrTooltip')} />:{pfr}%{' '}
       <StatTooltip id="tooltip-3bet" label={t('stats.threeBet')} tooltipText={t('stats.threeBetTooltip')} />:{threeBet}%{' '}
@@ -225,6 +210,7 @@ function HoldemPageContent() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
+      <GamePageHeading title={tc('nav.holdem')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
         <span data-tutorial="he-pot-display">
@@ -246,7 +232,7 @@ function HoldemPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: community cards + CPU players */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5">
+      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8">
         {/* Community cards */}
         <div className="mb-4" data-tutorial="he-community-cards">
           <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>

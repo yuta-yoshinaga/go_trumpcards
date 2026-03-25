@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // gameNames is the canonical ordered list of available game names.
 var gameNames = []string{
 	"blackjack", "poker", "oldmaid", "daifugo", "sevens",
-	"doubt", "holdem", "omaha", "shortdeck", "hearts", "memory", "klondike", "freecell", "baccarat", "spades", "crazyeights", "ginrummy", "spider", "napoleon", "indianpoker", "videopoker", "euchre", "pyramid", "cribbage",
+	"doubt", "holdem", "omaha", "shortdeck", "hearts", "memory", "klondike", "freecell", "baccarat", "spades", "crazyeights", "ginrummy", "spider", "napoleon", "indianpoker", "videopoker", "deuceswild", "jokerpoker", "euchre", "pyramid", "cribbage",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.
@@ -102,7 +103,11 @@ func (m *GameManager) initGame(name string) string {
 func (m *GameManager) switchGame(name string) string {
 	name = strings.ToLower(name)
 	if _, ok := m.games[name]; !ok {
-		return i18n.Tf("unknownGame", "name", name)
+		msg := i18n.Tf("unknownGame", "name", name)
+		if suggestion := cuiutil.SuggestCommand(name, m.gameOrder, 2); suggestion != "" {
+			msg += "\n  " + i18n.Tf("didYouMean", "name", suggestion)
+		}
+		return msg
 	}
 	if name == m.currentGame {
 		return i18n.Tf("alreadyPlaying", "name", name)
@@ -153,6 +158,8 @@ func buildGameEntries() (map[string]CuiExecer, map[string][]string) {
 		"napoleon":    NewNapoleonCui(),
 		"indianpoker": NewIndianPokerCui(),
 		"videopoker":  NewVideoPokerCui(),
+		"deuceswild":  NewDeucesWildCui(),
+		"jokerpoker":  NewJokerPokerCui(),
 		"euchre":      NewEuchreCui(),
 		"pyramid":     NewPyramidCui(),
 		"cribbage":    NewCribbageCui(),

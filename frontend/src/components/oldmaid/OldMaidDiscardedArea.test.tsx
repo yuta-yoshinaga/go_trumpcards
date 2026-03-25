@@ -45,7 +45,7 @@ describe('OldMaidDiscardedArea', () => {
   });
 
   it('uses desktop card dimensions on wide viewport', () => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
     const cards = [makeCard('SPADE', 1), makeCard('HEART', 1)];
     const { container } = render(<OldMaidDiscardedArea cards={cards} />);
     const pairContainer = container.querySelector('div[style*="position: relative"]') as HTMLElement;
@@ -65,7 +65,7 @@ describe('OldMaidDiscardedArea', () => {
   });
 
   it('scales overlap offsets proportionally on desktop', () => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
     const cards = [makeCard('SPADE', 1), makeCard('HEART', 1)];
     const { container } = render(<OldMaidDiscardedArea cards={cards} />);
     const overlappedImg = container.querySelectorAll('img')[1] as HTMLElement;

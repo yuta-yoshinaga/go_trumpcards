@@ -67,10 +67,10 @@ func TestDaifugo_advanceTurn_GameEndFlag(t *testing.T) {
 	config := DaifugoConfig{}
 	d := NewDaifugo(tc, players, config)
 
-	d.gameEndFlag = true
-	originalTurn := d.currentTurn
+	d.round.gameEndFlag = true
+	originalTurn := d.round.currentTurn
 	d.advanceTurn()
-	assert.Equal(t, originalTurn, d.currentTurn)
+	assert.Equal(t, originalTurn, d.round.currentTurn)
 }
 
 // TestDaifugo_isPlayable_EmptyCards covers lines 547-549:
@@ -109,12 +109,12 @@ func TestDaifugo_findBestSequencePlay_StrengthSkip(t *testing.T) {
 	d := NewDaifugo(tc, players, config)
 
 	// Set up a table with a 3-card sequence
-	d.tableCards = []*Card{
+	d.round.tableCards = []*Card{
 		NewCard(CardDesignHeart, 3, false),
 		NewCard(CardDesignHeart, 4, false),
 		NewCard(CardDesignHeart, 5, false),
 	}
-	d.tableIsSequence = true
+	d.round.tableIsSequence = true
 
 	// Craft a hand with same-suit cards in NON-ascending order.
 	// Place a higher-strength card BEFORE a lower-strength same-suit card.
@@ -153,12 +153,12 @@ func TestDaifugo_findBestSequencePlay_SciIncrement(t *testing.T) {
 	d := NewDaifugo(tc, players, config)
 
 	// Table: 3-card sequence of Hearts 3-4-5
-	d.tableCards = []*Card{
+	d.round.tableCards = []*Card{
 		NewCard(CardDesignHeart, 3, false),
 		NewCard(CardDesignHeart, 4, false),
 		NewCard(CardDesignHeart, 5, false),
 	}
-	d.tableIsSequence = true
+	d.round.tableIsSequence = true
 
 	// Craft a hand that, for a given startIdx, builds suitCards with a gap that requires
 	// sci++ advancement. The key is:
@@ -347,7 +347,7 @@ func TestDaifugo_findBestPlay_EightOnly(t *testing.T) {
 
 	// Player 1 has only an 8 (skipped by first loop, picked by second loop)
 	players[1].AddCard(NewCard(CardDesignSpade, 8, false))
-	d.tableCards = nil
+	d.round.tableCards = nil
 
 	result := d.findBestPlay(players[1])
 	assert.Equal(t, []int{0}, result)
@@ -377,13 +377,13 @@ func TestDaifugo_applyCapitalFall_FormerDaifugoIsLast(t *testing.T) {
 	players[3].SetRank(3)
 	// Player 1 is last active, give them 1 card
 	players[1].AddCard(NewCard(CardDesignSpade, 3, false))
-	d.currentTurn = 1 // set turn to CPU player 1
+	d.round.currentTurn = 1 // set turn to CPU player 1
 
 	// CpuPlay: player 1 plays last card → finishPlayer(1) rank=4 → applyCapitalFall
 	d.CpuPlay()
 
 	// lowestIdx == prevDaifugoIdx (both = 1) → no swap
-	assert.True(t, d.gameEndFlag)
+	assert.True(t, d.round.gameEndFlag)
 	assert.Equal(t, 4, players[1].GetRank()) // still last
 	assert.Equal(t, 1, players[0].GetRank()) // unchanged
 }
@@ -401,7 +401,7 @@ func TestDaifugo_findBestPlayEasy_FollowWithJokerSkip(t *testing.T) {
 	d := NewDaifugo(tc, players, cfg)
 
 	// Table has a single card
-	d.tableCards = []*Card{NewCard(CardDesignSpade, 3, false)}
+	d.round.tableCards = []*Card{NewCard(CardDesignSpade, 3, false)}
 	// CPU has joker first, then a normal card
 	players[1].AddCard(NewCard(CardDesignJoker, 0, false))
 	players[1].AddCard(NewCard(CardDesignHeart, 5, false))
@@ -424,7 +424,7 @@ func TestDaifugo_findBestPlayHard_UrgentFollowAllJokerTable(t *testing.T) {
 	d := NewDaifugo(tc, players, cfg)
 
 	// All-joker table (tableBase < 0 → strength = JokerStrength)
-	d.tableCards = []*Card{NewCard(CardDesignJoker, 0, false)}
+	d.round.tableCards = []*Card{NewCard(CardDesignJoker, 0, false)}
 	// CPU 1 has only weak cards → can't beat joker → passes
 	players[1].AddCard(NewCard(CardDesignHeart, 3, false))
 	// Urgent
@@ -447,7 +447,7 @@ func TestDaifugo_findBestPlayEasy_AllJokerTable(t *testing.T) {
 	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyEasy}
 	d := NewDaifugo(tc, players, cfg)
 
-	d.tableCards = []*Card{NewCard(CardDesignJoker, 0, false)}
+	d.round.tableCards = []*Card{NewCard(CardDesignJoker, 0, false)}
 	players[1].AddCard(NewCard(CardDesignHeart, 3, false))
 
 	result := d.findBestPlayEasy(players[1])
@@ -466,7 +466,7 @@ func TestDaifugo_shouldStrategicPass_AllJokerTable(t *testing.T) {
 	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard}
 	d := NewDaifugo(tc, players, cfg)
 
-	d.tableCards = []*Card{NewCard(CardDesignJoker, 0, false)}
+	d.round.tableCards = []*Card{NewCard(CardDesignJoker, 0, false)}
 	// 6+ cards in hand
 	for i := 3; i <= 8; i++ {
 		players[1].AddCard(NewCard(CardDesignHeart, i, false))
@@ -490,10 +490,10 @@ func TestDaifugo_shouldStrategicPass_Revolution(t *testing.T) {
 	}
 	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard}
 	d := NewDaifugo(tc, players, cfg)
-	d.revolutionActive = true
+	d.round.revolutionActive = true
 
 	// Table: 3 (revolution strength = 15, which is > 10 → returns false early)
-	d.tableCards = []*Card{NewCard(CardDesignSpade, 3, false)}
+	d.round.tableCards = []*Card{NewCard(CardDesignSpade, 3, false)}
 	// 6+ cards in hand
 	for i := 4; i <= 10; i++ {
 		players[1].AddCard(NewCard(CardDesignHeart, i, false))
@@ -504,7 +504,7 @@ func TestDaifugo_shouldStrategicPass_Revolution(t *testing.T) {
 
 	// Table: Ace (revolution strength = 18-14 = 4, which is ≤ 10)
 	// Hand has a 10 (revolution strength = 18-10 = 8, which is < DaifugoCardStrength(1)=14)
-	d.tableCards = []*Card{NewCard(CardDesignSpade, 1, false)}
+	d.round.tableCards = []*Card{NewCard(CardDesignSpade, 1, false)}
 	result = d.shouldStrategicPass(players[1], []int{0})
 	// Card 4 has revolution strength 18-4=14 which equals DaifugoCardStrength(1)=14 → pass
 	assert.True(t, result, "revolution: card strength 14 >= threshold 14 → should pass")
@@ -577,7 +577,7 @@ func TestDaifugo_findBestPlayHard_UrgentFollowOverflowBreak(t *testing.T) {
 	d := NewDaifugo(tc, players, cfg)
 
 	// Table has pair
-	d.tableCards = []*Card{
+	d.round.tableCards = []*Card{
 		NewCard(CardDesignSpade, 3, false),
 		NewCard(CardDesignHeart, 3, false),
 	}
@@ -612,12 +612,12 @@ func TestDaifugo_findBestSequencePlayHard_UrgentJokerFill(t *testing.T) {
 	d := NewDaifugo(tc, players, cfg)
 
 	// Table: 3-card sequence
-	d.tableCards = []*Card{
+	d.round.tableCards = []*Card{
 		NewCard(CardDesignHeart, 3, false),
 		NewCard(CardDesignHeart, 4, false),
 		NewCard(CardDesignHeart, 5, false),
 	}
-	d.tableIsSequence = true
+	d.round.tableIsSequence = true
 
 	// CPU 1: has joker + cards with gap → joker fills the gap
 	// Spade 7, Spade 9 (gap at 8) + Joker
@@ -647,12 +647,12 @@ func TestDaifugo_findBestSequencePlayHard_UrgentNoJokerFill(t *testing.T) {
 	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard, SequenceEnabled: true}
 	d := NewDaifugo(tc, players, cfg)
 
-	d.tableCards = []*Card{
+	d.round.tableCards = []*Card{
 		NewCard(CardDesignHeart, 3, false),
 		NewCard(CardDesignHeart, 4, false),
 		NewCard(CardDesignHeart, 5, false),
 	}
-	d.tableIsSequence = true
+	d.round.tableIsSequence = true
 
 	// CPU 1: gap with no joker
 	players[1].AddCard(NewCard(CardDesignSpade, 7, false))
@@ -708,7 +708,7 @@ func TestDaifugo_searchCardGroupSuitCheck(t *testing.T) {
 	t.Run("full lock: first card matches → true", func(t *testing.T) {
 		cfg := DaifugoConfig{SuitLockMode: DaifugoSuitLockFull}
 		d := NewDaifugo(tc, players, cfg)
-		d.lockedSuit = CardDesignSpade
+		d.round.lockedSuit = CardDesignSpade
 
 		players[0].Reset()
 		players[0].AddCard(NewCard(CardDesignSpade, 6, false))
@@ -720,7 +720,7 @@ func TestDaifugo_searchCardGroupSuitCheck(t *testing.T) {
 	t.Run("full lock: first card doesn't match → false", func(t *testing.T) {
 		cfg := DaifugoConfig{SuitLockMode: DaifugoSuitLockFull}
 		d := NewDaifugo(tc, players, cfg)
-		d.lockedSuit = CardDesignSpade
+		d.round.lockedSuit = CardDesignSpade
 
 		players[0].Reset()
 		players[0].AddCard(NewCard(CardDesignHeart, 6, false))
@@ -732,7 +732,7 @@ func TestDaifugo_searchCardGroupSuitCheck(t *testing.T) {
 	t.Run("partial lock: second card matches → true", func(t *testing.T) {
 		cfg := DaifugoConfig{SuitLockMode: DaifugoSuitLockPartial}
 		d := NewDaifugo(tc, players, cfg)
-		d.lockedSuit = CardDesignSpade
+		d.round.lockedSuit = CardDesignSpade
 
 		players[0].Reset()
 		players[0].AddCard(NewCard(CardDesignHeart, 6, false))
@@ -744,7 +744,7 @@ func TestDaifugo_searchCardGroupSuitCheck(t *testing.T) {
 	t.Run("partial lock: no card matches → false", func(t *testing.T) {
 		cfg := DaifugoConfig{SuitLockMode: DaifugoSuitLockPartial}
 		d := NewDaifugo(tc, players, cfg)
-		d.lockedSuit = CardDesignSpade
+		d.round.lockedSuit = CardDesignSpade
 
 		players[0].Reset()
 		players[0].AddCard(NewCard(CardDesignHeart, 6, false))
@@ -789,7 +789,7 @@ func TestDaifugo_shouldStrategicPass_JokerInHand(t *testing.T) {
 	d := NewDaifugo(tc, players, cfg)
 
 	// Table strength <= 10 (card 4, strength = 4)
-	d.tableCards = []*Card{NewCard(CardDesignSpade, 4, false)}
+	d.round.tableCards = []*Card{NewCard(CardDesignSpade, 4, false)}
 	// 6+ cards in hand, with a joker at index 0
 	players[1].AddCard(NewCard(CardDesignJoker, 0, false)) // index 0 = joker
 	for i := 5; i <= 10; i++ {
@@ -822,7 +822,7 @@ func TestDaifugo_searchCardGroup_JokerComplementSelectStrongest(t *testing.T) {
 	players[1].AddCard(NewCard(CardDesignHeart, 10, false)) // idx 1
 	players[1].AddCard(NewCard(CardDesignJoker, 0, false))  // idx 2
 
-	d.tableCards = []*Card{NewCard(CardDesignSpade, 5, false), NewCard(CardDesignClover, 5, false)}
+	d.round.tableCards = []*Card{NewCard(CardDesignSpade, 5, false), NewCard(CardDesignClover, 5, false)}
 
 	result := d.searchCardGroup(players[1], 2, 5, cardSearchOpts{selectStrongest: true})
 	assert.NotNil(t, result)
@@ -846,7 +846,7 @@ func TestDaifugo_findOpeningSequencePlay_SkipsJokerStartIdx(t *testing.T) {
 		SequenceLockEnabled: true,
 	}
 	d := NewDaifugo(tc, players, cfg)
-	d.sequenceLocked = true
+	d.round.sequenceLocked = true
 
 	// Cards sorted by strength: 3(str3), joker(str16 → placed at end after sort)
 	// But we need the joker to appear at a startIdx that the loop reaches.
@@ -890,7 +890,7 @@ func TestDaifugo_findOpeningSequencePlay_IllegalFinishFallback(t *testing.T) {
 		SequenceRevolutionEnabled: true,
 	}
 	d := NewDaifugo(tc, players, cfg)
-	d.sequenceLocked = true
+	d.round.sequenceLocked = true
 
 	// Player has exactly 3 cards that form a valid sequence including an 8 → illegal finish
 	// Hearts 7, 8, 9 → valid sequence, but playing all 3 = finish with 8 = illegal

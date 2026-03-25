@@ -149,7 +149,9 @@ classDiagram
         -trumpCards *TrumpCards
         -players []*PokerPlayer
         -config PokerConfig
-        -phase int
+        -dealerIdx int
+        -humanProfile *BettingHumanProfile
+        -round pokerRoundState
         +Reset()
         +PlayerExchange(indices []int) error
         +PlayerFold() error
@@ -180,11 +182,22 @@ classDiagram
         -handRank int
         -handName string
         -payout int
+        -variantConfig *VideoPokerVariantConfig
         +Reset()
         +PlayerBet(amount int) error
         +PlayerHold(indices []int) error
         +Phase() int
         +ActionLog() []*ActionLogEntry
+    }
+
+    class VideoPokerVariantConfig {
+        +string Name
+        +int DeckSize
+        +bool UseJoker
+        +func IsWild func(*Card) bool
+        +func EvalHand func([]*Card) (int, string)
+        +func PayTable func(int, int) int
+        +func MinQualifying func(int) bool
     }
 
     BlackJack --> "*" BlackJackPlayer
@@ -196,6 +209,7 @@ classDiagram
     Baccarat --> "1" TrumpCards
     VideoPoker --> "1" TrumpCards
     VideoPoker --> "1" ChipHolder
+    VideoPoker --> "0..1" VideoPokerVariantConfig
 ```
 
 #### トリックテイキング系ゲーム
@@ -246,12 +260,7 @@ classDiagram
         -trumpCards *TrumpCards
         -players []*NapoleonPlayer
         -config NapoleonConfig
-        -phase NapoleonPhase
-        -trickCards []*NapoleonTrickCard
-        -kitty []*Card
-        -napoleonIdx int
-        -adjutantCard *Card
-        -trumpSuit int
+        -round napoleonRoundState
         +Reset()
         +Bid(amount int) error
         +DeclareTrump(suit int) error
@@ -463,8 +472,8 @@ classDiagram
         -trumpCards *TrumpCards
         -players []*DaifugoPlayer
         -config DaifugoConfig
-        -currentTurn int
-        -tableCards []*Card
+        -sortMode DaifugoSortMode
+        -round daifugoRoundState
         +Reset()
         +Play(indices []int) error
         +Pass() error
@@ -832,6 +841,8 @@ classDiagram
         -napoleon *NapoleonWebController
         -indianpoker *IndianPokerWebController
         -videopoker *VideoPokerWebController
+        -deuceswild *DeucesWildWebController
+        -jokerpoker *JokerPokerWebController
         -euchre *EuchreWebController
         -pyramid *PyramidWebController
         -cribbage *CribbageWebController
@@ -856,8 +867,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 24 controllers
-    GameManager --> "*" CuiExecer : holds 24 games
+    TrumpCardsWeb --> "*" GameWebController : holds 26 controllers
+    GameManager --> "*" CuiExecer : holds 26 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1205,9 +1216,9 @@ stateDiagram-v2
     Result --> Bet : 次ラウンド (Reset)
     Result --> [*] : チップ0 (ゲーム終了)
 
-    note right of Bet : VideoPokerPhaseBet = 0
-    note right of Draw : VideoPokerPhaseDraw = 1
-    note right of Result : VideoPokerPhaseResult = 2
+    note right of Bet : VideoPokerPhaseBet = 1
+    note right of Draw : VideoPokerPhaseDraw = 2
+    note right of Result : VideoPokerPhaseResult = 3
 ```
 
 ### 3.15 Euchre フェーズ遷移

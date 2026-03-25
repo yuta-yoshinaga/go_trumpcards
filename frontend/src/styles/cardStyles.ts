@@ -1,5 +1,12 @@
 import type React from 'react';
 
+/** Tailwind classes for focus-visible ring on card selection buttons. */
+export const focusRingCard =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent rounded-lg';
+
+/** Tailwind classes for hover feedback on clickable cards (non-AnimatedCard). */
+export const hoverCardClass = 'cursor-pointer transition-[transform,box-shadow] duration-150';
+
 /** Return inline styles for a card with selection highlight and lift effect. */
 export function selectedCardStyle(isSelected: boolean): React.CSSProperties {
   return {

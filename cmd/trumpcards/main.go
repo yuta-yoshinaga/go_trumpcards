@@ -150,6 +150,8 @@ ENVIRONMENT VARIABLES:
 		"napoleon":    func() int { ui.NewNapoleonCui().Exec(); return 0 },
 		"indianpoker": func() int { ui.NewIndianPokerCui().Exec(); return 0 },
 		"videopoker":  func() int { ui.NewVideoPokerCui().Exec(); return 0 },
+		"deuceswild":  func() int { ui.NewDeucesWildCui().Exec(); return 0 },
+		"jokerpoker":  func() int { ui.NewJokerPokerCui().Exec(); return 0 },
 		"euchre":      func() int { ui.NewEuchreCui().Exec(); return 0 },
 		"pyramid":     func() int { ui.NewPyramidCui().Exec(); return 0 },
 		"cribbage":    func() int { ui.NewCribbageCui().Exec(); return 0 },
@@ -173,13 +175,16 @@ ENVIRONMENT VARIABLES:
 
 	arg := strings.ToLower(flag.Arg(0))
 	if handler, ok := commands[arg]; ok {
+		if flag.NArg() > 1 {
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(flag.Args()[1:], " ")))
+		}
 		return handler()
 	}
 
 	if arg != "" {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnknownGame", "name", arg))
 		if suggestion := cuiutil.SuggestCommand(arg, mapKeys(commands), 2); suggestion != "" {
-			fmt.Fprintln(os.Stderr, i18n.Tf("cliDidYouMean", "name", suggestion))
+			fmt.Fprintf(os.Stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 		}
 		fmt.Fprintln(os.Stderr)
 		flag.Usage()

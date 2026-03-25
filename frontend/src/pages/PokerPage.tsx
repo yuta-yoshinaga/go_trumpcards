@@ -7,6 +7,7 @@ import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -14,14 +15,15 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { PokerPhase } from '../types/phases';
@@ -75,23 +77,6 @@ const PK_TUTORIAL_CONFIG: TutorialConfig = {
   gameName: 'poker',
   steps: PK_TUTORIAL_STEPS,
 };
-
-/** Tutorial button that starts the Poker tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** Renders the 5-card Draw Poker game page with betting and card exchange. */
 export function PokerPage() {
@@ -163,6 +148,7 @@ function PokerPageContent() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
+      <GamePageHeading title={tc('nav.poker')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct || canExchange}>
         <span>
@@ -183,7 +169,7 @@ function PokerPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: CPU players + logs */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5">
+      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8">
         {/* CPU players */}
         {state?.players
           ?.filter((p) => !p.isHuman)

@@ -5,18 +5,21 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { MemorySkeleton } from '../components/skeleton/MemorySkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnSecondary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { playerName } from '../utils/playerUtils';
@@ -54,23 +57,6 @@ const MEM_TUTORIAL_CONFIG: TutorialConfig = {
   gameName: 'memory',
   steps: MEM_TUTORIAL_STEPS,
 };
-
-/** Tutorial button that starts the Memory tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
   [MemoryPhase.FLIP1]: 'flip1',
@@ -119,7 +105,8 @@ function MemoryPageContent() {
   const isHumanTurn = (isFlip1 || isFlip2) && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.memory.bg}`} aria-busy={loading} aria-live="polite">
+      <GamePageHeading title={tc('nav.memory')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
         <TutorialButton />
@@ -154,7 +141,7 @@ function MemoryPageContent() {
       />
 
       {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Player scores */}
         <div className="my-2 p-2 rounded bg-black/30 text-white text-sm" data-tutorial="mem-score-table">
           <div className="mb-1">{t('scores')}</div>
@@ -178,9 +165,9 @@ function MemoryPageContent() {
           </table>
         </div>
 
-        {/* Board: responsive grid (4/6/8/13 columns by breakpoint) */}
+        {/* Board: responsive grid (6/6/8/13 columns by breakpoint) */}
         <div className="my-3 p-2 rounded bg-black/40" data-tutorial="mem-board">
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1">
+          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1">
             {state.board.map((bc, idx) => (
               <button
                 type="button"
@@ -216,7 +203,7 @@ function MemoryPageContent() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.memory.footer} px-4 py-2.5`}>
         <ErrorAlert message={error} />
         <div className="flex gap-2 items-center">
           {isResult && (

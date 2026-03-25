@@ -227,7 +227,7 @@ func TestPokerCuiController_AllIn(t *testing.T) {
 func TestPokerCuiController_Empty(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Equal(t, "コマンドが不明です: ", c.Exec(""))
+	assert.Equal(t, "'help' でコマンド一覧を表示します。", c.Exec(""))
 }
 
 func TestPokerCuiController_Unknown(t *testing.T) {

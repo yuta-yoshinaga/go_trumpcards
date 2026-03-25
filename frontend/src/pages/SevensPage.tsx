@@ -6,17 +6,19 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { SevensSkeleton } from '../components/skeleton/SevensSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { playerName } from '../utils/playerUtils';
 import { actionDesc } from '../utils/sevensUtils';
@@ -45,23 +47,6 @@ const SV_TUTORIAL_CONFIG: TutorialConfig = {
   gameName: 'sevens',
   steps: SV_TUTORIAL_STEPS,
 };
-
-/** Tutorial button that starts the Sevens tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** Renders the Sevens game page with board, player areas, and joker placement. */
 export function SevensPage() {
@@ -239,7 +224,8 @@ function SevensPageContent() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <GamePageHeading title={tc('nav.sevens')} />
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {state.config &&
           (state.config.tunnelEnabled ||
             state.config.tunnelSkipWidth >= 2 ||

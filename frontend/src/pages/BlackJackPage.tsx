@@ -24,6 +24,7 @@ import { HandStatusBadges } from '../components/blackjack/HandStatusBadges';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -31,13 +32,13 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnSecondary } from '../styles/buttonStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -104,23 +105,6 @@ const BJ_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
-
-/** Tutorial button that starts the BlackJack tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
 
 /** BlackJack tutorial configuration. */
 const BJ_TUTORIAL_CONFIG: TutorialConfig = {
@@ -241,6 +225,7 @@ function BlackJackPageContent() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-bright" aria-busy={loading} aria-live="polite">
+      <GamePageHeading title={tc('nav.blackjack')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator
         phaseName={phaseNames[phase] ?? t('phase.bet')}
@@ -272,16 +257,16 @@ function BlackJackPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: dealer area + CPU players */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 lg:px-8">
         {phase !== BjPhase.BET && (
           <div data-tutorial="bj-dealer-hand">
-            <h3 className="text-white">
+            <h2 className="text-white">
               {t('dealerHand')}
               {dealerHitsSoft17 ? ' (H17)' : ' (S17)'}
-            </h3>
-            <h3 className="text-white">
+            </h2>
+            <p className="text-white">
               {t('score')} {state.dealer.score ? state.dealer.score : ''}
-            </h3>
+            </p>
             <div className="flex flex-wrap gap-2">
               {state.dealer.cards?.map((card, idx) => (
                 <AnimatedCard key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={cardWidth} />
@@ -296,14 +281,14 @@ function BlackJackPageContent() {
           <div className="mt-4">
             {cpuPlayers.map((cpu, cpuIdx) => (
               <div key={cpuIdx} className="mb-3">
-                <h3 className="text-yellow-200 mt-0 mb-1">
+                <h2 className="text-yellow-200 mt-0 mb-1">
                   {tc('player.cpu', { id: cpuIdx + 1 })} ({cpu.chips} chips)
                   {cpu.insuranceBet > 0 && (
                     <span className="text-yellow-400 text-sm ml-2">
                       [{t('insurance')} {cpu.insuranceBet}]
                     </span>
                   )}
-                </h3>
+                </h2>
                 {cpu.hands.map((hand, handIdx) => (
                   <div key={handIdx} className="mb-1">
                     <div className="text-yellow-100 text-sm">
@@ -340,7 +325,7 @@ function BlackJackPageContent() {
           <div className="mb-2" data-tutorial="bj-player-hand">
             {hands.map((hand, handIndex) => (
               <div key={`hand-${handIndex}`} className="mb-2">
-                <h3 className="text-white mt-0 mb-0.5">
+                <h2 className="text-white mt-0 mb-0.5">
                   {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
                   {handIndex === currentHandIdx &&
                     (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) &&
@@ -351,10 +336,10 @@ function BlackJackPageContent() {
                     isBlackJack={hand.isBlackJack}
                     surrendered={hand.surrendered}
                   />
-                </h3>
-                <h3 className="text-white mt-0 mb-0.5">
+                </h2>
+                <p className="text-white mt-0 mb-0.5">
                   {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
-                </h3>
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {hand.cards.map((card, cardIdx) => (
                     <AnimatedCard

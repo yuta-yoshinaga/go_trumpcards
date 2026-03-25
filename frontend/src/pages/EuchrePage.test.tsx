@@ -786,4 +786,10 @@ describe('EuchrePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '\u30b9\u30ad\u30c3\u30d7' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<EuchrePage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
 });

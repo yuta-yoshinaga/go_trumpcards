@@ -24,6 +24,7 @@ type VideoPokerWebOutput struct {
 	HandRank    int              `json:"handRank"`
 	HandName    string           `json:"handName"`
 	HeldIndices [5]bool          `json:"heldIndices"`
+	VariantName string           `json:"variantName"`
 	WebOutputBase
 }
 

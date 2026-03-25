@@ -24,6 +24,7 @@ const betPhaseState: VideoPokerResponse = {
   handRank: 0,
   handName: '',
   heldIndices: [false, false, false, false, false],
+  variantName: 'jacksorbetter',
   message: '',
 };
 
@@ -37,6 +38,7 @@ const drawPhaseState: VideoPokerResponse = {
   handRank: 0,
   handName: '',
   heldIndices: [false, false, false, false, false],
+  variantName: 'jacksorbetter',
   message: '',
 };
 
@@ -52,6 +54,7 @@ const resultPhaseWin: VideoPokerResponse = {
   heldIndices: [true, true, false, false, false],
   message: 'Jacks or Better! You win!',
   messageCode: 'videopoker.result.win',
+  variantName: 'jacksorbetter',
   messageParams: { handName: 'Jacks or Better', payout: '1' },
 };
 
@@ -66,6 +69,7 @@ const resultPhaseLose: VideoPokerResponse = {
   handName: '',
   heldIndices: [false, false, false, false, false],
   message: 'No winning hand.',
+  variantName: 'jacksorbetter',
   messageCode: 'videopoker.result.lose',
 };
 
@@ -108,5 +112,11 @@ describe('VideoPokerPage', () => {
     await waitFor(() => expect(screen.getByText(/次のハンド/)).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /次のハンド/ }));
     await waitFor(() => expect(screen.getByText(/リセットしますか/)).toBeInTheDocument());
+  });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<VideoPokerPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 });

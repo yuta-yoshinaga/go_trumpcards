@@ -5,19 +5,22 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { CrazyEightsSkeleton } from '../components/skeleton/CrazyEightsSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCrazyEightsGame } from '../hooks/useCrazyEightsGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import { selectedCardStyle } from '../styles/cardStyles';
+import { TutorialProvider } from '../providers/TutorialProvider';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { CrazyEightsPhase, CrazyEightsSuit } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -79,23 +82,6 @@ const CE_TUTORIAL_CONFIG: TutorialConfig = {
   steps: CE_TUTORIAL_STEPS,
 };
 
-/** Tutorial button that starts the Crazy Eights tutorial. */
-function TutorialButton() {
-  const { t } = useTranslation('tutorial');
-  const { start } = useTutorialContext();
-  return (
-    <button
-      type="button"
-      className={`${btnSecondary} text-xs`}
-      onClick={start}
-      aria-label={t('tutorialButton')}
-      title={t('tutorialButton')}
-    >
-      ?
-    </button>
-  );
-}
-
 /** Renders the Crazy Eights game page with card play and suit selection. */
 export function CrazyEightsPage() {
   const { t: tCe } = useTranslation('crazyeights');
@@ -155,7 +141,8 @@ function CrazyEightsPageContent() {
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.crazyeights.bg}`} aria-busy={loading} aria-live="polite">
+      <GamePageHeading title={tc('nav.crazyeights')} />
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn || isChooseSuit}>
         <TutorialButton />
       </PhaseIndicator>
@@ -189,7 +176,7 @@ function CrazyEightsPageContent() {
         ]}
       />
 
-      <div className="flex-1 overflow-y-auto pt-3 px-4">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         <div className="text-white text-center mb-2">
           <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
           <span>{t('drawPile', { count: state.drawPileCount })}</span>
@@ -257,7 +244,7 @@ function CrazyEightsPageContent() {
         />
       </div>
 
-      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.crazyeights.footer} px-4 py-2.5`}>
         {humanPlayer && (
           <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
             {humanPlayer.cards.map((card, idx) => (
@@ -267,7 +254,7 @@ function CrazyEightsPageContent() {
                 onClick={() => toggleCard(idx)}
                 aria-label={cardAlt(card)}
                 aria-pressed={selectedCardIndices.includes(idx)}
-                className="transition-transform"
+                className={`transition-transform ${focusRingCard}`}
                 style={{
                   background: 'none',
                   padding: 0,

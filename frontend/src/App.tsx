@@ -10,6 +10,7 @@ import { BlackJackPage } from './pages/BlackJackPage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { CribbagePage } from './pages/CribbagePage';
 import { DaifugoPage } from './pages/DaifugoPage';
+import { DeucesWildPage } from './pages/DeucesWildPage';
 import { DoubtPage } from './pages/DoubtPage';
 import { EuchrePage } from './pages/EuchrePage';
 import { FreeCellPage } from './pages/FreeCellPage';
@@ -17,6 +18,7 @@ import { GinRummyPage } from './pages/GinRummyPage';
 import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
 import { IndianPokerPage } from './pages/IndianPokerPage';
+import { JokerPokerPage } from './pages/JokerPokerPage';
 import { KlondikePage } from './pages/KlondikePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { NapoleonPage } from './pages/NapoleonPage';
@@ -56,6 +58,8 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/pyramid': <PyramidPage />,
   '/indianpoker': <IndianPokerPage />,
   '/videopoker': <VideoPokerPage />,
+  '/deuceswild': <DeucesWildPage />,
+  '/jokerpoker': <JokerPokerPage />,
 };
 
 /** Root application component with router and game page routes. */

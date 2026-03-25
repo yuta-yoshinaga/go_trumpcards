@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { playableCardStyle, selectedCardStyle, smartHighlightStyle } from './cardStyles';
+import { focusRingCard, playableCardStyle, selectedCardStyle, smartHighlightStyle } from './cardStyles';
 
 describe('selectedCardStyle', () => {
   it('returns selected styles when true', () => {
@@ -29,6 +29,15 @@ describe('playableCardStyle', () => {
     const style = playableCardStyle(false);
     expect(style.border).toBe('3px solid transparent');
     expect(style.boxShadow).toBe('none');
+  });
+});
+
+describe('focusRingCard', () => {
+  it('includes focus-visible ring classes', () => {
+    expect(focusRingCard).toContain('focus-visible:outline-none');
+    expect(focusRingCard).toContain('focus-visible:ring-2');
+    expect(focusRingCard).toContain('focus-visible:ring-blue-400');
+    expect(focusRingCard).toContain('rounded-lg');
   });
 });
 

@@ -1,3 +1,4 @@
+import { gameTheme } from '../../styles/gameTheme';
 import { GameSkeleton } from './GameSkeleton';
 import { SkeletonGrid } from './SkeletonGrid';
 
@@ -5,8 +6,8 @@ import { SkeletonGrid } from './SkeletonGrid';
 export function MemorySkeleton() {
   return (
     <GameSkeleton
-      bgClass="bg-game-bg-blue"
-      footerClassName="bg-game-bg-blue-dark border-white/20 px-4 py-2.5"
+      bgClass={gameTheme.memory.bg}
+      footerClassName={`${gameTheme.memory.footer} px-4 py-2.5`}
       footer={<div className="h-8 w-24 rounded bg-white/10 animate-pulse" />}
     >
       <div className="my-2 p-2 rounded bg-black/30">
@@ -16,7 +17,7 @@ export function MemorySkeleton() {
         ))}
       </div>
       <div className="my-3 p-2 rounded bg-black/40">
-        <SkeletonGrid count={52} cols="grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13" />
+        <SkeletonGrid count={52} cols="grid-cols-6 md:grid-cols-8 lg:grid-cols-13" />
       </div>
     </GameSkeleton>
   );
