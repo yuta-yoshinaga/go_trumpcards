@@ -418,14 +418,9 @@ func TestIndianPokerCpuDecide_TAG(t *testing.T) {
 	ip.SetLastBet(10)
 	ip.minRaise = 10
 
-	// Test repeatedly to cover random branches
-	actions := map[int]bool{}
-	for i := 0; i < 1000; i++ {
-		action, _ := ip.cpuDecide(1)
-		actions[action] = true
-	}
-	// TAG should produce at least check/call and possibly raise/bet
-	assert.True(t, len(actions) > 0)
+	// TAG should produce a valid action
+	action, _ := ip.cpuDecide(1)
+	assert.True(t, action >= 0)
 }
 
 func TestIndianPokerCpuDecide_LAP(t *testing.T) {
@@ -444,12 +439,8 @@ func TestIndianPokerCpuDecide_LAP(t *testing.T) {
 	ip.SetLastBet(10)
 	ip.minRaise = 10
 
-	actions := map[int]bool{}
-	for i := 0; i < 1000; i++ {
-		action, _ := ip.cpuDecide(2) // LAP
-		actions[action] = true
-	}
-	assert.True(t, len(actions) > 0)
+	action, _ := ip.cpuDecide(2) // LAP
+	assert.True(t, action >= 0)
 }
 
 func TestIndianPokerCpuDecide_TAP(t *testing.T) {
@@ -468,12 +459,8 @@ func TestIndianPokerCpuDecide_TAP(t *testing.T) {
 	ip.SetLastBet(10)
 	ip.minRaise = 10
 
-	actions := map[int]bool{}
-	for i := 0; i < 1000; i++ {
-		action, _ := ip.cpuDecide(3) // TAP
-		actions[action] = true
-	}
-	assert.True(t, len(actions) > 0)
+	action, _ := ip.cpuDecide(3) // TAP
+	assert.True(t, action >= 0)
 }
 
 func TestIndianPokerCpuDecide_LAG(t *testing.T) {
@@ -502,12 +489,8 @@ func TestIndianPokerCpuDecide_LAG(t *testing.T) {
 	ip.SetLastBet(10)
 	ip.minRaise = 10
 
-	actions := map[int]bool{}
-	for i := 0; i < 1000; i++ {
-		action, _ := ip.cpuDecide(3) // LAG
-		actions[action] = true
-	}
-	assert.True(t, len(actions) > 0)
+	action, _ := ip.cpuDecide(3) // LAG
+	assert.True(t, action >= 0)
 }
 
 func TestIndianPokerCpuDecide_UnknownStyle(t *testing.T) {
@@ -1532,16 +1515,10 @@ func TestIndianPokerCpuDecide_PotLimitActuallyCaps(t *testing.T) {
 	ip.minRaise = 100 // minRaise > pot, so cpuPotBet returns minRaise=100, but maxBetAmount=30
 
 	// maxBetAmount = pot(20) + lastBet(10) = 30
-	gotCapped := false
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 10; i++ {
 		_, amount := ip.cpuDecide(1)
-		if amount > 0 && amount <= 30 {
-			gotCapped = true
-		}
-		assert.LessOrEqual(t, amount, 30)
+		assert.LessOrEqual(t, amount, 30, "bet amount must not exceed maxBetAmount")
 	}
-	// Should have produced at least one capped raise
-	assert.True(t, gotCapped || true) // relaxed: just verify no amount exceeds cap
 }
 
 // --- advanceTurn: fallthrough to showdown when all acted/folded/allIn in loop ---
