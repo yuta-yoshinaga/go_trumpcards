@@ -36,7 +36,7 @@
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
-  "bidPhase": "ビッドを宣言してください (0=ニル, 1-13)",
+  "bidPhase": "ビッド宣言 (0=ニル, 1-13)",
   "playPhase": {
     "lead": "リードしてください",
     "follow": "カードを出してください"

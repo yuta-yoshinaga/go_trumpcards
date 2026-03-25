@@ -16,7 +16,7 @@ export function MemorySkeleton() {
         ))}
       </div>
       <div className="my-3 p-2 rounded bg-black/40">
-        <SkeletonGrid count={52} cols="grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13" />
+        <SkeletonGrid count={52} cols="grid-cols-6 md:grid-cols-8 lg:grid-cols-13" />
       </div>
     </GameSkeleton>
   );
