@@ -166,7 +166,7 @@ function MemoryPageContent() {
 
         {/* Board: responsive grid (6/6/8/13 columns by breakpoint) */}
         <div className="my-3 p-2 rounded bg-black/40" data-tutorial="mem-board">
-          <div className="grid grid-cols-6 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1">
+          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1">
             {state.board.map((bc, idx) => (
               <button
                 type="button"
