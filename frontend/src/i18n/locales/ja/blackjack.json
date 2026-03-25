@@ -50,6 +50,17 @@
     "3": "Omega II"
   },
   "trueCountNA": "TC=N/A",
+  "advancedSettings": "詳細設定",
+  "sideBetLabel": {
+    "pp": "PP (ペアベット):",
+    "t3": "21+3:"
+  },
+  "sideBetTooltip": {
+    "pp": "Perfect Pairs: 最初の2枚がペアなら配当",
+    "t3": "21+3: 最初の2枚+ディーラー1枚でポーカー役が成立すれば配当"
+  },
+  "soft17Tooltip": "H17=ソフト17でヒット / S17=ソフト17でスタンド",
+  "dasTooltip": "DAS=スプリット後にダブルダウン可",
   "das": "DAS",
   "surrenderRule": "サレンダー:",
   "surrenderRuleNames": {

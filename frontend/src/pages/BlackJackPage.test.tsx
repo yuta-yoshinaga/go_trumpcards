@@ -1157,14 +1157,14 @@ describe('BlackJackPage', () => {
 
   it('shows PP and 21+3 inputs in bet phase', async () => {
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByLabelText('PP:')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText('PP (ペアベット):')).toBeInTheDocument());
     expect(screen.getByLabelText('21+3:')).toBeInTheDocument();
   });
 
   it('sends side bets when PP and T3 are set', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    fireEvent.change(screen.getByLabelText('PP:'), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText('PP (ペアベット):'), { target: { value: '10' } });
     fireEvent.change(screen.getByLabelText('21+3:'), { target: { value: '20' } });
     mockExec.mockClear();
     mockExec.mockResolvedValue(actionPhaseState);

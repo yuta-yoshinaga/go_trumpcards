@@ -150,13 +150,13 @@ describe('BjBetPhaseControls', () => {
 
   it('renders PP input with provided value', () => {
     render(<BjBetPhaseControls {...defaultProps({ perfectPairsBet: 20 })} />);
-    expect(screen.getByLabelText('PP:')).toHaveValue(20);
+    expect(screen.getByLabelText('PP (ペアベット):')).toHaveValue(20);
   });
 
   it('calls onPerfectPairsBetChange when PP input changes', () => {
     const onPerfectPairsBetChange = vi.fn();
     render(<BjBetPhaseControls {...defaultProps({ onPerfectPairsBetChange })} />);
-    fireEvent.change(screen.getByLabelText('PP:'), { target: { value: '30' } });
+    fireEvent.change(screen.getByLabelText('PP (ペアベット):'), { target: { value: '30' } });
     expect(onPerfectPairsBetChange).toHaveBeenCalledWith(30);
   });
 
@@ -249,7 +249,7 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByRole('button', { name: 'カウント OFF' })).toBeDisabled();
     expect(screen.getByLabelText('カウンティング方式')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'DAS ON' })).toBeDisabled();
-    expect(screen.getByLabelText('PP:')).toBeDisabled();
+    expect(screen.getByLabelText('PP (ペアベット):')).toBeDisabled();
     expect(screen.getByLabelText('21+3:')).toBeDisabled();
     expect(screen.getByLabelText('ハンド数:')).toBeDisabled();
     expect(screen.getByLabelText('サレンダー:')).toBeDisabled();
@@ -261,7 +261,7 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled();
     expect(screen.getByLabelText('デッキ数:')).not.toBeDisabled();
     expect(screen.getByLabelText('CPU人数:')).not.toBeDisabled();
-    expect(screen.getByLabelText('PP:')).not.toBeDisabled();
+    expect(screen.getByLabelText('PP (ペアベット):')).not.toBeDisabled();
     expect(screen.getByLabelText('21+3:')).not.toBeDisabled();
     expect(screen.getByLabelText('ハンド数:')).not.toBeDisabled();
     expect(screen.getByLabelText('サレンダー:')).not.toBeDisabled();
