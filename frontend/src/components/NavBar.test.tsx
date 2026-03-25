@@ -230,6 +230,7 @@ describe('NavBar', () => {
     });
 
     it('forces details open on medium desktop (sm-lg) when toggled closed', () => {
+      const original = window.innerWidth;
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
       window.dispatchEvent(new Event('resize'));
       renderNavBar('/');
@@ -240,9 +241,14 @@ describe('NavBar', () => {
       tableDetails.open = false;
       fireEvent(tableDetails, new Event('toggle'));
       expect(tableDetails).toHaveAttribute('open');
+
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
     });
 
     it('closes open dropdown when clicking outside on large desktop', () => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
       renderNavBar('/poker');
       const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
       expect(pokerDetails).toHaveAttribute('open');
