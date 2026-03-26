@@ -42,63 +42,60 @@ function Board({
         style={{ gridTemplateColumns: 'auto repeat(13, 1fr)' }}
         data-testid="sevens-grid"
       >
-        {SUITS.map(({ idx, name, label, color }) => {
-          const tunnelIcon = tunnelEnabled;
-          return (
-            <div key={name} className="contents">
-              <span
-                className="flex items-center justify-center font-bold text-base sm:text-lg"
-                style={{ color }}
-                aria-hidden="true"
-              >
-                {label}
-                {tunnelIcon && (
-                  <span role="img" className="text-yellow-400 text-[8px] ml-0.5" aria-label={t('tunnelConnection')}>
-                    ↔
-                  </span>
-                )}
-              </span>
-              {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
-                const placed = isPositionPlaced(tablePlaced, idx, v);
-                const isCenter = v === 7;
-                const canPlace =
-                  jokerSelecting &&
-                  isPositionPlayable(tablePlaced, idx, v, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
-                const tunnelHighlight =
-                  tunnelEnabled &&
-                  !placed &&
-                  ((v === 1 && isPositionPlaced(tablePlaced, idx, 13)) ||
-                    (v === 13 && isPositionPlaced(tablePlaced, idx, 1)));
-                const colors = cellColors(placed, isCenter, canPlace);
-                const baseClass =
-                  'rounded text-center text-[0.6rem] sm:text-xs lg:text-sm leading-none aspect-square flex items-center justify-center';
-                const bold = isCenter ? ' font-bold' : '';
-                const border = tunnelHighlight ? ' border border-amber-400' : '';
+        {SUITS.map(({ idx, name, label, color }) => (
+          <div key={name} className="contents">
+            <span
+              className="flex items-center justify-center font-bold text-base sm:text-lg"
+              style={{ color }}
+              aria-hidden="true"
+            >
+              {label}
+              {tunnelEnabled && (
+                <span role="img" className="text-yellow-400 text-[8px] ml-0.5" aria-label={t('tunnelConnection')}>
+                  ↔
+                </span>
+              )}
+            </span>
+            {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
+              const placed = isPositionPlaced(tablePlaced, idx, v);
+              const isCenter = v === 7;
+              const canPlace =
+                jokerSelecting &&
+                isPositionPlayable(tablePlaced, idx, v, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
+              const tunnelHighlight =
+                tunnelEnabled &&
+                !placed &&
+                ((v === 1 && isPositionPlaced(tablePlaced, idx, 13)) ||
+                  (v === 13 && isPositionPlaced(tablePlaced, idx, 1)));
+              const colors = cellColors(placed, isCenter, canPlace);
+              const baseClass =
+                'rounded text-center text-[0.6rem] sm:text-xs lg:text-sm leading-none aspect-square flex items-center justify-center';
+              const bold = isCenter ? ' font-bold' : '';
+              const border = tunnelHighlight ? ' border border-amber-400' : '';
 
-                if (canPlace) {
-                  return (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => onJokerPlace?.(idx, v)}
-                      aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
-                      className={`${baseClass}${bold} border border-blue-400 cursor-pointer p-0`}
-                      style={colors}
-                      data-testid="board-cell"
-                    >
-                      {valueName(v)}
-                    </button>
-                  );
-                }
+              if (canPlace) {
                 return (
-                  <span key={v} className={`${baseClass}${bold}${border}`} style={colors} data-testid="board-cell">
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => onJokerPlace?.(idx, v)}
+                    aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
+                    className={`${baseClass}${bold} border border-blue-400 cursor-pointer p-0`}
+                    style={colors}
+                    data-testid="board-cell"
+                  >
                     {valueName(v)}
-                  </span>
+                  </button>
                 );
-              })}
-            </div>
-          );
-        })}
+              }
+              return (
+                <span key={v} className={`${baseClass}${bold}${border}`} style={colors} data-testid="board-cell">
+                  {valueName(v)}
+                </span>
+              );
+            })}
+          </div>
+        ))}
       </div>
     </div>
   );
