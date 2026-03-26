@@ -26,6 +26,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -233,7 +234,7 @@ function OmahaPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: community cards + CPU players */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full">
+      <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* Community cards */}
         <div className="mb-4" data-tutorial="oh-community-cards">
           <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>

@@ -22,6 +22,7 @@ import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DaifugoAction } from '../types/card';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -170,7 +171,7 @@ function DaifugoPageContent() {
       <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
         <TutorialButton />
       </PhaseIndicator>
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full">
+      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
         <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (

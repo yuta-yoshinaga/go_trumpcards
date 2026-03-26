@@ -20,6 +20,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { playerName } from '../utils/playerUtils';
@@ -230,7 +231,7 @@ function SevensPageContent() {
       <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
         <TutorialButton />
       </PhaseIndicator>
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full">
+      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         {state.config &&
           (state.config.tunnelEnabled ||
             state.config.tunnelSkipWidth >= 2 ||

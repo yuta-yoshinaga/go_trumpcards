@@ -26,6 +26,7 @@ import {
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoubtCpuAction } from '../types/card';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -221,7 +222,7 @@ function DoubtPageContent() {
       />
 
       {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full">
+      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* CPU player areas */}
         <div className="flex gap-2 flex-wrap mb-3">
           {cpuPlayers.map((player) => (
