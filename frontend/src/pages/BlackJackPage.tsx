@@ -260,7 +260,9 @@ function BlackJackPageContent() {
       {/* Scrollable: dealer area + CPU players */}
       <div
         data-testid="card-area"
-        className={['overflow-y-auto p-4 lg:px-8', phase !== BjPhase.BET && 'flex-1'].filter(Boolean).join(' ')}
+        className={['overflow-y-auto p-4 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full', phase !== BjPhase.BET && 'flex-1']
+          .filter(Boolean)
+          .join(' ')}
       >
         {phase === BjPhase.BET && (
           <div className="flex items-center justify-center py-6">

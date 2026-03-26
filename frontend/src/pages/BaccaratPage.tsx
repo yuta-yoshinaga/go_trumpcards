@@ -244,7 +244,9 @@ function BaccaratPageContent() {
 
       <div
         data-testid="card-area"
-        className={['overflow-y-auto pt-3 px-4 lg:px-8', !isBetPhase && 'flex-1'].filter(Boolean).join(' ')}
+        className={['overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full', !isBetPhase && 'flex-1']
+          .filter(Boolean)
+          .join(' ')}
       >
         {isBetPhase && state.playerHand.length === 0 && (
           <div className="flex items-center justify-center py-6">

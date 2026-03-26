@@ -170,7 +170,7 @@ function DaifugoPageContent() {
       <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
         <TutorialButton />
       </PhaseIndicator>
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full">
         <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
         <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (

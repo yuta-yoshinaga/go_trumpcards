@@ -230,7 +230,7 @@ function SevensPageContent() {
       <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
         <TutorialButton />
       </PhaseIndicator>
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full">
         {state.config &&
           (state.config.tunnelEnabled ||
             state.config.tunnelSkipWidth >= 2 ||

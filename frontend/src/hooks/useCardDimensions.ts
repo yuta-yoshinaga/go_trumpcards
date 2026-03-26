@@ -24,11 +24,11 @@ export const CARD_DIMENSIONS = {
     solitaireMinColWidth: 0,
   },
   largeDesktop: {
-    cardHeight: 120,
-    cardOverlap: 28,
-    cardWidth: 80,
-    cpuCardWidth: 66,
-    footerCardWidth: 72,
+    cardHeight: 150,
+    cardOverlap: 34,
+    cardWidth: 100,
+    cpuCardWidth: 82,
+    footerCardWidth: 90,
     solitaireMinColWidth: 0,
   },
 } as const;

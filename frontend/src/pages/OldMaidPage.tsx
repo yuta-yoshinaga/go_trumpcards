@@ -171,7 +171,7 @@ function OldMaidPageContent() {
         <TutorialButton />
       </PhaseIndicator>
       {/* Scrollable: CPU rows + discard + status + logs + result */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-5xl lg:mx-auto lg:w-full">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full">
         {/* Mode badge */}
         {state.mode === OldMaidMode.JijiNuki && (
           <div className="text-center mb-1">

@@ -140,7 +140,7 @@ export function VideoPokerGameContent({
         <TutorialButton />
       </PhaseIndicator>
 
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full">
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
         {state.hand.length > 0 && (

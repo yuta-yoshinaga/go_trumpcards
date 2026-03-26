@@ -170,7 +170,7 @@ function PokerPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: CPU players + logs */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8">
+      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full">
         {/* CPU players */}
         {state?.players
           ?.filter((p) => !p.isHuman)

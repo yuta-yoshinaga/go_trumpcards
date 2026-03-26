@@ -176,7 +176,7 @@ function CrazyEightsPageContent() {
         ]}
       />
 
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-5xl lg:mx-auto lg:w-full">
+      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-6xl lg:mx-auto lg:w-full">
         <div className="text-white text-center mb-2">
           <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
           <span>{t('drawPile', { count: state.drawPileCount })}</span>
