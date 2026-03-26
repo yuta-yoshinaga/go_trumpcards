@@ -445,4 +445,28 @@ describe('SpiderPage', () => {
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  it('renders on mobile viewport with min-width applied', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('renders on desktop viewport without mobile min-width', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    try {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
 });

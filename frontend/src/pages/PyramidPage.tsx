@@ -91,7 +91,7 @@ function PyramidPageContent() {
     handleUndo,
     handleSelectCard,
   } = usePyramidGame();
-  const { cardHeight, cardWidth, isMobile } = useCardDimensions();
+  const { cardHeight, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === PyramidPhase.PLAYING;
 
@@ -126,7 +126,9 @@ function PyramidPageContent() {
   /** Fraction of card height used for vertical overlap between rows (less on mobile for bigger tap targets) */
   const ROW_OVERLAP_RATIO = isMobile ? 0.3 : 0.35;
   const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
-  const pyramidWidth = maxCols * (cardWidth + cardGap) - cardGap;
+  /** Use minimum column width for touch-friendly card sizing on mobile */
+  const effectiveCardWidth = isMobile ? Math.max(cardWidth, solitaireMinColWidth) : cardWidth;
+  const pyramidWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading} aria-live="polite">
@@ -146,10 +148,10 @@ function PyramidPageContent() {
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Pyramid */}
-        <div data-tutorial="py-pyramid" className="flex flex-col items-center mb-3">
+        <div data-tutorial="py-pyramid" className="flex flex-col items-center mb-3 overflow-x-auto">
           {state.pyramid.map((row, rowIdx) => {
             const cols = row.length;
-            const rowWidth = cols * (cardWidth + cardGap) - cardGap;
+            const rowWidth = cols * (effectiveCardWidth + cardGap) - cardGap;
             const offsetX = (pyramidWidth - rowWidth) / 2;
             return (
               <div
@@ -161,13 +163,13 @@ function PyramidPageContent() {
                 }}
               >
                 {row.map((pc, colIdx) => {
-                  const left = offsetX + colIdx * (cardWidth + cardGap);
+                  const left = offsetX + colIdx * (effectiveCardWidth + cardGap);
                   if (pc.removed) {
                     return (
                       <div
                         key={`pc-${rowIdx.toString()}-${colIdx.toString()}`}
                         className="absolute"
-                        style={{ left, width: cardWidth, height: cardHeight }}
+                        style={{ left, width: effectiveCardWidth, height: cardHeight }}
                       />
                     );
                   }
@@ -188,7 +190,7 @@ function PyramidPageContent() {
                           isSelected('pyramid', rowIdx, colIdx) ? 'ring-2 ring-yellow-400' : ''
                         } ${!exposed ? 'opacity-60' : ''}`}
                       >
-                        <AnimatedCard card={pc.card} width={cardWidth} />
+                        <AnimatedCard card={pc.card} width={effectiveCardWidth} />
                       </button>
                     </div>
                   );
@@ -206,10 +208,14 @@ function PyramidPageContent() {
               {t('stock')} ({state.stockCount})
             </div>
             {state.stockCount > 0 ? (
-              <AnimatedCardBack width={cardWidth} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
+              <AnimatedCardBack
+                width={effectiveCardWidth}
+                onClick={isPlaying ? handleDraw : undefined}
+                ariaLabel={t('draw')}
+              />
             ) : (
               <div
-                style={{ width: cardWidth, height: cardHeight }}
+                style={{ width: effectiveCardWidth, height: cardHeight }}
                 className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
               >
                 {t('empty')}
@@ -234,11 +240,11 @@ function PyramidPageContent() {
                   isSelected('waste') ? 'ring-2 ring-yellow-400' : ''
                 }`}
               >
-                <AnimatedCard card={state.waste[state.waste.length - 1]} width={cardWidth} />
+                <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
               </button>
             ) : (
               <div
-                style={{ width: cardWidth, height: cardHeight }}
+                style={{ width: effectiveCardWidth, height: cardHeight }}
                 className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
               >
                 {t('empty')}

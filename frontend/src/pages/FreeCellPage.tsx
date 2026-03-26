@@ -94,7 +94,9 @@ function FreeCellPageContent() {
     handleSelectSource,
     handleSelectTarget,
   } = useFreeCellGame();
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  /** Minimum column width for touch-friendly tap targets on mobile; 0 on desktop to allow natural sizing. */
+  const columnMinWidth = isMobile ? solitaireMinColWidth : 0;
 
   const isPlayingForKbd = state?.phase === FreeCellPhase.PLAYING;
 
@@ -222,9 +224,9 @@ function FreeCellPageContent() {
         </div>
 
         {/* Tableau */}
-        <div className="flex gap-2 mb-3" data-tutorial="fc-tableau">
+        <div className="flex gap-2 mb-3 overflow-x-auto" data-tutorial="fc-tableau">
           {state.tableau.map((col: (Card | null)[], colIdx: number) => (
-            <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+            <div key={`col-${colIdx.toString()}`} className="flex-1" style={{ minWidth: columnMinWidth }}>
               <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
               <div className="relative" style={{ minHeight: cardHeight }}>
                 {col.length === 0 ? (
