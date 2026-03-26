@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
@@ -52,32 +52,37 @@ function CloseIcon() {
   );
 }
 
-const langToggle = (
-  currentLang: string,
-  i18n: { changeLanguage: (lng: string) => void },
-  t: (key: string) => string,
-) => (
-  <div className="flex gap-0.5">
-    <button
-      type="button"
-      aria-label={t('nav.switchToJa')}
-      aria-pressed={currentLang === 'ja'}
-      onClick={() => i18n.changeLanguage('ja')}
-      className={`px-3 py-2 text-xs font-bold rounded-l min-h-[44px] transition-colors ${currentLang === 'ja' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
-    >
-      JA
-    </button>
-    <button
-      type="button"
-      aria-label={t('nav.switchToEn')}
-      aria-pressed={currentLang === 'en'}
-      onClick={() => i18n.changeLanguage('en')}
-      className={`px-3 py-2 text-xs font-bold rounded-r min-h-[44px] transition-colors ${currentLang === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
-    >
-      EN
-    </button>
-  </div>
-);
+interface LangToggleProps {
+  currentLang: string;
+  i18n: { changeLanguage: (lng: string) => void };
+  t: (key: string) => string;
+}
+
+/** Language toggle buttons (JA / EN). */
+function LangToggle({ currentLang, i18n, t }: LangToggleProps) {
+  return (
+    <div className="flex gap-0.5">
+      <button
+        type="button"
+        aria-label={t('nav.switchToJa')}
+        aria-pressed={currentLang === 'ja'}
+        onClick={() => i18n.changeLanguage('ja')}
+        className={`px-3 py-2 text-xs font-bold rounded-l min-h-[44px] transition-colors ${currentLang === 'ja' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
+      >
+        JA
+      </button>
+      <button
+        type="button"
+        aria-label={t('nav.switchToEn')}
+        aria-pressed={currentLang === 'en'}
+        onClick={() => i18n.changeLanguage('en')}
+        className={`px-3 py-2 text-xs font-bold rounded-r min-h-[44px] transition-colors ${currentLang === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
+      >
+        EN
+      </button>
+    </div>
+  );
+}
 
 /** Lookup map from path to game route for recent/favorite rendering. */
 const routeByPath = new Map(gameRoutes.map((r) => [r.path, r]));
@@ -128,10 +133,10 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  const closeMenu = () => {
+  const closeMenu = useCallback(() => {
     setIsOpen(false);
     setSearchTerm('');
-  };
+  }, []);
 
   const handleNavKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -139,7 +144,8 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
     }
   };
 
-  /** Pre-compute bilingual names for search filtering. */
+  /** Pre-compute bilingual names for search filtering.
+   * Uses explicit lng overrides so the result is language-independent. */
   const searchableRoutes = useMemo(
     () =>
       gameRoutes.map((route) => ({
@@ -147,7 +153,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         ja: i18n.t(route.labelKey, { lng: 'ja', ns: 'common' }).toLowerCase(),
         en: i18n.t(route.labelKey, { lng: 'en', ns: 'common' }).toLowerCase(),
       })),
-    [i18n.t],
+    [],
   );
 
   /** Filter game routes by bilingual name match. */
@@ -165,7 +171,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         </Link>
         <div className="flex items-center gap-2">
           {soundMuted !== undefined && onSoundToggle && <SoundToggle muted={soundMuted} onToggle={onSoundToggle} />}
-          {langToggle(currentLang, i18n, t)}
+          <LangToggle currentLang={currentLang} i18n={i18n} t={t} />
           <button
             ref={toggleRef}
             type="button"
@@ -327,7 +333,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         <TutorialProgressPanel />
         <div className="hidden sm:flex sm:items-center sm:gap-2">
           {soundMuted !== undefined && onSoundToggle && <SoundToggle muted={soundMuted} onToggle={onSoundToggle} />}
-          {langToggle(currentLang, i18n, t)}
+          <LangToggle currentLang={currentLang} i18n={i18n} t={t} />
         </div>
       </nav>
     </div>
