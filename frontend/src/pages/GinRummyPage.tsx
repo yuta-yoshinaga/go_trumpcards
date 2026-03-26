@@ -20,7 +20,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
-import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { GinRummyPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -187,77 +187,89 @@ function GinRummyPageContent() {
           <span>{t('drawPile', { count: state.drawPileCount })}</span>
         </div>
 
-        {/* Discard pile top */}
-        {state.discardTop && (
-          <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-            <AnimatedCard card={state.discardTop} width={cardWidth} />
-            <div className="text-white/70 text-sm">
-              <div>{t('discardTop')}</div>
-            </div>
-          </div>
-        )}
-
-        {/* CPU player */}
-        {state.players
-          .filter((p) => !p.isHuman)
-          .map((p) => (
-            <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-              <div className="text-white/70 text-sm">
-                {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}
-              </div>
-              {/* Show CPU cards during layoff/round end/game end */}
-              {(isLayoffPhase || isRoundEnd || isGameEnd) && p.cards.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {p.cards.map((card, idx) => (
-                    <AnimatedCard key={`cpu-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth * 0.8} />
-                  ))}
+        <div className={lgTwoColGrid}>
+          {/* Left: game play area */}
+          <div>
+            {/* Discard pile top */}
+            {state.discardTop && (
+              <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
+                <AnimatedCard card={state.discardTop} width={cardWidth} />
+                <div className="text-white/70 text-sm">
+                  <div>{t('discardTop')}</div>
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            )}
 
-        {/* Knocker melds */}
-        {state.knockerMelds.length > 0 && (
-          <div className="my-3 p-2 rounded bg-black/30">
-            <div className="text-white/70 text-sm mb-1">{t('knockerMelds')}</div>
-            {state.knockerMelds.map((meld, meldIdx) => (
-              <div key={`meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
-                {meld.cards.map((card, cardIdx) => (
-                  <AnimatedCard
-                    key={`meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
-                    card={card}
-                    width={cardWidth * 0.7}
-                  />
+            {/* Knocker melds */}
+            {state.knockerMelds.length > 0 && (
+              <div className="my-3 p-2 rounded bg-black/30">
+                <div className="text-white/70 text-sm mb-1">{t('knockerMelds')}</div>
+                {state.knockerMelds.map((meld, meldIdx) => (
+                  <div key={`meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
+                    {meld.cards.map((card, cardIdx) => (
+                      <AnimatedCard
+                        key={`meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
+                        card={card}
+                        width={cardWidth * 0.7}
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
 
-        {/* Score table */}
-        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gr-score-table">
-          <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-          <table className="w-full text-sm text-white/70">
-            <thead>
-              <tr>
-                <th scope="col" className="text-left">
-                  {t('scoresPlayer')}
-                </th>
-                <th scope="col">{t('scoresRound')}</th>
-                <th scope="col">{t('scoresTotal')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.players.map((p) => (
-                <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
-                  <td>{playerName(p.id, p.isHuman)}</td>
-                  <td className="text-center">{p.roundScore}</td>
-                  <td className="text-center">{p.cumulativeScore}</td>
-                </tr>
+          {/* Right: info sidebar */}
+          <div>
+            {/* CPU player */}
+            {state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                  <div className="text-white/70 text-sm">
+                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                    {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}
+                  </div>
+                  {/* Show CPU cards during layoff/round end/game end */}
+                  {(isLayoffPhase || isRoundEnd || isGameEnd) && p.cards.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {p.cards.map((card, idx) => (
+                        <AnimatedCard
+                          key={`cpu-${card.design}-${card.value}-${idx}`}
+                          card={card}
+                          width={cardWidth * 0.8}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
-            </tbody>
-          </table>
+
+            {/* Score table */}
+            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gr-score-table">
+              <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+              <table className="w-full text-sm text-white/70">
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left">
+                      {t('scoresPlayer')}
+                    </th>
+                    <th scope="col">{t('scoresRound')}</th>
+                    <th scope="col">{t('scoresTotal')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.players.map((p) => (
+                    <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                      <td>{playerName(p.id, p.isHuman)}</td>
+                      <td className="text-center">{p.roundScore}</td>
+                      <td className="text-center">{p.cumulativeScore}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />

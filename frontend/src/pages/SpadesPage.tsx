@@ -22,7 +22,7 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../h
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
-import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { SpadesPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -213,75 +213,83 @@ function SpadesPageContent() {
           <span>{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
         </div>
 
-        {/* Bid phase instruction */}
-        {isHumanBidTurn && (
-          <div className="text-yellow-300 text-center mb-2" data-tutorial="sp-bid-controls">
-            {t('bidPhase')}
-          </div>
-        )}
-
-        {/* CPU players */}
-        {state.players
-          .filter((p) => !p.isHuman)
-          .map((p) => (
-            <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-              <div className="text-white/70 text-sm">
-                {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })} |{' '}
-                {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')} | {t('bags', { count: p.bags })}
+        <div className={lgTwoColGrid}>
+          {/* Left: game play area */}
+          <div>
+            {/* Bid phase instruction */}
+            {isHumanBidTurn && (
+              <div className="text-yellow-300 text-center mb-2" data-tutorial="sp-bid-controls">
+                {t('bidPhase')}
               </div>
-            </div>
-          ))}
+            )}
 
-        {/* Current trick */}
-        {state.currentTrick.length > 0 && (
-          <div className="my-3 p-3 rounded bg-black/40" data-tutorial="sp-trick-display">
-            <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
-            <div className="flex gap-2">
-              {state.currentTrick.map((trickCard) => (
-                <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                  <AnimatedCard card={trickCard.card} width={cardWidth} />
-                  <div className="text-game-text-muted text-xs mt-1">
-                    {playerName(
-                      state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
-                      state.players[trickCard.playerIdx]?.isHuman ?? false,
-                    )}
+            {/* Current trick */}
+            {state.currentTrick.length > 0 && (
+              <div className="my-3 p-3 rounded bg-black/40" data-tutorial="sp-trick-display">
+                <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
+                <div className="flex gap-2">
+                  {state.currentTrick.map((trickCard) => (
+                    <div key={`trick-${trickCard.playerIdx}`} className="text-center">
+                      <AnimatedCard card={trickCard.card} width={cardWidth} />
+                      <div className="text-game-text-muted text-xs mt-1">
+                        {playerName(
+                          state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
+                          state.players[trickCard.playerIdx]?.isHuman ?? false,
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right: info sidebar */}
+          <div>
+            {/* CPU players */}
+            {state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                  <div className="text-white/70 text-sm">
+                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                    {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })} |{' '}
+                    {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')} | {t('bags', { count: p.bags })}
                   </div>
                 </div>
               ))}
+
+            {/* Score table */}
+            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="sp-score-table">
+              <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+              <table className="w-full text-sm text-white/70">
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left">
+                      {t('scoresPlayer')}
+                    </th>
+                    <th scope="col">{t('scoresBid')}</th>
+                    <th scope="col">{t('scoresTricks')}</th>
+                    <th scope="col">{t('scoresBags')}</th>
+                    <th scope="col">{t('scoresRound')}</th>
+                    <th scope="col">{t('scoresTotal')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.players.map((p) => (
+                    <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                      <td>{playerName(p.id, p.isHuman)}</td>
+                      <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
+                      <td className="text-center">{p.trickCount}</td>
+                      <td className="text-center">{p.bags}</td>
+                      <td className="text-center">{p.roundScore}</td>
+                      <td className="text-center">{p.cumulativeScore}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
-
-        {/* Score table */}
-        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="sp-score-table">
-          <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-          <table className="w-full text-sm text-white/70">
-            <thead>
-              <tr>
-                <th scope="col" className="text-left">
-                  {t('scoresPlayer')}
-                </th>
-                <th scope="col">{t('scoresBid')}</th>
-                <th scope="col">{t('scoresTricks')}</th>
-                <th scope="col">{t('scoresBags')}</th>
-                <th scope="col">{t('scoresRound')}</th>
-                <th scope="col">{t('scoresTotal')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.players.map((p) => (
-                <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
-                  <td>{playerName(p.id, p.isHuman)}</td>
-                  <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
-                  <td className="text-center">{p.trickCount}</td>
-                  <td className="text-center">{p.bags}</td>
-                  <td className="text-center">{p.roundScore}</td>
-                  <td className="text-center">{p.cumulativeScore}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
 
         {/* Message */}
