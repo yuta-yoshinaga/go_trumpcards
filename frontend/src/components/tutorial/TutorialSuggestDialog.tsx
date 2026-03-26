@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSecondary } from '../../styles/buttonStyles';
 import { getFocusableElements } from '../../utils/dom';
@@ -28,6 +28,16 @@ export function TutorialSuggestDialog({
   const { t } = useTranslation('tutorial');
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
+
+  // Lock background scroll while dialog is visible
+  useLayoutEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;

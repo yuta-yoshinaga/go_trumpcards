@@ -99,6 +99,20 @@ describe('TutorialSuggestDialog', () => {
     expect(document.activeElement).toBe(focusable[focusable.length - 1]);
   });
 
+  it('locks body scroll when open and restores on close', () => {
+    document.body.style.overflow = 'auto';
+    const { unmount } = render(<TutorialSuggestDialog {...defaultProps} />);
+    expect(document.body.style.overflow).toBe('hidden');
+    unmount();
+    expect(document.body.style.overflow).toBe('auto');
+  });
+
+  it('does not lock body scroll when not open', () => {
+    document.body.style.overflow = 'auto';
+    render(<TutorialSuggestDialog {...defaultProps} open={false} />);
+    expect(document.body.style.overflow).toBe('auto');
+  });
+
   it('has aria-describedby pointing to message paragraph', () => {
     render(<TutorialSuggestDialog {...defaultProps} />);
     const dialog = screen.getByRole('alertdialog');

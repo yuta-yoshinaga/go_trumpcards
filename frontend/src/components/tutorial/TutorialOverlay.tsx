@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { TutorialStep } from '../../types/tutorial';
 import { getFocusableElements } from '../ConfirmDialog';
 import { TutorialTooltip } from './TutorialTooltip';
@@ -67,6 +67,15 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
+
+  // Lock background scroll while overlay is visible
+  useLayoutEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
 
   // Find and observe the target element
   useEffect(() => {
@@ -174,7 +183,7 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
             )}
           </mask>
         </defs>
-        <rect width="100%" height="100%" fill="rgba(0,0,0,0.6)" mask={`url(#tutorial-mask-${maskId})`} />
+        <rect width="100%" height="100%" fill="rgba(0,0,0,0.75)" mask={`url(#tutorial-mask-${maskId})`} />
       </svg>
 
       {/* Tooltip positioned relative to spotlight */}
