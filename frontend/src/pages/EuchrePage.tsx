@@ -20,6 +20,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { EuchrePhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -176,7 +177,7 @@ function EuchrePageContent() {
   const suitName = (suit: number) => (SUIT_NAMES[suit] ? t(SUIT_NAMES[suit]) : '');
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.euchre.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.euchre')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanBidTurn || isHumanTurn || isHumanDiscard}>
@@ -335,7 +336,7 @@ function EuchrePageContent() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.euchre.footer} px-4 py-2.5`}>
         {/* Human cards */}
         {humanPlayer && (
           <div

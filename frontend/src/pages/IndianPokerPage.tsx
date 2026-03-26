@@ -24,6 +24,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { IndianPokerPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 
@@ -159,7 +160,7 @@ function IndianPokerPageContent() {
   }));
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.indianpoker.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.indianpoker')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
@@ -223,7 +224,7 @@ function IndianPokerPageContent() {
       </div>
 
       {/* Sticky footer: player card + buttons */}
-      <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
+      <GameFooter className={`${gameTheme.indianpoker.footer} px-5 py-3`}>
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2" data-tutorial="ip-player-card">

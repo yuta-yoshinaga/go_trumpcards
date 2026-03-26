@@ -1,7 +1,7 @@
 /** Background and footer theme classes for each game, organized by category. */
 export const gameTheme: Record<string, { bg: string; footer: string }> = {
   // Table games
-  blackjack: { bg: 'bg-game-bg-green-bright', footer: 'bg-game-bg-green-bright-dark border-white/15' },
+  blackjack: { bg: 'bg-game-bg-green-bright', footer: 'bg-game-bg-green-bright-dark border-white/20' },
   baccarat: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   // Poker
   poker: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },

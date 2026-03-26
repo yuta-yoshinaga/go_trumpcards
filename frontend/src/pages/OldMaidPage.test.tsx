@@ -1267,4 +1267,23 @@ describe('OldMaidPage', () => {
     await startGame();
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
+
+  // -- PhaseIndicator coverage --
+
+  it('phase indicator shows your turn when human turn', async () => {
+    await startGame();
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows waiting when cpu turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    await startGame();
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
+  });
+
+  it('phase indicator shows end phase', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    await startGame();
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('終了'));
+  });
 });

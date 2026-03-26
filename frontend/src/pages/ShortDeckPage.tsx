@@ -26,6 +26,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
+import { gameTheme } from '../styles/gameTheme';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 
@@ -209,7 +210,7 @@ function ShortDeckPageContent() {
   if (!state) return <ShortDeckSkeleton />;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.shortdeck.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.shortdeck')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
@@ -284,7 +285,7 @@ function ShortDeckPageContent() {
       </div>
 
       {/* Sticky footer: player hand + buttons */}
-      <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
+      <GameFooter className={`${gameTheme.shortdeck.footer} px-5 py-3`}>
         {/* Learning mode toggle */}
         <div
           className="flex items-center gap-2 mb-2"

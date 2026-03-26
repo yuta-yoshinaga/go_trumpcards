@@ -5,6 +5,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
 import { ActionLogPanel } from './ActionLogPanel';
@@ -132,7 +133,7 @@ export function VideoPokerGameContent({
   const displayHeld = isDrawPhase ? heldCards : (state.heldIndices ?? []);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme[gameName].bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc(`nav.${gameName}`)} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isBetPhase || isDrawPhase}>
         <span>{t('label.chips', { chips: state.chips })}</span>
@@ -173,7 +174,7 @@ export function VideoPokerGameContent({
         {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
-      <GameFooter className="bg-gray-800 px-4 pt-3">
+      <GameFooter className={`${gameTheme[gameName].footer} px-4 pt-3`}>
         <ErrorAlert message={error} />
         {isBetPhase && (
           <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="vp-bet-controls">

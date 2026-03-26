@@ -8,7 +8,7 @@ export function BaccaratSkeleton() {
   return (
     <GameSkeleton
       bgClass="bg-game-bg-casino"
-      footerClassName="bg-gray-800 px-4 pt-3"
+      footerClassName="bg-game-bg-casino-dark border-white/20 px-4 pt-3"
       footer={
         <div className="flex flex-col items-center gap-2 pb-2">
           <div className="h-8 w-32 rounded bg-white/10 animate-pulse" />

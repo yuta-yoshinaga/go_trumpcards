@@ -45,13 +45,13 @@ describe('GameFooter', () => {
 
   it('merges provided className', () => {
     render(
-      <GameFooter className="bg-game-bg-green-bright-dark border-white/15 px-4 py-3">
+      <GameFooter className="bg-game-bg-green-bright-dark border-white/20 px-4 py-3">
         <span>content</span>
       </GameFooter>,
     );
     const footer = screen.getByRole('contentinfo');
     expect(footer.className).toContain('bg-game-bg-green-bright-dark');
-    expect(footer.className).toContain('border-white/15');
+    expect(footer.className).toContain('border-white/20');
     expect(footer.className).toContain('px-4');
     expect(footer.className).toContain('py-3');
   });
