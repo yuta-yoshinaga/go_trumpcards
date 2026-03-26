@@ -58,6 +58,7 @@ vi.mock('framer-motion', async () => {
   return { motion: createMotionProxy(), AnimatePresence };
 });
 
+import enCommon from '../i18n/locales/en/common.json';
 import jaBaccarat from '../i18n/locales/ja/baccarat.json';
 import jaBlackjack from '../i18n/locales/ja/blackjack.json';
 import jaCommon from '../i18n/locales/ja/common.json';
@@ -130,6 +131,9 @@ i18n.use(initReactI18next).init({
       spider: jaSpider,
       indianpoker: jaIndianpoker,
       tutorial: jaTutorial,
+    },
+    en: {
+      common: enCommon,
     },
   },
   interpolation: { escapeValue: false },
