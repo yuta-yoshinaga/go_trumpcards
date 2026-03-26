@@ -117,6 +117,20 @@ describe('BaccaratPage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('does not expand card area with flex-1 during bet phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('ベットしてゲーム開始')).toBeInTheDocument());
+    expect(screen.getByTestId('card-area')).not.toHaveClass('flex-1');
+  });
+
+  it('expands card area with flex-1 during end phase', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('プレイヤーの勝ち！')).toBeInTheDocument());
+    expect(screen.getByTestId('card-area')).toHaveClass('flex-1');
+  });
+
   it('renders skeleton before state loads', () => {
     mockExec.mockReturnValue(new Promise(() => {})); // never resolves
     renderWithProviders(<BaccaratPage />);
