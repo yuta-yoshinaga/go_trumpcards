@@ -62,6 +62,11 @@ export function useCardDimensions() {
   return { ...CARD_DIMENSIONS.mobile, isMobile };
 }
 
+/** Hook that returns true when viewport width is below the sm breakpoint (mobile). */
+export function useIsMobile(): boolean {
+  return useWindowWidth() < SM_BREAKPOINT;
+}
+
 /** Hook that returns true when viewport width is at or above the large-desktop breakpoint. */
 export function useIsLargeDesktop(): boolean {
   return useWindowWidth() >= LG_BREAKPOINT;

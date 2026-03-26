@@ -172,13 +172,13 @@ describe('NavBar', () => {
       expect(jaBtns.length).toBeGreaterThanOrEqual(2);
     });
 
-    it('moves focus to first game link when menu opens', () => {
+    it('moves focus to first interactive element when menu opens', () => {
       renderNavBar();
       const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
       fireEvent.click(btn);
       const nav = screen.getByRole('navigation');
-      const firstLink = nav.querySelector('a');
-      expect(document.activeElement).toBe(firstLink);
+      const firstInteractive = nav.querySelector('input, a');
+      expect(document.activeElement).toBe(firstInteractive);
     });
 
     it('returns focus to hamburger button when menu closes', () => {
@@ -211,16 +211,63 @@ describe('NavBar', () => {
   });
 
   describe('collapsible categories', () => {
+    it('expands all categories on mobile viewport', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar('/poker');
+      const categoryDetails = document.querySelectorAll('.nav-category');
+      expect(categoryDetails.length).toBe(gameCategories.length);
+      for (const details of categoryDetails) {
+        expect(details).toHaveAttribute('open');
+      }
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('only expands active category on large desktop viewport', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar('/poker');
+      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details');
+      expect(pokerDetails).toHaveAttribute('open');
+      const trickDetails = screen.getByText(labelFor('nav.category.trickTaking')).closest('details');
+      expect(trickDetails).not.toHaveAttribute('open');
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('forces details open on mobile when toggled closed', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar('/poker');
+      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
+      expect(pokerDetails).toHaveAttribute('open');
+      // Simulate toggle to close — onToggle handler should force it back open
+      pokerDetails.open = false;
+      fireEvent(pokerDetails, new Event('toggle'));
+      expect(pokerDetails).toHaveAttribute('open');
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
     it('auto-opens details for the active category', () => {
       renderNavBar('/poker');
       const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details');
       expect(pokerDetails).toHaveAttribute('open');
     });
 
-    it('keeps other categories closed by default', () => {
+    it('keeps other categories closed by default on desktop', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
       renderNavBar('/poker');
       const trickDetails = screen.getByText(labelFor('nav.category.trickTaking')).closest('details');
       expect(trickDetails).not.toHaveAttribute('open');
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
     });
 
     it('auto-opens home category when on root path', () => {
@@ -277,6 +324,259 @@ describe('NavBar', () => {
       unmount();
       expect(document.removeEventListener).toHaveBeenCalledWith('mousedown', expect.any(Function));
       vi.restoreAllMocks();
+    });
+  });
+
+  describe('favorites', () => {
+    it('shows favorite star buttons on mobile', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.addFavorite') });
+      expect(starButtons.length).toBeGreaterThan(0);
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('hides favorite star buttons on desktop', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      expect(screen.queryByRole('button', { name: i18n.t('nav.addFavorite') })).not.toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('toggling star adds game to favorites section', () => {
+      localStorage.removeItem('trumpcards-favorite-games');
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      // No favorites section initially
+      expect(screen.queryByText(i18n.t('nav.favoriteGames'))).not.toBeInTheDocument();
+      // Click the first star button
+      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.addFavorite') });
+      fireEvent.click(starButtons[0]);
+      // Favorites section should appear
+      expect(screen.getByText(i18n.t('nav.favoriteGames'))).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+      localStorage.removeItem('trumpcards-favorite-games');
+    });
+
+    it('shows favorites section when favorites exist on mobile', () => {
+      localStorage.setItem('trumpcards-favorite-games', JSON.stringify(['/poker']));
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      expect(screen.getByText(i18n.t('nav.favoriteGames'))).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+      localStorage.removeItem('trumpcards-favorite-games');
+    });
+
+    it('hides favorites section on desktop', () => {
+      localStorage.setItem('trumpcards-favorite-games', JSON.stringify(['/poker']));
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      expect(screen.queryByText(i18n.t('nav.favoriteGames'))).not.toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+      localStorage.removeItem('trumpcards-favorite-games');
+    });
+  });
+
+  describe('recently played', () => {
+    it('does not show section when no recent games', () => {
+      localStorage.removeItem('trumpcards-recent-games');
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      // Use a non-game path so useRecentGames doesn't record anything
+      renderNavBar('/nonexistent');
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      expect(screen.queryByText(i18n.t('nav.recentGames'))).not.toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('shows recently played section with stored games on mobile', () => {
+      localStorage.setItem('trumpcards-recent-games', JSON.stringify(['/poker', '/hearts']));
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      expect(screen.getByText(i18n.t('nav.recentGames'))).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+      localStorage.removeItem('trumpcards-recent-games');
+    });
+
+    it('hides recently played section on desktop', () => {
+      localStorage.setItem('trumpcards-recent-games', JSON.stringify(['/poker']));
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      expect(screen.queryByText(i18n.t('nav.recentGames'))).not.toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+      localStorage.removeItem('trumpcards-recent-games');
+    });
+
+    it('hides recently played section when search is active', () => {
+      localStorage.setItem('trumpcards-recent-games', JSON.stringify(['/poker']));
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: 'ブラック' } });
+      expect(screen.queryByText(i18n.t('nav.recentGames'))).not.toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+      localStorage.removeItem('trumpcards-recent-games');
+    });
+  });
+
+  describe('game search', () => {
+    it('shows search input on mobile when menu is open', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      expect(screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'))).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('hides search input on desktop', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      expect(screen.queryByPlaceholderText(i18n.t('nav.searchPlaceholder'))).not.toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('filters games by name when typing', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: 'ブラック' } });
+      // Should show blackjack, hide poker
+      expect(screen.getByRole('link', { name: labelFor('nav.blackjack') })).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: labelFor('nav.poker') })).not.toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('matches English game names when UI is Japanese', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: 'Blackjack' } });
+      expect(screen.getByRole('link', { name: labelFor('nav.blackjack') })).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('restores categories when search is cleared', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: 'ブラック' } });
+      // Categories should be hidden during search
+      expect(screen.queryByText(labelFor('nav.category.poker'))).not.toBeInTheDocument();
+      // Clear search
+      fireEvent.change(input, { target: { value: '' } });
+      // Categories should reappear
+      expect(screen.getByText(labelFor('nav.category.poker'))).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('search input has aria-label and type="search"', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByRole('searchbox');
+      expect(input).toHaveAttribute('aria-label', i18n.t('nav.searchPlaceholder'));
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('shows clear button when search has text', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      // No clear button initially
+      expect(screen.queryByRole('button', { name: i18n.t('nav.searchClear') })).not.toBeInTheDocument();
+      fireEvent.change(input, { target: { value: 'test' } });
+      // Clear button appears
+      const clearBtn = screen.getByRole('button', { name: i18n.t('nav.searchClear') });
+      expect(clearBtn).toBeInTheDocument();
+      // Clicking clear restores categories
+      fireEvent.click(clearBtn);
+      expect(screen.getByText(labelFor('nav.category.poker'))).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('shows no results message when search matches nothing', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: 'xyznonexistent' } });
+      expect(screen.getByText(i18n.t('nav.noResults'))).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('clears search when a game link is clicked', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: 'ブラック' } });
+      fireEvent.click(screen.getByRole('link', { name: labelFor('nav.blackjack') }));
+      // Menu should be closed (search cleared implicitly)
+      const nav = screen.getByRole('navigation');
+      expect(nav).toHaveClass('hidden');
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
     });
   });
 
