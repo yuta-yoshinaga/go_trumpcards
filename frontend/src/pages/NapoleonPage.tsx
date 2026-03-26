@@ -137,7 +137,7 @@ function NapoleonPageContent() {
     hintLoading,
     handleHint,
   } = useNapoleonGame();
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
 
   const [bidValue, setBidValue] = useState(12);
   const [trumpSuitValue, setTrumpSuitValue] = useState(1);
@@ -377,7 +377,10 @@ function NapoleonPageContent() {
       <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         {/* Human cards */}
         {humanPlayer && (
-          <div className="flex flex-wrap gap-1 mb-2" data-tutorial="np-player-hand">
+          <div
+            className={isMobile ? 'flex gap-1 overflow-x-auto mb-2' : 'flex flex-wrap gap-1 mb-2'}
+            data-tutorial="np-player-hand"
+          >
             {humanPlayer.cards.map((card, idx) => (
               <button
                 type="button"
@@ -392,6 +395,7 @@ function NapoleonPageContent() {
                   borderRadius: 8,
                   ...selectedCardStyle(selectedCardIndices.includes(idx)),
                   boxSizing: 'border-box',
+                  ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
                 }}
               >
                 <AnimatedCard card={card} width={cardWidth} />
