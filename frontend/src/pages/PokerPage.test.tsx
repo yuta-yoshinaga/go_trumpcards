@@ -1408,8 +1408,6 @@ describe('PokerPage', () => {
     mockExec.mockResolvedValue(dealState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('bet', undefined, 10, undefined, expect.any(Number)),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 10, undefined, expect.any(Number)));
   });
 });
