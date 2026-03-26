@@ -22,6 +22,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CpuAction } from '../types/card';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -171,7 +172,7 @@ function OldMaidPageContent() {
         <TutorialButton />
       </PhaseIndicator>
       {/* Scrollable: CPU rows + discard + status + logs + result */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-5xl lg:mx-auto lg:w-full">
+      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* Mode badge */}
         {state.mode === OldMaidMode.JijiNuki && (
           <div className="text-center mb-1">

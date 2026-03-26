@@ -26,6 +26,7 @@ import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { PokerPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -170,7 +171,7 @@ function PokerPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: CPU players + logs */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8">
+      <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* CPU players */}
         {state?.players
           ?.filter((p) => !p.isHuman)

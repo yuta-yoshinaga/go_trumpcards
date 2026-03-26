@@ -24,6 +24,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { IndianPokerPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -177,7 +178,7 @@ function IndianPokerPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: opponent cards + CPU players */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8">
+      <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* CPU players - show cards face-up (opponents can see each other's cards) */}
         <div data-tutorial="ip-cpu-cards">
           {state.players

@@ -18,6 +18,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BaccaratSideBetResult } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
@@ -244,7 +245,9 @@ function BaccaratPageContent() {
 
       <div
         data-testid="card-area"
-        className={['overflow-y-auto pt-3 px-4 lg:px-8', !isBetPhase && 'flex-1'].filter(Boolean).join(' ')}
+        className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
+          .filter(Boolean)
+          .join(' ')}
       >
         {isBetPhase && state.playerHand.length === 0 && (
           <div className="flex items-center justify-center py-6">

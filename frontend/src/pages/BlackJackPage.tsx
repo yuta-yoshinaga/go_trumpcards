@@ -39,6 +39,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
@@ -260,7 +261,9 @@ function BlackJackPageContent() {
       {/* Scrollable: dealer area + CPU players */}
       <div
         data-testid="card-area"
-        className={['overflow-y-auto p-4 lg:px-8', phase !== BjPhase.BET && 'flex-1'].filter(Boolean).join(' ')}
+        className={[`overflow-y-auto p-4 lg:px-8 ${lgCardAreaConstraint}`, phase !== BjPhase.BET && 'flex-1']
+          .filter(Boolean)
+          .join(' ')}
       >
         {phase === BjPhase.BET && (
           <div className="flex items-center justify-center py-6">
