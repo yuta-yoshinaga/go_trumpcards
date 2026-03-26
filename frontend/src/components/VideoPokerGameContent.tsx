@@ -34,10 +34,10 @@ export interface VideoPokerGameContentProps {
   payoutTableRows: string[];
 }
 
-/** Payout table display component. */
-function PayoutTable({ t, rows, expanded }: { t: (key: string) => string; rows: string[]; expanded?: boolean }) {
+/** Payout table display component (collapsed by default, user can expand on tap). */
+function PayoutTable({ t, rows }: { t: (key: string) => string; rows: string[] }) {
   return (
-    <details className="mb-3 text-center" open={expanded}>
+    <details className="mb-3 text-center">
       <summary className="text-yellow-300 text-sm cursor-pointer lg:text-base">{t('payoutTable.title')}</summary>
       <ul className="text-gray-300 text-xs mt-1 space-y-0.5 lg:text-sm lg:space-y-1">
         {rows.map((row) => (
@@ -168,7 +168,7 @@ export function VideoPokerGameContent({
           <div className="text-white text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
         )}
 
-        <PayoutTable t={tNs} rows={payoutTableRows} expanded={isBetPhase} />
+        <PayoutTable t={tNs} rows={payoutTableRows} />
 
         {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>

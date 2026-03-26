@@ -171,10 +171,13 @@ describe('VideoPokerGameContent', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 5));
   });
 
-  it('renders payout table', async () => {
+  it('renders payout table collapsed by default', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
     await waitFor(() => expect(screen.getByText(/配当表/)).toBeInTheDocument());
+    // Payout table should be collapsed (details element should not have open attribute)
+    const details = screen.getByText(/配当表/).closest('details');
+    expect(details).not.toHaveAttribute('open');
   });
 
   it('clicking card in result phase does not toggle hold', async () => {
