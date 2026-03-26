@@ -13,8 +13,6 @@ export const CARD_DIMENSIONS = {
     cardWidth: 40,
     cpuCardWidth: 34,
     footerCardWidth: 36,
-    sevensCellSize: 24,
-    sevensFontSize: '0.65em',
     solitaireMinColWidth: 48,
   },
   desktop: {
@@ -23,8 +21,6 @@ export const CARD_DIMENSIONS = {
     cardWidth: 60,
     cpuCardWidth: 50,
     footerCardWidth: 54,
-    sevensCellSize: 26,
-    sevensFontSize: '0.75em',
     solitaireMinColWidth: 0,
   },
   largeDesktop: {
@@ -33,8 +29,6 @@ export const CARD_DIMENSIONS = {
     cardWidth: 80,
     cpuCardWidth: 66,
     footerCardWidth: 72,
-    sevensCellSize: 32,
-    sevensFontSize: '0.85em',
     solitaireMinColWidth: 0,
   },
 } as const;
