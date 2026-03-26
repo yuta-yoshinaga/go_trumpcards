@@ -792,4 +792,34 @@ describe('EuchrePage', () => {
     renderWithProviders(<EuchrePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  it('renders mobile viewport with horizontal scroll hand', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<EuchrePage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      const hand = document.querySelector('[data-tutorial="eu-player-hand"]');
+      expect(hand?.className).toContain('overflow-x-auto');
+      expect(hand?.className).not.toContain('flex-wrap');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('renders desktop viewport with wrapping hand', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    try {
+      mockExec.mockResolvedValue(playPhaseState);
+      renderWithProviders(<EuchrePage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      const hand = document.querySelector('[data-tutorial="eu-player-hand"]');
+      expect(hand?.className).toContain('flex-wrap');
+      expect(hand?.className).not.toContain('overflow-x-auto');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
 });
