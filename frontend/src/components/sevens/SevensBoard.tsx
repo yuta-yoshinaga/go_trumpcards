@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { suitName, valueName } from '../../utils/cardUtils';
 import { isPositionPlaced, isPositionPlayable, SUITS } from '../../utils/sevensUtils';
 
@@ -12,6 +11,16 @@ interface BoardProps {
   onJokerPlace?: (suit: number, value: number) => void;
 }
 
+/** Cell background and text color style based on card placement state. */
+function cellColors(placed: boolean, isCenter: boolean, canPlace: boolean): React.CSSProperties {
+  if (canPlace) return { background: 'var(--color-blue-500, #3b82f6)', color: 'white' };
+  if (placed)
+    return isCenter
+      ? { background: 'var(--color-game-status-waiting)', color: 'black' }
+      : { background: 'var(--color-game-status-active)', color: 'black' };
+  return { background: 'rgba(255,255,255,0.1)', color: 'var(--color-board-cell-empty-text)' };
+}
+
 function Board({
   tablePlaced,
   tunnelEnabled,
@@ -21,77 +30,70 @@ function Board({
   onJokerPlace,
 }: BoardProps) {
   const { t } = useTranslation('sevens');
-  const { sevensCellSize, sevensFontSize } = useCardDimensions();
   return (
-    <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
-      <div className="text-white font-bold mb-2">
+    <div className="bg-black/30 rounded-[10px] py-2 px-2 sm:px-3.5 my-2">
+      <div className="text-white font-bold mb-1.5 text-sm">
         {t('board')}
         {tunnelEnabled && <span className="text-yellow-400 text-xs ml-2">{t('tunnelTag')}</span>}
         {jokerSelecting && <span className="text-green-400 text-xs ml-2">{t('jokerSelectHint')}</span>}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div
+        className="grid gap-y-1 gap-x-0.5"
+        style={{ gridTemplateColumns: 'auto repeat(13, 1fr)' }}
+        data-testid="sevens-grid"
+      >
         {SUITS.map(({ idx, name, label, color }) => (
-          <div key={name} className="bg-white/[0.08] rounded-lg py-1.5 px-2.5 flex items-center gap-2">
-            <span className="min-w-[18px]" style={{ color, fontWeight: 'bold', fontSize: '1.1em' }}>
+          <div key={name} className="contents">
+            <span
+              className="flex items-center justify-center font-bold text-base sm:text-lg"
+              style={{ color }}
+              aria-hidden="true"
+            >
               {label}
-            </span>
-            <div className="flex flex-wrap gap-[3px] items-center">
-              {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
-                const placed = isPositionPlaced(tablePlaced, idx, v);
-                const isCenter = v === 7;
-                const canPlace =
-                  jokerSelecting &&
-                  isPositionPlayable(tablePlaced, idx, v, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
-                const tunnelHighlight =
-                  tunnelEnabled &&
-                  !placed &&
-                  ((v === 1 && isPositionPlaced(tablePlaced, idx, 13)) ||
-                    (v === 13 && isPositionPlaced(tablePlaced, idx, 1)));
-                const cellStyle: React.CSSProperties = {
-                  display: 'inline-block',
-                  width: sevensCellSize,
-                  height: sevensCellSize,
-                  lineHeight: `${sevensCellSize}px`,
-                  textAlign: 'center',
-                  borderRadius: 4,
-                  fontSize: sevensFontSize,
-                  fontWeight: isCenter ? 'bold' : 'normal',
-                  background: canPlace
-                    ? 'var(--color-blue-500)'
-                    : placed
-                      ? isCenter
-                        ? 'var(--color-game-status-waiting)'
-                        : 'var(--color-game-status-active)'
-                      : 'rgba(255,255,255,0.1)',
-                  color: canPlace ? 'white' : placed ? 'black' : 'var(--color-board-cell-empty-text)',
-                  boxSizing: 'border-box',
-                };
-                if (canPlace) {
-                  return (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => onJokerPlace?.(idx, v)}
-                      aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
-                      className="border border-blue-400 min-w-[44px] min-h-[44px]"
-                      style={{ ...cellStyle, cursor: 'pointer', padding: 0 }}
-                    >
-                      {valueName(v)}
-                    </button>
-                  );
-                }
-                return (
-                  <span key={v} className={tunnelHighlight ? 'border border-amber-400' : ''} style={cellStyle}>
-                    {valueName(v)}
-                  </span>
-                );
-              })}
               {tunnelEnabled && (
-                <span role="img" className="text-yellow-400 text-xs ml-0.5" aria-label={t('tunnelConnection')}>
+                <span role="img" className="text-yellow-400 text-[8px] ml-0.5" aria-label={t('tunnelConnection')}>
                   ↔
                 </span>
               )}
-            </div>
+            </span>
+            {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
+              const placed = isPositionPlaced(tablePlaced, idx, v);
+              const isCenter = v === 7;
+              const canPlace =
+                jokerSelecting &&
+                isPositionPlayable(tablePlaced, idx, v, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
+              const tunnelHighlight =
+                tunnelEnabled &&
+                !placed &&
+                ((v === 1 && isPositionPlaced(tablePlaced, idx, 13)) ||
+                  (v === 13 && isPositionPlaced(tablePlaced, idx, 1)));
+              const colors = cellColors(placed, isCenter, canPlace);
+              const baseClass =
+                'rounded text-center text-[0.6rem] sm:text-xs lg:text-sm leading-none aspect-square flex items-center justify-center';
+              const bold = isCenter ? ' font-bold' : '';
+              const border = tunnelHighlight ? ' border border-amber-400' : '';
+
+              if (canPlace) {
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => onJokerPlace?.(idx, v)}
+                    aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
+                    className={`${baseClass}${bold} border border-blue-400 cursor-pointer p-0`}
+                    style={colors}
+                    data-testid="board-cell"
+                  >
+                    {valueName(v)}
+                  </button>
+                );
+              }
+              return (
+                <span key={v} className={`${baseClass}${bold}${border}`} style={colors} data-testid="board-cell">
+                  {valueName(v)}
+                </span>
+              );
+            })}
           </div>
         ))}
       </div>

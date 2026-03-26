@@ -399,8 +399,7 @@ classDiagram
         +number cardOverlap
         +number cpuCardWidth
         +number footerCardWidth
-        +number sevensCellSize
-        +string sevensFontSize
+        +number solitaireMinColWidth
     }
     note for useCardDimensions "3-tier responsive = mobile/desktop/largeDesktop (640px/1024px)"
 
