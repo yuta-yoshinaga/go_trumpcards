@@ -172,13 +172,13 @@ describe('NavBar', () => {
       expect(jaBtns.length).toBeGreaterThanOrEqual(2);
     });
 
-    it('moves focus to first game link when menu opens', () => {
+    it('moves focus to first interactive element when menu opens', () => {
       renderNavBar();
       const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
       fireEvent.click(btn);
       const nav = screen.getByRole('navigation');
-      const firstLink = nav.querySelector('a');
-      expect(document.activeElement).toBe(firstLink);
+      const firstInteractive = nav.querySelector('input, a');
+      expect(document.activeElement).toBe(firstInteractive);
     });
 
     it('returns focus to hamburger button when menu closes', () => {

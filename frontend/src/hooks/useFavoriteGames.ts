@@ -6,6 +6,9 @@ export const FAVORITE_GAMES_KEY = 'trumpcards-favorite-games';
 
 const knownPaths = new Set(gameRoutes.map((r) => r.path));
 
+/** Maximum number of favorite games to store. */
+const MAX_FAVORITES = 10;
+
 /** Reads the favorites list from localStorage, filtering out stale paths. */
 function readFavorites(): string[] {
   try {
@@ -27,7 +30,7 @@ export function useFavoriteGames() {
 
   const toggleFavorite = useCallback((path: string) => {
     setFavorites((prev) => {
-      const next = prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path];
+      const next = prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path].slice(0, MAX_FAVORITES);
       try {
         localStorage.setItem(FAVORITE_GAMES_KEY, JSON.stringify(next));
       } catch {

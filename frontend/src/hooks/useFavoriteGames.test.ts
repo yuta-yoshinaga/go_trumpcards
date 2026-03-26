@@ -65,6 +65,38 @@ describe('useFavoriteGames', () => {
     expect(result.current.favorites).toEqual([]);
   });
 
+  it('filters out stale paths from localStorage', () => {
+    localStorage.setItem(FAVORITE_GAMES_KEY, JSON.stringify(['/poker', '/nonexistent', '/hearts']));
+    const { result } = renderHook(() => useFavoriteGames());
+    expect(result.current.favorites).toEqual(['/poker', '/hearts']);
+    expect(result.current.favorites).not.toContain('/nonexistent');
+  });
+
+  it('caps favorites at 10', () => {
+    const { result } = renderHook(() => useFavoriteGames());
+    const paths = [
+      '/',
+      '/poker',
+      '/hearts',
+      '/spades',
+      '/klondike',
+      '/freecell',
+      '/spider',
+      '/pyramid',
+      '/memory',
+      '/baccarat',
+      '/holdem',
+    ];
+    for (const p of paths) {
+      act(() => {
+        result.current.toggleFavorite(p);
+      });
+    }
+    expect(result.current.favorites.length).toBe(10);
+    // 11th game should not be added
+    expect(result.current.favorites).not.toContain('/holdem');
+  });
+
   it('supports multiple favorites', () => {
     const { result } = renderHook(() => useFavoriteGames());
     act(() => {

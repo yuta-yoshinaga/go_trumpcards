@@ -104,8 +104,8 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
 
   useEffect(() => {
     if (isOpen && navRef.current) {
-      const firstLink = navRef.current.querySelector<HTMLElement>('a');
-      firstLink?.focus();
+      const firstInteractive = navRef.current.querySelector<HTMLElement>('input, a');
+      firstInteractive?.focus();
     }
     if (!isOpen && wasOpen.current && toggleRef.current) {
       toggleRef.current.focus();
@@ -147,7 +147,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         ja: i18n.t(route.labelKey, { lng: 'ja', ns: 'common' }).toLowerCase(),
         en: i18n.t(route.labelKey, { lng: 'en', ns: 'common' }).toLowerCase(),
       })),
-    [i18n],
+    [i18n.t],
   );
 
   /** Filter game routes by bilingual name match. */
