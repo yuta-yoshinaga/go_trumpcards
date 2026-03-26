@@ -1670,4 +1670,24 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  // -- PhaseIndicator coverage --
+
+  it('phase indicator shows your turn when human turn', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows waiting when cpu turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
+  });
+
+  it('phase indicator shows end phase', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('終了'));
+  });
 });

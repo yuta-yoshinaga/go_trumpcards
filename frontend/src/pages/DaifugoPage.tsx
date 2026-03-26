@@ -22,6 +22,7 @@ import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { DaifugoAction } from '../types/card';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardLabel } from '../utils/cardUtils';
@@ -164,7 +165,7 @@ function DaifugoPageContent() {
   ] as const;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.daifugo.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.daifugo')} />
       <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
         <TutorialButton />
@@ -263,7 +264,7 @@ function DaifugoPageContent() {
         />
       </div>
 
-      <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.daifugo.footer} px-4 py-2.5`}>
         <div className="text-center mb-1" data-tutorial="df-sort-buttons">
           {sortModes.map(({ mode, label }) => (
             <button

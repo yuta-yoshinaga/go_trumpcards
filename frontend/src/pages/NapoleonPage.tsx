@@ -25,6 +25,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { NapoleonPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -186,7 +187,7 @@ function NapoleonPageContent() {
   const trumpLabel = state.trumpSuit > 0 ? t(`suitName.${SUIT_KEYS[state.trumpSuit]}`) : '';
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.napoleon.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.napoleon')} />
       {/* Phase indicator */}
       <PhaseIndicator
@@ -374,7 +375,7 @@ function NapoleonPageContent() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.napoleon.footer} px-4 py-2.5`}>
         {/* Human cards */}
         {humanPlayer && (
           <div

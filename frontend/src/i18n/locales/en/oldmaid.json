@@ -46,5 +46,9 @@
     "playerHand": "This is your hand. Matching pairs are automatically discarded.",
     "drawButton": "Press Draw Random to randomly pick a card from your opponent.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "phase": {
+    "play": "Playing",
+    "end": "End"
   }
 }

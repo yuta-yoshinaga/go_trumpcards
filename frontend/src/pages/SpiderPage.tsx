@@ -19,6 +19,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { SpiderPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -140,7 +141,7 @@ function SpiderPageContent() {
   const dealsRemaining = Math.floor(state.stockCount / 10);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.spider.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.spider')} />
       {/* Phase indicator */}
       <PhaseIndicator
@@ -263,7 +264,7 @@ function SpiderPageContent() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-game-bg-casino-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.spider.footer} px-4 py-2.5`}>
         <ErrorAlert message={error ?? hintError} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (

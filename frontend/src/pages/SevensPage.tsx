@@ -9,6 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { WinCelebration } from '../components/motion/WinCelebration';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
@@ -19,6 +20,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { playerName } from '../utils/playerUtils';
 import { actionDesc } from '../utils/sevensUtils';
@@ -223,8 +225,11 @@ function SevensPageContent() {
   ];
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.sevens.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.sevens')} />
+      <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
+        <TutorialButton />
+      </PhaseIndicator>
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {state.config &&
           (state.config.tunnelEnabled ||
@@ -320,7 +325,7 @@ function SevensPageContent() {
         />
       </div>
 
-      <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.sevens.footer} px-4 py-2.5`}>
         {humanPlayer && (
           <div className="mb-2" data-tutorial="sv-player-hand">
             <SevensHumanArea
@@ -378,7 +383,6 @@ function SevensPageContent() {
           >
             {tc('button.pass')}
           </button>
-          <TutorialButton />
           {jokerCardIdx !== null && (
             <button type="button" className={`${btnWarning} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>
               {tc('button.cancel')}

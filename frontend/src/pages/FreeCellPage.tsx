@@ -18,6 +18,7 @@ import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { FreeCellPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -130,7 +131,7 @@ function FreeCellPageContent() {
     selectedSource.cardIndex === cardIndex;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.freecell.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.freecell')} />
       <PhaseIndicator
         phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
@@ -294,7 +295,7 @@ function FreeCellPageContent() {
         />
       </div>
 
-      <GameFooter className="bg-game-bg-casino-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.freecell.footer} px-4 py-2.5`}>
         <ErrorAlert message={error ?? hintError} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (

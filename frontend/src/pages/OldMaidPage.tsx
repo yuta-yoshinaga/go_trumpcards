@@ -13,6 +13,7 @@ import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea
 import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -21,6 +22,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { CpuAction } from '../types/card';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardLabel } from '../utils/cardUtils';
@@ -160,11 +162,14 @@ function OldMaidPageContent() {
   return (
     <div
       key={shakeKey}
-      className={`flex-1 flex flex-col min-h-0 bg-game-bg-green${shakeKey > 0 ? ' animate-shake' : ''}`}
+      className={`flex-1 flex flex-col min-h-0 ${gameTheme.oldmaid.bg}${shakeKey > 0 ? ' animate-shake' : ''}`}
       aria-busy={loading}
       aria-live="polite"
     >
       <GamePageHeading title={tc('nav.oldmaid')} />
+      <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
+        <TutorialButton />
+      </PhaseIndicator>
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:max-w-5xl lg:mx-auto lg:w-full">
         {/* Mode badge */}
@@ -267,7 +272,7 @@ function OldMaidPageContent() {
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
-      <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.oldmaid.footer} px-4 py-2.5`}>
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2" data-tutorial="om-player-hand">
@@ -288,7 +293,6 @@ function OldMaidPageContent() {
 
         {/* Buttons */}
         <div className="text-center">
-          <TutorialButton />
           <button
             type="button"
             className={`${btnSecondary} min-w-[80px]`}

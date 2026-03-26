@@ -20,6 +20,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { CribbagePhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -182,7 +183,7 @@ function CribbagePageContent() {
   ];
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.cribbage.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.cribbage')} />
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
         <TutorialButton />
@@ -360,7 +361,7 @@ function CribbagePageContent() {
         />
       </div>
 
-      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.cribbage.footer} px-4 py-2.5`}>
         {humanPlayer && (
           <div className="flex flex-wrap gap-1 mb-2" data-tutorial="cb-player-hand">
             {humanPlayer.cards.map((card, idx) => (

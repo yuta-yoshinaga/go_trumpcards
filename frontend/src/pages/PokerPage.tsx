@@ -26,6 +26,7 @@ import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
+import { gameTheme } from '../styles/gameTheme';
 import { PokerPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -147,7 +148,7 @@ function PokerPageContent() {
   if (!state) return <PokerSkeleton />;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.poker.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.poker')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct || canExchange}>
@@ -208,7 +209,7 @@ function PokerPageContent() {
       </div>
 
       {/* Sticky footer: player hand + buttons */}
-      <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
+      <GameFooter className={`${gameTheme.poker.footer} px-5 py-3`}>
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2" data-tutorial="pk-player-hand">
