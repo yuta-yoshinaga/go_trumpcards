@@ -13,6 +13,7 @@ import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { DaifugoSkeleton } from '../components/skeleton/DaifugoSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -165,10 +166,11 @@ function DaifugoPageContent() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.daifugo')} />
-      <div className="flex items-center justify-end px-4 pt-2">
+      <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
         <TutorialButton />
-      </div>
+      </PhaseIndicator>
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+        <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
         <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (
             <DaifugoCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
@@ -262,8 +264,6 @@ function DaifugoPageContent() {
       </div>
 
       <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
-        <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
-
         <div className="text-center mb-1" data-tutorial="df-sort-buttons">
           {sortModes.map(({ mode, label }) => (
             <button

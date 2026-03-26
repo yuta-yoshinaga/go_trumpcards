@@ -45,6 +45,10 @@
     "suit": "スート順",
     "number": "数字順"
   },
+  "phase": {
+    "play": "プレイ",
+    "end": "終了"
+  },
   "resultPrefix": "ゲーム終了！",
   "resultEntry": "{{name}}:{{rank}}",
   "settings": {
