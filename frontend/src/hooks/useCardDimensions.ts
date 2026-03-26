@@ -15,6 +15,7 @@ export const CARD_DIMENSIONS = {
     footerCardWidth: 36,
     sevensCellSize: 24,
     sevensFontSize: '0.65em',
+    solitaireMinColWidth: 48,
   },
   desktop: {
     cardHeight: 84,
@@ -24,6 +25,7 @@ export const CARD_DIMENSIONS = {
     footerCardWidth: 54,
     sevensCellSize: 26,
     sevensFontSize: '0.75em',
+    solitaireMinColWidth: 0,
   },
   largeDesktop: {
     cardHeight: 120,
@@ -33,6 +35,7 @@ export const CARD_DIMENSIONS = {
     footerCardWidth: 72,
     sevensCellSize: 32,
     sevensFontSize: '0.85em',
+    solitaireMinColWidth: 0,
   },
 } as const;
 

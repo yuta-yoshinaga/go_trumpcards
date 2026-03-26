@@ -100,7 +100,7 @@ function SpiderPageContent() {
     handleSelectSource,
     handleSelectTarget,
   } = useSpiderGame();
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
 
@@ -186,7 +186,11 @@ function SpiderPageContent() {
         {/* Tableau (10 columns) */}
         <div className="flex gap-0.5 sm:gap-1 mb-3 overflow-x-auto" data-tutorial="spd-tableau">
           {state.tableau.map((col, colIdx) => (
-            <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+            <div
+              key={`col-${colIdx.toString()}`}
+              className="flex-1"
+              style={{ minWidth: isMobile ? solitaireMinColWidth : 0 }}
+            >
               <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
               <div className="relative" style={{ minHeight: cardHeight }}>
                 {col.length === 0 ? (
