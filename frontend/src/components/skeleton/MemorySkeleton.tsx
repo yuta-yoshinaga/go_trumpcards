@@ -10,10 +10,9 @@ export function MemorySkeleton() {
       footerClassName={`${gameTheme.memory.footer} px-4 py-2.5`}
       footer={<div className="h-8 w-24 rounded bg-white/10 animate-pulse" />}
     >
-      <div className="my-2 p-2 rounded bg-black/30">
-        <div className="h-4 w-16 rounded bg-white/10 animate-pulse mb-2" />
+      <div className="my-1 px-2 py-1 rounded bg-black/30 flex gap-3">
         {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="h-4 w-full rounded bg-white/10 animate-pulse mb-1" />
+          <div key={i} className="h-4 w-20 rounded bg-white/10 animate-pulse" />
         ))}
       </div>
       <div className="my-3 p-2 rounded bg-black/40">

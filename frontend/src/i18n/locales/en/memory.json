@@ -15,6 +15,7 @@
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresPairs": "Pairs",
+  "scoreLine": "{{name}}: {{count}}",
   "nextButton": "Next",
   "flipPrompt1": "Flip the first card",
   "flipPrompt2": "Flip the second card",

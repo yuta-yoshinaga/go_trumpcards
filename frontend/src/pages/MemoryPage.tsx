@@ -139,27 +139,23 @@ function MemoryPageContent() {
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        {/* Player scores */}
-        <div className="my-2 p-2 rounded bg-black/30 text-white text-sm" data-tutorial="mem-score-table">
-          <div className="mb-1">{t('scores')}</div>
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th scope="col" className="text-left">
-                  {t('scoresPlayer')}
-                </th>
-                <th scope="col">{t('scoresPairs')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.players.map((p) => (
-                <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
-                  <td>{playerName(p.id, p.isHuman)}</td>
-                  <td className="text-center">{p.pairCount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Player scores – compact inline layout to maximise board visibility on mobile */}
+        <div
+          className="my-1 px-2 py-1 rounded bg-black/30 text-white text-sm flex flex-wrap items-center gap-x-3 gap-y-0.5"
+          data-tutorial="mem-score-table"
+          role="status"
+          aria-label={t('scores')}
+        >
+          {state.players.map((p, idx) => (
+            <span key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+              {idx > 0 && (
+                <span className="text-white/40 mr-3" aria-hidden="true">
+                  |
+                </span>
+              )}
+              {t('scoreLine', { name: playerName(p.id, p.isHuman), count: p.pairCount })}
+            </span>
+          ))}
         </div>
 
         {/* Board: responsive grid (6/6/8/13 columns by breakpoint) */}

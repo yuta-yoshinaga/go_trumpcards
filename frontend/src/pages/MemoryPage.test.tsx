@@ -98,26 +98,25 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
   });
 
-  it('renders player scores', async () => {
+  it('renders player scores inline', async () => {
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
-    expect(screen.getByText('CPU 1')).toBeInTheDocument();
-    expect(screen.getByText('CPU 2')).toBeInTheDocument();
-    expect(screen.getByText('CPU 3')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    expect(screen.getByText(/CPU 1: 2/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 2: 1/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 3: 0/)).toBeInTheDocument();
   });
 
-  it('score table headers have scope="col" for accessibility', async () => {
+  it('score section has role="status" for accessibility', async () => {
     const { container } = renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
-    const ths = container.querySelectorAll('th');
-    ths.forEach((th) => {
-      expect(th).toHaveAttribute('scope', 'col');
-    });
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    const scoreSection = container.querySelector('[role="status"]');
+    expect(scoreSection).toBeInTheDocument();
+    expect(scoreSection).toHaveAttribute('aria-label', 'スコア');
   });
 
   it('renders board with 52 buttons', async () => {
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
     // Board should have 52 buttons
     const buttons = screen.getAllByRole('button');
     // 52 board + 1 reset = 53
@@ -126,7 +125,7 @@ describe('MemoryPage', () => {
 
   it('clicking a board card calls handleFlip', async () => {
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(flip2State);
@@ -141,7 +140,7 @@ describe('MemoryPage', () => {
   it('shows face-up card image in flip2 phase', async () => {
     mockExec.mockResolvedValue(flip2State);
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
     // Face-up card at position 5 shows card image instead of position number
     const imgs = screen.getAllByRole('img');
     expect(imgs.length).toBeGreaterThanOrEqual(1);
@@ -167,7 +166,7 @@ describe('MemoryPage', () => {
 
   it('next button not shown in flip phases', async () => {
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '次へ' })).not.toBeInTheDocument();
   });
 
@@ -211,7 +210,7 @@ describe('MemoryPage', () => {
     const takenBoard = makeBoard({ 0: { taken: true } });
     mockExec.mockResolvedValue({ ...flip1State, board: takenBoard });
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
 
     // Taken cards should not show position number (transparent)
     // Other cards should be enabled
@@ -221,14 +220,14 @@ describe('MemoryPage', () => {
     const takenBoard = makeBoard({ 0: { taken: true } });
     mockExec.mockResolvedValue({ ...flip1State, board: takenBoard });
     const { container } = renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
     const hiddenButtons = container.querySelectorAll('button[aria-hidden="true"]');
     expect(hiddenButtons.length).toBe(1);
   });
 
   it('changing cpu difficulty updates config used on reset', async () => {
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
 
     fireEvent.click(screen.getByText('設定'));
     fireEvent.change(screen.getByRole('combobox', { name: 'CPU難易度' }), { target: { value: '2' } });
@@ -243,14 +242,14 @@ describe('MemoryPage', () => {
   it('board cards disabled when face up', async () => {
     mockExec.mockResolvedValue(flip2State);
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
     // Face-up card button at position 5 should be disabled
   });
 
   it('board cards disabled on CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
     // Board card at position 10 should be disabled (avoids pairCount text conflicts)
     const boardButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '10');
     expect(boardButtons[0]).toBeDisabled();
@@ -264,7 +263,7 @@ describe('MemoryPage', () => {
 
   it('settings panel works', async () => {
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
 
     // Open settings
     fireEvent.click(screen.getByText('設定'));
@@ -279,7 +278,7 @@ describe('MemoryPage', () => {
 
   it('renders landscape orientation banner in DOM', async () => {
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
     expect(screen.getByText('横向きにすると快適にプレイできます')).toBeInTheDocument();
   });
 
@@ -376,7 +375,7 @@ describe('MemoryPage', () => {
 
   it('board card buttons have focus-visible ring classes', async () => {
     renderWithProviders(<MemoryPage />);
-    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
     const boardButtons = screen.getAllByRole('button').filter((btn) => btn.className.includes('aspect-'));
     expect(boardButtons.length).toBeGreaterThan(0);
     for (const btn of boardButtons) {
