@@ -43,6 +43,20 @@ describe('BettingControls', () => {
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
   });
 
+  it('applies poker-themed styles to action buttons', () => {
+    render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
+    expect(screen.getByRole('button', { name: 'コール' }).className).toContain('bg-emerald-600');
+    expect(screen.getByRole('button', { name: 'レイズ' }).className).toContain('bg-sky-500');
+    expect(screen.getByRole('button', { name: 'フォールド' }).className).toContain('bg-gray-500');
+    expect(screen.getByRole('button', { name: 'オールイン' }).className).toContain('bg-amber-500');
+  });
+
+  it('applies poker-themed styles to bet/check buttons', () => {
+    render(<BettingControls {...makeProps()} />);
+    expect(screen.getByRole('button', { name: 'ベット' }).className).toContain('bg-sky-500');
+    expect(screen.getByRole('button', { name: 'チェック' }).className).toContain('bg-emerald-600');
+  });
+
   it('disables buttons when loading', () => {
     render(<BettingControls {...makeProps({ loading: true })} />);
     for (const btn of screen.getAllByRole('button')) {

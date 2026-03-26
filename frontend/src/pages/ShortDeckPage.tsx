@@ -24,7 +24,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -465,7 +465,7 @@ function ShortDeckPageContent() {
           </label>
           <button
             type="button"
-            className={`${btnPrimary} min-w-[90px]`}
+            className={`${btnOutline} min-w-[90px]`}
             disabled={loading}
             onClick={() =>
               requestConfirm(() => {
