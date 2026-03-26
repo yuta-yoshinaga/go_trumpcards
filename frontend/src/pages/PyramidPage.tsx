@@ -208,10 +208,14 @@ function PyramidPageContent() {
               {t('stock')} ({state.stockCount})
             </div>
             {state.stockCount > 0 ? (
-              <AnimatedCardBack width={cardWidth} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
+              <AnimatedCardBack
+                width={effectiveCardWidth}
+                onClick={isPlaying ? handleDraw : undefined}
+                ariaLabel={t('draw')}
+              />
             ) : (
               <div
-                style={{ width: cardWidth, height: cardHeight }}
+                style={{ width: effectiveCardWidth, height: cardHeight }}
                 className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
               >
                 {t('empty')}
@@ -236,11 +240,11 @@ function PyramidPageContent() {
                   isSelected('waste') ? 'ring-2 ring-yellow-400' : ''
                 }`}
               >
-                <AnimatedCard card={state.waste[state.waste.length - 1]} width={cardWidth} />
+                <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
               </button>
             ) : (
               <div
-                style={{ width: cardWidth, height: cardHeight }}
+                style={{ width: effectiveCardWidth, height: cardHeight }}
                 className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
               >
                 {t('empty')}
