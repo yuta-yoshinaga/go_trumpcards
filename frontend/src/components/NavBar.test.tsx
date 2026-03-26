@@ -518,6 +518,51 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
     });
 
+    it('search input has aria-label and type="search"', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByRole('searchbox');
+      expect(input).toHaveAttribute('aria-label', i18n.t('nav.searchPlaceholder'));
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('shows clear button when search has text', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      // No clear button initially
+      expect(screen.queryByRole('button', { name: i18n.t('nav.searchClear') })).not.toBeInTheDocument();
+      fireEvent.change(input, { target: { value: 'test' } });
+      // Clear button appears
+      const clearBtn = screen.getByRole('button', { name: i18n.t('nav.searchClear') });
+      expect(clearBtn).toBeInTheDocument();
+      // Clicking clear restores categories
+      fireEvent.click(clearBtn);
+      expect(screen.getByText(labelFor('nav.category.poker'))).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('shows no results message when search matches nothing', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: 'xyznonexistent' } });
+      expect(screen.getByText(i18n.t('nav.noResults'))).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
     it('clears search when a game link is clicked', () => {
       const original = window.innerWidth;
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });

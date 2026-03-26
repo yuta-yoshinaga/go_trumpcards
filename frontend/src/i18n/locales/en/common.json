@@ -7,6 +7,7 @@
     "closeMenu": "Close menu",
     "searchPlaceholder": "Search games...",
     "searchClear": "Clear search",
+    "noResults": "No games found",
     "recentGames": "Recently Played",
     "favoriteGames": "Favorites",
     "addFavorite": "Add to favorites",

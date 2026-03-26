@@ -1,16 +1,19 @@
 import { useCallback, useState } from 'react';
+import { gameRoutes } from '../constants/gameRoutes';
 
 /** localStorage key for favorite games. */
 export const FAVORITE_GAMES_KEY = 'trumpcards-favorite-games';
 
-/** Reads the favorites list from localStorage. */
+const knownPaths = new Set(gameRoutes.map((r) => r.path));
+
+/** Reads the favorites list from localStorage, filtering out stale paths. */
 function readFavorites(): string[] {
   try {
     const raw = localStorage.getItem(FAVORITE_GAMES_KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((p): p is string => typeof p === 'string');
+    return parsed.filter((p): p is string => typeof p === 'string' && knownPaths.has(p));
   } catch {
     return [];
   }

@@ -7,6 +7,7 @@
     "closeMenu": "メニューを閉じる",
     "searchPlaceholder": "ゲームを検索...",
     "searchClear": "検索をクリア",
+    "noResults": "該当するゲームがありません",
     "recentGames": "最近プレイしたゲーム",
     "favoriteGames": "お気に入り",
     "addFavorite": "お気に入りに追加",

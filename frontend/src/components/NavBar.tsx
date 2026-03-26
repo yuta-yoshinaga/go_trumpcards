@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
-import { type GameRoute, gameCategories, gameRoutes } from '../constants/gameRoutes';
+import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
 import { useIsMediumDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useFavoriteGames } from '../hooks/useFavoriteGames';
@@ -79,6 +79,9 @@ const langToggle = (
   </div>
 );
 
+/** Lookup map from path to game route for recent/favorite rendering. */
+const routeByPath = new Map(gameRoutes.map((r) => [r.path, r]));
+
 interface NavBarProps {
   soundMuted?: boolean;
   onSoundToggle?: () => void;
@@ -136,20 +139,23 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
     }
   };
 
+  /** Pre-compute bilingual names for search filtering. */
+  const searchableRoutes = useMemo(
+    () =>
+      gameRoutes.map((route) => ({
+        route,
+        ja: i18n.t(route.labelKey, { lng: 'ja', ns: 'common' }).toLowerCase(),
+        en: i18n.t(route.labelKey, { lng: 'en', ns: 'common' }).toLowerCase(),
+      })),
+    [i18n],
+  );
+
   /** Filter game routes by bilingual name match. */
-  const filterRoutes = (term: string): GameRoute[] => {
-    const lower = term.toLowerCase();
-    return gameRoutes.filter(({ labelKey: routeLabel }) => {
-      const ja = i18n.t(routeLabel, { lng: 'ja', ns: 'common' }).toLowerCase();
-      const en = i18n.t(routeLabel, { lng: 'en', ns: 'common' }).toLowerCase();
-      return ja.includes(lower) || en.includes(lower);
-    });
-  };
-
-  const filteredRoutes = searchTerm ? filterRoutes(searchTerm) : null;
-
-  /** Lookup map from path to game route for recent/favorite rendering. */
-  const routeByPath = new Map(gameRoutes.map((r) => [r.path, r]));
+  const filteredRoutes = useMemo(() => {
+    if (!searchTerm) return null;
+    const lower = searchTerm.toLowerCase();
+    return searchableRoutes.filter(({ ja, en }) => ja.includes(lower) || en.includes(lower)).map(({ route }) => route);
+  }, [searchTerm, searchableRoutes]);
 
   return (
     <div className="glass-panel--dark">
@@ -181,19 +187,32 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         className={`${isOpen ? 'flex' : 'hidden'} flex-col gap-2 mx-2.5 mb-2 sm:flex sm:flex-row sm:flex-wrap sm:items-start sm:justify-end sm:my-2`}
       >
         {isMobile && (
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape' && searchTerm) {
-                e.stopPropagation();
-                setSearchTerm('');
-              }
-            }}
-            placeholder={t('nav.searchPlaceholder')}
-            className="w-full px-3 py-2 text-sm bg-gray-700 text-white rounded border border-gray-600 placeholder-gray-400 min-h-[44px]"
-          />
+          <div className="flex items-center gap-1">
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && searchTerm) {
+                  e.stopPropagation();
+                  setSearchTerm('');
+                }
+              }}
+              placeholder={t('nav.searchPlaceholder')}
+              aria-label={t('nav.searchPlaceholder')}
+              className="flex-1 px-3 py-2 text-sm bg-gray-700 text-white rounded border border-gray-600 placeholder-gray-400 min-h-[44px]"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                aria-label={t('nav.searchClear')}
+                onClick={() => setSearchTerm('')}
+                className="text-gray-400 hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center text-sm"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         )}
         {isMobile && !filteredRoutes && favorites.length > 0 && (
           <div className="flex flex-col gap-1">
@@ -239,18 +258,22 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         )}
         {filteredRoutes ? (
           <div className="flex flex-col gap-1">
-            {filteredRoutes.map(({ path, labelKey: routeLabel, icon }) => (
-              <Link
-                key={path}
-                to={path}
-                aria-current={pathname === path ? 'page' : undefined}
-                onClick={closeMenu}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150${pathname === path ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500 hover:shadow-md'}`}
-              >
-                <span aria-hidden="true">{icon}</span>
-                {t(routeLabel)}
-              </Link>
-            ))}
+            {filteredRoutes.length === 0 ? (
+              <span className="text-gray-400 text-xs px-3 py-2">{t('nav.noResults')}</span>
+            ) : (
+              filteredRoutes.map(({ path, labelKey: routeLabel, icon }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  aria-current={pathname === path ? 'page' : undefined}
+                  onClick={closeMenu}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150${pathname === path ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500 hover:shadow-md'}`}
+                >
+                  <span aria-hidden="true">{icon}</span>
+                  {t(routeLabel)}
+                </Link>
+              ))
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3 lg:flex-nowrap lg:gap-1">
