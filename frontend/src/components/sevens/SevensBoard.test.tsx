@@ -119,18 +119,20 @@ describe('SevensBoard', () => {
     expect(cells[5].className).not.toContain('font-bold');
   });
 
-  it('placed cell has active background color', () => {
+  it('placed cell has active background color and black text', () => {
     const tablePlaced = [0, (1 << 6) | (1 << 7), 1 << 7, 1 << 7, 1 << 7];
     render(<SevensBoard {...defaultProps} tablePlaced={tablePlaced} />);
     const cells = screen.getAllByTestId('board-cell');
     // Value 6 (index 5) is placed and non-center
     expect(cells[5].style.background).toBe('var(--color-game-status-active)');
+    expect(cells[5].style.color).toBe('black');
   });
 
-  it('center cell (7) has waiting background color', () => {
+  it('center cell (7) has waiting background color and black text', () => {
     render(<SevensBoard {...defaultProps} />);
     const cells = screen.getAllByTestId('board-cell');
     expect(cells[6].style.background).toBe('var(--color-game-status-waiting)');
+    expect(cells[6].style.color).toBe('black');
   });
 
   it('empty cell has transparent background', () => {
