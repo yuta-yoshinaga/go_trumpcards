@@ -13,8 +13,6 @@
     "hard": "Hard"
   },
   "scores": "スコア",
-  "scoresPlayer": "プレイヤー",
-  "scoresPairs": "ペア数",
   "scoreLine": "{{name}}: {{count}}",
   "nextButton": "次へ",
   "flipPrompt1": "1枚目をめくってください",
