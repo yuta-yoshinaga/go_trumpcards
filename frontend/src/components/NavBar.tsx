@@ -153,7 +153,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         ja: i18n.t(route.labelKey, { lng: 'ja', ns: 'common' }).toLowerCase(),
         en: i18n.t(route.labelKey, { lng: 'en', ns: 'common' }).toLowerCase(),
       })),
-    [],
+    [i18n.t],
   );
 
   /** Filter game routes by bilingual name match. */

@@ -257,9 +257,9 @@ function BlackJackPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: dealer area + CPU players */}
-      <div className="flex-1 overflow-y-auto p-4 lg:px-8">
+      <div className={`${phase === BjPhase.BET ? '' : 'flex-1'} overflow-y-auto p-4 lg:px-8`}>
         {phase === BjPhase.BET && (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center py-6">
             <p className="text-white/50 text-lg">{t('betGuide')}</p>
           </div>
         )}
