@@ -441,16 +441,22 @@ describe('PyramidPage', () => {
   it('renders correctly on mobile viewport (isMobile branch)', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
-    renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    try {
+      renderWithProviders(<PyramidPage />);
+      await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
   });
 
   it('renders on desktop viewport without mobile min-width', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
-    renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    try {
+      renderWithProviders(<PyramidPage />);
+      await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
   });
 });
