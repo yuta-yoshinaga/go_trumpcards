@@ -45,6 +45,10 @@
     "suit": "By Suit",
     "number": "By Number"
   },
+  "phase": {
+    "play": "Play",
+    "end": "End"
+  },
   "resultPrefix": "Game Over!",
   "resultEntry": "{{name}}: {{rank}}",
   "settings": {
