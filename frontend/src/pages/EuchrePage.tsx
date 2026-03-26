@@ -20,7 +20,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
-import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { EuchrePhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -225,104 +225,112 @@ function EuchrePageContent() {
           {state.trumpSuit === 0 && <span>{t('noTrump')}</span>}
         </div>
 
-        {/* Maker / Going alone info */}
-        {state.makerTeam >= 0 && (
-          <div className="text-yellow-300 text-center mb-2">
-            <span className="mr-4">{t('maker', { team: state.makerTeam })}</span>
-            {state.goingAlone && <span>{t('goingAlone')}</span>}
-          </div>
-        )}
-
-        {/* Pick-up phase instruction */}
-        {isHumanBidTurn && isPickUpPhase && (
-          <div className="text-yellow-300 text-center mb-2" data-tutorial="eu-pickup-controls">
-            {t('pickUpPhase')}
-          </div>
-        )}
-
-        {/* Call trump phase instruction */}
-        {isHumanBidTurn && isCallTrumpPhase && (
-          <div className="text-yellow-300 text-center mb-2">{t('callTrumpPhase')}</div>
-        )}
-
-        {/* Discard phase instruction */}
-        {isHumanDiscard && <div className="text-yellow-300 text-center mb-2">{t('discardPhase')}</div>}
-
-        {/* Face-up card */}
-        {state.faceUpCard && (isPickUpPhase || isCallTrumpPhase) && (
-          <div className="my-2 text-center">
-            <div className="text-white/70 text-sm mb-1">{t('faceUpCard')}</div>
-            <div className="inline-block">
-              <AnimatedCard card={state.faceUpCard} width={cardWidth} />
-            </div>
-          </div>
-        )}
-
-        {/* CPU players */}
-        {state.players
-          .filter((p) => !p.isHuman)
-          .map((p) => (
-            <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-              <div className="text-white/70 text-sm">
-                {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('team', { n: p.team })} |{' '}
-                {t('trickCount', { count: p.trickCount })}
-                {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+        <div className={lgTwoColGrid}>
+          {/* Left: game play area */}
+          <div>
+            {/* Maker / Going alone info */}
+            {state.makerTeam >= 0 && (
+              <div className="text-yellow-300 text-center mb-2">
+                <span className="mr-4">{t('maker', { team: state.makerTeam })}</span>
+                {state.goingAlone && <span>{t('goingAlone')}</span>}
               </div>
-            </div>
-          ))}
+            )}
 
-        {/* Current trick */}
-        {state.currentTrick.length > 0 && (
-          <div className="my-3 p-3 rounded bg-black/40" data-tutorial="eu-trick-display">
-            <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
-            <div className="flex gap-2">
-              {state.currentTrick.map((trickCard) => (
-                <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                  <AnimatedCard card={trickCard.card} width={cardWidth} />
-                  <div className="text-game-text-muted text-xs mt-1">
-                    {playerName(
-                      state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
-                      state.players[trickCard.playerIdx]?.isHuman ?? false,
-                    )}
+            {/* Pick-up phase instruction */}
+            {isHumanBidTurn && isPickUpPhase && (
+              <div className="text-yellow-300 text-center mb-2" data-tutorial="eu-pickup-controls">
+                {t('pickUpPhase')}
+              </div>
+            )}
+
+            {/* Call trump phase instruction */}
+            {isHumanBidTurn && isCallTrumpPhase && (
+              <div className="text-yellow-300 text-center mb-2">{t('callTrumpPhase')}</div>
+            )}
+
+            {/* Discard phase instruction */}
+            {isHumanDiscard && <div className="text-yellow-300 text-center mb-2">{t('discardPhase')}</div>}
+
+            {/* Face-up card */}
+            {state.faceUpCard && (isPickUpPhase || isCallTrumpPhase) && (
+              <div className="my-2 text-center">
+                <div className="text-white/70 text-sm mb-1">{t('faceUpCard')}</div>
+                <div className="inline-block">
+                  <AnimatedCard card={state.faceUpCard} width={cardWidth} />
+                </div>
+              </div>
+            )}
+
+            {/* Current trick */}
+            {state.currentTrick.length > 0 && (
+              <div className="my-3 p-3 rounded bg-black/40" data-tutorial="eu-trick-display">
+                <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
+                <div className="flex gap-2">
+                  {state.currentTrick.map((trickCard) => (
+                    <div key={`trick-${trickCard.playerIdx}`} className="text-center">
+                      <AnimatedCard card={trickCard.card} width={cardWidth} />
+                      <div className="text-game-text-muted text-xs mt-1">
+                        {playerName(
+                          state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
+                          state.players[trickCard.playerIdx]?.isHuman ?? false,
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Partnership info */}
+            {humanPlayer && (
+              <div className="text-white/70 text-sm text-center mb-2" data-tutorial="eu-team-info">
+                {t('partnership', {
+                  partner: playerName(state.players.find((p) => !p.isHuman && p.team === humanTeam)?.id ?? -1, false),
+                })}
+                {state.dealerIdx === humanPlayer.id ? ` | ${t('dealer')}` : ''}
+              </div>
+            )}
+          </div>
+
+          {/* Right: info sidebar */}
+          <div>
+            {/* CPU players */}
+            {state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                  <div className="text-white/70 text-sm">
+                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('team', { n: p.team })} |{' '}
+                    {t('trickCount', { count: p.trickCount })}
+                    {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
                   </div>
                 </div>
               ))}
+
+            {/* Team scores */}
+            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="eu-score-table">
+              <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
+              <table className="w-full text-sm text-white/70">
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left">
+                      {t('team', { n: '' })}
+                    </th>
+                    <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.teamScores.map((score, idx) => (
+                    <tr key={idx} className={idx === humanTeam ? 'text-yellow-300' : ''}>
+                      <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
+                      <td className="text-center">{score}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
-
-        {/* Team scores */}
-        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="eu-score-table">
-          <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
-          <table className="w-full text-sm text-white/70">
-            <thead>
-              <tr>
-                <th scope="col" className="text-left">
-                  {t('team', { n: '' })}
-                </th>
-                <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.teamScores.map((score, idx) => (
-                <tr key={idx} className={idx === humanTeam ? 'text-yellow-300' : ''}>
-                  <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
-                  <td className="text-center">{score}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
-
-        {/* Partnership info */}
-        {humanPlayer && (
-          <div className="text-white/70 text-sm text-center mb-2" data-tutorial="eu-team-info">
-            {t('partnership', {
-              partner: playerName(state.players.find((p) => !p.isHuman && p.team === humanTeam)?.id ?? -1, false),
-            })}
-            {state.dealerIdx === humanPlayer.id ? ` | ${t('dealer')}` : ''}
-          </div>
-        )}
 
         {/* Message */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />

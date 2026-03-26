@@ -20,7 +20,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
-import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { CribbagePhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -225,131 +225,147 @@ function CribbagePageContent() {
           <span>{t('dealer', { name: playerName(state.dealerIdx, state.players[state.dealerIdx]?.isHuman) })}</span>
         </div>
 
-        {/* Starter card */}
-        {state.starter && (
-          <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-            <AnimatedCard card={state.starter} width={cardWidth} />
-            <div className="text-white/70 text-sm">
-              <div>{t('starter')}</div>
-            </div>
-          </div>
-        )}
-
-        {/* Pegging area */}
-        {(isPeggingPhase || state.pegPlayedCards.length > 0) && (
-          <div className="my-3 p-2 rounded bg-black/30" data-tutorial="cb-pegging-area">
-            <div className="text-white/70 text-sm mb-1">
-              {t('pegPlayedCards')} - {t('pegCount', { count: state.pegCount })}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {state.pegPlayedCards.map((card, idx) => (
-                <AnimatedCard key={`peg-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth * 0.8} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Crib (shown during show/round end/game end) */}
-        {state.crib.length > 0 && (isShowPhase || isRoundEnd || isGameEnd) && (
-          <div className="my-3 p-2 rounded bg-black/30">
-            <div className="text-white/70 text-sm mb-1">{t('crib')}</div>
-            <div className="flex flex-wrap gap-1">
-              {state.crib.map((card, idx) => (
-                <AnimatedCard key={`crib-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth * 0.8} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* CPU player */}
-        {state.players
-          .filter((p) => !p.isHuman)
-          .map((p) => (
-            <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-              <div className="text-white/70 text-sm">
-                {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}
+        <div className={lgTwoColGrid}>
+          {/* Left: game play area */}
+          <div>
+            {/* Starter card */}
+            {state.starter && (
+              <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
+                <AnimatedCard card={state.starter} width={cardWidth} />
+                <div className="text-white/70 text-sm">
+                  <div>{t('starter')}</div>
+                </div>
               </div>
-              {/* Show CPU cards during show/round end/game end */}
-              {(isShowPhase || isRoundEnd || isGameEnd) && p.cards.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {p.cards.map((card, idx) => (
-                    <AnimatedCard key={`cpu-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth * 0.8} />
+            )}
+
+            {/* Pegging area */}
+            {(isPeggingPhase || state.pegPlayedCards.length > 0) && (
+              <div className="my-3 p-2 rounded bg-black/30" data-tutorial="cb-pegging-area">
+                <div className="text-white/70 text-sm mb-1">
+                  {t('pegPlayedCards')} - {t('pegCount', { count: state.pegCount })}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {state.pegPlayedCards.map((card, idx) => (
+                    <AnimatedCard key={`peg-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth * 0.8} />
                   ))}
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            )}
 
-        {/* Hand score details (show phase) */}
-        {(isShowPhase || isRoundEnd || isGameEnd) && state.handScoreDetails.some((d) => d !== null) && (
-          <div className="my-3 p-2 rounded bg-black/30">
-            <div className="text-white/70 text-sm mb-1">{t('score')}</div>
-            <table className="w-full text-sm text-white/70">
-              <thead>
-                <tr>
-                  <th scope="col" className="text-left" />
-                  <th scope="col">{t('scoreDetail.fifteens')}</th>
-                  <th scope="col">{t('scoreDetail.pairs')}</th>
-                  <th scope="col">{t('scoreDetail.runs')}</th>
-                  <th scope="col">{t('scoreDetail.flush')}</th>
-                  <th scope="col">{t('scoreDetail.nobs')}</th>
-                  <th scope="col">{t('scoreDetail.total')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {state.handScoreDetails.map((detail, idx) =>
-                  detail ? (
-                    <tr key={idx}>
-                      <td>{scoreLabels[idx]}</td>
-                      <td className="text-center">{detail.fifteens}</td>
-                      <td className="text-center">{detail.pairs}</td>
-                      <td className="text-center">{detail.runs}</td>
-                      <td className="text-center">{detail.flush}</td>
-                      <td className="text-center">{detail.nobs}</td>
-                      <td className="text-center font-bold">{detail.total}</td>
+            {/* Crib (shown during show/round end/game end) */}
+            {state.crib.length > 0 && (isShowPhase || isRoundEnd || isGameEnd) && (
+              <div className="my-3 p-2 rounded bg-black/30">
+                <div className="text-white/70 text-sm mb-1">{t('crib')}</div>
+                <div className="flex flex-wrap gap-1">
+                  {state.crib.map((card, idx) => (
+                    <AnimatedCard
+                      key={`crib-${card.design}-${card.value}-${idx}`}
+                      card={card}
+                      width={cardWidth * 0.8}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Hand score details (show phase) */}
+            {(isShowPhase || isRoundEnd || isGameEnd) && state.handScoreDetails.some((d) => d !== null) && (
+              <div className="my-3 p-2 rounded bg-black/30">
+                <div className="text-white/70 text-sm mb-1">{t('score')}</div>
+                <table className="w-full text-sm text-white/70">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="text-left" />
+                      <th scope="col">{t('scoreDetail.fifteens')}</th>
+                      <th scope="col">{t('scoreDetail.pairs')}</th>
+                      <th scope="col">{t('scoreDetail.runs')}</th>
+                      <th scope="col">{t('scoreDetail.flush')}</th>
+                      <th scope="col">{t('scoreDetail.nobs')}</th>
+                      <th scope="col">{t('scoreDetail.total')}</th>
                     </tr>
-                  ) : null,
-                )}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {state.handScoreDetails.map((detail, idx) =>
+                      detail ? (
+                        <tr key={idx}>
+                          <td>{scoreLabels[idx]}</td>
+                          <td className="text-center">{detail.fifteens}</td>
+                          <td className="text-center">{detail.pairs}</td>
+                          <td className="text-center">{detail.runs}</td>
+                          <td className="text-center">{detail.flush}</td>
+                          <td className="text-center">{detail.nobs}</td>
+                          <td className="text-center font-bold">{detail.total}</td>
+                        </tr>
+                      ) : null,
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Peg board */}
-        <div data-tutorial="cb-score-table">
-          <PegBoard
-            scores={state.players.map((p) => ({
-              name: playerName(p.id, p.isHuman),
-              score: p.cumulativeScore,
-            }))}
-            pointLimit={state.config.pointLimit}
-          />
-        </div>
-
-        {/* Score table */}
-        <div className="my-3 p-2 rounded bg-black/30">
-          <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-          <table className="w-full text-sm text-white/70">
-            <thead>
-              <tr>
-                <th scope="col" className="text-left">
-                  {t('scoresPlayer')}
-                </th>
-                <th scope="col">{t('scoresRound')}</th>
-                <th scope="col">{t('scoresTotal')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.players.map((p) => (
-                <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
-                  <td>{playerName(p.id, p.isHuman)}</td>
-                  <td className="text-center">{p.roundScore}</td>
-                  <td className="text-center">{p.cumulativeScore}</td>
-                </tr>
+          {/* Right: info sidebar */}
+          <div>
+            {/* CPU player */}
+            {state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                  <div className="text-white/70 text-sm">
+                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                    {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}
+                  </div>
+                  {/* Show CPU cards during show/round end/game end */}
+                  {(isShowPhase || isRoundEnd || isGameEnd) && p.cards.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {p.cards.map((card, idx) => (
+                        <AnimatedCard
+                          key={`cpu-${card.design}-${card.value}-${idx}`}
+                          card={card}
+                          width={cardWidth * 0.8}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
-            </tbody>
-          </table>
+
+            {/* Peg board */}
+            <div data-tutorial="cb-score-table">
+              <PegBoard
+                scores={state.players.map((p) => ({
+                  name: playerName(p.id, p.isHuman),
+                  score: p.cumulativeScore,
+                }))}
+                pointLimit={state.config.pointLimit}
+              />
+            </div>
+
+            {/* Score table */}
+            <div className="my-3 p-2 rounded bg-black/30">
+              <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+              <table className="w-full text-sm text-white/70">
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left">
+                      {t('scoresPlayer')}
+                    </th>
+                    <th scope="col">{t('scoresRound')}</th>
+                    <th scope="col">{t('scoresTotal')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.players.map((p) => (
+                    <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                      <td>{playerName(p.id, p.isHuman)}</td>
+                      <td className="text-center">{p.roundScore}</td>
+                      <td className="text-center">{p.cumulativeScore}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
