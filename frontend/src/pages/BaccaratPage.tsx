@@ -241,7 +241,10 @@ function BaccaratPageContent() {
         <TutorialButton />
       </PhaseIndicator>
 
-      <div className={`${isBetPhase ? '' : 'flex-1'} overflow-y-auto pt-3 px-4 lg:px-8`}>
+      <div
+        data-testid="card-area"
+        className={['overflow-y-auto pt-3 px-4 lg:px-8', !isBetPhase && 'flex-1'].filter(Boolean).join(' ')}
+      >
         {isBetPhase && state.playerHand.length === 0 && (
           <div className="flex items-center justify-center py-6">
             <p className="text-white/50 text-lg">{t('betGuide')}</p>

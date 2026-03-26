@@ -335,18 +335,14 @@ describe('BlackJackPage', () => {
   it('does not expand card area with flex-1 during bet phase', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
-    const betGuide = screen.getByText('ベットしてゲーム開始');
-    const cardArea = betGuide.closest('.overflow-y-auto');
-    expect(cardArea).not.toHaveClass('flex-1');
+    expect(screen.getByTestId('card-area')).not.toHaveClass('flex-1');
   });
 
   it('expands card area with flex-1 during action phase', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText(/ディーラー手札/)).toBeInTheDocument());
-    const dealerHand = screen.getByText(/ディーラー手札/);
-    const cardArea = dealerHand.closest('.overflow-y-auto');
-    expect(cardArea).toHaveClass('flex-1');
+    expect(screen.getByTestId('card-area')).toHaveClass('flex-1');
   });
 
   it('disables bet button while loading', async () => {
