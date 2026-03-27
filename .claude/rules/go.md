@@ -2,78 +2,77 @@
 globs: ["**/*.go"]
 ---
 
-# Go ファイル編集ルール
+# Go File Editing Rules
 
-## フォーマット
+## Format
 
-- **`goimports -w <file>` を必ず実行してからコミットする**（`gofmt` は使わない）
-- パス: `/home/yuta/go/bin/goimports`
+- **Always run `goimports -w <file>` before committing** (do not use `gofmt`)
 
 ## Lint
 
-- **コミット前に `golangci-lint run ./...` を実行し、警告・エラーがないことを確認する**
+- **Run `golangci-lint run ./...` before committing and ensure no warnings or errors**
 
-## テスト
+## Testing
 
-**ユニットテストは必須**。実装と同じコミットに含める。
+**Unit tests are mandatory.** Include them in the same commit as the implementation.
 
-### TDDサイクル (Red → Green → Refactor)
+### TDD Cycle (Red → Green → Refactor)
 
-実装前に必ずこのサイクルを守ること:
+Always follow this cycle before implementing:
 
-1. **Red** — 失敗するテストを先に書く。実装コードを書く前に、期待動作を捉えるテストを作成し失敗を確認する:
+1. **Red** — Write a failing test first. Create a test that captures the expected behavior before writing implementation code:
    ```sh
-   go test -tags test ./path/to/package -run TestNewFeature  # 失敗 (Red)
+   go test -tags test ./path/to/package -run TestNewFeature  # Fails (Red)
    ```
-2. **Green** — テストをパスする最小限のコードを書く。余分な機能は追加しない:
+2. **Green** — Write the minimum code to pass the test. Do not add extra functionality:
    ```sh
-   go test -tags test ./path/to/package -run TestNewFeature  # パス (Green)
+   go test -tags test ./path/to/package -run TestNewFeature  # Passes (Green)
    ```
-3. **Refactor** — テストを維持しながらコードを整理する。命名・構造・重複除去を行い、全テストが通ることを確認:
+3. **Refactor** — Clean up code while keeping tests green. Improve naming, structure, and remove duplication:
    ```sh
-   go test -tags test ./...  # 全テストパス (Refactor後)
+   go test -tags test ./...  # All tests pass (after Refactor)
    ```
 
-テスト実行: `go test -tags test ./...`
+Run tests: `go test -tags test ./...`
 
-### カバレッジ基準
+### Coverage Standard
 
-- `cmd/` と `internal/infrastructure/` はカバレッジ対象外
-- それ以外の `internal/` 配下は **ブランチカバレッジ (C1) 80%以上** が必須
-- ビジネスロジックとクリティカルパスに集中してテストすること
+- `cmd/` and `internal/infrastructure/` are excluded from coverage
+- All other packages under `internal/` require **branch coverage (C1) of 80% or higher**
+- Focus on business logic and critical paths
 
-### テスト配置（レイヤー別）
+### Test Locations (by layer)
 
-| レイヤー | テストファイル |
-|---------|--------------|
+| Layer | Test file |
+|-------|-----------|
 | Domain | `internal/domain/*_test.go` |
 | Use cases | `internal/usecase/*Interactor_test.go` |
 | Presenters | `internal/adapter/presenter/*_test.go` |
 | Controllers | `internal/adapter/controller/*_test.go` |
 
-### モックパターン
+### Mock Pattern
 
-- **Presenterモック**: `internal/usecase/presenter/*_mock.go` — `testify/mock` で実装
-- **Interactorモック**: `internal/adapter/controller/usecase/*_mock.go` — `testify/mock` で実装
-- 既存の `BlackJack*_mock.go` を参照パターンとして使う
+- **Presenter mocks**: `internal/usecase/presenter/*_mock.go` — implemented with `testify/mock`
+- **Interactor mocks**: `internal/adapter/controller/usecase/*_mock.go` — implemented with `testify/mock`
+- Use existing `BlackJack*_mock.go` as reference pattern
 
-### 決定的テストの書き方
+### Writing Deterministic Tests
 
-シャッフルに依存しないようにすること:
+Do not depend on shuffle order:
 
-- `AddCard` でハンドを手動セットアップし、`Reset`/`Shuffle` 後の順序に依存しない
-- ディーラー/CPUに自動ドローが発生しないスコアを与える（例: BlackJack dealer >= 17）
-- ランダム分岐のカバレッジは最大1000回のリトライループで両分岐を確保する
+- Set up hands manually with `AddCard`; do not depend on order after `Reset`/`Shuffle`
+- Give dealer/CPU scores that prevent automatic draws (e.g., BlackJack dealer >= 17)
+- Use retry loops up to 1000 iterations to cover both branches of random decisions
 
-## アーキテクチャ
+## Architecture
 
 Clean Architecture: `infrastructure` → `adapter` → `usecase` → `domain`
 
-- ドメインインターフェース: `internal/domain/interfaces/`
-- 依存方向を逆にしてはいけない（外側のレイヤーは内側に依存する）
+- Domain interfaces: `internal/domain/interfaces/`
+- Never reverse the dependency direction (outer layers depend on inner layers)
 
-## デッドコード
+## Dead Code
 
-- コード変更時に遭遇したデッドコードは必ず削除する
-- 検出ツール: `golang.org/x/tools/cmd/deadcode`
-- 削除前に手動で確認する（リフレクション経由の呼び出しなどの誤検知に注意）
+- Always remove dead code encountered when modifying code
+- Detection tool: `golang.org/x/tools/cmd/deadcode`
+- Verify manually before deleting (beware of false positives such as reflection-based calls)

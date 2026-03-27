@@ -2,80 +2,80 @@
 globs: ["frontend/**/*.ts", "frontend/**/*.tsx"]
 ---
 
-# フロントエンド (TypeScript/TSX) ファイル編集ルール
+# Frontend (TypeScript/TSX) File Editing Rules
 
-## パッケージマネージャー
+## Package Manager
 
-**`npm` ではなく `bun` を、`npx` ではなく `bunx` を常に使用すること。** このプロジェクトではBunを唯一のJavaScriptパッケージマネージャー・スクリプトランナーとして使用する。
+**Always use `bun` instead of `npm`, and `bunx` instead of `npx`.** This project uses Bun as the sole JavaScript package manager and script runner.
 
-## コミット前チェック（必須、全て通過すること）
+## Pre-commit Checks (mandatory, all must pass)
 
 ```sh
-cd frontend && bun run build   # Reactビルド
-cd frontend && bun run check   # Biome lint + フォーマットチェック
-cd frontend && bun run test    # Vitestユニットテスト
+cd frontend && bun run build   # React build
+cd frontend && bun run check   # Biome lint + format check
+cd frontend && bun run test    # Vitest unit tests
 ```
 
-## テスト
+## Testing
 
-**ユニットテストは必須**。実装と同じコミットに含める。テストスタック: **Vitest + React Testing Library + jest-dom**
+**Unit tests are mandatory.** Include them in the same commit as the implementation. Test stack: **Vitest + React Testing Library + jest-dom**
 
-### TDDサイクル (Red → Green → Refactor)
+### TDD Cycle (Red → Green → Refactor)
 
-実装前に必ずこのサイクルを守ること:
+Always follow this cycle before implementing:
 
-1. **Red** — 失敗するテストを先に書く。実装コードを書く前に、期待動作を捉えるテストを作成し失敗を確認する:
+1. **Red** — Write a failing test first. Create a test that captures the expected behavior before writing implementation code:
    ```sh
-   cd frontend && bun run test -- --run TestNewFeature  # 失敗 (Red)
+   cd frontend && bun run test -- --run TestNewFeature  # Fails (Red)
    ```
-2. **Green** — テストをパスする最小限のコードを書く。余分な機能は追加しない:
+2. **Green** — Write the minimum code to pass the test. Do not add extra functionality:
    ```sh
-   cd frontend && bun run test -- --run TestNewFeature  # パス (Green)
+   cd frontend && bun run test -- --run TestNewFeature  # Passes (Green)
    ```
-3. **Refactor** — テストを維持しながらコードを整理する。命名・構造・重複除去を行い、全テストが通ることを確認:
+3. **Refactor** — Clean up code while keeping tests green. Improve naming, structure, and remove duplication:
    ```sh
-   cd frontend && bun run test  # 全テストパス (Refactor後)
+   cd frontend && bun run test  # All tests pass (after Refactor)
    ```
 
-### カバレッジ基準
+### Coverage Standard
 
-以下4ディレクトリで **ブランチカバレッジ (C1) 80%以上** が必須:
+**Branch coverage (C1) of 80% or higher** is required for the following 4 directories:
 
 - `frontend/src/api`
 - `frontend/src/components`
 - `frontend/src/pages`
 - `frontend/src/utils`
 
-ビジネスロジックとクリティカルパスに集中してテストすること。到達不能分岐の無理なカバレッジは不要。
+Focus on business logic and critical paths. Forced coverage of unreachable branches is unnecessary.
 
-### テスト配置（レイヤー別）
+### Test Locations (by layer)
 
-| レイヤー | テストファイル | テスト対象 |
-|---------|--------------|---------|
-| API client | `src/api/*.test.ts` | URL・リクエストボディ・エラーハンドリング |
-| Components | `src/components/*.test.tsx` | レンダリング・props・イベントハンドラ |
-| Pages | `src/pages/*.test.tsx` | マウント時APIコール・フェーズ別レンダリング・ボタン操作 |
+| Layer | Test file | What to test |
+|-------|-----------|-------------|
+| API client | `src/api/*.test.ts` | URL, request body, error handling |
+| Components | `src/components/*.test.tsx` | Rendering, props, event handlers |
+| Pages | `src/pages/*.test.tsx` | On-mount API calls, phase-specific rendering, button interactions |
 
-### テストパターン
+### Test Patterns
 
-- **APIモック**: `vi.mock('../api/gameApi', ...)` でAPIモジュールをモック; `vi.mocked(api.exec)` でアクセス
-- **ルーター依存コンポーネント**: `NavBar` など `useLocation` を使うコンポーネントは `<MemoryRouter initialEntries={['/path']}>` でラップ
-- **非同期エフェクト待機**: `useEffect` でAPIを呼ぶコンポーネントは `waitFor(() => expect(...))` で待つ
-- **ボタンのクエリ**: テキストが複数要素に存在する場合は `screen.getByRole('button', { name: '...' })` を使う
-- **QueryClientProviderラップ**: pageテスト・hookテストは `renderWithProviders`（`frontend/src/test/renderWithProviders.tsx`）でラップ
+- **API mocks**: Mock the API module with `vi.mock('../api/gameApi', ...)`; access via `vi.mocked(api.exec)`
+- **Router-dependent components**: Wrap components using `useLocation` (e.g., `NavBar`) in `<MemoryRouter initialEntries={['/path']}>`
+- **Async effect waiting**: Use `waitFor(() => expect(...))` for components that call APIs in `useEffect`
+- **Button queries**: When text appears in multiple elements, use `screen.getByRole('button', { name: '...' })`
+- **QueryClientProvider wrapping**: Page tests and hook tests must use `renderWithProviders` (`frontend/src/test/renderWithProviders.tsx`)
 
-## i18n（国際化）
+## i18n (Internationalization)
 
-Web GUIはJapanese (ja) / English (en) を `react-i18next` + `i18next-browser-languagedetector` でサポート。
+The Web GUI supports Japanese (ja) / English (en) via `react-i18next` + `i18next-browser-languagedetector`.
 
-- **設定**: `frontend/src/i18n/index.ts`
-- **翻訳ファイル**: `frontend/src/i18n/locales/{ja,en}/<game>.json`
-- **コンポーネント内**: `useTranslation()` フックを使う
-- **非コンポーネントファイル** (`playerUtils.ts` など): `i18n` インスタンスを直接インポート
-- **テスト**: `frontend/src/test/setup.ts` でja翻訳が初期化済み
+- **Config**: `frontend/src/i18n/index.ts`
+- **Translation files**: `frontend/src/i18n/locales/{ja,en}/<game>.json`
+- **In components**: use the `useTranslation()` hook
+- **In non-component files** (e.g., `playerUtils.ts`): import the `i18n` instance directly
+- **Tests**: ja translations are initialized in `frontend/src/test/setup.ts`
 
-## デッドコード
+## Dead Code
 
-- コード変更時に遭遇したデッドコードは必ず削除する
-- 検出ツール: `knip`
-- 削除前に手動で確認する（静的解析の誤検知に注意）
+- Always remove dead code encountered when modifying code
+- Detection tool: `knip`
+- Verify manually before deleting (beware of false positives from static analysis)
