@@ -11,6 +11,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -105,8 +106,6 @@ function KlondikePageContent() {
     handleSelectTarget,
   } = useKlondikeGame();
   const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
-  /** Minimum column width for touch-friendly tap targets on mobile; 0 on desktop to allow natural sizing. */
-  const columnMinWidth = isMobile ? solitaireMinColWidth : 0;
 
   const isPlayingForKbd = state?.phase === KlondikePhase.PLAYING;
   const { elapsedSeconds, resetTimer, timeBonus } = useKlondikeTimer(isPlayingForKbd);
@@ -287,55 +286,62 @@ function KlondikePageContent() {
         </div>
 
         {/* Tableau */}
-        <div className="flex gap-2 mb-3 overflow-x-auto" data-tutorial="kl-tableau">
-          {state.tableau.map((col, colIdx) => (
-            <div key={`col-${colIdx.toString()}`} className="flex-1" style={{ minWidth: columnMinWidth }}>
-              <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
-              <div className="relative" style={{ minHeight: cardHeight }}>
-                {col.length === 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
-                    disabled={!isPlaying || loading || !selectedSource}
-                    style={{ height: cardHeight }}
-                    className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                  >
-                    K
-                  </button>
-                ) : (
-                  col.map((tc, cardIdx) => (
-                    <div
-                      key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                      className="absolute left-0 right-0"
-                      style={{ top: cardIdx * cardOverlap }}
+        <div className="relative">
+          <div className="flex gap-2 mb-3 overflow-x-auto" data-tutorial="kl-tableau">
+            {state.tableau.map((col, colIdx) => (
+              <div
+                key={`col-${colIdx.toString()}`}
+                className={isMobile ? 'flex-shrink-0' : 'flex-1'}
+                style={isMobile ? { width: solitaireMinColWidth } : undefined}
+              >
+                <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
+                <div className="relative" style={{ minHeight: cardHeight }}>
+                  {col.length === 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
+                      disabled={!isPlaying || loading || !selectedSource}
+                      style={{ height: cardHeight }}
+                      className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                     >
-                      {tc.faceUp && tc.card ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (selectedSource) {
-                              handleSelectTarget({ zone: 'tableau', col: colIdx });
-                            } else {
-                              handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
-                            }
-                          }}
-                          disabled={!isPlaying || loading}
-                          aria-label={cardAlt(tc.card)}
-                          aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
-                          className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
-                        >
-                          <AnimatedCard card={tc.card} width={cardWidth} style={{ width: '100%' }} />
-                        </button>
-                      ) : (
-                        <AnimatedCardBack width={cardWidth} className="w-full" />
-                      )}
-                    </div>
-                  ))
-                )}
-                {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                      K
+                    </button>
+                  ) : (
+                    col.map((tc, cardIdx) => (
+                      <div
+                        key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                        className="absolute left-0 right-0"
+                        style={{ top: cardIdx * cardOverlap }}
+                      >
+                        {tc.faceUp && tc.card ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (selectedSource) {
+                                handleSelectTarget({ zone: 'tableau', col: colIdx });
+                              } else {
+                                handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
+                              }
+                            }}
+                            disabled={!isPlaying || loading}
+                            aria-label={cardAlt(tc.card)}
+                            aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
+                            className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
+                          >
+                            <AnimatedCard card={tc.card} width={cardWidth} style={{ width: '100%' }} />
+                          </button>
+                        ) : (
+                          <AnimatedCardBack width={cardWidth} className="w-full" />
+                        )}
+                      </div>
+                    ))
+                  )}
+                  {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          {isMobile && <ScrollFadeHint />}
         </div>
 
         {/* Hint display */}

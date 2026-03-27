@@ -21,4 +21,10 @@ describe('LandscapeBanner', () => {
     expect(banner?.className).toContain('portrait:flex');
     expect(banner?.className).toContain('sm:hidden');
   });
+
+  it('has animate-pulse class for attention', () => {
+    const { container } = render(<LandscapeBanner message="Test" />);
+    const banner = container.firstElementChild;
+    expect(banner?.className).toContain('animate-pulse');
+  });
 });

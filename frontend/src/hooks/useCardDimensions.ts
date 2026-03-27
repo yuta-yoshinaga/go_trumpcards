@@ -13,7 +13,7 @@ export const CARD_DIMENSIONS = {
     cardWidth: 40,
     cpuCardWidth: 34,
     footerCardWidth: 36,
-    solitaireMinColWidth: 48,
+    solitaireMinColWidth: 52,
   },
   desktop: {
     cardHeight: 84,

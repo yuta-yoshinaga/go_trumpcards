@@ -794,25 +794,33 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 
-  it('renders on mobile viewport with min-width applied', async () => {
+  it('renders mobile viewport with fixed-width flex-shrink-0 tableau columns', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     try {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<KlondikePage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      const tableau = document.querySelector('[data-tutorial="kl-tableau"]');
+      const firstCol = tableau?.firstElementChild;
+      expect(firstCol?.className).toContain('flex-shrink-0');
+      expect(firstCol?.className).not.toContain('flex-1');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
   });
 
-  it('renders on desktop viewport without mobile min-width', async () => {
+  it('renders desktop viewport with flex-1 tableau columns', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
     try {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<KlondikePage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      const tableau = document.querySelector('[data-tutorial="kl-tableau"]');
+      const firstCol = tableau?.firstElementChild;
+      expect(firstCol?.className).toContain('flex-1');
+      expect(firstCol?.className).not.toContain('flex-shrink-0');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
