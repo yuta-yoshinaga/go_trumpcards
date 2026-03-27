@@ -377,6 +377,8 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.dwwc.Stop()
 	web.jpwc.Stop()
 	web.euc.Stop()
+	web.pyc.Stop()
+	web.cbc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

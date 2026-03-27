@@ -29,6 +29,6 @@ clean-workers:
 	rm -rf build/casino build/classic build/solo
 
 deploy-workers: build-workers
-	cd workers/casino && npx wrangler deploy
-	cd workers/classic && npx wrangler deploy
-	cd workers/solo && npx wrangler deploy
+	cd workers/casino && bunx wrangler deploy
+	cd workers/classic && bunx wrangler deploy
+	cd workers/solo && bunx wrangler deploy
