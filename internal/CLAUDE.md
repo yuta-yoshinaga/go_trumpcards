@@ -56,13 +56,6 @@ Card games involve shuffling, so tests must not depend on random outcomes:
 
 ## Run tests
 
-**Run sequentially with frontend tasks** (RAM is limited — see root `CLAUDE.md` Resource Constraints).
-
-Kill residual processes first, then run with limited parallelism:
-
 ```sh
-pkill -f 'go test' || true; pkill -f golangci-lint || true
-go test -tags test -p 2 ./...
+go test -tags test ./...
 ```
-
-The `-p 2` flag limits parallel package tests to reduce memory usage.
