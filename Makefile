@@ -1,5 +1,6 @@
 TINYGO ?= tinygo
 WASM_OPT ?= wasm-opt
+ASSETS_GEN := go run github.com/syumai/workers/cmd/workers-assets-gen
 
 .PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo clean-workers deploy-workers
 
@@ -8,10 +9,9 @@ build-workers: build-worker-casino build-worker-classic build-worker-solo
 define build_worker
 	@echo "Building worker: $(1)"
 	@mkdir -p build/$(1)
+	$(ASSETS_GEN) -mode=tinygo -o build/$(1)
 	$(TINYGO) build -o build/$(1)/app.wasm -target wasi -no-debug -opt=z ./cmd/workers/$(1)
 	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz build/$(1)/app.wasm -o build/$(1)/app.wasm
-	@WORKERS_DIR=$$(go list -m -f '{{.Dir}}' github.com/syumai/workers); \
-	cp "$$WORKERS_DIR/cmd/_assets/main.js" build/$(1)/worker.js
 	@RAW=$$(stat -c%s build/$(1)/app.wasm); GZIP=$$(gzip -c build/$(1)/app.wasm | wc -c); \
 	echo "  $(1): $$RAW bytes raw, $$GZIP bytes gzip"
 endef

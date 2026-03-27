@@ -1,5 +1,5 @@
 name = "go-trumpcards-casino"
-main = "../../build/casino/worker.js"
+main = "../../build/casino/worker.mjs"
 compatibility_date = "2024-09-23"
 
 [vars]

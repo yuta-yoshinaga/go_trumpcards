@@ -1,5 +1,5 @@
 name = "go-trumpcards-classic"
-main = "../../build/classic/worker.js"
+main = "../../build/classic/worker.mjs"
 compatibility_date = "2024-09-23"
 
 [vars]
