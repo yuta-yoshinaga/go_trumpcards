@@ -207,6 +207,20 @@ classDiagram
         GAME_OVER = 2
     }
 
+    class FreeCellPhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
+    class SpiderPhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
     class CrazyEightsPhase {
         <<enumeration>>
         PLAY = 0
@@ -285,7 +299,7 @@ classDiagram
         GAME_END = 5
     }
 
-    note for KlondikePhase "FreeCellPhase, SpiderPhase, PyramidPhase も\n同一の値を持つ別定数として存在"
+    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase,\nPyramidPhase は同一の値を持つ別定数"
 ```
 
 ### 1.2 API クライアント層
