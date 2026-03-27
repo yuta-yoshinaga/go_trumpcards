@@ -1,13 +1,12 @@
 package controller
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,7 +49,7 @@ func TestDerefDefault(t *testing.T) {
 	})
 }
 
-// failWriter is a minimal rest.ResponseWriter implementation where WriteJson always fails.
+// failWriter is a minimal http.ResponseWriter implementation where Write always fails.
 type failWriter struct {
 	header     http.Header
 	headerCode int
@@ -60,37 +59,15 @@ func newFailWriter() *failWriter {
 	return &failWriter{header: http.Header{}}
 }
 
-func (fw *failWriter) Header() http.Header   { return fw.header }
-func (fw *failWriter) WriteHeader(code int)  { fw.headerCode = code }
-func (fw *failWriter) WriteJson(_ any) error { return errors.New("write failed") }
-func (fw *failWriter) EncodeJson(v any) ([]byte, error) {
-	return nil, errors.New("encode failed")
-}
+func (fw *failWriter) Header() http.Header         { return fw.header }
+func (fw *failWriter) WriteHeader(code int)        { fw.headerCode = code }
+func (fw *failWriter) Write(_ []byte) (int, error) { return 0, errors.New("write failed") }
 
-// successWriter is a minimal rest.ResponseWriter that records the status code and JSON body.
-type successWriter struct {
-	header     http.Header
-	headerCode int
-	body       any
-}
-
-func newSuccessWriter() *successWriter {
-	return &successWriter{header: http.Header{}}
-}
-
-func (sw *successWriter) Header() http.Header  { return sw.header }
-func (sw *successWriter) WriteHeader(code int) { sw.headerCode = code }
-func (sw *successWriter) WriteJson(v any) error {
-	sw.body = v
-	return nil
-}
-func (sw *successWriter) EncodeJson(v any) ([]byte, error) { return json.Marshal(v) }
-
-func TestWritePresenterResponse_WriteJsonError(t *testing.T) {
+func TestWritePresenterResponse_WriteError(t *testing.T) {
 	bc := &baseController{}
 	fw := newFailWriter()
 
-	// Valid JSON response string — triggers the WriteJson error path.
+	// Valid JSON response string — triggers the Write error path.
 	bc.writePresenterResponse(fw, `{"ok":true}`)
 	assert.Equal(t, http.StatusOK, fw.headerCode)
 }
@@ -99,18 +76,18 @@ func TestWritePresenterResponse_WriteJsonError(t *testing.T) {
 
 func TestWriteJsonResponse_Success(t *testing.T) {
 	bc := &baseController{}
-	sw := newSuccessWriter()
+	rec := httptest.NewRecorder()
 
-	bc.writeJsonResponse(sw, http.StatusOK, map[string]string{"msg": "ok"})
-	assert.Equal(t, http.StatusOK, sw.headerCode)
-	assert.Equal(t, map[string]string{"msg": "ok"}, sw.body)
+	bc.writeJsonResponse(rec, http.StatusOK, map[string]string{"msg": "ok"})
+	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.Contains(t, rec.Body.String(), `"msg":"ok"`)
 }
 
-func TestWriteJsonResponse_WriteJsonError(t *testing.T) {
+func TestWriteJsonResponse_WriteError(t *testing.T) {
 	bc := &baseController{}
 	fw := newFailWriter()
 
-	// WriteJson fails — should log but not panic.
+	// Write fails — should log but not panic.
 	bc.writeJsonResponse(fw, http.StatusBadRequest, "error body")
 	assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 }
@@ -129,48 +106,48 @@ func TestExecWithSession_DecodeError(t *testing.T) {
 	bc := &baseController{}
 	store := NewSessionStore[*testInteractor]()
 	defer store.Stop()
-	sw := newSuccessWriter()
-	req := makeRestRequest(`{invalid json}`)
+	rec := httptest.NewRecorder()
+	req := makeHTTPRequest(`{invalid json}`)
 
-	execWithSession(bc, sw, req, store,
+	execWithSession(bc, rec, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
+		func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
-	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
-	assert.Equal(t, map[string]string{"message": "param error."}, sw.body)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Contains(t, rec.Body.String(), "param error.")
 }
 
 func TestExecWithSession_EmptyCommand(t *testing.T) {
 	bc := &baseController{}
 	store := NewSessionStore[*testInteractor]()
 	defer store.Stop()
-	sw := newSuccessWriter()
-	req := makeRestRequest(`{"command":"","sessionId":"s1"}`)
+	rec := httptest.NewRecorder()
+	req := makeHTTPRequest(`{"command":"","sessionId":"s1"}`)
 
-	execWithSession(bc, sw, req, store,
+	execWithSession(bc, rec, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
+		func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
-	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
-	assert.Equal(t, map[string]string{"message": "param error."}, sw.body)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Contains(t, rec.Body.String(), "param error.")
 }
 
 func TestExecWithSession_EmptySessionId(t *testing.T) {
 	bc := &baseController{}
 	store := NewSessionStore[*testInteractor]()
 	defer store.Stop()
-	sw := newSuccessWriter()
-	req := makeRestRequest(`{"command":"r","sessionId":""}`)
+	rec := httptest.NewRecorder()
+	req := makeHTTPRequest(`{"command":"r","sessionId":""}`)
 
-	execWithSession(bc, sw, req, store,
+	execWithSession(bc, rec, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
+		func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
-	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
-	assert.Equal(t, map[string]string{"message": "param error."}, sw.body)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Contains(t, rec.Body.String(), "param error.")
 }
 
 func TestExecWithSession_QuitCommand(t *testing.T) {
@@ -179,16 +156,16 @@ func TestExecWithSession_QuitCommand(t *testing.T) {
 			bc := &baseController{}
 			store := NewSessionStore[*testInteractor]()
 			defer store.Stop()
-			sw := newSuccessWriter()
-			req := makeRestRequest(`{"command":"` + cmd + `","sessionId":"s1"}`)
+			rec := httptest.NewRecorder()
+			req := makeHTTPRequest(`{"command":"` + cmd + `","sessionId":"s1"}`)
 
-			execWithSession(bc, sw, req, store,
+			execWithSession(bc, rec, req, store,
 				func() *testInteractor { return &testInteractor{} },
 				func(msg string) any { return map[string]string{"message": msg} },
-				func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
+				func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 			)
-			assert.Equal(t, http.StatusOK, sw.headerCode)
-			assert.Equal(t, map[string]string{"message": "bye."}, sw.body)
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Contains(t, rec.Body.String(), "bye.")
 		})
 	}
 }
@@ -197,53 +174,53 @@ func TestExecWithSession_SessionRetrievalFailure(t *testing.T) {
 	bc := &baseController{}
 	store := NewSessionStore[*testInteractor]()
 	defer store.Stop()
-	sw := newSuccessWriter()
+	rec := httptest.NewRecorder()
 	// Session ID exceeding max length triggers GetWithLock failure.
 	longID := strings.Repeat("x", SessionMaxIDLen+1)
-	req := makeRestRequest(`{"command":"r","sessionId":"` + longID + `"}`)
+	req := makeHTTPRequest(`{"command":"r","sessionId":"` + longID + `"}`)
 
-	execWithSession(bc, sw, req, store,
+	execWithSession(bc, rec, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
+		func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
-	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
-	assert.Equal(t, map[string]string{"message": "param error."}, sw.body)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Contains(t, rec.Body.String(), "param error.")
 }
 
 func TestExecWithSession_HandlerReturnsTrue(t *testing.T) {
 	bc := &baseController{}
 	store := NewSessionStore[*testInteractor]()
 	defer store.Stop()
-	sw := newSuccessWriter()
-	req := makeRestRequest(`{"command":"r","sessionId":"s1"}`)
+	rec := httptest.NewRecorder()
+	req := makeHTTPRequest(`{"command":"r","sessionId":"s1"}`)
 
-	execWithSession(bc, sw, req, store,
+	execWithSession(bc, rec, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		func(w rest.ResponseWriter, _ *testInteractor, _ testInput) bool {
+		func(w http.ResponseWriter, _ *testInteractor, _ testInput) bool {
 			bc.writeJsonResponse(w, http.StatusOK, map[string]string{"message": "handled"})
 			return true
 		},
 	)
-	assert.Equal(t, http.StatusOK, sw.headerCode)
-	assert.Equal(t, map[string]string{"message": "handled"}, sw.body)
+	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.Contains(t, rec.Body.String(), "handled")
 }
 
 func TestExecWithSession_HandlerReturnsFalse(t *testing.T) {
 	bc := &baseController{}
 	store := NewSessionStore[*testInteractor]()
 	defer store.Stop()
-	sw := newSuccessWriter()
-	req := makeRestRequest(`{"command":"xyz","sessionId":"s1"}`)
+	rec := httptest.NewRecorder()
+	req := makeHTTPRequest(`{"command":"xyz","sessionId":"s1"}`)
 
-	execWithSession(bc, sw, req, store,
+	execWithSession(bc, rec, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool {
+		func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool {
 			return false
 		},
 	)
-	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
-	assert.Equal(t, map[string]string{"message": "Unsupported command."}, sw.body)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Contains(t, rec.Body.String(), "Unsupported command.")
 }

@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
 )
 
 // GameWebController is a generic web controller that eliminates boilerplate
@@ -12,14 +12,14 @@ type GameWebController[I any, P WebInput, O any] struct {
 	factory    func() I
 	store      *SessionStore[I]
 	newDefault func(string) O
-	dispatch   func(bc *baseController, w rest.ResponseWriter, interactor I, param P, newDefault func(string) O) bool
+	dispatch   func(bc *baseController, w http.ResponseWriter, interactor I, param P, newDefault func(string) O) bool
 }
 
 // NewGameWebController creates a GameWebController.
 func NewGameWebController[I any, P WebInput, O any](
 	factory func() I,
 	newDefault func(string) O,
-	dispatch func(bc *baseController, w rest.ResponseWriter, interactor I, param P, newDefault func(string) O) bool,
+	dispatch func(bc *baseController, w http.ResponseWriter, interactor I, param P, newDefault func(string) O) bool,
 ) *GameWebController[I, P, O] {
 	return &GameWebController[I, P, O]{
 		factory:    factory,
@@ -30,10 +30,10 @@ func NewGameWebController[I any, P WebInput, O any](
 }
 
 // Exec handles an incoming game request.
-func (gwc *GameWebController[I, P, O]) Exec(w rest.ResponseWriter, r *rest.Request) {
+func (gwc *GameWebController[I, P, O]) Exec(w http.ResponseWriter, r *http.Request) {
 	execWithSession(&gwc.baseController, w, r, gwc.store, gwc.factory,
 		func(msg string) any { return gwc.newDefault(msg) },
-		func(w rest.ResponseWriter, interactor I, param P) bool {
+		func(w http.ResponseWriter, interactor I, param P) bool {
 			return gwc.dispatch(&gwc.baseController, w, interactor, param, gwc.newDefault)
 		})
 }

@@ -13,9 +13,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 )
 
 func mustKlondikeOutputJSON(msg string) string {
@@ -54,18 +51,10 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	ctrl := controller.NewKlondikeWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/klondike/exec", ctrl.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("quit q", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"q","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(mustKlondikeOutputJSON("bye."))
 	})
@@ -73,9 +62,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("quit", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"quit","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(mustKlondikeOutputJSON("bye."))
 	})
@@ -83,9 +70,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("reset r", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"r","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -93,9 +78,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("reset", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -103,9 +86,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("draw d", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"d","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -113,9 +94,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("draw", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"draw","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -123,9 +102,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("giveup g", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"g","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -133,9 +110,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("giveup", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"giveup","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -143,9 +118,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("hint h", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"h","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -153,9 +126,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("hint", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"hint","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -163,9 +134,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("autocomplete ac", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"ac","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -173,9 +142,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("autocomplete", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"autocomplete","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -183,9 +150,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("log", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -193,9 +158,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("l shorthand", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -207,9 +170,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 			From:         &controller.KlondikeWebZone{Zone: "waste"},
 			To:           &controller.KlondikeWebZone{Zone: "tableau", Col: intPtr(3)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -220,9 +181,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 			From:         &controller.KlondikeWebZone{Zone: "waste"},
 			To:           &controller.KlondikeWebZone{Zone: "foundation"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -233,9 +192,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 			From:         &controller.KlondikeWebZone{Zone: "tableau", Col: intPtr(0), CardIndex: intPtr(2)},
 			To:           &controller.KlondikeWebZone{Zone: "tableau", Col: intPtr(4)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -246,9 +203,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 			From:         &controller.KlondikeWebZone{Zone: "tableau", Col: intPtr(1)},
 			To:           &controller.KlondikeWebZone{Zone: "foundation"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
 	})
@@ -257,9 +212,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("unsupported command", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"other","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.BodyIs(mustKlondikeOutputJSON("Unsupported command."))
 	})
@@ -267,9 +220,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("empty command", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.BodyIs(mustKlondikeOutputJSON("param error."))
 	})
@@ -277,9 +228,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 	t.Run("empty session", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":""}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.BodyIs(mustKlondikeOutputJSON("param error."))
 	})
@@ -288,9 +237,7 @@ func TestKlondikeWebController_Method(t *testing.T) {
 		input := controller.KlondikeWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.BodyIs(mustKlondikeOutputJSON("param error."))
 	})
@@ -302,16 +249,10 @@ func TestKlondikeWebController_MoveErrors(t *testing.T) {
 	ctrl := controller.NewKlondikeWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(rest.Post("/klondike/exec", ctrl.Exec))
-	api.SetApp(router)
-
 	t.Run("move without from/to", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"m","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 	})
 
@@ -321,9 +262,7 @@ func TestKlondikeWebController_MoveErrors(t *testing.T) {
 			From:         &controller.KlondikeWebZone{Zone: "waste"},
 			To:           &controller.KlondikeWebZone{Zone: "tableau"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 	})
 
@@ -333,9 +272,7 @@ func TestKlondikeWebController_MoveErrors(t *testing.T) {
 			From:         &controller.KlondikeWebZone{Zone: "tableau"},
 			To:           &controller.KlondikeWebZone{Zone: "tableau"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 	})
 
@@ -345,9 +282,7 @@ func TestKlondikeWebController_MoveErrors(t *testing.T) {
 			From:         &controller.KlondikeWebZone{Zone: "tableau"},
 			To:           &controller.KlondikeWebZone{Zone: "foundation"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 	})
 
@@ -357,9 +292,7 @@ func TestKlondikeWebController_MoveErrors(t *testing.T) {
 			From:         &controller.KlondikeWebZone{Zone: "foundation"},
 			To:           &controller.KlondikeWebZone{Zone: "waste"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 	})
 }
@@ -374,17 +307,11 @@ func TestKlondikeWebController_ResetWithConfig(t *testing.T) {
 	ctrl := controller.NewKlondikeWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(rest.Post("/klondike/exec", ctrl.Exec))
-	api.SetApp(router)
-
 	input := controller.KlondikeWebInput{
 		BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "s1"},
 		Config:       &controller.KlondikeWebConfig{DrawCount: intPtr(3)},
 	}
-	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	recorded := test.RunRequest(t, api.MakeHandler(), req)
+	recorded := execRequest(t, ctrl.Exec, &input)
 	recorded.CodeIs(http.StatusOK)
 	recorded.BodyIs(mockOutput)
 }
@@ -399,18 +326,12 @@ func TestKlondikeWebController_ResetWithScoringMode(t *testing.T) {
 	ctrl := controller.NewKlondikeWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(rest.Post("/klondike/exec", ctrl.Exec))
-	api.SetApp(router)
-
 	scoringMode := 1
 	input := controller.KlondikeWebInput{
 		BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "s1"},
 		Config:       &controller.KlondikeWebConfig{ScoringMode: &scoringMode},
 	}
-	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	recorded := test.RunRequest(t, api.MakeHandler(), req)
+	recorded := execRequest(t, ctrl.Exec, &input)
 	recorded.CodeIs(http.StatusOK)
 	recorded.BodyIs(mockOutput)
 }
@@ -425,16 +346,10 @@ func TestKlondikeWebController_Undo(t *testing.T) {
 	ctrl := controller.NewKlondikeWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(rest.Post("/klondike/exec", ctrl.Exec))
-	api.SetApp(router)
-
 	t.Run("undo u", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"u","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(mockOutput)
 	})
@@ -442,9 +357,7 @@ func TestKlondikeWebController_Undo(t *testing.T) {
 	t.Run("undo", func(t *testing.T) {
 		var input controller.KlondikeWebInput
 		_ = json.Unmarshal([]byte(`{"command":"undo","sessionId":"s1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(mockOutput)
 	})

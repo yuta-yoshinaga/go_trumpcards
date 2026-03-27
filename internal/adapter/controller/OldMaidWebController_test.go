@@ -11,8 +11,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -29,66 +27,48 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	towc := controller.NewOldMaidWebController(factory)
 	defer towc.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/oldmaid/exec", towc.Exec),
-	)
-	api.SetApp(router)
-
 	var jsonInput controller.OldMaidWebInput
 	// When "q" / "quit": newDefaultOutput is used (cpuHighlightedCardIdx=-1, removedCard=null, mode=0)
 	qBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"drawHistory":[],"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"bye."}`
 
 	t.Run("success Exec q", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(qBody)
 	})
 	t.Run("success Exec quit", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "quit", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(qBody)
 	})
 	t.Run("success Exec r", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec reset", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec d", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "d", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec draw", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "draw", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -99,9 +79,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "d", SessionID: "test-session-1"},
 			DrawIdx:      &drawIdx,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -112,9 +90,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 			Mode:                 1,
 			CpuPlacementStrategy: true,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 	})
@@ -123,9 +99,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "test-session-1"},
 			CpuMemoryAI:  true,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 	})
@@ -134,26 +108,20 @@ func TestOldMaidWebController_Method(t *testing.T) {
 			BaseWebInput:         controller.BaseWebInput{Command: "reset", SessionID: "test-session-1"},
 			CpuHesitationEnabled: true,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 	})
 	t.Run("success Exec s (shuffle)", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "s", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec shuffle", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "shuffle", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -163,18 +131,14 @@ func TestOldMaidWebController_Method(t *testing.T) {
 			BaseWebInput:   controller.BaseWebInput{Command: "reorder", SessionID: "test-session-1"},
 			ReorderIndices: []int{2, 0, 1},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
 	})
 	t.Run("failed Exec reorder without indices", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reorder", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"drawHistory":[],"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error: reorderIndices is required."}`)
@@ -184,9 +148,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "test-session-1"},
 			Mode:         -1,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"drawHistory":[],"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error: mode must be between 0 and 1"}`)
@@ -196,36 +158,28 @@ func TestOldMaidWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "test-session-1"},
 			Mode:         99,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"drawHistory":[],"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error: mode must be between 0 and 1"}`)
 	})
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"drawHistory":[],"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"Unsupported command."}`)
 	})
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"drawHistory":[],"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error."}`)
 	})
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"drawHistory":[],"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error."}`)
@@ -234,9 +188,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		input := controller.OldMaidWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, towc.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"drawHistory":[],"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error."}`)
@@ -253,16 +205,11 @@ func TestOldMaidWebController_ResetProfile(t *testing.T) {
 		factory := func() uc.OldMaidInteractorIF { return omiMock }
 		ctrl := controller.NewOldMaidWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/oldmaid/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.OldMaidWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset-profile", SessionID: "rp-session-1"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		omiMock.AssertCalled(t, "ResetProfile")
 	})
@@ -274,16 +221,11 @@ func TestOldMaidWebController_ResetProfile(t *testing.T) {
 		factory := func() uc.OldMaidInteractorIF { return omiMock }
 		ctrl := controller.NewOldMaidWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/oldmaid/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.OldMaidWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "rp", SessionID: "rp-session-2"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		omiMock.AssertCalled(t, "ResetProfile")
 	})
@@ -300,17 +242,12 @@ func TestOldMaidWebController_ResetWithCpuMetaAI(t *testing.T) {
 		factory := func() uc.OldMaidInteractorIF { return omiMock }
 		ctrl := controller.NewOldMaidWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/oldmaid/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.OldMaidWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-metaai-1"},
 			CpuMetaAI:    true,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		omiMock.AssertCalled(t, "Reset", expectedCfg, mock.Anything)
 	})
@@ -323,16 +260,11 @@ func TestOldMaidWebController_ResetWithCpuMetaAI(t *testing.T) {
 		factory := func() uc.OldMaidInteractorIF { return omiMock }
 		ctrl := controller.NewOldMaidWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/oldmaid/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.OldMaidWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-metaai-2"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		omiMock.AssertCalled(t, "Reset", expectedCfg, mock.Anything)
 	})
@@ -355,18 +287,10 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 	})
 	defer isoController.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/oldmaid/exec", isoController.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("session-A reset calls mockA", func(t *testing.T) {
 		var input controller.OldMaidWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockA.AssertCalled(t, "Reset", mock.Anything, mock.Anything)
 		mockB.AssertNotCalled(t, "Reset", mock.Anything)
@@ -375,9 +299,7 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-B reset calls mockB", func(t *testing.T) {
 		var input controller.OldMaidWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-B"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockB.AssertCalled(t, "Reset", mock.Anything, mock.Anything)
 	})
@@ -385,9 +307,7 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-A second call reuses mockA", func(t *testing.T) {
 		var input controller.OldMaidWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		if callCount != 2 {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)
@@ -404,16 +324,10 @@ func TestOldMaidWebController_Log(t *testing.T) {
 	ctrl := controller.NewOldMaidWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(rest.Post("/oldmaid/exec", ctrl.Exec))
-	api.SetApp(router)
-
 	t.Run("log command", func(t *testing.T) {
 		var input controller.OldMaidWebInput
 		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"om-log-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockLogOutput)
@@ -422,9 +336,7 @@ func TestOldMaidWebController_Log(t *testing.T) {
 	t.Run("l shorthand", func(t *testing.T) {
 		var input controller.OldMaidWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"om-log-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockLogOutput)

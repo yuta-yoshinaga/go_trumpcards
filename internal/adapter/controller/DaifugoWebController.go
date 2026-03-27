@@ -4,7 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
 )
 
 // DaifugoWebConfig ローカルルール設定 (入力・出力共用)
@@ -140,7 +140,7 @@ func newDaifugoDefaultOutput(msg string) *DaifugoWebOutput {
 	}
 }
 
-func daifugoDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DaifugoInteractorIF, param DaifugoWebInput, _ func(string) *DaifugoWebOutput) bool {
+func daifugoDispatch(bc *baseController, w http.ResponseWriter, dgi usecase.DaifugoInteractorIF, param DaifugoWebInput, _ func(string) *DaifugoWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		if param.Config != nil {

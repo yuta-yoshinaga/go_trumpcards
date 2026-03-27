@@ -4,7 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
 )
 
 // ShortDeckWebInput ショートデックホールデムWebインプット (HoldemWebInputと同一構造)
@@ -32,7 +32,7 @@ func newShortDeckDefaultOutput(msg string) *ShortDeckWebOutput {
 	}
 }
 
-func shortDeckDispatch(bc *baseController, w rest.ResponseWriter, ogi usecase.ShortDeckInteractorIF, param ShortDeckWebInput, newDefault func(string) *ShortDeckWebOutput) bool {
+func shortDeckDispatch(bc *baseController, w http.ResponseWriter, ogi usecase.ShortDeckInteractorIF, param ShortDeckWebInput, newDefault func(string) *ShortDeckWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		cfg, err := param.ToConfig()

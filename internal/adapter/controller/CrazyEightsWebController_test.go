@@ -13,9 +13,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 )
 
 func mustCrazyEightsOutputJSON(msg string) string {
@@ -47,18 +44,10 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	ctrl := controller.NewCrazyEightsWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/crazyeights/exec", ctrl.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("success Exec q", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"q","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustCrazyEightsOutputJSON("bye."))
@@ -67,9 +56,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("success Exec quit", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"quit","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustCrazyEightsOutputJSON("bye."))
@@ -78,9 +65,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("success Exec r", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"r","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -89,9 +74,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("success Exec reset", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -102,9 +85,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "play", SessionID: "test-session-1"},
 			CardIndex:    func() *int { v := 3; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -115,9 +96,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "p", SessionID: "test-session-1"},
 			CardIndex:    func() *int { v := 3; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -126,9 +105,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("success Exec draw", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"d","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -137,9 +114,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("success Exec draw long", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"draw","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -150,9 +125,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "suit", SessionID: "test-session-1"},
 			Suit:         func() *int { v := 2; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -163,9 +136,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "s", SessionID: "test-session-1"},
 			Suit:         func() *int { v := 2; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -174,9 +145,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("success Exec nr nextround", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"nr","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -185,9 +154,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("success Exec nextround", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"nextround","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -196,9 +163,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("success Exec log", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -207,9 +172,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("success Exec l shorthand", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -219,9 +182,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("failed Exec other", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"other","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustCrazyEightsOutputJSON("Unsupported command."))
@@ -230,9 +191,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustCrazyEightsOutputJSON("param error."))
@@ -241,9 +200,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":""}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustCrazyEightsOutputJSON("param error."))
@@ -253,9 +210,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 		input := controller.CrazyEightsWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustCrazyEightsOutputJSON("param error."))
@@ -264,9 +219,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("failed Exec play no cardIndex", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"p","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustCrazyEightsOutputJSON("param error: cardIndex is required."))
@@ -275,9 +228,7 @@ func TestCrazyEightsWebController_Method(t *testing.T) {
 	t.Run("failed Exec suit no suit", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"suit","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustCrazyEightsOutputJSON("param error: suit is required."))
@@ -297,17 +248,12 @@ func TestCrazyEightsWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.CrazyEightsInteractorIF { return siMock }
 		ctrl := controller.NewCrazyEightsWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/crazyeights/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.CrazyEightsWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-1"},
 			Config:       &controller.CrazyEightsWebConfig{CpuDifficulty: &diff, PointLimit: &limit},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -321,17 +267,12 @@ func TestCrazyEightsWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.CrazyEightsInteractorIF { return siMock }
 		ctrl := controller.NewCrazyEightsWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/crazyeights/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.CrazyEightsWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-2"},
 			Config:       &controller.CrazyEightsWebConfig{CpuDifficulty: &diff},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -345,17 +286,12 @@ func TestCrazyEightsWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.CrazyEightsInteractorIF { return siMock }
 		ctrl := controller.NewCrazyEightsWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/crazyeights/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.CrazyEightsWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-3"},
 			Config:       &controller.CrazyEightsWebConfig{CpuDifficulty: &diff},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -369,17 +305,12 @@ func TestCrazyEightsWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.CrazyEightsInteractorIF { return siMock }
 		ctrl := controller.NewCrazyEightsWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/crazyeights/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.CrazyEightsWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-4"},
 			Config:       &controller.CrazyEightsWebConfig{PointLimit: &limit},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -393,17 +324,12 @@ func TestCrazyEightsWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.CrazyEightsInteractorIF { return siMock }
 		ctrl := controller.NewCrazyEightsWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/crazyeights/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.CrazyEightsWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-limit-max"},
 			Config:       &controller.CrazyEightsWebConfig{PointLimit: &limit},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -416,16 +342,11 @@ func TestCrazyEightsWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.CrazyEightsInteractorIF { return siMock }
 		ctrl := controller.NewCrazyEightsWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/crazyeights/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.CrazyEightsWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-5"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -449,18 +370,10 @@ func TestCrazyEightsWebController_SessionIsolation(t *testing.T) {
 	})
 	defer isoController.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/crazyeights/exec", isoController.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("session-A reset calls mockA", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockA.AssertCalled(t, "ResetWithConfig", domain.DefaultCrazyEightsConfig())
 		mockB.AssertNotCalled(t, "ResetWithConfig", domain.DefaultCrazyEightsConfig())
@@ -469,9 +382,7 @@ func TestCrazyEightsWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-B reset calls mockB", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"session-B"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockB.AssertCalled(t, "ResetWithConfig", domain.DefaultCrazyEightsConfig())
 	})
@@ -479,9 +390,7 @@ func TestCrazyEightsWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-A second call reuses mockA without creating new interactor", func(t *testing.T) {
 		var input controller.CrazyEightsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/crazyeights/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		if callCount != 2 {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)

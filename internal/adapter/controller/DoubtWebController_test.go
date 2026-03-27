@@ -7,8 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -51,18 +49,10 @@ func TestDoubtWebController_Method(t *testing.T) {
 	tdwc := controller.NewDoubtWebController(factory)
 	defer tdwc.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/doubt/exec", tdwc.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("success Exec q", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustDoubtOutputJSON("bye."))
@@ -71,9 +61,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("success Exec quit", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "quit", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustDoubtOutputJSON("bye."))
@@ -82,9 +70,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("success Exec r", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -93,9 +79,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("success Exec reset", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -104,9 +88,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("success Exec p play", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "p", "cardIndices": [0], "claimedValue": 1, "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -115,9 +97,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("success Exec d doubt (human doubts)", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "d", "doubterIndices": [0], "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -126,9 +106,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("success Exec d doubt confirm (cpu only, no human)", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "d", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -137,9 +115,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("success Exec s skip", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "s", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -148,9 +124,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("failed Exec other", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustDoubtOutputJSON("Unsupported command."))
@@ -159,9 +133,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustDoubtOutputJSON("param error."))
@@ -170,9 +142,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustDoubtOutputJSON("param error."))
@@ -182,9 +152,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 		input := controller.DoubtWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustDoubtOutputJSON("param error."))
@@ -226,9 +194,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 				CardIndices:  []int{0},
 				ClaimedValue: tc.claimedValue,
 			}
-			req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-			req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-			recorded := test.RunRequest(t, api.MakeHandler(), req)
+			recorded := execRequest(t, tdwc.Exec, &input)
 			recorded.CodeIs(tc.wantCode)
 			recorded.ContentTypeIsJson()
 			recorded.BodyIs(tc.wantBody)
@@ -241,9 +207,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "p", SessionID: "test-session-1"},
 			CardIndices:  indices,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustDoubtOutputJSON("param error."))
@@ -261,18 +225,10 @@ func TestDoubtWebController_SkipWithCpuDoubters(t *testing.T) {
 	tdwc := controller.NewDoubtWebController(factory)
 	defer tdwc.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/doubt/exec", tdwc.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("skip with cpu doubters calls ResolveDoubt", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "s", "sessionId": "session-skip-doubters"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -298,18 +254,10 @@ func TestDoubtWebController_SessionIsolation(t *testing.T) {
 	})
 	defer isoController.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/doubt/exec", isoController.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("session-A reset calls mockA", func(t *testing.T) {
 		var input controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockA.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig(), mock.Anything)
 		mockB.AssertNotCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig())
@@ -318,9 +266,7 @@ func TestDoubtWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-B reset calls mockB", func(t *testing.T) {
 		var input controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-B"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockB.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig(), mock.Anything)
 	})
@@ -328,9 +274,7 @@ func TestDoubtWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-A second call reuses mockA without creating new interactor", func(t *testing.T) {
 		var input controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		if callCount != 2 {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)
@@ -351,18 +295,13 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
 			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-1"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
@@ -377,18 +316,13 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
 			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-2"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
@@ -403,18 +337,13 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
 			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-3"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
@@ -429,18 +358,13 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
 			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-4"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
@@ -477,18 +401,13 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 				factory := func() uc.DoubtInteractorIF { return dgiMock }
 				ctrl := controller.NewDoubtWebController(factory)
 				defer ctrl.Stop()
-				api := rest.NewApi()
-				router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-				api.SetApp(router)
 
 				input := controller.DoubtWebInput{
 					BaseWebInput:     controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-pdl"},
 					DoubtWindowSec:   &win,
 					PenaltyDrawLimit: tc.limit,
 				}
-				req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-				req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-				recorded := test.RunRequest(t, api.MakeHandler(), req)
+				recorded := execRequest(t, ctrl.Exec, &input)
 				recorded.CodeIs(http.StatusOK)
 				dgiMock.AssertCalled(t, "ResetWithConfig", tc.expectedCfg, mock.Anything)
 			})
@@ -508,18 +427,13 @@ func TestDoubtWebController_ResetWithCpuHesitation(t *testing.T) {
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
 			BaseWebInput:         controller.BaseWebInput{Command: "reset", SessionID: "cfg-hes"},
 			DoubtWindowSec:       &win,
 			CpuHesitationEnabled: true,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
@@ -532,17 +446,12 @@ func TestDoubtWebController_ResetWithCpuHesitation(t *testing.T) {
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
 			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-hes-nil"},
 			DoubtWindowSec: &win,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
@@ -558,16 +467,11 @@ func TestDoubtWebController_ResetProfile(t *testing.T) {
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset-profile", SessionID: "rp-session-1"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetProfile")
 	})
@@ -579,16 +483,11 @@ func TestDoubtWebController_ResetProfile(t *testing.T) {
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "rp", SessionID: "rp-session-2"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetProfile")
 	})
@@ -606,18 +505,13 @@ func TestDoubtWebController_ResetWithCpuMetaAI(t *testing.T) {
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
 			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-metaai-1"},
 			DoubtWindowSec: &win,
 			CpuMetaAI:      true,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
@@ -630,17 +524,12 @@ func TestDoubtWebController_ResetWithCpuMetaAI(t *testing.T) {
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
 			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-metaai-2"},
 			DoubtWindowSec: &win,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
@@ -695,16 +584,10 @@ func TestDoubtWebController_Log(t *testing.T) {
 	ctrl := controller.NewDoubtWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
-	api.SetApp(router)
-
 	t.Run("log command", func(t *testing.T) {
 		var input controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"doubt-log-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockLogOutput)
@@ -713,9 +596,7 @@ func TestDoubtWebController_Log(t *testing.T) {
 	t.Run("l shorthand", func(t *testing.T) {
 		var input controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"doubt-log-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockLogOutput)

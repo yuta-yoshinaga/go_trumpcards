@@ -6,7 +6,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
 )
 
 // IndianPokerWebInput インディアンポーカーWebインプット
@@ -124,7 +124,7 @@ func newIndianPokerDefaultOutput(msg string) *IndianPokerWebOutput {
 	}
 }
 
-func indianPokerDispatch(bc *baseController, w rest.ResponseWriter, ipi usecase.IndianPokerInteractorIF, param IndianPokerWebInput, newDefault func(string) *IndianPokerWebOutput) bool {
+func indianPokerDispatch(bc *baseController, w http.ResponseWriter, ipi usecase.IndianPokerInteractorIF, param IndianPokerWebInput, newDefault func(string) *IndianPokerWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		cfg := param.ToConfig()

@@ -6,8 +6,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // NapoleonWebInput ナポレオンWebインプット
@@ -128,7 +126,7 @@ func newNapoleonDefaultOutput(msg string) *NapoleonWebOutput {
 	}
 }
 
-func napoleonDispatch(bc *baseController, w rest.ResponseWriter, ni usecase.NapoleonInteractorIF, param NapoleonWebInput, newDefault func(string) *NapoleonWebOutput) bool {
+func napoleonDispatch(bc *baseController, w http.ResponseWriter, ni usecase.NapoleonInteractorIF, param NapoleonWebInput, newDefault func(string) *NapoleonWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, ni.ResetWithConfig(param.ToConfig()))

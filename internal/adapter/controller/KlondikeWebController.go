@@ -5,8 +5,6 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // KlondikeWebInput クロンダイクWebインプット
@@ -79,7 +77,7 @@ func newKlondikeDefaultOutput(msg string) *KlondikeWebOutput {
 	}
 }
 
-func klondikeDispatch(bc *baseController, w rest.ResponseWriter, ki usecase.KlondikeInteractorIF, param KlondikeWebInput, newDefault func(string) *KlondikeWebOutput) bool {
+func klondikeDispatch(bc *baseController, w http.ResponseWriter, ki usecase.KlondikeInteractorIF, param KlondikeWebInput, newDefault func(string) *KlondikeWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		if param.Config != nil {
@@ -114,7 +112,7 @@ func klondikeDispatch(bc *baseController, w rest.ResponseWriter, ki usecase.Klon
 	return true
 }
 
-func klondikeMoveDispatch(bc *baseController, w rest.ResponseWriter, ki usecase.KlondikeInteractorIF, param KlondikeWebInput, newDefault func(string) *KlondikeWebOutput) bool {
+func klondikeMoveDispatch(bc *baseController, w http.ResponseWriter, ki usecase.KlondikeInteractorIF, param KlondikeWebInput, newDefault func(string) *KlondikeWebOutput) bool {
 	if param.From == nil || param.To == nil {
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
 		return true
