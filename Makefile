@@ -1,7 +1,8 @@
 TINYGO ?= tinygo
 WASM_OPT ?= wasm-opt
 GOPATH ?= $(shell go env GOPATH)
-WORKERS_JS := $(GOPATH)/pkg/mod/github.com/syumai/workers@v0.32.0/cmd/_assets/main.js
+WORKERS_MOD := $(shell go list -m -f '{{.Dir}}' github.com/syumai/workers 2>/dev/null)
+WORKERS_JS := $(WORKERS_MOD)/cmd/_assets/main.js
 
 .PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo clean-workers deploy-workers
 
