@@ -1,8 +1,5 @@
 TINYGO ?= tinygo
 WASM_OPT ?= wasm-opt
-GOPATH ?= $(shell go env GOPATH)
-WORKERS_MOD := $(shell go list -m -f '{{.Dir}}' github.com/syumai/workers 2>/dev/null)
-WORKERS_JS := $(WORKERS_MOD)/cmd/_assets/main.js
 
 .PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo clean-workers deploy-workers
 
@@ -13,7 +10,8 @@ define build_worker
 	@mkdir -p build/$(1)
 	$(TINYGO) build -o build/$(1)/app.wasm -target wasi -no-debug -opt=z ./cmd/workers/$(1)
 	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz build/$(1)/app.wasm -o build/$(1)/app.wasm
-	@cp $(WORKERS_JS) build/$(1)/worker.js
+	@WORKERS_DIR=$$(go list -m -f '{{.Dir}}' github.com/syumai/workers); \
+	cp "$$WORKERS_DIR/cmd/_assets/main.js" build/$(1)/worker.js
 	@RAW=$$(stat -c%s build/$(1)/app.wasm); GZIP=$$(gzip -c build/$(1)/app.wasm | wc -c); \
 	echo "  $(1): $$RAW bytes raw, $$GZIP bytes gzip"
 endef
