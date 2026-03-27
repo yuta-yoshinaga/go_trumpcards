@@ -306,13 +306,56 @@ describe('NavBar', () => {
       expect(pokerDetails).not.toHaveAttribute('open');
     });
 
+    it('does not close other categories on mousedown inside a category on mobile', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar('/');
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+
+      const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details') as HTMLDetailsElement;
+      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
+      expect(tableDetails).toHaveAttribute('open');
+      expect(pokerDetails).toHaveAttribute('open');
+
+      // mousedown on a Poker link — Table category must stay open to prevent layout shift
+      const pokerLink = pokerDetails.querySelector('a') as HTMLElement;
+      fireEvent.mouseDown(pokerLink);
+
+      expect(tableDetails).toHaveAttribute('open');
+      expect(pokerDetails).toHaveAttribute('open');
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('does not close other categories on mousedown inside a category on medium desktop', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar('/');
+
+      const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details') as HTMLDetailsElement;
+      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
+      // Force both open to simulate tablet state
+      tableDetails.open = true;
+      pokerDetails.open = true;
+
+      const pokerLink = pokerDetails.querySelector('a') as HTMLElement;
+      fireEvent.mouseDown(pokerLink);
+
+      expect(tableDetails).toHaveAttribute('open');
+      expect(pokerDetails).toHaveAttribute('open');
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
     it('does not close dropdown when clicking inside it', () => {
       renderNavBar('/poker');
       const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
       expect(pokerDetails).toHaveAttribute('open');
 
       // Click inside the open dropdown — should stay open
-      const pokerLink = screen.getByRole('link', { name: labelFor('nav.poker') });
+      const pokerLink = pokerDetails.querySelector('a') as HTMLElement;
       fireEvent.mouseDown(pokerLink);
 
       expect(pokerDetails).toHaveAttribute('open');
