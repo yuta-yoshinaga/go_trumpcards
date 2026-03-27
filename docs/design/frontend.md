@@ -299,7 +299,7 @@ classDiagram
         GAME_END = 5
     }
 
-    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase,\nPyramidPhase は同一の値を持つ別定数"
+    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase は、\nそれぞれ同一の値を持つ別定数です"
 ```
 
 ### 1.2 API クライアント層

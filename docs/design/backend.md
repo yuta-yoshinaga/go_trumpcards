@@ -1132,7 +1132,7 @@ stateDiagram-v2
     [*] --> Playing : Reset()
     Playing --> Playing : Move / Draw / Deal / Remove / Undo
     Playing --> GameClear : 全カードをFoundation/Pyramid除去完了
-    Playing --> GameClear : Autocomplete成功
+    Playing --> GameClear : Autocomplete成功 (Klondike/FreeCell/Spider のみ)
     Playing --> GameOver : GiveUp
     GameClear --> [*]
     GameOver --> [*]
@@ -1143,6 +1143,8 @@ stateDiagram-v2
 ```
 
 Pyramid 固有のアクション: `Draw` / `RemovePair` / `RemoveKing` / `RemoveWithWaste` / `RemoveWasteKing` / `Undo`。クリア条件はピラミッドの28枚全除去。
+
+各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
 
 ### 3.9 CrazyEights フェーズ遷移
 
