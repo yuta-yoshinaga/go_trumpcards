@@ -164,7 +164,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
   }, [searchTerm, searchableRoutes]);
 
   return (
-    <div className="glass-panel--dark">
+    <div className="glass-panel--dark lg:hidden">
       <div className="flex items-center justify-between sm:hidden my-2 mx-2.5">
         <Link to="/" className="text-white font-bold min-h-[44px] inline-flex items-center" onClick={closeMenu}>
           {SITE_NAME}

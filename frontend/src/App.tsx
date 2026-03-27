@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HashRouter, Route, Routes } from 'react-router-dom';
+import { DesktopSidebar } from './components/DesktopSidebar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
@@ -68,16 +69,19 @@ export default function App() {
   return (
     <HashRouter>
       <ErrorBoundary>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full lg:flex-row">
           <SkipNavLink targetId="main-content" label={t('nav.skipToContent')} />
-          <NavBar />
-          <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col min-h-0">
-            <Routes>
-              {gameRoutes.map(({ path }) => (
-                <Route key={path} path={path} element={pageByPath[path]} />
-              ))}
-            </Routes>
-          </main>
+          <DesktopSidebar />
+          <div className="flex flex-col flex-1 min-w-0">
+            <NavBar />
+            <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col min-h-0">
+              <Routes>
+                {gameRoutes.map(({ path }) => (
+                  <Route key={path} path={path} element={pageByPath[path]} />
+                ))}
+              </Routes>
+            </main>
+          </div>
         </div>
       </ErrorBoundary>
     </HashRouter>
