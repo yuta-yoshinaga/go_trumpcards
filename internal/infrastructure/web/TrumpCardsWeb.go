@@ -263,6 +263,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 // a 204 response.
 func corsMiddleware(allowedOrigins map[string]bool, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Vary", "Origin")
 		origin := r.Header.Get("Origin")
 		if origin != "" && allowedOrigins[origin] {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
@@ -404,6 +405,8 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.npc.Stop()
 	web.ipc.Stop()
 	web.vpc.Stop()
+	web.dwwc.Stop()
+	web.jpwc.Stop()
 	web.euc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
