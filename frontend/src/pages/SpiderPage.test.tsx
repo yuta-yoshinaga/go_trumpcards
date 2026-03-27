@@ -477,4 +477,38 @@ describe('SpiderPage', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
   });
+
+  it('clicking face-up card in different column after source selected triggers move', async () => {
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+
+    // Select ♠K in col 0 as source
+    const sourceCard = screen.getByAltText('♠ K');
+    const sourceButton = sourceCard.closest('button') as HTMLButtonElement;
+    fireEvent.click(sourceButton);
+    await waitFor(() => expect(sourceButton).toHaveAttribute('aria-pressed', 'true'));
+
+    // Click ♥5 in col 1 (different column) — triggers handleSelectTarget → calls move
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    const targetCard = screen.getByAltText('♥ 5');
+    const targetButton = targetCard.closest('button') as HTMLButtonElement;
+    fireEvent.click(targetButton);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.anything(), expect.anything()));
+  });
+
+  it('clicking face-up card in same column after source selected re-selects source', async () => {
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+
+    // Select ♠K in col 0 as source
+    const cardImg = screen.getByAltText('♠ K');
+    const cardButton = cardImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(cardButton);
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
+
+    // Click ♠K again (same col 0) — triggers handleSelectSource which deselects
+    fireEvent.click(cardButton);
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'false'));
+  });
 });
