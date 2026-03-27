@@ -59,19 +59,15 @@ describe('useOldMaidGame onSuccess replay skip', () => {
     mockExec.mockResolvedValue(baseState);
   });
 
-  it('calls runReplay on first success', async () => {
-    const { result } = renderHook(() => useOldMaidGame(), { wrapper: createWrapper() });
-    act(() => {
-      result.current.handleStart();
-    });
+  it('calls runReplay on auto-start', async () => {
+    renderHook(() => useOldMaidGame(), { wrapper: createWrapper() });
+    // Auto-start triggers reset on mount
     await waitFor(() => expect(runReplaySpy).toHaveBeenCalledTimes(1));
   });
 
   it('skips replay when cpuActions unchanged', async () => {
     const { result } = renderHook(() => useOldMaidGame(), { wrapper: createWrapper() });
-    act(() => {
-      result.current.handleStart();
-    });
+    // Wait for auto-start
     await waitFor(() => expect(runReplaySpy).toHaveBeenCalledTimes(1));
 
     runReplaySpy.mockClear();
@@ -85,9 +81,7 @@ describe('useOldMaidGame onSuccess replay skip', () => {
 
   it('runs replay when cpuActions change', async () => {
     const { result } = renderHook(() => useOldMaidGame(), { wrapper: createWrapper() });
-    act(() => {
-      result.current.handleStart();
-    });
+    // Wait for auto-start
     await waitFor(() => expect(runReplaySpy).toHaveBeenCalledTimes(1));
 
     const newState: OldMaidResponse = {
@@ -104,16 +98,14 @@ describe('useOldMaidGame onSuccess replay skip', () => {
     runReplaySpy.mockClear();
     mockExec.mockResolvedValue(newState);
     act(() => {
-      result.current.exec('draw', 0);
+      result.current.gameExec('draw', 0);
     });
     await waitFor(() => expect(runReplaySpy).toHaveBeenCalledTimes(1));
   });
 
   it('sets displayState even when replay is skipped', async () => {
     const { result } = renderHook(() => useOldMaidGame(), { wrapper: createWrapper() });
-    act(() => {
-      result.current.handleStart();
-    });
+    // Wait for auto-start
     await waitFor(() => expect(runReplaySpy).toHaveBeenCalledTimes(1));
 
     const updatedState: OldMaidResponse = { ...baseState, currentTurn: 1 };

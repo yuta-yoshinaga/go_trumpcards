@@ -151,7 +151,7 @@ export function useOldMaidGame() {
     });
   }, []);
 
-  const { loading, error, exec } = useGameApi(oldmaidApi.exec, { onSuccess });
+  const { loading, error, exec: gameExec } = useGameApi(oldmaidApi.exec, { onSuccess });
 
   const handleStart = useCallback(() => {
     const settings = {
@@ -163,7 +163,7 @@ export function useOldMaidGame() {
     };
     setGameSettings(settings);
     setSuspectPins(new Set());
-    exec(
+    gameExec(
       'reset',
       undefined,
       settings.mode,
@@ -173,12 +173,21 @@ export function useOldMaidGame() {
       settings.cpuHesitationEnabled,
       settings.cpuMetaAI,
     );
-  }, [exec, setupMode, setupStrategy, setupMemoryAI, setupHesitation, setupMetaAI]);
+  }, [gameExec, setupMode, setupStrategy, setupMemoryAI, setupHesitation, setupMetaAI]);
+
+  // Auto-start with default settings on first mount
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (!autoStartedRef.current) {
+      autoStartedRef.current = true;
+      handleStart();
+    }
+  }, [handleStart]);
 
   const handleReset = useCallback(() => {
     setSuspectPins(new Set());
     if (gameSettings) {
-      exec(
+      gameExec(
         'reset',
         undefined,
         gameSettings.mode,
@@ -189,13 +198,13 @@ export function useOldMaidGame() {
         gameSettings.cpuMetaAI,
       );
     }
-  }, [exec, gameSettings]);
+  }, [gameExec, gameSettings]);
 
   const handleReorder = useCallback(
     (indices: number[]) => {
-      exec('reorder', undefined, undefined, undefined, indices);
+      gameExec('reorder', undefined, undefined, undefined, indices);
     },
-    [exec],
+    [gameExec],
   );
 
   return {
@@ -205,14 +214,13 @@ export function useOldMaidGame() {
     setupMemoryAI,
     setupHesitation,
     setupMetaAI,
-    gameSettings,
     suspectPins,
     setSuspectPins,
     shakeKey,
     revealedCard,
     loading,
     error,
-    exec,
+    gameExec,
     handleStart,
     handleReset,
     handleReorder,
@@ -221,6 +229,5 @@ export function useOldMaidGame() {
     setSetupMemoryAI,
     setSetupHesitation,
     setSetupMetaAI,
-    setGameSettings,
   };
 }
