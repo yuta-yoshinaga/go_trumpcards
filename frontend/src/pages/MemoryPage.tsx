@@ -137,11 +137,11 @@ function MemoryPageContent() {
         ]}
       />
 
-      {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        {/* Player scores – compact inline layout to maximise board visibility on mobile */}
+      {/* Content area – scroll on mobile, fit-to-viewport on desktop */}
+      <div className="flex-1 overflow-y-auto lg:overflow-hidden lg:flex lg:flex-col pt-3 lg:pt-1 px-4 lg:px-8">
+        {/* Player scores – compact inline layout to maximise board visibility */}
         <div
-          className="my-1 px-2 py-1 rounded bg-black/30 text-white text-sm flex flex-wrap items-center gap-y-0.5"
+          className="my-1 px-2 py-1 rounded bg-black/30 text-white text-sm flex flex-wrap items-center gap-y-0.5 lg:shrink-0"
           data-tutorial="mem-score-table"
           role="status"
           aria-label={t('scores')}
@@ -158,9 +158,12 @@ function MemoryPageContent() {
           ))}
         </div>
 
-        {/* Board: responsive grid (6/6/8/13 columns by breakpoint) */}
-        <div className="my-3 p-2 rounded bg-black/40" data-tutorial="mem-board">
-          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1">
+        {/* Board: responsive grid (6/8/13 columns); on lg fills remaining height */}
+        <div
+          className="my-3 lg:my-1 p-2 lg:p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
+          data-tutorial="mem-board"
+        >
+          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1 lg:grid-rows-4 lg:h-full">
             {state.board.map((bc, idx) => (
               <button
                 type="button"
@@ -168,7 +171,7 @@ function MemoryPageContent() {
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
                 aria-hidden={bc.taken || undefined}
-                className={`relative aspect-[2/3] rounded border ${focusRingWhite} ${
+                className={`relative aspect-[2/3] lg:aspect-auto rounded border ${focusRingWhite} ${
                   bc.taken
                     ? 'bg-transparent border-transparent'
                     : bc.faceUp
