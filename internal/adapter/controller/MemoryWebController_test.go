@@ -13,9 +13,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 )
 
 func mustMemoryOutputJSON(msg string) string {
@@ -46,18 +43,10 @@ func TestMemoryWebController_Method(t *testing.T) {
 	ctrl := controller.NewMemoryWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/memory/exec", ctrl.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("success Exec q", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"q","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustMemoryOutputJSON("bye."))
@@ -66,9 +55,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("success Exec quit", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"quit","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustMemoryOutputJSON("bye."))
@@ -77,9 +64,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("success Exec r", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"r","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -88,9 +73,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("success Exec reset", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -101,9 +84,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "f", SessionID: "test-session-1"},
 			Position:     func() *int { v := 5; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -114,9 +95,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "flip", SessionID: "test-session-1"},
 			Position:     func() *int { v := 5; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -125,9 +104,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("success Exec n next", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"n","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -136,9 +113,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("success Exec next", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"next","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -147,9 +122,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("success Exec log", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -158,9 +131,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("success Exec l shorthand", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -170,9 +141,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("failed Exec other", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"other","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustMemoryOutputJSON("Unsupported command."))
@@ -181,9 +150,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustMemoryOutputJSON("param error."))
@@ -192,9 +159,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":""}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustMemoryOutputJSON("param error."))
@@ -204,9 +169,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 		input := controller.MemoryWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustMemoryOutputJSON("param error."))
@@ -215,9 +178,7 @@ func TestMemoryWebController_Method(t *testing.T) {
 	t.Run("failed Exec flip no position", func(t *testing.T) {
 		var input controller.MemoryWebInput
 		_ = json.Unmarshal([]byte(`{"command":"f","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustMemoryOutputJSON("param error: position is required."))
@@ -236,17 +197,12 @@ func TestMemoryWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.MemoryInteractorIF { return miMock }
 		ctrl := controller.NewMemoryWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/memory/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.MemoryWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-1"},
 			Config:       &controller.MemoryWebConfig{CpuDifficulty: &diff},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		miMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -260,17 +216,12 @@ func TestMemoryWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.MemoryInteractorIF { return miMock }
 		ctrl := controller.NewMemoryWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/memory/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.MemoryWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-2"},
 			Config:       &controller.MemoryWebConfig{CpuDifficulty: &diff},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		miMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -284,17 +235,12 @@ func TestMemoryWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.MemoryInteractorIF { return miMock }
 		ctrl := controller.NewMemoryWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/memory/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.MemoryWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-3"},
 			Config:       &controller.MemoryWebConfig{CpuDifficulty: &diff},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		miMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -307,16 +253,11 @@ func TestMemoryWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.MemoryInteractorIF { return miMock }
 		ctrl := controller.NewMemoryWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/memory/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.MemoryWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-4"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/memory/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		miMock.AssertCalled(t, "ResetWithConfig", expected)
 	})

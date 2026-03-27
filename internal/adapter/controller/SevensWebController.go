@@ -4,7 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
 )
 
 // SevensWebInput 7並べWebインプット
@@ -111,7 +111,7 @@ func newSevensDefaultOutput(msg string) *SevensWebOutput {
 	}
 }
 
-func sevensDispatch(bc *baseController, w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput, _ func(string) *SevensWebOutput) bool {
+func sevensDispatch(bc *baseController, w http.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput, _ func(string) *SevensWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		if param.HasConfigParams() {

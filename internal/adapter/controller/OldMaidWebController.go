@@ -7,8 +7,6 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // OldMaidWebInput ババ抜きWebインプット
@@ -116,7 +114,7 @@ func newOldMaidDefaultOutput(msg string) *OldMaidWebOutput {
 	}
 }
 
-func oldMaidDispatch(bc *baseController, w rest.ResponseWriter, omi usecase.OldMaidInteractorIF, param OldMaidWebInput, newDefault func(string) *OldMaidWebOutput) bool {
+func oldMaidDispatch(bc *baseController, w http.ResponseWriter, omi usecase.OldMaidInteractorIF, param OldMaidWebInput, newDefault func(string) *OldMaidWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		cfg, err := param.ToConfig()

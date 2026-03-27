@@ -12,9 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 )
 
 func mustFreeCellOutputJSON(msg string) string {
@@ -49,14 +46,6 @@ func TestFreeCellWebController(t *testing.T) {
 
 	factory := func() uc.FreeCellInteractorIF { return fiMock }
 	ctrl := controller.NewFreeCellWebController(factory)
-
-	api := rest.NewApi()
-	router, err := rest.MakeRouter(rest.Post("/freecell/exec", ctrl.Exec))
-	if err != nil {
-		t.Fatal(err)
-	}
-	api.SetApp(router)
-	handler := api.MakeHandler()
 
 	expectedBody := mockOutput
 
@@ -178,9 +167,7 @@ func TestFreeCellWebController(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			recorded := test.RunRequest(t, handler,
-				test.MakeSimpleRequest("POST", "http://localhost/freecell/exec",
-					json.RawMessage(tt.body)))
+			recorded := execRequest(t, ctrl.Exec, json.RawMessage(tt.body))
 			recorded.CodeIs(tt.wantStatus)
 			recorded.BodyIs(tt.wantBody)
 		})
@@ -249,8 +236,7 @@ func TestFreeCellWebController(t *testing.T) {
 
 	for _, tt := range moveTests {
 		t.Run(tt.name, func(t *testing.T) {
-			recorded := test.RunRequest(t, handler,
-				test.MakeSimpleRequest("POST", "http://localhost/freecell/exec", tt.input))
+			recorded := execRequest(t, ctrl.Exec, tt.input)
 			recorded.CodeIs(tt.wantStatus)
 			recorded.BodyIs(tt.wantBody)
 		})
@@ -261,14 +247,6 @@ func TestFreeCellWebController_MoveErrors(t *testing.T) {
 	fiMock := new(usecase.MockFreeCellInteractor)
 	factory := func() uc.FreeCellInteractorIF { return fiMock }
 	ctrl := controller.NewFreeCellWebController(factory)
-
-	api := rest.NewApi()
-	router, err := rest.MakeRouter(rest.Post("/freecell/exec", ctrl.Exec))
-	if err != nil {
-		t.Fatal(err)
-	}
-	api.SetApp(router)
-	handler := api.MakeHandler()
 
 	tests := []struct {
 		name  string
@@ -332,8 +310,7 @@ func TestFreeCellWebController_MoveErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			recorded := test.RunRequest(t, handler,
-				test.MakeSimpleRequest("POST", "http://localhost/freecell/exec", tt.input))
+			recorded := execRequest(t, ctrl.Exec, tt.input)
 			recorded.CodeIs(http.StatusBadRequest)
 		})
 	}

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -17,8 +18,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // TrumpCardsWeb トランプカードゲームWebクラス
@@ -258,39 +257,37 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 	}
 }
 
+// corsMiddleware returns an http.Handler that applies CORS headers for the
+// given set of allowed origins. Only POST requests with Content-Type are
+// permitted. Preflight OPTIONS requests receive the appropriate headers and
+// a 204 response.
+func corsMiddleware(allowedOrigins map[string]bool, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Vary", "Origin")
+		origin := r.Header.Get("Origin")
+		if origin != "" && allowedOrigins[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Methods", "POST")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			w.Header().Set("Access-Control-Max-Age", strconv.Itoa(corsMaxAge))
+		}
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+const corsMaxAge = 3600
+
 // Exec ゲーム実行
 func (web *TrumpCardsWeb) Exec() error {
-	api := rest.NewApi()
-	allowedOriginsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
-	if allowedOriginsStr == "" && os.Getenv("APP_ENV") != "production" {
-		allowedOriginsStr = "http://localhost:5173,http://localhost:8080"
-	}
-	if allowedOriginsStr != "" {
-		allowedOrigins := make(map[string]bool, strings.Count(allowedOriginsStr, ",")+1)
-		for _, origin := range strings.Split(allowedOriginsStr, ",") {
-			if o := strings.TrimSpace(origin); o != "" {
-				allowedOrigins[o] = true
-			}
-		}
-		api.Use(&rest.CorsMiddleware{
-			RejectNonCorsRequests: false,
-			OriginValidator: func(origin string, request *rest.Request) bool {
-				return allowedOrigins[origin]
-			},
-			AllowedMethods:                []string{"POST"},
-			AllowedHeaders:                []string{"Content-Type"},
-			AccessControlAllowCredentials: false,
-			AccessControlMaxAge:           3600,
-		})
-	}
-	stack := rest.DefaultDevStack
-	if os.Getenv("APP_ENV") == "production" {
-		stack = rest.DefaultProdStack
-	}
-	api.Use(stack...)
+	mux := http.NewServeMux()
+
 	type apiRoute struct {
 		path    string
-		handler rest.HandlerFunc
+		handler http.HandlerFunc
 	}
 	routes := []apiRoute{
 		{"/blackjack/exec", web.bjc.Exec},
@@ -320,23 +317,27 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/pyramid/exec", web.pyc.Exec},
 		{"/cribbage/exec", web.cbc.Exec},
 	}
-	restRoutes := make([]*rest.Route, len(routes))
-	for i, r := range routes {
-		restRoutes[i] = rest.Post(r.path, r.handler)
-	}
-	router, err := rest.MakeRouter(restRoutes...)
-	if err != nil {
-		slog.Error("failed to create router", "error", err)
-		return fmt.Errorf("failed to create router: %w", err)
-	}
-	api.SetApp(router)
-	mux := http.NewServeMux()
-	apiHandler := api.MakeHandler()
 	for _, r := range routes {
-		mux.Handle(r.path, apiHandler)
+		mux.HandleFunc("POST "+r.path, r.handler)
 	}
 	RegisterSwaggerRoutes(mux)
 	mux.Handle("/", http.FileServer(http.Dir("public")))
+
+	// Apply CORS middleware if allowed origins are configured.
+	allowedOriginsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if allowedOriginsStr == "" && os.Getenv("APP_ENV") != "production" {
+		allowedOriginsStr = "http://localhost:5173,http://localhost:8080"
+	}
+	var handler http.Handler = mux
+	if allowedOriginsStr != "" {
+		allowedOrigins := make(map[string]bool, strings.Count(allowedOriginsStr, ",")+1)
+		for _, origin := range strings.Split(allowedOriginsStr, ",") {
+			if o := strings.TrimSpace(origin); o != "" {
+				allowedOrigins[o] = true
+			}
+		}
+		handler = corsMiddleware(allowedOrigins, mux)
+	}
 	const (
 		readTimeout     = 10 * time.Second
 		writeTimeout    = 30 * time.Second
@@ -345,7 +346,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	)
 	srv := &http.Server{
 		Addr:         getListenPort(),
-		Handler:      mux,
+		Handler:      handler,
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 		IdleTimeout:  idleTimeout,
@@ -404,6 +405,8 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.npc.Stop()
 	web.ipc.Stop()
 	web.vpc.Stop()
+	web.dwwc.Stop()
+	web.jpwc.Stop()
 	web.euc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")

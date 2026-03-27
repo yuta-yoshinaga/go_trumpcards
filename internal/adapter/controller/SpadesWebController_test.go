@@ -13,9 +13,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 )
 
 func mustSpadesOutputJSON(msg string) string {
@@ -49,18 +46,10 @@ func TestSpadesWebController_Method(t *testing.T) {
 	ctrl := controller.NewSpadesWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/spades/exec", ctrl.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("success Exec q", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"q","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustSpadesOutputJSON("bye."))
@@ -69,9 +58,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec quit", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"quit","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustSpadesOutputJSON("bye."))
@@ -80,9 +67,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec r", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"r","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -91,9 +76,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec reset", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -104,9 +87,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "bid", SessionID: "test-session-1"},
 			Bid:          func() *int { v := 3; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -117,9 +98,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "b", SessionID: "test-session-1"},
 			Bid:          func() *int { v := 3; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -130,9 +109,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "p", SessionID: "test-session-1"},
 			CardIndex:    func() *int { v := 3; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -143,9 +120,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "play", SessionID: "test-session-1"},
 			CardIndex:    func() *int { v := 3; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -154,9 +129,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec n next", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"n","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -165,9 +138,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec next", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"next","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -176,9 +147,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec nr nextround", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"nr","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -187,9 +156,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec nextround", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"nextround","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -198,9 +165,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec log", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -209,9 +174,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec l shorthand", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -220,9 +183,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec h hint", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"h","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -231,9 +192,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec hint", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"hint","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -243,9 +202,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("failed Exec other", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"other","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustSpadesOutputJSON("Unsupported command."))
@@ -254,9 +211,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustSpadesOutputJSON("param error."))
@@ -265,9 +220,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":""}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustSpadesOutputJSON("param error."))
@@ -277,9 +230,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustSpadesOutputJSON("param error."))
@@ -288,9 +239,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("failed Exec bid without bid field", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"bid","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustSpadesOutputJSON("param error: bid is required."))
@@ -299,9 +248,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("failed Exec play no cardIndex", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"p","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustSpadesOutputJSON("param error: cardIndex is required."))
@@ -323,17 +270,12 @@ func TestSpadesWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SpadesInteractorIF { return siMock }
 		ctrl := controller.NewSpadesWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/spades/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-1"},
 			Config:       &controller.SpadesWebConfig{CpuDifficulty: &diff, PointLimit: &limit, NilBonus: &nilBonus, BagPenaltyThreshold: &bagThreshold},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -347,17 +289,12 @@ func TestSpadesWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SpadesInteractorIF { return siMock }
 		ctrl := controller.NewSpadesWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/spades/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-2"},
 			Config:       &controller.SpadesWebConfig{CpuDifficulty: &diff},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -371,17 +308,12 @@ func TestSpadesWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SpadesInteractorIF { return siMock }
 		ctrl := controller.NewSpadesWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/spades/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-3"},
 			Config:       &controller.SpadesWebConfig{CpuDifficulty: &diff},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -395,17 +327,12 @@ func TestSpadesWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SpadesInteractorIF { return siMock }
 		ctrl := controller.NewSpadesWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/spades/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-4"},
 			Config:       &controller.SpadesWebConfig{PointLimit: &limit},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -419,17 +346,12 @@ func TestSpadesWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SpadesInteractorIF { return siMock }
 		ctrl := controller.NewSpadesWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/spades/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-limit-max"},
 			Config:       &controller.SpadesWebConfig{PointLimit: &limit},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -443,17 +365,12 @@ func TestSpadesWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SpadesInteractorIF { return siMock }
 		ctrl := controller.NewSpadesWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/spades/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-nilbonus"},
 			Config:       &controller.SpadesWebConfig{NilBonus: &nilBonus},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -467,17 +384,12 @@ func TestSpadesWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SpadesInteractorIF { return siMock }
 		ctrl := controller.NewSpadesWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/spades/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-nilbonus-max"},
 			Config:       &controller.SpadesWebConfig{NilBonus: &nilBonus},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -491,17 +403,12 @@ func TestSpadesWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SpadesInteractorIF { return siMock }
 		ctrl := controller.NewSpadesWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/spades/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-bagthresh"},
 			Config:       &controller.SpadesWebConfig{BagPenaltyThreshold: &bagThreshold},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -515,17 +422,12 @@ func TestSpadesWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SpadesInteractorIF { return siMock }
 		ctrl := controller.NewSpadesWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/spades/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-bagthresh-max"},
 			Config:       &controller.SpadesWebConfig{BagPenaltyThreshold: &bagThreshold},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -538,16 +440,11 @@ func TestSpadesWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SpadesInteractorIF { return siMock }
 		ctrl := controller.NewSpadesWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/spades/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.SpadesWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-5"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -571,18 +468,10 @@ func TestSpadesWebController_SessionIsolation(t *testing.T) {
 	})
 	defer isoController.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/spades/exec", isoController.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("session-A reset calls mockA", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockA.AssertCalled(t, "ResetWithConfig", domain.DefaultSpadesConfig())
 		mockB.AssertNotCalled(t, "ResetWithConfig", domain.DefaultSpadesConfig())
@@ -591,9 +480,7 @@ func TestSpadesWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-B reset calls mockB", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"session-B"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockB.AssertCalled(t, "ResetWithConfig", domain.DefaultSpadesConfig())
 	})
@@ -601,9 +488,7 @@ func TestSpadesWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-A second call reuses mockA without creating new interactor", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		if callCount != 2 {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)

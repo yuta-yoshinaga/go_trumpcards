@@ -6,8 +6,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // SpadesWebInput スペードWebインプット
@@ -110,7 +108,7 @@ func newSpadesDefaultOutput(msg string) *SpadesWebOutput {
 	}
 }
 
-func spadesDispatch(bc *baseController, w rest.ResponseWriter, si usecase.SpadesInteractorIF, param SpadesWebInput, newDefault func(string) *SpadesWebOutput) bool {
+func spadesDispatch(bc *baseController, w http.ResponseWriter, si usecase.SpadesInteractorIF, param SpadesWebInput, newDefault func(string) *SpadesWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, si.ResetWithConfig(param.ToConfig()))

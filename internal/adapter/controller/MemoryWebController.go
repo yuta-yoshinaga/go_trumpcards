@@ -6,8 +6,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // MemoryWebInput 神経衰弱Webインプット
@@ -86,7 +84,7 @@ func newMemoryDefaultOutput(msg string) *MemoryWebOutput {
 	}
 }
 
-func memoryDispatch(bc *baseController, w rest.ResponseWriter, mi usecase.MemoryInteractorIF, param MemoryWebInput, newDefault func(string) *MemoryWebOutput) bool {
+func memoryDispatch(bc *baseController, w http.ResponseWriter, mi usecase.MemoryInteractorIF, param MemoryWebInput, newDefault func(string) *MemoryWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, mi.ResetWithConfig(param.ToConfig()))

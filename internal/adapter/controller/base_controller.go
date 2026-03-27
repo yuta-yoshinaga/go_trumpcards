@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // WebInput is the interface that all web controller input structs must implement.
@@ -45,17 +43,19 @@ func derefDefault[T any](p *T, defaultVal T) T {
 }
 
 // writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
-func (bc *baseController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
+func (bc *baseController) writePresenterResponse(w http.ResponseWriter, responseStr string) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err := w.WriteJson(json.RawMessage(responseStr)); err != nil {
-		slog.Error("WriteJson error", "error", err)
+	if _, err := w.Write([]byte(responseStr)); err != nil {
+		slog.Error("Write error", "error", err)
 	}
 }
 
 // writeJsonResponse writes a JSON response with the given HTTP status code.
-func (bc *baseController) writeJsonResponse(w rest.ResponseWriter, status int, body any) {
+func (bc *baseController) writeJsonResponse(w http.ResponseWriter, status int, body any) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	if err := w.WriteJson(body); err != nil {
+	if err := json.NewEncoder(w).Encode(body); err != nil {
 		slog.Error("WriteJson error", "error", err)
 	}
 }
@@ -64,15 +64,15 @@ func (bc *baseController) writeJsonResponse(w rest.ResponseWriter, status int, b
 // handler returns true if command was recognized, false for unsupported.
 func execWithSession[P WebInput, T any](
 	bc *baseController,
-	w rest.ResponseWriter,
-	r *rest.Request,
+	w http.ResponseWriter,
+	r *http.Request,
 	store *SessionStore[T],
 	factory func() T,
 	newDefault func(string) any,
-	handler func(w rest.ResponseWriter, interactor T, param P) bool,
+	handler func(w http.ResponseWriter, interactor T, param P) bool,
 ) {
 	var param P
-	if err := r.DecodeJsonPayload(&param); err != nil || param.GetCommand() == "" || param.GetSessionID() == "" {
+	if err := json.NewDecoder(r.Body).Decode(&param); err != nil || param.GetCommand() == "" || param.GetSessionID() == "" {
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))
 		return
 	}

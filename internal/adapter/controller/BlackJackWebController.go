@@ -4,7 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
 )
 
 // BlackJackWebInput ブラックジャックWebインプット
@@ -126,7 +126,7 @@ func newBlackJackDefaultOutput(msg string) *BlackJackWebOutput {
 	}
 }
 
-func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput, _ func(string) *BlackJackWebOutput) bool {
+func blackJackDispatch(bc *baseController, w http.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput, _ func(string) *BlackJackWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		if param.HasConfigParams() {

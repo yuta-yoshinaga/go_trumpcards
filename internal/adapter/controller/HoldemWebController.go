@@ -7,8 +7,6 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // HoldemWebInput テキサスホールデムWebインプット
@@ -237,7 +235,7 @@ func newHoldemDefaultOutput(msg string) *HoldemWebOutput {
 	}
 }
 
-func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.HoldemInteractorIF, param HoldemWebInput, newDefault func(string) *HoldemWebOutput) bool {
+func holdemDispatch(bc *baseController, w http.ResponseWriter, hgi usecase.HoldemInteractorIF, param HoldemWebInput, newDefault func(string) *HoldemWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		cfg, err := param.ToConfig()

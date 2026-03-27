@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
 )
 
 // VideoPokerWebInput ビデオポーカーWebインプット
@@ -43,7 +43,7 @@ func newVideoPokerDefaultOutput(msg string) *VideoPokerWebOutput {
 	}
 }
 
-func videoPokerDispatch(bc *baseController, w rest.ResponseWriter, vi usecase.VideoPokerInteractorIF, param VideoPokerWebInput, _ func(string) *VideoPokerWebOutput) bool {
+func videoPokerDispatch(bc *baseController, w http.ResponseWriter, vi usecase.VideoPokerInteractorIF, param VideoPokerWebInput, _ func(string) *VideoPokerWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, vi.Reset())

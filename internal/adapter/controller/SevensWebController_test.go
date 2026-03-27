@@ -11,8 +11,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -29,21 +27,13 @@ func TestSevensWebController_Method(t *testing.T) {
 	tswc := controller.NewSevensWebController(factory)
 	defer tswc.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/sevens/exec", tswc.Exec),
-	)
-	api.SetApp(router)
-
 	var jsonInput controller.SevensWebInput
 	// For "q"/"quit": responseStr = {"message":"bye."} → other fields get zero values
 	qBody := `{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"tunnelSkipWidth":0,"jokerCount":0,"cpuStrategy":0,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false,"endStopEnabled":false,"jokerConsecutiveBanned":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"bye."}`
 
 	t.Run("success Exec q", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(qBody)
@@ -51,9 +41,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	t.Run("success Exec quit", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "quit", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(qBody)
@@ -61,9 +49,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	t.Run("success Exec r", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -71,9 +57,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	t.Run("success Exec reset", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -81,9 +65,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	t.Run("success Exec p pass (no index, defaults to 0)", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "p", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -91,9 +73,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	t.Run("success Exec p with index", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "p", "index": 0, "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -101,9 +81,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	t.Run("success Exec j joker command", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "j", "index": 0, "jokerTargetSuit": 1, "jokerTargetValue": 6, "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -111,9 +89,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"tunnelSkipWidth":0,"jokerCount":0,"cpuStrategy":0,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false,"endStopEnabled":false,"jokerConsecutiveBanned":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"Unsupported command."}`)
@@ -121,9 +97,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"tunnelSkipWidth":0,"jokerCount":0,"cpuStrategy":0,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false,"endStopEnabled":false,"jokerConsecutiveBanned":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
@@ -131,9 +105,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"tunnelSkipWidth":0,"jokerCount":0,"cpuStrategy":0,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false,"endStopEnabled":false,"jokerConsecutiveBanned":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
@@ -142,9 +114,7 @@ func TestSevensWebController_Method(t *testing.T) {
 		input := controller.SevensWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"tunnelSkipWidth":0,"jokerCount":0,"cpuStrategy":0,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false,"endStopEnabled":false,"jokerConsecutiveBanned":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
@@ -161,15 +131,10 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		var jsonInput controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "tunnelEnabled": true, "jokerCount": 2, "cpuStrategy": 1, "sessionId": "test-cfg-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -184,15 +149,10 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		var jsonInput controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "test-cfg-2"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(defaultOutput)
@@ -207,15 +167,10 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		var jsonInput controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "tunnelEnabled": true, "sessionId": "test-cfg-3"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(partialOutput)
@@ -229,15 +184,10 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		var jsonInput controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "maxPasses": 3, "sessionId": "test-cfg-4"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(passesOutput)
@@ -252,18 +202,13 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		negOne := -1
 		input := controller.SevensWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "test-cfg-neg"},
 			JokerCount:   &negOne,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		sgiMock.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{JokerCount: -1, MaxPasses: 5})
 	})
@@ -275,15 +220,10 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		var jsonInput controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "maxPasses": 0, "sessionId": "test-cfg-5"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(passesOutput)
@@ -298,15 +238,10 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		var jsonInput controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "noJokerFinish": true, "sessionId": "test-cfg-njf"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(njfOutput)
@@ -321,9 +256,6 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		jokerCount := 1
 		jokerReclaim := true
@@ -332,9 +264,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 			JokerCount:   &jokerCount,
 			JokerReclaim: &jokerReclaim,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(jrOutput)
@@ -349,18 +279,13 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		endStop := true
 		input := controller.SevensWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "test-cfg-es"},
 			EndStop:      &endStop,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(esOutput)
@@ -375,18 +300,13 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		skipWidth := 3
 		input := controller.SevensWebInput{
 			BaseWebInput:    controller.BaseWebInput{Command: "reset", SessionID: "test-cfg-tsw"},
 			TunnelSkipWidth: &skipWidth,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(tswOutput)
@@ -401,18 +321,13 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
 
 		jcb := true
 		input := controller.SevensWebInput{
 			BaseWebInput:           controller.BaseWebInput{Command: "reset", SessionID: "test-cfg-jcb"},
 			JokerConsecutiveBanned: &jcb,
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tswc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(jcbOutput)
@@ -438,18 +353,10 @@ func TestSevensWebController_SessionIsolation(t *testing.T) {
 	})
 	defer isoController.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/sevens/exec", isoController.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("session-A reset calls mockA", func(t *testing.T) {
 		var input controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockA.AssertCalled(t, "Reset")
 		mockB.AssertNotCalled(t, "Reset")
@@ -458,9 +365,7 @@ func TestSevensWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-B reset calls mockB", func(t *testing.T) {
 		var input controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-B"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockB.AssertCalled(t, "Reset")
 	})
@@ -468,9 +373,7 @@ func TestSevensWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-A second call reuses mockA", func(t *testing.T) {
 		var input controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		if callCount != 2 {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)
@@ -487,16 +390,10 @@ func TestSevensWebController_Log(t *testing.T) {
 	ctrl := controller.NewSevensWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(rest.Post("/sevens/exec", ctrl.Exec))
-	api.SetApp(router)
-
 	t.Run("log command", func(t *testing.T) {
 		var input controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"sv-log-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockLogOutput)
@@ -505,9 +402,7 @@ func TestSevensWebController_Log(t *testing.T) {
 	t.Run("l shorthand", func(t *testing.T) {
 		var input controller.SevensWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"sv-log-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockLogOutput)

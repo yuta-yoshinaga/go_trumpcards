@@ -6,8 +6,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // CrazyEightsWebInput クレイジーエイトWebインプット
@@ -84,7 +82,7 @@ func newCrazyEightsDefaultOutput(msg string) *CrazyEightsWebOutput {
 	}
 }
 
-func crazyEightsDispatch(bc *baseController, w rest.ResponseWriter, ci usecase.CrazyEightsInteractorIF, param CrazyEightsWebInput, newDefault func(string) *CrazyEightsWebOutput) bool {
+func crazyEightsDispatch(bc *baseController, w http.ResponseWriter, ci usecase.CrazyEightsInteractorIF, param CrazyEightsWebInput, newDefault func(string) *CrazyEightsWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, ci.ResetWithConfig(param.ToConfig()))

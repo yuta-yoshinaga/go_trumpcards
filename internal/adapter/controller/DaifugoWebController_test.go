@@ -11,9 +11,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 )
 
 func TestDaifugoWebController_Method(t *testing.T) {
@@ -28,21 +25,13 @@ func TestDaifugoWebController_Method(t *testing.T) {
 	tdwc := controller.NewDaifugoWebController(factory)
 	defer tdwc.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/daifugo/exec", tdwc.Exec),
-	)
-	api.SetApp(router)
-
 	var jsonInput controller.DaifugoWebInput
 	// For "q"/"quit": responseStr = {"message":"bye."} → other fields get zero values
 	qBody := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockMode":0,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"blindExchangeEnabled":false,"fiveSkipEnabled":false,"fiveSkipCount":0,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false,"nineReverseEnabled":false,"coupDetatEnabled":false,"numberLockEnabled":false,"sandstormEnabled":false,"emperorEnabled":false,"sequenceRevolutionEnabled":false,"sequenceLockEnabled":false,"illegalFinishEnabled":false,"queenBomberEnabled":false,"cpuDifficulty":0},"exchangeActions":[],"cpuActions":[],"humanAction":null,"pendingAction":"none","pendingActionTarget":-1,"reverseDirection":false,"numberLocked":false,"sequenceLocked":false,"sortMode":0,"message":"bye."}`
 
 	t.Run("success Exec q", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(qBody)
@@ -50,9 +39,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("success Exec quit", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "quit", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(qBody)
@@ -60,9 +47,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("success Exec r", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -70,9 +55,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("success Exec reset", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -80,9 +63,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("success Exec p (pass)", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "p", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -96,9 +77,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 				FiveSkipEnabled: true,
 			},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -113,9 +92,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 				EmperorEnabled:   true,
 			},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -129,9 +106,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 				QueenBomberEnabled: true,
 			},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -140,9 +115,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("success Exec sort default mode", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "sort", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -156,9 +129,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 				IllegalFinishEnabled:      true,
 			},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -172,9 +143,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 				CpuDifficulty: 2,
 			},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -186,9 +155,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "sort", SessionID: "test-session-1"},
 			SortMode:     func() *int { v := 2; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
@@ -196,9 +163,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockMode":0,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"blindExchangeEnabled":false,"fiveSkipEnabled":false,"fiveSkipCount":0,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false,"nineReverseEnabled":false,"coupDetatEnabled":false,"numberLockEnabled":false,"sandstormEnabled":false,"emperorEnabled":false,"sequenceRevolutionEnabled":false,"sequenceLockEnabled":false,"illegalFinishEnabled":false,"queenBomberEnabled":false,"cpuDifficulty":0},"exchangeActions":[],"cpuActions":[],"humanAction":null,"pendingAction":"none","pendingActionTarget":-1,"reverseDirection":false,"numberLocked":false,"sequenceLocked":false,"sortMode":0,"message":"Unsupported command."}`)
@@ -206,9 +171,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockMode":0,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"blindExchangeEnabled":false,"fiveSkipEnabled":false,"fiveSkipCount":0,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false,"nineReverseEnabled":false,"coupDetatEnabled":false,"numberLockEnabled":false,"sandstormEnabled":false,"emperorEnabled":false,"sequenceRevolutionEnabled":false,"sequenceLockEnabled":false,"illegalFinishEnabled":false,"queenBomberEnabled":false,"cpuDifficulty":0},"exchangeActions":[],"cpuActions":[],"humanAction":null,"pendingAction":"none","pendingActionTarget":-1,"reverseDirection":false,"numberLocked":false,"sequenceLocked":false,"sortMode":0,"message":"param error."}`)
@@ -216,9 +179,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockMode":0,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"blindExchangeEnabled":false,"fiveSkipEnabled":false,"fiveSkipCount":0,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false,"nineReverseEnabled":false,"coupDetatEnabled":false,"numberLockEnabled":false,"sandstormEnabled":false,"emperorEnabled":false,"sequenceRevolutionEnabled":false,"sequenceLockEnabled":false,"illegalFinishEnabled":false,"queenBomberEnabled":false,"cpuDifficulty":0},"exchangeActions":[],"cpuActions":[],"humanAction":null,"pendingAction":"none","pendingActionTarget":-1,"reverseDirection":false,"numberLocked":false,"sequenceLocked":false,"sortMode":0,"message":"param error."}`)
@@ -227,9 +188,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		input := controller.DaifugoWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, tdwc.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockMode":0,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"blindExchangeEnabled":false,"fiveSkipEnabled":false,"fiveSkipCount":0,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false,"nineReverseEnabled":false,"coupDetatEnabled":false,"numberLockEnabled":false,"sandstormEnabled":false,"emperorEnabled":false,"sequenceRevolutionEnabled":false,"sequenceLockEnabled":false,"illegalFinishEnabled":false,"queenBomberEnabled":false,"cpuDifficulty":0},"exchangeActions":[],"cpuActions":[],"humanAction":null,"pendingAction":"none","pendingActionTarget":-1,"reverseDirection":false,"numberLocked":false,"sequenceLocked":false,"sortMode":0,"message":"param error."}`)
@@ -254,18 +213,10 @@ func TestDaifugoWebController_SessionIsolation(t *testing.T) {
 	})
 	defer isoController.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/daifugo/exec", isoController.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("session-A reset calls mockA", func(t *testing.T) {
 		var input controller.DaifugoWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockA.AssertCalled(t, "Reset")
 		mockB.AssertNotCalled(t, "Reset")
@@ -274,9 +225,7 @@ func TestDaifugoWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-B reset calls mockB", func(t *testing.T) {
 		var input controller.DaifugoWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-B"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockB.AssertCalled(t, "Reset")
 	})
@@ -284,9 +233,7 @@ func TestDaifugoWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-A second call reuses mockA", func(t *testing.T) {
 		var input controller.DaifugoWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		if callCount != 2 {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)
@@ -303,16 +250,10 @@ func TestDaifugoWebController_Log(t *testing.T) {
 	ctrl := controller.NewDaifugoWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(rest.Post("/daifugo/exec", ctrl.Exec))
-	api.SetApp(router)
-
 	t.Run("log command", func(t *testing.T) {
 		var input controller.DaifugoWebInput
 		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"dg-log-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockLogOutput)
@@ -321,9 +262,7 @@ func TestDaifugoWebController_Log(t *testing.T) {
 	t.Run("l shorthand", func(t *testing.T) {
 		var input controller.DaifugoWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"dg-log-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockLogOutput)

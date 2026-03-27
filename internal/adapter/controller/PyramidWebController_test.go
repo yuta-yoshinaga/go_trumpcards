@@ -11,9 +11,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 )
 
 func mustPyramidOutputJSON(msg string) string {
@@ -31,7 +28,7 @@ func mustPyramidOutputJSON(msg string) string {
 
 func pyramidIntPtr(v int) *int { return &v }
 
-func setupPyramidWebTest(t *testing.T) (*usecase.MockPyramidInteractor, *rest.Api, string) {
+func setupPyramidWebTest(t *testing.T) (*usecase.MockPyramidInteractor, *controller.PyramidWebController, string) {
 	t.Helper()
 	mockOutput := `{"pyramid":[],"stockCount":0,"waste":[],"phase":0,"moveCount":0,"message":""}`
 	piMock := new(usecase.MockPyramidInteractor)
@@ -39,32 +36,23 @@ func setupPyramidWebTest(t *testing.T) (*usecase.MockPyramidInteractor, *rest.Ap
 	ctrl := controller.NewPyramidWebController(factory)
 	t.Cleanup(func() { ctrl.Stop() })
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/pyramid/exec", ctrl.Exec),
-	)
-	api.SetApp(router)
-	return piMock, api, mockOutput
+	return piMock, ctrl, mockOutput
 }
 
-func pyramidPost(t *testing.T, api *rest.Api, body string) *test.Recorded {
+func pyramidPost(t *testing.T, handler http.HandlerFunc, body string) *recorded {
 	t.Helper()
 	var input controller.PyramidWebInput
 	_ = json.Unmarshal([]byte(body), &input)
-	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/pyramid/exec", &input)
-	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	return test.RunRequest(t, api.MakeHandler(), req)
+	return execRequest(t, handler, &input)
 }
 
-func pyramidPostInput(t *testing.T, api *rest.Api, input controller.PyramidWebInput) *test.Recorded {
+func pyramidPostInput(t *testing.T, handler http.HandlerFunc, input controller.PyramidWebInput) *recorded {
 	t.Helper()
-	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/pyramid/exec", &input)
-	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	return test.RunRequest(t, api.MakeHandler(), req)
+	return execRequest(t, handler, &input)
 }
 
 func TestPyramidWebController_Commands(t *testing.T) {
-	piMock, api, mockOutput := setupPyramidWebTest(t)
+	piMock, ctrl, mockOutput := setupPyramidWebTest(t)
 
 	piMock.On("Reset").Return(mockOutput)
 	piMock.On("Draw").Return(mockOutput)
@@ -87,75 +75,75 @@ func TestPyramidWebController_Commands(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			recorded := pyramidPost(t, api, tt.command)
-			recorded.CodeIs(http.StatusOK)
+			rec := pyramidPost(t, ctrl.Exec, tt.command)
+			rec.CodeIs(http.StatusOK)
 		})
 	}
 }
 
 func TestPyramidWebController_Quit(t *testing.T) {
-	_, api, _ := setupPyramidWebTest(t)
-	recorded := pyramidPost(t, api, `{"command":"q","sessionId":"s1"}`)
-	recorded.CodeIs(http.StatusOK)
-	recorded.BodyIs(mustPyramidOutputJSON("bye."))
+	_, ctrl, _ := setupPyramidWebTest(t)
+	rec := pyramidPost(t, ctrl.Exec, `{"command":"q","sessionId":"s1"}`)
+	rec.CodeIs(http.StatusOK)
+	rec.BodyIs(mustPyramidOutputJSON("bye."))
 }
 
 func TestPyramidWebController_RemoveKing(t *testing.T) {
-	piMock, api, mockOutput := setupPyramidWebTest(t)
+	piMock, ctrl, mockOutput := setupPyramidWebTest(t)
 	piMock.On("RemoveKing", 6, 0).Return(mockOutput)
 
-	recorded := pyramidPostInput(t, api, controller.PyramidWebInput{
+	rec := pyramidPostInput(t, ctrl.Exec, controller.PyramidWebInput{
 		BaseWebInput: controller.BaseWebInput{Command: "rm", SessionID: "s1"},
 		Card1:        &controller.PyramidWebCard{Zone: "pyramid", Row: pyramidIntPtr(6), Col: pyramidIntPtr(0)},
 	})
-	recorded.CodeIs(http.StatusOK)
+	rec.CodeIs(http.StatusOK)
 }
 
 func TestPyramidWebController_RemovePair(t *testing.T) {
-	piMock, api, mockOutput := setupPyramidWebTest(t)
+	piMock, ctrl, mockOutput := setupPyramidWebTest(t)
 	piMock.On("RemovePair", 6, 0, 6, 1).Return(mockOutput)
 
-	recorded := pyramidPostInput(t, api, controller.PyramidWebInput{
+	rec := pyramidPostInput(t, ctrl.Exec, controller.PyramidWebInput{
 		BaseWebInput: controller.BaseWebInput{Command: "rm", SessionID: "s1"},
 		Card1:        &controller.PyramidWebCard{Zone: "pyramid", Row: pyramidIntPtr(6), Col: pyramidIntPtr(0)},
 		Card2:        &controller.PyramidWebCard{Zone: "pyramid", Row: pyramidIntPtr(6), Col: pyramidIntPtr(1)},
 	})
-	recorded.CodeIs(http.StatusOK)
+	rec.CodeIs(http.StatusOK)
 }
 
 func TestPyramidWebController_RemoveWithWaste(t *testing.T) {
-	piMock, api, mockOutput := setupPyramidWebTest(t)
+	piMock, ctrl, mockOutput := setupPyramidWebTest(t)
 	piMock.On("RemoveWithWaste", 6, 0).Return(mockOutput)
 
-	recorded := pyramidPostInput(t, api, controller.PyramidWebInput{
+	rec := pyramidPostInput(t, ctrl.Exec, controller.PyramidWebInput{
 		BaseWebInput: controller.BaseWebInput{Command: "rm", SessionID: "s1"},
 		Card1:        &controller.PyramidWebCard{Zone: "waste"},
 		Card2:        &controller.PyramidWebCard{Zone: "pyramid", Row: pyramidIntPtr(6), Col: pyramidIntPtr(0)},
 	})
-	recorded.CodeIs(http.StatusOK)
+	rec.CodeIs(http.StatusOK)
 }
 
 func TestPyramidWebController_RemoveWasteKing(t *testing.T) {
-	piMock, api, mockOutput := setupPyramidWebTest(t)
+	piMock, ctrl, mockOutput := setupPyramidWebTest(t)
 	piMock.On("RemoveWasteKing").Return(mockOutput)
 
-	recorded := pyramidPostInput(t, api, controller.PyramidWebInput{
+	rec := pyramidPostInput(t, ctrl.Exec, controller.PyramidWebInput{
 		BaseWebInput: controller.BaseWebInput{Command: "rm", SessionID: "s1"},
 		Card1:        &controller.PyramidWebCard{Zone: "waste"},
 	})
-	recorded.CodeIs(http.StatusOK)
+	rec.CodeIs(http.StatusOK)
 }
 
 func TestPyramidWebController_RemoveNoCard1(t *testing.T) {
-	_, api, _ := setupPyramidWebTest(t)
-	recorded := pyramidPostInput(t, api, controller.PyramidWebInput{
+	_, ctrl, _ := setupPyramidWebTest(t)
+	rec := pyramidPostInput(t, ctrl.Exec, controller.PyramidWebInput{
 		BaseWebInput: controller.BaseWebInput{Command: "rm", SessionID: "s1"},
 	})
-	recorded.CodeIs(http.StatusBadRequest)
+	rec.CodeIs(http.StatusBadRequest)
 }
 
 func TestPyramidWebController_UnknownCommand(t *testing.T) {
-	_, api, _ := setupPyramidWebTest(t)
-	recorded := pyramidPost(t, api, `{"command":"xyz","sessionId":"s1"}`)
-	recorded.CodeIs(http.StatusBadRequest)
+	_, ctrl, _ := setupPyramidWebTest(t)
+	rec := pyramidPost(t, ctrl.Exec, `{"command":"xyz","sessionId":"s1"}`)
+	rec.CodeIs(http.StatusBadRequest)
 }

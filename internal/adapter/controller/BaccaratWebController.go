@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
 )
 
 // BaccaratWebInput バカラWebインプット
@@ -61,7 +61,7 @@ func newBaccaratDefaultOutput(msg string) *BaccaratWebOutput {
 	}
 }
 
-func baccaratDispatch(bc *baseController, w rest.ResponseWriter, bi usecase.BaccaratInteractorIF, param BaccaratWebInput, _ func(string) *BaccaratWebOutput) bool {
+func baccaratDispatch(bc *baseController, w http.ResponseWriter, bi usecase.BaccaratInteractorIF, param BaccaratWebInput, _ func(string) *BaccaratWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, bi.Reset())

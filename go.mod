@@ -3,7 +3,6 @@ module github.com/yuta-yoshinaga/go_trumpcards
 go 1.26.0
 
 require (
-	github.com/ant0ine/go-json-rest v3.3.3-0.20170913041208-ebb33769ae01+incompatible
 	github.com/minio/selfupdate v0.6.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/term v0.41.0
