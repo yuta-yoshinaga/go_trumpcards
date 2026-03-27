@@ -6,10 +6,7 @@ test.describe('Old Maid E2E', () => {
   test('starts a game and draws a card', async ({ page }) => {
     await navigateTo(page, '/oldmaid');
 
-    // Setup screen: click ゲーム開始
-    const startButton = page.getByRole('button', { name: 'ゲーム開始' });
-    await expect(startButton).toBeVisible();
-    await startButton.click();
+    // Game auto-starts with default settings; wait for it to load
     await waitForLoaded(page);
 
     // Wait for the game to initialize and reach human's turn
