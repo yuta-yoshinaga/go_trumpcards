@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -12,7 +12,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea';
 import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
-import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
+import { OldMaidSettingsDialog } from '../components/oldmaid/OldMaidSettingsDialog';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
@@ -63,7 +63,7 @@ const OM_TUTORIAL_CONFIG: TutorialConfig = {
   steps: OM_TUTORIAL_STEPS,
 };
 
-/** Renders the Old Maid game page with setup screen, player areas, and draw history. */
+/** Renders the Old Maid game page with settings dialog, player areas, and draw history. */
 export function OldMaidPage() {
   const { t: tOm } = useTranslation('oldmaid');
   return (
@@ -91,7 +91,7 @@ function OldMaidPageContent() {
     revealedCard,
     loading,
     error,
-    exec,
+    gameExec,
     handleStart,
     handleReset,
     handleReorder,
@@ -100,8 +100,19 @@ function OldMaidPageContent() {
     setSetupMemoryAI,
     setSetupHesitation,
     setSetupMetaAI,
-    setGameSettings,
   } = useOldMaidGame();
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const syncSetupFromSettings = () => {
+    if (gameSettings) {
+      setSetupMode(gameSettings.mode);
+      setSetupStrategy(gameSettings.cpuPlacementStrategy);
+      setSetupMemoryAI(gameSettings.cpuMemoryAI);
+      setSetupHesitation(gameSettings.cpuHesitationEnabled);
+      setSetupMetaAI(gameSettings.cpuMetaAI);
+    }
+  };
 
   const { cardWidth } = useCardDimensions();
 
@@ -110,34 +121,16 @@ function OldMaidPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: () => exec('draw') },
-      { key: 's', action: () => exec('shuffle') },
+      { key: 'd', action: () => gameExec('draw') },
+      { key: 's', action: () => gameExec('shuffle') },
     ],
-    [exec],
+    [gameExec],
   );
 
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: !!gameSettings && isHumanTurnForKbd && !loading,
+    enabled: isHumanTurnForKbd && !loading,
   });
-
-  if (!gameSettings) {
-    return (
-      <OldMaidSetupScreen
-        mode={setupMode}
-        cpuPlacementStrategy={setupStrategy}
-        cpuMemoryAI={setupMemoryAI}
-        cpuHesitationEnabled={setupHesitation}
-        cpuMetaAI={setupMetaAI}
-        onModeChange={setSetupMode}
-        onStrategyChange={setSetupStrategy}
-        onMemoryAIChange={setSetupMemoryAI}
-        onHesitationChange={setSetupHesitation}
-        onMetaAIChange={setSetupMetaAI}
-        onStart={handleStart}
-      />
-    );
-  }
 
   if (!displayState) return <OldMaidSkeleton />;
 
@@ -205,7 +198,7 @@ function OldMaidPageContent() {
                   return next;
                 })
               }
-              onDraw={(drawIdx) => exec('draw', drawIdx)}
+              onDraw={(drawIdx) => gameExec('draw', drawIdx)}
             />
           ))}
         </div>
@@ -284,7 +277,7 @@ function OldMaidPageContent() {
               gameEndFlag={state.gameEndFlag}
               loading={loading}
               highlightedCardIdx={-1}
-              onDraw={(drawIdx) => exec('draw', drawIdx)}
+              onDraw={(drawIdx) => gameExec('draw', drawIdx)}
               onReorder={handleReorder}
             />
           </div>
@@ -299,8 +292,8 @@ function OldMaidPageContent() {
             className={`${btnSecondary} min-w-[80px]`}
             disabled={loading}
             onClick={() => {
-              setGameSettings(null);
-              setSuspectPins(new Set());
+              syncSetupFromSettings();
+              setSettingsOpen(true);
             }}
           >
             {t('button.settings')}
@@ -325,7 +318,7 @@ function OldMaidPageContent() {
               type="button"
               className={`${btnWarning} min-w-[110px]`}
               disabled={loading || !isHumanTurn || state.gameEndFlag}
-              onClick={() => exec('draw')}
+              onClick={() => gameExec('draw')}
             >
               {t('button.drawRandom')}
             </button>
@@ -334,7 +327,7 @@ function OldMaidPageContent() {
             type="button"
             className={`${btnSecondary} min-w-[110px]`}
             disabled={loading || state.gameEndFlag}
-            onClick={() => exec('shuffle')}
+            onClick={() => gameExec('shuffle')}
           >
             {t('button.shuffle')}
           </button>
@@ -342,6 +335,27 @@ function OldMaidPageContent() {
       </GameFooter>
       <WinCelebration show={!!state?.gameEndFlag} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
+      <OldMaidSettingsDialog
+        open={settingsOpen}
+        mode={setupMode}
+        cpuPlacementStrategy={setupStrategy}
+        cpuMemoryAI={setupMemoryAI}
+        cpuHesitationEnabled={setupHesitation}
+        cpuMetaAI={setupMetaAI}
+        onModeChange={setSetupMode}
+        onStrategyChange={setSetupStrategy}
+        onMemoryAIChange={setSetupMemoryAI}
+        onHesitationChange={setSetupHesitation}
+        onMetaAIChange={setSetupMetaAI}
+        onApply={() => {
+          setSettingsOpen(false);
+          handleStart();
+        }}
+        onClose={() => {
+          syncSetupFromSettings();
+          setSettingsOpen(false);
+        }}
+      />
     </div>
   );
 }
