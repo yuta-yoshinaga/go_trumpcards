@@ -27,4 +27,19 @@ describe('SkeletonGrid', () => {
     const cell = container.querySelector('.animate-pulse') as HTMLElement;
     expect(cell.className).toContain('aspect-square');
   });
+
+  it('applies gridClassName to grid container', () => {
+    const { container } = render(
+      <SkeletonGrid count={4} cols="grid-cols-4" gridClassName="lg:grid-rows-4 lg:h-full" />,
+    );
+    const el = container.firstChild as HTMLElement;
+    expect(el.className).toContain('lg:grid-rows-4');
+    expect(el.className).toContain('lg:h-full');
+  });
+
+  it('omits trailing space when gridClassName is empty', () => {
+    const { container } = render(<SkeletonGrid count={1} cols="grid-cols-1" />);
+    const el = container.firstChild as HTMLElement;
+    expect(el.className).not.toMatch(/\s$/);
+  });
 });
