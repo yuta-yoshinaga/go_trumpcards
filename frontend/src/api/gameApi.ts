@@ -31,6 +31,41 @@ import type {
 /** Unique session identifier for correlating API requests. */
 export const sessionId: string = crypto.randomUUID();
 
+/** Worker base URLs for Cloudflare deployment. Empty strings for Docker (relative URLs). */
+const WORKER_CASINO = import.meta.env.VITE_WORKER_CASINO_URL || '';
+const WORKER_CLASSIC = import.meta.env.VITE_WORKER_CLASSIC_URL || '';
+const WORKER_SOLO = import.meta.env.VITE_WORKER_SOLO_URL || '';
+
+/** Maps each game to its Worker base URL. */
+const workerUrl: Record<string, string> = {
+  blackjack: WORKER_CASINO,
+  baccarat: WORKER_CASINO,
+  poker: WORKER_CASINO,
+  holdem: WORKER_CASINO,
+  omaha: WORKER_CASINO,
+  shortdeck: WORKER_CASINO,
+  indianpoker: WORKER_CASINO,
+  videopoker: WORKER_CASINO,
+  deuceswild: WORKER_CASINO,
+  jokerpoker: WORKER_CASINO,
+  hearts: WORKER_CLASSIC,
+  spades: WORKER_CLASSIC,
+  euchre: WORKER_CLASSIC,
+  napoleon: WORKER_CLASSIC,
+  oldmaid: WORKER_CLASSIC,
+  doubt: WORKER_CLASSIC,
+  daifugo: WORKER_CLASSIC,
+  sevens: WORKER_CLASSIC,
+  crazyeights: WORKER_CLASSIC,
+  klondike: WORKER_SOLO,
+  freecell: WORKER_SOLO,
+  spider: WORKER_SOLO,
+  pyramid: WORKER_SOLO,
+  memory: WORKER_SOLO,
+  ginrummy: WORKER_SOLO,
+  cribbage: WORKER_SOLO,
+};
+
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: 'POST',
@@ -42,7 +77,8 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
 }
 
 function gameExec<T>(game: string, body: Record<string, unknown>): Promise<T> {
-  return postJson<T>(`/${game}/exec`, { ...body, sessionId });
+  const base = workerUrl[game] || '';
+  return postJson<T>(`${base}/${game}/exec`, { ...body, sessionId });
 }
 
 /** Configuration options for BlackJack game settings. */

@@ -9,14 +9,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	corsmw "github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/cors"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -257,30 +256,6 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 	}
 }
 
-// corsMiddleware returns an http.Handler that applies CORS headers for the
-// given set of allowed origins. Only POST requests with Content-Type are
-// permitted. Preflight OPTIONS requests receive the appropriate headers and
-// a 204 response.
-func corsMiddleware(allowedOrigins map[string]bool, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Vary", "Origin")
-		origin := r.Header.Get("Origin")
-		if origin != "" && allowedOrigins[origin] {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Allow-Methods", "POST")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-			w.Header().Set("Access-Control-Max-Age", strconv.Itoa(corsMaxAge))
-		}
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
-}
-
-const corsMaxAge = 3600
-
 // Exec ゲーム実行
 func (web *TrumpCardsWeb) Exec() error {
 	mux := http.NewServeMux()
@@ -329,14 +304,8 @@ func (web *TrumpCardsWeb) Exec() error {
 		allowedOriginsStr = "http://localhost:5173,http://localhost:8080"
 	}
 	var handler http.Handler = mux
-	if allowedOriginsStr != "" {
-		allowedOrigins := make(map[string]bool, strings.Count(allowedOriginsStr, ",")+1)
-		for _, origin := range strings.Split(allowedOriginsStr, ",") {
-			if o := strings.TrimSpace(origin); o != "" {
-				allowedOrigins[o] = true
-			}
-		}
-		handler = corsMiddleware(allowedOrigins, mux)
+	if origins := corsmw.ParseOrigins(allowedOriginsStr); origins != nil {
+		handler = corsmw.Middleware(origins, mux)
 	}
 	const (
 		readTimeout     = 10 * time.Second
