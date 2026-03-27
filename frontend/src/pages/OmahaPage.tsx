@@ -24,8 +24,10 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 
@@ -209,7 +211,7 @@ function OmahaPageContent() {
   if (!state) return <OmahaSkeleton />;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.omaha.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.omaha')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
@@ -232,7 +234,7 @@ function OmahaPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: community cards + CPU players */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8">
+      <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* Community cards */}
         <div className="mb-4" data-tutorial="oh-community-cards">
           <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
@@ -284,7 +286,7 @@ function OmahaPageContent() {
       </div>
 
       {/* Sticky footer: player hand + buttons */}
-      <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
+      <GameFooter className={`${gameTheme.omaha.footer} px-5 py-3`}>
         {/* Learning mode toggle */}
         <div className="flex items-center gap-2 mb-2" data-testid="learning-mode-toggle">
           <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
@@ -461,7 +463,7 @@ function OmahaPageContent() {
           </label>
           <button
             type="button"
-            className={`${btnPrimary} min-w-[90px]`}
+            className={`${btnOutline} min-w-[90px]`}
             disabled={loading}
             onClick={() =>
               requestConfirm(() => {

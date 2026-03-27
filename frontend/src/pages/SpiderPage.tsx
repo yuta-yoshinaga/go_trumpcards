@@ -6,6 +6,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -18,6 +19,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { SpiderPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -99,7 +101,9 @@ function SpiderPageContent() {
     handleSelectSource,
     handleSelectTarget,
   } = useSpiderGame();
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  /** Minimum column width for touch-friendly tap targets on mobile; 0 on desktop to allow natural sizing. */
+  const columnMinWidth = isMobile ? solitaireMinColWidth : 0;
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
 
@@ -137,7 +141,7 @@ function SpiderPageContent() {
   const dealsRemaining = Math.floor(state.stockCount / 10);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.spider.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.spider')} />
       {/* Phase indicator */}
       <PhaseIndicator
@@ -154,6 +158,8 @@ function SpiderPageContent() {
           {t('completed')}: {state.completedSuits}/8
         </span>
       </PhaseIndicator>
+
+      <LandscapeBanner message={t('landscapeBanner')} />
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
@@ -181,9 +187,9 @@ function SpiderPageContent() {
         </div>
 
         {/* Tableau (10 columns) */}
-        <div className="flex gap-1 mb-3" data-tutorial="spd-tableau">
+        <div className="flex gap-0.5 sm:gap-1 mb-3 overflow-x-auto" data-tutorial="spd-tableau">
           {state.tableau.map((col, colIdx) => (
-            <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+            <div key={`col-${colIdx.toString()}`} className="flex-1" style={{ minWidth: columnMinWidth }}>
               <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
               <div className="relative" style={{ minHeight: cardHeight }}>
                 {col.length === 0 ? (
@@ -258,7 +264,7 @@ function SpiderPageContent() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-game-bg-casino-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.spider.footer} px-4 py-2.5`}>
         <ErrorAlert message={error ?? hintError} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (

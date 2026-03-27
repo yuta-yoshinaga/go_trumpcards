@@ -13,7 +13,7 @@ test.describe('Memory E2E', () => {
     await waitForLoaded(page);
 
     // Verify score table is visible
-    await expect(page.getByText('スコア')).toBeVisible();
+    await expect(page.getByRole('status', { name: 'スコア' })).toBeVisible();
 
     // Verify board cards are present (52 numbered card buttons)
     const boardButtons = page.locator('button').filter({ hasText: /^\d+$/ });
@@ -57,7 +57,7 @@ test.describe('Memory E2E', () => {
     await resetButton.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
-    await expect(page.getByText('スコア')).toBeVisible();
+    await expect(page.getByRole('status', { name: 'スコア' })).toBeVisible();
   });
 
   test('settings: change CPU difficulty', async ({ page }) => {
@@ -80,6 +80,6 @@ test.describe('Memory E2E', () => {
     await waitForLoaded(page);
 
     // Verify game started
-    await expect(page.getByText('スコア')).toBeVisible();
+    await expect(page.getByRole('status', { name: 'スコア' })).toBeVisible();
   });
 });

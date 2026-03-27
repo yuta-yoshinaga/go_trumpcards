@@ -185,6 +185,20 @@ describe('TutorialOverlay', () => {
     expect(document.activeElement).toBe(buttons[0]);
   });
 
+  it('locks body scroll on mount and restores on unmount', () => {
+    document.body.style.overflow = 'auto';
+    const { unmount } = render(<TutorialOverlay {...defaultProps} />);
+    expect(document.body.style.overflow).toBe('hidden');
+    unmount();
+    expect(document.body.style.overflow).toBe('auto');
+  });
+
+  it('uses darker overlay opacity (0.75)', () => {
+    const { container } = render(<TutorialOverlay {...defaultProps} />);
+    const overlayRect = container.querySelector('svg > rect[mask]');
+    expect(overlayRect).toHaveAttribute('fill', 'rgba(0,0,0,0.75)');
+  });
+
   it('restores focus on unmount', () => {
     const triggerButton = document.createElement('button');
     document.body.appendChild(triggerButton);

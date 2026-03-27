@@ -332,6 +332,19 @@ describe('BlackJackPage', () => {
     expect(screen.queryByText('ディーラー手札')).not.toBeInTheDocument();
   });
 
+  it('does not expand card area with flex-1 during bet phase', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(screen.getByTestId('card-area')).not.toHaveClass('flex-1');
+  });
+
+  it('expands card area with flex-1 during action phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/ディーラー手札/)).toBeInTheDocument());
+    expect(screen.getByTestId('card-area')).toHaveClass('flex-1');
+  });
+
   it('disables bet button while loading', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());

@@ -6,6 +6,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -17,6 +18,7 @@ import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { FreeCellPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -93,7 +95,9 @@ function FreeCellPageContent() {
     handleSelectSource,
     handleSelectTarget,
   } = useFreeCellGame();
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  /** Minimum column width for touch-friendly tap targets on mobile; 0 on desktop to allow natural sizing. */
+  const columnMinWidth = isMobile ? solitaireMinColWidth : 0;
 
   const isPlayingForKbd = state?.phase === FreeCellPhase.PLAYING;
 
@@ -127,7 +131,7 @@ function FreeCellPageContent() {
     selectedSource.cardIndex === cardIndex;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.freecell.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.freecell')} />
       <PhaseIndicator
         phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
@@ -138,6 +142,8 @@ function FreeCellPageContent() {
         <TutorialButton />
       </PhaseIndicator>
 
+      <LandscapeBanner message={t('landscapeBanner')} />
+
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Free cells + Foundation row */}
         <div className="flex gap-2 mb-3 items-start flex-wrap">
@@ -146,7 +152,13 @@ function FreeCellPageContent() {
             {state.freeCells.map((card: Card | null, idx: number) => (
               <div key={`fc-${idx.toString()}`} className="text-center">
                 <div className="text-game-text-muted text-xs mb-1">
-                  {t('freecell')} {idx}
+                  <span className="hidden sm:inline">
+                    {t('freecell')} {idx}
+                  </span>
+                  <span className="sm:hidden">
+                    {t('freecellShort')}
+                    {idx}
+                  </span>
                 </div>
                 {card ? (
                   <button
@@ -213,9 +225,9 @@ function FreeCellPageContent() {
         </div>
 
         {/* Tableau */}
-        <div className="flex gap-2 mb-3" data-tutorial="fc-tableau">
+        <div className="flex gap-2 mb-3 overflow-x-auto" data-tutorial="fc-tableau">
           {state.tableau.map((col: (Card | null)[], colIdx: number) => (
-            <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+            <div key={`col-${colIdx.toString()}`} className="flex-1" style={{ minWidth: columnMinWidth }}>
               <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
               <div className="relative" style={{ minHeight: cardHeight }}>
                 {col.length === 0 ? (
@@ -283,7 +295,7 @@ function FreeCellPageContent() {
         />
       </div>
 
-      <GameFooter className="bg-game-bg-casino-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.freecell.footer} px-4 py-2.5`}>
         <ErrorAlert message={error ?? hintError} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (

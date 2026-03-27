@@ -9,7 +9,7 @@ export function BlackJackSkeleton() {
     <GameSkeleton
       bgClass="bg-game-bg-green-bright"
       bodyClassName="p-4"
-      footerClassName="bg-game-bg-green-bright-dark border-white/15 px-4 py-3"
+      footerClassName="bg-game-bg-green-bright-dark border-white/20 px-4 py-3"
       footer={
         <>
           <div className="mb-2">

@@ -6,6 +6,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -18,6 +19,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePyramidGame } from '../hooks/usePyramidGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { PyramidPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -90,7 +92,7 @@ function PyramidPageContent() {
     handleUndo,
     handleSelectCard,
   } = usePyramidGame();
-  const { cardHeight, cardWidth } = useCardDimensions();
+  const { cardHeight, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === PyramidPhase.PLAYING;
 
@@ -122,13 +124,15 @@ function PyramidPageContent() {
   // Calculate pyramid layout dimensions
   const maxCols = 7; // bottom row has 7 cards
   const cardGap = 4;
-  /** Fraction of card height used for vertical overlap between rows */
-  const ROW_OVERLAP_RATIO = 0.35;
+  /** Fraction of card height used for vertical overlap between rows (less on mobile for bigger tap targets) */
+  const ROW_OVERLAP_RATIO = isMobile ? 0.3 : 0.35;
   const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
-  const pyramidWidth = maxCols * (cardWidth + cardGap) - cardGap;
+  /** Use minimum column width for touch-friendly card sizing on mobile */
+  const effectiveCardWidth = isMobile ? Math.max(cardWidth, solitaireMinColWidth) : cardWidth;
+  const pyramidWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pyramid.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.pyramid')} />
       {/* Phase indicator */}
       <PhaseIndicator
@@ -140,13 +144,15 @@ function PyramidPageContent() {
         <TutorialButton />
       </PhaseIndicator>
 
+      <LandscapeBanner message={t('landscapeBanner')} />
+
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Pyramid */}
-        <div data-tutorial="py-pyramid" className="flex flex-col items-center mb-3">
+        <div data-tutorial="py-pyramid" className="flex flex-col items-center mb-3 overflow-x-auto">
           {state.pyramid.map((row, rowIdx) => {
             const cols = row.length;
-            const rowWidth = cols * (cardWidth + cardGap) - cardGap;
+            const rowWidth = cols * (effectiveCardWidth + cardGap) - cardGap;
             const offsetX = (pyramidWidth - rowWidth) / 2;
             return (
               <div
@@ -158,13 +164,13 @@ function PyramidPageContent() {
                 }}
               >
                 {row.map((pc, colIdx) => {
-                  const left = offsetX + colIdx * (cardWidth + cardGap);
+                  const left = offsetX + colIdx * (effectiveCardWidth + cardGap);
                   if (pc.removed) {
                     return (
                       <div
                         key={`pc-${rowIdx.toString()}-${colIdx.toString()}`}
                         className="absolute"
-                        style={{ left, width: cardWidth, height: cardHeight }}
+                        style={{ left, width: effectiveCardWidth, height: cardHeight }}
                       />
                     );
                   }
@@ -185,7 +191,7 @@ function PyramidPageContent() {
                           isSelected('pyramid', rowIdx, colIdx) ? 'ring-2 ring-yellow-400' : ''
                         } ${!exposed ? 'opacity-60' : ''}`}
                       >
-                        <AnimatedCard card={pc.card} width={cardWidth} />
+                        <AnimatedCard card={pc.card} width={effectiveCardWidth} />
                       </button>
                     </div>
                   );
@@ -203,10 +209,14 @@ function PyramidPageContent() {
               {t('stock')} ({state.stockCount})
             </div>
             {state.stockCount > 0 ? (
-              <AnimatedCardBack width={cardWidth} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
+              <AnimatedCardBack
+                width={effectiveCardWidth}
+                onClick={isPlaying ? handleDraw : undefined}
+                ariaLabel={t('draw')}
+              />
             ) : (
               <div
-                style={{ width: cardWidth, height: cardHeight }}
+                style={{ width: effectiveCardWidth, height: cardHeight }}
                 className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
               >
                 {t('empty')}
@@ -231,11 +241,11 @@ function PyramidPageContent() {
                   isSelected('waste') ? 'ring-2 ring-yellow-400' : ''
                 }`}
               >
-                <AnimatedCard card={state.waste[state.waste.length - 1]} width={cardWidth} />
+                <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
               </button>
             ) : (
               <div
-                style={{ width: cardWidth, height: cardHeight }}
+                style={{ width: effectiveCardWidth, height: cardHeight }}
                 className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
               >
                 {t('empty')}
@@ -266,7 +276,7 @@ function PyramidPageContent() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-game-bg-casino-dark border-white/20 px-4 py-2.5">
+      <GameFooter className={`${gameTheme.pyramid.footer} px-4 py-2.5`}>
         <ErrorAlert message={error ?? hintError} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (

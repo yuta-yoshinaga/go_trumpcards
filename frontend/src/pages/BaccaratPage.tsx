@@ -18,6 +18,8 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { BaccaratSideBetResult } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -233,7 +235,7 @@ function BaccaratPageContent() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.baccarat.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.baccarat')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}>
@@ -241,7 +243,17 @@ function BaccaratPageContent() {
         <TutorialButton />
       </PhaseIndicator>
 
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+      <div
+        data-testid="card-area"
+        className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
+          .filter(Boolean)
+          .join(' ')}
+      >
+        {isBetPhase && state.playerHand.length === 0 && (
+          <div className="flex items-center justify-center py-6">
+            <p className="text-white/50 text-lg">{t('betGuide')}</p>
+          </div>
+        )}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
         {/* Player Hand */}
@@ -303,7 +315,7 @@ function BaccaratPageContent() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-gray-800 px-4 pt-3">
+      <GameFooter className={`${gameTheme.baccarat.footer} px-4 pt-3`}>
         <ErrorAlert message={error} />
         {isBetPhase && (
           <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="bac-bet-controls">

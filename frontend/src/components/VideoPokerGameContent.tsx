@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useIsLargeDesktop } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
 import { ActionLogPanel } from './ActionLogPanel';
@@ -34,10 +36,10 @@ export interface VideoPokerGameContentProps {
   payoutTableRows: string[];
 }
 
-/** Payout table display component. */
-function PayoutTable({ t, rows, expanded }: { t: (key: string) => string; rows: string[]; expanded?: boolean }) {
+/** Payout table display component (collapsed by default, user can expand on tap). */
+function PayoutTable({ t, rows }: { t: (key: string) => string; rows: string[] }) {
   return (
-    <details className="mb-3 text-center" open={expanded}>
+    <details className="mb-3 text-center">
       <summary className="text-yellow-300 text-sm cursor-pointer lg:text-base">{t('payoutTable.title')}</summary>
       <ul className="text-gray-300 text-xs mt-1 space-y-0.5 lg:text-sm lg:space-y-1">
         {rows.map((row) => (
@@ -63,7 +65,6 @@ export function VideoPokerGameContent({
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
 
   const { cardWidth } = useCardDimensions();
-  const isLgDesktop = useIsLargeDesktop();
   const { state, loading, error, exec: execApi } = useGameApi(apiExec);
 
   useEffect(() => {
@@ -133,14 +134,14 @@ export function VideoPokerGameContent({
   const displayHeld = isDrawPhase ? heldCards : (state.heldIndices ?? []);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme[gameName].bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc(`nav.${gameName}`)} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isBetPhase || isDrawPhase}>
         <span>{t('label.chips', { chips: state.chips })}</span>
         <TutorialButton />
       </PhaseIndicator>
 
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
         {state.hand.length > 0 && (
@@ -169,12 +170,12 @@ export function VideoPokerGameContent({
           <div className="text-white text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
         )}
 
-        <PayoutTable t={tNs} rows={payoutTableRows} expanded={isLgDesktop && isBetPhase} />
+        <PayoutTable t={tNs} rows={payoutTableRows} />
 
         {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
-      <GameFooter className="bg-gray-800 px-4 pt-3">
+      <GameFooter className={`${gameTheme[gameName].footer} px-4 pt-3`}>
         <ErrorAlert message={error} />
         {isBetPhase && (
           <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="vp-bet-controls">
@@ -198,6 +199,7 @@ export function VideoPokerGameContent({
             <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
               {t('button.deal')}
             </button>
+            <p className="text-gray-400 text-xs mt-1">{tNs('dealGuide')}</p>
           </div>
         )}
         {isDrawPhase && (

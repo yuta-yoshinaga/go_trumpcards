@@ -106,5 +106,6 @@
     "splitReason": "同じカードなのでスプリット推奨",
     "surrenderReason": "不利な状況なのでサレンダー推奨",
     "declineReason": "インシュランスは期待値がマイナスなので辞退推奨"
-  }
+  },
+  "betGuide": "ベットしてゲーム開始"
 }

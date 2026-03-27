@@ -745,6 +745,14 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
   });
 
+  it('uses outline style for reset button', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const resetBtn = screen.getByRole('button', { name: 'リセット' });
+    expect(resetBtn.className).toContain('bg-transparent');
+    expect(resetBtn.className).toContain('border');
+  });
+
   // ---- loading / disabled state ----
   it('disables buttons while loading', async () => {
     mockExec.mockResolvedValue(preFlopState);

@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -112,11 +113,7 @@ function MemoryPageContent() {
         <TutorialButton />
       </PhaseIndicator>
 
-      {/* Landscape orientation banner (visible on small portrait screens) */}
-      <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-yellow-500/90 text-black text-sm font-medium">
-        <span aria-hidden="true">&#8635;</span>
-        <span>{t('landscapeBanner')}</span>
-      </div>
+      <LandscapeBanner message={t('landscapeBanner')} />
 
       {/* Settings */}
       <SettingsPanel
@@ -140,34 +137,33 @@ function MemoryPageContent() {
         ]}
       />
 
-      {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        {/* Player scores */}
-        <div className="my-2 p-2 rounded bg-black/30 text-white text-sm" data-tutorial="mem-score-table">
-          <div className="mb-1">{t('scores')}</div>
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th scope="col" className="text-left">
-                  {t('scoresPlayer')}
-                </th>
-                <th scope="col">{t('scoresPairs')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.players.map((p) => (
-                <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
-                  <td>{playerName(p.id, p.isHuman)}</td>
-                  <td className="text-center">{p.pairCount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Content area – scroll on mobile, fit-to-viewport on desktop */}
+      <div className="flex-1 overflow-y-auto lg:overflow-hidden lg:flex lg:flex-col pt-3 lg:pt-1 px-4 lg:px-8">
+        {/* Player scores – compact inline layout to maximise board visibility */}
+        <div
+          className="my-1 px-2 py-1 rounded bg-black/30 text-white text-sm flex flex-wrap items-center gap-y-0.5 lg:shrink-0"
+          data-tutorial="mem-score-table"
+          role="status"
+          aria-label={t('scores')}
+        >
+          {state.players.map((p, idx) => (
+            <span key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+              {idx > 0 && (
+                <span className="text-white/40 mr-3" aria-hidden="true">
+                  |
+                </span>
+              )}
+              {t('scoreLine', { name: playerName(p.id, p.isHuman), count: p.pairCount })}
+            </span>
+          ))}
         </div>
 
-        {/* Board: responsive grid (6/6/8/13 columns by breakpoint) */}
-        <div className="my-3 p-2 rounded bg-black/40" data-tutorial="mem-board">
-          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1">
+        {/* Board: responsive grid (6/8/13 columns); on lg fills remaining height */}
+        <div
+          className="my-3 lg:my-1 p-2 lg:p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
+          data-tutorial="mem-board"
+        >
+          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1 lg:grid-rows-4 lg:h-full">
             {state.board.map((bc, idx) => (
               <button
                 type="button"
@@ -175,7 +171,7 @@ function MemoryPageContent() {
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
                 aria-hidden={bc.taken || undefined}
-                className={`relative aspect-[2/3] rounded border ${focusRingWhite} ${
+                className={`relative aspect-[2/3] lg:aspect-auto rounded border ${focusRingWhite} ${
                   bc.taken
                     ? 'bg-transparent border-transparent'
                     : bc.faceUp

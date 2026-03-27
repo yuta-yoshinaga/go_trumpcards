@@ -1395,4 +1395,19 @@ describe('PokerPage', () => {
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  it('getElapsed returns non-zero time when cpuMetaAI is enabled and it is human turn', async () => {
+    mockExec.mockResolvedValue(dealState);
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
+
+    // Enable cpuMetaAI so getElapsed computes elapsed instead of returning 0
+    fireEvent.click(screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(dealState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 10, undefined, expect.any(Number)));
+  });
 });

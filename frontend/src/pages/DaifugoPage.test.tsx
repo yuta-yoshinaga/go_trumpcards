@@ -119,6 +119,30 @@ describe('DaifugoPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('shows phase indicator with プレイ during gameplay', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => {
+      const indicator = screen.getByTestId('phase-indicator');
+      expect(indicator).toHaveTextContent('プレイ');
+    });
+  });
+
+  it('shows あなたのターン when it is human turn', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => {
+      expect(screen.getByText('あなたのターン')).toBeInTheDocument();
+    });
+  });
+
+  it('shows 終了 phase when game ends', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => {
+      const indicator = screen.getByTestId('phase-indicator');
+      expect(indicator).toHaveTextContent('終了');
+    });
+  });
+
   it('calls reset command on mount', async () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -802,9 +826,8 @@ describe('DaifugoPage', () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => {
       const badges = screen.getAllByText('数縛り');
-      // Badge button + settings checkbox label
       expect(badges.length).toBeGreaterThanOrEqual(1);
-      expect(badges[0].tagName).toBe('BUTTON');
+      expect(badges.some((el) => el.tagName === 'BUTTON')).toBe(true);
     });
   });
 
@@ -1123,7 +1146,7 @@ describe('DaifugoPage', () => {
     await waitFor(() => {
       const badges = screen.getAllByText('階段縛り');
       expect(badges.length).toBeGreaterThanOrEqual(1);
-      expect(badges[0].tagName).toBe('BUTTON');
+      expect(badges.some((el) => el.tagName === 'BUTTON')).toBe(true);
     });
   });
 

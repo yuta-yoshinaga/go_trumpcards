@@ -24,6 +24,8 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary } from '../styles/buttonStyles';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { IndianPokerPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 
@@ -159,7 +161,7 @@ function IndianPokerPageContent() {
   }));
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.indianpoker.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.indianpoker')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
@@ -176,7 +178,7 @@ function IndianPokerPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: opponent cards + CPU players */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8">
+      <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* CPU players - show cards face-up (opponents can see each other's cards) */}
         <div data-tutorial="ip-cpu-cards">
           {state.players
@@ -223,7 +225,7 @@ function IndianPokerPageContent() {
       </div>
 
       {/* Sticky footer: player card + buttons */}
-      <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
+      <GameFooter className={`${gameTheme.indianpoker.footer} px-5 py-3`}>
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2" data-tutorial="ip-player-card">

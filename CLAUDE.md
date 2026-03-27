@@ -10,41 +10,9 @@ Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Do
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
 
-## Resource Constraints
-
-This development environment runs on WSL2 with **limited RAM (~2 GB) and 4 CPU cores**. Heavy tasks (frontend tests, Go tests, builds, linting) must NOT be launched in parallel — doing so causes SWAP thrashing and dramatically slows overall execution.
-
-### Rules
-
-1. **Kill residual processes before launching heavy tasks.** Previous processes may not have fully exited. Always run `pkill` first to ensure no leftover processes compete for memory:
-   ```sh
-   pkill -f vitest || true; pkill -f 'bun run' || true; pkill -f 'go test' || true; pkill -f golangci-lint || true
-   ```
-   Run this before every heavy task invocation (build, test, lint).
-
-2. **Run heavy tasks sequentially, not in parallel.** Chain with `&&`:
-   ```sh
-   cd frontend && bun run build && bun run check && bun run test
-   ```
-   Do NOT launch `bun run build`, `bun run check`, and `bun run test` as separate parallel tool calls or background tasks.
-
-3. **Limit Vitest worker threads** when running tests on their own:
-   ```sh
-   cd frontend && bun run test -- --pool-options.threads.maxThreads=2
-   ```
-
-4. **Limit Go test parallelism**:
-   ```sh
-   go test -tags test -p 2 ./...
-   ```
-
-5. **Never launch frontend and Go tasks simultaneously** (e.g., `bun run test` and `go test` at the same time).
-
-6. **Avoid multiple background tasks** (`run_in_background`) for resource-heavy commands. Use background only for lightweight commands (e.g., `git`, `ls`, `gh`).
-
 ## Package Manager Rule
 
-**Always use `bun` instead of `npm`/`node`, and `bunx` instead of `npx`.** This project uses Bun as the sole JavaScript runtime, package manager, and script runner. Never invoke `node ./node_modules/...` directly — use `bun` or `bunx` instead, as Node.js consumes significantly more memory.
+**Always use `bun` instead of `npm`/`node`, and `bunx` instead of `npx`.** This project uses Bun as the sole JavaScript runtime, package manager, and script runner. Never invoke `node ./node_modules/...` directly — use `bun` or `bunx` instead.
 
 ## Commands
 
@@ -63,8 +31,8 @@ go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server                # Start REST API + web GUI server (direct)
 
 # Test
-go test -tags test -p 2 ./...                                              # Run all Go tests
-go test -tags test -p 2 -coverprofile=coverage.out -covermode=atomic ./... # Coverage report
+go test -tags test ./...                                              # Run all Go tests
+go test -tags test -coverprofile=coverage.out -covermode=atomic ./... # Coverage report
 
 # Format
 goimports -w ./...           # Format and organize imports (use goimports, not gofmt)
@@ -133,7 +101,7 @@ Before marking any task complete:
 | Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game (follow `docs/manual/cui_template.md` / `docs/manual/web_template.md` format) |
 | Add a new game manual | Copy `docs/manual/cui_template.md` → `docs/manual/cui/<game>.md`, `docs/manual/web_template.md` → `docs/manual/web/<game>.md` and fill in game-specific content |
 | Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](CLAUDE.md) and [`internal/CLAUDE.md`](internal/CLAUDE.md) |
-| Make an architectural decision that passes the ADR litmus test (see Workflow section) | Add or update an ADR in [`docs/adr/`](docs/adr/) (日本語で記述) and update the index in [`docs/adr/README.md`](docs/adr/README.md) |
+| Make an architectural decision that passes the ADR litmus test (see Workflow section) | Add or update an ADR in [`docs/adr/`](docs/adr/) (written in Japanese) and update the index in [`docs/adr/README.md`](docs/adr/README.md) |
 | Add/modify exported Go symbol | Ensure GoDoc comment (`// SymbolName description`) is present |
 | Add/modify exported TS symbol | Ensure TSDoc comment (`/** description */`) is present |
 | Change backend struct/interface/domain logic | Update corresponding UML diagrams in [`docs/design/backend.md`](docs/design/backend.md) (class, sequence, state machine) |
@@ -181,21 +149,21 @@ All commit messages must follow [Conventional Commits](https://www.conventionalc
 - When a change contradicts or supersedes an existing ADR, update the ADR's status to `Superseded` and create a new ADR documenting the new decision
 - ADR format: Status, Date, Context, Decision, Consequences (see [`docs/adr/README.md`](docs/adr/README.md))
 
-#### ADR記録のリトマステスト
+#### ADR Litmus Test
 
-以下の **3つ全てに「はい」** の場合のみADRを作成する:
+Create an ADR only when **all three** of the following are true:
 
-1. **他の選択肢を真剣に検討したか？** — 選択肢が1つしかないなら記録する「決定」がない
-2. **この決定を覆すと、複数ファイル/レイヤーの変更が必要か？** — 影響範囲が小さいならコミットメッセージで十分
-3. **6ヶ月後の新メンバーが「なぜこうなっている？」と疑問に思うか？** — コードから自明なら記録不要
+1. **Were alternatives seriously considered?** — If there was only one option, there is no "decision" to record
+2. **Would reversing this decision require changes across multiple files/layers?** — If the impact is small, a commit message is sufficient
+3. **Would a new team member 6 months from now ask "why is it done this way?"** — If the answer is obvious from the code, no record needed
 
-ADRに該当しない設計判断の書き先:
+Where to document design decisions that don't warrant an ADR:
 
-| ケース | 書き先 |
-|--------|--------|
-| 新ゲーム追加の設計判断 | GitHub Issue コメント or PR description |
-| リファクタリングの理由 | コミットメッセージのbody |
-| UI デザイン方針 | GitHub Issue or PR description |
+| Case | Where to write |
+|------|---------------|
+| Design decisions for a new game | GitHub Issue comment or PR description |
+| Reason for refactoring | Commit message body |
+| UI design direction | GitHub Issue or PR description |
 
 ### Plan Node Default
 

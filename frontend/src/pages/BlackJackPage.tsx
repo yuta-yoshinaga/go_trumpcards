@@ -39,6 +39,8 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -224,7 +226,7 @@ function BlackJackPageContent() {
   if (!state) return <BlackJackSkeleton />;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-bright" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.blackjack.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.blackjack')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator
@@ -257,7 +259,17 @@ function BlackJackPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: dealer area + CPU players */}
-      <div className="flex-1 overflow-y-auto p-4 lg:px-8">
+      <div
+        data-testid="card-area"
+        className={[`overflow-y-auto p-4 lg:px-8 ${lgCardAreaConstraint}`, phase !== BjPhase.BET && 'flex-1']
+          .filter(Boolean)
+          .join(' ')}
+      >
+        {phase === BjPhase.BET && (
+          <div className="flex items-center justify-center py-6">
+            <p className="text-white/50 text-lg">{t('betGuide')}</p>
+          </div>
+        )}
         {phase !== BjPhase.BET && (
           <div data-tutorial="bj-dealer-hand">
             <h2 className="text-white">
@@ -319,7 +331,7 @@ function BlackJackPageContent() {
       </div>
 
       {/* Sticky footer: player hand + result + buttons */}
-      <GameFooter className="bg-game-bg-green-bright-dark border-white/15 px-4 py-3">
+      <GameFooter className={`${gameTheme.blackjack.footer} px-4 py-3`}>
         {/* Player hands */}
         {phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2" data-tutorial="bj-player-hand">

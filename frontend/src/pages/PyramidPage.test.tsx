@@ -437,4 +437,26 @@ describe('PyramidPage', () => {
     renderWithProviders(<PyramidPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  it('renders correctly on mobile viewport (isMobile branch)', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      renderWithProviders(<PyramidPage />);
+      await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('renders on desktop viewport without mobile min-width', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    try {
+      renderWithProviders(<PyramidPage />);
+      await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
 });

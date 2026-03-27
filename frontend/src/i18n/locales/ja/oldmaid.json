@@ -9,7 +9,9 @@
     "cpuHesitation": "CPU迷い時間ディレイ（カード内容により反応速度が変化）",
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
     "start": "ゲーム開始",
-    "cpuSettings": "CPU設定"
+    "cpuSettings": "CPU設定",
+    "apply": "適用",
+    "cancel": "キャンセル"
   },
   "badge": {
     "jijiNuki": "ジジ抜き"
@@ -46,5 +48,9 @@
     "playerHand": "あなたの手札です。ペアになったカードは自動で捨てられます。",
     "drawButton": "ランダムに引くボタンで、相手のカードからランダムに1枚引けます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "phase": {
+    "play": "プレイ",
+    "end": "終了"
   }
 }

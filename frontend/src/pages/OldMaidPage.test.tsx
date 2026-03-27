@@ -69,109 +69,149 @@ beforeEach(() => {
 
 async function startGame() {
   renderWithProviders(<OldMaidPage />);
-  fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+  // Game auto-starts with default settings on mount
   await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
 }
 
 describe('OldMaidPage', () => {
-  it('shows setup screen on initial render without calling exec', () => {
+  it('auto-starts game on mount and calls reset with defaults', async () => {
     renderWithProviders(<OldMaidPage />);
-    expect(screen.getByText('Old Maid 設定')).toBeInTheDocument();
-    expect(mockExec).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false, false, false),
+    );
   });
 
-  it('renders null game area while API call is pending after setup', async () => {
+  it('renders skeleton while API call is pending on mount', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<OldMaidPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     expect(screen.queryByText('あなた')).not.toBeInTheDocument();
   });
 
-  it('mode 0 radio is selected by default', () => {
-    renderWithProviders(<OldMaidPage />);
+  it('設定 button opens settings dialog', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
+    expect(screen.getByText('Old Maid 設定')).toBeInTheDocument();
+  });
+
+  it('settings dialog has mode 0 radio selected by default', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     const radios = screen.getAllByRole('radio');
     expect(radios[0]).toBeChecked();
     expect(radios[1]).not.toBeChecked();
   });
 
-  it('can select mode 1', () => {
-    renderWithProviders(<OldMaidPage />);
+  it('settings dialog can select mode 1', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     const radios = screen.getAllByRole('radio');
     fireEvent.click(radios[1]);
     expect(radios[1]).toBeChecked();
   });
 
-  it('CPU心理戦 checkbox is unchecked by default', () => {
-    renderWithProviders(<OldMaidPage />);
+  it('settings dialog CPU心理戦 checkbox is unchecked by default', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     expect(screen.getByLabelText('CPU心理戦（奇数カードを端に配置）')).not.toBeChecked();
   });
 
-  it('CPU心理戦 checkbox can be toggled', () => {
-    renderWithProviders(<OldMaidPage />);
+  it('settings dialog CPU心理戦 checkbox can be toggled', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     const checkbox = screen.getByLabelText('CPU心理戦（奇数カードを端に配置）');
     fireEvent.click(checkbox);
     expect(checkbox).toBeChecked();
   });
 
-  it('CPU記憶AI checkbox is unchecked by default', () => {
-    renderWithProviders(<OldMaidPage />);
+  it('settings dialog CPU記憶AI checkbox is unchecked by default', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     expect(screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）')).not.toBeChecked();
   });
 
-  it('CPU記憶AI checkbox can be toggled', () => {
-    renderWithProviders(<OldMaidPage />);
+  it('settings dialog CPU記憶AI checkbox can be toggled', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     const checkbox = screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）');
     fireEvent.click(checkbox);
     expect(checkbox).toBeChecked();
   });
 
-  it('ゲーム開始 calls reset with mode=1 and cpuPlacementStrategy=true after changes', async () => {
-    renderWithProviders(<OldMaidPage />);
+  it('apply calls reset with mode=1 and cpuPlacementStrategy=true after changes', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     const radios = screen.getAllByRole('radio');
     fireEvent.click(radios[1]);
     fireEvent.click(screen.getByLabelText('CPU心理戦（奇数カードを端に配置）'));
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: '適用' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, 1, true, undefined, false, false, false),
     );
   });
 
-  it('ゲーム開始 calls reset with cpuMemoryAI=true when checkbox enabled', async () => {
-    renderWithProviders(<OldMaidPage />);
+  it('apply calls reset with cpuMemoryAI=true when checkbox enabled', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     fireEvent.click(screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）'));
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: '適用' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, true, false, false),
     );
   });
 
-  it('ゲーム開始 calls reset with cpuHesitationEnabled=true when checkbox enabled', async () => {
-    renderWithProviders(<OldMaidPage />);
+  it('apply calls reset with cpuHesitationEnabled=true when checkbox enabled', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     fireEvent.click(screen.getByLabelText('CPU迷い時間ディレイ（カード内容により反応速度が変化）'));
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: '適用' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false, true, false),
     );
   });
 
-  it('ゲーム開始 calls reset with cpuMetaAI=true when checkbox enabled', async () => {
-    renderWithProviders(<OldMaidPage />);
+  it('apply calls reset with cpuMetaAI=true when checkbox enabled', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     fireEvent.click(screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）'));
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: '適用' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false, false, true),
     );
   });
 
-  it('hides setup screen after ゲーム開始', async () => {
+  it('settings dialog closes on cancel without resetting and reverts changes', async () => {
     await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
+    // Change mode to 1 in the dialog
+    const radios = screen.getAllByRole('radio');
+    fireEvent.click(radios[1]);
+    expect(radios[1]).toBeChecked();
+    // Cancel
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
     expect(screen.queryByText('Old Maid 設定')).not.toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
+    // Reopen dialog: mode should be reverted to 0 (original)
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
+    const radiosAfter = screen.getAllByRole('radio');
+    expect(radiosAfter[0]).toBeChecked();
+    expect(radiosAfter[1]).not.toBeChecked();
   });
 
-  it('設定 button returns to setup screen', async () => {
+  it('settings dialog closes on apply', async () => {
     await startGame();
     fireEvent.click(screen.getByRole('button', { name: '設定' }));
     expect(screen.getByText('Old Maid 設定')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '適用' }));
+    expect(screen.queryByText('Old Maid 設定')).not.toBeInTheDocument();
   });
 
   it('shows ジジ抜き mode badge when mode is 1', async () => {
@@ -428,10 +468,9 @@ describe('OldMaidPage', () => {
       },
     };
 
-    // reset returns humanTurnState, draw returns stateWithCpuActions
+    // auto-start returns humanTurnState, draw returns stateWithCpuActions
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(stateWithCpuActions);
     renderWithProviders(<OldMaidPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'ランダムに引く' })).not.toBeDisabled());
 
     // Trigger draw
@@ -500,7 +539,6 @@ describe('OldMaidPage', () => {
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(finalState);
     renderWithProviders(<OldMaidPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
@@ -634,7 +672,6 @@ describe('OldMaidPage', () => {
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(twoCpuActionsState);
     renderWithProviders(<OldMaidPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
@@ -682,7 +719,6 @@ describe('OldMaidPage', () => {
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(stateWithUndefinedDiscards);
     renderWithProviders(<OldMaidPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
@@ -734,7 +770,6 @@ describe('OldMaidPage', () => {
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(humanActionNoCpuState);
     renderWithProviders(<OldMaidPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
@@ -746,8 +781,9 @@ describe('OldMaidPage', () => {
     });
   }, 10000);
 
-  it('setup screen groups radio buttons in fieldset with legend', () => {
-    renderWithProviders(<OldMaidPage />);
+  it('settings dialog groups radio buttons in fieldset with legend', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     const legend = screen.getByText('モード選択');
     const fieldset = legend.closest('fieldset');
     expect(fieldset).toBeInTheDocument();
@@ -755,8 +791,9 @@ describe('OldMaidPage', () => {
     expect(radios).toHaveLength(2);
   });
 
-  it('setup screen groups checkboxes in fieldset with legend', () => {
-    renderWithProviders(<OldMaidPage />);
+  it('settings dialog groups checkboxes in fieldset with legend', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
     const legend = screen.getByText('CPU設定');
     const fieldset = legend.closest('fieldset');
     expect(fieldset).toBeInTheDocument();
@@ -1087,13 +1124,14 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(screen.queryByText('容疑者')).not.toBeInTheDocument());
   });
 
-  it('clears suspect pins when going to settings', async () => {
+  it('clears suspect pins when applying settings', async () => {
     await startGame();
     const pinButton = screen.getAllByRole('button', { name: '容疑者ピン' })[0];
     fireEvent.click(pinButton);
     expect(screen.getByText('容疑者')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '設定' }));
-    expect(screen.queryByText('容疑者')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '適用' }));
+    await waitFor(() => expect(screen.queryByText('容疑者')).not.toBeInTheDocument());
   });
 
   it('does not show suspect pin button for finished CPU players', async () => {
@@ -1148,7 +1186,6 @@ describe('OldMaidPage', () => {
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(directCpuState);
     renderWithProviders(<OldMaidPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
@@ -1167,8 +1204,6 @@ describe('OldMaidPage', () => {
     });
 
     renderWithProviders(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('ゲーム開始')).toBeInTheDocument());
-    fireEvent.click(screen.getByText('ゲーム開始'));
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
     vi.mocked(actionLogApi.oldmaid).mockResolvedValueOnce({ entries: [] });
@@ -1266,5 +1301,24 @@ describe('OldMaidPage', () => {
   it('renders accessible h1 heading', async () => {
     await startGame();
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+  });
+
+  // -- PhaseIndicator coverage --
+
+  it('phase indicator shows your turn when human turn', async () => {
+    await startGame();
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows waiting when cpu turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    await startGame();
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
+  });
+
+  it('phase indicator shows end phase', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    await startGame();
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('終了'));
   });
 });

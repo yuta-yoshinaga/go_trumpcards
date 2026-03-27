@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { btnDanger, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnPokerAccent, btnPokerAllIn, btnPokerMuted, btnPokerPrimary } from '../styles/buttonStyles';
 
 interface BettingControlsProps {
   inputId: string;
@@ -58,27 +58,27 @@ export function BettingControls({
       </div>
       {hasOutstandingBet ? (
         <>
-          <button type="button" className={`${btnSuccess} min-w-[80px]`} disabled={loading} onClick={onCall}>
+          <button type="button" className={`${btnPokerPrimary} min-w-[80px]`} disabled={loading} onClick={onCall}>
             {t('action.call')}
           </button>
-          <button type="button" className={`${btnWarning} min-w-[80px]`} disabled={loading} onClick={onRaise}>
+          <button type="button" className={`${btnPokerAccent} min-w-[80px]`} disabled={loading} onClick={onRaise}>
             {t('action.raise')}
           </button>
         </>
       ) : (
         <>
-          <button type="button" className={`${btnWarning} min-w-[80px]`} disabled={loading} onClick={onBet}>
+          <button type="button" className={`${btnPokerAccent} min-w-[80px]`} disabled={loading} onClick={onBet}>
             {t('action.bet')}
           </button>
-          <button type="button" className={`${btnSuccess} min-w-[80px]`} disabled={loading} onClick={onCheck}>
+          <button type="button" className={`${btnPokerPrimary} min-w-[80px]`} disabled={loading} onClick={onCheck}>
             {t('action.check')}
           </button>
         </>
       )}
-      <button type="button" className={`${btnDanger} min-w-[80px]`} disabled={loading} onClick={onFold}>
+      <button type="button" className={`${btnPokerMuted} min-w-[80px]`} disabled={loading} onClick={onFold}>
         {t('action.fold')}
       </button>
-      <button type="button" className={`${btnWarning} min-w-[80px]`} disabled={loading} onClick={onAllIn}>
+      <button type="button" className={`${btnPokerAllIn} min-w-[80px]`} disabled={loading} onClick={onAllIn}>
         {t('action.allIn')}
       </button>
     </div>

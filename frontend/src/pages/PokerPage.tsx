@@ -26,6 +26,8 @@ import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
+import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
 import { PokerPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -147,7 +149,7 @@ function PokerPageContent() {
   if (!state) return <PokerSkeleton />;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.poker.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.poker')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct || canExchange}>
@@ -169,7 +171,7 @@ function PokerPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: CPU players + logs */}
-      <div className="flex-1 overflow-y-auto pt-4 px-5 lg:px-8">
+      <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* CPU players */}
         {state?.players
           ?.filter((p) => !p.isHuman)
@@ -208,7 +210,7 @@ function PokerPageContent() {
       </div>
 
       {/* Sticky footer: player hand + buttons */}
-      <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
+      <GameFooter className={`${gameTheme.poker.footer} px-5 py-3`}>
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2" data-tutorial="pk-player-hand">
@@ -341,8 +343,8 @@ function PokerPageContent() {
         )}
 
         {/* Settings + Reset */}
-        <div className="text-center flex items-center justify-center gap-3">
-          <label className="text-white text-sm flex items-center gap-1">
+        <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+          <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
             {tc('betting.bettingLimit')}
             <select
               value={bettingLimit}
@@ -354,18 +356,20 @@ function PokerPageContent() {
               <option value={2}>{tc('betting.noLimit')}</option>
             </select>
           </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={isLowball} onChange={(e) => setIsLowball(e.target.checked)} />
-            {t('lowball')}
-          </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-            {t('settings.cpuMetaAI')}
-          </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('hint.toggle', { ns: 'tutorial' })}
-          </label>
+          <div className="flex items-center gap-3">
+            <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
+              <input type="checkbox" checked={isLowball} onChange={(e) => setIsLowball(e.target.checked)} />
+              {t('lowball')}
+            </label>
+            <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
+              <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+              {t('settings.cpuMetaAI')}
+            </label>
+            <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
+              <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+          </div>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}

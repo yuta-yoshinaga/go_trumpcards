@@ -13,8 +13,7 @@ export const CARD_DIMENSIONS = {
     cardWidth: 40,
     cpuCardWidth: 34,
     footerCardWidth: 36,
-    sevensCellSize: 24,
-    sevensFontSize: '0.65em',
+    solitaireMinColWidth: 48,
   },
   desktop: {
     cardHeight: 84,
@@ -22,17 +21,15 @@ export const CARD_DIMENSIONS = {
     cardWidth: 60,
     cpuCardWidth: 50,
     footerCardWidth: 54,
-    sevensCellSize: 26,
-    sevensFontSize: '0.75em',
+    solitaireMinColWidth: 0,
   },
   largeDesktop: {
-    cardHeight: 120,
-    cardOverlap: 28,
-    cardWidth: 80,
-    cpuCardWidth: 66,
-    footerCardWidth: 72,
-    sevensCellSize: 32,
-    sevensFontSize: '0.85em',
+    cardHeight: 150,
+    cardOverlap: 34,
+    cardWidth: 100,
+    cpuCardWidth: 82,
+    footerCardWidth: 90,
+    solitaireMinColWidth: 0,
   },
 } as const;
 
@@ -52,10 +49,16 @@ export function useWindowWidth(): number {
 /** Hook that returns responsive card dimensions based on viewport width. */
 export function useCardDimensions() {
   const width = useWindowWidth();
+  const isMobile = width < SM_BREAKPOINT;
 
-  if (width >= LG_BREAKPOINT) return CARD_DIMENSIONS.largeDesktop;
-  if (width >= SM_BREAKPOINT) return CARD_DIMENSIONS.desktop;
-  return CARD_DIMENSIONS.mobile;
+  if (width >= LG_BREAKPOINT) return { ...CARD_DIMENSIONS.largeDesktop, isMobile };
+  if (width >= SM_BREAKPOINT) return { ...CARD_DIMENSIONS.desktop, isMobile };
+  return { ...CARD_DIMENSIONS.mobile, isMobile };
+}
+
+/** Hook that returns true when viewport width is below the sm breakpoint (mobile). */
+export function useIsMobile(): boolean {
+  return useWindowWidth() < SM_BREAKPOINT;
 }
 
 /** Hook that returns true when viewport width is at or above the large-desktop breakpoint. */
