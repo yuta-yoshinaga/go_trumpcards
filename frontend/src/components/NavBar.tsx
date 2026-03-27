@@ -118,9 +118,13 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
     wasOpen.current = isOpen;
   }, [isOpen]);
 
-  // Close nav dropdown on outside click (large desktop only)
+  // Close nav dropdown on outside click (large desktop only).
+  // On mobile/tablet, categories are always-open so this must be skipped
+  // to prevent a layout shift between mousedown and mouseup that causes
+  // clicks to land on the wrong game link.
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
+      if (isMobile || isMediumDesktop) return;
       if (!navRef.current) return;
       const openDetails = navRef.current.querySelectorAll('details[open]');
       for (const details of openDetails) {
@@ -131,7 +135,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
     };
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, []);
+  }, [isMobile, isMediumDesktop]);
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
