@@ -22,9 +22,9 @@ describe('LandscapeBanner', () => {
     expect(banner?.className).toContain('sm:hidden');
   });
 
-  it('has animate-pulse class for attention', () => {
+  it('has animate-pulse class on icon for attention', () => {
     const { container } = render(<LandscapeBanner message="Test" />);
-    const banner = container.firstElementChild;
-    expect(banner?.className).toContain('animate-pulse');
+    const icon = container.querySelector('svg');
+    expect(icon?.getAttribute('class')).toContain('animate-pulse');
   });
 });

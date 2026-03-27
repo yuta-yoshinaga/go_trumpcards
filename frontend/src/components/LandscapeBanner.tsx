@@ -7,7 +7,7 @@ interface LandscapeBannerProps {
 /** Banner suggesting landscape orientation on small portrait screens. */
 export function LandscapeBanner({ message }: LandscapeBannerProps) {
   return (
-    <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-yellow-500/90 text-black text-sm font-medium animate-pulse">
+    <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-yellow-500/90 text-black text-sm font-medium">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="20"
@@ -19,7 +19,7 @@ export function LandscapeBanner({ message }: LandscapeBannerProps) {
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
-        className="flex-shrink-0"
+        className="flex-shrink-0 animate-pulse"
       >
         <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
         <line x1="12" y1="18" x2="12.01" y2="18" />

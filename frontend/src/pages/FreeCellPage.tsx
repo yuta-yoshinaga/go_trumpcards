@@ -229,7 +229,7 @@ function FreeCellPageContent() {
             {state.tableau.map((col: (Card | null)[], colIdx: number) => (
               <div
                 key={`col-${colIdx.toString()}`}
-                className={isMobile ? 'flex-shrink-0' : 'flex-1'}
+                className="flex-shrink-0 sm:flex-1"
                 style={isMobile ? { width: solitaireMinColWidth } : undefined}
               >
                 <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
