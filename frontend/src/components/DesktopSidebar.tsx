@@ -122,15 +122,24 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
               gameRoutes
                 .filter((r) => filteredPaths.has(r.path))
                 .map(({ path, labelKey: routeLabel, icon }) => (
-                  <Link
-                    key={path}
-                    to={path}
-                    aria-current={pathname === path ? 'page' : undefined}
-                    className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors ${pathname === path ? 'bg-blue-600 text-white' : 'text-gray-200 hover:bg-white/10'}`}
-                  >
-                    <span aria-hidden="true">{icon}</span>
-                    {t(routeLabel)}
-                  </Link>
+                  <div key={path} className="flex items-center gap-0.5">
+                    <Link
+                      to={path}
+                      aria-current={pathname === path ? 'page' : undefined}
+                      className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-blue-600 text-white' : 'text-gray-200 hover:bg-white/10'}`}
+                    >
+                      <span aria-hidden="true">{icon}</span>
+                      {t(routeLabel)}
+                    </Link>
+                    <button
+                      type="button"
+                      aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
+                      onClick={() => toggleFavorite(path)}
+                      className="text-yellow-400 w-6 h-6 flex items-center justify-center text-xs shrink-0 hover:scale-110 transition-transform"
+                    >
+                      {isFavorite(path) ? '★' : '☆'}
+                    </button>
+                  </div>
                 ))
             )}
           </div>

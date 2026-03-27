@@ -282,7 +282,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
             )}
           </div>
         ) : (
-          <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3 lg:flex-nowrap lg:gap-1">
+          <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3">
             {gameCategories.map(({ labelKey, icon: catIcon, routes }) => {
               const hasActivePage = routes.some(({ path }) => path === pathname);
               return (
@@ -297,10 +297,10 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
                     }
                   }}
                 >
-                  <summary className="text-gray-300 text-xs uppercase tracking-wider px-1 py-2 cursor-pointer select-none min-h-[44px] flex items-center gap-1 sm:cursor-default sm:py-0 sm:min-h-0 lg:cursor-pointer lg:py-2 lg:min-h-[44px] lg:hover:text-white lg:transition-colors shrink-0">
+                  <summary className="text-gray-300 text-xs uppercase tracking-wider px-1 py-2 cursor-pointer select-none min-h-[44px] flex items-center gap-1 sm:cursor-default sm:py-0 sm:min-h-0 shrink-0">
                     <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
                   </summary>
-                  <div className="nav-dropdown flex flex-col gap-1 pl-2 pb-1 sm:flex-row sm:pl-0 sm:pb-0 lg:flex-col">
+                  <div className="nav-dropdown flex flex-col gap-1 pl-2 pb-1 sm:flex-row sm:pl-0 sm:pb-0">
                     {routes.map(({ path, labelKey: routeLabel, icon }) => (
                       <div key={path} className="flex items-center gap-1">
                         <Link

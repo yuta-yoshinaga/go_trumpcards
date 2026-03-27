@@ -175,18 +175,18 @@ describe('DesktopSidebar', () => {
   describe('SoundToggle', () => {
     it('does not render when props not provided', () => {
       renderSidebar();
-      expect(screen.queryByRole('button', { name: 'サウンドをオフにする' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: i18n.t('sound.mute') })).not.toBeInTheDocument();
     });
 
     it('renders when soundMuted and onSoundToggle are provided', () => {
       renderSidebar('/', { soundMuted: false, onSoundToggle: vi.fn() });
-      expect(screen.getByRole('button', { name: 'サウンドをオフにする' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: i18n.t('sound.mute') })).toBeInTheDocument();
     });
 
     it('calls onSoundToggle when clicked', () => {
       const onSoundToggle = vi.fn();
       renderSidebar('/', { soundMuted: false, onSoundToggle });
-      fireEvent.click(screen.getByRole('button', { name: 'サウンドをオフにする' }));
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('sound.mute') }));
       expect(onSoundToggle).toHaveBeenCalledTimes(1);
     });
   });
