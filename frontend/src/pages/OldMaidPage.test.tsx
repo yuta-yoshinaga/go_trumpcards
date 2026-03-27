@@ -187,14 +187,23 @@ describe('OldMaidPage', () => {
     );
   });
 
-  it('settings dialog closes on cancel without resetting', async () => {
+  it('settings dialog closes on cancel without resetting and reverts changes', async () => {
     await startGame();
     fireEvent.click(screen.getByRole('button', { name: '設定' }));
-    expect(screen.getByText('Old Maid 設定')).toBeInTheDocument();
+    // Change mode to 1 in the dialog
+    const radios = screen.getAllByRole('radio');
+    fireEvent.click(radios[1]);
+    expect(radios[1]).toBeChecked();
+    // Cancel
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
     expect(screen.queryByText('Old Maid 設定')).not.toBeInTheDocument();
     expect(mockExec).not.toHaveBeenCalled();
+    // Reopen dialog: mode should be reverted to 0 (original)
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
+    const radiosAfter = screen.getAllByRole('radio');
+    expect(radiosAfter[0]).toBeChecked();
+    expect(radiosAfter[1]).not.toBeChecked();
   });
 
   it('settings dialog closes on apply', async () => {

@@ -214,6 +214,7 @@ export function useOldMaidGame() {
     setupMemoryAI,
     setupHesitation,
     setupMetaAI,
+    gameSettings,
     suspectPins,
     setSuspectPins,
     shakeKey,

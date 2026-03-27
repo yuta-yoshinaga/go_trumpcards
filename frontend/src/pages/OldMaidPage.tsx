@@ -84,6 +84,7 @@ function OldMaidPageContent() {
     setupMemoryAI,
     setupHesitation,
     setupMetaAI,
+    gameSettings,
     suspectPins,
     setSuspectPins,
     shakeKey,
@@ -102,6 +103,16 @@ function OldMaidPageContent() {
   } = useOldMaidGame();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const syncSetupFromSettings = () => {
+    if (gameSettings) {
+      setSetupMode(gameSettings.mode);
+      setSetupStrategy(gameSettings.cpuPlacementStrategy);
+      setSetupMemoryAI(gameSettings.cpuMemoryAI);
+      setSetupHesitation(gameSettings.cpuHesitationEnabled);
+      setSetupMetaAI(gameSettings.cpuMetaAI);
+    }
+  };
 
   const { cardWidth } = useCardDimensions();
 
@@ -280,7 +291,10 @@ function OldMaidPageContent() {
             type="button"
             className={`${btnSecondary} min-w-[80px]`}
             disabled={loading}
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => {
+              syncSetupFromSettings();
+              setSettingsOpen(true);
+            }}
           >
             {t('button.settings')}
           </button>
@@ -337,7 +351,10 @@ function OldMaidPageContent() {
           setSettingsOpen(false);
           handleStart();
         }}
-        onClose={() => setSettingsOpen(false)}
+        onClose={() => {
+          syncSetupFromSettings();
+          setSettingsOpen(false);
+        }}
       />
     </div>
   );

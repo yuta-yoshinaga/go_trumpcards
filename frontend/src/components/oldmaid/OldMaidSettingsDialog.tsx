@@ -45,7 +45,8 @@ export function OldMaidSettingsDialog({
     if (!open) return;
     triggerRef.current = document.activeElement;
 
-    const dialog = dialogRef.current as HTMLElement;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
     const focusable = getFocusableElements(dialog);
     if (focusable.length === 0) return;
 
