@@ -31,7 +31,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
         ja: i18n.t(route.labelKey, { lng: 'ja', ns: 'common' }).toLowerCase(),
         en: i18n.t(route.labelKey, { lng: 'en', ns: 'common' }).toLowerCase(),
       })),
-    [i18n.t],
+    [i18n],
   );
 
   /** Filter game routes by bilingual name match. */
