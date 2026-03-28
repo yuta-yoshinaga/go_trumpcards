@@ -20,6 +20,7 @@ import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { cardAlt } from '../utils/cardAlt';
 import { gameTheme } from '../styles/gameTheme';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -169,6 +170,7 @@ function MemoryPageContent() {
                 type="button"
                 key={`board-${idx.toString()}`}
                 data-testid={`board-${idx.toString()}`}
+                aria-label={bc.faceUp && bc.card ? cardAlt(bc.card) : t('cardFaceDown', { position: idx + 1 })}
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
                 className={`memory-card relative aspect-[2/3] lg:aspect-auto rounded border ${focusRingWhite} ${
