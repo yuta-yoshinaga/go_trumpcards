@@ -481,15 +481,35 @@ func (b *Baccarat) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// baccaratMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const baccaratMaxSliceLen = 1000
+
 // UnmarshalJSON implements json.Unmarshaler.
 func (b *Baccarat) UnmarshalJSON(data []byte) error {
 	var j baccaratJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
+	// Validate slice sizes to mitigate DoS from oversized arrays.
+	if len(j.PlayerHand) > baccaratMaxSliceLen || len(j.BankerHand) > baccaratMaxSliceLen ||
+		len(j.ActionLog) > baccaratMaxSliceLen || len(j.History) > baccaratMaxSliceLen ||
+		len(j.SideBetResults) > baccaratMaxSliceLen {
+		return fmt.Errorf("baccarat: input array exceeds maximum allowed size")
+	}
+
 	b.trumpCards = j.TrumpCards
+	if b.trumpCards == nil {
+		b.trumpCards = NewTrumpCards(0)
+	}
 	b.playerHand = j.PlayerHand
+	if b.playerHand == nil {
+		b.playerHand = make([]*Card, 0)
+	}
 	b.bankerHand = j.BankerHand
+	if b.bankerHand == nil {
+		b.bankerHand = make([]*Card, 0)
+	}
 	if j.Chips != nil {
 		b.chips = *j.Chips
 	}
@@ -500,9 +520,18 @@ func (b *Baccarat) UnmarshalJSON(data []byte) error {
 	b.result = j.Result
 	b.payout = j.Payout
 	b.actionLog = j.ActionLog
+	if b.actionLog == nil {
+		b.actionLog = make([]*ActionLogEntry, 0)
+	}
 	b.history = j.History
+	if b.history == nil {
+		b.history = make([]int, 0)
+	}
 	b.playerPairBet = j.PlayerPairBet
 	b.bankerPairBet = j.BankerPairBet
 	b.sideBetResults = j.SideBetResults
+	if b.sideBetResults == nil {
+		b.sideBetResults = make([]*BacSideBetResult, 0)
+	}
 	return nil
 }

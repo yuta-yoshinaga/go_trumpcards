@@ -96,7 +96,11 @@ func (rp *RankedGamePlayer) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	rp.GamePlayer = j.GamePlayer
+	if j.GamePlayer != nil {
+		rp.GamePlayer = j.GamePlayer
+	} else {
+		rp.GamePlayer = NewGamePlayer(false)
+	}
 	rp.rank = j.Rank
 	return nil
 }

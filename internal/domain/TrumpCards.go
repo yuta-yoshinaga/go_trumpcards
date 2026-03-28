@@ -183,6 +183,9 @@ func (t *TrumpCards) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	t.deck = j.Deck
+	if t.deck == nil {
+		t.deck = make([]*Card, 0)
+	}
 	t.deckDrawCnt = j.DeckDrawCnt
 	t.deckCnt = j.DeckCnt
 	return nil

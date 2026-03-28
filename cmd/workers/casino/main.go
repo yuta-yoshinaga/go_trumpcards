@@ -3,6 +3,8 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/syumai/workers"
@@ -34,15 +36,22 @@ func main() {
 			new(presenter.BaccaratWebPresenter),
 		)
 	}
-	baccaratKV := controller.NewKVSessionProvider[usecase.BaccaratInteractorIF](
+	baccaratKV, err := controller.NewKVSessionProvider[usecase.BaccaratInteractorIF](
 		"GAME_SESSIONS", "baccarat:",
 		func(bi usecase.BaccaratInteractorIF) ([]byte, error) {
-			return bi.(*usecase.BaccaratInteractor).Snapshot()
+			snap, ok := bi.(interface{ Snapshot() ([]byte, error) })
+			if !ok {
+				return nil, fmt.Errorf("interactor does not support snapshotting")
+			}
+			return snap.Snapshot()
 		},
 		func(data []byte) (usecase.BaccaratInteractorIF, error) {
 			return usecase.RestoreBaccaratInteractor(data, new(presenter.BaccaratWebPresenter))
 		},
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 	bcc := controller.NewBaccaratWebControllerWithProvider(baccaratKV, baccaratFactory)
 	mux.HandleFunc("/baccarat/exec", bcc.Exec)
 

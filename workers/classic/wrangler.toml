@@ -2,6 +2,7 @@ name = "go-trumpcards-classic"
 main = "./build/worker.mjs"
 compatibility_date = "2024-09-23"
 
+# Placeholder for Phase 2+: KV session persistence (not yet wired in code)
 [[kv_namespaces]]
 binding = "GAME_SESSIONS"
 id = "TBD_CLASSIC_KV_ID"
