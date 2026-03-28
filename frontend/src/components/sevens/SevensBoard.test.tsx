@@ -157,7 +157,7 @@ describe('SevensBoard', () => {
   it('grid has minimum width for readability on mobile', () => {
     render(<SevensBoard {...defaultProps} />);
     const grid = screen.getByTestId('sevens-grid') as HTMLElement;
-    expect(grid.className).toContain('min-w-[480px]');
+    expect(grid).toHaveStyle({ minWidth: '480px' });
   });
 
   it('renders ScrollFadeHint on mobile', () => {

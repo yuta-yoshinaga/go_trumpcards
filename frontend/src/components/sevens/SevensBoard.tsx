@@ -43,8 +43,8 @@ function Board({
       <div className="relative">
         <div className="overflow-x-auto">
           <div
-            className="grid gap-y-1 gap-x-0.5 min-w-[480px]"
-            style={{ gridTemplateColumns: 'auto repeat(13, 1fr)' }}
+            className="grid gap-y-1 gap-x-0.5"
+            style={{ minWidth: '480px', gridTemplateColumns: 'auto repeat(13, 1fr)' }}
             data-testid="sevens-grid"
           >
             {SUITS.map(({ idx, name, label, color }) => (
