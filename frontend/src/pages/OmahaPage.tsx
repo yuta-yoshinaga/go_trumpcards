@@ -17,11 +17,12 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { OmahaSkeleton } from '../components/skeleton/OmahaSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -188,6 +189,7 @@ function OmahaPageContent() {
   const isAddonPhase = phase === OmahaPhase.REBUY && state?.rebuyPhaseType === OmahaRebuyPhaseType.ADDON;
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
+  const isLargeDesktop = useIsLargeDesktop();
   const cpuPlayers = useMemo(() => state?.players?.filter((player) => !player.isHuman) ?? [], [state?.players]);
 
   const actionBindings = useMemo(
@@ -239,29 +241,26 @@ function OmahaPageContent() {
 
       {/* Scrollable: community cards + CPU players */}
       <div className={`relative flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Community cards (sticky on mobile) */}
-        <div
-          className={`mb-4 ${isMobile ? 'sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm' : ''}`}
-          data-tutorial="oh-community-cards"
-        >
-          <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
-          <div className="flex flex-wrap gap-2">
-            {state?.communityCards?.length
-              ? state.communityCards.map((card) => (
-                  <AnimatedCard
-                    key={`${card.design}-${card.value}`}
-                    card={card}
-                    width={cardWidth}
-                    style={{ border: '3px solid transparent' }}
-                  />
-                ))
-              : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-          </div>
-        </div>
-
-        {/* CPU players (accordion, collapsed on mobile) */}
-        <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="oh-cpu-area">
-          {cpuPlayers.map((player) => (
+        {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
+        {(() => {
+          const communityCardsContent = (
+            <>
+              <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
+              <div className="flex flex-wrap gap-2">
+                {state?.communityCards?.length
+                  ? state.communityCards.map((card) => (
+                      <AnimatedCard
+                        key={`${card.design}-${card.value}`}
+                        card={card}
+                        width={cardWidth}
+                        style={{ border: '3px solid transparent' }}
+                      />
+                    ))
+                  : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+              </div>
+            </>
+          );
+          const cpuPlayerCards = cpuPlayers.map((player) => (
             <CpuPlayerCard
               key={player.id}
               player={player}
@@ -274,8 +273,33 @@ function OmahaPageContent() {
                 ) : undefined
               }
             />
-          ))}
-        </CpuAccordion>
+          ));
+
+          if (isLargeDesktop) {
+            return (
+              <PokerTableLayout
+                communityCardsTutorial="oh-community-cards"
+                cpuAreaTutorial="oh-cpu-area"
+                communityCards={communityCardsContent}
+                cpuPlayers={cpuPlayerCards}
+              />
+            );
+          }
+
+          return (
+            <>
+              <div
+                className={`mb-4 ${isMobile ? 'sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm' : ''}`}
+                data-tutorial="oh-community-cards"
+              >
+                {communityCardsContent}
+              </div>
+              <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="oh-cpu-area">
+                {cpuPlayerCards}
+              </CpuAccordion>
+            </>
+          );
+        })()}
 
         {/* CPU actions: toast on mobile, inline log on desktop */}
         {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
