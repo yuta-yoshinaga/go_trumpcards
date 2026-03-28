@@ -11,6 +11,15 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { omaha: vi.fn() },
 }));
 
+const mockUseIsLargeDesktop = vi.fn<() => boolean>().mockReturnValue(false);
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsLargeDesktop: () => mockUseIsLargeDesktop(),
+  };
+});
+
 const mockExec = vi.mocked(omahaApi.exec);
 
 /** Helper: base human player */
@@ -250,6 +259,7 @@ const endState: OmahaResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(initState);
+  mockUseIsLargeDesktop.mockReturnValue(false);
 });
 
 describe('OmahaPage', () => {
@@ -1451,5 +1461,13 @@ describe('OmahaPage', () => {
     mockExec.mockResolvedValue(initState);
     renderWithProviders(<OmahaPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('renders poker table layout (no accordion) on large desktop', async () => {
+    mockUseIsLargeDesktop.mockReturnValue(true);
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    expect(screen.queryByTestId('cpu-accordion')).not.toBeInTheDocument();
   });
 });
