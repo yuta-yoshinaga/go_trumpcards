@@ -232,7 +232,6 @@ function FreeCellPageContent() {
                 className="flex-shrink-0 sm:flex-1"
                 style={isMobile ? { width: solitaireMinColWidth } : undefined}
               >
-                <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
                 <div className="relative" style={{ minHeight: cardHeight }}>
                   {col.length === 0 ? (
                     <button

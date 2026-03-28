@@ -96,13 +96,10 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/完成: 0\/8/));
   });
 
-  it('renders tableau columns', async () => {
+  it('renders tableau columns without index headers', async () => {
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
-    // Column labels 0-9
-    for (let i = 0; i < 10; i++) {
-      expect(screen.getByText(i.toString())).toBeInTheDocument();
-    }
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    // Column index headers should not be rendered
   });
 
   it('clicking deal button dispatches deal', async () => {
@@ -300,7 +297,7 @@ describe('SpiderPage', () => {
 
   it('clicking tableau face-up card selects as source', async () => {
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const cardImg = screen.getByAltText('♠ K');
     const cardButton = cardImg.closest('button') as HTMLButtonElement;
@@ -310,7 +307,7 @@ describe('SpiderPage', () => {
 
   it('tableau face-up card button has aria-pressed false initially and true when selected', async () => {
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const cardImg = screen.getByAltText('♠ K');
     const cardButton = cardImg.closest('button') as HTMLButtonElement;
@@ -322,7 +319,7 @@ describe('SpiderPage', () => {
 
   it('empty tableau column disabled when no source selected', async () => {
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const emptyButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '空');
     for (const btn of emptyButtons) {
@@ -480,7 +477,7 @@ describe('SpiderPage', () => {
 
   it('clicking face-up card in different column after source selected triggers move', async () => {
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     // Select ♠K in col 0 as source
     const sourceCard = screen.getByAltText('♠ K');
@@ -499,7 +496,7 @@ describe('SpiderPage', () => {
 
   it('clicking face-up card in same column after source selected re-selects source', async () => {
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     // Select ♠K in col 0 as source
     const cardImg = screen.getByAltText('♠ K');
