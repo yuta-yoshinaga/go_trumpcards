@@ -144,4 +144,21 @@ describe('CpuPlayerCard', () => {
     );
     expect(screen.getAllByAltText('カード裏面')).toHaveLength(3);
   });
+
+  it('shows compact text count when compactFaceDown is true and cards are face-down', () => {
+    render(
+      <CpuPlayerCard player={makePlayer()} showCards={false} faceDownCount={5} showHandName={false} compactFaceDown />,
+    );
+    const compact = screen.getByTestId('compact-card-count');
+    expect(compact).toHaveTextContent('5');
+    expect(screen.queryByAltText('カード裏面')).not.toBeInTheDocument();
+  });
+
+  it('shows face-up cards even when compactFaceDown is true', () => {
+    render(
+      <CpuPlayerCard player={makePlayer()} showCards={true} faceDownCount={5} showHandName={false} compactFaceDown />,
+    );
+    expect(screen.queryByTestId('compact-card-count')).not.toBeInTheDocument();
+    expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+  });
 });

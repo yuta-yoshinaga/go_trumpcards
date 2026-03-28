@@ -19,6 +19,7 @@
   "lowballMode": "2-7 Lowball Mode",
   "cardSelected": "(selected for exchange)",
   "settings": {
+    "title": "Settings",
     "cpuMetaAI": "Meta-AI (CPU learns your play style)"
   },
   "tutorial": {
