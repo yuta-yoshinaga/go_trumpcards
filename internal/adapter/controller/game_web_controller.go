@@ -10,20 +10,32 @@ import (
 type GameWebController[I any, P WebInput, O any] struct {
 	baseController
 	factory    func() I
-	store      *SessionStore[I]
+	provider   SessionProvider[I]
 	newDefault func(string) O
 	dispatch   func(bc *baseController, w http.ResponseWriter, interactor I, param P, newDefault func(string) O) bool
 }
 
-// NewGameWebController creates a GameWebController.
+// NewGameWebController creates a GameWebController with the default in-memory
+// session provider.
 func NewGameWebController[I any, P WebInput, O any](
+	factory func() I,
+	newDefault func(string) O,
+	dispatch func(bc *baseController, w http.ResponseWriter, interactor I, param P, newDefault func(string) O) bool,
+) *GameWebController[I, P, O] {
+	return NewGameWebControllerWithProvider[I, P, O](NewMemorySessionProvider[I](), factory, newDefault, dispatch)
+}
+
+// NewGameWebControllerWithProvider creates a GameWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewGameWebControllerWithProvider[I any, P WebInput, O any](
+	provider SessionProvider[I],
 	factory func() I,
 	newDefault func(string) O,
 	dispatch func(bc *baseController, w http.ResponseWriter, interactor I, param P, newDefault func(string) O) bool,
 ) *GameWebController[I, P, O] {
 	return &GameWebController[I, P, O]{
 		factory:    factory,
-		store:      NewSessionStore[I](),
+		provider:   provider,
 		newDefault: newDefault,
 		dispatch:   dispatch,
 	}
@@ -31,14 +43,14 @@ func NewGameWebController[I any, P WebInput, O any](
 
 // Exec handles an incoming game request.
 func (gwc *GameWebController[I, P, O]) Exec(w http.ResponseWriter, r *http.Request) {
-	execWithSession(&gwc.baseController, w, r, gwc.store, gwc.factory,
+	execWithSession(&gwc.baseController, w, r, gwc.provider, gwc.factory,
 		func(msg string) any { return gwc.newDefault(msg) },
 		func(w http.ResponseWriter, interactor I, param P) bool {
 			return gwc.dispatch(&gwc.baseController, w, interactor, param, gwc.newDefault)
 		})
 }
 
-// Stop stops the background cleanup goroutine of the session store.
+// Stop stops the background cleanup goroutine of the session provider.
 func (gwc *GameWebController[I, P, O]) Stop() {
-	gwc.store.Stop()
+	gwc.provider.Stop()
 }

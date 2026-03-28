@@ -56,7 +56,7 @@ func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 	bjMock := &mockBlackJackIF{}
 	factory := func() usecase.BlackJackInteractorIF { return bjMock }
 	ctrl := NewBlackJackWebController(factory)
-	defer ctrl.store.Stop()
+	defer ctrl.provider.Stop()
 
 	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
@@ -83,7 +83,7 @@ func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 		bjMock2 := &mockBlackJackIF{}
 		factory2 := func() usecase.BlackJackInteractorIF { return bjMock2 }
 		ctrl2 := NewBlackJackWebController(factory2)
-		defer ctrl2.store.Stop()
+		defer ctrl2.provider.Stop()
 		fw := newFailWriter()
 		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-bj-unsupported"}`)
 		ctrl2.Exec(fw, req)
@@ -114,7 +114,7 @@ func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 	pkMock := &mockPokerIF{}
 	factory := func() usecase.PokerInteractorIF { return pkMock }
 	ctrl := NewPokerWebController(factory)
-	defer ctrl.store.Stop()
+	defer ctrl.provider.Stop()
 
 	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
@@ -141,7 +141,7 @@ func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 		pkMock2 := &mockPokerIF{}
 		factory2 := func() usecase.PokerInteractorIF { return pkMock2 }
 		ctrl2 := NewPokerWebController(factory2)
-		defer ctrl2.store.Stop()
+		defer ctrl2.provider.Stop()
 		fw := newFailWriter()
 		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-pk-unsupported"}`)
 		ctrl2.Exec(fw, req)
@@ -169,7 +169,7 @@ func TestOldMaidWebController_WriteJsonErrors(t *testing.T) {
 	omMock := &mockOldMaidIF{}
 	factory := func() usecase.OldMaidInteractorIF { return omMock }
 	ctrl := NewOldMaidWebController(factory)
-	defer ctrl.store.Stop()
+	defer ctrl.provider.Stop()
 
 	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
@@ -196,7 +196,7 @@ func TestOldMaidWebController_WriteJsonErrors(t *testing.T) {
 		omMock2 := &mockOldMaidIF{}
 		factory2 := func() usecase.OldMaidInteractorIF { return omMock2 }
 		ctrl2 := NewOldMaidWebController(factory2)
-		defer ctrl2.store.Stop()
+		defer ctrl2.provider.Stop()
 		fw := newFailWriter()
 		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-om-unsupported"}`)
 		ctrl2.Exec(fw, req)
@@ -227,7 +227,7 @@ func TestDaifugoWebController_WriteJsonErrors(t *testing.T) {
 	dgMock := &mockDaifugoIF{}
 	factory := func() usecase.DaifugoInteractorIF { return dgMock }
 	ctrl := NewDaifugoWebController(factory)
-	defer ctrl.store.Stop()
+	defer ctrl.provider.Stop()
 
 	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
@@ -254,7 +254,7 @@ func TestDaifugoWebController_WriteJsonErrors(t *testing.T) {
 		dgMock2 := &mockDaifugoIF{}
 		factory2 := func() usecase.DaifugoInteractorIF { return dgMock2 }
 		ctrl2 := NewDaifugoWebController(factory2)
-		defer ctrl2.store.Stop()
+		defer ctrl2.provider.Stop()
 		fw := newFailWriter()
 		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-dg-unsupported"}`)
 		ctrl2.Exec(fw, req)
@@ -280,7 +280,7 @@ func TestSevensWebController_WriteJsonErrors(t *testing.T) {
 	svMock := &mockSevensIF{}
 	factory := func() usecase.SevensInteractorIF { return svMock }
 	ctrl := NewSevensWebController(factory)
-	defer ctrl.store.Stop()
+	defer ctrl.provider.Stop()
 
 	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
@@ -307,7 +307,7 @@ func TestSevensWebController_WriteJsonErrors(t *testing.T) {
 		svMock2 := &mockSevensIF{}
 		factory2 := func() usecase.SevensInteractorIF { return svMock2 }
 		ctrl2 := NewSevensWebController(factory2)
-		defer ctrl2.store.Stop()
+		defer ctrl2.provider.Stop()
 		fw := newFailWriter()
 		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-sv-unsupported"}`)
 		ctrl2.Exec(fw, req)
@@ -343,7 +343,7 @@ func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 	dwMock := &mockDoubtIF{}
 	factory := func() usecase.DoubtInteractorIF { return dwMock }
 	ctrl := NewDoubtWebController(factory)
-	defer ctrl.store.Stop()
+	defer ctrl.provider.Stop()
 
 	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
@@ -370,7 +370,7 @@ func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 		dwMock2 := &mockDoubtIF{}
 		factory2 := func() usecase.DoubtInteractorIF { return dwMock2 }
 		ctrl2 := NewDoubtWebController(factory2)
-		defer ctrl2.store.Stop()
+		defer ctrl2.provider.Stop()
 		fw := newFailWriter()
 		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-dw-unsupported"}`)
 		ctrl2.Exec(fw, req)
@@ -404,7 +404,7 @@ func TestHoldemWebController_WriteJsonErrors(t *testing.T) {
 	hmMock := &mockHoldemIF{}
 	factory := func() usecase.HoldemInteractorIF { return hmMock }
 	ctrl := NewHoldemWebController(factory)
-	defer ctrl.store.Stop()
+	defer ctrl.provider.Stop()
 
 	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
@@ -431,7 +431,7 @@ func TestHoldemWebController_WriteJsonErrors(t *testing.T) {
 		hmMock2 := &mockHoldemIF{}
 		factory2 := func() usecase.HoldemInteractorIF { return hmMock2 }
 		ctrl2 := NewHoldemWebController(factory2)
-		defer ctrl2.store.Stop()
+		defer ctrl2.provider.Stop()
 		fw := newFailWriter()
 		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-hm-unsupported"}`)
 		ctrl2.Exec(fw, req)

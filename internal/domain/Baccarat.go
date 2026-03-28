@@ -1,6 +1,9 @@
 package domain
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // バカラフェーズ定数
 const (
@@ -437,3 +440,69 @@ func (b *Baccarat) SetPlayerPairBet(amount int) { b.playerPairBet = amount }
 
 // SetBankerPairBet バンカーペアベット額設定（テスト用）
 func (b *Baccarat) SetBankerPairBet(amount int) { b.bankerPairBet = amount }
+
+// baccaratJSON is the JSON wire format for Baccarat.
+type baccaratJSON struct {
+	TrumpCards     *TrumpCards         `json:"tc"`
+	PlayerHand     []*Card             `json:"ph"`
+	BankerHand     []*Card             `json:"bh"`
+	Chips          *ChipHolder         `json:"ch"`
+	BetAmount      int                 `json:"ba"`
+	BetType        int                 `json:"bt"`
+	Phase          int                 `json:"ps"`
+	GameEndFlag    bool                `json:"ge"`
+	Result         GameResult          `json:"rs"`
+	Payout         int                 `json:"po"`
+	ActionLog      []*ActionLogEntry   `json:"al"`
+	History        []int               `json:"hi"`
+	PlayerPairBet  int                 `json:"pp"`
+	BankerPairBet  int                 `json:"bp"`
+	SideBetResults []*BacSideBetResult `json:"sb"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (b *Baccarat) MarshalJSON() ([]byte, error) {
+	return json.Marshal(baccaratJSON{
+		TrumpCards:     b.trumpCards,
+		PlayerHand:     b.playerHand,
+		BankerHand:     b.bankerHand,
+		Chips:          &b.chips,
+		BetAmount:      b.betAmount,
+		BetType:        b.betType,
+		Phase:          b.phase,
+		GameEndFlag:    b.gameEndFlag,
+		Result:         b.result,
+		Payout:         b.payout,
+		ActionLog:      b.actionLog,
+		History:        b.history,
+		PlayerPairBet:  b.playerPairBet,
+		BankerPairBet:  b.bankerPairBet,
+		SideBetResults: b.sideBetResults,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (b *Baccarat) UnmarshalJSON(data []byte) error {
+	var j baccaratJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	b.trumpCards = j.TrumpCards
+	b.playerHand = j.PlayerHand
+	b.bankerHand = j.BankerHand
+	if j.Chips != nil {
+		b.chips = *j.Chips
+	}
+	b.betAmount = j.BetAmount
+	b.betType = j.BetType
+	b.phase = j.Phase
+	b.gameEndFlag = j.GameEndFlag
+	b.result = j.Result
+	b.payout = j.Payout
+	b.actionLog = j.ActionLog
+	b.history = j.History
+	b.playerPairBet = j.PlayerPairBet
+	b.bankerPairBet = j.BankerPairBet
+	b.sideBetResults = j.SideBetResults
+	return nil
+}
