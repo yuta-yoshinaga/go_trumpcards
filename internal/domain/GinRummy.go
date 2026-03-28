@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -1007,4 +1008,99 @@ func copyMelds(melds [][]*Card) [][]*Card {
 	result := make([][]*Card, len(melds))
 	copy(result, melds)
 	return result
+}
+
+// ginRummyJSON is the JSON wire format for GinRummy.
+type ginRummyJSON struct {
+	TrumpCards       *TrumpCards       `json:"tc"`
+	Players          []*GinRummyPlayer `json:"pl"`
+	Config           GinRummyConfig    `json:"cf"`
+	Phase            GinRummyPhase     `json:"ps"`
+	CurrentPlayerIdx int               `json:"ci"`
+	DiscardPile      []*Card           `json:"dp"`
+	DrawPile         []*Card           `json:"wp"`
+	GameEndFlag      bool              `json:"ge"`
+	WinnerIdx        int               `json:"wi"`
+	RoundNumber      int               `json:"rn"`
+	ActionLog        []*ActionLogEntry `json:"al"`
+	KnockerIdx       int               `json:"ki"`
+	KnockerMelds     [][]*Card         `json:"km"`
+	KnockerDeadwood  []*Card           `json:"kd"`
+	IsGin            bool              `json:"ig"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (g *GinRummy) MarshalJSON() ([]byte, error) {
+	return json.Marshal(ginRummyJSON{
+		TrumpCards:       g.trumpCards,
+		Players:          g.players,
+		Config:           g.config,
+		Phase:            g.phase,
+		CurrentPlayerIdx: g.currentPlayerIdx,
+		DiscardPile:      g.discardPile,
+		DrawPile:         g.drawPile,
+		GameEndFlag:      g.gameEndFlag,
+		WinnerIdx:        g.winnerIdx,
+		RoundNumber:      g.roundNumber,
+		ActionLog:        g.actionLog,
+		KnockerIdx:       g.knockerIdx,
+		KnockerMelds:     g.knockerMelds,
+		KnockerDeadwood:  g.knockerDeadwood,
+		IsGin:            g.isGin,
+	})
+}
+
+// ginRummyMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const ginRummyMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (g *GinRummy) UnmarshalJSON(data []byte) error {
+	var j ginRummyJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > ginRummyMaxSliceLen || len(j.DiscardPile) > ginRummyMaxSliceLen ||
+		len(j.DrawPile) > ginRummyMaxSliceLen || len(j.ActionLog) > ginRummyMaxSliceLen ||
+		len(j.KnockerMelds) > ginRummyMaxSliceLen || len(j.KnockerDeadwood) > ginRummyMaxSliceLen {
+		return fmt.Errorf("ginrummy: input array exceeds maximum allowed size")
+	}
+
+	g.trumpCards = j.TrumpCards
+	if g.trumpCards == nil {
+		g.trumpCards = NewTrumpCards(0)
+	}
+	g.players = j.Players
+	if g.players == nil {
+		g.players = make([]*GinRummyPlayer, 0)
+	}
+	g.config = j.Config
+	g.phase = j.Phase
+	g.currentPlayerIdx = j.CurrentPlayerIdx
+	g.discardPile = j.DiscardPile
+	if g.discardPile == nil {
+		g.discardPile = make([]*Card, 0)
+	}
+	g.drawPile = j.DrawPile
+	if g.drawPile == nil {
+		g.drawPile = make([]*Card, 0)
+	}
+	g.gameEndFlag = j.GameEndFlag
+	g.winnerIdx = j.WinnerIdx
+	g.roundNumber = j.RoundNumber
+	g.actionLog = j.ActionLog
+	if g.actionLog == nil {
+		g.actionLog = make([]*ActionLogEntry, 0)
+	}
+	g.knockerIdx = j.KnockerIdx
+	g.knockerMelds = j.KnockerMelds
+	if g.knockerMelds == nil {
+		g.knockerMelds = make([][]*Card, 0)
+	}
+	g.knockerDeadwood = j.KnockerDeadwood
+	if g.knockerDeadwood == nil {
+		g.knockerDeadwood = make([]*Card, 0)
+	}
+	g.isGin = j.IsGin
+	return nil
 }

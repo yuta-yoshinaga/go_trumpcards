@@ -15,7 +15,7 @@ const (
 
 // MemoryConfig 神経衰弱ゲーム設定
 type MemoryConfig struct {
-	CpuDifficulty MemoryCpuDifficulty
+	CpuDifficulty MemoryCpuDifficulty `json:"cd"`
 }
 
 // DefaultMemoryConfig デフォルト設定を返す

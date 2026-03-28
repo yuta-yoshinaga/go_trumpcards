@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -63,4 +65,18 @@ func (ipi *IndianPokerInteractor) GetConfig() domain.IndianPokerConfig {
 // ActionLog 棋譜を出力する
 func (ipi *IndianPokerInteractor) ActionLog() string {
 	return ipi.ipp.ActionLogOutput(ipi.ip)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (ipi *IndianPokerInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(ipi.ip)
+}
+
+// RestoreIndianPokerInteractor deserialises JSON into an IndianPokerInteractor.
+func RestoreIndianPokerInteractor(data []byte, ipp presenter.IndianPokerPresenter) (*IndianPokerInteractor, error) {
+	var ip domain.IndianPoker
+	if err := json.Unmarshal(data, &ip); err != nil {
+		return nil, err
+	}
+	return &IndianPokerInteractor{ip: &ip, ipp: ipp}, nil
 }

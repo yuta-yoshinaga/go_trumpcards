@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -82,4 +84,18 @@ func (di *DaifugoInteractor) runCpuTurns() {
 	for !di.dg.GetGameEndFlag() && !di.dg.IsHumanTurn() {
 		di.dg.CpuPlay()
 	}
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (di *DaifugoInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(di.dg)
+}
+
+// RestoreDaifugoInteractor deserialises JSON into a DaifugoInteractor.
+func RestoreDaifugoInteractor(data []byte, dgp presenter.DaifugoPresenter) (*DaifugoInteractor, error) {
+	var dg domain.Daifugo
+	if err := json.Unmarshal(data, &dg); err != nil {
+		return nil, err
+	}
+	return &DaifugoInteractor{dg: &dg, dgp: dgp}, nil
 }

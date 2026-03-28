@@ -63,6 +63,15 @@ func NewSpiderWebController(factory func() usecase.SpiderInteractorIF) *SpiderWe
 	return NewGameWebController(factory, newSpiderDefaultOutput, spiderDispatch)
 }
 
+// NewSpiderWebControllerWithProvider creates a SpiderWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewSpiderWebControllerWithProvider(
+	provider SessionProvider[usecase.SpiderInteractorIF],
+	factory func() usecase.SpiderInteractorIF,
+) *SpiderWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newSpiderDefaultOutput, spiderDispatch)
+}
+
 func newSpiderDefaultOutput(msg string) *SpiderWebOutput {
 	return &SpiderWebOutput{
 		Tableau:       make([][]*SpiderWebOutputTableauCard, 0),

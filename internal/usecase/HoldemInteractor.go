@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -109,4 +111,18 @@ func (hi *HoldemInteractor) ShowHand() string {
 // ActionLog 棋譜を出力する
 func (hi *HoldemInteractor) ActionLog() string {
 	return hi.hp.ActionLogOutput(hi.h)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (hi *HoldemInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(hi.h)
+}
+
+// RestoreHoldemInteractor deserialises JSON into a HoldemInteractor.
+func RestoreHoldemInteractor(data []byte, hp presenter.HoldemPresenter) (*HoldemInteractor, error) {
+	var h domain.Holdem
+	if err := json.Unmarshal(data, &h); err != nil {
+		return nil, err
+	}
+	return &HoldemInteractor{h: &h, hp: hp}, nil
 }

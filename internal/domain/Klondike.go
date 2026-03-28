@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -26,8 +27,8 @@ const KlondikeFoundationCnt = 4
 
 // KlondikeTableauCard タブロー上のカード
 type KlondikeTableauCard struct {
-	Card   *Card
-	FaceUp bool
+	Card   *Card `json:"c"`
+	FaceUp bool  `json:"f"`
 }
 
 // KlondikeHint ヒント
@@ -679,4 +680,87 @@ func (k *Klondike) appendLog(actionType, detail string, cards []*Card) {
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// klondikeJSON is the JSON wire format for Klondike.
+type klondikeJSON struct {
+	TrumpCards           *TrumpCards                                `json:"tc"`
+	Tableau              [KlondikeTableauCnt][]*KlondikeTableauCard `json:"tb"`
+	Stock                []*Card                                    `json:"st"`
+	Waste                []*Card                                    `json:"wa"`
+	Foundation           [KlondikeFoundationCnt][]*Card             `json:"fd"`
+	Phase                KlondikePhase                              `json:"ps"`
+	MoveCount            int                                        `json:"mc"`
+	ActionLog            []*ActionLogEntry                          `json:"al"`
+	DrawCount            int                                        `json:"dc"`
+	ScoringMode          KlondikeScoringMode                        `json:"sm"`
+	IsStalemate          bool                                       `json:"sl"`
+	NoProgressCycles     int                                        `json:"np"`
+	ProgressSinceRecycle bool                                       `json:"pr"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (k *Klondike) MarshalJSON() ([]byte, error) {
+	return json.Marshal(klondikeJSON{
+		TrumpCards:           k.trumpCards,
+		Tableau:              k.tableau,
+		Stock:                k.stock,
+		Waste:                k.waste,
+		Foundation:           k.foundation,
+		Phase:                k.phase,
+		MoveCount:            k.moveCount,
+		ActionLog:            k.actionLog,
+		DrawCount:            k.drawCount,
+		ScoringMode:          k.scoringMode,
+		IsStalemate:          k.isStalemate,
+		NoProgressCycles:     k.noProgressCycles,
+		ProgressSinceRecycle: k.progressSinceRecycle,
+	})
+}
+
+// klondikeMaxSliceLen caps slice sizes during deserialisation.
+const klondikeMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (k *Klondike) UnmarshalJSON(data []byte) error {
+	var j klondikeJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > klondikeMaxSliceLen || len(j.Waste) > klondikeMaxSliceLen ||
+		len(j.ActionLog) > klondikeMaxSliceLen {
+		return fmt.Errorf("klondike: input array exceeds maximum allowed size")
+	}
+
+	k.trumpCards = j.TrumpCards
+	if k.trumpCards == nil {
+		k.trumpCards = NewTrumpCards(0)
+	}
+	k.tableau = j.Tableau
+	k.stock = j.Stock
+	if k.stock == nil {
+		k.stock = make([]*Card, 0)
+	}
+	k.waste = j.Waste
+	if k.waste == nil {
+		k.waste = make([]*Card, 0)
+	}
+	k.foundation = j.Foundation
+	k.phase = j.Phase
+	k.moveCount = j.MoveCount
+	k.actionLog = j.ActionLog
+	if k.actionLog == nil {
+		k.actionLog = make([]*ActionLogEntry, 0)
+	}
+	k.drawCount = j.DrawCount
+	if k.drawCount == 0 {
+		k.drawCount = 1
+	}
+	// Undo history is not serialised; set to nil on restore.
+	k.history = nil
+	k.scoringMode = j.ScoringMode
+	k.isStalemate = j.IsStalemate
+	k.noProgressCycles = j.NoProgressCycles
+	k.progressSinceRecycle = j.ProgressSinceRecycle
+	return nil
 }

@@ -1,6 +1,10 @@
 package domain
 
-import "math/rand"
+import (
+	"encoding/json"
+	"fmt"
+	"math/rand"
+)
 
 // memoryCardEntry 記憶したカード1枚分の情報 (ボード上の位置と値)
 type memoryCardEntry struct {
@@ -106,4 +110,49 @@ func (p *MemoryPlayer) RemoveMemoryAt(position int) {
 // GetMemoryCount 記憶しているカード枚数を返す
 func (p *MemoryPlayer) GetMemoryCount() int {
 	return len(p.cardMemories)
+}
+
+// memoryPlayerJSON is the JSON wire format for MemoryPlayer.
+type memoryPlayerJSON struct {
+	GamePlayer *GamePlayer `json:"gp"`
+	PairCount  int         `json:"pc"`
+	Pairs      [][2]*Card  `json:"pa"`
+	// CPU memory (cardMemories) is intentionally omitted;
+	// CPU will re-learn after restore.
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p *MemoryPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(memoryPlayerJSON{
+		GamePlayer: p.GamePlayer,
+		PairCount:  p.pairCount,
+		Pairs:      p.pairs,
+	})
+}
+
+// memoryPlayerMaxSliceLen caps slice sizes during deserialisation.
+const memoryPlayerMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *MemoryPlayer) UnmarshalJSON(data []byte) error {
+	var j memoryPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Pairs) > memoryPlayerMaxSliceLen {
+		return fmt.Errorf("memoryPlayer: input array exceeds maximum allowed size")
+	}
+	if j.GamePlayer != nil {
+		p.GamePlayer = j.GamePlayer
+	} else {
+		p.GamePlayer = NewGamePlayer(false)
+	}
+	p.pairCount = j.PairCount
+	p.pairs = j.Pairs
+	if p.pairs == nil {
+		p.pairs = make([][2]*Card, 0)
+	}
+	// CPU memory is reset on restore; CPU will re-learn.
+	p.ResetMemory()
+	return nil
 }

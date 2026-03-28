@@ -132,6 +132,15 @@ func NewPokerWebController(factory func() usecase.PokerInteractorIF) *PokerWebCo
 	return NewGameWebController(factory, newPokerDefaultOutput, pokerDispatch)
 }
 
+// NewPokerWebControllerWithProvider creates a PokerWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewPokerWebControllerWithProvider(
+	provider SessionProvider[usecase.PokerInteractorIF],
+	factory func() usecase.PokerInteractorIF,
+) *PokerWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newPokerDefaultOutput, pokerDispatch)
+}
+
 func newPokerDefaultOutput(msg string) *PokerWebOutput {
 	return &PokerWebOutput{
 		Players:       make([]*PokerWebOutputPlayer, 0),

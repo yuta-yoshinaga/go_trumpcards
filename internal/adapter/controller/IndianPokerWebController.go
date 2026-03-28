@@ -114,6 +114,15 @@ func NewIndianPokerWebController(factory func() usecase.IndianPokerInteractorIF)
 	return NewGameWebController(factory, newIndianPokerDefaultOutput, indianPokerDispatch)
 }
 
+// NewIndianPokerWebControllerWithProvider creates an IndianPokerWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewIndianPokerWebControllerWithProvider(
+	provider SessionProvider[usecase.IndianPokerInteractorIF],
+	factory func() usecase.IndianPokerInteractorIF,
+) *IndianPokerWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newIndianPokerDefaultOutput, indianPokerDispatch)
+}
+
 func newIndianPokerDefaultOutput(msg string) *IndianPokerWebOutput {
 	return &IndianPokerWebOutput{
 		Players:       make([]*IndianPokerWebOutputPlayer, 0),

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -621,4 +622,62 @@ func (f *FreeCell) appendLog(actionType, detail string, cards []*Card) {
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// freeCellJSON is the JSON wire format for FreeCell.
+type freeCellJSON struct {
+	TrumpCards  *TrumpCards                    `json:"tc"`
+	Tableau     [FreeCellTableauCnt][]*Card    `json:"tb"`
+	FreeCells   [FreeCellCellCnt]*Card         `json:"fc"`
+	Foundation  [FreeCellFoundationCnt][]*Card `json:"fd"`
+	Phase       FreeCellPhase                  `json:"ps"`
+	MoveCount   int                            `json:"mc"`
+	ActionLog   []*ActionLogEntry              `json:"al"`
+	IsStalemate bool                           `json:"sm"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (f *FreeCell) MarshalJSON() ([]byte, error) {
+	return json.Marshal(freeCellJSON{
+		TrumpCards:  f.trumpCards,
+		Tableau:     f.tableau,
+		FreeCells:   f.freeCells,
+		Foundation:  f.foundation,
+		Phase:       f.phase,
+		MoveCount:   f.moveCount,
+		ActionLog:   f.actionLog,
+		IsStalemate: f.isStalemate,
+	})
+}
+
+// freeCellMaxSliceLen caps slice sizes during deserialisation.
+const freeCellMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (f *FreeCell) UnmarshalJSON(data []byte) error {
+	var j freeCellJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.ActionLog) > freeCellMaxSliceLen {
+		return fmt.Errorf("freeCell: input array exceeds maximum allowed size")
+	}
+
+	f.trumpCards = j.TrumpCards
+	if f.trumpCards == nil {
+		f.trumpCards = NewTrumpCards(0)
+	}
+	f.tableau = j.Tableau
+	f.freeCells = j.FreeCells
+	f.foundation = j.Foundation
+	f.phase = j.Phase
+	f.moveCount = j.MoveCount
+	f.actionLog = j.ActionLog
+	if f.actionLog == nil {
+		f.actionLog = make([]*ActionLogEntry, 0)
+	}
+	// Undo history is not serialised; set to nil on restore.
+	f.history = nil
+	f.isStalemate = j.IsStalemate
+	return nil
 }

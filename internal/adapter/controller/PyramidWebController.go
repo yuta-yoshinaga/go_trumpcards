@@ -57,6 +57,15 @@ func NewPyramidWebController(factory func() usecase.PyramidInteractorIF) *Pyrami
 	return NewGameWebController(factory, newPyramidDefaultOutput, pyramidDispatch)
 }
 
+// NewPyramidWebControllerWithProvider creates a PyramidWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewPyramidWebControllerWithProvider(
+	provider SessionProvider[usecase.PyramidInteractorIF],
+	factory func() usecase.PyramidInteractorIF,
+) *PyramidWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newPyramidDefaultOutput, pyramidDispatch)
+}
+
 func newPyramidDefaultOutput(msg string) *PyramidWebOutput {
 	return &PyramidWebOutput{
 		Pyramid:       make([][]*PyramidWebOutputCard, 0),

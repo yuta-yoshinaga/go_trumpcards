@@ -68,6 +68,15 @@ func NewKlondikeWebController(factory func() usecase.KlondikeInteractorIF) *Klon
 	return NewGameWebController(factory, newKlondikeDefaultOutput, klondikeDispatch)
 }
 
+// NewKlondikeWebControllerWithProvider creates a KlondikeWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewKlondikeWebControllerWithProvider(
+	provider SessionProvider[usecase.KlondikeInteractorIF],
+	factory func() usecase.KlondikeInteractorIF,
+) *KlondikeWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newKlondikeDefaultOutput, klondikeDispatch)
+}
+
 func newKlondikeDefaultOutput(msg string) *KlondikeWebOutput {
 	return &KlondikeWebOutput{
 		Tableau:       make([][]*KlondikeWebOutputTableauCard, 0),

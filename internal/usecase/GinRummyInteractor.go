@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -151,4 +153,18 @@ func (ci *GinRummyInteractor) runCpuTurns() {
 		}
 		ci.g.CpuPlay()
 	}
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (ci *GinRummyInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(ci.g)
+}
+
+// RestoreGinRummyInteractor deserialises JSON into a GinRummyInteractor.
+func RestoreGinRummyInteractor(data []byte, gp presenter.GinRummyPresenter) (*GinRummyInteractor, error) {
+	var g domain.GinRummy
+	if err := json.Unmarshal(data, &g); err != nil {
+		return nil, err
+	}
+	return &GinRummyInteractor{g: &g, gp: gp}, nil
 }

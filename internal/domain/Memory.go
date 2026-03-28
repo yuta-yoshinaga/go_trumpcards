@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -29,9 +30,9 @@ const MemoryBoardSize = 52
 
 // MemoryBoardCard ボード上のカード
 type MemoryBoardCard struct {
-	Card   *Card
-	FaceUp bool
-	Taken  bool
+	Card   *Card `json:"c"`
+	FaceUp bool  `json:"f"`
+	Taken  bool  `json:"t"`
 }
 
 // CPU記憶パラメータ (難易度別)
@@ -397,4 +398,79 @@ func (m *Memory) appendLog(actionType, detail string, cards []*Card) {
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// memoryJSON is the JSON wire format for Memory.
+type memoryJSON struct {
+	TrumpCards       *TrumpCards                       `json:"tc"`
+	Board            [MemoryBoardSize]*MemoryBoardCard `json:"bd"`
+	Players          []*MemoryPlayer                   `json:"pl"`
+	Config           MemoryConfig                      `json:"cf"`
+	Phase            MemoryPhase                       `json:"ps"`
+	CurrentPlayerIdx int                               `json:"ci"`
+	FirstFlipPos     int                               `json:"f1"`
+	SecondFlipPos    int                               `json:"f2"`
+	LastMatchResult  bool                              `json:"lm"`
+	GameEndFlag      bool                              `json:"ge"`
+	WinnerIdx        int                               `json:"wi"`
+	TurnNumber       int                               `json:"tn"`
+	ActionLog        []*ActionLogEntry                 `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (m *Memory) MarshalJSON() ([]byte, error) {
+	return json.Marshal(memoryJSON{
+		TrumpCards:       m.trumpCards,
+		Board:            m.board,
+		Players:          m.players,
+		Config:           m.config,
+		Phase:            m.phase,
+		CurrentPlayerIdx: m.currentPlayerIdx,
+		FirstFlipPos:     m.firstFlipPos,
+		SecondFlipPos:    m.secondFlipPos,
+		LastMatchResult:  m.lastMatchResult,
+		GameEndFlag:      m.gameEndFlag,
+		WinnerIdx:        m.winnerIdx,
+		TurnNumber:       m.turnNumber,
+		ActionLog:        m.actionLog,
+	})
+}
+
+// memoryMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const memoryMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (m *Memory) UnmarshalJSON(data []byte) error {
+	var j memoryJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > memoryMaxSliceLen || len(j.ActionLog) > memoryMaxSliceLen {
+		return fmt.Errorf("memory: input array exceeds maximum allowed size")
+	}
+
+	m.trumpCards = j.TrumpCards
+	if m.trumpCards == nil {
+		m.trumpCards = NewTrumpCards(0)
+	}
+	m.board = j.Board
+	m.players = j.Players
+	if m.players == nil {
+		m.players = make([]*MemoryPlayer, 0)
+	}
+	m.config = j.Config
+	m.phase = j.Phase
+	m.currentPlayerIdx = j.CurrentPlayerIdx
+	m.firstFlipPos = j.FirstFlipPos
+	m.secondFlipPos = j.SecondFlipPos
+	m.lastMatchResult = j.LastMatchResult
+	m.gameEndFlag = j.GameEndFlag
+	m.winnerIdx = j.WinnerIdx
+	m.turnNumber = j.TurnNumber
+	m.actionLog = j.ActionLog
+	if m.actionLog == nil {
+		m.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

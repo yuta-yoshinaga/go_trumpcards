@@ -9,15 +9,15 @@ const (
 
 // SevensConfig 7並べゲーム設定
 type SevensConfig struct {
-	TunnelEnabled          bool // トンネルルール (A↔K循環)
-	TunnelSkipWidth        int  // カスタムトンネル: スキップ幅 (0=無効, 2以上で±N接続を追加。TunnelEnabled時は循環ラップあり)
-	JokerCount             int  // ジョーカー枚数
-	CpuStrategy            int  // CPU戦略モード (0=シンプル, 1=戦略的, 2=嫌がらせ特化)
-	MaxPasses              int  // 最大パス回数 (0 = 無制限)
-	NoJokerFinish          bool // ジョーカー上がり禁止
-	JokerReclaimEnabled    bool // ジョーカー回収 (ジョーカー配置位置に本物のカードを出すとジョーカーが手札に戻る)
-	EndStopEnabled         bool // 片側ストップ (Aを置くと上側8-Kがブロック、Kを置くと下側A-6がブロック)
-	JokerConsecutiveBanned bool // ジョーカー連続禁止 (前のターンにジョーカーを出した場合、次のターンにジョーカーを出せない)
+	TunnelEnabled          bool `json:"te"` // トンネルルール (A↔K循環)
+	TunnelSkipWidth        int  `json:"tw"` // カスタムトンネル: スキップ幅 (0=無効, 2以上で±N接続を追加。TunnelEnabled時は循環ラップあり)
+	JokerCount             int  `json:"jc"` // ジョーカー枚数
+	CpuStrategy            int  `json:"cs"` // CPU戦略モード (0=シンプル, 1=戦略的, 2=嫌がらせ特化)
+	MaxPasses              int  `json:"mp"` // 最大パス回数 (0 = 無制限)
+	NoJokerFinish          bool `json:"nj"` // ジョーカー上がり禁止
+	JokerReclaimEnabled    bool `json:"jr"` // ジョーカー回収 (ジョーカー配置位置に本物のカードを出すとジョーカーが手札に戻る)
+	EndStopEnabled         bool `json:"es"` // 片側ストップ (Aを置くと上側8-Kがブロック、Kを置くと下側A-6がブロック)
+	JokerConsecutiveBanned bool `json:"jb"` // ジョーカー連続禁止 (前のターンにジョーカーを出した場合、次のターンにジョーカーを出せない)
 }
 
 // DefaultSevensConfig デフォルト設定 (全機能無効)

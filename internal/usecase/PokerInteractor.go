@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -91,4 +93,18 @@ func (pi *PokerInteractor) Odds(indices []int) string {
 		return pi.pp.Output(pi.p, err)
 	}
 	return pi.pp.OutputWithOdds(pi.p, nil, odds)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (pi *PokerInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(pi.p)
+}
+
+// RestorePokerInteractor deserialises JSON into a PokerInteractor.
+func RestorePokerInteractor(data []byte, pp presenter.PokerPresenter) (*PokerInteractor, error) {
+	var p domain.Poker
+	if err := json.Unmarshal(data, &p); err != nil {
+		return nil, err
+	}
+	return &PokerInteractor{p: &p, pp: pp}, nil
 }

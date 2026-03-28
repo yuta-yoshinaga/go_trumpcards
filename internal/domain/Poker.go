@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
@@ -1106,6 +1107,138 @@ func (p *Poker) appendLog(playerIdx int, actionType, detail string, cards []*Car
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// pokerRoundStateJSON is the JSON wire format for pokerRoundState.
+type pokerRoundStateJSON struct {
+	Phase           int                `json:"ph"`
+	Pot             int                `json:"pt"`
+	CurrentTurn     int                `json:"ct"`
+	LastBet         int                `json:"lb"`
+	MinRaise        int                `json:"mr"`
+	RaiseCount      int                `json:"rc"`
+	ActedFlags      []bool             `json:"af"`
+	SidePots        []PokerSidePot     `json:"sp"`
+	StartingChips   []int              `json:"sc"`
+	RoundResults    []PokerResult      `json:"rr"`
+	CpuActions      []PokerCpuAction   `json:"ca"`
+	CpuExchanges    []PokerCpuExchange `json:"ce"`
+	ActionLog       []*ActionLogEntry  `json:"al"`
+	GameEndFlag     bool               `json:"ge"`
+	LastHumanPlayMs int                `json:"hm"`
+}
+
+// pokerJSON is the JSON wire format for Poker.
+type pokerJSON struct {
+	TrumpCards *TrumpCards              `json:"tc"`
+	Players    []*PokerPlayer           `json:"pl"`
+	Config     PokerConfig              `json:"cf"`
+	DealerIdx  int                      `json:"di"`
+	Profile    *BettingHumanProfileData `json:"pf,omitempty"`
+	Round      pokerRoundStateJSON      `json:"rd"`
+}
+
+// pokerMaxSliceLen caps slice sizes during deserialisation.
+const pokerMaxSliceLen = 1000
+
+// MarshalJSON implements json.Marshaler.
+func (p *Poker) MarshalJSON() ([]byte, error) {
+	j := pokerJSON{
+		TrumpCards: p.trumpCards,
+		Players:    p.players,
+		Config:     p.config,
+		DealerIdx:  p.dealerIdx,
+		Round: pokerRoundStateJSON{
+			Phase:           p.round.phase,
+			Pot:             p.round.pot,
+			CurrentTurn:     p.round.currentTurn,
+			LastBet:         p.round.lastBet,
+			MinRaise:        p.round.minRaise,
+			RaiseCount:      p.round.raiseCount,
+			ActedFlags:      p.round.actedFlags,
+			SidePots:        p.round.sidePots,
+			StartingChips:   p.round.startingChips,
+			RoundResults:    p.round.roundResults,
+			CpuActions:      p.round.cpuActions,
+			CpuExchanges:    p.round.cpuExchanges,
+			ActionLog:       p.round.actionLog,
+			GameEndFlag:     p.round.gameEndFlag,
+			LastHumanPlayMs: p.round.lastHumanPlayMs,
+		},
+	}
+	if p.humanProfile != nil {
+		d := p.humanProfile.Export()
+		j.Profile = &d
+	}
+	return json.Marshal(j)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *Poker) UnmarshalJSON(data []byte) error {
+	var j pokerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > pokerMaxSliceLen || len(j.Round.ActedFlags) > pokerMaxSliceLen ||
+		len(j.Round.SidePots) > pokerMaxSliceLen || len(j.Round.StartingChips) > pokerMaxSliceLen ||
+		len(j.Round.RoundResults) > pokerMaxSliceLen || len(j.Round.CpuActions) > pokerMaxSliceLen ||
+		len(j.Round.CpuExchanges) > pokerMaxSliceLen || len(j.Round.ActionLog) > pokerMaxSliceLen {
+		return fmt.Errorf("poker: input array exceeds maximum allowed size")
+	}
+	p.trumpCards = j.TrumpCards
+	if p.trumpCards == nil {
+		p.trumpCards = NewTrumpCards(0)
+	}
+	p.players = j.Players
+	if p.players == nil {
+		p.players = make([]*PokerPlayer, 0)
+	}
+	p.config = j.Config
+	p.dealerIdx = j.DealerIdx
+	if j.Profile != nil {
+		p.humanProfile = &BettingHumanProfile{}
+		p.humanProfile.Import(*j.Profile)
+	}
+	p.round = pokerRoundState{
+		phase:           j.Round.Phase,
+		pot:             j.Round.Pot,
+		currentTurn:     j.Round.CurrentTurn,
+		lastBet:         j.Round.LastBet,
+		minRaise:        j.Round.MinRaise,
+		raiseCount:      j.Round.RaiseCount,
+		actedFlags:      j.Round.ActedFlags,
+		sidePots:        j.Round.SidePots,
+		startingChips:   j.Round.StartingChips,
+		roundResults:    j.Round.RoundResults,
+		cpuActions:      j.Round.CpuActions,
+		cpuExchanges:    j.Round.CpuExchanges,
+		actionLog:       j.Round.ActionLog,
+		gameEndFlag:     j.Round.GameEndFlag,
+		lastHumanPlayMs: j.Round.LastHumanPlayMs,
+	}
+	// Nil-guard slices
+	if p.round.actedFlags == nil {
+		p.round.actedFlags = make([]bool, 0)
+	}
+	if p.round.sidePots == nil {
+		p.round.sidePots = make([]PokerSidePot, 0)
+	}
+	if p.round.startingChips == nil {
+		p.round.startingChips = make([]int, 0)
+	}
+	if p.round.roundResults == nil {
+		p.round.roundResults = make([]PokerResult, 0)
+	}
+	if p.round.cpuActions == nil {
+		p.round.cpuActions = make([]PokerCpuAction, 0)
+	}
+	if p.round.cpuExchanges == nil {
+		p.round.cpuExchanges = make([]PokerCpuExchange, 0)
+	}
+	if p.round.actionLog == nil {
+		p.round.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }
 
 // logBettingAction ベッティングアクションをログに記録する

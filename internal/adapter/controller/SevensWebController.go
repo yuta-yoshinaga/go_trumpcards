@@ -103,6 +103,15 @@ func NewSevensWebController(factory func() usecase.SevensInteractorIF) *SevensWe
 	return NewGameWebController(factory, newSevensDefaultOutput, sevensDispatch)
 }
 
+// NewSevensWebControllerWithProvider creates a SevensWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewSevensWebControllerWithProvider(
+	provider SessionProvider[usecase.SevensInteractorIF],
+	factory func() usecase.SevensInteractorIF,
+) *SevensWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newSevensDefaultOutput, sevensDispatch)
+}
+
 func newSevensDefaultOutput(msg string) *SevensWebOutput {
 	return &SevensWebOutput{
 		Players:       make([]*SevensWebOutputPlayer, 0),

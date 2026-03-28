@@ -36,6 +36,15 @@ func NewVideoPokerWebController(factory func() usecase.VideoPokerInteractorIF) *
 	return NewGameWebController(factory, newVideoPokerDefaultOutput, videoPokerDispatch)
 }
 
+// NewVideoPokerWebControllerWithProvider creates a VideoPokerWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewVideoPokerWebControllerWithProvider(
+	provider SessionProvider[usecase.VideoPokerInteractorIF],
+	factory func() usecase.VideoPokerInteractorIF,
+) *VideoPokerWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newVideoPokerDefaultOutput, videoPokerDispatch)
+}
+
 func newVideoPokerDefaultOutput(msg string) *VideoPokerWebOutput {
 	return &VideoPokerWebOutput{
 		Hand:          make([]*WebOutputCard, 0),

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -50,8 +51,8 @@ type EuchreHint struct {
 
 // EuchreTrickCard トリック中の1枚
 type EuchreTrickCard struct {
-	PlayerIdx int
-	Card      *Card
+	PlayerIdx int   `json:"pi"`
+	Card      *Card `json:"c"`
 }
 
 // Euchre ユーカーゲームクラス
@@ -1414,4 +1415,109 @@ func (e *Euchre) currentTrickWinnerIdx() int {
 		return 0
 	}
 	return e.trickWinner()
+}
+
+// euchreJSON is the JSON wire format for Euchre.
+type euchreJSON struct {
+	TrumpCards          *TrumpCards        `json:"tc"`
+	Players             []*EuchrePlayer    `json:"ps"`
+	Config              EuchreConfig       `json:"cf"`
+	Phase               EuchrePhase        `json:"ph"`
+	RoundNumber         int                `json:"rn"`
+	TrickNumber         int                `json:"tn"`
+	CurrentPlayerIdx    int                `json:"ci"`
+	CurrentTrick        []*EuchreTrickCard `json:"ct"`
+	DealerIdx           int                `json:"di"`
+	TrumpSuit           int                `json:"ts"`
+	FaceUpCard          *Card              `json:"fu"`
+	Kitty               []*Card            `json:"kt"`
+	MakerTeam           int                `json:"mt"`
+	GoingAlone          bool               `json:"ga"`
+	GoingAlonePlayerIdx int                `json:"gi"`
+	TeamScores          [EuchreTeamCnt]int `json:"sc"`
+	LeadPlayerIdx       int                `json:"li"`
+	BidPlayerIdx        int                `json:"bi"`
+	GameEndFlag         bool               `json:"ge"`
+	WinnerTeam          int                `json:"wt"`
+	ActionLog           []*ActionLogEntry  `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (e *Euchre) MarshalJSON() ([]byte, error) {
+	return json.Marshal(euchreJSON{
+		TrumpCards:          e.trumpCards,
+		Players:             e.players,
+		Config:              e.config,
+		Phase:               e.phase,
+		RoundNumber:         e.roundNumber,
+		TrickNumber:         e.trickNumber,
+		CurrentPlayerIdx:    e.currentPlayerIdx,
+		CurrentTrick:        e.currentTrick,
+		DealerIdx:           e.dealerIdx,
+		TrumpSuit:           e.trumpSuit,
+		FaceUpCard:          e.faceUpCard,
+		Kitty:               e.kitty,
+		MakerTeam:           e.makerTeam,
+		GoingAlone:          e.goingAlone,
+		GoingAlonePlayerIdx: e.goingAlonePlayerIdx,
+		TeamScores:          e.teamScores,
+		LeadPlayerIdx:       e.leadPlayerIdx,
+		BidPlayerIdx:        e.bidPlayerIdx,
+		GameEndFlag:         e.gameEndFlag,
+		WinnerTeam:          e.winnerTeam,
+		ActionLog:           e.actionLog,
+	})
+}
+
+// euchreMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const euchreMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (e *Euchre) UnmarshalJSON(data []byte) error {
+	var j euchreJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > euchreMaxSliceLen || len(j.CurrentTrick) > euchreMaxSliceLen ||
+		len(j.Kitty) > euchreMaxSliceLen || len(j.ActionLog) > euchreMaxSliceLen {
+		return fmt.Errorf("euchre: input array exceeds maximum allowed size")
+	}
+	e.trumpCards = j.TrumpCards
+	if e.trumpCards == nil {
+		e.trumpCards = NewTrumpCards(0)
+	}
+	e.players = j.Players
+	if e.players == nil {
+		e.players = make([]*EuchrePlayer, 0)
+	}
+	e.config = j.Config
+	e.phase = j.Phase
+	e.roundNumber = j.RoundNumber
+	e.trickNumber = j.TrickNumber
+	e.currentPlayerIdx = j.CurrentPlayerIdx
+	e.currentTrick = j.CurrentTrick
+	if e.currentTrick == nil {
+		e.currentTrick = make([]*EuchreTrickCard, 0)
+	}
+	e.dealerIdx = j.DealerIdx
+	e.trumpSuit = j.TrumpSuit
+	e.faceUpCard = j.FaceUpCard
+	e.kitty = j.Kitty
+	if e.kitty == nil {
+		e.kitty = make([]*Card, 0)
+	}
+	e.makerTeam = j.MakerTeam
+	e.goingAlone = j.GoingAlone
+	e.goingAlonePlayerIdx = j.GoingAlonePlayerIdx
+	e.teamScores = j.TeamScores
+	e.leadPlayerIdx = j.LeadPlayerIdx
+	e.bidPlayerIdx = j.BidPlayerIdx
+	e.gameEndFlag = j.GameEndFlag
+	e.winnerTeam = j.WinnerTeam
+	e.actionLog = j.ActionLog
+	if e.actionLog == nil {
+		e.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

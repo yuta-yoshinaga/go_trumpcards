@@ -88,6 +88,15 @@ func NewCribbageWebController(factory func() usecase.CribbageInteractorIF) *Crib
 	return NewGameWebController(factory, newCribbageDefaultOutput, cribbageDispatch)
 }
 
+// NewCribbageWebControllerWithProvider creates a CribbageWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewCribbageWebControllerWithProvider(
+	provider SessionProvider[usecase.CribbageInteractorIF],
+	factory func() usecase.CribbageInteractorIF,
+) *CribbageWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newCribbageDefaultOutput, cribbageDispatch)
+}
+
 func newCribbageDefaultOutput(msg string) *CribbageWebOutput {
 	return &CribbageWebOutput{
 		Players:        make([]*CribbageWebOutputPlayer, 0),

@@ -1,6 +1,9 @@
 package domain
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // ビデオポーカーフェーズ定数
 const (
@@ -252,3 +255,97 @@ func (vp *VideoPoker) SetHandRank(rank int) { vp.handRank = rank }
 
 // SetHandName ハンド名設定（テスト用）
 func (vp *VideoPoker) SetHandName(name string) { vp.handName = name }
+
+// videoPokerJSON is the JSON wire format for VideoPoker.
+type videoPokerJSON struct {
+	TrumpCards  *TrumpCards              `json:"tc"`
+	Hand        []*Card                  `json:"hd"`
+	Chips       *ChipHolder              `json:"ch"`
+	BetAmount   int                      `json:"ba"`
+	HeldIndices [VideoPokerHandSize]bool `json:"hi"`
+	Phase       int                      `json:"ps"`
+	GameEndFlag bool                     `json:"ge"`
+	Result      GameResult               `json:"rs"`
+	Payout      int                      `json:"po"`
+	HandRank    int                      `json:"hr"`
+	HandName    string                   `json:"hn"`
+	ActionLog   []*ActionLogEntry        `json:"al"`
+	ConfigName  string                   `json:"cn"`
+	JokerCount  int                      `json:"jc"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (vp *VideoPoker) MarshalJSON() ([]byte, error) {
+	j := videoPokerJSON{
+		TrumpCards:  vp.trumpCards,
+		Hand:        vp.hand,
+		Chips:       &vp.chips,
+		BetAmount:   vp.betAmount,
+		HeldIndices: vp.heldIndices,
+		Phase:       vp.phase,
+		GameEndFlag: vp.gameEndFlag,
+		Result:      vp.result,
+		Payout:      vp.payout,
+		HandRank:    vp.handRank,
+		HandName:    vp.handName,
+		ActionLog:   vp.actionLog,
+	}
+	if vp.config != nil {
+		j.ConfigName = vp.config.Name
+		j.JokerCount = vp.config.JokerCount
+	}
+	return json.Marshal(j)
+}
+
+// videoPokerMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const videoPokerMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (vp *VideoPoker) UnmarshalJSON(data []byte) error {
+	var j videoPokerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Hand) > videoPokerMaxSliceLen || len(j.ActionLog) > videoPokerMaxSliceLen {
+		return fmt.Errorf("videopoker: input array exceeds maximum allowed size")
+	}
+
+	vp.trumpCards = j.TrumpCards
+	if vp.trumpCards == nil {
+		vp.trumpCards = NewTrumpCards(j.JokerCount)
+	}
+	vp.hand = j.Hand
+	if vp.hand == nil {
+		vp.hand = make([]*Card, 0)
+	}
+	if j.Chips != nil {
+		vp.chips = *j.Chips
+	}
+	vp.betAmount = j.BetAmount
+	vp.heldIndices = j.HeldIndices
+	vp.phase = j.Phase
+	vp.gameEndFlag = j.GameEndFlag
+	vp.result = j.Result
+	vp.payout = j.Payout
+	vp.handRank = j.HandRank
+	vp.handName = j.HandName
+	vp.actionLog = j.ActionLog
+	if vp.actionLog == nil {
+		vp.actionLog = make([]*ActionLogEntry, 0)
+	}
+	vp.config = resolveVideoPokerConfig(j.ConfigName)
+	return nil
+}
+
+// resolveVideoPokerConfig restores a VideoPokerVariantConfig by name.
+func resolveVideoPokerConfig(name string) *VideoPokerVariantConfig {
+	switch name {
+	case "deuceswild":
+		return DeucesWildConfig()
+	case "jokerpoker":
+		return JokerPokerConfig()
+	default:
+		return JacksOrBetterConfig()
+	}
+}

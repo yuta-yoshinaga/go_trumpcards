@@ -1,6 +1,9 @@
 package domain
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // OmahaPlayer オマハホールデムプレイヤークラス
 type OmahaPlayer struct {
@@ -124,6 +127,70 @@ func (op *OmahaPlayer) GetComparisonCards() []*Card {
 	cards := make([]*Card, len(op.bestHand))
 	copy(cards, op.bestHand)
 	return cards
+}
+
+// omahaPlayerJSON is the JSON wire format for OmahaPlayer.
+type omahaPlayerJSON struct {
+	Player              *Player            `json:"p"`
+	ChipHolder          *ChipHolder        `json:"ch"`
+	BettingPlayerBase   *bettingPlayerBase `json:"bp"`
+	IsHuman             bool               `json:"ih"`
+	BestHand            []*Card            `json:"bh"`
+	PlayStyle           HoldemPlayStyle    `json:"ps"`
+	TotalHands          int                `json:"th"`
+	VPIPCount           int                `json:"vc"`
+	PFRCount            int                `json:"pc"`
+	ThreeBetOpportunity int                `json:"to"`
+	ThreeBetCount       int                `json:"tc"`
+	PostFlopBetRaise    int                `json:"pb"`
+	PostFlopCall        int                `json:"pf"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (op *OmahaPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(omahaPlayerJSON{
+		Player:              &op.Player,
+		ChipHolder:          &op.ChipHolder,
+		BettingPlayerBase:   &op.bettingPlayerBase,
+		IsHuman:             op.isHuman,
+		BestHand:            op.bestHand,
+		PlayStyle:           op.playStyle,
+		TotalHands:          op.totalHands,
+		VPIPCount:           op.vpipCount,
+		PFRCount:            op.pfrCount,
+		ThreeBetOpportunity: op.threeBetOpportunity,
+		ThreeBetCount:       op.threeBetCount,
+		PostFlopBetRaise:    op.postFlopBetRaise,
+		PostFlopCall:        op.postFlopCall,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (op *OmahaPlayer) UnmarshalJSON(data []byte) error {
+	var j omahaPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.Player != nil {
+		op.Player = *j.Player
+	}
+	if j.ChipHolder != nil {
+		op.ChipHolder = *j.ChipHolder
+	}
+	if j.BettingPlayerBase != nil {
+		op.bettingPlayerBase = *j.BettingPlayerBase
+	}
+	op.isHuman = j.IsHuman
+	op.bestHand = j.BestHand
+	op.playStyle = j.PlayStyle
+	op.totalHands = j.TotalHands
+	op.vpipCount = j.VPIPCount
+	op.pfrCount = j.PFRCount
+	op.threeBetOpportunity = j.ThreeBetOpportunity
+	op.threeBetCount = j.ThreeBetCount
+	op.postFlopBetRaise = j.PostFlopBetRaise
+	op.postFlopCall = j.PostFlopCall
+	return nil
 }
 
 // EvalBestHand コミュニティカードとホールカード(4枚)からベスト5枚を評価

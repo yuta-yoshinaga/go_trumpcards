@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // ポーカーハンドランク定数
 const (
 	PokerHandHighCard      = 0
@@ -182,6 +184,49 @@ func evalFiveCardHandWithJokers(cards []*Card) int {
 	}
 
 	return bestRank
+}
+
+// pokerPlayerJSON is the JSON wire format for PokerPlayer.
+type pokerPlayerJSON struct {
+	Player            *Player            `json:"p"`
+	ChipHolder        *ChipHolder        `json:"ch"`
+	BettingPlayerBase *bettingPlayerBase `json:"bp"`
+	IsHuman           bool               `json:"ih"`
+	PlayStyle         PokerPlayStyle     `json:"ps"`
+	ExchangeCount     int                `json:"ec"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (pp *PokerPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(pokerPlayerJSON{
+		Player:            &pp.Player,
+		ChipHolder:        &pp.ChipHolder,
+		BettingPlayerBase: &pp.bettingPlayerBase,
+		IsHuman:           pp.isHuman,
+		PlayStyle:         pp.playStyle,
+		ExchangeCount:     pp.exchangeCount,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (pp *PokerPlayer) UnmarshalJSON(data []byte) error {
+	var j pokerPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.Player != nil {
+		pp.Player = *j.Player
+	}
+	if j.ChipHolder != nil {
+		pp.ChipHolder = *j.ChipHolder
+	}
+	if j.BettingPlayerBase != nil {
+		pp.bettingPlayerBase = *j.BettingPlayerBase
+	}
+	pp.isHuman = j.IsHuman
+	pp.playStyle = j.PlayStyle
+	pp.exchangeCount = j.ExchangeCount
+	return nil
 }
 
 // checkFiveOfAKind ジョーカーを含めてFiveOfAKindが成立するか判定

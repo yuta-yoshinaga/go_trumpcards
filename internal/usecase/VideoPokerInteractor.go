@@ -1,6 +1,9 @@
 package usecase
 
 import (
+	"encoding/json"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -50,4 +53,18 @@ func (vi *VideoPokerInteractor) Hold(indices []int) string {
 // ActionLog 棋譜を出力する
 func (vi *VideoPokerInteractor) ActionLog() string {
 	return vi.vpp.ActionLogOutput(vi.vp)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (vi *VideoPokerInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(vi.vp)
+}
+
+// RestoreVideoPokerInteractor deserialises JSON into a VideoPokerInteractor.
+func RestoreVideoPokerInteractor(data []byte, vpp presenter.VideoPokerPresenter) (*VideoPokerInteractor, error) {
+	var vp domain.VideoPoker
+	if err := json.Unmarshal(data, &vp); err != nil {
+		return nil, err
+	}
+	return &VideoPokerInteractor{vp: &vp, vpp: vpp}, nil
 }

@@ -107,6 +107,15 @@ func NewDoubtWebController(factory func() usecase.DoubtInteractorIF) *DoubtWebCo
 	return NewGameWebController(factory, newDoubtDefaultOutput, doubtDispatch)
 }
 
+// NewDoubtWebControllerWithProvider creates a DoubtWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewDoubtWebControllerWithProvider(
+	provider SessionProvider[usecase.DoubtInteractorIF],
+	factory func() usecase.DoubtInteractorIF,
+) *DoubtWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newDoubtDefaultOutput, doubtDispatch)
+}
+
 func newDoubtDefaultOutput(msg string) *DoubtWebOutput {
 	return &DoubtWebOutput{
 		Players:       make([]*DoubtWebOutputPlayer, 0),

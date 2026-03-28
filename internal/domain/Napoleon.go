@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -1741,4 +1742,134 @@ func (n *Napoleon) wouldWinTrick(card *Card) bool {
 		return true
 	}
 	return false
+}
+
+// --- JSON Serialization ---
+
+// napoleonTrickCardJSON is the JSON wire format for NapoleonTrickCard.
+type napoleonTrickCardJSON struct {
+	PlayerIdx int   `json:"pi"`
+	Card      *Card `json:"cd"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (tc *NapoleonTrickCard) MarshalJSON() ([]byte, error) {
+	return json.Marshal(napoleonTrickCardJSON{
+		PlayerIdx: tc.PlayerIdx,
+		Card:      tc.Card,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (tc *NapoleonTrickCard) UnmarshalJSON(data []byte) error {
+	var j napoleonTrickCardJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	tc.PlayerIdx = j.PlayerIdx
+	tc.Card = j.Card
+	return nil
+}
+
+// napoleonJSON is the JSON wire format for Napoleon (flattens napoleonRoundState).
+type napoleonJSON struct {
+	TrumpCards       *TrumpCards          `json:"tc"`
+	Players          []*NapoleonPlayer    `json:"pl"`
+	Config           NapoleonConfig       `json:"cf"`
+	Phase            NapoleonPhase        `json:"ph"`
+	RoundNumber      int                  `json:"rn"`
+	TrickNumber      int                  `json:"tn"`
+	CurrentPlayerIdx int                  `json:"ci"`
+	CurrentTrick     []*NapoleonTrickCard `json:"ct"`
+	TrumpSuit        int                  `json:"ts"`
+	AdjutantCard     *Card                `json:"ac"`
+	NapoleonIdx      int                  `json:"ni"`
+	AdjutantIdx      int                  `json:"ai"`
+	AdjutantRevealed bool                 `json:"ar"`
+	LeadPlayerIdx    int                  `json:"li"`
+	BidPlayerIdx     int                  `json:"bi"`
+	Kitty            []*Card              `json:"ki"`
+	HighestBid       int                  `json:"hb"`
+	HighestBidder    int                  `json:"hd"`
+	PassCount        int                  `json:"pc"`
+	GameEndFlag      bool                 `json:"ge"`
+	WinnerTeam       int                  `json:"wt"`
+	ActionLog        []*ActionLogEntry    `json:"al"`
+}
+
+// napoleonMaxSliceLen caps slice sizes during deserialisation.
+const napoleonMaxSliceLen = 1000
+
+// MarshalJSON implements json.Marshaler.
+func (n *Napoleon) MarshalJSON() ([]byte, error) {
+	return json.Marshal(napoleonJSON{
+		TrumpCards:       n.trumpCards,
+		Players:          n.players,
+		Config:           n.config,
+		Phase:            n.round.phase,
+		RoundNumber:      n.round.roundNumber,
+		TrickNumber:      n.round.trickNumber,
+		CurrentPlayerIdx: n.round.currentPlayerIdx,
+		CurrentTrick:     n.round.currentTrick,
+		TrumpSuit:        n.round.trumpSuit,
+		AdjutantCard:     n.round.adjutantCard,
+		NapoleonIdx:      n.round.napoleonIdx,
+		AdjutantIdx:      n.round.adjutantIdx,
+		AdjutantRevealed: n.round.adjutantRevealed,
+		LeadPlayerIdx:    n.round.leadPlayerIdx,
+		BidPlayerIdx:     n.round.bidPlayerIdx,
+		Kitty:            n.round.kitty,
+		HighestBid:       n.round.highestBid,
+		HighestBidder:    n.round.highestBidder,
+		PassCount:        n.round.passCount,
+		GameEndFlag:      n.round.gameEndFlag,
+		WinnerTeam:       n.round.winnerTeam,
+		ActionLog:        n.round.actionLog,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (n *Napoleon) UnmarshalJSON(data []byte) error {
+	var j napoleonJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > napoleonMaxSliceLen || len(j.CurrentTrick) > napoleonMaxSliceLen ||
+		len(j.Kitty) > napoleonMaxSliceLen || len(j.ActionLog) > napoleonMaxSliceLen {
+		return fmt.Errorf("napoleon: input array exceeds maximum allowed size")
+	}
+	n.trumpCards = j.TrumpCards
+	if n.trumpCards == nil {
+		n.trumpCards = NewTrumpCards(0)
+	}
+	n.players = j.Players
+	if n.players == nil {
+		n.players = make([]*NapoleonPlayer, 0)
+	}
+	n.config = j.Config
+	n.round = napoleonRoundState{
+		phase:            j.Phase,
+		roundNumber:      j.RoundNumber,
+		trickNumber:      j.TrickNumber,
+		currentPlayerIdx: j.CurrentPlayerIdx,
+		currentTrick:     j.CurrentTrick,
+		trumpSuit:        j.TrumpSuit,
+		adjutantCard:     j.AdjutantCard,
+		napoleonIdx:      j.NapoleonIdx,
+		adjutantIdx:      j.AdjutantIdx,
+		adjutantRevealed: j.AdjutantRevealed,
+		leadPlayerIdx:    j.LeadPlayerIdx,
+		bidPlayerIdx:     j.BidPlayerIdx,
+		kitty:            j.Kitty,
+		highestBid:       j.HighestBid,
+		highestBidder:    j.HighestBidder,
+		passCount:        j.PassCount,
+		gameEndFlag:      j.GameEndFlag,
+		winnerTeam:       j.WinnerTeam,
+		actionLog:        j.ActionLog,
+	}
+	if n.round.actionLog == nil {
+		n.round.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

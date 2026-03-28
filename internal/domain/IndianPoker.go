@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
@@ -770,6 +771,125 @@ func (ip *IndianPoker) logAction(playerIdx, action, amount int) {
 	case IndianPokerActionAllIn:
 		ip.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", ip.players[playerIdx].GetCurrentBet()), nil)
 	}
+}
+
+// indianPokerJSON is the JSON wire format for IndianPoker.
+type indianPokerJSON struct {
+	TrumpCards      *TrumpCards                  `json:"tc"`
+	Players         []*IndianPokerPlayer         `json:"pl"`
+	Pot             int                          `json:"pt"`
+	SidePots        []IndianPokerSidePot         `json:"sp"`
+	DealerIdx       int                          `json:"di"`
+	CurrentTurn     int                          `json:"ct"`
+	Phase           int                          `json:"ph"`
+	Config          IndianPokerConfig            `json:"cf"`
+	GameEndFlag     bool                         `json:"ge"`
+	LastBet         int                          `json:"lb"`
+	MinRaise        int                          `json:"mr"`
+	RaiseCount      int                          `json:"rc"`
+	ActedFlags      []bool                       `json:"af"`
+	RoundResults    []IndianPokerResult          `json:"rr"`
+	CpuActions      []IndianPokerCpuAction       `json:"ca"`
+	StartingChips   []int                        `json:"sc"`
+	HandCount       int                          `json:"hc"`
+	ActionLog       []*ActionLogEntry            `json:"al"`
+	Profile         *IndianPokerHumanProfileData `json:"pf,omitempty"`
+	LastHumanPlayMs int                          `json:"hm"`
+}
+
+// indianPokerMaxSliceLen caps slice sizes during deserialisation.
+const indianPokerMaxSliceLen = 1000
+
+// MarshalJSON implements json.Marshaler.
+func (ip *IndianPoker) MarshalJSON() ([]byte, error) {
+	j := indianPokerJSON{
+		TrumpCards:      ip.trumpCards,
+		Players:         ip.players,
+		Pot:             ip.pot,
+		SidePots:        ip.sidePots,
+		DealerIdx:       ip.dealerIdx,
+		CurrentTurn:     ip.currentTurn,
+		Phase:           ip.phase,
+		Config:          ip.config,
+		GameEndFlag:     ip.gameEndFlag,
+		LastBet:         ip.lastBet,
+		MinRaise:        ip.minRaise,
+		RaiseCount:      ip.raiseCount,
+		ActedFlags:      ip.actedFlags,
+		RoundResults:    ip.roundResults,
+		CpuActions:      ip.cpuActions,
+		StartingChips:   ip.startingChips,
+		HandCount:       ip.handCount,
+		ActionLog:       ip.actionLog,
+		LastHumanPlayMs: ip.lastHumanPlayMs,
+	}
+	if ip.humanProfile != nil {
+		d := ip.humanProfile.Export()
+		j.Profile = &d
+	}
+	return json.Marshal(j)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (ip *IndianPoker) UnmarshalJSON(data []byte) error {
+	var j indianPokerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > indianPokerMaxSliceLen || len(j.SidePots) > indianPokerMaxSliceLen ||
+		len(j.ActedFlags) > indianPokerMaxSliceLen || len(j.RoundResults) > indianPokerMaxSliceLen ||
+		len(j.CpuActions) > indianPokerMaxSliceLen || len(j.StartingChips) > indianPokerMaxSliceLen ||
+		len(j.ActionLog) > indianPokerMaxSliceLen {
+		return fmt.Errorf("indianpoker: input array exceeds maximum allowed size")
+	}
+	ip.trumpCards = j.TrumpCards
+	if ip.trumpCards == nil {
+		ip.trumpCards = NewTrumpCards(0)
+	}
+	ip.players = j.Players
+	if ip.players == nil {
+		ip.players = make([]*IndianPokerPlayer, 0)
+	}
+	ip.pot = j.Pot
+	ip.sidePots = j.SidePots
+	if ip.sidePots == nil {
+		ip.sidePots = make([]IndianPokerSidePot, 0)
+	}
+	ip.dealerIdx = j.DealerIdx
+	ip.currentTurn = j.CurrentTurn
+	ip.phase = j.Phase
+	ip.config = j.Config
+	ip.gameEndFlag = j.GameEndFlag
+	ip.lastBet = j.LastBet
+	ip.minRaise = j.MinRaise
+	ip.raiseCount = j.RaiseCount
+	ip.actedFlags = j.ActedFlags
+	if ip.actedFlags == nil {
+		ip.actedFlags = make([]bool, 0)
+	}
+	ip.roundResults = j.RoundResults
+	if ip.roundResults == nil {
+		ip.roundResults = make([]IndianPokerResult, 0)
+	}
+	ip.cpuActions = j.CpuActions
+	if ip.cpuActions == nil {
+		ip.cpuActions = make([]IndianPokerCpuAction, 0)
+	}
+	ip.startingChips = j.StartingChips
+	if ip.startingChips == nil {
+		ip.startingChips = make([]int, 0)
+	}
+	ip.handCount = j.HandCount
+	ip.actionLog = j.ActionLog
+	if ip.actionLog == nil {
+		ip.actionLog = make([]*ActionLogEntry, 0)
+	}
+	ip.lastHumanPlayMs = j.LastHumanPlayMs
+	if j.Profile != nil {
+		ip.humanProfile = &IndianPokerHumanProfile{}
+		ip.humanProfile.Import(*j.Profile)
+	}
+	return nil
 }
 
 // --- テスト用セッター ---
