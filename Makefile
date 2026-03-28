@@ -10,7 +10,7 @@ define build_worker
 	@echo "Building worker: $(1)"
 	@mkdir -p workers/$(1)/build
 	$(ASSETS_GEN) -mode=tinygo -o workers/$(1)/build
-	$(TINYGO) build -o workers/$(1)/build/app.wasm -target wasi -no-debug -opt=z ./cmd/workers/$(1)
+	$(TINYGO) build -o workers/$(1)/build/app.wasm -target wasm -no-debug -opt=z ./cmd/workers/$(1)
 	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz workers/$(1)/build/app.wasm -o workers/$(1)/build/app.wasm
 	@RAW=$$(stat -c%s workers/$(1)/build/app.wasm); GZIP=$$(gzip -c workers/$(1)/build/app.wasm | wc -c); \
 	echo "  $(1): $$RAW bytes raw, $$GZIP bytes gzip"
