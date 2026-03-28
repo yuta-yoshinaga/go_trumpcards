@@ -110,6 +110,7 @@
     "result": "結果:",
     "cpuAction": "CPU行動:",
     "cpuActions": "[CPUの行動]",
+    "cpuOpponents": "CPU対戦相手 ({{count}})",
     "pot": "ポット:",
     "dealer": "ディーラー:",
     "networkError": "通信エラーが発生しました。もう一度お試しください。",
