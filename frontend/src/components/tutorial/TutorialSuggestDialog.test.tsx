@@ -116,7 +116,7 @@ describe('TutorialSuggestDialog', () => {
   it('applies backdrop blur to overlay', () => {
     render(<TutorialSuggestDialog {...defaultProps} />);
     const overlay = screen.getByRole('presentation');
-    expect(overlay.className).toContain('backdrop-blur-sm');
+    expect(overlay).toHaveClass('backdrop-blur-sm');
   });
 
   it('has aria-describedby pointing to message paragraph', () => {
