@@ -79,10 +79,10 @@ jobs:
             SUFFIX="-staging"
             CORS_ORIGINS="$CORS_ORIGINS_STAGING"
           fi
-          DEPLOY_NAME="go-trumpcards-${WORKER_NAME}${SUFFIX}"
           cd "workers/${WORKER_NAME}"
-          bunx wrangler deploy --name "$DEPLOY_NAME"
-          echo "$CORS_ORIGINS" | bunx wrangler secret put CORS_ALLOWED_ORIGINS --name "$DEPLOY_NAME"
+          bunx wrangler deploy \
+            --name "go-trumpcards-${WORKER_NAME}${SUFFIX}" \
+            --var "CORS_ALLOWED_ORIGINS:${CORS_ORIGINS}"
 
   deploy-pages:
     name: Deploy Frontend (Pages)
