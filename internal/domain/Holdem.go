@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -757,6 +758,164 @@ func (h *Holdem) logAction(playerIdx, action, amount int) {
 	case HoldemActionAllIn:
 		h.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", h.players[playerIdx].GetCurrentBet()), nil)
 	}
+}
+
+// holdemJSON is the JSON wire format for Holdem.
+type holdemJSON struct {
+	TrumpCards      *TrumpCards              `json:"tc"`
+	Players         []*HoldemPlayer          `json:"pl"`
+	CommunityCards  []*Card                  `json:"cc"`
+	Pot             int                      `json:"pt"`
+	SidePots        []HoldemSidePot          `json:"sp"`
+	DealerIdx       int                      `json:"di"`
+	CurrentTurn     int                      `json:"ct"`
+	Phase           int                      `json:"ph"`
+	Config          HoldemConfig             `json:"cf"`
+	GameEndFlag     bool                     `json:"ge"`
+	LastBet         int                      `json:"lb"`
+	MinRaise        int                      `json:"mr"`
+	RaiseCount      int                      `json:"rc"`
+	ActedFlags      []bool                   `json:"af"`
+	RoundResults    []HoldemResult           `json:"rr"`
+	CpuActions      []HoldemCpuAction        `json:"ca"`
+	StartingChips   []int                    `json:"sc"`
+	VPIPTracked     []bool                   `json:"vt"`
+	PFRTracked      []bool                   `json:"ft"`
+	ThreeBetTracked []bool                   `json:"tt"`
+	HandCount       int                      `json:"hc"`
+	RebuyCounts     []int                    `json:"rb"`
+	AddonUsed       []bool                   `json:"au"`
+	RebuyPhaseType  int                      `json:"rp"`
+	ActionLog       []*ActionLogEntry        `json:"al"`
+	Profile         *BettingHumanProfileData `json:"pf,omitempty"`
+	LastHumanPlayMs int                      `json:"hm"`
+}
+
+// holdemMaxSliceLen caps slice sizes during deserialisation.
+const holdemMaxSliceLen = 1000
+
+// MarshalJSON implements json.Marshaler.
+func (h *Holdem) MarshalJSON() ([]byte, error) {
+	j := holdemJSON{
+		TrumpCards:      h.trumpCards,
+		Players:         h.players,
+		CommunityCards:  h.communityCards,
+		Pot:             h.pot,
+		SidePots:        h.sidePots,
+		DealerIdx:       h.dealerIdx,
+		CurrentTurn:     h.currentTurn,
+		Phase:           h.phase,
+		Config:          h.config,
+		GameEndFlag:     h.gameEndFlag,
+		LastBet:         h.lastBet,
+		MinRaise:        h.minRaise,
+		RaiseCount:      h.raiseCount,
+		ActedFlags:      h.actedFlags,
+		RoundResults:    h.roundResults,
+		CpuActions:      h.cpuActions,
+		StartingChips:   h.startingChips,
+		VPIPTracked:     h.vpipTracked,
+		PFRTracked:      h.pfrTracked,
+		ThreeBetTracked: h.threeBetTracked,
+		HandCount:       h.handCount,
+		RebuyCounts:     h.rebuyCounts,
+		AddonUsed:       h.addonUsed,
+		RebuyPhaseType:  h.rebuyPhaseType,
+		ActionLog:       h.actionLog,
+		LastHumanPlayMs: h.lastHumanPlayMs,
+	}
+	if h.humanProfile != nil {
+		d := h.humanProfile.Export()
+		j.Profile = &d
+	}
+	return json.Marshal(j)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (h *Holdem) UnmarshalJSON(data []byte) error {
+	var j holdemJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > holdemMaxSliceLen || len(j.CommunityCards) > holdemMaxSliceLen ||
+		len(j.SidePots) > holdemMaxSliceLen || len(j.ActedFlags) > holdemMaxSliceLen ||
+		len(j.RoundResults) > holdemMaxSliceLen || len(j.CpuActions) > holdemMaxSliceLen ||
+		len(j.StartingChips) > holdemMaxSliceLen || len(j.ActionLog) > holdemMaxSliceLen {
+		return fmt.Errorf("holdem: input array exceeds maximum allowed size")
+	}
+	h.trumpCards = j.TrumpCards
+	if h.trumpCards == nil {
+		h.trumpCards = NewTrumpCards(0)
+	}
+	h.players = j.Players
+	if h.players == nil {
+		h.players = make([]*HoldemPlayer, 0)
+	}
+	h.communityCards = j.CommunityCards
+	if h.communityCards == nil {
+		h.communityCards = make([]*Card, 0)
+	}
+	h.pot = j.Pot
+	h.sidePots = j.SidePots
+	if h.sidePots == nil {
+		h.sidePots = make([]HoldemSidePot, 0)
+	}
+	h.dealerIdx = j.DealerIdx
+	h.currentTurn = j.CurrentTurn
+	h.phase = j.Phase
+	h.config = j.Config
+	h.gameEndFlag = j.GameEndFlag
+	h.lastBet = j.LastBet
+	h.minRaise = j.MinRaise
+	h.raiseCount = j.RaiseCount
+	h.actedFlags = j.ActedFlags
+	if h.actedFlags == nil {
+		h.actedFlags = make([]bool, 0)
+	}
+	h.roundResults = j.RoundResults
+	if h.roundResults == nil {
+		h.roundResults = make([]HoldemResult, 0)
+	}
+	h.cpuActions = j.CpuActions
+	if h.cpuActions == nil {
+		h.cpuActions = make([]HoldemCpuAction, 0)
+	}
+	h.startingChips = j.StartingChips
+	if h.startingChips == nil {
+		h.startingChips = make([]int, 0)
+	}
+	h.vpipTracked = j.VPIPTracked
+	if h.vpipTracked == nil {
+		h.vpipTracked = make([]bool, 0)
+	}
+	h.pfrTracked = j.PFRTracked
+	if h.pfrTracked == nil {
+		h.pfrTracked = make([]bool, 0)
+	}
+	h.threeBetTracked = j.ThreeBetTracked
+	if h.threeBetTracked == nil {
+		h.threeBetTracked = make([]bool, 0)
+	}
+	h.handCount = j.HandCount
+	h.rebuyCounts = j.RebuyCounts
+	if h.rebuyCounts == nil {
+		h.rebuyCounts = make([]int, 0)
+	}
+	h.addonUsed = j.AddonUsed
+	if h.addonUsed == nil {
+		h.addonUsed = make([]bool, 0)
+	}
+	h.rebuyPhaseType = j.RebuyPhaseType
+	h.actionLog = j.ActionLog
+	if h.actionLog == nil {
+		h.actionLog = make([]*ActionLogEntry, 0)
+	}
+	h.lastHumanPlayMs = j.LastHumanPlayMs
+	if j.Profile != nil {
+		h.humanProfile = &BettingHumanProfile{}
+		h.humanProfile.Import(*j.Profile)
+	}
+	return nil
 }
 
 // Resize プレイヤースライスを差し替え、プレイヤー数依存スライスを再初期化する

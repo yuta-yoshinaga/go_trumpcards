@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // ChipHolder チップ管理の共通構造体
 type ChipHolder struct {
 	chips int
@@ -27,4 +29,14 @@ func (ch *ChipHolder) SubtractChips(amount int) bool {
 	}
 	ch.chips -= amount
 	return true
+}
+
+// MarshalJSON implements json.Marshaler.
+func (ch *ChipHolder) MarshalJSON() ([]byte, error) {
+	return json.Marshal(ch.chips)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (ch *ChipHolder) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &ch.chips)
 }

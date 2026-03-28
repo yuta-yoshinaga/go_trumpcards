@@ -1,6 +1,9 @@
 package domain
 
-import "math/rand"
+import (
+	"encoding/json"
+	"math/rand"
+)
 
 // TrumpCards トランプカードクラス
 type TrumpCards struct {
@@ -155,4 +158,35 @@ func (t *TrumpCards) DrawCard() *Card {
 		t.deckDrawCnt++
 	}
 	return res
+}
+
+// trumpCardsJSON is the JSON wire format for TrumpCards.
+type trumpCardsJSON struct {
+	Deck        []*Card `json:"dk"`
+	DeckDrawCnt int     `json:"dc"`
+	DeckCnt     int     `json:"dn"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (t *TrumpCards) MarshalJSON() ([]byte, error) {
+	return json.Marshal(trumpCardsJSON{
+		Deck:        t.deck,
+		DeckDrawCnt: t.deckDrawCnt,
+		DeckCnt:     t.deckCnt,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (t *TrumpCards) UnmarshalJSON(data []byte) error {
+	var j trumpCardsJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	t.deck = j.Deck
+	if t.deck == nil {
+		t.deck = make([]*Card, 0)
+	}
+	t.deckDrawCnt = j.DeckDrawCnt
+	t.deckCnt = j.DeckCnt
+	return nil
 }

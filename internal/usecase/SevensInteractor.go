@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -95,4 +97,18 @@ func (si *SevensInteractor) runCpuTurns() {
 			si.s.CpuPlay()
 		}
 	}
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (si *SevensInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(si.s)
+}
+
+// RestoreSevensInteractor deserialises JSON into a SevensInteractor.
+func RestoreSevensInteractor(data []byte, sp presenter.SevensPresenter) (*SevensInteractor, error) {
+	var s domain.Sevens
+	if err := json.Unmarshal(data, &s); err != nil {
+		return nil, err
+	}
+	return &SevensInteractor{s: &s, sp: sp}, nil
 }

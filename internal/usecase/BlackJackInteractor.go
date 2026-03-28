@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -191,4 +193,18 @@ func (bi *BlackJackInteractor) ResetWithConfig(cfg domain.BlackJackConfig) strin
 // ActionLog 棋譜を出力する
 func (bi *BlackJackInteractor) ActionLog() string {
 	return bi.bjp.ActionLogOutput(bi.bj)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (bi *BlackJackInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(bi.bj)
+}
+
+// RestoreBlackJackInteractor deserialises JSON into a BlackJackInteractor.
+func RestoreBlackJackInteractor(data []byte, bjp presenter.BlackJackPresenter) (*BlackJackInteractor, error) {
+	var bj domain.BlackJack
+	if err := json.Unmarshal(data, &bj); err != nil {
+		return nil, err
+	}
+	return &BlackJackInteractor{bj: &bj, bjp: bjp}, nil
 }

@@ -15,9 +15,9 @@ const (
 
 // HeartsConfig ハーツゲーム設定
 type HeartsConfig struct {
-	CpuDifficulty HeartsCpuDifficulty
-	PointLimit    int  // ゲーム終了スコア (いずれかのプレイヤーがこの点数に達したら終了)
-	OmnibusJD     bool // オムニバス・ハーツ: J♦獲得で-10点
+	CpuDifficulty HeartsCpuDifficulty `json:"cd"`
+	PointLimit    int                 `json:"pl"` // ゲーム終了スコア (いずれかのプレイヤーがこの点数に達したら終了)
+	OmnibusJD     bool                `json:"oj"` // オムニバス・ハーツ: J♦獲得で-10点
 }
 
 // DefaultHeartsConfig デフォルト設定を返す

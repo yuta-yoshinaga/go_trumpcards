@@ -1,6 +1,9 @@
 package usecase
 
 import (
+	"encoding/json"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -96,4 +99,18 @@ func (fi *FreeCellInteractor) ActionLog() string {
 // Undo アンドゥ
 func (fi *FreeCellInteractor) Undo() string {
 	return execAndPresent(fi.f, fi.fp, fi.f.Undo)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (fi *FreeCellInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(fi.f)
+}
+
+// RestoreFreeCellInteractor deserialises JSON into a FreeCellInteractor.
+func RestoreFreeCellInteractor(data []byte, fp presenter.FreeCellPresenter) (*FreeCellInteractor, error) {
+	var fc domain.FreeCell
+	if err := json.Unmarshal(data, &fc); err != nil {
+		return nil, err
+	}
+	return &FreeCellInteractor{f: &fc, fp: fp}, nil
 }

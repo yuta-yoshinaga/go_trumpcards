@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -240,4 +242,18 @@ func (ei *EuchreInteractor) runCpuTurns() {
 			ei.e.NextTrick()
 		}
 	}
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (ei *EuchreInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(ei.e)
+}
+
+// RestoreEuchreInteractor deserialises JSON into an EuchreInteractor.
+func RestoreEuchreInteractor(data []byte, ep presenter.EuchrePresenter) (*EuchreInteractor, error) {
+	var e domain.Euchre
+	if err := json.Unmarshal(data, &e); err != nil {
+		return nil, err
+	}
+	return &EuchreInteractor{e: &e, ep: ep}, nil
 }

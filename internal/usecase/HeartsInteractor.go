@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -136,4 +138,18 @@ func (hi *HeartsInteractor) runCpuTurns() {
 			hi.h.NextTrick()
 		}
 	}
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (hi *HeartsInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(hi.h)
+}
+
+// RestoreHeartsInteractor deserialises JSON into a HeartsInteractor.
+func RestoreHeartsInteractor(data []byte, hp presenter.HeartsPresenter) (*HeartsInteractor, error) {
+	var h domain.Hearts
+	if err := json.Unmarshal(data, &h); err != nil {
+		return nil, err
+	}
+	return &HeartsInteractor{h: &h, hp: hp}, nil
 }

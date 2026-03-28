@@ -1,6 +1,9 @@
 package domain
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // ShortDeckPlayer ショートデックホールデムプレイヤークラス
 type ShortDeckPlayer struct {
@@ -124,6 +127,70 @@ func (sp *ShortDeckPlayer) GetComparisonCards() []*Card {
 	cards := make([]*Card, len(sp.bestHand))
 	copy(cards, sp.bestHand)
 	return cards
+}
+
+// shortDeckPlayerJSON is the JSON wire format for ShortDeckPlayer.
+type shortDeckPlayerJSON struct {
+	Player              *Player            `json:"p"`
+	ChipHolder          *ChipHolder        `json:"ch"`
+	BettingPlayerBase   *bettingPlayerBase `json:"bp"`
+	IsHuman             bool               `json:"ih"`
+	BestHand            []*Card            `json:"bh"`
+	PlayStyle           HoldemPlayStyle    `json:"ps"`
+	TotalHands          int                `json:"th"`
+	VPIPCount           int                `json:"vc"`
+	PFRCount            int                `json:"pc"`
+	ThreeBetOpportunity int                `json:"to"`
+	ThreeBetCount       int                `json:"tc"`
+	PostFlopBetRaise    int                `json:"pb"`
+	PostFlopCall        int                `json:"pf"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (sp *ShortDeckPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(shortDeckPlayerJSON{
+		Player:              &sp.Player,
+		ChipHolder:          &sp.ChipHolder,
+		BettingPlayerBase:   &sp.bettingPlayerBase,
+		IsHuman:             sp.isHuman,
+		BestHand:            sp.bestHand,
+		PlayStyle:           sp.playStyle,
+		TotalHands:          sp.totalHands,
+		VPIPCount:           sp.vpipCount,
+		PFRCount:            sp.pfrCount,
+		ThreeBetOpportunity: sp.threeBetOpportunity,
+		ThreeBetCount:       sp.threeBetCount,
+		PostFlopBetRaise:    sp.postFlopBetRaise,
+		PostFlopCall:        sp.postFlopCall,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (sp *ShortDeckPlayer) UnmarshalJSON(data []byte) error {
+	var j shortDeckPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.Player != nil {
+		sp.Player = *j.Player
+	}
+	if j.ChipHolder != nil {
+		sp.ChipHolder = *j.ChipHolder
+	}
+	if j.BettingPlayerBase != nil {
+		sp.bettingPlayerBase = *j.BettingPlayerBase
+	}
+	sp.isHuman = j.IsHuman
+	sp.bestHand = j.BestHand
+	sp.playStyle = j.PlayStyle
+	sp.totalHands = j.TotalHands
+	sp.vpipCount = j.VPIPCount
+	sp.pfrCount = j.PFRCount
+	sp.threeBetOpportunity = j.ThreeBetOpportunity
+	sp.threeBetCount = j.ThreeBetCount
+	sp.postFlopBetRaise = j.PostFlopBetRaise
+	sp.postFlopCall = j.PostFlopCall
+	return nil
 }
 
 // EvalBestHand コミュニティカードとホールカード(2枚)からベスト5枚を評価 (ショートデック用)

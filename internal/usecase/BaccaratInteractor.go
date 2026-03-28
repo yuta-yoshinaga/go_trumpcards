@@ -1,6 +1,9 @@
 package usecase
 
 import (
+	"encoding/json"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -50,4 +53,18 @@ func (bi *BaccaratInteractor) ClearHistory() string {
 // ActionLog 棋譜を出力する
 func (bi *BaccaratInteractor) ActionLog() string {
 	return bi.bp.ActionLogOutput(bi.b)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (bi *BaccaratInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(bi.b)
+}
+
+// RestoreBaccaratInteractor deserialises JSON into a BaccaratInteractor.
+func RestoreBaccaratInteractor(data []byte, bp presenter.BaccaratPresenter) (*BaccaratInteractor, error) {
+	var bac domain.Baccarat
+	if err := json.Unmarshal(data, &bac); err != nil {
+		return nil, err
+	}
+	return &BaccaratInteractor{b: &bac, bp: bp}, nil
 }

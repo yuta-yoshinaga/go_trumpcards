@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // BlackJackCpuSeat CPUプレイヤー席
 type BlackJackCpuSeat struct {
 	player       *BlackJackPlayer
@@ -47,4 +49,38 @@ func (c *BlackJackCpuSeat) Reset() {
 	c.player.Reset()
 	c.hands = []*BlackJackHand{NewBlackJackHand()}
 	c.insuranceBet = 0
+}
+
+// blackJackCpuSeatJSON is the JSON wire format for BlackJackCpuSeat.
+type blackJackCpuSeatJSON struct {
+	Player       *BlackJackPlayer `json:"p"`
+	Hands        []*BlackJackHand `json:"hs"`
+	InsuranceBet int              `json:"ib"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (c *BlackJackCpuSeat) MarshalJSON() ([]byte, error) {
+	return json.Marshal(blackJackCpuSeatJSON{
+		Player:       c.player,
+		Hands:        c.hands,
+		InsuranceBet: c.insuranceBet,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (c *BlackJackCpuSeat) UnmarshalJSON(data []byte) error {
+	var j blackJackCpuSeatJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	c.player = j.Player
+	if c.player == nil {
+		c.player = NewBlackJackPlayer()
+	}
+	c.hands = j.Hands
+	if c.hands == nil {
+		c.hands = []*BlackJackHand{NewBlackJackHand()}
+	}
+	c.insuranceBet = j.InsuranceBet
+	return nil
 }

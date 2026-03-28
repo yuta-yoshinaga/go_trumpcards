@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // IndianPokerPlayer インディアンポーカープレイヤークラス
 type IndianPokerPlayer struct {
 	Player                            // 親クラス
@@ -27,6 +29,46 @@ func (p *IndianPokerPlayer) GetPlayStyle() HoldemPlayStyle { return p.playStyle 
 // GetPlayStyleName プレイスタイル名取得
 func (p *IndianPokerPlayer) GetPlayStyleName() string {
 	return playStyleName(int(p.playStyle), HoldemPlayStyleNames)
+}
+
+// indianPokerPlayerJSON is the JSON wire format for IndianPokerPlayer.
+type indianPokerPlayerJSON struct {
+	Player            *Player            `json:"p"`
+	ChipHolder        *ChipHolder        `json:"ch"`
+	BettingPlayerBase *bettingPlayerBase `json:"bp"`
+	IsHuman           bool               `json:"ih"`
+	PlayStyle         HoldemPlayStyle    `json:"ps"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p *IndianPokerPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(indianPokerPlayerJSON{
+		Player:            &p.Player,
+		ChipHolder:        &p.ChipHolder,
+		BettingPlayerBase: &p.bettingPlayerBase,
+		IsHuman:           p.isHuman,
+		PlayStyle:         p.playStyle,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *IndianPokerPlayer) UnmarshalJSON(data []byte) error {
+	var j indianPokerPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.Player != nil {
+		p.Player = *j.Player
+	}
+	if j.ChipHolder != nil {
+		p.ChipHolder = *j.ChipHolder
+	}
+	if j.BettingPlayerBase != nil {
+		p.bettingPlayerBase = *j.BettingPlayerBase
+	}
+	p.isHuman = j.IsHuman
+	p.playStyle = j.PlayStyle
+	return nil
 }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)

@@ -15,10 +15,10 @@ const (
 
 // SpadesConfig スペードゲーム設定
 type SpadesConfig struct {
-	CpuDifficulty       SpadesCpuDifficulty
-	PointLimit          int // ゲーム終了スコア (先に到達したプレイヤーが勝利)
-	NilBonus            int // ニルビッド成功時のボーナス
-	BagPenaltyThreshold int // バッグペナルティの閾値 (累積10バッグごとに-100)
+	CpuDifficulty       SpadesCpuDifficulty `json:"cd"`
+	PointLimit          int                 `json:"pl"` // ゲーム終了スコア (先に到達したプレイヤーが勝利)
+	NilBonus            int                 `json:"nb"` // ニルビッド成功時のボーナス
+	BagPenaltyThreshold int                 `json:"bt"` // バッグペナルティの閾値 (累積10バッグごとに-100)
 }
 
 // DefaultSpadesConfig デフォルト設定を返す

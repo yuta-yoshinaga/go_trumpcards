@@ -95,6 +95,15 @@ func NewHeartsWebController(factory func() usecase.HeartsInteractorIF) *HeartsWe
 	return NewGameWebController(factory, newHeartsDefaultOutput, heartsDispatch)
 }
 
+// NewHeartsWebControllerWithProvider creates a HeartsWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewHeartsWebControllerWithProvider(
+	provider SessionProvider[usecase.HeartsInteractorIF],
+	factory func() usecase.HeartsInteractorIF,
+) *HeartsWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newHeartsDefaultOutput, heartsDispatch)
+}
+
 func newHeartsDefaultOutput(msg string) *HeartsWebOutput {
 	return &HeartsWebOutput{
 		Players:       make([]*HeartsWebOutputPlayer, 0),

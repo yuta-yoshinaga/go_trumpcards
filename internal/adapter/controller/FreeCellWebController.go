@@ -51,6 +51,15 @@ func NewFreeCellWebController(factory func() usecase.FreeCellInteractorIF) *Free
 	return NewGameWebController(factory, newFreeCellDefaultOutput, freeCellDispatch)
 }
 
+// NewFreeCellWebControllerWithProvider creates a FreeCellWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewFreeCellWebControllerWithProvider(
+	provider SessionProvider[usecase.FreeCellInteractorIF],
+	factory func() usecase.FreeCellInteractorIF,
+) *FreeCellWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newFreeCellDefaultOutput, freeCellDispatch)
+}
+
 func newFreeCellDefaultOutput(msg string) *FreeCellWebOutput {
 	return &FreeCellWebOutput{
 		Tableau:       make([][]*WebOutputCard, 0),

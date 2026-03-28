@@ -73,15 +73,15 @@ jobs:
           CORS_ORIGINS_PROD: ${{ vars.CORS_ALLOWED_ORIGINS_PROD }}
           CORS_ORIGINS_STAGING: ${{ vars.CORS_ALLOWED_ORIGINS_STAGING }}
         run: |
-          SUFFIX=""
+          ENV_FLAG=""
           CORS_ORIGINS="$CORS_ORIGINS_PROD"
           if [ "$IS_PRODUCTION" != "true" ]; then
-            SUFFIX="-staging"
+            ENV_FLAG="--env staging"
             CORS_ORIGINS="$CORS_ORIGINS_STAGING"
           fi
           cd "workers/${WORKER_NAME}"
           bunx wrangler deploy \
-            --name "go-trumpcards-${WORKER_NAME}${SUFFIX}" \
+            $ENV_FLAG \
             --var "CORS_ALLOWED_ORIGINS:${CORS_ORIGINS}"
 
   deploy-pages:

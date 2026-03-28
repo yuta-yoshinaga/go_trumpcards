@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -38,8 +39,8 @@ type SpadesHint struct {
 
 // SpadesTrickCard トリック中の1枚
 type SpadesTrickCard struct {
-	PlayerIdx int
-	Card      *Card
+	PlayerIdx int   `json:"pi"`
+	Card      *Card `json:"c"`
 }
 
 // SpadesLoseThreshold 負け閾値 (-200点以下で負け)
@@ -1128,4 +1129,85 @@ func (s *Spades) getValidPlayIndices(playerIdx int) []int {
 // GetValidPlayIndices プレイ可能なカードのインデックスリストを返す (Web用)
 func (s *Spades) GetValidPlayIndices(playerIdx int) []int {
 	return s.getValidPlayIndices(playerIdx)
+}
+
+// spadesJSON is the JSON wire format for Spades.
+type spadesJSON struct {
+	TrumpCards       *TrumpCards        `json:"tc"`
+	Players          []*SpadesPlayer    `json:"ps"`
+	Config           SpadesConfig       `json:"cf"`
+	Phase            SpadesPhase        `json:"ph"`
+	RoundNumber      int                `json:"rn"`
+	TrickNumber      int                `json:"tn"`
+	CurrentPlayerIdx int                `json:"ci"`
+	CurrentTrick     []*SpadesTrickCard `json:"ct"`
+	SpadesBroken     bool               `json:"sb"`
+	LeadPlayerIdx    int                `json:"li"`
+	BidPlayerIdx     int                `json:"bi"`
+	GameEndFlag      bool               `json:"ge"`
+	WinnerIdx        int                `json:"wi"`
+	ActionLog        []*ActionLogEntry  `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (s *Spades) MarshalJSON() ([]byte, error) {
+	return json.Marshal(spadesJSON{
+		TrumpCards:       s.trumpCards,
+		Players:          s.players,
+		Config:           s.config,
+		Phase:            s.phase,
+		RoundNumber:      s.roundNumber,
+		TrickNumber:      s.trickNumber,
+		CurrentPlayerIdx: s.currentPlayerIdx,
+		CurrentTrick:     s.currentTrick,
+		SpadesBroken:     s.spadesBroken,
+		LeadPlayerIdx:    s.leadPlayerIdx,
+		BidPlayerIdx:     s.bidPlayerIdx,
+		GameEndFlag:      s.gameEndFlag,
+		WinnerIdx:        s.winnerIdx,
+		ActionLog:        s.actionLog,
+	})
+}
+
+// spadesMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const spadesMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (s *Spades) UnmarshalJSON(data []byte) error {
+	var j spadesJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > spadesMaxSliceLen || len(j.CurrentTrick) > spadesMaxSliceLen ||
+		len(j.ActionLog) > spadesMaxSliceLen {
+		return fmt.Errorf("spades: input array exceeds maximum allowed size")
+	}
+	s.trumpCards = j.TrumpCards
+	if s.trumpCards == nil {
+		s.trumpCards = NewTrumpCards(0)
+	}
+	s.players = j.Players
+	if s.players == nil {
+		s.players = make([]*SpadesPlayer, 0)
+	}
+	s.config = j.Config
+	s.phase = j.Phase
+	s.roundNumber = j.RoundNumber
+	s.trickNumber = j.TrickNumber
+	s.currentPlayerIdx = j.CurrentPlayerIdx
+	s.currentTrick = j.CurrentTrick
+	if s.currentTrick == nil {
+		s.currentTrick = make([]*SpadesTrickCard, 0)
+	}
+	s.spadesBroken = j.SpadesBroken
+	s.leadPlayerIdx = j.LeadPlayerIdx
+	s.bidPlayerIdx = j.BidPlayerIdx
+	s.gameEndFlag = j.GameEndFlag
+	s.winnerIdx = j.WinnerIdx
+	s.actionLog = j.ActionLog
+	if s.actionLog == nil {
+		s.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

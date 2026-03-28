@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // CribbageCpuDifficulty CPU の難易度レベル
 type CribbageCpuDifficulty int
 
@@ -35,5 +37,27 @@ func (c CribbageConfig) Validate() error {
 	if err := ValidateMin("point limit", c.PointLimit, 1); err != nil {
 		return err
 	}
+	return nil
+}
+
+// cribbageConfigJSON is the JSON wire format for CribbageConfig.
+type cribbageConfigJSON struct {
+	CpuDifficulty CribbageCpuDifficulty `json:"cd"`
+	PointLimit    int                   `json:"pl"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (c CribbageConfig) MarshalJSON() ([]byte, error) {
+	return json.Marshal(cribbageConfigJSON(c))
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (c *CribbageConfig) UnmarshalJSON(data []byte) error {
+	var j cribbageConfigJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	c.CpuDifficulty = j.CpuDifficulty
+	c.PointLimit = j.PointLimit
 	return nil
 }

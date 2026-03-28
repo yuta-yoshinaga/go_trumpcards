@@ -15,8 +15,8 @@ const (
 
 // GinRummyConfig ジンラミーゲーム設定
 type GinRummyConfig struct {
-	CpuDifficulty GinRummyCpuDifficulty
-	PointLimit    int // ゲーム終了スコア (先に到達したプレイヤーが勝利)
+	CpuDifficulty GinRummyCpuDifficulty `json:"cd"`
+	PointLimit    int                   `json:"pl"` // ゲーム終了スコア (先に到達したプレイヤーが勝利)
 }
 
 // DefaultGinRummyConfig デフォルト設定を返す

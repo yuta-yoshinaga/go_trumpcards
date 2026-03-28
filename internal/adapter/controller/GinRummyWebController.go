@@ -82,6 +82,15 @@ func NewGinRummyWebController(factory func() usecase.GinRummyInteractorIF) *GinR
 	return NewGameWebController(factory, newGinRummyDefaultOutput, ginRummyDispatch)
 }
 
+// NewGinRummyWebControllerWithProvider creates a GinRummyWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewGinRummyWebControllerWithProvider(
+	provider SessionProvider[usecase.GinRummyInteractorIF],
+	factory func() usecase.GinRummyInteractorIF,
+) *GinRummyWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newGinRummyDefaultOutput, ginRummyDispatch)
+}
+
 func newGinRummyDefaultOutput(msg string) *GinRummyWebOutput {
 	return &GinRummyWebOutput{
 		Players:         make([]*GinRummyWebOutputPlayer, 0),

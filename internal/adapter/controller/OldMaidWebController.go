@@ -104,6 +104,15 @@ func NewOldMaidWebController(factory func() usecase.OldMaidInteractorIF) *OldMai
 	return NewGameWebController(factory, newOldMaidDefaultOutput, oldMaidDispatch)
 }
 
+// NewOldMaidWebControllerWithProvider creates an OldMaidWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewOldMaidWebControllerWithProvider(
+	provider SessionProvider[usecase.OldMaidInteractorIF],
+	factory func() usecase.OldMaidInteractorIF,
+) *OldMaidWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newOldMaidDefaultOutput, oldMaidDispatch)
+}
+
 func newOldMaidDefaultOutput(msg string) *OldMaidWebOutput {
 	return &OldMaidWebOutput{
 		Players:               make([]*OldMaidWebOutputPlayer, 0),

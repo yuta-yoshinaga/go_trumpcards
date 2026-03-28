@@ -75,6 +75,15 @@ func NewMemoryWebController(factory func() usecase.MemoryInteractorIF) *MemoryWe
 	return NewGameWebController(factory, newMemoryDefaultOutput, memoryDispatch)
 }
 
+// NewMemoryWebControllerWithProvider creates a MemoryWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewMemoryWebControllerWithProvider(
+	provider SessionProvider[usecase.MemoryInteractorIF],
+	factory func() usecase.MemoryInteractorIF,
+) *MemoryWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newMemoryDefaultOutput, memoryDispatch)
+}
+
 func newMemoryDefaultOutput(msg string) *MemoryWebOutput {
 	return &MemoryWebOutput{
 		Players:       make([]*MemoryWebOutputPlayer, 0),

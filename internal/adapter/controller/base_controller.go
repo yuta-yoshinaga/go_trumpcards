@@ -66,7 +66,7 @@ func execWithSession[P WebInput, T any](
 	bc *baseController,
 	w http.ResponseWriter,
 	r *http.Request,
-	store *SessionStore[T],
+	provider SessionProvider[T],
 	factory func() T,
 	newDefault func(string) any,
 	handler func(w http.ResponseWriter, interactor T, param P) bool,
@@ -80,13 +80,12 @@ func execWithSession[P WebInput, T any](
 		bc.writeJsonResponse(w, http.StatusOK, newDefault("bye."))
 		return
 	}
-	interactor, mu, ok := store.GetWithLock(param.GetSessionID(), factory)
+	interactor, release, ok := provider.Acquire(param.GetSessionID(), factory)
 	if !ok {
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))
 		return
 	}
-	mu.Lock()
-	defer mu.Unlock()
+	defer release()
 	if !handler(w, interactor, param) {
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("Unsupported command."))
 	}

@@ -1,12 +1,47 @@
 package domain
 
-import "sort"
+import (
+	"encoding/json"
+	"sort"
+)
 
 // DaifugoPlayer 大富豪プレイヤークラス
 type DaifugoPlayer struct {
 	*RankedGamePlayer
 	prevRank             int  // 前回のランク (-1 = なし)
 	illegalFinishPenalty bool // 反則上がりペナルティ
+}
+
+// daifugoPlayerJSON is the JSON wire format for DaifugoPlayer.
+type daifugoPlayerJSON struct {
+	RankedGamePlayer *RankedGamePlayer `json:"rp"`
+	PrevRank         int               `json:"pr"`
+	IllegalFinish    bool              `json:"if"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p *DaifugoPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(daifugoPlayerJSON{
+		RankedGamePlayer: p.RankedGamePlayer,
+		PrevRank:         p.prevRank,
+		IllegalFinish:    p.illegalFinishPenalty,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *DaifugoPlayer) UnmarshalJSON(data []byte) error {
+	var j daifugoPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.RankedGamePlayer != nil {
+		p.RankedGamePlayer = j.RankedGamePlayer
+	} else {
+		p.RankedGamePlayer = NewRankedGamePlayer(false)
+	}
+	p.prevRank = j.PrevRank
+	p.illegalFinishPenalty = j.IllegalFinish
+	return nil
 }
 
 // NewDaifugoPlayer コンストラクタ

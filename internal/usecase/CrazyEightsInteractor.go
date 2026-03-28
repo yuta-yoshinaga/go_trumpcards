@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -140,3 +142,17 @@ const (
 	// CrazyEightsPhaseGameEnd ゲーム終了フェーズ (domain からの再エクスポート)
 	CrazyEightsPhaseGameEnd = domain.CrazyEightsPhaseGameEnd
 )
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (ci *CrazyEightsInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(ci.g)
+}
+
+// RestoreCrazyEightsInteractor deserialises JSON into a CrazyEightsInteractor.
+func RestoreCrazyEightsInteractor(data []byte, gp presenter.CrazyEightsPresenter) (*CrazyEightsInteractor, error) {
+	var g domain.CrazyEights
+	if err := json.Unmarshal(data, &g); err != nil {
+		return nil, err
+	}
+	return &CrazyEightsInteractor{g: &g, gp: gp}, nil
+}

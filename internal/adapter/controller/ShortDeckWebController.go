@@ -21,6 +21,15 @@ func NewShortDeckWebController(factory func() usecase.ShortDeckInteractorIF) *Sh
 	return NewGameWebController(factory, newShortDeckDefaultOutput, shortDeckDispatch)
 }
 
+// NewShortDeckWebControllerWithProvider creates a ShortDeckWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewShortDeckWebControllerWithProvider(
+	provider SessionProvider[usecase.ShortDeckInteractorIF],
+	factory func() usecase.ShortDeckInteractorIF,
+) *ShortDeckWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newShortDeckDefaultOutput, shortDeckDispatch)
+}
+
 func newShortDeckDefaultOutput(msg string) *ShortDeckWebOutput {
 	return &ShortDeckWebOutput{
 		Players:        make([]*HoldemWebOutputPlayer, 0),

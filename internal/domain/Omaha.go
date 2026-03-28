@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
@@ -1306,6 +1307,164 @@ func (o *Omaha) logAction(playerIdx, action, amount int) {
 	case OmahaActionAllIn:
 		o.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", o.players[playerIdx].GetCurrentBet()), nil)
 	}
+}
+
+// omahaJSON is the JSON wire format for Omaha.
+type omahaJSON struct {
+	TrumpCards      *TrumpCards              `json:"tc"`
+	Players         []*OmahaPlayer           `json:"pl"`
+	CommunityCards  []*Card                  `json:"cc"`
+	Pot             int                      `json:"pt"`
+	SidePots        []OmahaSidePot           `json:"sp"`
+	DealerIdx       int                      `json:"di"`
+	CurrentTurn     int                      `json:"ct"`
+	Phase           int                      `json:"ph"`
+	Config          OmahaConfig              `json:"cf"`
+	GameEndFlag     bool                     `json:"ge"`
+	LastBet         int                      `json:"lb"`
+	MinRaise        int                      `json:"mr"`
+	RaiseCount      int                      `json:"rc"`
+	ActedFlags      []bool                   `json:"af"`
+	RoundResults    []OmahaResult            `json:"rr"`
+	CpuActions      []OmahaCpuAction         `json:"ca"`
+	StartingChips   []int                    `json:"sc"`
+	VPIPTracked     []bool                   `json:"vt"`
+	PFRTracked      []bool                   `json:"ft"`
+	ThreeBetTracked []bool                   `json:"tt"`
+	HandCount       int                      `json:"hc"`
+	RebuyCounts     []int                    `json:"rb"`
+	AddonUsed       []bool                   `json:"au"`
+	RebuyPhaseType  int                      `json:"rp"`
+	ActionLog       []*ActionLogEntry        `json:"al"`
+	Profile         *BettingHumanProfileData `json:"pf,omitempty"`
+	LastHumanPlayMs int                      `json:"hm"`
+}
+
+// omahaMaxSliceLen caps slice sizes during deserialisation.
+const omahaMaxSliceLen = 1000
+
+// MarshalJSON implements json.Marshaler.
+func (o *Omaha) MarshalJSON() ([]byte, error) {
+	j := omahaJSON{
+		TrumpCards:      o.trumpCards,
+		Players:         o.players,
+		CommunityCards:  o.communityCards,
+		Pot:             o.pot,
+		SidePots:        o.sidePots,
+		DealerIdx:       o.dealerIdx,
+		CurrentTurn:     o.currentTurn,
+		Phase:           o.phase,
+		Config:          o.config,
+		GameEndFlag:     o.gameEndFlag,
+		LastBet:         o.lastBet,
+		MinRaise:        o.minRaise,
+		RaiseCount:      o.raiseCount,
+		ActedFlags:      o.actedFlags,
+		RoundResults:    o.roundResults,
+		CpuActions:      o.cpuActions,
+		StartingChips:   o.startingChips,
+		VPIPTracked:     o.vpipTracked,
+		PFRTracked:      o.pfrTracked,
+		ThreeBetTracked: o.threeBetTracked,
+		HandCount:       o.handCount,
+		RebuyCounts:     o.rebuyCounts,
+		AddonUsed:       o.addonUsed,
+		RebuyPhaseType:  o.rebuyPhaseType,
+		ActionLog:       o.actionLog,
+		LastHumanPlayMs: o.lastHumanPlayMs,
+	}
+	if o.humanProfile != nil {
+		d := o.humanProfile.Export()
+		j.Profile = &d
+	}
+	return json.Marshal(j)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (o *Omaha) UnmarshalJSON(data []byte) error {
+	var j omahaJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > omahaMaxSliceLen || len(j.CommunityCards) > omahaMaxSliceLen ||
+		len(j.SidePots) > omahaMaxSliceLen || len(j.ActedFlags) > omahaMaxSliceLen ||
+		len(j.RoundResults) > omahaMaxSliceLen || len(j.CpuActions) > omahaMaxSliceLen ||
+		len(j.StartingChips) > omahaMaxSliceLen || len(j.ActionLog) > omahaMaxSliceLen {
+		return fmt.Errorf("omaha: input array exceeds maximum allowed size")
+	}
+	o.trumpCards = j.TrumpCards
+	if o.trumpCards == nil {
+		o.trumpCards = NewTrumpCards(0)
+	}
+	o.players = j.Players
+	if o.players == nil {
+		o.players = make([]*OmahaPlayer, 0)
+	}
+	o.communityCards = j.CommunityCards
+	if o.communityCards == nil {
+		o.communityCards = make([]*Card, 0)
+	}
+	o.pot = j.Pot
+	o.sidePots = j.SidePots
+	if o.sidePots == nil {
+		o.sidePots = make([]OmahaSidePot, 0)
+	}
+	o.dealerIdx = j.DealerIdx
+	o.currentTurn = j.CurrentTurn
+	o.phase = j.Phase
+	o.config = j.Config
+	o.gameEndFlag = j.GameEndFlag
+	o.lastBet = j.LastBet
+	o.minRaise = j.MinRaise
+	o.raiseCount = j.RaiseCount
+	o.actedFlags = j.ActedFlags
+	if o.actedFlags == nil {
+		o.actedFlags = make([]bool, 0)
+	}
+	o.roundResults = j.RoundResults
+	if o.roundResults == nil {
+		o.roundResults = make([]OmahaResult, 0)
+	}
+	o.cpuActions = j.CpuActions
+	if o.cpuActions == nil {
+		o.cpuActions = make([]OmahaCpuAction, 0)
+	}
+	o.startingChips = j.StartingChips
+	if o.startingChips == nil {
+		o.startingChips = make([]int, 0)
+	}
+	o.vpipTracked = j.VPIPTracked
+	if o.vpipTracked == nil {
+		o.vpipTracked = make([]bool, 0)
+	}
+	o.pfrTracked = j.PFRTracked
+	if o.pfrTracked == nil {
+		o.pfrTracked = make([]bool, 0)
+	}
+	o.threeBetTracked = j.ThreeBetTracked
+	if o.threeBetTracked == nil {
+		o.threeBetTracked = make([]bool, 0)
+	}
+	o.handCount = j.HandCount
+	o.rebuyCounts = j.RebuyCounts
+	if o.rebuyCounts == nil {
+		o.rebuyCounts = make([]int, 0)
+	}
+	o.addonUsed = j.AddonUsed
+	if o.addonUsed == nil {
+		o.addonUsed = make([]bool, 0)
+	}
+	o.rebuyPhaseType = j.RebuyPhaseType
+	o.actionLog = j.ActionLog
+	if o.actionLog == nil {
+		o.actionLog = make([]*ActionLogEntry, 0)
+	}
+	o.lastHumanPlayMs = j.LastHumanPlayMs
+	if j.Profile != nil {
+		o.humanProfile = &BettingHumanProfile{}
+		o.humanProfile.Import(*j.Profile)
+	}
+	return nil
 }
 
 // Resize プレイヤースライスを差し替え、プレイヤー数依存スライスを再初期化する

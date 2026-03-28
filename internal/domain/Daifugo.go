@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -484,4 +485,166 @@ func (d *Daifugo) appendLog(playerIdx int, actionType, detail string, cards []*C
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// --- JSON Serialization ---
+
+// daifugoCpuActionJSON is the JSON wire format for DaifugoCpuAction.
+type daifugoCpuActionJSON struct {
+	PlayerIdx   int     `json:"pi"`
+	PlayedCards []*Card `json:"pc"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (a *DaifugoCpuAction) MarshalJSON() ([]byte, error) {
+	return json.Marshal(daifugoCpuActionJSON{
+		PlayerIdx:   a.PlayerIdx,
+		PlayedCards: a.PlayedCards,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (a *DaifugoCpuAction) UnmarshalJSON(data []byte) error {
+	var j daifugoCpuActionJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	a.PlayerIdx = j.PlayerIdx
+	a.PlayedCards = j.PlayedCards
+	return nil
+}
+
+// daifugoExchangeActionJSON is the JSON wire format for DaifugoExchangeAction.
+type daifugoExchangeActionJSON struct {
+	FromPlayerIdx int     `json:"fp"`
+	ToPlayerIdx   int     `json:"tp"`
+	Cards         []*Card `json:"cs"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (a *DaifugoExchangeAction) MarshalJSON() ([]byte, error) {
+	return json.Marshal(daifugoExchangeActionJSON{
+		FromPlayerIdx: a.FromPlayerIdx,
+		ToPlayerIdx:   a.ToPlayerIdx,
+		Cards:         a.Cards,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (a *DaifugoExchangeAction) UnmarshalJSON(data []byte) error {
+	var j daifugoExchangeActionJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	a.FromPlayerIdx = j.FromPlayerIdx
+	a.ToPlayerIdx = j.ToPlayerIdx
+	a.Cards = j.Cards
+	return nil
+}
+
+// daifugoJSON is the JSON wire format for Daifugo (flattens daifugoRoundState).
+type daifugoJSON struct {
+	TrumpCards          *TrumpCards              `json:"tc"`
+	Players             []*DaifugoPlayer         `json:"pl"`
+	Config              DaifugoConfig            `json:"cf"`
+	SortMode            DaifugoSortMode          `json:"sm"`
+	CurrentTurn         int                      `json:"ct"`
+	TableCards          []*Card                  `json:"tb"`
+	LastPlayPlayerIdx   int                      `json:"lp"`
+	GameEndFlag         bool                     `json:"ge"`
+	PassCount           int                      `json:"pc"`
+	CpuActions          []*DaifugoCpuAction      `json:"ca"`
+	HumanAction         *DaifugoCpuAction        `json:"ha"`
+	RevolutionActive    bool                     `json:"ra"`
+	SuitLocked          bool                     `json:"sl"`
+	LockedSuit          int                      `json:"ls"`
+	ElevenBackActive    bool                     `json:"ea"`
+	TableIsSequence     bool                     `json:"ts"`
+	ExchangeActions     []*DaifugoExchangeAction `json:"ex"`
+	PendingActionType   DaifugoPendingAction     `json:"pa"`
+	PendingActionTarget int                      `json:"pt"`
+	ReverseDirection    bool                     `json:"rd"`
+	NumberLocked        bool                     `json:"nl"`
+	SequenceLocked      bool                     `json:"sq"`
+	ActionLog           []*ActionLogEntry        `json:"al"`
+}
+
+// daifugoMaxSliceLen caps slice sizes during deserialisation.
+const daifugoMaxSliceLen = 1000
+
+// MarshalJSON implements json.Marshaler.
+func (d *Daifugo) MarshalJSON() ([]byte, error) {
+	return json.Marshal(daifugoJSON{
+		TrumpCards:          d.trumpCards,
+		Players:             d.players,
+		Config:              d.config,
+		SortMode:            d.sortMode,
+		CurrentTurn:         d.round.currentTurn,
+		TableCards:          d.round.tableCards,
+		LastPlayPlayerIdx:   d.round.lastPlayPlayerIdx,
+		GameEndFlag:         d.round.gameEndFlag,
+		PassCount:           d.round.passCount,
+		CpuActions:          d.round.cpuActions,
+		HumanAction:         d.round.humanAction,
+		RevolutionActive:    d.round.revolutionActive,
+		SuitLocked:          d.round.suitLocked,
+		LockedSuit:          d.round.lockedSuit,
+		ElevenBackActive:    d.round.elevenBackActive,
+		TableIsSequence:     d.round.tableIsSequence,
+		ExchangeActions:     d.round.exchangeActions,
+		PendingActionType:   d.round.pendingActionType,
+		PendingActionTarget: d.round.pendingActionTarget,
+		ReverseDirection:    d.round.reverseDirection,
+		NumberLocked:        d.round.numberLocked,
+		SequenceLocked:      d.round.sequenceLocked,
+		ActionLog:           d.round.actionLog,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (d *Daifugo) UnmarshalJSON(data []byte) error {
+	var j daifugoJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > daifugoMaxSliceLen || len(j.TableCards) > daifugoMaxSliceLen ||
+		len(j.CpuActions) > daifugoMaxSliceLen || len(j.ExchangeActions) > daifugoMaxSliceLen ||
+		len(j.ActionLog) > daifugoMaxSliceLen {
+		return fmt.Errorf("daifugo: input array exceeds maximum allowed size")
+	}
+	d.trumpCards = j.TrumpCards
+	if d.trumpCards == nil {
+		d.trumpCards = NewTrumpCards(0)
+	}
+	d.players = j.Players
+	if d.players == nil {
+		d.players = make([]*DaifugoPlayer, 0)
+	}
+	d.config = j.Config
+	d.sortMode = j.SortMode
+	d.round = daifugoRoundState{
+		currentTurn:         j.CurrentTurn,
+		tableCards:          j.TableCards,
+		lastPlayPlayerIdx:   j.LastPlayPlayerIdx,
+		gameEndFlag:         j.GameEndFlag,
+		passCount:           j.PassCount,
+		cpuActions:          j.CpuActions,
+		humanAction:         j.HumanAction,
+		revolutionActive:    j.RevolutionActive,
+		suitLocked:          j.SuitLocked,
+		lockedSuit:          j.LockedSuit,
+		elevenBackActive:    j.ElevenBackActive,
+		tableIsSequence:     j.TableIsSequence,
+		exchangeActions:     j.ExchangeActions,
+		pendingActionType:   j.PendingActionType,
+		pendingActionTarget: j.PendingActionTarget,
+		reverseDirection:    j.ReverseDirection,
+		numberLocked:        j.NumberLocked,
+		sequenceLocked:      j.SequenceLocked,
+		actionLog:           j.ActionLog,
+	}
+	if d.round.actionLog == nil {
+		d.round.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

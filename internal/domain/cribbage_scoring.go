@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // CribbageScoreDetail クリベッジのスコア内訳
 type CribbageScoreDetail struct {
 	Fifteens int
@@ -9,6 +11,38 @@ type CribbageScoreDetail struct {
 	Nobs     int
 	Total    int
 	Cards    []*Card // スコア対象カード (hand + starter)
+}
+
+// cribbageScoreDetailJSON is the JSON wire format for CribbageScoreDetail.
+type cribbageScoreDetailJSON struct {
+	Fifteens int     `json:"f"`
+	Pairs    int     `json:"p"`
+	Runs     int     `json:"r"`
+	Flush    int     `json:"fl"`
+	Nobs     int     `json:"n"`
+	Total    int     `json:"t"`
+	Cards    []*Card `json:"cs"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (d CribbageScoreDetail) MarshalJSON() ([]byte, error) {
+	return json.Marshal(cribbageScoreDetailJSON(d))
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (d *CribbageScoreDetail) UnmarshalJSON(data []byte) error {
+	var j cribbageScoreDetailJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	d.Fifteens = j.Fifteens
+	d.Pairs = j.Pairs
+	d.Runs = j.Runs
+	d.Flush = j.Flush
+	d.Nobs = j.Nobs
+	d.Total = j.Total
+	d.Cards = j.Cards
+	return nil
 }
 
 // cribbageCardValue クリベッジ用カード値 (A=1, 2-9=face, 10/J/Q/K=10)

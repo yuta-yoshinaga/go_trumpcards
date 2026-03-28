@@ -100,6 +100,15 @@ func NewEuchreWebController(factory func() usecase.EuchreInteractorIF) *EuchreWe
 	return NewGameWebController(factory, newEuchreDefaultOutput, euchreDispatch)
 }
 
+// NewEuchreWebControllerWithProvider creates an EuchreWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewEuchreWebControllerWithProvider(
+	provider SessionProvider[usecase.EuchreInteractorIF],
+	factory func() usecase.EuchreInteractorIF,
+) *EuchreWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newEuchreDefaultOutput, euchreDispatch)
+}
+
 func newEuchreDefaultOutput(msg string) *EuchreWebOutput {
 	return &EuchreWebOutput{
 		Players:       make([]*EuchreWebOutputPlayer, 0),

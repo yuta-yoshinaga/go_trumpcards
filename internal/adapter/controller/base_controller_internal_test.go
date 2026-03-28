@@ -104,12 +104,12 @@ type testInteractor struct{}
 
 func TestExecWithSession_DecodeError(t *testing.T) {
 	bc := &baseController{}
-	store := NewSessionStore[*testInteractor]()
-	defer store.Stop()
+	provider := NewMemorySessionProvider[*testInteractor]()
+	defer provider.Stop()
 	rec := httptest.NewRecorder()
 	req := makeHTTPRequest(`{invalid json}`)
 
-	execWithSession(bc, rec, req, store,
+	execWithSession(bc, rec, req, provider,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
 		func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
@@ -120,12 +120,12 @@ func TestExecWithSession_DecodeError(t *testing.T) {
 
 func TestExecWithSession_EmptyCommand(t *testing.T) {
 	bc := &baseController{}
-	store := NewSessionStore[*testInteractor]()
-	defer store.Stop()
+	provider := NewMemorySessionProvider[*testInteractor]()
+	defer provider.Stop()
 	rec := httptest.NewRecorder()
 	req := makeHTTPRequest(`{"command":"","sessionId":"s1"}`)
 
-	execWithSession(bc, rec, req, store,
+	execWithSession(bc, rec, req, provider,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
 		func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
@@ -136,12 +136,12 @@ func TestExecWithSession_EmptyCommand(t *testing.T) {
 
 func TestExecWithSession_EmptySessionId(t *testing.T) {
 	bc := &baseController{}
-	store := NewSessionStore[*testInteractor]()
-	defer store.Stop()
+	provider := NewMemorySessionProvider[*testInteractor]()
+	defer provider.Stop()
 	rec := httptest.NewRecorder()
 	req := makeHTTPRequest(`{"command":"r","sessionId":""}`)
 
-	execWithSession(bc, rec, req, store,
+	execWithSession(bc, rec, req, provider,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
 		func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
@@ -154,12 +154,12 @@ func TestExecWithSession_QuitCommand(t *testing.T) {
 	for _, cmd := range []string{"q", "quit"} {
 		t.Run(cmd, func(t *testing.T) {
 			bc := &baseController{}
-			store := NewSessionStore[*testInteractor]()
-			defer store.Stop()
+			provider := NewMemorySessionProvider[*testInteractor]()
+			defer provider.Stop()
 			rec := httptest.NewRecorder()
 			req := makeHTTPRequest(`{"command":"` + cmd + `","sessionId":"s1"}`)
 
-			execWithSession(bc, rec, req, store,
+			execWithSession(bc, rec, req, provider,
 				func() *testInteractor { return &testInteractor{} },
 				func(msg string) any { return map[string]string{"message": msg} },
 				func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
@@ -172,14 +172,14 @@ func TestExecWithSession_QuitCommand(t *testing.T) {
 
 func TestExecWithSession_SessionRetrievalFailure(t *testing.T) {
 	bc := &baseController{}
-	store := NewSessionStore[*testInteractor]()
-	defer store.Stop()
+	provider := NewMemorySessionProvider[*testInteractor]()
+	defer provider.Stop()
 	rec := httptest.NewRecorder()
-	// Session ID exceeding max length triggers GetWithLock failure.
+	// Session ID exceeding max length triggers Acquire failure.
 	longID := strings.Repeat("x", SessionMaxIDLen+1)
 	req := makeHTTPRequest(`{"command":"r","sessionId":"` + longID + `"}`)
 
-	execWithSession(bc, rec, req, store,
+	execWithSession(bc, rec, req, provider,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
 		func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
@@ -190,12 +190,12 @@ func TestExecWithSession_SessionRetrievalFailure(t *testing.T) {
 
 func TestExecWithSession_HandlerReturnsTrue(t *testing.T) {
 	bc := &baseController{}
-	store := NewSessionStore[*testInteractor]()
-	defer store.Stop()
+	provider := NewMemorySessionProvider[*testInteractor]()
+	defer provider.Stop()
 	rec := httptest.NewRecorder()
 	req := makeHTTPRequest(`{"command":"r","sessionId":"s1"}`)
 
-	execWithSession(bc, rec, req, store,
+	execWithSession(bc, rec, req, provider,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
 		func(w http.ResponseWriter, _ *testInteractor, _ testInput) bool {
@@ -209,12 +209,12 @@ func TestExecWithSession_HandlerReturnsTrue(t *testing.T) {
 
 func TestExecWithSession_HandlerReturnsFalse(t *testing.T) {
 	bc := &baseController{}
-	store := NewSessionStore[*testInteractor]()
-	defer store.Stop()
+	provider := NewMemorySessionProvider[*testInteractor]()
+	defer provider.Stop()
 	rec := httptest.NewRecorder()
 	req := makeHTTPRequest(`{"command":"xyz","sessionId":"s1"}`)
 
-	execWithSession(bc, rec, req, store,
+	execWithSession(bc, rec, req, provider,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
 		func(_ http.ResponseWriter, _ *testInteractor, _ testInput) bool {

@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -152,4 +154,18 @@ func (si *SpadesInteractor) runCpuTurns() {
 			si.s.NextTrick()
 		}
 	}
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (si *SpadesInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(si.s)
+}
+
+// RestoreSpadesInteractor deserialises JSON into a SpadesInteractor.
+func RestoreSpadesInteractor(data []byte, sp presenter.SpadesPresenter) (*SpadesInteractor, error) {
+	var s domain.Spades
+	if err := json.Unmarshal(data, &s); err != nil {
+		return nil, err
+	}
+	return &SpadesInteractor{s: &s, sp: sp}, nil
 }

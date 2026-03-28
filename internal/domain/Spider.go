@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -29,8 +30,8 @@ const SpiderTotalCards = 104
 
 // SpiderTableauCard タブロー上のカード
 type SpiderTableauCard struct {
-	Card   *Card
-	FaceUp bool
+	Card   *Card `json:"c"`
+	FaceUp bool  `json:"f"`
 }
 
 // SpiderHint ヒント
@@ -574,4 +575,74 @@ func (s *Spider) appendLog(actionType, detail string, cards []*Card) {
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// spiderJSON is the JSON wire format for Spider.
+type spiderJSON struct {
+	TrumpCards     *TrumpCards                            `json:"tc"`
+	Tableau        [SpiderTableauCnt][]*SpiderTableauCard `json:"tb"`
+	Stock          []*Card                                `json:"st"`
+	CompletedSuits int                                    `json:"cs"`
+	Phase          SpiderPhase                            `json:"ps"`
+	MoveCount      int                                    `json:"mc"`
+	Score          int                                    `json:"sc"`
+	ActionLog      []*ActionLogEntry                      `json:"al"`
+	Difficulty     SpiderDifficulty                       `json:"df"`
+	IsStalemate    bool                                   `json:"sm"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (s *Spider) MarshalJSON() ([]byte, error) {
+	return json.Marshal(spiderJSON{
+		TrumpCards:     s.trumpCards,
+		Tableau:        s.tableau,
+		Stock:          s.stock,
+		CompletedSuits: s.completedSuits,
+		Phase:          s.phase,
+		MoveCount:      s.moveCount,
+		Score:          s.score,
+		ActionLog:      s.actionLog,
+		Difficulty:     s.difficulty,
+		IsStalemate:    s.isStalemate,
+	})
+}
+
+// spiderMaxSliceLen caps slice sizes during deserialisation.
+const spiderMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (s *Spider) UnmarshalJSON(data []byte) error {
+	var j spiderJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > spiderMaxSliceLen || len(j.ActionLog) > spiderMaxSliceLen {
+		return fmt.Errorf("spider: input array exceeds maximum allowed size")
+	}
+
+	s.trumpCards = j.TrumpCards
+	if s.trumpCards == nil {
+		s.trumpCards = NewTrumpCards(0)
+	}
+	s.tableau = j.Tableau
+	s.stock = j.Stock
+	if s.stock == nil {
+		s.stock = make([]*Card, 0)
+	}
+	s.completedSuits = j.CompletedSuits
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.score = j.Score
+	s.actionLog = j.ActionLog
+	if s.actionLog == nil {
+		s.actionLog = make([]*ActionLogEntry, 0)
+	}
+	// Undo history is not serialised; set to nil on restore.
+	s.history = nil
+	s.difficulty = j.Difficulty
+	if s.difficulty == 0 {
+		s.difficulty = SpiderDifficulty1Suit
+	}
+	s.isStalemate = j.IsStalemate
+	return nil
 }

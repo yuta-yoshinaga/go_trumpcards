@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -83,4 +85,18 @@ func (si *SpiderInteractor) ActionLog() string {
 // Undo アンドゥ
 func (si *SpiderInteractor) Undo() string {
 	return execAndPresent(si.s, si.sp, si.s.Undo)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (si *SpiderInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(si.s)
+}
+
+// RestoreSpiderInteractor deserialises JSON into a SpiderInteractor.
+func RestoreSpiderInteractor(data []byte, sp presenter.SpiderPresenter) (*SpiderInteractor, error) {
+	var spi domain.Spider
+	if err := json.Unmarshal(data, &spi); err != nil {
+		return nil, err
+	}
+	return &SpiderInteractor{s: &spi, sp: sp}, nil
 }

@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // EuchrePlayer ユーカープレイヤークラス
 type EuchrePlayer struct {
 	*GamePlayer
@@ -23,4 +25,38 @@ func (p *EuchrePlayer) ResetRound() {
 	p.ResetTricks()
 	p.Reset()
 	p.SetIsFinished(false)
+}
+
+// euchrePlayerJSON is the JSON wire format for EuchrePlayer.
+type euchrePlayerJSON struct {
+	GamePlayer  *GamePlayer  `json:"gp"`
+	TrickHolder *TrickHolder `json:"th"`
+	Team        int          `json:"tm"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p *EuchrePlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(euchrePlayerJSON{
+		GamePlayer:  p.GamePlayer,
+		TrickHolder: &p.TrickHolder,
+		Team:        p.team,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *EuchrePlayer) UnmarshalJSON(data []byte) error {
+	var j euchrePlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.GamePlayer != nil {
+		p.GamePlayer = j.GamePlayer
+	} else {
+		p.GamePlayer = NewGamePlayer(false)
+	}
+	if j.TrickHolder != nil {
+		p.TrickHolder = *j.TrickHolder
+	}
+	p.team = j.Team
+	return nil
 }
