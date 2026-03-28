@@ -158,7 +158,7 @@ function MemoryPageContent() {
           ))}
         </div>
 
-        {/* Board: responsive grid (6/8/13 columns); on lg fills remaining height */}
+        {/* Board: responsive grid (4/8/13 columns); on lg fills remaining height */}
         <div
           className="my-3 lg:my-1 p-2 lg:p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
           data-tutorial="mem-board"
@@ -181,7 +181,7 @@ function MemoryPageContent() {
               >
                 {bc.faceUp && bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
                 {!bc.taken && !bc.faceUp && (
-                  <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" loading="lazy" />
+                  <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
                 )}
               </button>
             ))}
