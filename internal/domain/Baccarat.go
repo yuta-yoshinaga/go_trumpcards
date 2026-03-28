@@ -1,6 +1,9 @@
 package domain
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // バカラフェーズ定数
 const (
@@ -437,3 +440,98 @@ func (b *Baccarat) SetPlayerPairBet(amount int) { b.playerPairBet = amount }
 
 // SetBankerPairBet バンカーペアベット額設定（テスト用）
 func (b *Baccarat) SetBankerPairBet(amount int) { b.bankerPairBet = amount }
+
+// baccaratJSON is the JSON wire format for Baccarat.
+type baccaratJSON struct {
+	TrumpCards     *TrumpCards         `json:"tc"`
+	PlayerHand     []*Card             `json:"ph"`
+	BankerHand     []*Card             `json:"bh"`
+	Chips          *ChipHolder         `json:"ch"`
+	BetAmount      int                 `json:"ba"`
+	BetType        int                 `json:"bt"`
+	Phase          int                 `json:"ps"`
+	GameEndFlag    bool                `json:"ge"`
+	Result         GameResult          `json:"rs"`
+	Payout         int                 `json:"po"`
+	ActionLog      []*ActionLogEntry   `json:"al"`
+	History        []int               `json:"hi"`
+	PlayerPairBet  int                 `json:"pp"`
+	BankerPairBet  int                 `json:"bp"`
+	SideBetResults []*BacSideBetResult `json:"sb"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (b *Baccarat) MarshalJSON() ([]byte, error) {
+	return json.Marshal(baccaratJSON{
+		TrumpCards:     b.trumpCards,
+		PlayerHand:     b.playerHand,
+		BankerHand:     b.bankerHand,
+		Chips:          &b.chips,
+		BetAmount:      b.betAmount,
+		BetType:        b.betType,
+		Phase:          b.phase,
+		GameEndFlag:    b.gameEndFlag,
+		Result:         b.result,
+		Payout:         b.payout,
+		ActionLog:      b.actionLog,
+		History:        b.history,
+		PlayerPairBet:  b.playerPairBet,
+		BankerPairBet:  b.bankerPairBet,
+		SideBetResults: b.sideBetResults,
+	})
+}
+
+// baccaratMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const baccaratMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (b *Baccarat) UnmarshalJSON(data []byte) error {
+	var j baccaratJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	// Validate slice sizes to mitigate DoS from oversized arrays.
+	if len(j.PlayerHand) > baccaratMaxSliceLen || len(j.BankerHand) > baccaratMaxSliceLen ||
+		len(j.ActionLog) > baccaratMaxSliceLen || len(j.History) > baccaratMaxSliceLen ||
+		len(j.SideBetResults) > baccaratMaxSliceLen {
+		return fmt.Errorf("baccarat: input array exceeds maximum allowed size")
+	}
+
+	b.trumpCards = j.TrumpCards
+	if b.trumpCards == nil {
+		b.trumpCards = NewTrumpCards(0)
+	}
+	b.playerHand = j.PlayerHand
+	if b.playerHand == nil {
+		b.playerHand = make([]*Card, 0)
+	}
+	b.bankerHand = j.BankerHand
+	if b.bankerHand == nil {
+		b.bankerHand = make([]*Card, 0)
+	}
+	if j.Chips != nil {
+		b.chips = *j.Chips
+	}
+	b.betAmount = j.BetAmount
+	b.betType = j.BetType
+	b.phase = j.Phase
+	b.gameEndFlag = j.GameEndFlag
+	b.result = j.Result
+	b.payout = j.Payout
+	b.actionLog = j.ActionLog
+	if b.actionLog == nil {
+		b.actionLog = make([]*ActionLogEntry, 0)
+	}
+	b.history = j.History
+	if b.history == nil {
+		b.history = make([]int, 0)
+	}
+	b.playerPairBet = j.PlayerPairBet
+	b.bankerPairBet = j.BankerPairBet
+	b.sideBetResults = j.SideBetResults
+	if b.sideBetResults == nil {
+		b.sideBetResults = make([]*BacSideBetResult, 0)
+	}
+	return nil
+}

@@ -60,4 +60,4 @@ Go 1.26 の代わりに TinyGo 0.40.1（Go 1.25 対応）を使用し、Wasm バ
 - **モック ファイルのビルドタグ**: 全モックファイルに `//go:build test` タグを追加。TinyGo ビルドから `testify/mock` を除外するために必要だった
 - **Go バージョン制約**: TinyGo が Go 1.25 までしかサポートしないため、`go.mod` に `go 1.25.8` を指定。`toolchain go1.26.0` ディレクティブにより通常開発は Go 1.26 を使用
 - **メソッドプレフィックスルーティング不可**: TinyGo の `net/http` は Go 1.22 の `"POST /path"` パターンを未サポート。Workers エントリポイントでは通常の `"/path"` パターンを使用
-- **セッション管理の制約**: Workers はステートレスなため、Docker 版のインメモリセッションストアがそのまま動作する（各リクエストでセッションが初期化される）。将来的に Cloudflare KV を導入すればリクエスト間でセッションを永続化可能
+- **セッション管理**: `SessionProvider[T]` インターフェースにより、Docker 版（インメモリ `MemorySessionProvider`）と Workers 版（`KVSessionProvider` + Cloudflare KV）を統一的に扱う。KV 版はゲームドメインオブジェクトを JSON シリアライズして永続化し、TTL=1時間で自動削除される。KV 無料枠（書き込み 1,000回/日）のためデモ用途に限定。ゲームごとに段階的にシリアライズを追加する方式（Phase 1 は Baccarat のみ対応）

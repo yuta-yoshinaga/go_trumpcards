@@ -3,11 +3,12 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
-	"github.com/syumai/workers/cloudflare"
-
 	"github.com/syumai/workers"
+	"github.com/syumai/workers/cloudflare"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -28,13 +29,30 @@ func main() {
 	})
 	mux.HandleFunc("/blackjack/exec", bjc.Exec)
 
-	// Baccarat
-	bcc := controller.NewBaccaratWebController(func() usecase.BaccaratInteractorIF {
+	// Baccarat (KV-backed session)
+	baccaratFactory := func() usecase.BaccaratInteractorIF {
 		return usecase.NewBaccaratInteractor(
 			domain.NewDefaultBaccarat(),
 			new(presenter.BaccaratWebPresenter),
 		)
-	})
+	}
+	baccaratKV, err := controller.NewKVSessionProvider[usecase.BaccaratInteractorIF](
+		"GAME_SESSIONS", "baccarat:",
+		func(bi usecase.BaccaratInteractorIF) ([]byte, error) {
+			snap, ok := bi.(interface{ Snapshot() ([]byte, error) })
+			if !ok {
+				return nil, fmt.Errorf("interactor does not support snapshotting")
+			}
+			return snap.Snapshot()
+		},
+		func(data []byte) (usecase.BaccaratInteractorIF, error) {
+			return usecase.RestoreBaccaratInteractor(data, new(presenter.BaccaratWebPresenter))
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bcc := controller.NewBaccaratWebControllerWithProvider(baccaratKV, baccaratFactory)
 	mux.HandleFunc("/baccarat/exec", bcc.Exec)
 
 	// Poker

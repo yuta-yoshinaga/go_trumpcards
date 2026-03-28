@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // カード定数
 const (
 	CardDesignJoker   = 0
@@ -49,4 +51,28 @@ func (c *Card) SetDraw(draw bool) {
 // GetDraw カード払い出しフラグ取得
 func (c *Card) GetDraw() bool {
 	return c.draw
+}
+
+// cardJSON is the JSON wire format for Card.
+type cardJSON struct {
+	D int  `json:"d"` // design
+	V int  `json:"v"` // value
+	W bool `json:"w"` // draw (dealt)
+}
+
+// MarshalJSON implements json.Marshaler.
+func (c *Card) MarshalJSON() ([]byte, error) {
+	return json.Marshal(cardJSON{D: c.design, V: c.value, W: c.draw})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (c *Card) UnmarshalJSON(data []byte) error {
+	var j cardJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	c.design = j.D
+	c.value = j.V
+	c.draw = j.W
+	return nil
 }

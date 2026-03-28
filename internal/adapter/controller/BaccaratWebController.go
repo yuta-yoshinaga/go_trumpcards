@@ -51,6 +51,15 @@ func NewBaccaratWebController(factory func() usecase.BaccaratInteractorIF) *Bacc
 	return NewGameWebController(factory, newBaccaratDefaultOutput, baccaratDispatch)
 }
 
+// NewBaccaratWebControllerWithProvider creates a BaccaratWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewBaccaratWebControllerWithProvider(
+	provider SessionProvider[usecase.BaccaratInteractorIF],
+	factory func() usecase.BaccaratInteractorIF,
+) *BaccaratWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newBaccaratDefaultOutput, baccaratDispatch)
+}
+
 func newBaccaratDefaultOutput(msg string) *BaccaratWebOutput {
 	return &BaccaratWebOutput{
 		PlayerHand:     make([]*WebOutputCard, 0),

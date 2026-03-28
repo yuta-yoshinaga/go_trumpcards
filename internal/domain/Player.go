@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"math/rand"
 	"sort"
 )
@@ -125,4 +126,27 @@ func (p *Player) RemoveCards(indices []int) []*Card {
 		}
 	}
 	return removed
+}
+
+// playerJSON is the JSON wire format for Player.
+type playerJSON struct {
+	Cards []*Card `json:"c"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p *Player) MarshalJSON() ([]byte, error) {
+	return json.Marshal(playerJSON{Cards: p.cards})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *Player) UnmarshalJSON(data []byte) error {
+	var j playerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	p.cards = j.Cards
+	if p.cards == nil {
+		p.cards = make([]*Card, 0)
+	}
+	return nil
 }
