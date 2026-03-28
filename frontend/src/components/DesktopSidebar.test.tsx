@@ -191,6 +191,44 @@ describe('DesktopSidebar', () => {
     });
   });
 
+  describe('accordion categories', () => {
+    it('renders categories as details elements', () => {
+      renderSidebar();
+      const details = document.querySelectorAll('details.sidebar-category');
+      expect(details.length).toBe(gameCategories.length);
+    });
+
+    it('expands category containing the active game', () => {
+      renderSidebar('/poker');
+      const details = document.querySelectorAll('details.sidebar-category');
+      // Poker is in the second category (index 1)
+      expect(details[1]).toHaveAttribute('open');
+    });
+
+    it('collapses categories without the active game', () => {
+      renderSidebar('/poker');
+      const details = document.querySelectorAll('details.sidebar-category');
+      // Table games (index 0) should be collapsed
+      expect(details[0]).not.toHaveAttribute('open');
+      // Solitaire (index 4) should be collapsed
+      expect(details[4]).not.toHaveAttribute('open');
+    });
+
+    it('expands table category by default when on home page', () => {
+      renderSidebar('/');
+      const details = document.querySelectorAll('details.sidebar-category');
+      // BlackJack is at "/" in the table category (index 0)
+      expect(details[0]).toHaveAttribute('open');
+    });
+  });
+
+  describe('search icon', () => {
+    it('renders a search icon in the search area', () => {
+      renderSidebar();
+      expect(document.querySelector('[data-testid="search-icon"]')).toBeInTheDocument();
+    });
+  });
+
   describe('tutorial progress', () => {
     it('renders tutorial progress panel', () => {
       renderSidebar();

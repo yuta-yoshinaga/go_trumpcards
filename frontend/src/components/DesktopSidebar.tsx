@@ -58,6 +58,23 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
       {/* Search */}
       <div className="px-3 py-2 border-b border-white/10">
         <div className="flex items-center gap-1">
+          <svg
+            data-testid="search-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-gray-400 shrink-0"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" x2="16.65" y1="21" y2="16.65" />
+          </svg>
           <input
             type="search"
             value={searchTerm}
@@ -144,35 +161,41 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
             )}
           </div>
         ) : (
-          gameCategories.map(({ labelKey, icon: catIcon, routes }) => (
-            <div key={labelKey} className="mb-2">
-              <span className="text-gray-400 text-[10px] uppercase tracking-wider px-1 font-semibold flex items-center gap-1">
-                <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
-              </span>
-              <div className="mt-1 flex flex-col gap-0.5">
-                {routes.map(({ path, labelKey: routeLabel, icon }) => (
-                  <div key={path} className="flex items-center gap-0.5">
-                    <Link
-                      to={path}
-                      aria-current={pathname === path ? 'page' : undefined}
-                      className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-blue-600 text-white' : 'text-gray-200 hover:bg-white/10'}`}
-                    >
-                      <span aria-hidden="true">{icon}</span>
-                      {t(routeLabel)}
-                    </Link>
-                    <button
-                      type="button"
-                      aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
-                      onClick={() => toggleFavorite(path)}
-                      className="text-yellow-400 w-6 h-6 flex items-center justify-center text-xs shrink-0 hover:scale-110 transition-transform"
-                    >
-                      {isFavorite(path) ? '★' : '☆'}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))
+          gameCategories.map(({ labelKey, icon: catIcon, routes }) => {
+            const hasActivePage = routes.some(({ path }) => path === pathname);
+            return (
+              <details key={labelKey} className="sidebar-category mb-1" open={hasActivePage || undefined}>
+                <summary className="text-gray-400 text-[10px] uppercase tracking-wider px-1 py-1 font-semibold flex items-center gap-1 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+                  <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
+                  <span className="ml-auto text-[8px] text-gray-500" aria-hidden="true">
+                    ▶
+                  </span>
+                </summary>
+                <div className="mt-0.5 flex flex-col gap-0.5 pl-1">
+                  {routes.map(({ path, labelKey: routeLabel, icon }) => (
+                    <div key={path} className="flex items-center gap-0.5">
+                      <Link
+                        to={path}
+                        aria-current={pathname === path ? 'page' : undefined}
+                        className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-blue-600 text-white' : 'text-gray-200 hover:bg-white/10'}`}
+                      >
+                        <span aria-hidden="true">{icon}</span>
+                        {t(routeLabel)}
+                      </Link>
+                      <button
+                        type="button"
+                        aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
+                        onClick={() => toggleFavorite(path)}
+                        className="text-yellow-400 w-6 h-6 flex items-center justify-center text-xs shrink-0 hover:scale-110 transition-transform"
+                      >
+                        {isFavorite(path) ? '★' : '☆'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            );
+          })
         )}
       </nav>
 
