@@ -595,6 +595,29 @@ describe('NapoleonPage', () => {
     });
   });
 
+  it('score table has horizontal scroll wrapper', async () => {
+    const { container } = renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
+    const scoreSection = container.querySelector('[data-tutorial="np-score-table"]');
+    const scrollWrapper = scoreSection?.querySelector('.overflow-x-auto');
+    expect(scrollWrapper).toBeInTheDocument();
+    const table = scrollWrapper?.querySelector('table');
+    expect(table?.className).toContain('min-w-[420px]');
+  });
+
+  it('score table renders ScrollFadeHint on mobile', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
+    try {
+      const { container } = renderWithProviders(<NapoleonPage />);
+      await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
+      const scoreSection = container.querySelector('[data-tutorial="np-score-table"]');
+      const fadeHint = scoreSection?.querySelector('.bg-gradient-to-l');
+      expect(fadeHint).toBeInTheDocument();
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
+
   it('shows trump suit info', async () => {
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => expect(screen.getByText(/\u30b9\u30da\u30fc\u30c9/)).toBeInTheDocument());
