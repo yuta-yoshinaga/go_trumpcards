@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { omahaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
+import { CpuActionToast } from '../components/CpuActionToast';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { EquityDisplay } from '../components/EquityDisplay';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -19,7 +21,7 @@ import { RoundResults } from '../components/RoundResults';
 import { OmahaSkeleton } from '../components/skeleton/OmahaSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -140,6 +142,7 @@ function OmahaPageContent() {
     useGamePageSetup('omaha');
   const phaseNames = usePhaseNames('omaha', OMAHA_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi } = useGameApi(omahaApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
@@ -234,9 +237,12 @@ function OmahaPageContent() {
       </PhaseIndicator>
 
       {/* Scrollable: community cards + CPU players */}
-      <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Community cards */}
-        <div className="mb-4" data-tutorial="oh-community-cards">
+      <div className={`relative flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+        {/* Community cards (sticky on mobile) */}
+        <div
+          className={`mb-4 ${isMobile ? 'sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm' : ''}`}
+          data-tutorial="oh-community-cards"
+        >
           <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
           <div className="flex flex-wrap gap-2">
             {state?.communityCards?.length
@@ -252,8 +258,8 @@ function OmahaPageContent() {
           </div>
         </div>
 
-        {/* CPU players */}
-        <div data-tutorial="oh-cpu-area">
+        {/* CPU players (accordion, collapsed on mobile) */}
+        <CpuAccordion playerCount={state?.players?.filter((p) => !p.isHuman).length ?? 0} dataTutorial="oh-cpu-area">
           {state?.players
             ?.filter((p) => !p.isHuman)
             .map((p) => (
@@ -268,10 +274,10 @@ function OmahaPageContent() {
                 }
               />
             ))}
-        </div>
+        </CpuAccordion>
 
-        {/* CPU actions log */}
-        <CpuActionLog actions={state?.cpuActions} />
+        {/* CPU actions: toast on mobile, inline log on desktop */}
+        {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
 
         {/* Round results */}
         {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
