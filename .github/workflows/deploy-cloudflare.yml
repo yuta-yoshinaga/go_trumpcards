@@ -75,9 +75,8 @@ jobs:
           if [ "$IS_PRODUCTION" != "true" ]; then
             SUFFIX="-staging"
           fi
-          bunx wrangler deploy \
-            --config "workers/${WORKER_NAME}/wrangler.toml" \
-            --name "go-trumpcards-${WORKER_NAME}${SUFFIX}"
+          cd "workers/${WORKER_NAME}"
+          bunx wrangler deploy --name "go-trumpcards-${WORKER_NAME}${SUFFIX}"
 
   deploy-pages:
     name: Deploy Frontend (Pages)

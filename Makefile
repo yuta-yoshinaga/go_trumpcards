@@ -8,11 +8,11 @@ build-workers: build-worker-casino build-worker-classic build-worker-solo
 
 define build_worker
 	@echo "Building worker: $(1)"
-	@mkdir -p build/$(1)
-	$(ASSETS_GEN) -mode=tinygo -o build/$(1)
-	$(TINYGO) build -o build/$(1)/app.wasm -target wasi -no-debug -opt=z ./cmd/workers/$(1)
-	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz build/$(1)/app.wasm -o build/$(1)/app.wasm
-	@RAW=$$(stat -c%s build/$(1)/app.wasm); GZIP=$$(gzip -c build/$(1)/app.wasm | wc -c); \
+	@mkdir -p workers/$(1)/build
+	$(ASSETS_GEN) -mode=tinygo -o workers/$(1)/build
+	$(TINYGO) build -o workers/$(1)/build/app.wasm -target wasi -no-debug -opt=z ./cmd/workers/$(1)
+	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz workers/$(1)/build/app.wasm -o workers/$(1)/build/app.wasm
+	@RAW=$$(stat -c%s workers/$(1)/build/app.wasm); GZIP=$$(gzip -c workers/$(1)/build/app.wasm | wc -c); \
 	echo "  $(1): $$RAW bytes raw, $$GZIP bytes gzip"
 endef
 
@@ -26,9 +26,9 @@ build-worker-solo:
 	$(call build_worker,solo)
 
 clean-workers:
-	rm -rf build/casino build/classic build/solo
+	rm -rf workers/casino/build workers/classic/build workers/solo/build
 
 deploy-workers: build-workers
-	bunx wrangler deploy --config workers/casino/wrangler.toml
-	bunx wrangler deploy --config workers/classic/wrangler.toml
-	bunx wrangler deploy --config workers/solo/wrangler.toml
+	cd workers/casino && bunx wrangler deploy
+	cd workers/classic && bunx wrangler deploy
+	cd workers/solo && bunx wrangler deploy

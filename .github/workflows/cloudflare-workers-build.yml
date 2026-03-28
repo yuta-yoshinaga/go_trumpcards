@@ -51,7 +51,7 @@ jobs:
         env:
           WORKER_NAME: ${{ matrix.worker }}
         run: |
-          WASM="build/${WORKER_NAME}/app.wasm"
+          WASM="workers/${WORKER_NAME}/build/app.wasm"
           RAW=$(stat -c%s "$WASM")
           GZIP=$(gzip -c "$WASM" | wc -c)
 
@@ -71,4 +71,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: wasm-${{ matrix.worker }}
-          path: build/${{ matrix.worker }}/*.wasm
+          path: workers/${{ matrix.worker }}/build/*.wasm
