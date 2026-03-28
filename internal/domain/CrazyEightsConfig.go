@@ -15,8 +15,8 @@ const (
 
 // CrazyEightsConfig クレイジーエイトゲーム設定
 type CrazyEightsConfig struct {
-	CpuDifficulty CrazyEightsCpuDifficulty
-	PointLimit    int // ゲーム終了スコア (先に到達したプレイヤーが勝利)
+	CpuDifficulty CrazyEightsCpuDifficulty `json:"cd"`
+	PointLimit    int                      `json:"pl"` // ゲーム終了スコア (先に到達したプレイヤーが勝利)
 }
 
 // DefaultCrazyEightsConfig デフォルト設定を返す

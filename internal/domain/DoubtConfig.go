@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // DoubtMemoryLevel CPU の記憶力レベル
 type DoubtMemoryLevel int
 
@@ -25,4 +27,32 @@ type DoubtConfig struct {
 // DefaultDoubtConfig デフォルト設定を返す
 func DefaultDoubtConfig() DoubtConfig {
 	return DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: DoubtMemoryLevelNormal}
+}
+
+// doubtConfigJSON is the JSON wire format for DoubtConfig.
+type doubtConfigJSON struct {
+	DoubtWindowSec       int              `json:"dw"`
+	CpuMemoryLevel       DoubtMemoryLevel `json:"ml"`
+	PenaltyDrawLimit     int              `json:"pd"`
+	CpuHesitationEnabled bool             `json:"ch"`
+	CpuMetaAI            bool             `json:"ca"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (c DoubtConfig) MarshalJSON() ([]byte, error) {
+	return json.Marshal(doubtConfigJSON(c))
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (c *DoubtConfig) UnmarshalJSON(data []byte) error {
+	var j doubtConfigJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	c.DoubtWindowSec = j.DoubtWindowSec
+	c.CpuMemoryLevel = j.CpuMemoryLevel
+	c.PenaltyDrawLimit = j.PenaltyDrawLimit
+	c.CpuHesitationEnabled = j.CpuHesitationEnabled
+	c.CpuMetaAI = j.CpuMetaAI
+	return nil
 }

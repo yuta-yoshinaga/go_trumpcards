@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -89,4 +91,18 @@ func (mi *MemoryInteractor) runCpuTurns() {
 		mi.m.CpuFlip()
 		mi.m.ResolveFlip()
 	}
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (mi *MemoryInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(mi.m)
+}
+
+// RestoreMemoryInteractor deserialises JSON into a MemoryInteractor.
+func RestoreMemoryInteractor(data []byte, mp presenter.MemoryPresenter) (*MemoryInteractor, error) {
+	var mem domain.Memory
+	if err := json.Unmarshal(data, &mem); err != nil {
+		return nil, err
+	}
+	return &MemoryInteractor{m: &mem, mp: mp}, nil
 }

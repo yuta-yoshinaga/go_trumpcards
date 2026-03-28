@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"math/rand"
 )
 
@@ -17,6 +18,36 @@ func (e cardMemoryEntry) GetTurnSeen() int { return e.turnSeen }
 type DoubtPlayer struct {
 	*GamePlayer
 	memoryManager[cardMemoryEntry]
+}
+
+// doubtPlayerJSON is the JSON wire format for DoubtPlayer.
+type doubtPlayerJSON struct {
+	GamePlayer *GamePlayer `json:"gp"`
+	// CPU memory (cardMemories) is intentionally omitted;
+	// CPU will re-learn after restore.
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p *DoubtPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(doubtPlayerJSON{
+		GamePlayer: p.GamePlayer,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *DoubtPlayer) UnmarshalJSON(data []byte) error {
+	var j doubtPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.GamePlayer != nil {
+		p.GamePlayer = j.GamePlayer
+	} else {
+		p.GamePlayer = NewGamePlayer(false)
+	}
+	// CPU memory is reset on restore; CPU will re-learn.
+	p.ResetMemory()
+	return nil
 }
 
 // NewDoubtPlayer コンストラクタ

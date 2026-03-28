@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -743,4 +744,83 @@ func suitName(suit int) string {
 	default:
 		return "?"
 	}
+}
+
+// crazyEightsJSON is the JSON wire format for CrazyEights.
+type crazyEightsJSON struct {
+	TrumpCards       *TrumpCards          `json:"tc"`
+	Players          []*CrazyEightsPlayer `json:"pl"`
+	Config           CrazyEightsConfig    `json:"cf"`
+	Phase            CrazyEightsPhase     `json:"ps"`
+	CurrentPlayerIdx int                  `json:"ci"`
+	DiscardPile      []*Card              `json:"dp"`
+	DrawPile         []*Card              `json:"wp"`
+	ChosenSuit       int                  `json:"cs"`
+	GameEndFlag      bool                 `json:"ge"`
+	WinnerIdx        int                  `json:"wi"`
+	RoundNumber      int                  `json:"rn"`
+	ActionLog        []*ActionLogEntry    `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (g *CrazyEights) MarshalJSON() ([]byte, error) {
+	return json.Marshal(crazyEightsJSON{
+		TrumpCards:       g.trumpCards,
+		Players:          g.players,
+		Config:           g.config,
+		Phase:            g.phase,
+		CurrentPlayerIdx: g.currentPlayerIdx,
+		DiscardPile:      g.discardPile,
+		DrawPile:         g.drawPile,
+		ChosenSuit:       g.chosenSuit,
+		GameEndFlag:      g.gameEndFlag,
+		WinnerIdx:        g.winnerIdx,
+		RoundNumber:      g.roundNumber,
+		ActionLog:        g.actionLog,
+	})
+}
+
+// crazyEightsMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const crazyEightsMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (g *CrazyEights) UnmarshalJSON(data []byte) error {
+	var j crazyEightsJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > crazyEightsMaxSliceLen || len(j.DiscardPile) > crazyEightsMaxSliceLen ||
+		len(j.DrawPile) > crazyEightsMaxSliceLen || len(j.ActionLog) > crazyEightsMaxSliceLen {
+		return fmt.Errorf("crazyeights: input array exceeds maximum allowed size")
+	}
+
+	g.trumpCards = j.TrumpCards
+	if g.trumpCards == nil {
+		g.trumpCards = NewTrumpCards(0)
+	}
+	g.players = j.Players
+	if g.players == nil {
+		g.players = make([]*CrazyEightsPlayer, 0)
+	}
+	g.config = j.Config
+	g.phase = j.Phase
+	g.currentPlayerIdx = j.CurrentPlayerIdx
+	g.discardPile = j.DiscardPile
+	if g.discardPile == nil {
+		g.discardPile = make([]*Card, 0)
+	}
+	g.drawPile = j.DrawPile
+	if g.drawPile == nil {
+		g.drawPile = make([]*Card, 0)
+	}
+	g.chosenSuit = j.ChosenSuit
+	g.gameEndFlag = j.GameEndFlag
+	g.winnerIdx = j.WinnerIdx
+	g.roundNumber = j.RoundNumber
+	g.actionLog = j.ActionLog
+	if g.actionLog == nil {
+		g.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

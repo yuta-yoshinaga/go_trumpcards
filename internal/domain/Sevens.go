@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
@@ -14,11 +15,11 @@ const sevensNoScore = math.MinInt
 
 // SevensCpuAction CPUまたは人間の1ターン分の行動記録
 type SevensCpuAction struct {
-	PlayerIdx   int   // 行動したプレイヤーインデックス
-	PlayedCard  *Card // 出したカード (nil = パスまたは失格)
-	TargetSuit  int   // ジョーカー配置先スート (ジョーカー以外は0)
-	TargetValue int   // ジョーカー配置先値 (ジョーカー以外は0)
-	ForcedPass  bool  // true = 出せるカードがなくパスした
+	PlayerIdx   int   `json:"pi"` // 行動したプレイヤーインデックス
+	PlayedCard  *Card `json:"pc"` // 出したカード (nil = パスまたは失格)
+	TargetSuit  int   `json:"ts"` // ジョーカー配置先スート (ジョーカー以外は0)
+	TargetValue int   `json:"tv"` // ジョーカー配置先値 (ジョーカー以外は0)
+	ForcedPass  bool  `json:"fp"` // true = 出せるカードがなくパスした
 }
 
 // Sevens 7並べゲームクラス
@@ -1158,4 +1159,79 @@ func (s *Sevens) appendLog(playerIdx int, actionType, detail string, cards []*Ca
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// sevensJSON is the JSON wire format for Sevens.
+type sevensJSON struct {
+	TrumpCards  *TrumpCards        `json:"tc"`
+	Players     []*SevensPlayer    `json:"ps"`
+	CurrentTurn int                `json:"ct"`
+	TablePlaced [5]uint16          `json:"tp"`
+	Config      SevensConfig       `json:"cf"`
+	GameEndFlag bool               `json:"ge"`
+	CpuActions  []*SevensCpuAction `json:"ca"`
+	HumanAction *SevensCpuAction   `json:"ha"`
+	JokerPlaced [5]uint16          `json:"jp"`
+	JokerCards  []*Card            `json:"jk"`
+	ActionLog   []*ActionLogEntry  `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (s *Sevens) MarshalJSON() ([]byte, error) {
+	return json.Marshal(sevensJSON{
+		TrumpCards:  s.trumpCards,
+		Players:     s.players,
+		CurrentTurn: s.currentTurn,
+		TablePlaced: s.tablePlaced,
+		Config:      s.config,
+		GameEndFlag: s.gameEndFlag,
+		CpuActions:  s.cpuActions,
+		HumanAction: s.humanAction,
+		JokerPlaced: s.jokerPlaced,
+		JokerCards:  s.jokerCards,
+		ActionLog:   s.actionLog,
+	})
+}
+
+// sevensMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const sevensMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (s *Sevens) UnmarshalJSON(data []byte) error {
+	var j sevensJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > sevensMaxSliceLen || len(j.CpuActions) > sevensMaxSliceLen ||
+		len(j.JokerCards) > sevensMaxSliceLen || len(j.ActionLog) > sevensMaxSliceLen {
+		return fmt.Errorf("sevens: input array exceeds maximum allowed size")
+	}
+	s.trumpCards = j.TrumpCards
+	if s.trumpCards == nil {
+		s.trumpCards = NewTrumpCards(0)
+	}
+	s.players = j.Players
+	if s.players == nil {
+		s.players = make([]*SevensPlayer, 0)
+	}
+	s.currentTurn = j.CurrentTurn
+	s.tablePlaced = j.TablePlaced
+	s.config = j.Config
+	s.gameEndFlag = j.GameEndFlag
+	s.cpuActions = j.CpuActions
+	if s.cpuActions == nil {
+		s.cpuActions = make([]*SevensCpuAction, 0)
+	}
+	s.humanAction = j.HumanAction
+	s.jokerPlaced = j.JokerPlaced
+	s.jokerCards = j.JokerCards
+	if s.jokerCards == nil {
+		s.jokerCards = make([]*Card, 0)
+	}
+	s.actionLog = j.ActionLog
+	if s.actionLog == nil {
+		s.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

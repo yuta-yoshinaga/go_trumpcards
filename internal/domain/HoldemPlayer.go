@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 )
@@ -127,6 +128,70 @@ func (hp *HoldemPlayer) GetComparisonCards() []*Card {
 	cards := make([]*Card, len(hp.bestHand))
 	copy(cards, hp.bestHand)
 	return cards
+}
+
+// holdemPlayerJSON is the JSON wire format for HoldemPlayer.
+type holdemPlayerJSON struct {
+	Player              *Player            `json:"p"`
+	ChipHolder          *ChipHolder        `json:"ch"`
+	BettingPlayerBase   *bettingPlayerBase `json:"bp"`
+	IsHuman             bool               `json:"ih"`
+	BestHand            []*Card            `json:"bh"`
+	PlayStyle           HoldemPlayStyle    `json:"ps"`
+	TotalHands          int                `json:"th"`
+	VPIPCount           int                `json:"vc"`
+	PFRCount            int                `json:"pc"`
+	ThreeBetOpportunity int                `json:"to"`
+	ThreeBetCount       int                `json:"tc"`
+	PostFlopBetRaise    int                `json:"pb"`
+	PostFlopCall        int                `json:"pf"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (hp *HoldemPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(holdemPlayerJSON{
+		Player:              &hp.Player,
+		ChipHolder:          &hp.ChipHolder,
+		BettingPlayerBase:   &hp.bettingPlayerBase,
+		IsHuman:             hp.isHuman,
+		BestHand:            hp.bestHand,
+		PlayStyle:           hp.playStyle,
+		TotalHands:          hp.totalHands,
+		VPIPCount:           hp.vpipCount,
+		PFRCount:            hp.pfrCount,
+		ThreeBetOpportunity: hp.threeBetOpportunity,
+		ThreeBetCount:       hp.threeBetCount,
+		PostFlopBetRaise:    hp.postFlopBetRaise,
+		PostFlopCall:        hp.postFlopCall,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (hp *HoldemPlayer) UnmarshalJSON(data []byte) error {
+	var j holdemPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.Player != nil {
+		hp.Player = *j.Player
+	}
+	if j.ChipHolder != nil {
+		hp.ChipHolder = *j.ChipHolder
+	}
+	if j.BettingPlayerBase != nil {
+		hp.bettingPlayerBase = *j.BettingPlayerBase
+	}
+	hp.isHuman = j.IsHuman
+	hp.bestHand = j.BestHand
+	hp.playStyle = j.PlayStyle
+	hp.totalHands = j.TotalHands
+	hp.vpipCount = j.VPIPCount
+	hp.pfrCount = j.PFRCount
+	hp.threeBetOpportunity = j.ThreeBetOpportunity
+	hp.threeBetCount = j.ThreeBetCount
+	hp.postFlopBetRaise = j.PostFlopBetRaise
+	hp.postFlopCall = j.PostFlopCall
+	return nil
 }
 
 // EvalBestHand コミュニティカードとホールカードからベスト5枚を評価

@@ -1,10 +1,44 @@
 package domain
 
+import "encoding/json"
+
 // OldMaidPlayer ババ抜きプレイヤークラス
 type OldMaidPlayer struct {
 	*GamePlayer
 	memLastDrawPos int  // 最後に引いたカードの位置 (-1=なし)
 	memGotPair     bool // 最後に引いたカードでペアができたか
+}
+
+// oldMaidPlayerJSON is the JSON wire format for OldMaidPlayer.
+type oldMaidPlayerJSON struct {
+	GamePlayer     *GamePlayer `json:"gp"`
+	MemLastDrawPos int         `json:"mp"`
+	MemGotPair     bool        `json:"mg"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p *OldMaidPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(oldMaidPlayerJSON{
+		GamePlayer:     p.GamePlayer,
+		MemLastDrawPos: p.memLastDrawPos,
+		MemGotPair:     p.memGotPair,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *OldMaidPlayer) UnmarshalJSON(data []byte) error {
+	var j oldMaidPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.GamePlayer != nil {
+		p.GamePlayer = j.GamePlayer
+	} else {
+		p.GamePlayer = NewGamePlayer(false)
+	}
+	p.memLastDrawPos = j.MemLastDrawPos
+	p.memGotPair = j.MemGotPair
+	return nil
 }
 
 // NewOldMaidPlayer コンストラクタ

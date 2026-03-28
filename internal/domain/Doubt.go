@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 )
@@ -738,4 +739,211 @@ func (d *Doubt) calcBluffChance(handSize, tableCardCount int) float64 {
 		chance -= bluffPenaltyMediumTable
 	}
 	return chance
+}
+
+// --- JSON Serialization ---
+
+// doubtActionJSON is the JSON wire format for DoubtAction.
+type doubtActionJSON struct {
+	PlayerIdx    int     `json:"pi"`
+	ClaimedValue int     `json:"cv"`
+	CardCount    int     `json:"cc"`
+	PlayedCards  []*Card `json:"pc"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (a *DoubtAction) MarshalJSON() ([]byte, error) {
+	return json.Marshal(doubtActionJSON{
+		PlayerIdx:    a.PlayerIdx,
+		ClaimedValue: a.ClaimedValue,
+		CardCount:    a.CardCount,
+		PlayedCards:  a.PlayedCards,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (a *DoubtAction) UnmarshalJSON(data []byte) error {
+	var j doubtActionJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	a.PlayerIdx = j.PlayerIdx
+	a.ClaimedValue = j.ClaimedValue
+	a.CardCount = j.CardCount
+	a.PlayedCards = j.PlayedCards
+	return nil
+}
+
+// doubtCpuActionJSON is the JSON wire format for DoubtCpuAction.
+type doubtCpuActionJSON struct {
+	PlayerIdx    int  `json:"pi"`
+	ClaimedValue int  `json:"cv"`
+	CardCount    int  `json:"cc"`
+	IsBluff      bool `json:"ib"`
+	HasTell      bool `json:"ht"`
+	HesitationMs int  `json:"hm"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (a *DoubtCpuAction) MarshalJSON() ([]byte, error) {
+	return json.Marshal(doubtCpuActionJSON{
+		PlayerIdx:    a.PlayerIdx,
+		ClaimedValue: a.ClaimedValue,
+		CardCount:    a.CardCount,
+		IsBluff:      a.IsBluff,
+		HasTell:      a.HasTell,
+		HesitationMs: a.HesitationMs,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (a *DoubtCpuAction) UnmarshalJSON(data []byte) error {
+	var j doubtCpuActionJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	a.PlayerIdx = j.PlayerIdx
+	a.ClaimedValue = j.ClaimedValue
+	a.CardCount = j.CardCount
+	a.IsBluff = j.IsBluff
+	a.HasTell = j.HasTell
+	a.HesitationMs = j.HesitationMs
+	return nil
+}
+
+// doubtDoubtResultJSON is the JSON wire format for DoubtDoubtResult.
+type doubtDoubtResultJSON struct {
+	DoubterIdx     int     `json:"di"`
+	CardPlayerIdx  int     `json:"cp"`
+	WasLying       bool    `json:"wl"`
+	LoserIdx       int     `json:"li"`
+	CardCount      int     `json:"cc"`
+	DiscardedCount int     `json:"dc"`
+	RevealedCards  []*Card `json:"rc"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (r *DoubtDoubtResult) MarshalJSON() ([]byte, error) {
+	return json.Marshal(doubtDoubtResultJSON{
+		DoubterIdx:     r.DoubterIdx,
+		CardPlayerIdx:  r.CardPlayerIdx,
+		WasLying:       r.WasLying,
+		LoserIdx:       r.LoserIdx,
+		CardCount:      r.CardCount,
+		DiscardedCount: r.DiscardedCount,
+		RevealedCards:  r.RevealedCards,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (r *DoubtDoubtResult) UnmarshalJSON(data []byte) error {
+	var j doubtDoubtResultJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	r.DoubterIdx = j.DoubterIdx
+	r.CardPlayerIdx = j.CardPlayerIdx
+	r.WasLying = j.WasLying
+	r.LoserIdx = j.LoserIdx
+	r.CardCount = j.CardCount
+	r.DiscardedCount = j.DiscardedCount
+	r.RevealedCards = j.RevealedCards
+	return nil
+}
+
+// doubtJSON is the JSON wire format for Doubt.
+type doubtJSON struct {
+	TrumpCards      *TrumpCards            `json:"tc"`
+	Players         []*DoubtPlayer         `json:"pl"`
+	CurrentTurn     int                    `json:"ct"`
+	Phase           DoubtPhase             `json:"ph"`
+	TableCards      []*Card                `json:"tb"`
+	LastAction      *DoubtAction           `json:"la"`
+	GameEndFlag     bool                   `json:"ge"`
+	WinnerIdx       int                    `json:"wi"`
+	CpuDoubters     []int                  `json:"cd"`
+	CpuActions      []*DoubtCpuAction      `json:"ca"`
+	HumanAction     *DoubtCpuAction        `json:"ha"`
+	LastDoubtResult *DoubtDoubtResult      `json:"lr"`
+	Config          DoubtConfig            `json:"cf"`
+	TurnCounter     int                    `json:"tn"`
+	Profile         *DoubtHumanProfileData `json:"pf,omitempty"`
+	LastHumanPlayMs int                    `json:"lh"`
+	ActionLog       []*ActionLogEntry      `json:"al"`
+}
+
+// doubtMaxSliceLen caps slice sizes during deserialisation.
+const doubtMaxSliceLen = 1000
+
+// MarshalJSON implements json.Marshaler.
+func (d *Doubt) MarshalJSON() ([]byte, error) {
+	j := doubtJSON{
+		TrumpCards:      d.trumpCards,
+		Players:         d.players,
+		CurrentTurn:     d.currentTurn,
+		Phase:           d.phase,
+		TableCards:      d.tableCards,
+		LastAction:      d.lastAction,
+		GameEndFlag:     d.gameEndFlag,
+		WinnerIdx:       d.winnerIdx,
+		CpuDoubters:     d.cpuDoubters,
+		CpuActions:      d.cpuActions,
+		HumanAction:     d.humanAction,
+		LastDoubtResult: d.lastDoubtResult,
+		Config:          d.config,
+		TurnCounter:     d.turnCounter,
+		LastHumanPlayMs: d.lastHumanPlayMs,
+		ActionLog:       d.actionLog,
+	}
+	if d.humanProfile != nil {
+		data := d.humanProfile.Export()
+		j.Profile = &data
+	}
+	return json.Marshal(j)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (d *Doubt) UnmarshalJSON(data []byte) error {
+	var j doubtJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > doubtMaxSliceLen || len(j.TableCards) > doubtMaxSliceLen ||
+		len(j.CpuDoubters) > doubtMaxSliceLen || len(j.CpuActions) > doubtMaxSliceLen ||
+		len(j.ActionLog) > doubtMaxSliceLen {
+		return fmt.Errorf("doubt: input array exceeds maximum allowed size")
+	}
+	d.trumpCards = j.TrumpCards
+	if d.trumpCards == nil {
+		d.trumpCards = NewTrumpCards(0)
+	}
+	d.players = j.Players
+	if d.players == nil {
+		d.players = make([]*DoubtPlayer, 0)
+	}
+	d.currentTurn = j.CurrentTurn
+	d.phase = j.Phase
+	d.tableCards = j.TableCards
+	if d.tableCards == nil {
+		d.tableCards = make([]*Card, 0)
+	}
+	d.lastAction = j.LastAction
+	d.gameEndFlag = j.GameEndFlag
+	d.winnerIdx = j.WinnerIdx
+	d.cpuDoubters = j.CpuDoubters
+	d.cpuActions = j.CpuActions
+	d.humanAction = j.HumanAction
+	d.lastDoubtResult = j.LastDoubtResult
+	d.config = j.Config
+	d.turnCounter = j.TurnCounter
+	d.lastHumanPlayMs = j.LastHumanPlayMs
+	if j.Profile != nil {
+		d.humanProfile = &DoubtHumanProfile{}
+		d.humanProfile.Import(*j.Profile)
+	}
+	d.actionLog = j.ActionLog
+	if d.actionLog == nil {
+		d.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -58,8 +59,8 @@ type HeartsHint struct {
 
 // HeartsTrickCard トリック中の1枚
 type HeartsTrickCard struct {
-	PlayerIdx int
-	Card      *Card
+	PlayerIdx int   `json:"pi"`
+	Card      *Card `json:"c"`
 }
 
 // Hearts ハーツゲームクラス
@@ -1183,4 +1184,93 @@ func (h *Hearts) appendLog(playerIdx int, actionType, detail string, cards []*Ca
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// heartsJSON is the JSON wire format for Hearts.
+type heartsJSON struct {
+	TrumpCards       *TrumpCards              `json:"tc"`
+	Players          []*HeartsPlayer          `json:"ps"`
+	Config           HeartsConfig             `json:"cf"`
+	Phase            HeartsPhase              `json:"ph"`
+	RoundNumber      int                      `json:"rn"`
+	TrickNumber      int                      `json:"tn"`
+	CurrentPlayerIdx int                      `json:"ci"`
+	CurrentTrick     []*HeartsTrickCard       `json:"ct"`
+	HeartsBroken     bool                     `json:"hb"`
+	PassedCards      [HeartsPlayerCnt][]*Card `json:"pc"`
+	PassReady        [HeartsPlayerCnt]bool    `json:"pr"`
+	LeadPlayerIdx    int                      `json:"li"`
+	GameEndFlag      bool                     `json:"ge"`
+	WinnerIdx        int                      `json:"wi"`
+	ActionLog        []*ActionLogEntry        `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (h *Hearts) MarshalJSON() ([]byte, error) {
+	return json.Marshal(heartsJSON{
+		TrumpCards:       h.trumpCards,
+		Players:          h.players,
+		Config:           h.config,
+		Phase:            h.phase,
+		RoundNumber:      h.roundNumber,
+		TrickNumber:      h.trickNumber,
+		CurrentPlayerIdx: h.currentPlayerIdx,
+		CurrentTrick:     h.currentTrick,
+		HeartsBroken:     h.heartsBroken,
+		PassedCards:      h.passedCards,
+		PassReady:        h.passReady,
+		LeadPlayerIdx:    h.leadPlayerIdx,
+		GameEndFlag:      h.gameEndFlag,
+		WinnerIdx:        h.winnerIdx,
+		ActionLog:        h.actionLog,
+	})
+}
+
+// heartsMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const heartsMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (h *Hearts) UnmarshalJSON(data []byte) error {
+	var j heartsJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > heartsMaxSliceLen || len(j.CurrentTrick) > heartsMaxSliceLen ||
+		len(j.ActionLog) > heartsMaxSliceLen {
+		return fmt.Errorf("hearts: input array exceeds maximum allowed size")
+	}
+	for i := range j.PassedCards {
+		if len(j.PassedCards[i]) > heartsMaxSliceLen {
+			return fmt.Errorf("hearts: input array exceeds maximum allowed size")
+		}
+	}
+	h.trumpCards = j.TrumpCards
+	if h.trumpCards == nil {
+		h.trumpCards = NewTrumpCards(0)
+	}
+	h.players = j.Players
+	if h.players == nil {
+		h.players = make([]*HeartsPlayer, 0)
+	}
+	h.config = j.Config
+	h.phase = j.Phase
+	h.roundNumber = j.RoundNumber
+	h.trickNumber = j.TrickNumber
+	h.currentPlayerIdx = j.CurrentPlayerIdx
+	h.currentTrick = j.CurrentTrick
+	if h.currentTrick == nil {
+		h.currentTrick = make([]*HeartsTrickCard, 0)
+	}
+	h.heartsBroken = j.HeartsBroken
+	h.passedCards = j.PassedCards
+	h.passReady = j.PassReady
+	h.leadPlayerIdx = j.LeadPlayerIdx
+	h.gameEndFlag = j.GameEndFlag
+	h.winnerIdx = j.WinnerIdx
+	h.actionLog = j.ActionLog
+	if h.actionLog == nil {
+		h.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

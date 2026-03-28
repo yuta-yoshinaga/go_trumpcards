@@ -1,6 +1,9 @@
 package domain
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // OldMaidMode ババ抜きモード
 type OldMaidMode int
@@ -30,5 +33,33 @@ func (c OldMaidConfig) Validate() error {
 	if c.Mode != OldMaidModeNormal && c.Mode != OldMaidModeJijiNuki {
 		return fmt.Errorf("invalid game mode %d, must be %d (Normal) or %d (JijiNuki)", int(c.Mode), int(OldMaidModeNormal), int(OldMaidModeJijiNuki))
 	}
+	return nil
+}
+
+// oldMaidConfigJSON is the JSON wire format for OldMaidConfig.
+type oldMaidConfigJSON struct {
+	Mode                 OldMaidMode `json:"md"`
+	CpuPlacementStrategy bool        `json:"cp"`
+	CpuMemoryAI          bool        `json:"cm"`
+	CpuHesitationEnabled bool        `json:"ch"`
+	CpuMetaAI            bool        `json:"ca"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (c OldMaidConfig) MarshalJSON() ([]byte, error) {
+	return json.Marshal(oldMaidConfigJSON(c))
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (c *OldMaidConfig) UnmarshalJSON(data []byte) error {
+	var j oldMaidConfigJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	c.Mode = j.Mode
+	c.CpuPlacementStrategy = j.CpuPlacementStrategy
+	c.CpuMemoryAI = j.CpuMemoryAI
+	c.CpuHesitationEnabled = j.CpuHesitationEnabled
+	c.CpuMetaAI = j.CpuMetaAI
 	return nil
 }

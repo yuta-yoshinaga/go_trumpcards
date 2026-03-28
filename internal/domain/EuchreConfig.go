@@ -15,8 +15,8 @@ const (
 
 // EuchreConfig ユーカーゲーム設定
 type EuchreConfig struct {
-	CpuDifficulty EuchreCpuDifficulty
-	PointLimit    int // ゲーム終了スコア (先に到達したチームが勝利, デフォルト10)
+	CpuDifficulty EuchreCpuDifficulty `json:"cd"`
+	PointLimit    int                 `json:"pl"` // ゲーム終了スコア (先に到達したチームが勝利, デフォルト10)
 }
 
 // DefaultEuchreConfig デフォルト設定を返す

@@ -116,6 +116,15 @@ func NewBlackJackWebController(factory func() usecase.BlackJackInteractorIF) *Bl
 	return NewGameWebController(factory, newBlackJackDefaultOutput, blackJackDispatch)
 }
 
+// NewBlackJackWebControllerWithProvider creates a BlackJackWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewBlackJackWebControllerWithProvider(
+	provider SessionProvider[usecase.BlackJackInteractorIF],
+	factory func() usecase.BlackJackInteractorIF,
+) *BlackJackWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newBlackJackDefaultOutput, blackJackDispatch)
+}
+
 func newBlackJackDefaultOutput(msg string) *BlackJackWebOutput {
 	return &BlackJackWebOutput{
 		Dealer:          &BlackJackWebOutputPlayer{},

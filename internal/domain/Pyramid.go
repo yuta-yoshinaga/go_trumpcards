@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -29,8 +30,8 @@ const PyramidTargetSum = 13
 
 // PyramidCard ピラミッド上のカード
 type PyramidCard struct {
-	Card    *Card
-	Removed bool
+	Card    *Card `json:"c"`
+	Removed bool  `json:"r"`
 }
 
 // PyramidHint ヒント
@@ -501,4 +502,69 @@ func (p *Pyramid) appendLog(actionType, detail string, cards []*Card) {
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// pyramidJSON is the JSON wire format for Pyramid.
+type pyramidJSON struct {
+	TrumpCards  *TrumpCards                   `json:"tc"`
+	Pyramid     [PyramidRowCnt][]*PyramidCard `json:"py"`
+	Stock       []*Card                       `json:"st"`
+	Waste       []*Card                       `json:"wa"`
+	Phase       PyramidPhase                  `json:"ps"`
+	MoveCount   int                           `json:"mc"`
+	ActionLog   []*ActionLogEntry             `json:"al"`
+	IsStalemate bool                          `json:"sm"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p *Pyramid) MarshalJSON() ([]byte, error) {
+	return json.Marshal(pyramidJSON{
+		TrumpCards:  p.trumpCards,
+		Pyramid:     p.pyramid,
+		Stock:       p.stock,
+		Waste:       p.waste,
+		Phase:       p.phase,
+		MoveCount:   p.moveCount,
+		ActionLog:   p.actionLog,
+		IsStalemate: p.isStalemate,
+	})
+}
+
+// pyramidMaxSliceLen caps slice sizes during deserialisation.
+const pyramidMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *Pyramid) UnmarshalJSON(data []byte) error {
+	var j pyramidJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > pyramidMaxSliceLen || len(j.Waste) > pyramidMaxSliceLen ||
+		len(j.ActionLog) > pyramidMaxSliceLen {
+		return fmt.Errorf("pyramid: input array exceeds maximum allowed size")
+	}
+
+	p.trumpCards = j.TrumpCards
+	if p.trumpCards == nil {
+		p.trumpCards = NewTrumpCards(0)
+	}
+	p.pyramid = j.Pyramid
+	p.stock = j.Stock
+	if p.stock == nil {
+		p.stock = make([]*Card, 0)
+	}
+	p.waste = j.Waste
+	if p.waste == nil {
+		p.waste = make([]*Card, 0)
+	}
+	p.phase = j.Phase
+	p.moveCount = j.MoveCount
+	p.actionLog = j.ActionLog
+	if p.actionLog == nil {
+		p.actionLog = make([]*ActionLogEntry, 0)
+	}
+	// Undo history is not serialised; set to nil on restore.
+	p.history = nil
+	p.isStalemate = j.IsStalemate
+	return nil
 }

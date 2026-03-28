@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -136,4 +138,18 @@ func (ci *CribbageInteractor) runCpuTurns() {
 		}
 		ci.g.CpuPlay()
 	}
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (ci *CribbageInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(ci.g)
+}
+
+// RestoreCribbageInteractor deserialises JSON into a CribbageInteractor.
+func RestoreCribbageInteractor(data []byte, gp presenter.CribbagePresenter) (*CribbageInteractor, error) {
+	var g domain.Cribbage
+	if err := json.Unmarshal(data, &g); err != nil {
+		return nil, err
+	}
+	return &CribbageInteractor{g: &g, gp: gp}, nil
 }

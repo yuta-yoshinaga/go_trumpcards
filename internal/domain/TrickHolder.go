@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // TrickHolder トリック管理の共通構造体
 type TrickHolder struct {
 	tricksTaken [][]*Card // 獲得したトリック
@@ -19,4 +21,27 @@ func (h *TrickHolder) AddTrick(cards []*Card) {
 // ResetTricks トリックをリセット
 func (h *TrickHolder) ResetTricks() {
 	h.tricksTaken = nil
+}
+
+// trickHolderJSON is the JSON wire format for TrickHolder.
+type trickHolderJSON struct {
+	TricksTaken [][]*Card `json:"tt"` // tricksTaken
+}
+
+// MarshalJSON implements json.Marshaler.
+func (h *TrickHolder) MarshalJSON() ([]byte, error) {
+	return json.Marshal(trickHolderJSON{TricksTaken: h.tricksTaken})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (h *TrickHolder) UnmarshalJSON(data []byte) error {
+	var j trickHolderJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	h.tricksTaken = j.TricksTaken
+	if h.tricksTaken == nil {
+		h.tricksTaken = make([][]*Card, 0)
+	}
+	return nil
 }

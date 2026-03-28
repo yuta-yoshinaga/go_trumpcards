@@ -21,6 +21,15 @@ func NewOmahaWebController(factory func() usecase.OmahaInteractorIF) *OmahaWebCo
 	return NewGameWebController(factory, newOmahaDefaultOutput, omahaDispatch)
 }
 
+// NewOmahaWebControllerWithProvider creates an OmahaWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewOmahaWebControllerWithProvider(
+	provider SessionProvider[usecase.OmahaInteractorIF],
+	factory func() usecase.OmahaInteractorIF,
+) *OmahaWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newOmahaDefaultOutput, omahaDispatch)
+}
+
 func newOmahaDefaultOutput(msg string) *OmahaWebOutput {
 	return &OmahaWebOutput{
 		Players:        make([]*HoldemWebOutputPlayer, 0),

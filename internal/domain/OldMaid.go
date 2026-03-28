@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 )
@@ -714,4 +715,186 @@ func (o *OldMaid) appendLog(playerIdx int, actionType, detail string, cards []*C
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// --- JSON Serialization ---
+
+// oldMaidCpuActionJSON is the JSON wire format for OldMaidCpuAction.
+type oldMaidCpuActionJSON struct {
+	DrawPlayerIdx  int     `json:"dp"`
+	DrawFromIdx    int     `json:"df"`
+	DrawnCard      *Card   `json:"dc"`
+	DiscardedPairs int     `json:"di"`
+	DiscardedCards []*Card `json:"ds"`
+	HesitationMs   int     `json:"hm"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (a *OldMaidCpuAction) MarshalJSON() ([]byte, error) {
+	return json.Marshal(oldMaidCpuActionJSON{
+		DrawPlayerIdx:  a.DrawPlayerIdx,
+		DrawFromIdx:    a.DrawFromIdx,
+		DrawnCard:      a.DrawnCard,
+		DiscardedPairs: a.DiscardedPairs,
+		DiscardedCards: a.DiscardedCards,
+		HesitationMs:   a.HesitationMs,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (a *OldMaidCpuAction) UnmarshalJSON(data []byte) error {
+	var j oldMaidCpuActionJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	a.DrawPlayerIdx = j.DrawPlayerIdx
+	a.DrawFromIdx = j.DrawFromIdx
+	a.DrawnCard = j.DrawnCard
+	a.DiscardedPairs = j.DiscardedPairs
+	a.DiscardedCards = j.DiscardedCards
+	a.HesitationMs = j.HesitationMs
+	return nil
+}
+
+// oldMaidDrawHistoryEntryJSON is the JSON wire format for OldMaidDrawHistoryEntry.
+type oldMaidDrawHistoryEntryJSON struct {
+	DrawPlayerIdx  int  `json:"dp"`
+	DrawFromIdx    int  `json:"df"`
+	DiscardedPairs int  `json:"di"`
+	DrawerFinished bool `json:"dr"`
+	TargetFinished bool `json:"tf"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (e *OldMaidDrawHistoryEntry) MarshalJSON() ([]byte, error) {
+	return json.Marshal(oldMaidDrawHistoryEntryJSON{
+		DrawPlayerIdx:  e.DrawPlayerIdx,
+		DrawFromIdx:    e.DrawFromIdx,
+		DiscardedPairs: e.DiscardedPairs,
+		DrawerFinished: e.DrawerFinished,
+		TargetFinished: e.TargetFinished,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (e *OldMaidDrawHistoryEntry) UnmarshalJSON(data []byte) error {
+	var j oldMaidDrawHistoryEntryJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	e.DrawPlayerIdx = j.DrawPlayerIdx
+	e.DrawFromIdx = j.DrawFromIdx
+	e.DiscardedPairs = j.DiscardedPairs
+	e.DrawerFinished = j.DrawerFinished
+	e.TargetFinished = j.TargetFinished
+	return nil
+}
+
+// oldMaidJSON is the JSON wire format for OldMaid.
+type oldMaidJSON struct {
+	TrumpCards            *TrumpCards                `json:"tc"`
+	Players               []*OldMaidPlayer           `json:"pl"`
+	CurrentTurn           int                        `json:"ct"`
+	GameEndFlag           bool                       `json:"ge"`
+	LoserIdx              int                        `json:"li"`
+	LastDrawPlayerIdx     int                        `json:"dp"`
+	LastDrawFromIdx       int                        `json:"df"`
+	LastDrawCard          *Card                      `json:"lc"`
+	LastDiscardedPairs    int                        `json:"ld"`
+	LastDiscardedCards    []*Card                    `json:"ls"`
+	HasDrawn              bool                       `json:"hd"`
+	CpuActions            []*OldMaidCpuAction        `json:"ca"`
+	HumanAction           *OldMaidCpuAction          `json:"ha"`
+	DrawHistory           []*OldMaidDrawHistoryEntry `json:"dh"`
+	Config                OldMaidConfig              `json:"cf"`
+	RemovedCard           *Card                      `json:"rc"`
+	CpuHighlightedCardIdx int                        `json:"ch"`
+	HumanHandDirty        bool                       `json:"hh"`
+	Profile               *OldMaidHumanProfileData   `json:"pf,omitempty"`
+	ActionLog             []*ActionLogEntry          `json:"al"`
+}
+
+// oldMaidMaxSliceLen caps slice sizes during deserialisation.
+const oldMaidMaxSliceLen = 1000
+
+// MarshalJSON implements json.Marshaler.
+func (o *OldMaid) MarshalJSON() ([]byte, error) {
+	j := oldMaidJSON{
+		TrumpCards:            o.trumpCards,
+		Players:               o.players,
+		CurrentTurn:           o.currentTurn,
+		GameEndFlag:           o.gameEndFlag,
+		LoserIdx:              o.loserIdx,
+		LastDrawPlayerIdx:     o.lastDrawPlayerIdx,
+		LastDrawFromIdx:       o.lastDrawFromIdx,
+		LastDrawCard:          o.lastDrawCard,
+		LastDiscardedPairs:    o.lastDiscardedPairs,
+		LastDiscardedCards:    o.lastDiscardedCards,
+		HasDrawn:              o.hasDrawn,
+		CpuActions:            o.cpuActions,
+		HumanAction:           o.humanAction,
+		DrawHistory:           o.drawHistory,
+		Config:                o.config,
+		RemovedCard:           o.removedCard,
+		CpuHighlightedCardIdx: o.cpuHighlightedCardIdx,
+		HumanHandDirty:        o.humanHandDirty,
+		ActionLog:             o.actionLog,
+	}
+	if o.humanProfile != nil {
+		d := o.humanProfile.Export()
+		j.Profile = &d
+	}
+	return json.Marshal(j)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (o *OldMaid) UnmarshalJSON(data []byte) error {
+	var j oldMaidJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > oldMaidMaxSliceLen || len(j.LastDiscardedCards) > oldMaidMaxSliceLen ||
+		len(j.CpuActions) > oldMaidMaxSliceLen || len(j.DrawHistory) > oldMaidMaxSliceLen ||
+		len(j.ActionLog) > oldMaidMaxSliceLen {
+		return fmt.Errorf("oldMaid: input array exceeds maximum allowed size")
+	}
+	o.trumpCards = j.TrumpCards
+	if o.trumpCards == nil {
+		o.trumpCards = NewTrumpCards(0)
+	}
+	o.players = j.Players
+	if o.players == nil {
+		o.players = make([]*OldMaidPlayer, 0)
+	}
+	o.currentTurn = j.CurrentTurn
+	o.gameEndFlag = j.GameEndFlag
+	o.loserIdx = j.LoserIdx
+	o.lastDrawPlayerIdx = j.LastDrawPlayerIdx
+	o.lastDrawFromIdx = j.LastDrawFromIdx
+	o.lastDrawCard = j.LastDrawCard
+	o.lastDiscardedPairs = j.LastDiscardedPairs
+	o.lastDiscardedCards = j.LastDiscardedCards
+	if o.lastDiscardedCards == nil {
+		o.lastDiscardedCards = make([]*Card, 0)
+	}
+	o.hasDrawn = j.HasDrawn
+	o.cpuActions = j.CpuActions
+	o.humanAction = j.HumanAction
+	o.drawHistory = j.DrawHistory
+	if o.drawHistory == nil {
+		o.drawHistory = make([]*OldMaidDrawHistoryEntry, 0)
+	}
+	o.config = j.Config
+	o.removedCard = j.RemovedCard
+	o.cpuHighlightedCardIdx = j.CpuHighlightedCardIdx
+	o.humanHandDirty = j.HumanHandDirty
+	if j.Profile != nil {
+		o.humanProfile = &OldMaidHumanProfile{}
+		o.humanProfile.Import(*j.Profile)
+	}
+	o.actionLog = j.ActionLog
+	if o.actionLog == nil {
+		o.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

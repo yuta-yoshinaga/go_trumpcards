@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // GinRummyPlayer ジンラミープレイヤークラス
 type GinRummyPlayer struct {
 	*GamePlayer
@@ -18,4 +20,35 @@ func (p *GinRummyPlayer) ResetRound() {
 	p.SetRoundScore(0)
 	p.Reset()
 	p.SetIsFinished(false)
+}
+
+// ginRummyPlayerJSON is the JSON wire format for GinRummyPlayer.
+type ginRummyPlayerJSON struct {
+	GamePlayer       *GamePlayer       `json:"gp"`
+	RoundScoreHolder *RoundScoreHolder `json:"rh"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p *GinRummyPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(ginRummyPlayerJSON{
+		GamePlayer:       p.GamePlayer,
+		RoundScoreHolder: &p.RoundScoreHolder,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *GinRummyPlayer) UnmarshalJSON(data []byte) error {
+	var j ginRummyPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.GamePlayer != nil {
+		p.GamePlayer = j.GamePlayer
+	} else {
+		p.GamePlayer = NewGamePlayer(false)
+	}
+	if j.RoundScoreHolder != nil {
+		p.RoundScoreHolder = *j.RoundScoreHolder
+	}
+	return nil
 }

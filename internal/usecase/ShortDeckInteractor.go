@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -108,4 +110,18 @@ func (oi *ShortDeckInteractor) ShowHand() string {
 // ActionLog 棋譜を出力する
 func (oi *ShortDeckInteractor) ActionLog() string {
 	return oi.op.ActionLogOutput(oi.o)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (oi *ShortDeckInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(oi.o)
+}
+
+// RestoreShortDeckInteractor deserialises JSON into a ShortDeckInteractor.
+func RestoreShortDeckInteractor(data []byte, op presenter.ShortDeckPresenter) (*ShortDeckInteractor, error) {
+	var sd domain.ShortDeck
+	if err := json.Unmarshal(data, &sd); err != nil {
+		return nil, err
+	}
+	return &ShortDeckInteractor{o: &sd, op: op}, nil
 }

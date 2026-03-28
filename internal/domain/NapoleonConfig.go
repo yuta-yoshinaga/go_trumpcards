@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // NapoleonCpuDifficulty CPU の難易度レベル
 type NapoleonCpuDifficulty int
 
@@ -40,5 +42,29 @@ func (c NapoleonConfig) Validate() error {
 	if err := ValidateMin("point limit", c.PointLimit, 1); err != nil {
 		return err
 	}
+	return nil
+}
+
+// napoleonConfigJSON is the JSON wire format for NapoleonConfig.
+type napoleonConfigJSON struct {
+	CpuDifficulty NapoleonCpuDifficulty `json:"cd"`
+	MinBid        int                   `json:"mb"`
+	PointLimit    int                   `json:"pl"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (c NapoleonConfig) MarshalJSON() ([]byte, error) {
+	return json.Marshal(napoleonConfigJSON(c))
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (c *NapoleonConfig) UnmarshalJSON(data []byte) error {
+	var j napoleonConfigJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	c.CpuDifficulty = j.CpuDifficulty
+	c.MinBid = j.MinBid
+	c.PointLimit = j.PointLimit
 	return nil
 }

@@ -1,6 +1,9 @@
 package usecase
 
 import (
+	"encoding/json"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -89,4 +92,18 @@ func (pi *PyramidInteractor) ActionLog() string {
 // Undo アンドゥ
 func (pi *PyramidInteractor) Undo() string {
 	return execAndPresent(pi.p, pi.pp, pi.p.Undo)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (pi *PyramidInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(pi.p)
+}
+
+// RestorePyramidInteractor deserialises JSON into a PyramidInteractor.
+func RestorePyramidInteractor(data []byte, pp presenter.PyramidPresenter) (*PyramidInteractor, error) {
+	var pyr domain.Pyramid
+	if err := json.Unmarshal(data, &pyr); err != nil {
+		return nil, err
+	}
+	return &PyramidInteractor{p: &pyr, pp: pp}, nil
 }

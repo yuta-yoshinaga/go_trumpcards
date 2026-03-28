@@ -224,6 +224,15 @@ func NewHoldemWebController(factory func() usecase.HoldemInteractorIF) *HoldemWe
 	return NewGameWebController(factory, newHoldemDefaultOutput, holdemDispatch)
 }
 
+// NewHoldemWebControllerWithProvider creates a HoldemWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewHoldemWebControllerWithProvider(
+	provider SessionProvider[usecase.HoldemInteractorIF],
+	factory func() usecase.HoldemInteractorIF,
+) *HoldemWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newHoldemDefaultOutput, holdemDispatch)
+}
+
 func newHoldemDefaultOutput(msg string) *HoldemWebOutput {
 	return &HoldemWebOutput{
 		Players:        make([]*HoldemWebOutputPlayer, 0),

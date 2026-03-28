@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -104,4 +106,18 @@ func (ki *KlondikeInteractor) ActionLog() string {
 // Undo アンドゥ
 func (ki *KlondikeInteractor) Undo() string {
 	return execAndPresent(ki.k, ki.kp, ki.k.Undo)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (ki *KlondikeInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(ki.k)
+}
+
+// RestoreKlondikeInteractor deserialises JSON into a KlondikeInteractor.
+func RestoreKlondikeInteractor(data []byte, kp presenter.KlondikePresenter) (*KlondikeInteractor, error) {
+	var kl domain.Klondike
+	if err := json.Unmarshal(data, &kl); err != nil {
+		return nil, err
+	}
+	return &KlondikeInteractor{k: &kl, kp: kp}, nil
 }

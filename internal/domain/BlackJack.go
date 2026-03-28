@@ -1,6 +1,9 @@
 package domain
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // GameResult ゲーム勝敗結果
 type GameResult int
@@ -720,4 +723,115 @@ func (b *BlackJack) appendLog(playerIdx int, actionType, detail string, cards []
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// blackJackJSON is the JSON wire format for BlackJack.
+type blackJackJSON struct {
+	TrumpCards         *TrumpCards         `json:"tc"`
+	Player             *BlackJackPlayer    `json:"pl"`
+	Dealer             *BlackJackPlayer    `json:"dl"`
+	GameEndFlag        bool                `json:"ge"`
+	Phase              int                 `json:"ps"`
+	PlayerHands        []*BlackJackHand    `json:"ph"`
+	CurrentHandIdx     int                 `json:"ci"`
+	InsuranceBet       int                 `json:"ib"`
+	InsuranceAvailable bool                `json:"ia"`
+	DeckCount          int                 `json:"dc"`
+	HintEnabled        bool                `json:"he"`
+	Config             BlackJackConfig     `json:"cf"`
+	RunningCount       int                 `json:"rc"`
+	HoleCardCounted    bool                `json:"hc"`
+	DeckCountChanged   bool                `json:"dd"`
+	CpuPlayers         []*BlackJackCpuSeat `json:"cp"`
+	PerfectPairsBet    int                 `json:"pp"`
+	TwentyOnePlus3Bet  int                 `json:"t3"`
+	SideBetResults     []*BJSideBetResult  `json:"sb"`
+	MultiHandCount     int                 `json:"mh"`
+	ActionLog          []*ActionLogEntry   `json:"al"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (b *BlackJack) MarshalJSON() ([]byte, error) {
+	return json.Marshal(blackJackJSON{
+		TrumpCards:         b.trumpCards,
+		Player:             b.player,
+		Dealer:             b.dealer,
+		GameEndFlag:        b.gameEndFlag,
+		Phase:              b.phase,
+		PlayerHands:        b.playerHands,
+		CurrentHandIdx:     b.currentHandIdx,
+		InsuranceBet:       b.insuranceBet,
+		InsuranceAvailable: b.insuranceAvailable,
+		DeckCount:          b.deckCount,
+		HintEnabled:        b.hintEnabled,
+		Config:             b.config,
+		RunningCount:       b.runningCount,
+		HoleCardCounted:    b.holeCardCounted,
+		DeckCountChanged:   b.deckCountChanged,
+		CpuPlayers:         b.cpuPlayers,
+		PerfectPairsBet:    b.perfectPairsBet,
+		TwentyOnePlus3Bet:  b.twentyOnePlus3Bet,
+		SideBetResults:     b.sideBetResults,
+		MultiHandCount:     b.multiHandCount,
+		ActionLog:          b.actionLog,
+	})
+}
+
+// blackJackMaxSliceLen caps slice sizes during deserialisation to prevent
+// excessive memory allocation from malformed input.
+const blackJackMaxSliceLen = 1000
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (b *BlackJack) UnmarshalJSON(data []byte) error {
+	var j blackJackJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.PlayerHands) > blackJackMaxSliceLen || len(j.CpuPlayers) > blackJackMaxSliceLen ||
+		len(j.SideBetResults) > blackJackMaxSliceLen || len(j.ActionLog) > blackJackMaxSliceLen {
+		return fmt.Errorf("blackjack: input array exceeds maximum allowed size")
+	}
+	b.trumpCards = j.TrumpCards
+	if b.trumpCards == nil {
+		b.trumpCards = NewTrumpCards(0)
+	}
+	b.player = j.Player
+	if b.player == nil {
+		b.player = NewBlackJackPlayer()
+	}
+	b.dealer = j.Dealer
+	if b.dealer == nil {
+		b.dealer = NewBlackJackPlayer()
+	}
+	b.gameEndFlag = j.GameEndFlag
+	b.phase = j.Phase
+	b.playerHands = j.PlayerHands
+	if b.playerHands == nil {
+		b.playerHands = []*BlackJackHand{NewBlackJackHand()}
+	}
+	b.currentHandIdx = j.CurrentHandIdx
+	b.insuranceBet = j.InsuranceBet
+	b.insuranceAvailable = j.InsuranceAvailable
+	b.deckCount = j.DeckCount
+	b.hintEnabled = j.HintEnabled
+	b.config = j.Config
+	b.runningCount = j.RunningCount
+	b.holeCardCounted = j.HoleCardCounted
+	b.deckCountChanged = j.DeckCountChanged
+	b.cpuPlayers = j.CpuPlayers
+	if b.cpuPlayers == nil {
+		b.cpuPlayers = make([]*BlackJackCpuSeat, 0)
+	}
+	b.perfectPairsBet = j.PerfectPairsBet
+	b.twentyOnePlus3Bet = j.TwentyOnePlus3Bet
+	b.sideBetResults = j.SideBetResults
+	if b.sideBetResults == nil {
+		b.sideBetResults = make([]*BJSideBetResult, 0)
+	}
+	b.multiHandCount = j.MultiHandCount
+	b.actionLog = j.ActionLog
+	if b.actionLog == nil {
+		b.actionLog = make([]*ActionLogEntry, 0)
+	}
+	return nil
 }

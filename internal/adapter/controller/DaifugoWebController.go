@@ -128,6 +128,15 @@ func NewDaifugoWebController(factory func() usecase.DaifugoInteractorIF) *Daifug
 	return NewGameWebController(factory, newDaifugoDefaultOutput, daifugoDispatch)
 }
 
+// NewDaifugoWebControllerWithProvider creates a DaifugoWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewDaifugoWebControllerWithProvider(
+	provider SessionProvider[usecase.DaifugoInteractorIF],
+	factory func() usecase.DaifugoInteractorIF,
+) *DaifugoWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newDaifugoDefaultOutput, daifugoDispatch)
+}
+
 func newDaifugoDefaultOutput(msg string) *DaifugoWebOutput {
 	return &DaifugoWebOutput{
 		Players:             make([]*DaifugoWebOutputPlayer, 0),

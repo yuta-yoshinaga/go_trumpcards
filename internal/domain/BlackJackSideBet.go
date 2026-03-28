@@ -44,11 +44,11 @@ const (
 
 // BJSideBetResult サイドベット結果
 type BJSideBetResult struct {
-	BetType    int
-	ResultType int
-	ResultName string
-	BetAmount  int
-	Payout     int
+	BetType    int    `json:"bt"`
+	ResultType int    `json:"rt"`
+	ResultName string `json:"rn"`
+	BetAmount  int    `json:"ba"`
+	Payout     int    `json:"po"`
 }
 
 // BetTypeName ベット種別名を返す

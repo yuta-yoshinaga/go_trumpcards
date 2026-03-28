@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -108,4 +110,18 @@ func (oi *OmahaInteractor) ShowHand() string {
 // ActionLog 棋譜を出力する
 func (oi *OmahaInteractor) ActionLog() string {
 	return oi.op.ActionLogOutput(oi.o)
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (oi *OmahaInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(oi.o)
+}
+
+// RestoreOmahaInteractor deserialises JSON into an OmahaInteractor.
+func RestoreOmahaInteractor(data []byte, op presenter.OmahaPresenter) (*OmahaInteractor, error) {
+	var o domain.Omaha
+	if err := json.Unmarshal(data, &o); err != nil {
+		return nil, err
+	}
+	return &OmahaInteractor{o: &o, op: op}, nil
 }

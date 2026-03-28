@@ -1,6 +1,9 @@
 package domain
 
-import "sort"
+import (
+	"encoding/json"
+	"sort"
+)
 
 // SevensMaxJokerCount 7並べで許可されるジョーカー最大枚数
 const SevensMaxJokerCount = 2
@@ -85,4 +88,42 @@ func (p *SevensPlayer) SortCards() {
 		}
 		return p.cards[i].GetValue() < p.cards[j].GetValue()
 	})
+}
+
+// sevensPlayerJSON is the JSON wire format for SevensPlayer.
+type sevensPlayerJSON struct {
+	RankedGamePlayer *RankedGamePlayer `json:"rp"`
+	IsEliminated     bool              `json:"el"`
+	PassesUsed       int               `json:"pu"`
+	MaxPasses        int               `json:"mp"`
+	LastPlayedJoker  bool              `json:"lj"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (p *SevensPlayer) MarshalJSON() ([]byte, error) {
+	return json.Marshal(sevensPlayerJSON{
+		RankedGamePlayer: p.RankedGamePlayer,
+		IsEliminated:     p.isEliminated,
+		PassesUsed:       p.passesUsed,
+		MaxPasses:        p.maxPasses,
+		LastPlayedJoker:  p.lastPlayedJoker,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (p *SevensPlayer) UnmarshalJSON(data []byte) error {
+	var j sevensPlayerJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if j.RankedGamePlayer != nil {
+		p.RankedGamePlayer = j.RankedGamePlayer
+	} else {
+		p.RankedGamePlayer = NewRankedGamePlayer(false)
+	}
+	p.isEliminated = j.IsEliminated
+	p.passesUsed = j.PassesUsed
+	p.maxPasses = j.MaxPasses
+	p.lastPlayedJoker = j.LastPlayedJoker
+	return nil
 }

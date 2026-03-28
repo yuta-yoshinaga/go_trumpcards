@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -207,4 +209,18 @@ func (ni *NapoleonInteractor) runCpuTurns() {
 			ni.n.NextTrick()
 		}
 	}
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (ni *NapoleonInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(ni.n)
+}
+
+// RestoreNapoleonInteractor deserialises JSON into a NapoleonInteractor.
+func RestoreNapoleonInteractor(data []byte, np presenter.NapoleonPresenter) (*NapoleonInteractor, error) {
+	var n domain.Napoleon
+	if err := json.Unmarshal(data, &n); err != nil {
+		return nil, err
+	}
+	return &NapoleonInteractor{n: &n, np: np}, nil
 }

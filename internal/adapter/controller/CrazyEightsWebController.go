@@ -74,6 +74,15 @@ func NewCrazyEightsWebController(factory func() usecase.CrazyEightsInteractorIF)
 	return NewGameWebController(factory, newCrazyEightsDefaultOutput, crazyEightsDispatch)
 }
 
+// NewCrazyEightsWebControllerWithProvider creates a CrazyEightsWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewCrazyEightsWebControllerWithProvider(
+	provider SessionProvider[usecase.CrazyEightsInteractorIF],
+	factory func() usecase.CrazyEightsInteractorIF,
+) *CrazyEightsWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newCrazyEightsDefaultOutput, crazyEightsDispatch)
+}
+
 func newCrazyEightsDefaultOutput(msg string) *CrazyEightsWebOutput {
 	return &CrazyEightsWebOutput{
 		Players:       make([]*CrazyEightsWebOutputPlayer, 0),

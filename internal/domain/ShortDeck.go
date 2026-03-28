@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
@@ -1271,6 +1272,164 @@ func (sd *ShortDeck) logAction(playerIdx, action, amount int) {
 	case ShortDeckActionAllIn:
 		sd.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", sd.players[playerIdx].GetCurrentBet()), nil)
 	}
+}
+
+// shortDeckJSON is the JSON wire format for ShortDeck.
+type shortDeckJSON struct {
+	TrumpCards      *TrumpCards              `json:"tc"`
+	Players         []*ShortDeckPlayer       `json:"pl"`
+	CommunityCards  []*Card                  `json:"cc"`
+	Pot             int                      `json:"pt"`
+	SidePots        []ShortDeckSidePot       `json:"sp"`
+	DealerIdx       int                      `json:"di"`
+	CurrentTurn     int                      `json:"ct"`
+	Phase           int                      `json:"ph"`
+	Config          ShortDeckConfig          `json:"cf"`
+	GameEndFlag     bool                     `json:"ge"`
+	LastBet         int                      `json:"lb"`
+	MinRaise        int                      `json:"mr"`
+	RaiseCount      int                      `json:"rc"`
+	ActedFlags      []bool                   `json:"af"`
+	RoundResults    []ShortDeckResult        `json:"rr"`
+	CpuActions      []ShortDeckCpuAction     `json:"ca"`
+	StartingChips   []int                    `json:"sc"`
+	VPIPTracked     []bool                   `json:"vt"`
+	PFRTracked      []bool                   `json:"ft"`
+	ThreeBetTracked []bool                   `json:"tt"`
+	HandCount       int                      `json:"hc"`
+	RebuyCounts     []int                    `json:"rb"`
+	AddonUsed       []bool                   `json:"au"`
+	RebuyPhaseType  int                      `json:"rp"`
+	ActionLog       []*ActionLogEntry        `json:"al"`
+	Profile         *BettingHumanProfileData `json:"pf,omitempty"`
+	LastHumanPlayMs int                      `json:"hm"`
+}
+
+// shortDeckMaxSliceLen caps slice sizes during deserialisation.
+const shortDeckMaxSliceLen = 1000
+
+// MarshalJSON implements json.Marshaler.
+func (sd *ShortDeck) MarshalJSON() ([]byte, error) {
+	j := shortDeckJSON{
+		TrumpCards:      sd.trumpCards,
+		Players:         sd.players,
+		CommunityCards:  sd.communityCards,
+		Pot:             sd.pot,
+		SidePots:        sd.sidePots,
+		DealerIdx:       sd.dealerIdx,
+		CurrentTurn:     sd.currentTurn,
+		Phase:           sd.phase,
+		Config:          sd.config,
+		GameEndFlag:     sd.gameEndFlag,
+		LastBet:         sd.lastBet,
+		MinRaise:        sd.minRaise,
+		RaiseCount:      sd.raiseCount,
+		ActedFlags:      sd.actedFlags,
+		RoundResults:    sd.roundResults,
+		CpuActions:      sd.cpuActions,
+		StartingChips:   sd.startingChips,
+		VPIPTracked:     sd.vpipTracked,
+		PFRTracked:      sd.pfrTracked,
+		ThreeBetTracked: sd.threeBetTracked,
+		HandCount:       sd.handCount,
+		RebuyCounts:     sd.rebuyCounts,
+		AddonUsed:       sd.addonUsed,
+		RebuyPhaseType:  sd.rebuyPhaseType,
+		ActionLog:       sd.actionLog,
+		LastHumanPlayMs: sd.lastHumanPlayMs,
+	}
+	if sd.humanProfile != nil {
+		d := sd.humanProfile.Export()
+		j.Profile = &d
+	}
+	return json.Marshal(j)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (sd *ShortDeck) UnmarshalJSON(data []byte) error {
+	var j shortDeckJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > shortDeckMaxSliceLen || len(j.CommunityCards) > shortDeckMaxSliceLen ||
+		len(j.SidePots) > shortDeckMaxSliceLen || len(j.ActedFlags) > shortDeckMaxSliceLen ||
+		len(j.RoundResults) > shortDeckMaxSliceLen || len(j.CpuActions) > shortDeckMaxSliceLen ||
+		len(j.StartingChips) > shortDeckMaxSliceLen || len(j.ActionLog) > shortDeckMaxSliceLen {
+		return fmt.Errorf("shortdeck: input array exceeds maximum allowed size")
+	}
+	sd.trumpCards = j.TrumpCards
+	if sd.trumpCards == nil {
+		sd.trumpCards = NewTrumpCards(0)
+	}
+	sd.players = j.Players
+	if sd.players == nil {
+		sd.players = make([]*ShortDeckPlayer, 0)
+	}
+	sd.communityCards = j.CommunityCards
+	if sd.communityCards == nil {
+		sd.communityCards = make([]*Card, 0)
+	}
+	sd.pot = j.Pot
+	sd.sidePots = j.SidePots
+	if sd.sidePots == nil {
+		sd.sidePots = make([]ShortDeckSidePot, 0)
+	}
+	sd.dealerIdx = j.DealerIdx
+	sd.currentTurn = j.CurrentTurn
+	sd.phase = j.Phase
+	sd.config = j.Config
+	sd.gameEndFlag = j.GameEndFlag
+	sd.lastBet = j.LastBet
+	sd.minRaise = j.MinRaise
+	sd.raiseCount = j.RaiseCount
+	sd.actedFlags = j.ActedFlags
+	if sd.actedFlags == nil {
+		sd.actedFlags = make([]bool, 0)
+	}
+	sd.roundResults = j.RoundResults
+	if sd.roundResults == nil {
+		sd.roundResults = make([]ShortDeckResult, 0)
+	}
+	sd.cpuActions = j.CpuActions
+	if sd.cpuActions == nil {
+		sd.cpuActions = make([]ShortDeckCpuAction, 0)
+	}
+	sd.startingChips = j.StartingChips
+	if sd.startingChips == nil {
+		sd.startingChips = make([]int, 0)
+	}
+	sd.vpipTracked = j.VPIPTracked
+	if sd.vpipTracked == nil {
+		sd.vpipTracked = make([]bool, 0)
+	}
+	sd.pfrTracked = j.PFRTracked
+	if sd.pfrTracked == nil {
+		sd.pfrTracked = make([]bool, 0)
+	}
+	sd.threeBetTracked = j.ThreeBetTracked
+	if sd.threeBetTracked == nil {
+		sd.threeBetTracked = make([]bool, 0)
+	}
+	sd.handCount = j.HandCount
+	sd.rebuyCounts = j.RebuyCounts
+	if sd.rebuyCounts == nil {
+		sd.rebuyCounts = make([]int, 0)
+	}
+	sd.addonUsed = j.AddonUsed
+	if sd.addonUsed == nil {
+		sd.addonUsed = make([]bool, 0)
+	}
+	sd.rebuyPhaseType = j.RebuyPhaseType
+	sd.actionLog = j.ActionLog
+	if sd.actionLog == nil {
+		sd.actionLog = make([]*ActionLogEntry, 0)
+	}
+	sd.lastHumanPlayMs = j.LastHumanPlayMs
+	if j.Profile != nil {
+		sd.humanProfile = &BettingHumanProfile{}
+		sd.humanProfile.Import(*j.Profile)
+	}
+	return nil
 }
 
 // Resize プレイヤースライスを差し替え、プレイヤー数依存スライスを再初期化する

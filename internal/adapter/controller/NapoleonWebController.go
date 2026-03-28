@@ -114,6 +114,15 @@ func NewNapoleonWebController(factory func() usecase.NapoleonInteractorIF) *Napo
 	return NewGameWebController(factory, newNapoleonDefaultOutput, napoleonDispatch)
 }
 
+// NewNapoleonWebControllerWithProvider creates a NapoleonWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewNapoleonWebControllerWithProvider(
+	provider SessionProvider[usecase.NapoleonInteractorIF],
+	factory func() usecase.NapoleonInteractorIF,
+) *NapoleonWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newNapoleonDefaultOutput, napoleonDispatch)
+}
+
 func newNapoleonDefaultOutput(msg string) *NapoleonWebOutput {
 	return &NapoleonWebOutput{
 		Players:       make([]*NapoleonWebOutputPlayer, 0),

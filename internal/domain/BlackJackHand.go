@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 // BlackJackHand ブラックジャックハンド（分割対応）
 type BlackJackHand struct {
 	cards       []*Card
@@ -181,4 +183,47 @@ func (h *BlackJackHand) Reset() {
 	h.busted = false
 	h.surrendered = false
 	h.fromSplit = false
+}
+
+// blackJackHandJSON is the JSON wire format for BlackJackHand.
+type blackJackHandJSON struct {
+	Cards       []*Card `json:"c"`
+	Bet         int     `json:"b"`
+	Stood       bool    `json:"st"`
+	Doubled     bool    `json:"db"`
+	Busted      bool    `json:"bu"`
+	Surrendered bool    `json:"sr"`
+	FromSplit   bool    `json:"fs"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (h *BlackJackHand) MarshalJSON() ([]byte, error) {
+	return json.Marshal(blackJackHandJSON{
+		Cards:       h.cards,
+		Bet:         h.bet,
+		Stood:       h.stood,
+		Doubled:     h.doubled,
+		Busted:      h.busted,
+		Surrendered: h.surrendered,
+		FromSplit:   h.fromSplit,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (h *BlackJackHand) UnmarshalJSON(data []byte) error {
+	var j blackJackHandJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	h.cards = j.Cards
+	if h.cards == nil {
+		h.cards = make([]*Card, 0)
+	}
+	h.bet = j.Bet
+	h.stood = j.Stood
+	h.doubled = j.Doubled
+	h.busted = j.Busted
+	h.surrendered = j.Surrendered
+	h.fromSplit = j.FromSplit
+	return nil
 }

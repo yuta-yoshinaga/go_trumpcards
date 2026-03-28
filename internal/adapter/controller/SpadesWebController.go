@@ -99,6 +99,15 @@ func NewSpadesWebController(factory func() usecase.SpadesInteractorIF) *SpadesWe
 	return NewGameWebController(factory, newSpadesDefaultOutput, spadesDispatch)
 }
 
+// NewSpadesWebControllerWithProvider creates a SpadesWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewSpadesWebControllerWithProvider(
+	provider SessionProvider[usecase.SpadesInteractorIF],
+	factory func() usecase.SpadesInteractorIF,
+) *SpadesWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newSpadesDefaultOutput, spadesDispatch)
+}
+
 func newSpadesDefaultOutput(msg string) *SpadesWebOutput {
 	return &SpadesWebOutput{
 		Players:       make([]*SpadesWebOutputPlayer, 0),

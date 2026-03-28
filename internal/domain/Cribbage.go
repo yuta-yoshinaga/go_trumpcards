@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 )
@@ -856,4 +857,127 @@ func (g *Cribbage) SetDiscardDone(playerIdx int, done bool) {
 	if playerIdx >= 0 && playerIdx < CribbagePlayerCnt {
 		g.discardDone[playerIdx] = done
 	}
+}
+
+// --- JSON Serialization ---
+
+// cribbageJSON is the JSON wire format for Cribbage.
+type cribbageJSON struct {
+	TrumpCards       *TrumpCards          `json:"tc"`
+	Players          []*CribbagePlayer    `json:"pl"`
+	Config           CribbageConfig       `json:"cf"`
+	Phase            CribbagePhase        `json:"ph"`
+	CurrentPlayerIdx int                  `json:"ci"`
+	DealerIdx        int                  `json:"di"`
+	Crib             []*Card              `json:"cb"`
+	Starter          *Card                `json:"st"`
+	DrawPile         []*Card              `json:"dp"`
+	PegCount         int                  `json:"pc"`
+	PegPlayedCards   []*Card              `json:"pp"`
+	PegGoState       int                  `json:"pg"`
+	LastPegPlayer    int                  `json:"lp"`
+	PlayerPegCards0  []*Card              `json:"p0"`
+	PlayerPegCards1  []*Card              `json:"p1"`
+	ShowPhaseStep    int                  `json:"ss"`
+	HandScoreDetail0 *CribbageScoreDetail `json:"h0,omitempty"`
+	HandScoreDetail1 *CribbageScoreDetail `json:"h1,omitempty"`
+	HandScoreDetail2 *CribbageScoreDetail `json:"h2,omitempty"`
+	GameEndFlag      bool                 `json:"ge"`
+	WinnerIdx        int                  `json:"wi"`
+	RoundNumber      int                  `json:"rn"`
+	ActionLog        []*ActionLogEntry    `json:"al"`
+	DiscardDone0     bool                 `json:"d0"`
+	DiscardDone1     bool                 `json:"d1"`
+	OriginalHand0    []*Card              `json:"o0"`
+	OriginalHand1    []*Card              `json:"o1"`
+}
+
+// cribbageMaxSliceLen caps slice sizes during deserialisation.
+const cribbageMaxSliceLen = 1000
+
+// MarshalJSON implements json.Marshaler.
+func (g *Cribbage) MarshalJSON() ([]byte, error) {
+	return json.Marshal(cribbageJSON{
+		TrumpCards:       g.trumpCards,
+		Players:          g.players,
+		Config:           g.config,
+		Phase:            g.phase,
+		CurrentPlayerIdx: g.currentPlayerIdx,
+		DealerIdx:        g.dealerIdx,
+		Crib:             g.crib,
+		Starter:          g.starter,
+		DrawPile:         g.drawPile,
+		PegCount:         g.pegCount,
+		PegPlayedCards:   g.pegPlayedCards,
+		PegGoState:       g.pegGoState,
+		LastPegPlayer:    g.lastPegPlayer,
+		PlayerPegCards0:  g.playerPeggedCards[0],
+		PlayerPegCards1:  g.playerPeggedCards[1],
+		ShowPhaseStep:    g.showPhaseStep,
+		HandScoreDetail0: g.handScoreDetails[0],
+		HandScoreDetail1: g.handScoreDetails[1],
+		HandScoreDetail2: g.handScoreDetails[2],
+		GameEndFlag:      g.gameEndFlag,
+		WinnerIdx:        g.winnerIdx,
+		RoundNumber:      g.roundNumber,
+		ActionLog:        g.actionLog,
+		DiscardDone0:     g.discardDone[0],
+		DiscardDone1:     g.discardDone[1],
+		OriginalHand0:    g.originalHands[0],
+		OriginalHand1:    g.originalHands[1],
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (g *Cribbage) UnmarshalJSON(data []byte) error {
+	var j cribbageJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Players) > cribbageMaxSliceLen || len(j.Crib) > cribbageMaxSliceLen ||
+		len(j.DrawPile) > cribbageMaxSliceLen || len(j.PegPlayedCards) > cribbageMaxSliceLen ||
+		len(j.ActionLog) > cribbageMaxSliceLen {
+		return fmt.Errorf("cribbage: input array exceeds maximum allowed size")
+	}
+	g.trumpCards = j.TrumpCards
+	if g.trumpCards == nil {
+		g.trumpCards = NewTrumpCards(0)
+	}
+	g.players = j.Players
+	if g.players == nil {
+		g.players = make([]*CribbagePlayer, 0)
+	}
+	g.config = j.Config
+	g.phase = j.Phase
+	g.currentPlayerIdx = j.CurrentPlayerIdx
+	g.dealerIdx = j.DealerIdx
+	g.crib = j.Crib
+	if g.crib == nil {
+		g.crib = make([]*Card, 0)
+	}
+	g.starter = j.Starter
+	g.drawPile = j.DrawPile
+	if g.drawPile == nil {
+		g.drawPile = make([]*Card, 0)
+	}
+	g.pegCount = j.PegCount
+	g.pegPlayedCards = j.PegPlayedCards
+	if g.pegPlayedCards == nil {
+		g.pegPlayedCards = make([]*Card, 0)
+	}
+	g.pegGoState = j.PegGoState
+	g.lastPegPlayer = j.LastPegPlayer
+	g.playerPeggedCards = [CribbagePlayerCnt][]*Card{j.PlayerPegCards0, j.PlayerPegCards1}
+	g.showPhaseStep = j.ShowPhaseStep
+	g.handScoreDetails = [3]*CribbageScoreDetail{j.HandScoreDetail0, j.HandScoreDetail1, j.HandScoreDetail2}
+	g.gameEndFlag = j.GameEndFlag
+	g.winnerIdx = j.WinnerIdx
+	g.roundNumber = j.RoundNumber
+	g.actionLog = j.ActionLog
+	if g.actionLog == nil {
+		g.actionLog = make([]*ActionLogEntry, 0)
+	}
+	g.discardDone = [CribbagePlayerCnt]bool{j.DiscardDone0, j.DiscardDone1}
+	g.originalHands = [CribbagePlayerCnt][]*Card{j.OriginalHand0, j.OriginalHand1}
+	return nil
 }

@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -98,4 +100,18 @@ func (oi *OldMaidInteractor) runCpuTurns() {
 	for !oi.om.GetGameEndFlag() && !oi.om.IsHumanTurn() {
 		_ = oi.om.CpuDraw()
 	}
+}
+
+// Snapshot serialises the game state to JSON for KV persistence.
+func (oi *OldMaidInteractor) Snapshot() ([]byte, error) {
+	return json.Marshal(oi.om)
+}
+
+// RestoreOldMaidInteractor deserialises JSON into an OldMaidInteractor.
+func RestoreOldMaidInteractor(data []byte, omp presenter.OldMaidPresenter) (*OldMaidInteractor, error) {
+	var om domain.OldMaid
+	if err := json.Unmarshal(data, &om); err != nil {
+		return nil, err
+	}
+	return &OldMaidInteractor{om: &om, omp: omp}, nil
 }
