@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -17,269 +16,227 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// registerKV creates a KV-backed session provider for a game and registers the
+// controller on the given mux. It eliminates the repeated boilerplate of
+// creating a provider, building a controller, and wiring up the route.
+func registerKV[I any](
+	mux *http.ServeMux,
+	path string,
+	kvPrefix string,
+	factory func() I,
+	restore func([]byte) (I, error),
+	newCtrl func(controller.SessionProvider[I], func() I) interface {
+		Exec(http.ResponseWriter, *http.Request)
+		Stop()
+	},
+) {
+	kvProvider, err := controller.NewKVSessionProvider[I](
+		"GAME_SESSIONS", kvPrefix,
+		func(i I) ([]byte, error) {
+			return any(i).(interface{ Snapshot() ([]byte, error) }).Snapshot()
+		},
+		restore,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctrl := newCtrl(kvProvider, factory)
+	mux.HandleFunc(path, ctrl.Exec)
+}
+
 func main() {
 	mux := http.NewServeMux()
 
-	// BlackJack (KV-backed session)
-	blackjackFactory := func() usecase.BlackJackInteractorIF {
-		return usecase.NewBlackJackInteractor(
-			domain.NewDefaultBlackJack(),
-			new(presenter.BlackJackWebPresenter),
-		)
-	}
-	blackjackKV, err := controller.NewKVSessionProvider[usecase.BlackJackInteractorIF](
-		"GAME_SESSIONS", "blackjack:",
-		func(bi usecase.BlackJackInteractorIF) ([]byte, error) {
-			snap, ok := bi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
-			}
-			return snap.Snapshot()
+	// BlackJack
+	registerKV(mux, "/blackjack/exec", "blackjack:",
+		func() usecase.BlackJackInteractorIF {
+			return usecase.NewBlackJackInteractor(
+				domain.NewDefaultBlackJack(),
+				new(presenter.BlackJackWebPresenter),
+			)
 		},
 		func(data []byte) (usecase.BlackJackInteractorIF, error) {
 			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.BlackJackInteractorIF], f func() usecase.BlackJackInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewBlackJackWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	bjc := controller.NewBlackJackWebControllerWithProvider(blackjackKV, blackjackFactory)
-	mux.HandleFunc("/blackjack/exec", bjc.Exec)
 
-	// Baccarat (KV-backed session)
-	baccaratFactory := func() usecase.BaccaratInteractorIF {
-		return usecase.NewBaccaratInteractor(
-			domain.NewDefaultBaccarat(),
-			new(presenter.BaccaratWebPresenter),
-		)
-	}
-	baccaratKV, err := controller.NewKVSessionProvider[usecase.BaccaratInteractorIF](
-		"GAME_SESSIONS", "baccarat:",
-		func(bi usecase.BaccaratInteractorIF) ([]byte, error) {
-			snap, ok := bi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
-			}
-			return snap.Snapshot()
+	// Baccarat
+	registerKV(mux, "/baccarat/exec", "baccarat:",
+		func() usecase.BaccaratInteractorIF {
+			return usecase.NewBaccaratInteractor(
+				domain.NewDefaultBaccarat(),
+				new(presenter.BaccaratWebPresenter),
+			)
 		},
 		func(data []byte) (usecase.BaccaratInteractorIF, error) {
 			return usecase.RestoreBaccaratInteractor(data, new(presenter.BaccaratWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.BaccaratInteractorIF], f func() usecase.BaccaratInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewBaccaratWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	bcc := controller.NewBaccaratWebControllerWithProvider(baccaratKV, baccaratFactory)
-	mux.HandleFunc("/baccarat/exec", bcc.Exec)
 
-	// Poker (KV-backed session)
-	pokerFactory := func() usecase.PokerInteractorIF {
-		config := domain.DefaultPokerConfig()
-		players := []*domain.PokerPlayer{
-			domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
-			domain.NewPokerPlayer(false, domain.PokerStyleConservative),
-			domain.NewPokerPlayer(false, domain.PokerStyleAggressive),
-			domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
-		}
-		poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
-		return usecase.NewPokerInteractor(poker, new(presenter.PokerWebPresenter))
-	}
-	pokerKV, err := controller.NewKVSessionProvider[usecase.PokerInteractorIF](
-		"GAME_SESSIONS", "poker:",
-		func(pi usecase.PokerInteractorIF) ([]byte, error) {
-			snap, ok := pi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
+	// Poker
+	registerKV(mux, "/poker/exec", "poker:",
+		func() usecase.PokerInteractorIF {
+			config := domain.DefaultPokerConfig()
+			players := []*domain.PokerPlayer{
+				domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+				domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+				domain.NewPokerPlayer(false, domain.PokerStyleAggressive),
+				domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
 			}
-			return snap.Snapshot()
+			poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
+			return usecase.NewPokerInteractor(poker, new(presenter.PokerWebPresenter))
 		},
 		func(data []byte) (usecase.PokerInteractorIF, error) {
 			return usecase.RestorePokerInteractor(data, new(presenter.PokerWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.PokerInteractorIF], f func() usecase.PokerInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewPokerWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	pkc := controller.NewPokerWebControllerWithProvider(pokerKV, pokerFactory)
-	mux.HandleFunc("/poker/exec", pkc.Exec)
 
-	// Texas Hold'em (KV-backed session)
-	holdemFactory := func() usecase.HoldemInteractorIF {
-		cfg := domain.DefaultHoldemConfig()
-		holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
-		return usecase.NewHoldemInteractor(holdem, new(presenter.HoldemWebPresenter))
-	}
-	holdemKV, err := controller.NewKVSessionProvider[usecase.HoldemInteractorIF](
-		"GAME_SESSIONS", "holdem:",
-		func(hi usecase.HoldemInteractorIF) ([]byte, error) {
-			snap, ok := hi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
-			}
-			return snap.Snapshot()
+	// Texas Hold'em
+	registerKV(mux, "/holdem/exec", "holdem:",
+		func() usecase.HoldemInteractorIF {
+			cfg := domain.DefaultHoldemConfig()
+			holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewHoldemInteractor(holdem, new(presenter.HoldemWebPresenter))
 		},
 		func(data []byte) (usecase.HoldemInteractorIF, error) {
 			return usecase.RestoreHoldemInteractor(data, new(presenter.HoldemWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.HoldemInteractorIF], f func() usecase.HoldemInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewHoldemWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	hmc := controller.NewHoldemWebControllerWithProvider(holdemKV, holdemFactory)
-	mux.HandleFunc("/holdem/exec", hmc.Exec)
 
-	// Omaha (KV-backed session)
-	omahaFactory := func() usecase.OmahaInteractorIF {
-		cfg := domain.DefaultOmahaConfig()
-		omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
-		return usecase.NewOmahaInteractor(omaha, new(presenter.OmahaWebPresenter))
-	}
-	omahaKV, err := controller.NewKVSessionProvider[usecase.OmahaInteractorIF](
-		"GAME_SESSIONS", "omaha:",
-		func(oi usecase.OmahaInteractorIF) ([]byte, error) {
-			snap, ok := oi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
-			}
-			return snap.Snapshot()
+	// Omaha
+	registerKV(mux, "/omaha/exec", "omaha:",
+		func() usecase.OmahaInteractorIF {
+			cfg := domain.DefaultOmahaConfig()
+			omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewOmahaInteractor(omaha, new(presenter.OmahaWebPresenter))
 		},
 		func(data []byte) (usecase.OmahaInteractorIF, error) {
 			return usecase.RestoreOmahaInteractor(data, new(presenter.OmahaWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.OmahaInteractorIF], f func() usecase.OmahaInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewOmahaWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ohc := controller.NewOmahaWebControllerWithProvider(omahaKV, omahaFactory)
-	mux.HandleFunc("/omaha/exec", ohc.Exec)
 
-	// Short Deck (KV-backed session)
-	shortdeckFactory := func() usecase.ShortDeckInteractorIF {
-		cfg := domain.DefaultShortDeckConfig()
-		sd := domain.NewShortDeck(domain.NewTrumpCardsShortDeck(), domain.NewShortDeckPlayersForTable(cfg.TableSize), cfg)
-		return usecase.NewShortDeckInteractor(sd, new(presenter.ShortDeckWebPresenter))
-	}
-	shortdeckKV, err := controller.NewKVSessionProvider[usecase.ShortDeckInteractorIF](
-		"GAME_SESSIONS", "shortdeck:",
-		func(si usecase.ShortDeckInteractorIF) ([]byte, error) {
-			snap, ok := si.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
-			}
-			return snap.Snapshot()
+	// Short Deck
+	registerKV(mux, "/shortdeck/exec", "shortdeck:",
+		func() usecase.ShortDeckInteractorIF {
+			cfg := domain.DefaultShortDeckConfig()
+			sd := domain.NewShortDeck(domain.NewTrumpCardsShortDeck(), domain.NewShortDeckPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewShortDeckInteractor(sd, new(presenter.ShortDeckWebPresenter))
 		},
 		func(data []byte) (usecase.ShortDeckInteractorIF, error) {
 			return usecase.RestoreShortDeckInteractor(data, new(presenter.ShortDeckWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.ShortDeckInteractorIF], f func() usecase.ShortDeckInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewShortDeckWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	skc := controller.NewShortDeckWebControllerWithProvider(shortdeckKV, shortdeckFactory)
-	mux.HandleFunc("/shortdeck/exec", skc.Exec)
 
-	// Indian Poker (KV-backed session)
-	indianpokerFactory := func() usecase.IndianPokerInteractorIF {
-		cfg := domain.DefaultIndianPokerConfig()
-		ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
-		return usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerWebPresenter))
-	}
-	indianpokerKV, err := controller.NewKVSessionProvider[usecase.IndianPokerInteractorIF](
-		"GAME_SESSIONS", "indianpoker:",
-		func(ipi usecase.IndianPokerInteractorIF) ([]byte, error) {
-			snap, ok := ipi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
-			}
-			return snap.Snapshot()
+	// Indian Poker
+	registerKV(mux, "/indianpoker/exec", "indianpoker:",
+		func() usecase.IndianPokerInteractorIF {
+			cfg := domain.DefaultIndianPokerConfig()
+			ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
+			return usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerWebPresenter))
 		},
 		func(data []byte) (usecase.IndianPokerInteractorIF, error) {
 			return usecase.RestoreIndianPokerInteractor(data, new(presenter.IndianPokerWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.IndianPokerInteractorIF], f func() usecase.IndianPokerInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewIndianPokerWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ipc := controller.NewIndianPokerWebControllerWithProvider(indianpokerKV, indianpokerFactory)
-	mux.HandleFunc("/indianpoker/exec", ipc.Exec)
 
-	// Video Poker (KV-backed session)
-	videopokerFactory := func() usecase.VideoPokerInteractorIF {
-		return usecase.NewVideoPokerInteractor(
-			domain.NewDefaultVideoPoker(),
-			new(presenter.VideoPokerWebPresenter),
-		)
-	}
-	videopokerKV, err := controller.NewKVSessionProvider[usecase.VideoPokerInteractorIF](
-		"GAME_SESSIONS", "videopoker:",
-		func(vi usecase.VideoPokerInteractorIF) ([]byte, error) {
-			snap, ok := vi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
-			}
-			return snap.Snapshot()
+	// Video Poker
+	registerKV(mux, "/videopoker/exec", "videopoker:",
+		func() usecase.VideoPokerInteractorIF {
+			return usecase.NewVideoPokerInteractor(
+				domain.NewDefaultVideoPoker(),
+				new(presenter.VideoPokerWebPresenter),
+			)
 		},
 		func(data []byte) (usecase.VideoPokerInteractorIF, error) {
 			return usecase.RestoreVideoPokerInteractor(data, new(presenter.VideoPokerWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.VideoPokerInteractorIF], f func() usecase.VideoPokerInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewVideoPokerWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	vpc := controller.NewVideoPokerWebControllerWithProvider(videopokerKV, videopokerFactory)
-	mux.HandleFunc("/videopoker/exec", vpc.Exec)
 
-	// Deuces Wild (KV-backed session)
-	deuceswildFactory := func() usecase.VideoPokerInteractorIF {
-		return usecase.NewVideoPokerInteractor(
-			domain.NewDeucesWildVideoPoker(),
-			new(presenter.VideoPokerWebPresenter),
-		)
-	}
-	deuceswildKV, err := controller.NewKVSessionProvider[usecase.VideoPokerInteractorIF](
-		"GAME_SESSIONS", "deuceswild:",
-		func(vi usecase.VideoPokerInteractorIF) ([]byte, error) {
-			snap, ok := vi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
-			}
-			return snap.Snapshot()
+	// Deuces Wild
+	registerKV(mux, "/deuceswild/exec", "deuceswild:",
+		func() usecase.VideoPokerInteractorIF {
+			return usecase.NewVideoPokerInteractor(
+				domain.NewDeucesWildVideoPoker(),
+				new(presenter.VideoPokerWebPresenter),
+			)
 		},
 		func(data []byte) (usecase.VideoPokerInteractorIF, error) {
 			return usecase.RestoreVideoPokerInteractor(data, new(presenter.VideoPokerWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.VideoPokerInteractorIF], f func() usecase.VideoPokerInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewVideoPokerWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	dwc := controller.NewVideoPokerWebControllerWithProvider(deuceswildKV, deuceswildFactory)
-	mux.HandleFunc("/deuceswild/exec", dwc.Exec)
 
-	// Joker Poker (KV-backed session)
-	jokerpokerFactory := func() usecase.VideoPokerInteractorIF {
-		return usecase.NewVideoPokerInteractor(
-			domain.NewJokerPokerVideoPoker(),
-			new(presenter.VideoPokerWebPresenter),
-		)
-	}
-	jokerpokerKV, err := controller.NewKVSessionProvider[usecase.VideoPokerInteractorIF](
-		"GAME_SESSIONS", "jokerpoker:",
-		func(vi usecase.VideoPokerInteractorIF) ([]byte, error) {
-			snap, ok := vi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
-			}
-			return snap.Snapshot()
+	// Joker Poker
+	registerKV(mux, "/jokerpoker/exec", "jokerpoker:",
+		func() usecase.VideoPokerInteractorIF {
+			return usecase.NewVideoPokerInteractor(
+				domain.NewJokerPokerVideoPoker(),
+				new(presenter.VideoPokerWebPresenter),
+			)
 		},
 		func(data []byte) (usecase.VideoPokerInteractorIF, error) {
 			return usecase.RestoreVideoPokerInteractor(data, new(presenter.VideoPokerWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.VideoPokerInteractorIF], f func() usecase.VideoPokerInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewVideoPokerWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	jpc := controller.NewVideoPokerWebControllerWithProvider(jokerpokerKV, jokerpokerFactory)
-	mux.HandleFunc("/jokerpoker/exec", jpc.Exec)
 
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {

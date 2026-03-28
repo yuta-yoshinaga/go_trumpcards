@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -17,285 +16,250 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// registerKV creates a KV-backed session provider for a game and registers the
+// controller on the given mux. It eliminates the repeated boilerplate of
+// creating a provider, building a controller, and wiring up the route.
+func registerKV[I any](
+	mux *http.ServeMux,
+	path string,
+	kvPrefix string,
+	factory func() I,
+	restore func([]byte) (I, error),
+	newCtrl func(controller.SessionProvider[I], func() I) interface {
+		Exec(http.ResponseWriter, *http.Request)
+		Stop()
+	},
+) {
+	kvProvider, err := controller.NewKVSessionProvider[I](
+		"GAME_SESSIONS", kvPrefix,
+		func(i I) ([]byte, error) {
+			return any(i).(interface{ Snapshot() ([]byte, error) }).Snapshot()
+		},
+		restore,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctrl := newCtrl(kvProvider, factory)
+	mux.HandleFunc(path, ctrl.Exec)
+}
+
 func main() {
 	mux := http.NewServeMux()
 
-	// Hearts (KV-backed session)
-	heartsFactory := func() usecase.HeartsInteractorIF {
-		config := domain.DefaultHeartsConfig()
-		players := []*domain.HeartsPlayer{
-			domain.NewHeartsPlayer(true),
-			domain.NewHeartsPlayer(false),
-			domain.NewHeartsPlayer(false),
-			domain.NewHeartsPlayer(false),
-		}
-		hearts := domain.NewHearts(domain.NewTrumpCards(0), players, config)
-		return usecase.NewHeartsInteractor(hearts, new(presenter.HeartsWebPresenter))
-	}
-	heartsKV, err := controller.NewKVSessionProvider[usecase.HeartsInteractorIF](
-		"GAME_SESSIONS", "hearts:",
-		func(hi usecase.HeartsInteractorIF) ([]byte, error) {
-			snap, ok := hi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
+	// Hearts
+	registerKV(mux, "/hearts/exec", "hearts:",
+		func() usecase.HeartsInteractorIF {
+			config := domain.DefaultHeartsConfig()
+			players := []*domain.HeartsPlayer{
+				domain.NewHeartsPlayer(true),
+				domain.NewHeartsPlayer(false),
+				domain.NewHeartsPlayer(false),
+				domain.NewHeartsPlayer(false),
 			}
-			return snap.Snapshot()
+			hearts := domain.NewHearts(domain.NewTrumpCards(0), players, config)
+			return usecase.NewHeartsInteractor(hearts, new(presenter.HeartsWebPresenter))
 		},
 		func(data []byte) (usecase.HeartsInteractorIF, error) {
 			return usecase.RestoreHeartsInteractor(data, new(presenter.HeartsWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.HeartsInteractorIF], f func() usecase.HeartsInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewHeartsWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	htc := controller.NewHeartsWebControllerWithProvider(heartsKV, heartsFactory)
-	mux.HandleFunc("/hearts/exec", htc.Exec)
 
-	// Spades (KV-backed session)
-	spadesFactory := func() usecase.SpadesInteractorIF {
-		config := domain.DefaultSpadesConfig()
-		players := []*domain.SpadesPlayer{
-			domain.NewSpadesPlayer(true),
-			domain.NewSpadesPlayer(false),
-			domain.NewSpadesPlayer(false),
-			domain.NewSpadesPlayer(false),
-		}
-		spades := domain.NewSpades(domain.NewTrumpCards(0), players, config)
-		return usecase.NewSpadesInteractor(spades, new(presenter.SpadesWebPresenter))
-	}
-	spadesKV, err := controller.NewKVSessionProvider[usecase.SpadesInteractorIF](
-		"GAME_SESSIONS", "spades:",
-		func(si usecase.SpadesInteractorIF) ([]byte, error) {
-			snap, ok := si.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
+	// Spades
+	registerKV(mux, "/spades/exec", "spades:",
+		func() usecase.SpadesInteractorIF {
+			config := domain.DefaultSpadesConfig()
+			players := []*domain.SpadesPlayer{
+				domain.NewSpadesPlayer(true),
+				domain.NewSpadesPlayer(false),
+				domain.NewSpadesPlayer(false),
+				domain.NewSpadesPlayer(false),
 			}
-			return snap.Snapshot()
+			spades := domain.NewSpades(domain.NewTrumpCards(0), players, config)
+			return usecase.NewSpadesInteractor(spades, new(presenter.SpadesWebPresenter))
 		},
 		func(data []byte) (usecase.SpadesInteractorIF, error) {
 			return usecase.RestoreSpadesInteractor(data, new(presenter.SpadesWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.SpadesInteractorIF], f func() usecase.SpadesInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewSpadesWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	spc := controller.NewSpadesWebControllerWithProvider(spadesKV, spadesFactory)
-	mux.HandleFunc("/spades/exec", spc.Exec)
 
-	// Euchre (KV-backed session)
-	euchreFactory := func() usecase.EuchreInteractorIF {
-		config := domain.DefaultEuchreConfig()
-		players := []*domain.EuchrePlayer{
-			domain.NewEuchrePlayer(true, 0),
-			domain.NewEuchrePlayer(false, 1),
-			domain.NewEuchrePlayer(false, 0),
-			domain.NewEuchrePlayer(false, 1),
-		}
-		euchre := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, config)
-		return usecase.NewEuchreInteractor(euchre, new(presenter.EuchreWebPresenter))
-	}
-	euchreKV, err := controller.NewKVSessionProvider[usecase.EuchreInteractorIF](
-		"GAME_SESSIONS", "euchre:",
-		func(ei usecase.EuchreInteractorIF) ([]byte, error) {
-			snap, ok := ei.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
+	// Euchre
+	registerKV(mux, "/euchre/exec", "euchre:",
+		func() usecase.EuchreInteractorIF {
+			config := domain.DefaultEuchreConfig()
+			players := []*domain.EuchrePlayer{
+				domain.NewEuchrePlayer(true, 0),
+				domain.NewEuchrePlayer(false, 1),
+				domain.NewEuchrePlayer(false, 0),
+				domain.NewEuchrePlayer(false, 1),
 			}
-			return snap.Snapshot()
+			euchre := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, config)
+			return usecase.NewEuchreInteractor(euchre, new(presenter.EuchreWebPresenter))
 		},
 		func(data []byte) (usecase.EuchreInteractorIF, error) {
 			return usecase.RestoreEuchreInteractor(data, new(presenter.EuchreWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.EuchreInteractorIF], f func() usecase.EuchreInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewEuchreWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	euc := controller.NewEuchreWebControllerWithProvider(euchreKV, euchreFactory)
-	mux.HandleFunc("/euchre/exec", euc.Exec)
 
-	// Napoleon (KV-backed session)
-	napoleonFactory := func() usecase.NapoleonInteractorIF {
-		config := domain.DefaultNapoleonConfig()
-		players := []*domain.NapoleonPlayer{
-			domain.NewNapoleonPlayer(true),
-			domain.NewNapoleonPlayer(false),
-			domain.NewNapoleonPlayer(false),
-			domain.NewNapoleonPlayer(false),
-		}
-		napoleon := domain.NewNapoleon(domain.NewTrumpCards(1), players, config)
-		return usecase.NewNapoleonInteractor(napoleon, new(presenter.NapoleonWebPresenter))
-	}
-	napoleonKV, err := controller.NewKVSessionProvider[usecase.NapoleonInteractorIF](
-		"GAME_SESSIONS", "napoleon:",
-		func(ni usecase.NapoleonInteractorIF) ([]byte, error) {
-			snap, ok := ni.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
+	// Napoleon
+	registerKV(mux, "/napoleon/exec", "napoleon:",
+		func() usecase.NapoleonInteractorIF {
+			config := domain.DefaultNapoleonConfig()
+			players := []*domain.NapoleonPlayer{
+				domain.NewNapoleonPlayer(true),
+				domain.NewNapoleonPlayer(false),
+				domain.NewNapoleonPlayer(false),
+				domain.NewNapoleonPlayer(false),
 			}
-			return snap.Snapshot()
+			napoleon := domain.NewNapoleon(domain.NewTrumpCards(1), players, config)
+			return usecase.NewNapoleonInteractor(napoleon, new(presenter.NapoleonWebPresenter))
 		},
 		func(data []byte) (usecase.NapoleonInteractorIF, error) {
 			return usecase.RestoreNapoleonInteractor(data, new(presenter.NapoleonWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.NapoleonInteractorIF], f func() usecase.NapoleonInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewNapoleonWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	npc := controller.NewNapoleonWebControllerWithProvider(napoleonKV, napoleonFactory)
-	mux.HandleFunc("/napoleon/exec", npc.Exec)
 
-	// Old Maid (KV-backed session)
-	oldmaidFactory := func() usecase.OldMaidInteractorIF {
-		players := []*domain.OldMaidPlayer{
-			domain.NewOldMaidPlayer(true),
-			domain.NewOldMaidPlayer(false),
-			domain.NewOldMaidPlayer(false),
-			domain.NewOldMaidPlayer(false),
-		}
-		oldMaid := domain.NewOldMaid(domain.NewTrumpCards(1), players)
-		return usecase.NewOldMaidInteractor(oldMaid, new(presenter.OldMaidWebPresenter))
-	}
-	oldmaidKV, err := controller.NewKVSessionProvider[usecase.OldMaidInteractorIF](
-		"GAME_SESSIONS", "oldmaid:",
-		func(oi usecase.OldMaidInteractorIF) ([]byte, error) {
-			snap, ok := oi.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
+	// Old Maid
+	registerKV(mux, "/oldmaid/exec", "oldmaid:",
+		func() usecase.OldMaidInteractorIF {
+			players := []*domain.OldMaidPlayer{
+				domain.NewOldMaidPlayer(true),
+				domain.NewOldMaidPlayer(false),
+				domain.NewOldMaidPlayer(false),
+				domain.NewOldMaidPlayer(false),
 			}
-			return snap.Snapshot()
+			oldMaid := domain.NewOldMaid(domain.NewTrumpCards(1), players)
+			return usecase.NewOldMaidInteractor(oldMaid, new(presenter.OldMaidWebPresenter))
 		},
 		func(data []byte) (usecase.OldMaidInteractorIF, error) {
 			return usecase.RestoreOldMaidInteractor(data, new(presenter.OldMaidWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.OldMaidInteractorIF], f func() usecase.OldMaidInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewOldMaidWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	omc := controller.NewOldMaidWebControllerWithProvider(oldmaidKV, oldmaidFactory)
-	mux.HandleFunc("/oldmaid/exec", omc.Exec)
 
-	// Doubt (KV-backed session)
-	doubtFactory := func() usecase.DoubtInteractorIF {
-		players := []*domain.DoubtPlayer{
-			domain.NewDoubtPlayer(true),
-			domain.NewDoubtPlayer(false),
-			domain.NewDoubtPlayer(false),
-			domain.NewDoubtPlayer(false),
-		}
-		doubt := domain.NewDoubt(domain.NewTrumpCards(0), players)
-		return usecase.NewDoubtInteractor(doubt, new(presenter.DoubtWebPresenter))
-	}
-	doubtKV, err := controller.NewKVSessionProvider[usecase.DoubtInteractorIF](
-		"GAME_SESSIONS", "doubt:",
-		func(di usecase.DoubtInteractorIF) ([]byte, error) {
-			snap, ok := di.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
+	// Doubt
+	registerKV(mux, "/doubt/exec", "doubt:",
+		func() usecase.DoubtInteractorIF {
+			players := []*domain.DoubtPlayer{
+				domain.NewDoubtPlayer(true),
+				domain.NewDoubtPlayer(false),
+				domain.NewDoubtPlayer(false),
+				domain.NewDoubtPlayer(false),
 			}
-			return snap.Snapshot()
+			doubt := domain.NewDoubt(domain.NewTrumpCards(0), players)
+			return usecase.NewDoubtInteractor(doubt, new(presenter.DoubtWebPresenter))
 		},
 		func(data []byte) (usecase.DoubtInteractorIF, error) {
 			return usecase.RestoreDoubtInteractor(data, new(presenter.DoubtWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.DoubtInteractorIF], f func() usecase.DoubtInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewDoubtWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	dwc := controller.NewDoubtWebControllerWithProvider(doubtKV, doubtFactory)
-	mux.HandleFunc("/doubt/exec", dwc.Exec)
 
-	// Daifugo (KV-backed session)
-	daifugoFactory := func() usecase.DaifugoInteractorIF {
-		config := domain.DefaultDaifugoConfig()
-		players := []*domain.DaifugoPlayer{
-			domain.NewDaifugoPlayer(true),
-			domain.NewDaifugoPlayer(false),
-			domain.NewDaifugoPlayer(false),
-			domain.NewDaifugoPlayer(false),
-		}
-		daifugo := domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config)
-		return usecase.NewDaifugoInteractor(daifugo, new(presenter.DaifugoWebPresenter))
-	}
-	daifugoKV, err := controller.NewKVSessionProvider[usecase.DaifugoInteractorIF](
-		"GAME_SESSIONS", "daifugo:",
-		func(di usecase.DaifugoInteractorIF) ([]byte, error) {
-			snap, ok := di.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
+	// Daifugo
+	registerKV(mux, "/daifugo/exec", "daifugo:",
+		func() usecase.DaifugoInteractorIF {
+			config := domain.DefaultDaifugoConfig()
+			players := []*domain.DaifugoPlayer{
+				domain.NewDaifugoPlayer(true),
+				domain.NewDaifugoPlayer(false),
+				domain.NewDaifugoPlayer(false),
+				domain.NewDaifugoPlayer(false),
 			}
-			return snap.Snapshot()
+			daifugo := domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config)
+			return usecase.NewDaifugoInteractor(daifugo, new(presenter.DaifugoWebPresenter))
 		},
 		func(data []byte) (usecase.DaifugoInteractorIF, error) {
 			return usecase.RestoreDaifugoInteractor(data, new(presenter.DaifugoWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.DaifugoInteractorIF], f func() usecase.DaifugoInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewDaifugoWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	dgc := controller.NewDaifugoWebControllerWithProvider(daifugoKV, daifugoFactory)
-	mux.HandleFunc("/daifugo/exec", dgc.Exec)
 
-	// Sevens (KV-backed session)
-	sevensFactory := func() usecase.SevensInteractorIF {
-		config := domain.DefaultSevensConfig()
-		players := []*domain.SevensPlayer{
-			domain.NewSevensPlayer(true),
-			domain.NewSevensPlayer(false),
-			domain.NewSevensPlayer(false),
-			domain.NewSevensPlayer(false),
-		}
-		sevens := domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
-		return usecase.NewSevensInteractor(sevens, new(presenter.SevensWebPresenter))
-	}
-	sevensKV, err := controller.NewKVSessionProvider[usecase.SevensInteractorIF](
-		"GAME_SESSIONS", "sevens:",
-		func(si usecase.SevensInteractorIF) ([]byte, error) {
-			snap, ok := si.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
+	// Sevens
+	registerKV(mux, "/sevens/exec", "sevens:",
+		func() usecase.SevensInteractorIF {
+			config := domain.DefaultSevensConfig()
+			players := []*domain.SevensPlayer{
+				domain.NewSevensPlayer(true),
+				domain.NewSevensPlayer(false),
+				domain.NewSevensPlayer(false),
+				domain.NewSevensPlayer(false),
 			}
-			return snap.Snapshot()
+			sevens := domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
+			return usecase.NewSevensInteractor(sevens, new(presenter.SevensWebPresenter))
 		},
 		func(data []byte) (usecase.SevensInteractorIF, error) {
 			return usecase.RestoreSevensInteractor(data, new(presenter.SevensWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.SevensInteractorIF], f func() usecase.SevensInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewSevensWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	sgc := controller.NewSevensWebControllerWithProvider(sevensKV, sevensFactory)
-	mux.HandleFunc("/sevens/exec", sgc.Exec)
 
-	// Crazy Eights (KV-backed session)
-	crazyeightsFactory := func() usecase.CrazyEightsInteractorIF {
-		config := domain.DefaultCrazyEightsConfig()
-		players := []*domain.CrazyEightsPlayer{
-			domain.NewCrazyEightsPlayer(true),
-			domain.NewCrazyEightsPlayer(false),
-			domain.NewCrazyEightsPlayer(false),
-			domain.NewCrazyEightsPlayer(false),
-		}
-		ce := domain.NewCrazyEights(domain.NewTrumpCards(0), players, config)
-		return usecase.NewCrazyEightsInteractor(ce, new(presenter.CrazyEightsWebPresenter))
-	}
-	crazyeightsKV, err := controller.NewKVSessionProvider[usecase.CrazyEightsInteractorIF](
-		"GAME_SESSIONS", "crazyeights:",
-		func(ci usecase.CrazyEightsInteractorIF) ([]byte, error) {
-			snap, ok := ci.(interface{ Snapshot() ([]byte, error) })
-			if !ok {
-				return nil, fmt.Errorf("interactor does not support snapshotting")
+	// Crazy Eights
+	registerKV(mux, "/crazyeights/exec", "crazyeights:",
+		func() usecase.CrazyEightsInteractorIF {
+			config := domain.DefaultCrazyEightsConfig()
+			players := []*domain.CrazyEightsPlayer{
+				domain.NewCrazyEightsPlayer(true),
+				domain.NewCrazyEightsPlayer(false),
+				domain.NewCrazyEightsPlayer(false),
+				domain.NewCrazyEightsPlayer(false),
 			}
-			return snap.Snapshot()
+			ce := domain.NewCrazyEights(domain.NewTrumpCards(0), players, config)
+			return usecase.NewCrazyEightsInteractor(ce, new(presenter.CrazyEightsWebPresenter))
 		},
 		func(data []byte) (usecase.CrazyEightsInteractorIF, error) {
 			return usecase.RestoreCrazyEightsInteractor(data, new(presenter.CrazyEightsWebPresenter))
 		},
+		func(p controller.SessionProvider[usecase.CrazyEightsInteractorIF], f func() usecase.CrazyEightsInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewCrazyEightsWebControllerWithProvider(p, f)
+		},
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	cec := controller.NewCrazyEightsWebControllerWithProvider(crazyeightsKV, crazyeightsFactory)
-	mux.HandleFunc("/crazyeights/exec", cec.Exec)
 
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
