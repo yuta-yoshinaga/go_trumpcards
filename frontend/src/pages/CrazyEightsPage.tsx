@@ -18,7 +18,7 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCrazyEightsGame } from 
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -310,7 +310,7 @@ function CrazyEightsPageContent() {
           )}
           <button
             type="button"
-            className={btnWarning}
+            className={btnOutline}
             data-tutorial="ce-reset-button"
             onClick={() =>
               requestConfirm(() => {

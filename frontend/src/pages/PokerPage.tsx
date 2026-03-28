@@ -23,7 +23,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { btnOutline, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -372,7 +372,7 @@ function PokerPageContent() {
           </div>
           <button
             type="button"
-            className={`${btnPrimary} min-w-[90px]`}
+            className={`${btnOutline} min-w-[90px]`}
             disabled={loading}
             data-tutorial="pk-reset-button"
             onClick={() =>

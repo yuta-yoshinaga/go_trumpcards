@@ -25,7 +25,7 @@ import {
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -565,7 +565,7 @@ function NapoleonPageContent() {
           {/* Reset */}
           <button
             type="button"
-            className={btnWarning}
+            className={btnOutline}
             data-tutorial="np-reset-button"
             onClick={() =>
               requestConfirm(() => {

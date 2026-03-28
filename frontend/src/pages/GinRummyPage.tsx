@@ -18,7 +18,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '../hooks/useGinRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -369,7 +369,7 @@ function GinRummyPageContent() {
           )}
           <button
             type="button"
-            className={btnWarning}
+            className={btnOutline}
             data-tutorial="gr-reset-button"
             onClick={() =>
               requestConfirm(() => {

@@ -21,7 +21,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CpuAction } from '../types/card';
@@ -316,7 +316,7 @@ function OldMaidPageContent() {
           <span data-tutorial="om-draw-button">
             <button
               type="button"
-              className={`${btnWarning} min-w-[110px]`}
+              className={`${btnOutline} min-w-[110px]`}
               disabled={loading || !isHumanTurn || state.gameEndFlag}
               onClick={() => gameExec('draw')}
             >

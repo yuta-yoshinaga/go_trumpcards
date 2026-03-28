@@ -19,7 +19,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { SpiderPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -310,7 +310,7 @@ function SpiderPageContent() {
           <div data-tutorial="spd-reset-button">
             <button
               type="button"
-              className={btnWarning}
+              className={btnOutline}
               onClick={() =>
                 requestConfirm(() => {
                   hideActionLog();

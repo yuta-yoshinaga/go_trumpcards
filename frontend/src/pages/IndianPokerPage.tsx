@@ -23,7 +23,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary } from '../styles/buttonStyles';
+import { btnOutline } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { IndianPokerPhase } from '../types/phases';
@@ -317,7 +317,7 @@ function IndianPokerPageContent() {
         <div className="text-center flex items-center justify-center gap-3" data-tutorial="ip-reset-button">
           <button
             type="button"
-            className={`${btnPrimary} min-w-[90px]`}
+            className={`${btnOutline} min-w-[90px]`}
             disabled={loading}
             onClick={() =>
               requestConfirm(() => {

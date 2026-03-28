@@ -17,7 +17,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BaccaratSideBetResult } from '../types/card';
@@ -390,7 +390,7 @@ function BaccaratPageContent() {
             <div data-tutorial="bac-reset-button">
               <button
                 type="button"
-                className={btnPrimary}
+                className={btnOutline}
                 onClick={() => requestConfirm(handleReset)}
                 disabled={loading}
               >

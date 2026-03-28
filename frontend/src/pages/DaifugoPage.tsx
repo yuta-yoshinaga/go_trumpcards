@@ -21,7 +21,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DaifugoAction } from '../types/card';
@@ -297,7 +297,7 @@ function DaifugoPageContent() {
         <div className="text-center" data-tutorial="df-play-pass">
           <button
             type="button"
-            className={`${btnPrimary} min-w-[90px]`}
+            className={`${btnOutline} min-w-[90px]`}
             data-tutorial="df-reset-button"
             disabled={loading}
             onClick={() =>
@@ -311,7 +311,7 @@ function DaifugoPageContent() {
           </button>
           <button
             type="button"
-            className={`${btnWarning} min-w-[90px]`}
+            className={`${btnSecondary} min-w-[90px]`}
             disabled={loading || !isHumanTurn || state.gameEndFlag || pendingAction !== 'none'}
             onClick={() => exec('play', [])}
           >
