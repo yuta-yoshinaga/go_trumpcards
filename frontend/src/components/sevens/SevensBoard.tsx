@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { useIsMobile } from '../../hooks/useCardDimensions';
 import { suitName, valueName } from '../../utils/cardUtils';
 import { isPositionPlaced, isPositionPlayable, SUITS } from '../../utils/sevensUtils';
+import { ScrollFadeHint } from '../ScrollFadeHint';
 
 interface BoardProps {
   tablePlaced: number[];
@@ -30,6 +32,7 @@ function Board({
   onJokerPlace,
 }: BoardProps) {
   const { t } = useTranslation('sevens');
+  const isMobile = useIsMobile();
   return (
     <div className="bg-black/30 rounded-[10px] py-2 px-2 sm:px-3.5 my-2">
       <div className="text-white font-bold mb-1.5 text-sm">
@@ -37,65 +40,70 @@ function Board({
         {tunnelEnabled && <span className="text-yellow-400 text-xs ml-2">{t('tunnelTag')}</span>}
         {jokerSelecting && <span className="text-green-400 text-xs ml-2">{t('jokerSelectHint')}</span>}
       </div>
-      <div
-        className="grid gap-y-1 gap-x-0.5"
-        style={{ gridTemplateColumns: 'auto repeat(13, 1fr)' }}
-        data-testid="sevens-grid"
-      >
-        {SUITS.map(({ idx, name, label, color }) => (
-          <div key={name} className="contents">
-            <span
-              className="flex items-center justify-center font-bold text-base sm:text-lg"
-              style={{ color }}
-              aria-hidden="true"
-            >
-              {label}
-              {tunnelEnabled && (
-                <span role="img" className="text-yellow-400 text-[8px] ml-0.5" aria-label={t('tunnelConnection')}>
-                  ↔
+      <div className="relative">
+        <div className="overflow-x-auto">
+          <div
+            className="grid gap-y-1 gap-x-0.5 min-w-[480px]"
+            style={{ gridTemplateColumns: 'auto repeat(13, 1fr)' }}
+            data-testid="sevens-grid"
+          >
+            {SUITS.map(({ idx, name, label, color }) => (
+              <div key={name} className="contents">
+                <span
+                  className="flex items-center justify-center font-bold text-base sm:text-lg"
+                  style={{ color }}
+                  aria-hidden="true"
+                >
+                  {label}
+                  {tunnelEnabled && (
+                    <span role="img" className="text-yellow-400 text-[8px] ml-0.5" aria-label={t('tunnelConnection')}>
+                      ↔
+                    </span>
+                  )}
                 </span>
-              )}
-            </span>
-            {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
-              const placed = isPositionPlaced(tablePlaced, idx, v);
-              const isCenter = v === 7;
-              const canPlace =
-                jokerSelecting &&
-                isPositionPlayable(tablePlaced, idx, v, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
-              const tunnelHighlight =
-                tunnelEnabled &&
-                !placed &&
-                ((v === 1 && isPositionPlaced(tablePlaced, idx, 13)) ||
-                  (v === 13 && isPositionPlaced(tablePlaced, idx, 1)));
-              const colors = cellColors(placed, isCenter, canPlace);
-              const baseClass =
-                'rounded text-center text-[0.6rem] sm:text-xs lg:text-sm leading-none aspect-square flex items-center justify-center';
-              const bold = isCenter ? ' font-bold' : '';
-              const border = tunnelHighlight ? ' border border-amber-400' : '';
+                {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
+                  const placed = isPositionPlaced(tablePlaced, idx, v);
+                  const isCenter = v === 7;
+                  const canPlace =
+                    jokerSelecting &&
+                    isPositionPlayable(tablePlaced, idx, v, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
+                  const tunnelHighlight =
+                    tunnelEnabled &&
+                    !placed &&
+                    ((v === 1 && isPositionPlaced(tablePlaced, idx, 13)) ||
+                      (v === 13 && isPositionPlaced(tablePlaced, idx, 1)));
+                  const colors = cellColors(placed, isCenter, canPlace);
+                  const baseClass =
+                    'rounded text-center text-[0.6rem] sm:text-xs lg:text-sm leading-none aspect-square flex items-center justify-center';
+                  const bold = isCenter ? ' font-bold' : '';
+                  const border = tunnelHighlight ? ' border border-amber-400' : '';
 
-              if (canPlace) {
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => onJokerPlace?.(idx, v)}
-                    aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
-                    className={`${baseClass}${bold} border border-blue-400 cursor-pointer p-0`}
-                    style={colors}
-                    data-testid="board-cell"
-                  >
-                    {valueName(v)}
-                  </button>
-                );
-              }
-              return (
-                <span key={v} className={`${baseClass}${bold}${border}`} style={colors} data-testid="board-cell">
-                  {valueName(v)}
-                </span>
-              );
-            })}
+                  if (canPlace) {
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => onJokerPlace?.(idx, v)}
+                        aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
+                        className={`${baseClass}${bold} border border-blue-400 cursor-pointer p-0`}
+                        style={colors}
+                        data-testid="board-cell"
+                      >
+                        {valueName(v)}
+                      </button>
+                    );
+                  }
+                  return (
+                    <span key={v} className={`${baseClass}${bold}${border}`} style={colors} data-testid="board-cell">
+                      {valueName(v)}
+                    </span>
+                  );
+                })}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+        {isMobile && <ScrollFadeHint />}
       </div>
     </div>
   );

@@ -147,4 +147,38 @@ describe('SevensBoard', () => {
     const button = screen.getByLabelText('SPADE 6 に配置') as HTMLElement;
     expect(button.style.color).toBe('white');
   });
+
+  it('grid has horizontal scroll wrapper', () => {
+    const { container } = render(<SevensBoard {...defaultProps} />);
+    const scrollWrapper = container.querySelector('.overflow-x-auto');
+    expect(scrollWrapper).toBeInTheDocument();
+  });
+
+  it('grid has minimum width for readability on mobile', () => {
+    render(<SevensBoard {...defaultProps} />);
+    const grid = screen.getByTestId('sevens-grid') as HTMLElement;
+    expect(grid.className).toContain('min-w-[480px]');
+  });
+
+  it('renders ScrollFadeHint on mobile', () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
+    try {
+      const { container } = render(<SevensBoard {...defaultProps} />);
+      const fadeHint = container.querySelector('.bg-gradient-to-l');
+      expect(fadeHint).toBeInTheDocument();
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
+
+  it('does not render ScrollFadeHint on desktop', () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1024);
+    try {
+      const { container } = render(<SevensBoard {...defaultProps} />);
+      const fadeHint = container.querySelector('.bg-gradient-to-l');
+      expect(fadeHint).not.toBeInTheDocument();
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
 });
