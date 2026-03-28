@@ -386,8 +386,7 @@ describe('SpadesPage', () => {
   });
 
   it('score table renders ScrollFadeHint on mobile', async () => {
-    const originalWidth = window.innerWidth;
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
     try {
       const { container } = renderWithProviders(<SpadesPage />);
       await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
@@ -395,7 +394,7 @@ describe('SpadesPage', () => {
       const fadeHint = scoreSection?.querySelector('[aria-hidden="true"]');
       expect(fadeHint).toBeInTheDocument();
     } finally {
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      innerWidthSpy.mockRestore();
     }
   });
 
