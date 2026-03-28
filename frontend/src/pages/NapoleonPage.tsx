@@ -11,6 +11,7 @@ import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { NapoleonSkeleton } from '../components/skeleton/NapoleonSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -333,42 +334,45 @@ function NapoleonPageContent() {
               ))}
 
             {/* Score table */}
-            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="np-score-table">
+            <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="np-score-table">
               <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-              <table className="w-full text-sm text-white/70">
-                <thead>
-                  <tr>
-                    <th scope="col" className="text-left">
-                      {t('scoresPlayer')}
-                    </th>
-                    <th scope="col">{t('scoresRole')}</th>
-                    <th scope="col">{t('scoresBid')}</th>
-                    <th scope="col">{t('scoresPictureCards')}</th>
-                    <th scope="col">{t('scoresTricks')}</th>
-                    <th scope="col">{t('scoresRound')}</th>
-                    <th scope="col">{t('scoresTotal')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.players.map((p) => (
-                    <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
-                      <td>{playerName(p.id, p.isHuman)}</td>
-                      <td className="text-center">
-                        {p.isNapoleon
-                          ? t('role.napoleon')
-                          : p.isAdjutant && (p.adjutantRevealed || state.adjutantRevealed)
-                            ? t('role.adjutant')
-                            : '-'}
-                      </td>
-                      <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
-                      <td className="text-center">{p.pictureCards}</td>
-                      <td className="text-center">{p.trickCount}</td>
-                      <td className="text-center">{p.roundScore}</td>
-                      <td className="text-center">{p.cumulativeScore}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-white/70 min-w-[420px]">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="text-left">
+                        {t('scoresPlayer')}
+                      </th>
+                      <th scope="col">{t('scoresRole')}</th>
+                      <th scope="col">{t('scoresBid')}</th>
+                      <th scope="col">{t('scoresPictureCards')}</th>
+                      <th scope="col">{t('scoresTricks')}</th>
+                      <th scope="col">{t('scoresRound')}</th>
+                      <th scope="col">{t('scoresTotal')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {state.players.map((p) => (
+                      <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                        <td>{playerName(p.id, p.isHuman)}</td>
+                        <td className="text-center">
+                          {p.isNapoleon
+                            ? t('role.napoleon')
+                            : p.isAdjutant && (p.adjutantRevealed || state.adjutantRevealed)
+                              ? t('role.adjutant')
+                              : '-'}
+                        </td>
+                        <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
+                        <td className="text-center">{p.pictureCards}</td>
+                        <td className="text-center">{p.trickCount}</td>
+                        <td className="text-center">{p.roundScore}</td>
+                        <td className="text-center">{p.cumulativeScore}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {isMobile && <ScrollFadeHint />}
             </div>
           </div>
         </div>
