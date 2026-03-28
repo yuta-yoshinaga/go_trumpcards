@@ -1,0 +1,74 @@
+name: Cloudflare Workers Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop]
+    paths:
+      - 'cmd/workers/**'
+      - '.github/workflows/cloudflare-workers-build.yml'
+      - 'Makefile'
+      - 'internal/**'
+  pull_request:
+    branches: [develop]
+    paths:
+      - 'cmd/workers/**'
+      - '.github/workflows/cloudflare-workers-build.yml'
+      - 'Makefile'
+      - 'internal/**'
+
+jobs:
+  tinygo-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        worker: [casino, classic, solo]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - uses: acifani/setup-tinygo@v2
+        with:
+          tinygo-version: '0.40.1'
+
+      - name: Install wasm-opt
+        run: sudo apt-get install -y binaryen
+
+      - name: Download Go modules
+        env:
+          GOTOOLCHAIN: local
+        run: go mod download
+
+      - name: Build and optimize
+        env:
+          GOTOOLCHAIN: local
+        run: make build-worker-${{ matrix.worker }}
+
+      - name: Check size limit
+        env:
+          WORKER_NAME: ${{ matrix.worker }}
+        run: |
+          WASM="build/${WORKER_NAME}/app.wasm"
+          RAW=$(stat -c%s "$WASM")
+          GZIP=$(gzip -c "$WASM" | wc -c)
+
+          echo "## ${WORKER_NAME} Worker" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Metric | Size |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|--------|------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Raw | $(echo "$RAW" | awk '{printf "%.2f MB", $1/1024/1024}') |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| gzip | $(echo "$GZIP" | awk '{printf "%.2f KB", $1/1024}') |" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$GZIP" -le 1048576 ]; then
+            echo "Fits in free tier (< 1 MB)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "EXCEEDS free tier limit (1 MB)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wasm-${{ matrix.worker }}
+          path: build/${{ matrix.worker }}/*.wasm

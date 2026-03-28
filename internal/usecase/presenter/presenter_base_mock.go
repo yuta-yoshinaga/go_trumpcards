@@ -1,3 +1,5 @@
+//go:build test
+
 package presenter
 
 import "github.com/stretchr/testify/mock"

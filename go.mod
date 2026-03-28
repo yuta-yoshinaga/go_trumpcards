@@ -1,10 +1,13 @@
 module github.com/yuta-yoshinaga/go_trumpcards
 
-go 1.26.0
+go 1.25.8
+
+toolchain go1.26.0
 
 require (
 	github.com/minio/selfupdate v0.6.0
 	github.com/stretchr/testify v1.11.1
+	github.com/syumai/workers v0.32.0
 	golang.org/x/term v0.41.0
 )
 
