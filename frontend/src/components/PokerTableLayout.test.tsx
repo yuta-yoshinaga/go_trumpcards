@@ -30,30 +30,34 @@ describe('PokerTableLayout', () => {
     mockUseIsLargeDesktop.mockReturnValue(false);
     const { container } = render(<PokerTableLayout communityCards={communityCards} cpuPlayers={cpuPlayers} />);
     const allText = container.textContent ?? '';
-    const communityIdx = allText.indexOf('Community');
-    const cpuIdx = allText.indexOf('CPU 1');
-    // Community cards should come before CPU players in DOM order
-    expect(communityIdx).toBeLessThan(cpuIdx);
+    expect(allText.indexOf('Community')).toBeLessThan(allText.indexOf('CPU 1'));
   });
 
   it('renders CPU players in grid before community cards on large desktop', () => {
     mockUseIsLargeDesktop.mockReturnValue(true);
-    render(<PokerTableLayout communityCards={communityCards} cpuPlayers={cpuPlayers} />);
-    // CPU grid should exist
+    const { container } = render(<PokerTableLayout communityCards={communityCards} cpuPlayers={cpuPlayers} />);
     const cpuGrid = screen.getByTestId('cpu-1').parentElement;
     expect(cpuGrid?.className).toContain('grid');
     expect(cpuGrid?.className).toContain('grid-cols-3');
+    const allText = container.textContent ?? '';
+    expect(allText.indexOf('CPU 1')).toBeLessThan(allText.indexOf('Community'));
   });
 
-  it('applies data-tutorial attribute to CPU area', () => {
-    mockUseIsLargeDesktop.mockReturnValue(false);
+  it.each([
+    { isLargeDesktop: false, device: 'mobile' },
+    { isLargeDesktop: true, device: 'desktop' },
+  ])('applies data-tutorial attribute to CPU area on $device', ({ isLargeDesktop }) => {
+    mockUseIsLargeDesktop.mockReturnValue(isLargeDesktop);
     render(<PokerTableLayout communityCards={communityCards} cpuPlayers={cpuPlayers} cpuAreaTutorial="he-cpu-area" />);
     const cpuArea = screen.getByTestId('cpu-1').closest('[data-tutorial]');
     expect(cpuArea?.getAttribute('data-tutorial')).toBe('he-cpu-area');
   });
 
-  it('applies data-tutorial attribute to community cards wrapper', () => {
-    mockUseIsLargeDesktop.mockReturnValue(false);
+  it.each([
+    { isLargeDesktop: false, device: 'mobile' },
+    { isLargeDesktop: true, device: 'desktop' },
+  ])('applies data-tutorial attribute to community cards on $device', ({ isLargeDesktop }) => {
+    mockUseIsLargeDesktop.mockReturnValue(isLargeDesktop);
     render(
       <PokerTableLayout
         communityCards={communityCards}
@@ -65,23 +69,14 @@ describe('PokerTableLayout', () => {
     expect(wrapper?.getAttribute('data-tutorial')).toBe('he-community-cards');
   });
 
-  it('renders all CPU players on both mobile and desktop', () => {
-    for (const isLargeDesktop of [false, true]) {
-      mockUseIsLargeDesktop.mockReturnValue(isLargeDesktop);
-      const { unmount } = render(<PokerTableLayout communityCards={communityCards} cpuPlayers={cpuPlayers} />);
-      expect(screen.getByTestId('cpu-1')).toBeInTheDocument();
-      expect(screen.getByTestId('cpu-2')).toBeInTheDocument();
-      expect(screen.getByTestId('cpu-3')).toBeInTheDocument();
-      unmount();
-    }
-  });
-
-  it('on large desktop, CPU grid appears before community cards in DOM', () => {
-    mockUseIsLargeDesktop.mockReturnValue(true);
-    const { container } = render(<PokerTableLayout communityCards={communityCards} cpuPlayers={cpuPlayers} />);
-    const allText = container.textContent ?? '';
-    const cpuIdx = allText.indexOf('CPU 1');
-    const communityIdx = allText.indexOf('Community');
-    expect(cpuIdx).toBeLessThan(communityIdx);
+  it.each([
+    { isLargeDesktop: false, device: 'mobile' },
+    { isLargeDesktop: true, device: 'desktop' },
+  ])('renders all CPU players on $device', ({ isLargeDesktop }) => {
+    mockUseIsLargeDesktop.mockReturnValue(isLargeDesktop);
+    render(<PokerTableLayout communityCards={communityCards} cpuPlayers={cpuPlayers} />);
+    expect(screen.getByTestId('cpu-1')).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-2')).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-3')).toBeInTheDocument();
   });
 });

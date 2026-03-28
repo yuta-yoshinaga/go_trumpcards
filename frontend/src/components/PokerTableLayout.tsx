@@ -17,25 +17,31 @@ export function PokerTableLayout({
 }: PokerTableLayoutProps) {
   const isLargeDesktop = useIsLargeDesktop();
 
+  const communityCardsEl = (
+    <div className="mb-4" data-tutorial={communityCardsTutorial}>
+      {communityCards}
+    </div>
+  );
+
+  const cpuPlayersEl = (
+    <div className={isLargeDesktop ? 'grid grid-cols-3 gap-3 mb-4' : undefined} data-tutorial={cpuAreaTutorial}>
+      {cpuPlayers}
+    </div>
+  );
+
   if (isLargeDesktop) {
     return (
       <>
-        <div className="grid grid-cols-3 gap-3 mb-4" {...(cpuAreaTutorial && { 'data-tutorial': cpuAreaTutorial })}>
-          {cpuPlayers}
-        </div>
-        <div className="mb-4" {...(communityCardsTutorial && { 'data-tutorial': communityCardsTutorial })}>
-          {communityCards}
-        </div>
+        {cpuPlayersEl}
+        {communityCardsEl}
       </>
     );
   }
 
   return (
     <>
-      <div className="mb-4" {...(communityCardsTutorial && { 'data-tutorial': communityCardsTutorial })}>
-        {communityCards}
-      </div>
-      <div {...(cpuAreaTutorial && { 'data-tutorial': cpuAreaTutorial })}>{cpuPlayers}</div>
+      {communityCardsEl}
+      {cpuPlayersEl}
     </>
   );
 }
