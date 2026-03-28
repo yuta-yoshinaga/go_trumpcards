@@ -21,7 +21,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -400,7 +400,7 @@ function HeartsPageContent() {
           )}
           <button
             type="button"
-            className={btnWarning}
+            className={btnOutline}
             data-tutorial="ht-reset-button"
             onClick={() =>
               requestConfirm(() => {

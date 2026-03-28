@@ -25,7 +25,7 @@ import {
 } from '../hooks/useDoubtGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess, focusRingBlue } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoubtCpuAction } from '../types/card';
@@ -264,7 +264,7 @@ function DoubtPageContent() {
                   <button type="button" className={btnDanger} disabled={loading} onClick={handleDoubt}>
                     {t('doubtButton')}
                   </button>
-                  <button type="button" className={btnWarning} disabled={loading} onClick={handleSkip}>
+                  <button type="button" className={btnSecondary} disabled={loading} onClick={handleSkip}>
                     {t('skipButton')}
                   </button>
                 </div>
@@ -427,7 +427,7 @@ function DoubtPageContent() {
         <div className="text-center">
           <button
             type="button"
-            className={`${btnPrimary} min-w-[90px]`}
+            className={`${btnOutline} min-w-[90px]`}
             disabled={loading}
             data-tutorial="dt-reset-button"
             onClick={() =>

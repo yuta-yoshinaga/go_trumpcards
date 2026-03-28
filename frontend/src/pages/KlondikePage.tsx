@@ -20,7 +20,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { KlondikePhase, KlondikeScoringMode } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -438,7 +438,7 @@ function KlondikePageContent() {
           <div data-tutorial="kl-reset-button">
             <button
               type="button"
-              className={btnWarning}
+              className={btnOutline}
               onClick={() =>
                 requestConfirm(() => {
                   hideActionLog();

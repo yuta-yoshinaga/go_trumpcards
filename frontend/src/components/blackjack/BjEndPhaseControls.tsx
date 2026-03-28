@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { btnPrimary } from '../../styles/buttonStyles';
+import { btnOutline } from '../../styles/buttonStyles';
 
 /** Props for BlackJack end phase controls. */
 export interface BjEndPhaseControlsProps {
@@ -41,7 +41,7 @@ export function BjEndPhaseControls(props: BjEndPhaseControlsProps) {
   return (
     <button
       type="button"
-      className={`${btnPrimary} animate-pulse ring-2 ring-white ring-offset-2 ring-offset-green-800`}
+      className={`${btnOutline} animate-pulse ring-2 ring-white ring-offset-2 ring-offset-green-800`}
       disabled={props.loading}
       onClick={props.onManualReset ?? props.onReset}
     >

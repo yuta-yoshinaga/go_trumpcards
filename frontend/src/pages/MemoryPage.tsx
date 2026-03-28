@@ -19,7 +19,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -214,7 +214,7 @@ function MemoryPageContent() {
           <div data-tutorial="mem-reset-button">
             <button
               type="button"
-              className={btnWarning}
+              className={btnOutline}
               onClick={() =>
                 requestConfirm(() => {
                   hideActionLog();
