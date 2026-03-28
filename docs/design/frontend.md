@@ -652,6 +652,14 @@ classDiagram
         +string status
     }
 
+    class PokerTableLayout {
+        +ReactNode communityCards
+        +ReactNode cpuPlayers
+        +string cpuAreaTutorial
+        +string communityCardsTutorial
+        +デスクトップ=3列グリッド / モバイル=縦並び
+    }
+
     class ErrorBoundary {
         +ReactNode children
         +エラー時リトライボタン
@@ -839,6 +847,9 @@ classDiagram
     GamePage --> ConfirmDialog : renders
     GamePage --> ErrorAlert : renders
     GamePage --> GamePageHeading : renders
+
+    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck)
+    PokerTableLayout --> CpuPlayerCard : wraps
 
     note for GamePage "全26ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
