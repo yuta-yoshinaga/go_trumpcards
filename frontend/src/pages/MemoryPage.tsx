@@ -158,29 +158,31 @@ function MemoryPageContent() {
           ))}
         </div>
 
-        {/* Board: responsive grid (6/8/13 columns); on lg fills remaining height */}
+        {/* Board: responsive grid (4/8/13 columns); on lg fills remaining height */}
         <div
           className="my-3 lg:my-1 p-2 lg:p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
           data-tutorial="mem-board"
         >
-          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1 lg:grid-rows-4 lg:h-full">
+          <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-13 gap-1 lg:grid-rows-4 lg:h-full">
             {state.board.map((bc, idx) => (
               <button
                 type="button"
                 key={`board-${idx.toString()}`}
+                data-testid={`board-${idx.toString()}`}
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
-                aria-hidden={bc.taken || undefined}
                 className={`relative aspect-[2/3] lg:aspect-auto rounded border ${focusRingWhite} ${
                   bc.taken
-                    ? 'bg-transparent border-transparent'
+                    ? 'hidden'
                     : bc.faceUp
                       ? 'bg-white border-yellow-400 ring-2 ring-yellow-400'
                       : 'bg-blue-800 border-blue-600 hover:border-yellow-400'
                 } transition-all`}
               >
                 {bc.faceUp && bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
-                {!bc.taken && !bc.faceUp && <span className="text-game-text-muted text-xs">{idx}</span>}
+                {!bc.taken && !bc.faceUp && (
+                  <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
+                )}
               </button>
             ))}
           </div>
