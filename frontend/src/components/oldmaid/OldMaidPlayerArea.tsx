@@ -21,6 +21,8 @@ interface PlayerAreaProps {
   onToggleSuspect?: () => void;
   onDraw: (drawIdx: number) => void;
   onReorder?: (indices: number[]) => void;
+  /** When true, non-target CPU players hide card back images to save space. */
+  compactNonTarget?: boolean;
 }
 
 /** Renders a player area for Old Maid with draw targets, hand display, and reorder support. */
@@ -35,6 +37,7 @@ export function OldMaidPlayerArea({
   onToggleSuspect,
   onDraw,
   onReorder,
+  compactNonTarget,
 }: PlayerAreaProps) {
   const { t } = useTranslation('oldmaid');
   const { t: tc } = useTranslation('common');
@@ -181,7 +184,7 @@ export function OldMaidPlayerArea({
               <span className="text-white self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>
             )}
           </>
-        ) : (
+        ) : compactNonTarget && !isTarget && !player.isHuman ? null : (
           <>
             {Array.from({ length: showCount }).map((_, i) => (
               <CardBack key={i} width={cardWidth} />

@@ -426,4 +426,19 @@ describe('MemoryPage', () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  it('face-down card buttons have aria-label with position', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    const cardBtn = screen.getByTestId('board-0');
+    expect(cardBtn).toHaveAttribute('aria-label', '1枚目のカード（裏向き）');
+  });
+
+  it('face-up card button has aria-label with card name', async () => {
+    mockExec.mockResolvedValue(flip2State);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    const faceUpBtn = screen.getByTestId('board-5');
+    expect(faceUpBtn).toHaveAttribute('aria-label', '♠ 3');
+  });
 });

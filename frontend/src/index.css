@@ -189,6 +189,34 @@ input[type="text"] {
   }
 }
 
+/* Memory card flip */
+.memory-card {
+  perspective: 600px;
+}
+.memory-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s ease-in-out;
+  transform-style: preserve-3d;
+}
+.memory-card-inner.flipped {
+  transform: rotateY(180deg);
+}
+.memory-card-front,
+.memory-card-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.memory-card-front {
+  transform: rotateY(180deg);
+}
+
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse,
@@ -196,5 +224,8 @@ input[type="text"] {
   .animate-flipIn,
   .animate-sweat-drop {
     animation: none;
+  }
+  .memory-card-inner {
+    transition: none;
   }
 }

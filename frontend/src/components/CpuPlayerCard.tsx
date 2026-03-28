@@ -19,12 +19,22 @@ interface CpuPlayerCardProps {
   faceDownCount: number;
   showHandName: boolean;
   extraInfo?: React.ReactNode;
+  /** When true, show text card count instead of face-down card images. */
+  compactFaceDown?: boolean;
 }
 
 /** Renders a CPU player's info area with cards (face-up or face-down) and status. */
-export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, extraInfo }: CpuPlayerCardProps) {
+export function CpuPlayerCard({
+  player,
+  showCards,
+  faceDownCount,
+  showHandName,
+  extraInfo,
+  compactFaceDown,
+}: CpuPlayerCardProps) {
   const { t } = useTranslation('common');
   const { cpuCardWidth } = useCardDimensions();
+  const showFaceUp = showCards && !player.folded && player.cards.length > 0;
   return (
     <div className="mb-3 rounded-lg p-2 bg-black/20 border border-white/10">
       <div className="text-white text-sm mb-1">
@@ -45,19 +55,30 @@ export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, 
             {player.handName}
           </span>
         )}
+        {!showFaceUp && compactFaceDown && (
+          <span className="ml-2 text-game-text-muted text-xs" data-testid="compact-card-count">
+            🂠 {faceDownCount}
+          </span>
+        )}
       </div>
-      <div className="flex flex-wrap gap-1">
-        {showCards && !player.folded && player.cards.length
-          ? player.cards.map((card) => (
-              <CardImage
-                key={`${card.design}-${card.value}`}
-                card={card}
-                width={cpuCardWidth}
-                style={{ border: '3px solid transparent' }}
-              />
-            ))
-          : Array.from({ length: faceDownCount }).map((_, i) => <CardBack key={i} width={cpuCardWidth} />)}
-      </div>
+      {showFaceUp ? (
+        <div className="flex flex-wrap gap-1">
+          {player.cards.map((card) => (
+            <CardImage
+              key={`${card.design}-${card.value}`}
+              card={card}
+              width={cpuCardWidth}
+              style={{ border: '3px solid transparent' }}
+            />
+          ))}
+        </div>
+      ) : !compactFaceDown ? (
+        <div className="flex flex-wrap gap-1">
+          {Array.from({ length: faceDownCount }).map((_, i) => (
+            <CardBack key={i} width={cpuCardWidth} />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

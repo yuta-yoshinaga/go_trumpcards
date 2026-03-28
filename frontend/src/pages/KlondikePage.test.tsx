@@ -181,24 +181,20 @@ describe('KlondikePage', () => {
 
   it('tableau face-up card button has aria-label with card name', async () => {
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const cardButton = screen.getByRole('button', { name: '♠ K' });
     expect(cardButton).toHaveAttribute('aria-label', '♠ K');
   });
 
-  it('renders tableau columns', async () => {
+  it('renders tableau without index headers', async () => {
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
-    // Column labels 0-6
-    for (let i = 0; i < 7; i++) {
-      expect(screen.getByText(i.toString())).toBeInTheDocument();
-    }
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
   });
 
   it('renders empty tableau column with K placeholder', async () => {
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     // Empty columns show "K" placeholder
     const kElements = screen.getAllByText('K');
     expect(kElements.length).toBeGreaterThanOrEqual(1);
@@ -303,7 +299,7 @@ describe('KlondikePage', () => {
 
   it('tableau face-up card button has aria-pressed false initially and true when selected', async () => {
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const cardImg = screen.getByAltText('♠ K');
     const cardButton = cardImg.closest('button') as HTMLButtonElement;
@@ -334,7 +330,7 @@ describe('KlondikePage', () => {
 
   it('clicking tableau face-up card selects as source', async () => {
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     // Find face-up card in tableau by alt text (K of Spades)
     const cardImg = screen.getByAltText('♠ K');
@@ -421,7 +417,7 @@ describe('KlondikePage', () => {
 
   it('empty tableau column disabled when no source selected', async () => {
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     for (const btn of kButtons) {

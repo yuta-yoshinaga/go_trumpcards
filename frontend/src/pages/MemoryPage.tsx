@@ -20,6 +20,7 @@ import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { cardAlt } from '../utils/cardAlt';
 import { gameTheme } from '../styles/gameTheme';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -169,9 +170,10 @@ function MemoryPageContent() {
                 type="button"
                 key={`board-${idx.toString()}`}
                 data-testid={`board-${idx.toString()}`}
+                aria-label={bc.faceUp && bc.card ? cardAlt(bc.card) : t('cardFaceDown', { position: idx + 1 })}
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
-                className={`relative aspect-[2/3] lg:aspect-auto rounded border ${focusRingWhite} ${
+                className={`memory-card relative aspect-[2/3] lg:aspect-auto rounded border ${focusRingWhite} ${
                   bc.taken
                     ? 'hidden'
                     : bc.faceUp
@@ -179,10 +181,14 @@ function MemoryPageContent() {
                       : 'bg-blue-800 border-blue-600 hover:border-yellow-400'
                 } transition-all`}
               >
-                {bc.faceUp && bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
-                {!bc.taken && !bc.faceUp && (
-                  <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
-                )}
+                <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>
+                  <div className="memory-card-back">
+                    <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
+                  </div>
+                  <div className="memory-card-front">
+                    {bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
+                  </div>
+                </div>
               </button>
             ))}
           </div>

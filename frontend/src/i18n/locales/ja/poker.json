@@ -19,6 +19,7 @@
   "lowballMode": "2-7 ローボール モード",
   "cardSelected": "(交換選択中)",
   "settings": {
+    "title": "設定",
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
   },
   "tutorial": {
