@@ -48,6 +48,12 @@ Go + Clean Architecture で実装した26種類のトランプゲーム。CLI �
 
 ## Demo
 
+### Cloudflare (Edge)
+
+- [Live (production)](https://go-trumpcards.pages.dev/)
+
+### Render (Docker)
+
 - [Live (production)](https://go-trumpcards.onrender.com/)
 - [Dev](https://go-trumpcards-dev.onrender.com/)
 - [Swagger UI](https://go-trumpcards.onrender.com/swagger/)
