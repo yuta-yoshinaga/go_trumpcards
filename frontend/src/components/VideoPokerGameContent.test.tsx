@@ -180,11 +180,11 @@ describe('VideoPokerGameContent', () => {
     expect(details).not.toHaveAttribute('open');
   });
 
-  it('hides payout table during bet phase to center bet controls', async () => {
+  it('shows payout table during bet phase for reference', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
     await waitFor(() => expect(screen.getByRole('button', { name: /ディール/ })).toBeInTheDocument());
-    expect(screen.queryByText(/配当表/)).not.toBeInTheDocument();
+    expect(screen.getByText(/配当表/)).toBeInTheDocument();
   });
 
   it('clicking card in result phase does not toggle hold', async () => {

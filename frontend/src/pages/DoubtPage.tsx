@@ -26,7 +26,7 @@ import {
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess, focusRingBlue } from '../styles/buttonStyles';
-import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoubtCpuAction } from '../types/card';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -223,140 +223,158 @@ function DoubtPageContent() {
 
       {/* Scrollable area */}
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* CPU player areas */}
-        <div className="flex gap-2 flex-wrap mb-3">
-          {cpuPlayers.map((player) => (
-            <DoubtCpuArea
-              key={player.id}
-              player={player}
-              isCurrentTurn={state.currentTurn === player.id}
-              hasTell={cpuTells.has(player.id)}
-            />
-          ))}
-        </div>
+        <div className={lgTwoColGrid}>
+          {/* Left: game play area */}
+          <div>
+            {/* Table area */}
+            <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2" data-tutorial="dt-table-area">
+              <div className="text-white font-bold mb-1">{t('table')}</div>
+              <div className="text-game-text-muted text-sm">{t('tableCards', { count: state.tableCardCount })}</div>
+              {state.lastAction && (
+                <div className="text-yellow-300 text-xs mt-1">{actionDesc(state.lastAction, state.players, t)}</div>
+              )}
+            </div>
 
-        {/* Table area */}
-        <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2" data-tutorial="dt-table-area">
-          <div className="text-white font-bold mb-1">{t('table')}</div>
-          <div className="text-game-text-muted text-sm">{t('tableCards', { count: state.tableCardCount })}</div>
-          {state.lastAction && (
-            <div className="text-yellow-300 text-xs mt-1">{actionDesc(state.lastAction, state.players, t)}</div>
-          )}
-        </div>
+            {/* Doubt/Skip UI */}
+            {isDoubtPhase && !state.gameEndFlag && (
+              <div className="bg-black/40 rounded-[10px] py-3 px-4 my-2" data-tutorial="dt-doubt-window">
+                {cpuPlayed ? (
+                  <>
+                    <div className="text-white font-bold mb-2">{t('doubtQuestion')}</div>
+                    {countdown !== null && (
+                      <div className="text-yellow-300 text-lg font-bold mb-2" aria-live="assertive" aria-atomic="true">
+                        {t('countdown', { sec: countdown })}
+                      </div>
+                    )}
+                    {state.cpuDoubters.length > 0 && (
+                      <div className="text-game-text-muted text-xs mb-2">
+                        {t('cpuDoubters', {
+                          names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', '),
+                        })}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <button type="button" className={btnDanger} disabled={loading} onClick={handleDoubt}>
+                        {t('doubtButton')}
+                      </button>
+                      <button type="button" className={btnSecondary} disabled={loading} onClick={handleSkip}>
+                        {t('skipButton')}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-white font-bold mb-2">{t('cpuJudging')}</div>
+                    {state.cpuDoubters.length > 0 && (
+                      <div className="text-red-300 text-sm mb-2">
+                        {t('cpuDoubtExclaim', {
+                          names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', '),
+                        })}
+                      </div>
+                    )}
+                    <button type="button" className={btnPrimary} disabled={loading} onClick={handleCpuDoubtConfirm}>
+                      {t('confirmButton')}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
 
-        {/* Doubt/Skip UI */}
-        {isDoubtPhase && !state.gameEndFlag && (
-          <div className="bg-black/40 rounded-[10px] py-3 px-4 my-2" data-tutorial="dt-doubt-window">
-            {cpuPlayed ? (
-              <>
-                <div className="text-white font-bold mb-2">{t('doubtQuestion')}</div>
-                {countdown !== null && (
-                  <div className="text-yellow-300 text-lg font-bold mb-2" aria-live="assertive" aria-atomic="true">
-                    {t('countdown', { sec: countdown })}
-                  </div>
-                )}
-                {state.cpuDoubters.length > 0 && (
-                  <div className="text-game-text-muted text-xs mb-2">
-                    {t('cpuDoubters', { names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', ') })}
-                  </div>
-                )}
-                <div className="flex gap-2">
-                  <button type="button" className={btnDanger} disabled={loading} onClick={handleDoubt}>
-                    {t('doubtButton')}
-                  </button>
-                  <button type="button" className={btnSecondary} disabled={loading} onClick={handleSkip}>
-                    {t('skipButton')}
-                  </button>
+            {/* Last doubt result */}
+            {state.lastDoubtResult && (
+              <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
+                <div className="text-white font-bold mb-1">{t('doubtResult.title')}</div>
+                <div className={state.lastDoubtResult.wasLying ? 'text-red-300' : 'text-green-300'}>
+                  {state.lastDoubtResult.wasLying ? t('doubtResult.wasLying') : t('doubtResult.wasTruth')}
                 </div>
-              </>
-            ) : (
-              <>
-                <div className="text-white font-bold mb-2">{t('cpuJudging')}</div>
-                {state.cpuDoubters.length > 0 && (
-                  <div className="text-red-300 text-sm mb-2">
-                    {t('cpuDoubtExclaim', { names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', ') })}
+                <div className="text-game-text-muted">
+                  {t('doubtResult.loserTook', {
+                    name: playerName(
+                      state.players[state.lastDoubtResult.loserIdx]?.id ?? state.lastDoubtResult.loserIdx,
+                      state.players[state.lastDoubtResult.loserIdx]?.isHuman ?? false,
+                    ),
+                    count: state.lastDoubtResult.cardCount,
+                  })}
+                </div>
+                {state.lastDoubtResult.discardedCount > 0 && (
+                  <div className="text-yellow-300">
+                    {t('doubtResult.discarded', { count: state.lastDoubtResult.discardedCount })}
                   </div>
                 )}
-                <button type="button" className={btnPrimary} disabled={loading} onClick={handleCpuDoubtConfirm}>
-                  {t('confirmButton')}
-                </button>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Last doubt result */}
-        {state.lastDoubtResult && (
-          <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
-            <div className="text-white font-bold mb-1">{t('doubtResult.title')}</div>
-            <div className={state.lastDoubtResult.wasLying ? 'text-red-300' : 'text-green-300'}>
-              {state.lastDoubtResult.wasLying ? t('doubtResult.wasLying') : t('doubtResult.wasTruth')}
-            </div>
-            <div className="text-game-text-muted">
-              {t('doubtResult.loserTook', {
-                name: playerName(
-                  state.players[state.lastDoubtResult.loserIdx]?.id ?? state.lastDoubtResult.loserIdx,
-                  state.players[state.lastDoubtResult.loserIdx]?.isHuman ?? false,
-                ),
-                count: state.lastDoubtResult.cardCount,
-              })}
-            </div>
-            {state.lastDoubtResult.discardedCount > 0 && (
-              <div className="text-yellow-300">
-                {t('doubtResult.discarded', { count: state.lastDoubtResult.discardedCount })}
+                {state.lastDoubtResult.revealedCards.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {state.lastDoubtResult.revealedCards.map((card, i) => (
+                      <AnimatedCard key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
-            {state.lastDoubtResult.revealedCards.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-1">
-                {state.lastDoubtResult.revealedCards.map((card, i) => (
-                  <AnimatedCard key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-                ))}
+
+            {/* Human/CPU action logs */}
+            {state.humanAction && !isDoubtPhase && (
+              <div className="bg-black/40 rounded-lg text-game-text-highlight py-2 px-3.5 my-2 text-xs">
+                {actionDesc(state.humanAction, state.players, t)}
+              </div>
+            )}
+            {state.cpuActions && state.cpuActions.length > 0 && (
+              <div className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs">
+                {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDesc(a, state.players, t))].join('\n')}
+              </div>
+            )}
+
+            {/* Result message */}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={state.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          {/* Right: info sidebar */}
+          <div>
+            {/* CPU player areas */}
+            <div className="flex gap-2 flex-wrap mb-3 lg:flex-col">
+              {cpuPlayers.map((player) => (
+                <DoubtCpuArea
+                  key={player.id}
+                  player={player}
+                  isCurrentTurn={state.currentTurn === player.id}
+                  hasTell={cpuTells.has(player.id)}
+                />
+              ))}
+            </div>
+
+            {/* Meta-AI info */}
+            {state.metaAI?.enabled && (
+              <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
+                <div className="text-white font-bold mb-1">{t('metaAI.title')}</div>
+                <div className="text-game-text-muted">
+                  {t('metaAI.gamesPlayed', { count: state.metaAI.gamesPlayed })}
+                </div>
+                <div className="text-game-text-muted">
+                  {t('metaAI.bluffRate', { rate: `${(state.metaAI.bluffRate * 100).toFixed(0)}%` })}
+                </div>
+                <div className="text-game-text-muted">
+                  {t('metaAI.doubtAccuracy', { rate: `${(state.metaAI.doubtAccuracy * 100).toFixed(0)}%` })}
+                </div>
+                {state.metaAI.hesitationMean > 0 && (
+                  <div className="text-game-text-muted">
+                    {t('metaAI.hesitationMean', { ms: Math.round(state.metaAI.hesitationMean) })}
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
-
-        {/* Human/CPU action logs */}
-        {state.humanAction && !isDoubtPhase && (
-          <div className="bg-black/40 rounded-lg text-game-text-highlight py-2 px-3.5 my-2 text-xs">
-            {actionDesc(state.humanAction, state.players, t)}
-          </div>
-        )}
-        {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs">
-            {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDesc(a, state.players, t))].join('\n')}
-          </div>
-        )}
-
-        {/* Meta-AI info */}
-        {state.metaAI?.enabled && (
-          <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
-            <div className="text-white font-bold mb-1">{t('metaAI.title')}</div>
-            <div className="text-game-text-muted">{t('metaAI.gamesPlayed', { count: state.metaAI.gamesPlayed })}</div>
-            <div className="text-game-text-muted">
-              {t('metaAI.bluffRate', { rate: `${(state.metaAI.bluffRate * 100).toFixed(0)}%` })}
-            </div>
-            <div className="text-game-text-muted">
-              {t('metaAI.doubtAccuracy', { rate: `${(state.metaAI.doubtAccuracy * 100).toFixed(0)}%` })}
-            </div>
-            {state.metaAI.hesitationMean > 0 && (
-              <div className="text-game-text-muted">
-                {t('metaAI.hesitationMean', { ms: Math.round(state.metaAI.hesitationMean) })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Result message */}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={state.gameEndFlag}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
+        </div>
       </div>
 
       {/* Sticky footer: human player hand + action buttons */}

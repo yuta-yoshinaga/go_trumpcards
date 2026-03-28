@@ -20,7 +20,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
-import { lgCardAreaConstraint } from '../styles/gameStyles';
+import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { CrazyEightsPhase, CrazyEightsSuit } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -183,66 +183,78 @@ function CrazyEightsPageContent() {
           <span>{t('drawPile', { count: state.drawPileCount })}</span>
         </div>
 
-        {/* Discard pile top */}
-        {state.discardTop && (
-          <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ce-discard-pile">
-            <AnimatedCard card={state.discardTop} width={cardWidth} />
-            <div className="text-white/70 text-sm">
-              <div>{t('discardTop')}</div>
-              {state.chosenSuit > 0 && (
-                <div className="text-yellow-300">
-                  {t('chosenSuit')}: {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+        <div className={lgTwoColGrid}>
+          {/* Left: game play area */}
+          <div>
+            {/* Discard pile top */}
+            {state.discardTop && (
+              <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ce-discard-pile">
+                <AnimatedCard card={state.discardTop} width={cardWidth} />
+                <div className="text-white/70 text-sm">
+                  <div>{t('discardTop')}</div>
+                  {state.chosenSuit > 0 && (
+                    <div className="text-yellow-300">
+                      {t('chosenSuit')}: {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          {/* Right: info sidebar */}
+          <div>
+            {/* CPU players */}
+            {state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                  <div className="text-white/70 text-sm">
+                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                    {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}
+                  </div>
+                </div>
+              ))}
+
+            {/* Score table */}
+            <div className="my-3 p-2 rounded bg-black/30">
+              <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+              <table className="w-full text-sm text-white/70">
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left">
+                      {t('scoresPlayer')}
+                    </th>
+                    <th scope="col">{t('scoresRound')}</th>
+                    <th scope="col">{t('scoresTotal')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.players.map((p) => (
+                    <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                      <td>{playerName(p.id, p.isHuman)}</td>
+                      <td className="text-center">{p.roundScore}</td>
+                      <td className="text-center">{p.cumulativeScore}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
-
-        {/* CPU players */}
-        {state.players
-          .filter((p) => !p.isHuman)
-          .map((p) => (
-            <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-              <div className="text-white/70 text-sm">
-                {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}
-              </div>
-            </div>
-          ))}
-
-        {/* Score table */}
-        <div className="my-3 p-2 rounded bg-black/30">
-          <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-          <table className="w-full text-sm text-white/70">
-            <thead>
-              <tr>
-                <th scope="col" className="text-left">
-                  {t('scoresPlayer')}
-                </th>
-                <th scope="col">{t('scoresRound')}</th>
-                <th scope="col">{t('scoresTotal')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.players.map((p) => (
-                <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
-                  <td>{playerName(p.id, p.isHuman)}</td>
-                  <td className="text-center">{p.roundScore}</td>
-                  <td className="text-center">{p.cumulativeScore}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        <ActionLogSection
-          isEndPhase={isGameEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
       </div>
 
       <GameFooter className={`${gameTheme.crazyeights.footer} px-4 py-2.5`}>
