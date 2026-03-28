@@ -107,5 +107,14 @@
     "surrenderReason": "Unfavorable situation — surrender recommended",
     "declineReason": "Insurance has negative expected value — decline recommended"
   },
-  "betGuide": "Place your bet to start"
+  "betGuide": "Place your bet to start",
+  "payoutRef": {
+    "title": "Payouts",
+    "blackjack": "Blackjack (3:2)",
+    "win": "Regular Win (1:1)",
+    "insurance": "Insurance (2:1)",
+    "push": "Push (Tie: bet returned)",
+    "surrender": "Surrender (half bet returned)",
+    "bust": "Bust (over 21: lose)"
+  }
 }

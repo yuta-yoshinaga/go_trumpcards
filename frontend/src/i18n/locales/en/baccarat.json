@@ -37,5 +37,13 @@
     "bankerHand": "This is the Banker's hand. Compare values to determine the winner.",
     "resetButton": "Press the reset button to start a new game."
   },
-  "betGuide": "Place your bet to start"
+  "betGuide": "Place your bet to start",
+  "payoutRef": {
+    "title": "Payouts",
+    "playerWin": "Player Win (1:1)",
+    "bankerWin": "Banker Win (0.95:1)",
+    "tie": "Tie (8:1)",
+    "playerPair": "Player Pair (11:1)",
+    "bankerPair": "Banker Pair (11:1)"
+  }
 }

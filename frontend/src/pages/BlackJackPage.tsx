@@ -266,8 +266,19 @@ function BlackJackPageContent() {
           .join(' ')}
       >
         {phase === BjPhase.BET && (
-          <div className="flex items-center justify-center py-6">
+          <div className="flex flex-col items-center justify-center py-6 gap-4">
             <p className="text-white/50 text-lg">{t('betGuide')}</p>
+            <div className="bg-black/30 rounded-lg p-4 w-full max-w-sm">
+              <div className="text-white font-bold text-sm mb-2">{t('payoutRef.title')}</div>
+              <ul className="text-white/70 text-sm space-y-1">
+                <li>{t('payoutRef.blackjack')}</li>
+                <li>{t('payoutRef.win')}</li>
+                <li>{t('payoutRef.insurance')}</li>
+                <li>{t('payoutRef.push')}</li>
+                <li>{t('payoutRef.surrender')}</li>
+                <li>{t('payoutRef.bust')}</li>
+              </ul>
+            </div>
           </div>
         )}
         {phase !== BjPhase.BET && (
