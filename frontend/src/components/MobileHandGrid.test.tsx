@@ -95,4 +95,28 @@ describe('MobileHandGrid', () => {
     render(<MobileHandGrid cards={[]} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />);
     expect(screen.queryAllByRole('button')).toHaveLength(0);
   });
+
+  it('renders single card without overlap (computeOverlap cardCount <= 1)', () => {
+    const cards = makeCards(1);
+    render(<MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />);
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(1);
+    // Single card should have no marginLeft
+    expect(buttons[0].style.marginLeft).toBe('0px');
+  });
+
+  it('uses positive gap when viewport is wide enough for all cards', () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const cards = makeCards(3);
+      render(<MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />);
+      const buttons = screen.getAllByRole('button');
+      // Second card should have positive marginLeft (DEFAULT_CARD_GAP = 2px)
+      expect(Number.parseFloat(buttons[1].style.marginLeft)).toBeGreaterThan(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
 });

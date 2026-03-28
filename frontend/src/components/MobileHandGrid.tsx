@@ -10,6 +10,10 @@ const TWO_ROW_THRESHOLD = 4;
 const CONTAINER_PADDING = 32;
 /** Base width of each card button including border (cardWidth + 6px border). */
 const BUTTON_EXTRA = 6;
+/** Default gap (px) between cards when they fit without overlap. */
+const DEFAULT_CARD_GAP = 2;
+/** Maximum overlap ratio — each card stays at least 30% visible. */
+const MAX_OVERLAP_RATIO = 0.7;
 
 /** Props for the MobileHandGrid component. */
 interface MobileHandGridProps {
@@ -46,7 +50,7 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
 
         return (
           <div
-            key={rowIdx}
+            key={`row-${rowIdx}`}
             data-testid="hand-row"
             className="flex justify-center"
             style={{ marginBottom: rowIdx === 0 && rows.length > 1 ? 4 : 0 }}
@@ -87,6 +91,7 @@ function computeOverlap(cardCount: number, buttonWidth: number, viewportWidth: n
   if (cardCount <= 1) return 0;
   const availableWidth = viewportWidth - CONTAINER_PADDING;
   const totalNeeded = cardCount * buttonWidth;
-  if (totalNeeded <= availableWidth) return 2; // small positive gap when plenty of room
-  return -((totalNeeded - availableWidth) / (cardCount - 1));
+  if (totalNeeded <= availableWidth) return DEFAULT_CARD_GAP;
+  const rawOverlap = -((totalNeeded - availableWidth) / (cardCount - 1));
+  return Math.max(rawOverlap, -buttonWidth * MAX_OVERLAP_RATIO);
 }
