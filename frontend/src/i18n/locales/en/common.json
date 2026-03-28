@@ -110,6 +110,7 @@
     "result": "Result:",
     "cpuAction": "CPU Actions:",
     "cpuActions": "[CPU Actions]",
+    "cpuOpponents": "CPU Opponents ({{count}})",
     "pot": "Pot:",
     "dealer": "Dealer:",
     "networkError": "A network error occurred. Please try again.",

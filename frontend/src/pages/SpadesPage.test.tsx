@@ -375,6 +375,29 @@ describe('SpadesPage', () => {
     });
   });
 
+  it('score table has horizontal scroll wrapper', async () => {
+    const { container } = renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
+    const scoreSection = container.querySelector('[data-tutorial="sp-score-table"]');
+    const scrollWrapper = scoreSection?.querySelector('.overflow-x-auto');
+    expect(scrollWrapper).toBeInTheDocument();
+    const table = scrollWrapper?.querySelector('table');
+    expect(table?.className).toContain('min-w-[360px]');
+  });
+
+  it('score table renders ScrollFadeHint on mobile', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
+    try {
+      const { container } = renderWithProviders(<SpadesPage />);
+      await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
+      const scoreSection = container.querySelector('[data-tutorial="sp-score-table"]');
+      const fadeHint = scoreSection?.querySelector('.bg-gradient-to-l');
+      expect(fadeHint).toBeInTheDocument();
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
+
   it('shows spades broken text', async () => {
     mockExec.mockResolvedValue(spadesBrokenState);
     renderWithProviders(<SpadesPage />);
@@ -754,7 +777,7 @@ describe('SpadesPage', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 
-  it('renders mobile viewport with horizontal scroll hand', async () => {
+  it('renders mobile viewport with 2-row hand grid', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     try {
@@ -762,8 +785,9 @@ describe('SpadesPage', () => {
       renderWithProviders(<SpadesPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       const hand = document.querySelector('[data-tutorial="sp-player-hand"]');
-      expect(hand?.className).toContain('overflow-x-auto');
-      expect(hand?.className).not.toContain('flex-wrap');
+      expect(hand).toBeInTheDocument();
+      const rows = hand?.querySelectorAll('[data-testid="hand-row"]');
+      expect(rows?.length).toBeGreaterThanOrEqual(1);
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
@@ -778,7 +802,7 @@ describe('SpadesPage', () => {
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       const hand = document.querySelector('[data-tutorial="sp-player-hand"]');
       expect(hand?.className).toContain('flex-wrap');
-      expect(hand?.className).not.toContain('overflow-x-auto');
+      expect(hand?.querySelectorAll('[data-testid="hand-row"]')).toHaveLength(0);
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }

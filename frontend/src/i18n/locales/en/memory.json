@@ -13,6 +13,7 @@
     "hard": "Hard"
   },
   "scores": "Scores",
+  "cardFaceDown": "Card {{position}} (face down)",
   "scoreLine": "{{name}}: {{count}}",
   "nextButton": "Next",
   "flipPrompt1": "Flip the first card",

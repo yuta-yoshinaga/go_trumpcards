@@ -19,7 +19,7 @@ export function MemorySkeleton() {
       <div className="my-3 lg:my-1 p-2 lg:p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
         <SkeletonGrid
           count={52}
-          cols="grid-cols-6 md:grid-cols-8 lg:grid-cols-13"
+          cols="grid-cols-4 md:grid-cols-8 lg:grid-cols-13"
           aspectRatio="aspect-[2/3] lg:aspect-auto"
           gridClassName="lg:grid-rows-4 lg:h-full"
         />

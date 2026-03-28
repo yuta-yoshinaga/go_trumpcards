@@ -130,9 +130,8 @@ describe('MemoryPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(flip2State);
 
-    // Click a board card button (find by the position text inside it)
-    const boardButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '3');
-    fireEvent.click(boardButtons[0]);
+    // Click a board card button by test id
+    fireEvent.click(screen.getByTestId('board-3'));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('flip', 3));
   });
@@ -141,9 +140,9 @@ describe('MemoryPage', () => {
     mockExec.mockResolvedValue(flip2State);
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
-    // Face-up card at position 5 shows card image instead of position number
-    const imgs = screen.getAllByRole('img');
-    expect(imgs.length).toBeGreaterThanOrEqual(1);
+    // Face-up card at position 5 shows specific card image
+    const faceUpImg = screen.getByAltText('♠ 3');
+    expect(faceUpImg).toBeInTheDocument();
   });
 
   it('result phase shows next button', async () => {
@@ -206,6 +205,16 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
   });
 
+  it('face-down cards show card back image instead of position number', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    // Face-down card should have a card back image, not a number
+    const cardBtn = screen.getByTestId('board-0');
+    const img = cardBtn.querySelector('img');
+    expect(img).toBeInTheDocument();
+    expect(img?.getAttribute('src')).toBe('/images/z01.png');
+  });
+
   it('board cards disabled when taken', async () => {
     const takenBoard = makeBoard({ 0: { taken: true } });
     mockExec.mockResolvedValue({ ...flip1State, board: takenBoard });
@@ -216,13 +225,13 @@ describe('MemoryPage', () => {
     // Other cards should be enabled
   });
 
-  it('taken card buttons have aria-hidden to avoid empty slot announcements', async () => {
+  it('taken cards are hidden from grid layout', async () => {
     const takenBoard = makeBoard({ 0: { taken: true } });
     mockExec.mockResolvedValue({ ...flip1State, board: takenBoard });
-    const { container } = renderWithProviders(<MemoryPage />);
+    renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
-    const hiddenButtons = container.querySelectorAll('button[aria-hidden="true"]');
-    expect(hiddenButtons.length).toBe(1);
+    const takenBtn = screen.getByTestId('board-0');
+    expect(takenBtn).toHaveClass('hidden');
   });
 
   it('changing cpu difficulty updates config used on reset', async () => {
@@ -250,9 +259,8 @@ describe('MemoryPage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
-    // Board card at position 10 should be disabled (avoids pairCount text conflicts)
-    const boardButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '10');
-    expect(boardButtons[0]).toBeDisabled();
+    // Board card at position 10 should be disabled
+    expect(screen.getByTestId('board-10')).toBeDisabled();
   });
 
   it('loading state shows sr-only text and aria-busy', async () => {
@@ -417,5 +425,20 @@ describe('MemoryPage', () => {
     mockExec.mockResolvedValue(flip1State);
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('face-down card buttons have aria-label with position', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    const cardBtn = screen.getByTestId('board-0');
+    expect(cardBtn).toHaveAttribute('aria-label', '1枚目のカード（裏向き）');
+  });
+
+  it('face-up card button has aria-label with card name', async () => {
+    mockExec.mockResolvedValue(flip2State);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    const faceUpBtn = screen.getByTestId('board-5');
+    expect(faceUpBtn).toHaveAttribute('aria-label', '♠ 3');
   });
 });

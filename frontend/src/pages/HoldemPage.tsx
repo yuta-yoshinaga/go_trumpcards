@@ -15,6 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
@@ -235,26 +236,28 @@ function HoldemPageContent() {
 
       {/* Scrollable: community cards + CPU players */}
       <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Community cards */}
-        <div className="mb-4" data-tutorial="he-community-cards">
-          <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
-          <div className="flex flex-wrap gap-2">
-            {state?.communityCards?.length
-              ? state.communityCards.map((card) => (
-                  <AnimatedCard
-                    key={`${card.design}-${card.value}`}
-                    card={card}
-                    width={cardWidth}
-                    style={{ border: '3px solid transparent' }}
-                  />
-                ))
-              : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-          </div>
-        </div>
-
-        {/* CPU players */}
-        <div data-tutorial="he-cpu-area">
-          {state?.players
+        {/* Community cards + CPU players (poker table layout on desktop) */}
+        <PokerTableLayout
+          communityCardsTutorial="he-community-cards"
+          cpuAreaTutorial="he-cpu-area"
+          communityCards={
+            <>
+              <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
+              <div className="flex flex-wrap gap-2">
+                {state?.communityCards?.length
+                  ? state.communityCards.map((card) => (
+                      <AnimatedCard
+                        key={`${card.design}-${card.value}`}
+                        card={card}
+                        width={cardWidth}
+                        style={{ border: '3px solid transparent' }}
+                      />
+                    ))
+                  : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+              </div>
+            </>
+          }
+          cpuPlayers={state?.players
             ?.filter((p) => !p.isHuman)
             .map((p) => (
               <CpuPlayerCard
@@ -268,7 +271,7 @@ function HoldemPageContent() {
                 }
               />
             ))}
-        </div>
+        />
 
         {/* CPU actions log */}
         <CpuActionLog actions={state?.cpuActions} />

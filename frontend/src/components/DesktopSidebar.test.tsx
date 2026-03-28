@@ -191,6 +191,53 @@ describe('DesktopSidebar', () => {
     });
   });
 
+  describe('accordion categories', () => {
+    it('renders categories as details elements', () => {
+      renderSidebar();
+      for (const { labelKey } of gameCategories) {
+        const summary = screen.getByText(labelFor(labelKey));
+        expect(summary.closest('details')).toBeInTheDocument();
+      }
+    });
+
+    it('expands category containing the active game', () => {
+      renderSidebar('/poker');
+      const pokerCategory = screen.getByText(labelFor('nav.category.poker'));
+      expect(pokerCategory.closest('details')).toHaveAttribute('open');
+    });
+
+    it('collapses categories without the active game', () => {
+      renderSidebar('/poker');
+      const tableCategory = screen.getByText(labelFor('nav.category.table'));
+      expect(tableCategory.closest('details')).not.toHaveAttribute('open');
+      const solitaireCategory = screen.getByText(labelFor('nav.category.solitaire'));
+      expect(solitaireCategory.closest('details')).not.toHaveAttribute('open');
+    });
+
+    it('expands table category by default when on home page', () => {
+      renderSidebar('/');
+      const tableCategory = screen.getByText(labelFor('nav.category.table'));
+      expect(tableCategory.closest('details')).toHaveAttribute('open');
+    });
+
+    it('toggles category open/closed on click', () => {
+      renderSidebar('/poker');
+      const tableCategory = screen.getByText(labelFor('nav.category.table'));
+      expect(tableCategory.closest('details')).not.toHaveAttribute('open');
+      fireEvent.click(tableCategory);
+      expect(tableCategory.closest('details')).toHaveAttribute('open');
+      fireEvent.click(tableCategory);
+      expect(tableCategory.closest('details')).not.toHaveAttribute('open');
+    });
+  });
+
+  describe('search icon', () => {
+    it('renders a search icon in the search area', () => {
+      renderSidebar();
+      expect(screen.getByTestId('search-icon')).toBeInTheDocument();
+    });
+  });
+
   describe('tutorial progress', () => {
     it('renders tutorial progress panel', () => {
       renderSidebar();

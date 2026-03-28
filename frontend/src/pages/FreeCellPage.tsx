@@ -18,7 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { FreeCellPhase } from '../types/phases';
@@ -232,7 +232,6 @@ function FreeCellPageContent() {
                 className="flex-shrink-0 sm:flex-1"
                 style={isMobile ? { width: solitaireMinColWidth } : undefined}
               >
-                <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
                 <div className="relative" style={{ minHeight: cardHeight }}>
                   {col.length === 0 ? (
                     <button
@@ -323,7 +322,7 @@ function FreeCellPageContent() {
           <div data-tutorial="fc-reset-button">
             <button
               type="button"
-              className={btnWarning}
+              className={btnOutline}
               onClick={() =>
                 requestConfirm(() => {
                   hideActionLog();

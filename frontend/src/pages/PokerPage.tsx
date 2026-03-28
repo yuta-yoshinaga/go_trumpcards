@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -23,7 +24,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { btnOutline, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -182,6 +183,7 @@ function PokerPageContent() {
               showCards={isEnd}
               faceDownCount={5}
               showHandName={isEnd}
+              compactFaceDown={!isEnd}
               extraInfo={
                 (phase === PokerPhase.SECOND_BET || isEnd) && p.exchangeCount > 0 && !p.folded ? (
                   <span className="ml-2 text-xs">{t('exchangeCount', { count: p.exchangeCount })}</span>
@@ -342,37 +344,53 @@ function PokerPageContent() {
           </div>
         )}
 
-        {/* Settings + Reset */}
-        <div className="text-center flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
-          <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
-            {tc('betting.bettingLimit')}
-            <select
-              value={bettingLimit}
-              onChange={(e) => setBettingLimit(Number(e.target.value))}
-              className="px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
-            >
-              <option value={0}>{tc('betting.fixed')}</option>
-              <option value={1}>{tc('betting.potLimit')}</option>
-              <option value={2}>{tc('betting.noLimit')}</option>
-            </select>
-          </label>
-          <div className="flex items-center gap-3">
-            <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
-              <input type="checkbox" checked={isLowball} onChange={(e) => setIsLowball(e.target.checked)} />
-              {t('lowball')}
-            </label>
-            <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
-              <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-              {t('settings.cpuMetaAI')}
-            </label>
-            <label className="text-white text-sm flex items-center gap-1 min-h-[44px] sm:min-h-0">
-              <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
-          </div>
+        {/* Settings (collapsible) + Reset */}
+        <SettingsPanel
+          title={t('settings.title')}
+          groups={[
+            {
+              items: [
+                {
+                  type: 'select',
+                  id: 'pokerBettingLimit',
+                  label: tc('betting.bettingLimit'),
+                  value: bettingLimit,
+                  options: [
+                    { value: 0, label: tc('betting.fixed') },
+                    { value: 1, label: tc('betting.potLimit') },
+                    { value: 2, label: tc('betting.noLimit') },
+                  ],
+                  onSelect: (v) => setBettingLimit(Number(v)),
+                },
+                {
+                  type: 'checkbox',
+                  id: 'pokerLowball',
+                  label: t('lowball'),
+                  checked: isLowball,
+                  onToggle: setIsLowball,
+                },
+                {
+                  type: 'checkbox',
+                  id: 'pokerCpuMetaAI',
+                  label: t('settings.cpuMetaAI'),
+                  checked: cpuMetaAI,
+                  onToggle: setCpuMetaAI,
+                },
+                {
+                  type: 'checkbox',
+                  id: 'pokerHint',
+                  label: tc('hint.toggle', { ns: 'tutorial' }),
+                  checked: hintEnabled,
+                  onToggle: setHintEnabled,
+                },
+              ],
+            },
+          ]}
+        />
+        <div className="text-center mt-2">
           <button
             type="button"
-            className={`${btnPrimary} min-w-[90px]`}
+            className={`${btnOutline} min-w-[90px]`}
             disabled={loading}
             data-tutorial="pk-reset-button"
             onClick={() =>

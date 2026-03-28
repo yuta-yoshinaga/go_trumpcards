@@ -19,7 +19,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnWarning } from '../styles/buttonStyles';
+import { btnOutline, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -353,7 +353,7 @@ function SevensPageContent() {
         <div className="text-center">
           <button
             type="button"
-            className={`${btnPrimary} min-w-[90px]`}
+            className={`${btnOutline} min-w-[90px]`}
             disabled={loading}
             data-tutorial="sv-reset-button"
             onClick={() =>
@@ -377,7 +377,7 @@ function SevensPageContent() {
           </button>
           <button
             type="button"
-            className={`${btnWarning} min-w-[90px]`}
+            className={`${btnSecondary} min-w-[90px]`}
             disabled={loading || !canPass}
             onClick={() => exec('play', -1)}
             data-tutorial="sv-play-pass"
@@ -385,7 +385,7 @@ function SevensPageContent() {
             {tc('button.pass')}
           </button>
           {jokerCardIdx !== null && (
-            <button type="button" className={`${btnWarning} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>
+            <button type="button" className={`${btnSecondary} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>
               {tc('button.cancel')}
             </button>
           )}

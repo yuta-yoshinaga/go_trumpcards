@@ -76,18 +76,14 @@ describe('FreeCellPage', () => {
 
   // --- Tableau ---
 
-  it('renders tableau cards', async () => {
+  it('renders tableau without index headers', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
-    // Column labels 0-7
-    for (let i = 0; i < 8; i++) {
-      expect(screen.getByText(i.toString())).toBeInTheDocument();
-    }
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
   });
 
   it('renders empty tableau columns with K placeholder', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     const kElements = screen.getAllByText('K');
     expect(kElements.length).toBeGreaterThanOrEqual(1);
   });
@@ -121,7 +117,7 @@ describe('FreeCellPage', () => {
 
   it('renders free cells (empty)', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     const emptyButtons = screen.getAllByText('空');
     expect(emptyButtons.length).toBe(4);
   });
@@ -129,7 +125,7 @@ describe('FreeCellPage', () => {
   it('renders freecell with card occupied', async () => {
     mockExec.mockResolvedValue(withFreeCellCardState);
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     // The occupied freecell should show a card image
     expect(screen.getByAltText('♦ 7')).toBeInTheDocument();
     // 3 empty freecells remain
@@ -204,7 +200,7 @@ describe('FreeCellPage', () => {
 
   it('card selection via handleSelectSource on tableau card click', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const cardImg = screen.getByAltText('♠ K');
     const cardButton = cardImg.closest('button') as HTMLButtonElement;
@@ -225,7 +221,7 @@ describe('FreeCellPage', () => {
 
   it('target selection via handleSelectTarget on foundation click when source selected', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     // Select tableau card as source
     const cardImg = screen.getByAltText('♠ K');
@@ -245,7 +241,7 @@ describe('FreeCellPage', () => {
 
   it('target selection via handleSelectTarget on empty freecell click when source selected', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     // Select tableau card as source
     const cardImg = screen.getByAltText('♠ K');
@@ -266,7 +262,7 @@ describe('FreeCellPage', () => {
 
   it('target selection via handleSelectTarget on empty tableau click when source selected', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     // Select tableau card as source
     const cardImg = screen.getByAltText('♠ K');
@@ -514,7 +510,7 @@ describe('FreeCellPage', () => {
 
   it('empty freecell buttons have aria-label', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     for (let i = 0; i < 4; i++) {
       expect(screen.getByRole('button', { name: `フリーセル ${i} (空)` })).toBeInTheDocument();
@@ -525,7 +521,7 @@ describe('FreeCellPage', () => {
 
   it('tableau face-up card button has aria-label with card name', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const cardButton = screen.getByRole('button', { name: '♠ K' });
     expect(cardButton).toHaveAttribute('aria-label', '♠ K');
@@ -533,7 +529,7 @@ describe('FreeCellPage', () => {
 
   it('tableau face-up card button has aria-pressed false initially and true when selected', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const cardImg = screen.getByAltText('♠ K');
     const cardButton = cardImg.closest('button') as HTMLButtonElement;
@@ -557,7 +553,7 @@ describe('FreeCellPage', () => {
 
   it('empty tableau column disabled when no source selected', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     for (const btn of kButtons) {
@@ -567,7 +563,7 @@ describe('FreeCellPage', () => {
 
   it('empty freecell disabled when no source selected', async () => {
     renderWithProviders(<FreeCellPage />);
-    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const emptyButtons = screen.getAllByText('空');
     for (const btn of emptyButtons) {

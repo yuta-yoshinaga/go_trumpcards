@@ -17,7 +17,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BaccaratSideBetResult } from '../types/card';
@@ -250,8 +250,16 @@ function BaccaratPageContent() {
           .join(' ')}
       >
         {isBetPhase && state.playerHand.length === 0 && (
-          <div className="flex items-center justify-center py-6">
+          <div className="flex flex-col items-center justify-center py-6 gap-4">
             <p className="text-white/50 text-lg">{t('betGuide')}</p>
+            <div className="bg-black/30 rounded-lg p-4 w-full max-w-sm">
+              <div className="text-white font-bold text-sm mb-2">{t('payoutRef.title')}</div>
+              <ul className="text-white/70 text-sm space-y-1">
+                {(['playerWin', 'bankerWin', 'tie', 'playerPair', 'bankerPair'] as const).map((key) => (
+                  <li key={key}>{t(`payoutRef.${key}`)}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
@@ -390,7 +398,7 @@ function BaccaratPageContent() {
             <div data-tutorial="bac-reset-button">
               <button
                 type="button"
-                className={btnPrimary}
+                className={btnOutline}
                 onClick={() => requestConfirm(handleReset)}
                 disabled={loading}
               >

@@ -7,9 +7,11 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { NapoleonSkeleton } from '../components/skeleton/NapoleonSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -23,7 +25,7 @@ import {
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -139,7 +141,7 @@ function NapoleonPageContent() {
     hintLoading,
     handleHint,
   } = useNapoleonGame();
-  const { cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
 
   const [bidValue, setBidValue] = useState(12);
   const [trumpSuitValue, setTrumpSuitValue] = useState(1);
@@ -332,42 +334,45 @@ function NapoleonPageContent() {
               ))}
 
             {/* Score table */}
-            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="np-score-table">
+            <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="np-score-table">
               <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-              <table className="w-full text-sm text-white/70">
-                <thead>
-                  <tr>
-                    <th scope="col" className="text-left">
-                      {t('scoresPlayer')}
-                    </th>
-                    <th scope="col">{t('scoresRole')}</th>
-                    <th scope="col">{t('scoresBid')}</th>
-                    <th scope="col">{t('scoresPictureCards')}</th>
-                    <th scope="col">{t('scoresTricks')}</th>
-                    <th scope="col">{t('scoresRound')}</th>
-                    <th scope="col">{t('scoresTotal')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.players.map((p) => (
-                    <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
-                      <td>{playerName(p.id, p.isHuman)}</td>
-                      <td className="text-center">
-                        {p.isNapoleon
-                          ? t('role.napoleon')
-                          : p.isAdjutant && (p.adjutantRevealed || state.adjutantRevealed)
-                            ? t('role.adjutant')
-                            : '-'}
-                      </td>
-                      <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
-                      <td className="text-center">{p.pictureCards}</td>
-                      <td className="text-center">{p.trickCount}</td>
-                      <td className="text-center">{p.roundScore}</td>
-                      <td className="text-center">{p.cumulativeScore}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-white/70 min-w-[420px]">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="text-left">
+                        {t('scoresPlayer')}
+                      </th>
+                      <th scope="col">{t('scoresRole')}</th>
+                      <th scope="col">{t('scoresBid')}</th>
+                      <th scope="col">{t('scoresPictureCards')}</th>
+                      <th scope="col">{t('scoresTricks')}</th>
+                      <th scope="col">{t('scoresRound')}</th>
+                      <th scope="col">{t('scoresTotal')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {state.players.map((p) => (
+                      <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                        <td>{playerName(p.id, p.isHuman)}</td>
+                        <td className="text-center">
+                          {p.isNapoleon
+                            ? t('role.napoleon')
+                            : p.isAdjutant && (p.adjutantRevealed || state.adjutantRevealed)
+                              ? t('role.adjutant')
+                              : '-'}
+                        </td>
+                        <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
+                        <td className="text-center">{p.pictureCards}</td>
+                        <td className="text-center">{p.trickCount}</td>
+                        <td className="text-center">{p.roundScore}</td>
+                        <td className="text-center">{p.cumulativeScore}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {isMobile && <ScrollFadeHint />}
             </div>
           </div>
         </div>
@@ -387,33 +392,38 @@ function NapoleonPageContent() {
       {/* Footer */}
       <GameFooter className={`${gameTheme.napoleon.footer} px-4 py-2.5`}>
         {/* Human cards */}
-        {humanPlayer && (
-          <div
-            className={isMobile ? 'flex gap-1 overflow-x-auto mb-2' : 'flex flex-wrap gap-1 mb-2'}
-            data-tutorial="np-player-hand"
-          >
-            {humanPlayer.cards.map((card, idx) => (
-              <button
-                type="button"
-                key={`${card.design}-${card.value}-${idx}`}
-                onClick={() => toggleCard(idx)}
-                aria-label={cardAlt(card)}
-                aria-pressed={selectedCardIndices.includes(idx)}
-                className={`transition-transform ${focusRingCard}`}
-                style={{
-                  background: 'none',
-                  padding: 0,
-                  borderRadius: 8,
-                  ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                  boxSizing: 'border-box',
-                  ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
-                }}
-              >
-                <AnimatedCard card={card} width={cardWidth} />
-              </button>
-            ))}
-          </div>
-        )}
+        {humanPlayer &&
+          (isMobile ? (
+            <MobileHandGrid
+              cards={humanPlayer.cards}
+              selectedIndices={selectedCardIndices}
+              onToggle={toggleCard}
+              cardWidth={cardWidth}
+              dataTutorial="np-player-hand"
+            />
+          ) : (
+            <div className="flex flex-wrap gap-1 mb-2" data-tutorial="np-player-hand">
+              {humanPlayer.cards.map((card, idx) => (
+                <button
+                  type="button"
+                  key={`${card.design}-${card.value}-${idx}`}
+                  onClick={() => toggleCard(idx)}
+                  aria-label={cardAlt(card)}
+                  aria-pressed={selectedCardIndices.includes(idx)}
+                  className={`transition-transform ${focusRingCard}`}
+                  style={{
+                    background: 'none',
+                    padding: 0,
+                    borderRadius: 8,
+                    ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <AnimatedCard card={card} width={cardWidth} />
+                </button>
+              ))}
+            </div>
+          ))}
 
         <ErrorAlert message={error ?? hintError} />
 
@@ -555,7 +565,7 @@ function NapoleonPageContent() {
           {/* Reset */}
           <button
             type="button"
-            className={btnWarning}
+            className={btnOutline}
             data-tutorial="np-reset-button"
             onClick={() =>
               requestConfirm(() => {

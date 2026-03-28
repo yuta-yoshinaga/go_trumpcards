@@ -199,7 +199,7 @@ export function VideoPokerGameContent({
           </div>
         )}
 
-        {!isBetPhase && <PayoutTable t={tNs} rows={payoutTableRows} />}
+        <PayoutTable t={tNs} rows={payoutTableRows} />
 
         {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>

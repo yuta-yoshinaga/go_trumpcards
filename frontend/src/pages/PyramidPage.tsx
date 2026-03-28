@@ -18,7 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePyramidGame } from '../hooks/usePyramidGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { PyramidPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -298,7 +298,7 @@ function PyramidPageContent() {
           <div data-tutorial="py-reset-button">
             <button
               type="button"
-              className={btnWarning}
+              className={btnOutline}
               onClick={() =>
                 requestConfirm(() => {
                   hideActionLog();

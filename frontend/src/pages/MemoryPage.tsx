@@ -19,7 +19,8 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { cardAlt } from '../utils/cardAlt';
 import { gameTheme } from '../styles/gameTheme';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
@@ -158,29 +159,36 @@ function MemoryPageContent() {
           ))}
         </div>
 
-        {/* Board: responsive grid (6/8/13 columns); on lg fills remaining height */}
+        {/* Board: responsive grid (4/8/13 columns); on lg fills remaining height */}
         <div
           className="my-3 lg:my-1 p-2 lg:p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
           data-tutorial="mem-board"
         >
-          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1 lg:grid-rows-4 lg:h-full">
+          <div className="grid grid-cols-4 md:grid-cols-8 lg:grid-cols-13 gap-1 lg:grid-rows-4 lg:h-full">
             {state.board.map((bc, idx) => (
               <button
                 type="button"
                 key={`board-${idx.toString()}`}
+                data-testid={`board-${idx.toString()}`}
+                aria-label={bc.faceUp && bc.card ? cardAlt(bc.card) : t('cardFaceDown', { position: idx + 1 })}
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
-                aria-hidden={bc.taken || undefined}
-                className={`relative aspect-[2/3] lg:aspect-auto rounded border ${focusRingWhite} ${
+                className={`memory-card relative aspect-[2/3] lg:aspect-auto rounded border ${focusRingWhite} ${
                   bc.taken
-                    ? 'bg-transparent border-transparent'
+                    ? 'hidden'
                     : bc.faceUp
                       ? 'bg-white border-yellow-400 ring-2 ring-yellow-400'
                       : 'bg-blue-800 border-blue-600 hover:border-yellow-400'
                 } transition-all`}
               >
-                {bc.faceUp && bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
-                {!bc.taken && !bc.faceUp && <span className="text-game-text-muted text-xs">{idx}</span>}
+                <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>
+                  <div className="memory-card-back">
+                    <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
+                  </div>
+                  <div className="memory-card-front">
+                    {bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
+                  </div>
+                </div>
               </button>
             ))}
           </div>
@@ -212,7 +220,7 @@ function MemoryPageContent() {
           <div data-tutorial="mem-reset-button">
             <button
               type="button"
-              className={btnWarning}
+              className={btnOutline}
               onClick={() =>
                 requestConfirm(() => {
                   hideActionLog();

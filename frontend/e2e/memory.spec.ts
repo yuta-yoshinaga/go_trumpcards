@@ -15,8 +15,8 @@ test.describe('Memory E2E', () => {
     // Verify score table is visible
     await expect(page.getByRole('status', { name: 'スコア' })).toBeVisible();
 
-    // Verify board cards are present (52 numbered card buttons)
-    const boardButtons = page.locator('button').filter({ hasText: /^\d+$/ });
+    // Verify board cards are present (card back images in buttons)
+    const boardButtons = page.locator('[data-testid^="board-"]');
     await expect(boardButtons.first()).toBeVisible();
 
     const nextButton = page.getByRole('button', { name: '次へ' });
@@ -37,7 +37,7 @@ test.describe('Memory E2E', () => {
 
       // Try to flip a card (human turn in flip1 phase)
       // Find an enabled board card and click it
-      const enabledCards = page.locator('button:not([disabled])').filter({ hasText: /^\d+$/ });
+      const enabledCards = page.locator('[data-testid^="board-"]:not([disabled]):not(.hidden)');
       const cardCount = await enabledCards.count();
       if (cardCount === 0) break; // Game may have ended or CPU turn
 
@@ -45,7 +45,7 @@ test.describe('Memory E2E', () => {
       await waitForLoaded(page);
 
       // If still in flip phase, flip a second card
-      const enabledCards2 = page.locator('button:not([disabled])').filter({ hasText: /^\d+$/ });
+      const enabledCards2 = page.locator('[data-testid^="board-"]:not([disabled]):not(.hidden)');
       const cardCount2 = await enabledCards2.count();
       if (cardCount2 > 0) {
         await enabledCards2.first().click();

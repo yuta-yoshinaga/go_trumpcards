@@ -322,13 +322,13 @@ describe('PokerPage', () => {
     expect(screen.getByAltText('♦ 4')).toBeInTheDocument();
   });
 
-  it('shows CardBack for CPU cards when not in END phase', async () => {
+  it('shows compact card count for CPU cards when not in END phase', async () => {
     mockExec.mockResolvedValue(dealState);
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
-    const cardBacks = screen.getAllByAltText('カード裏面');
-    // 3 CPUs * 5 cards each = 15 card backs
-    expect(cardBacks.length).toBeGreaterThanOrEqual(5);
+    // CPU cards are shown as compact text count (not card back images)
+    const compactCounts = screen.getAllByTestId('compact-card-count');
+    expect(compactCounts.length).toBeGreaterThanOrEqual(1);
   });
 
   it('shows CardBack for folded CPU in END phase', async () => {

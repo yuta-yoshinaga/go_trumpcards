@@ -21,7 +21,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
+import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CpuAction } from '../types/card';
@@ -114,7 +114,7 @@ function OldMaidPageContent() {
     }
   };
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
 
   const isHumanTurnForKbd =
     !!displayState && !displayState.gameEndFlag && !!displayState.players[displayState.currentTurn]?.isHuman;
@@ -187,6 +187,7 @@ function OldMaidPageContent() {
               loading={loading}
               highlightedCardIdx={state.nextDrawTargetIdx === player.id ? state.cpuHighlightedCardIdx : -1}
               isSuspect={suspectPins.has(player.id)}
+              compactNonTarget={isMobile}
               onToggleSuspect={() =>
                 setSuspectPins((prev) => {
                   const next = new Set(prev);
@@ -301,7 +302,7 @@ function OldMaidPageContent() {
           <span data-tutorial="om-reset-button">
             <button
               type="button"
-              className={`${btnPrimary} min-w-[80px]`}
+              className={`${btnOutline} min-w-[80px]`}
               disabled={loading}
               onClick={() =>
                 requestConfirm(() => {
@@ -316,7 +317,7 @@ function OldMaidPageContent() {
           <span data-tutorial="om-draw-button">
             <button
               type="button"
-              className={`${btnWarning} min-w-[110px]`}
+              className={`${btnPrimary} min-w-[110px]`}
               disabled={loading || !isHumanTurn || state.gameEndFlag}
               onClick={() => gameExec('draw')}
             >

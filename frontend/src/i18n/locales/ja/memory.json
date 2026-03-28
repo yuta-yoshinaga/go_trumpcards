@@ -13,6 +13,7 @@
     "hard": "Hard"
   },
   "scores": "スコア",
+  "cardFaceDown": "{{position}}枚目のカード（裏向き）",
   "scoreLine": "{{name}}: {{count}}",
   "nextButton": "次へ",
   "flipPrompt1": "1枚目をめくってください",
