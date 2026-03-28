@@ -255,11 +255,9 @@ function BaccaratPageContent() {
             <div className="bg-black/30 rounded-lg p-4 w-full max-w-sm">
               <div className="text-white font-bold text-sm mb-2">{t('payoutRef.title')}</div>
               <ul className="text-white/70 text-sm space-y-1">
-                <li>{t('payoutRef.playerWin')}</li>
-                <li>{t('payoutRef.bankerWin')}</li>
-                <li>{t('payoutRef.tie')}</li>
-                <li>{t('payoutRef.playerPair')}</li>
-                <li>{t('payoutRef.bankerPair')}</li>
+                {(['playerWin', 'bankerWin', 'tie', 'playerPair', 'bankerPair'] as const).map((key) => (
+                  <li key={key}>{t(`payoutRef.${key}`)}</li>
+                ))}
               </ul>
             </div>
           </div>

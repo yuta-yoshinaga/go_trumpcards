@@ -271,12 +271,9 @@ function BlackJackPageContent() {
             <div className="bg-black/30 rounded-lg p-4 w-full max-w-sm">
               <div className="text-white font-bold text-sm mb-2">{t('payoutRef.title')}</div>
               <ul className="text-white/70 text-sm space-y-1">
-                <li>{t('payoutRef.blackjack')}</li>
-                <li>{t('payoutRef.win')}</li>
-                <li>{t('payoutRef.insurance')}</li>
-                <li>{t('payoutRef.push')}</li>
-                <li>{t('payoutRef.surrender')}</li>
-                <li>{t('payoutRef.bust')}</li>
+                {(['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const).map((key) => (
+                  <li key={key}>{t(`payoutRef.${key}`)}</li>
+                ))}
               </ul>
             </div>
           </div>
