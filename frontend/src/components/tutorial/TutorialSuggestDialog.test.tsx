@@ -113,6 +113,12 @@ describe('TutorialSuggestDialog', () => {
     expect(document.body.style.overflow).toBe('auto');
   });
 
+  it('applies backdrop blur to overlay', () => {
+    render(<TutorialSuggestDialog {...defaultProps} />);
+    const overlay = screen.getByRole('presentation');
+    expect(overlay.className).toContain('backdrop-blur-sm');
+  });
+
   it('has aria-describedby pointing to message paragraph', () => {
     render(<TutorialSuggestDialog {...defaultProps} />);
     const dialog = screen.getByRole('alertdialog');
