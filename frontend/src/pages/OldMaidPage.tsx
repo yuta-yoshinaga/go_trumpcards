@@ -114,7 +114,7 @@ function OldMaidPageContent() {
     }
   };
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
 
   const isHumanTurnForKbd =
     !!displayState && !displayState.gameEndFlag && !!displayState.players[displayState.currentTurn]?.isHuman;
@@ -187,6 +187,7 @@ function OldMaidPageContent() {
               loading={loading}
               highlightedCardIdx={state.nextDrawTargetIdx === player.id ? state.cpuHighlightedCardIdx : -1}
               isSuspect={suspectPins.has(player.id)}
+              compactNonTarget={isMobile}
               onToggleSuspect={() =>
                 setSuspectPins((prev) => {
                   const next = new Set(prev);

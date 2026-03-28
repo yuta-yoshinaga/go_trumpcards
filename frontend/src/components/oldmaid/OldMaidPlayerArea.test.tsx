@@ -17,6 +17,16 @@ function makeHumanPlayer(cards: Card[]): OldMaidPlayerData {
   };
 }
 
+function makeCpuPlayer(cardCount: number): OldMaidPlayerData {
+  return {
+    id: 1,
+    isHuman: false,
+    isFinished: false,
+    cardCount,
+    cards: [],
+  };
+}
+
 const defaultProps = {
   isTarget: false,
   isHumanTurn: false,
@@ -25,6 +35,26 @@ const defaultProps = {
   highlightedCardIdx: -1,
   onDraw: vi.fn(),
 };
+
+describe('OldMaidPlayerArea compactNonTarget', () => {
+  it('hides card backs for non-target CPU when compactNonTarget is true', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(5)} compactNonTarget />);
+    expect(screen.queryByAltText('カード裏面')).not.toBeInTheDocument();
+    expect(screen.getByText('5枚')).toBeInTheDocument();
+  });
+
+  it('shows card backs for target CPU even when compactNonTarget is true', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(5)} isTarget compactNonTarget />);
+    const backs = screen.getAllByAltText('カード裏面');
+    expect(backs.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('shows card backs for non-target CPU when compactNonTarget is false', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(5)} />);
+    const backs = screen.getAllByAltText('カード裏面');
+    expect(backs).toHaveLength(5);
+  });
+});
 
 describe('OldMaidPlayerArea keyboard reordering', () => {
   const threeCards = [makeCard('SPADE', 1), makeCard('HEART', 5), makeCard('DIAMOND', 10)];
