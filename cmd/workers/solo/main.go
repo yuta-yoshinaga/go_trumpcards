@@ -21,28 +21,28 @@ func main() {
 		klondike := domain.NewKlondike(domain.NewTrumpCards(0))
 		return usecase.NewKlondikeInteractor(klondike, new(presenter.KlondikeWebPresenter))
 	})
-	mux.HandleFunc("POST /klondike/exec", klc.Exec)
+	mux.HandleFunc("/klondike/exec", klc.Exec)
 
 	// FreeCell
 	fcc := controller.NewFreeCellWebController(func() usecase.FreeCellInteractorIF {
 		freeCell := domain.NewFreeCell(domain.NewTrumpCards(0))
 		return usecase.NewFreeCellInteractor(freeCell, new(presenter.FreeCellWebPresenter))
 	})
-	mux.HandleFunc("POST /freecell/exec", fcc.Exec)
+	mux.HandleFunc("/freecell/exec", fcc.Exec)
 
 	// Spider
 	sdc := controller.NewSpiderWebController(func() usecase.SpiderInteractorIF {
 		spider := domain.NewSpider(domain.NewTrumpCardsWithSuits(domain.SpiderTotalCards, []int{domain.CardDesignSpade}))
 		return usecase.NewSpiderInteractor(spider, new(presenter.SpiderWebPresenter))
 	})
-	mux.HandleFunc("POST /spider/exec", sdc.Exec)
+	mux.HandleFunc("/spider/exec", sdc.Exec)
 
 	// Pyramid
 	pyc := controller.NewPyramidWebController(func() usecase.PyramidInteractorIF {
 		pyramid := domain.NewPyramid(domain.NewTrumpCards(0))
 		return usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidWebPresenter))
 	})
-	mux.HandleFunc("POST /pyramid/exec", pyc.Exec)
+	mux.HandleFunc("/pyramid/exec", pyc.Exec)
 
 	// Memory
 	myc := controller.NewMemoryWebController(func() usecase.MemoryInteractorIF {
@@ -56,7 +56,7 @@ func main() {
 		memory := domain.NewMemory(domain.NewTrumpCards(0), players, config)
 		return usecase.NewMemoryInteractor(memory, new(presenter.MemoryWebPresenter))
 	})
-	mux.HandleFunc("POST /memory/exec", myc.Exec)
+	mux.HandleFunc("/memory/exec", myc.Exec)
 
 	// Gin Rummy
 	grc := controller.NewGinRummyWebController(func() usecase.GinRummyInteractorIF {
@@ -68,7 +68,7 @@ func main() {
 		gr := domain.NewGinRummy(domain.NewTrumpCards(0), players, config)
 		return usecase.NewGinRummyInteractor(gr, new(presenter.GinRummyWebPresenter))
 	})
-	mux.HandleFunc("POST /ginrummy/exec", grc.Exec)
+	mux.HandleFunc("/ginrummy/exec", grc.Exec)
 
 	// Cribbage
 	cbc := controller.NewCribbageWebController(func() usecase.CribbageInteractorIF {
@@ -80,7 +80,7 @@ func main() {
 		cribbage := domain.NewCribbage(domain.NewTrumpCards(0), players, config)
 		return usecase.NewCribbageInteractor(cribbage, new(presenter.CribbageWebPresenter))
 	})
-	mux.HandleFunc("POST /cribbage/exec", cbc.Exec)
+	mux.HandleFunc("/cribbage/exec", cbc.Exec)
 
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(os.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
