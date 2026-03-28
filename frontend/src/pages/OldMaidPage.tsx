@@ -301,7 +301,7 @@ function OldMaidPageContent() {
           <span data-tutorial="om-reset-button">
             <button
               type="button"
-              className={`${btnPrimary} min-w-[80px]`}
+              className={`${btnOutline} min-w-[80px]`}
               disabled={loading}
               onClick={() =>
                 requestConfirm(() => {
@@ -316,7 +316,7 @@ function OldMaidPageContent() {
           <span data-tutorial="om-draw-button">
             <button
               type="button"
-              className={`${btnOutline} min-w-[110px]`}
+              className={`${btnPrimary} min-w-[110px]`}
               disabled={loading || !isHumanTurn || state.gameEndFlag}
               onClick={() => gameExec('draw')}
             >
