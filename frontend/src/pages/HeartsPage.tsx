@@ -8,6 +8,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -130,7 +131,7 @@ function HeartsPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('hearts', state);
-  const { cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
 
   const isPassPhaseForKbd = state?.phase === HeartsPhase.PASS;
   const isPlayPhaseForKbd = state?.phase === HeartsPhase.PLAY;
@@ -317,33 +318,38 @@ function HeartsPageContent() {
       {/* Footer */}
       <GameFooter className={`${gameTheme.hearts.footer} px-4 py-2.5`}>
         {/* Human cards */}
-        {humanPlayer && (
-          <div
-            className={isMobile ? 'flex gap-1 overflow-x-auto mb-2' : 'flex flex-wrap gap-1 mb-2'}
-            data-tutorial="ht-player-hand"
-          >
-            {humanPlayer.cards.map((card, idx) => (
-              <button
-                type="button"
-                key={`${card.design}-${card.value}-${idx}`}
-                onClick={() => toggleCard(idx)}
-                aria-label={cardAlt(card)}
-                aria-pressed={selectedCardIndices.includes(idx)}
-                className={`transition-transform ${focusRingCard}`}
-                style={{
-                  background: 'none',
-                  padding: 0,
-                  borderRadius: 8,
-                  ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                  boxSizing: 'border-box',
-                  ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
-                }}
-              >
-                <AnimatedCard card={card} width={cardWidth} />
-              </button>
-            ))}
-          </div>
-        )}
+        {humanPlayer &&
+          (isMobile ? (
+            <MobileHandGrid
+              cards={humanPlayer.cards}
+              selectedIndices={selectedCardIndices}
+              onToggle={toggleCard}
+              cardWidth={cardWidth}
+              dataTutorial="ht-player-hand"
+            />
+          ) : (
+            <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ht-player-hand">
+              {humanPlayer.cards.map((card, idx) => (
+                <button
+                  type="button"
+                  key={`${card.design}-${card.value}-${idx}`}
+                  onClick={() => toggleCard(idx)}
+                  aria-label={cardAlt(card)}
+                  aria-pressed={selectedCardIndices.includes(idx)}
+                  className={`transition-transform ${focusRingCard}`}
+                  style={{
+                    background: 'none',
+                    padding: 0,
+                    borderRadius: 8,
+                    ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <AnimatedCard card={card} width={cardWidth} />
+                </button>
+              ))}
+            </div>
+          ))}
 
         <ErrorAlert message={error ?? hintError} />
 

@@ -1042,7 +1042,7 @@ describe('NapoleonPage', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 
-  it('renders mobile viewport with horizontal scroll hand', async () => {
+  it('renders mobile viewport with 2-row hand grid', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     try {
@@ -1050,8 +1050,9 @@ describe('NapoleonPage', () => {
       renderWithProviders(<NapoleonPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       const hand = document.querySelector('[data-tutorial="np-player-hand"]');
-      expect(hand?.className).toContain('overflow-x-auto');
-      expect(hand?.className).not.toContain('flex-wrap');
+      expect(hand).toBeInTheDocument();
+      const rows = hand?.querySelectorAll('[data-testid="hand-row"]');
+      expect(rows?.length).toBeGreaterThanOrEqual(1);
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
@@ -1066,7 +1067,7 @@ describe('NapoleonPage', () => {
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       const hand = document.querySelector('[data-tutorial="np-player-hand"]');
       expect(hand?.className).toContain('flex-wrap');
-      expect(hand?.className).not.toContain('overflow-x-auto');
+      expect(hand?.querySelectorAll('[data-testid="hand-row"]')).toHaveLength(0);
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
