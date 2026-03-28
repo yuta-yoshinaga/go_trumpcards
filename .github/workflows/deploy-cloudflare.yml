@@ -70,13 +70,19 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           WORKER_NAME: ${{ matrix.worker }}
           IS_PRODUCTION: ${{ github.ref == 'refs/heads/master' && 'true' || 'false' }}
+          CORS_ORIGINS_PROD: ${{ vars.CORS_ALLOWED_ORIGINS_PROD }}
+          CORS_ORIGINS_STAGING: ${{ vars.CORS_ALLOWED_ORIGINS_STAGING }}
         run: |
           SUFFIX=""
+          CORS_ORIGINS="$CORS_ORIGINS_PROD"
           if [ "$IS_PRODUCTION" != "true" ]; then
             SUFFIX="-staging"
+            CORS_ORIGINS="$CORS_ORIGINS_STAGING"
           fi
+          DEPLOY_NAME="go-trumpcards-${WORKER_NAME}${SUFFIX}"
           cd "workers/${WORKER_NAME}"
-          bunx wrangler deploy --name "go-trumpcards-${WORKER_NAME}${SUFFIX}"
+          bunx wrangler deploy --name "$DEPLOY_NAME"
+          echo "$CORS_ORIGINS" | bunx wrangler secret put CORS_ALLOWED_ORIGINS --name "$DEPLOY_NAME"
 
   deploy-pages:
     name: Deploy Frontend (Pages)
