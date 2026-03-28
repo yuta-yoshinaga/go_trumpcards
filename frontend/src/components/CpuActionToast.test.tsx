@@ -2,9 +2,16 @@ import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CpuActionToast } from './CpuActionToast';
 
+const mockT = vi.fn((key: string) => key);
+vi.mock('react-i18next', async () => ({
+  ...(await vi.importActual('react-i18next')),
+  useTranslation: () => ({ t: mockT }),
+}));
+
 describe('CpuActionToast', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    mockT.mockClear();
   });
 
   afterEach(() => {
@@ -25,7 +32,7 @@ describe('CpuActionToast', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
     expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.getByText(/Player 1/)).toBeInTheDocument();
+    expect(mockT).toHaveBeenCalledWith('player.player', { idx: 1 });
   });
 
   it('auto-dismisses after 3 seconds', () => {

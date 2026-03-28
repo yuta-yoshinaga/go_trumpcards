@@ -188,6 +188,7 @@ function OmahaPageContent() {
   const isAddonPhase = phase === OmahaPhase.REBUY && state?.rebuyPhaseType === OmahaRebuyPhaseType.ADDON;
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
+  const cpuPlayers = useMemo(() => state?.players?.filter((player) => !player.isHuman) ?? [], [state?.players]);
 
   const actionBindings = useMemo(
     () => [
@@ -259,21 +260,21 @@ function OmahaPageContent() {
         </div>
 
         {/* CPU players (accordion, collapsed on mobile) */}
-        <CpuAccordion playerCount={state?.players?.filter((p) => !p.isHuman).length ?? 0} dataTutorial="oh-cpu-area">
-          {state?.players
-            ?.filter((p) => !p.isHuman)
-            .map((p) => (
-              <CpuPlayerCard
-                key={p.id}
-                player={p}
-                showCards={isShowdown}
-                faceDownCount={4}
-                showHandName={isShowdown}
-                extraInfo={
-                  p.totalHands > 0 ? <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} /> : undefined
-                }
-              />
-            ))}
+        <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="oh-cpu-area">
+          {cpuPlayers.map((player) => (
+            <CpuPlayerCard
+              key={player.id}
+              player={player}
+              showCards={isShowdown}
+              faceDownCount={4}
+              showHandName={isShowdown}
+              extraInfo={
+                player.totalHands > 0 ? (
+                  <HudStats vpip={player.vpip} pfr={player.pfr} threeBet={player.threeBet} af={player.af} />
+                ) : undefined
+              }
+            />
+          ))}
         </CpuAccordion>
 
         {/* CPU actions: toast on mobile, inline log on desktop */}

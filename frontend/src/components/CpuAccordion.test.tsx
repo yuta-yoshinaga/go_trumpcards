@@ -1,6 +1,12 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CpuAccordion } from './CpuAccordion';
+
+const mockT = vi.fn((key: string) => key);
+vi.mock('react-i18next', async () => ({
+  ...(await vi.importActual('react-i18next')),
+  useTranslation: () => ({ t: mockT }),
+}));
 
 vi.mock('../hooks/useCardDimensions', () => ({
   useIsMobile: vi.fn(() => false),
@@ -11,6 +17,10 @@ const { useIsMobile } = await import('../hooks/useCardDimensions');
 const mockUseIsMobile = vi.mocked(useIsMobile);
 
 describe('CpuAccordion', () => {
+  beforeEach(() => {
+    mockT.mockClear();
+  });
+
   it('renders a details element with summary showing player count', () => {
     render(
       <CpuAccordion playerCount={3}>
@@ -18,7 +28,7 @@ describe('CpuAccordion', () => {
       </CpuAccordion>,
     );
     expect(screen.getByTestId('cpu-accordion')).toBeInTheDocument();
-    expect(screen.getByText(/CPU対戦相手 \(3\)/)).toBeInTheDocument();
+    expect(mockT).toHaveBeenCalledWith('label.cpuOpponents', { count: 3 });
     expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 
