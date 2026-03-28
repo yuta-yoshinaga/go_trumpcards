@@ -2,8 +2,15 @@ name = "go-trumpcards-solo"
 main = "./build/worker.mjs"
 compatibility_date = "2024-09-23"
 
-# Placeholder for Phase 2+: KV session persistence (not yet wired in code)
+# Production KV (Phase 2+: not yet wired in code)
 [[kv_namespaces]]
 binding = "GAME_SESSIONS"
-id = "TBD_SOLO_KV_ID"
-preview_id = "TBD_SOLO_KV_PREVIEW_ID"
+id = "766288ab9a9441d7975560a003a1f56f"
+preview_id = "b29980931c9a4a60a945876eb7655f48"
+
+[env.staging]
+name = "go-trumpcards-solo-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "GAME_SESSIONS"
+id = "d44d7ffaff4148929c3f27019188a7fc"
