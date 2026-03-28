@@ -171,7 +171,7 @@ function MemoryPageContent() {
                 data-testid={`board-${idx.toString()}`}
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
-                className={`relative aspect-[2/3] lg:aspect-auto rounded border ${focusRingWhite} ${
+                className={`memory-card relative aspect-[2/3] lg:aspect-auto rounded border ${focusRingWhite} ${
                   bc.taken
                     ? 'hidden'
                     : bc.faceUp
@@ -179,10 +179,14 @@ function MemoryPageContent() {
                       : 'bg-blue-800 border-blue-600 hover:border-yellow-400'
                 } transition-all`}
               >
-                {bc.faceUp && bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
-                {!bc.taken && !bc.faceUp && (
-                  <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
-                )}
+                <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>
+                  <div className="memory-card-back">
+                    <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
+                  </div>
+                  <div className="memory-card-front">
+                    {bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
+                  </div>
+                </div>
               </button>
             ))}
           </div>
