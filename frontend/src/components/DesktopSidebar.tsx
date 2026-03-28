@@ -164,10 +164,10 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
           gameCategories.map(({ labelKey, icon: catIcon, routes }) => {
             const hasActivePage = routes.some(({ path }) => path === pathname);
             return (
-              <details key={labelKey} className="sidebar-category mb-1" open={hasActivePage || undefined}>
+              <details key={labelKey} className="sidebar-category mb-1" open={hasActivePage}>
                 <summary className="text-gray-400 text-[10px] uppercase tracking-wider px-1 py-1 font-semibold flex items-center gap-1 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
                   <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
-                  <span className="ml-auto text-[8px] text-gray-500" aria-hidden="true">
+                  <span className="ml-auto text-[8px] text-gray-500 sidebar-category-chevron" aria-hidden="true">
                     ▶
                   </span>
                 </summary>

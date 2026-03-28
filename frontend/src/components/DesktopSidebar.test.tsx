@@ -194,38 +194,47 @@ describe('DesktopSidebar', () => {
   describe('accordion categories', () => {
     it('renders categories as details elements', () => {
       renderSidebar();
-      const details = document.querySelectorAll('details.sidebar-category');
-      expect(details.length).toBe(gameCategories.length);
+      for (const { labelKey } of gameCategories) {
+        const summary = screen.getByText(labelFor(labelKey));
+        expect(summary.closest('details')).toBeInTheDocument();
+      }
     });
 
     it('expands category containing the active game', () => {
       renderSidebar('/poker');
-      const details = document.querySelectorAll('details.sidebar-category');
-      // Poker is in the second category (index 1)
-      expect(details[1]).toHaveAttribute('open');
+      const pokerCategory = screen.getByText(labelFor('nav.category.poker'));
+      expect(pokerCategory.closest('details')).toHaveAttribute('open');
     });
 
     it('collapses categories without the active game', () => {
       renderSidebar('/poker');
-      const details = document.querySelectorAll('details.sidebar-category');
-      // Table games (index 0) should be collapsed
-      expect(details[0]).not.toHaveAttribute('open');
-      // Solitaire (index 4) should be collapsed
-      expect(details[4]).not.toHaveAttribute('open');
+      const tableCategory = screen.getByText(labelFor('nav.category.table'));
+      expect(tableCategory.closest('details')).not.toHaveAttribute('open');
+      const solitaireCategory = screen.getByText(labelFor('nav.category.solitaire'));
+      expect(solitaireCategory.closest('details')).not.toHaveAttribute('open');
     });
 
     it('expands table category by default when on home page', () => {
       renderSidebar('/');
-      const details = document.querySelectorAll('details.sidebar-category');
-      // BlackJack is at "/" in the table category (index 0)
-      expect(details[0]).toHaveAttribute('open');
+      const tableCategory = screen.getByText(labelFor('nav.category.table'));
+      expect(tableCategory.closest('details')).toHaveAttribute('open');
+    });
+
+    it('toggles category open/closed on click', () => {
+      renderSidebar('/poker');
+      const tableCategory = screen.getByText(labelFor('nav.category.table'));
+      expect(tableCategory.closest('details')).not.toHaveAttribute('open');
+      fireEvent.click(tableCategory);
+      expect(tableCategory.closest('details')).toHaveAttribute('open');
+      fireEvent.click(tableCategory);
+      expect(tableCategory.closest('details')).not.toHaveAttribute('open');
     });
   });
 
   describe('search icon', () => {
     it('renders a search icon in the search area', () => {
       renderSidebar();
-      expect(document.querySelector('[data-testid="search-icon"]')).toBeInTheDocument();
+      expect(screen.getByTestId('search-icon')).toBeInTheDocument();
     });
   });
 
