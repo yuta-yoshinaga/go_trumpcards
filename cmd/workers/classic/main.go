@@ -28,7 +28,7 @@ func main() {
 		hearts := domain.NewHearts(domain.NewTrumpCards(0), players, config)
 		return usecase.NewHeartsInteractor(hearts, new(presenter.HeartsWebPresenter))
 	})
-	mux.HandleFunc("POST /hearts/exec", htc.Exec)
+	mux.HandleFunc("/hearts/exec", htc.Exec)
 
 	// Spades
 	spc := controller.NewSpadesWebController(func() usecase.SpadesInteractorIF {
@@ -42,7 +42,7 @@ func main() {
 		spades := domain.NewSpades(domain.NewTrumpCards(0), players, config)
 		return usecase.NewSpadesInteractor(spades, new(presenter.SpadesWebPresenter))
 	})
-	mux.HandleFunc("POST /spades/exec", spc.Exec)
+	mux.HandleFunc("/spades/exec", spc.Exec)
 
 	// Euchre
 	euc := controller.NewEuchreWebController(func() usecase.EuchreInteractorIF {
@@ -56,7 +56,7 @@ func main() {
 		euchre := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, config)
 		return usecase.NewEuchreInteractor(euchre, new(presenter.EuchreWebPresenter))
 	})
-	mux.HandleFunc("POST /euchre/exec", euc.Exec)
+	mux.HandleFunc("/euchre/exec", euc.Exec)
 
 	// Napoleon
 	npc := controller.NewNapoleonWebController(func() usecase.NapoleonInteractorIF {
@@ -70,7 +70,7 @@ func main() {
 		napoleon := domain.NewNapoleon(domain.NewTrumpCards(1), players, config)
 		return usecase.NewNapoleonInteractor(napoleon, new(presenter.NapoleonWebPresenter))
 	})
-	mux.HandleFunc("POST /napoleon/exec", npc.Exec)
+	mux.HandleFunc("/napoleon/exec", npc.Exec)
 
 	// Old Maid
 	omc := controller.NewOldMaidWebController(func() usecase.OldMaidInteractorIF {
@@ -83,7 +83,7 @@ func main() {
 		oldMaid := domain.NewOldMaid(domain.NewTrumpCards(1), players)
 		return usecase.NewOldMaidInteractor(oldMaid, new(presenter.OldMaidWebPresenter))
 	})
-	mux.HandleFunc("POST /oldmaid/exec", omc.Exec)
+	mux.HandleFunc("/oldmaid/exec", omc.Exec)
 
 	// Doubt
 	dwc := controller.NewDoubtWebController(func() usecase.DoubtInteractorIF {
@@ -96,7 +96,7 @@ func main() {
 		doubt := domain.NewDoubt(domain.NewTrumpCards(0), players)
 		return usecase.NewDoubtInteractor(doubt, new(presenter.DoubtWebPresenter))
 	})
-	mux.HandleFunc("POST /doubt/exec", dwc.Exec)
+	mux.HandleFunc("/doubt/exec", dwc.Exec)
 
 	// Daifugo
 	dgc := controller.NewDaifugoWebController(func() usecase.DaifugoInteractorIF {
@@ -110,7 +110,7 @@ func main() {
 		daifugo := domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config)
 		return usecase.NewDaifugoInteractor(daifugo, new(presenter.DaifugoWebPresenter))
 	})
-	mux.HandleFunc("POST /daifugo/exec", dgc.Exec)
+	mux.HandleFunc("/daifugo/exec", dgc.Exec)
 
 	// Sevens
 	sgc := controller.NewSevensWebController(func() usecase.SevensInteractorIF {
@@ -124,7 +124,7 @@ func main() {
 		sevens := domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
 		return usecase.NewSevensInteractor(sevens, new(presenter.SevensWebPresenter))
 	})
-	mux.HandleFunc("POST /sevens/exec", sgc.Exec)
+	mux.HandleFunc("/sevens/exec", sgc.Exec)
 
 	// Crazy Eights
 	cec := controller.NewCrazyEightsWebController(func() usecase.CrazyEightsInteractorIF {
@@ -138,7 +138,7 @@ func main() {
 		ce := domain.NewCrazyEights(domain.NewTrumpCards(0), players, config)
 		return usecase.NewCrazyEightsInteractor(ce, new(presenter.CrazyEightsWebPresenter))
 	})
-	mux.HandleFunc("POST /crazyeights/exec", cec.Exec)
+	mux.HandleFunc("/crazyeights/exec", cec.Exec)
 
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(os.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {

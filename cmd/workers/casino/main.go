@@ -23,7 +23,7 @@ func main() {
 			new(presenter.BlackJackWebPresenter),
 		)
 	})
-	mux.HandleFunc("POST /blackjack/exec", bjc.Exec)
+	mux.HandleFunc("/blackjack/exec", bjc.Exec)
 
 	// Baccarat
 	bcc := controller.NewBaccaratWebController(func() usecase.BaccaratInteractorIF {
@@ -32,7 +32,7 @@ func main() {
 			new(presenter.BaccaratWebPresenter),
 		)
 	})
-	mux.HandleFunc("POST /baccarat/exec", bcc.Exec)
+	mux.HandleFunc("/baccarat/exec", bcc.Exec)
 
 	// Poker
 	pkc := controller.NewPokerWebController(func() usecase.PokerInteractorIF {
@@ -46,7 +46,7 @@ func main() {
 		poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
 		return usecase.NewPokerInteractor(poker, new(presenter.PokerWebPresenter))
 	})
-	mux.HandleFunc("POST /poker/exec", pkc.Exec)
+	mux.HandleFunc("/poker/exec", pkc.Exec)
 
 	// Texas Hold'em
 	hmc := controller.NewHoldemWebController(func() usecase.HoldemInteractorIF {
@@ -54,7 +54,7 @@ func main() {
 		holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
 		return usecase.NewHoldemInteractor(holdem, new(presenter.HoldemWebPresenter))
 	})
-	mux.HandleFunc("POST /holdem/exec", hmc.Exec)
+	mux.HandleFunc("/holdem/exec", hmc.Exec)
 
 	// Omaha
 	ohc := controller.NewOmahaWebController(func() usecase.OmahaInteractorIF {
@@ -62,7 +62,7 @@ func main() {
 		omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
 		return usecase.NewOmahaInteractor(omaha, new(presenter.OmahaWebPresenter))
 	})
-	mux.HandleFunc("POST /omaha/exec", ohc.Exec)
+	mux.HandleFunc("/omaha/exec", ohc.Exec)
 
 	// Short Deck
 	skc := controller.NewShortDeckWebController(func() usecase.ShortDeckInteractorIF {
@@ -70,7 +70,7 @@ func main() {
 		sd := domain.NewShortDeck(domain.NewTrumpCardsShortDeck(), domain.NewShortDeckPlayersForTable(cfg.TableSize), cfg)
 		return usecase.NewShortDeckInteractor(sd, new(presenter.ShortDeckWebPresenter))
 	})
-	mux.HandleFunc("POST /shortdeck/exec", skc.Exec)
+	mux.HandleFunc("/shortdeck/exec", skc.Exec)
 
 	// Indian Poker
 	ipc := controller.NewIndianPokerWebController(func() usecase.IndianPokerInteractorIF {
@@ -78,7 +78,7 @@ func main() {
 		ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
 		return usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerWebPresenter))
 	})
-	mux.HandleFunc("POST /indianpoker/exec", ipc.Exec)
+	mux.HandleFunc("/indianpoker/exec", ipc.Exec)
 
 	// Video Poker
 	vpc := controller.NewVideoPokerWebController(func() usecase.VideoPokerInteractorIF {
@@ -87,7 +87,7 @@ func main() {
 			new(presenter.VideoPokerWebPresenter),
 		)
 	})
-	mux.HandleFunc("POST /videopoker/exec", vpc.Exec)
+	mux.HandleFunc("/videopoker/exec", vpc.Exec)
 
 	// Deuces Wild
 	dwc := controller.NewVideoPokerWebController(func() usecase.VideoPokerInteractorIF {
@@ -96,7 +96,7 @@ func main() {
 			new(presenter.VideoPokerWebPresenter),
 		)
 	})
-	mux.HandleFunc("POST /deuceswild/exec", dwc.Exec)
+	mux.HandleFunc("/deuceswild/exec", dwc.Exec)
 
 	// Joker Poker
 	jpc := controller.NewVideoPokerWebController(func() usecase.VideoPokerInteractorIF {
@@ -105,7 +105,7 @@ func main() {
 			new(presenter.VideoPokerWebPresenter),
 		)
 	})
-	mux.HandleFunc("POST /jokerpoker/exec", jpc.Exec)
+	mux.HandleFunc("/jokerpoker/exec", jpc.Exec)
 
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(os.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
