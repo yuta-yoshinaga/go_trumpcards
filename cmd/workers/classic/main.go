@@ -1,8 +1,11 @@
+//go:build js && wasm
+
 package main
 
 import (
 	"net/http"
-	"os"
+
+	"github.com/syumai/workers/cloudflare"
 
 	"github.com/syumai/workers"
 
@@ -141,7 +144,7 @@ func main() {
 	mux.HandleFunc("/crazyeights/exec", cec.Exec)
 
 	var handler http.Handler = mux
-	if origins := corsmw.ParseOrigins(os.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
+	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)
 	}
 	workers.Serve(handler)
