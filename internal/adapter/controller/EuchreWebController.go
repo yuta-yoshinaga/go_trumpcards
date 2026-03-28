@@ -6,8 +6,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // EuchreWebInput ユーカーWebインプット
@@ -111,7 +109,7 @@ func newEuchreDefaultOutput(msg string) *EuchreWebOutput {
 	}
 }
 
-func euchreDispatch(bc *baseController, w rest.ResponseWriter, ei usecase.EuchreInteractorIF, param EuchreWebInput, newDefault func(string) *EuchreWebOutput) bool {
+func euchreDispatch(bc *baseController, w http.ResponseWriter, ei usecase.EuchreInteractorIF, param EuchreWebInput, newDefault func(string) *EuchreWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, ei.ResetWithConfig(param.ToConfig()))

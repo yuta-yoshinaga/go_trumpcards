@@ -7,7 +7,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
 )
 
 // PokerWebInput ポーカーWebインプット
@@ -143,7 +143,7 @@ func newPokerDefaultOutput(msg string) *PokerWebOutput {
 	}
 }
 
-func pokerDispatch(bc *baseController, w rest.ResponseWriter, pi usecase.PokerInteractorIF, param PokerWebInput, _ func(string) *PokerWebOutput) bool {
+func pokerDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PokerInteractorIF, param PokerWebInput, _ func(string) *PokerWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, pi.ResetWithConfig(param.ToConfig(), param.Profile))

@@ -4,8 +4,6 @@ import (
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // FreeCellWebInput フリーセルWebインプット
@@ -62,7 +60,7 @@ func newFreeCellDefaultOutput(msg string) *FreeCellWebOutput {
 	}
 }
 
-func freeCellDispatch(bc *baseController, w rest.ResponseWriter, fi usecase.FreeCellInteractorIF, param FreeCellWebInput, newDefault func(string) *FreeCellWebOutput) bool {
+func freeCellDispatch(bc *baseController, w http.ResponseWriter, fi usecase.FreeCellInteractorIF, param FreeCellWebInput, newDefault func(string) *FreeCellWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, fi.Reset())
@@ -84,7 +82,7 @@ func freeCellDispatch(bc *baseController, w rest.ResponseWriter, fi usecase.Free
 	return true
 }
 
-func freeCellMoveDispatch(bc *baseController, w rest.ResponseWriter, fi usecase.FreeCellInteractorIF, param FreeCellWebInput, newDefault func(string) *FreeCellWebOutput) bool {
+func freeCellMoveDispatch(bc *baseController, w http.ResponseWriter, fi usecase.FreeCellInteractorIF, param FreeCellWebInput, newDefault func(string) *FreeCellWebOutput) bool {
 	if param.From == nil || param.To == nil {
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
 		return true

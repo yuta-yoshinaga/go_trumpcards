@@ -4,7 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
 )
 
 // OmahaWebInput オマハホールデムWebインプット (HoldemWebInputと同一構造)
@@ -32,7 +32,7 @@ func newOmahaDefaultOutput(msg string) *OmahaWebOutput {
 	}
 }
 
-func omahaDispatch(bc *baseController, w rest.ResponseWriter, ogi usecase.OmahaInteractorIF, param OmahaWebInput, newDefault func(string) *OmahaWebOutput) bool {
+func omahaDispatch(bc *baseController, w http.ResponseWriter, ogi usecase.OmahaInteractorIF, param OmahaWebInput, newDefault func(string) *OmahaWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		cfg, err := param.ToConfig()

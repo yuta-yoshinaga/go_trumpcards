@@ -9,16 +9,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	corsmw "github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/cors"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // TrumpCardsWeb トランプカードゲームWebクラス
@@ -260,37 +258,11 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 
 // Exec ゲーム実行
 func (web *TrumpCardsWeb) Exec() error {
-	api := rest.NewApi()
-	allowedOriginsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
-	if allowedOriginsStr == "" && os.Getenv("APP_ENV") != "production" {
-		allowedOriginsStr = "http://localhost:5173,http://localhost:8080"
-	}
-	if allowedOriginsStr != "" {
-		allowedOrigins := make(map[string]bool, strings.Count(allowedOriginsStr, ",")+1)
-		for _, origin := range strings.Split(allowedOriginsStr, ",") {
-			if o := strings.TrimSpace(origin); o != "" {
-				allowedOrigins[o] = true
-			}
-		}
-		api.Use(&rest.CorsMiddleware{
-			RejectNonCorsRequests: false,
-			OriginValidator: func(origin string, request *rest.Request) bool {
-				return allowedOrigins[origin]
-			},
-			AllowedMethods:                []string{"POST"},
-			AllowedHeaders:                []string{"Content-Type"},
-			AccessControlAllowCredentials: false,
-			AccessControlMaxAge:           3600,
-		})
-	}
-	stack := rest.DefaultDevStack
-	if os.Getenv("APP_ENV") == "production" {
-		stack = rest.DefaultProdStack
-	}
-	api.Use(stack...)
+	mux := http.NewServeMux()
+
 	type apiRoute struct {
 		path    string
-		handler rest.HandlerFunc
+		handler http.HandlerFunc
 	}
 	routes := []apiRoute{
 		{"/blackjack/exec", web.bjc.Exec},
@@ -320,23 +292,21 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/pyramid/exec", web.pyc.Exec},
 		{"/cribbage/exec", web.cbc.Exec},
 	}
-	restRoutes := make([]*rest.Route, len(routes))
-	for i, r := range routes {
-		restRoutes[i] = rest.Post(r.path, r.handler)
-	}
-	router, err := rest.MakeRouter(restRoutes...)
-	if err != nil {
-		slog.Error("failed to create router", "error", err)
-		return fmt.Errorf("failed to create router: %w", err)
-	}
-	api.SetApp(router)
-	mux := http.NewServeMux()
-	apiHandler := api.MakeHandler()
 	for _, r := range routes {
-		mux.Handle(r.path, apiHandler)
+		mux.HandleFunc("POST "+r.path, r.handler)
 	}
 	RegisterSwaggerRoutes(mux)
 	mux.Handle("/", http.FileServer(http.Dir("public")))
+
+	// Apply CORS middleware if allowed origins are configured.
+	allowedOriginsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if allowedOriginsStr == "" && os.Getenv("APP_ENV") != "production" {
+		allowedOriginsStr = "http://localhost:5173,http://localhost:8080"
+	}
+	var handler http.Handler = mux
+	if origins := corsmw.ParseOrigins(allowedOriginsStr); origins != nil {
+		handler = corsmw.Middleware(origins, mux)
+	}
 	const (
 		readTimeout     = 10 * time.Second
 		writeTimeout    = 30 * time.Second
@@ -345,7 +315,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	)
 	srv := &http.Server{
 		Addr:         getListenPort(),
-		Handler:      mux,
+		Handler:      handler,
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 		IdleTimeout:  idleTimeout,
@@ -404,7 +374,11 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.npc.Stop()
 	web.ipc.Stop()
 	web.vpc.Stop()
+	web.dwwc.Stop()
+	web.jpwc.Stop()
 	web.euc.Stop()
+	web.pyc.Stop()
+	web.cbc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

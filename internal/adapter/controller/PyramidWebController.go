@@ -4,8 +4,6 @@ import (
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // PyramidWebInput ピラミッドWebインプット
@@ -67,7 +65,7 @@ func newPyramidDefaultOutput(msg string) *PyramidWebOutput {
 	}
 }
 
-func pyramidDispatch(bc *baseController, w rest.ResponseWriter, pi usecase.PyramidInteractorIF, param PyramidWebInput, newDefault func(string) *PyramidWebOutput) bool {
+func pyramidDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PyramidInteractorIF, param PyramidWebInput, newDefault func(string) *PyramidWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, pi.Reset())
@@ -89,7 +87,7 @@ func pyramidDispatch(bc *baseController, w rest.ResponseWriter, pi usecase.Pyram
 	return true
 }
 
-func pyramidRemoveDispatch(bc *baseController, w rest.ResponseWriter, pi usecase.PyramidInteractorIF, param PyramidWebInput, newDefault func(string) *PyramidWebOutput) bool {
+func pyramidRemoveDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PyramidInteractorIF, param PyramidWebInput, newDefault func(string) *PyramidWebOutput) bool {
 	if param.Card1 == nil {
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: card1 is required."))
 		return true

@@ -6,8 +6,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // GinRummyWebInput ジンラミーWebインプット
@@ -95,7 +93,7 @@ func newGinRummyDefaultOutput(msg string) *GinRummyWebOutput {
 	}
 }
 
-func ginRummyDispatch(bc *baseController, w rest.ResponseWriter, ci usecase.GinRummyInteractorIF, param GinRummyWebInput, newDefault func(string) *GinRummyWebOutput) bool {
+func ginRummyDispatch(bc *baseController, w http.ResponseWriter, ci usecase.GinRummyInteractorIF, param GinRummyWebInput, newDefault func(string) *GinRummyWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, ci.ResetWithConfig(param.ToConfig()))

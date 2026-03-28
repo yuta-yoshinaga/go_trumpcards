@@ -1,184 +1,163 @@
-package controller
+//go:build test
+
+package controller_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	mockUsecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-func newPokerTestHandler(mi *mockUsecase.MockPokerInteractor) (*rest.Api, *PokerWebController) {
-	api := rest.NewApi()
-	api.Use(rest.DefaultDevStack...)
-	pwc := NewPokerWebController(func() usecase.PokerInteractorIF {
+func newPokerTestController(mi *mockUsecase.MockPokerInteractor) *controller.PokerWebController {
+	pwc := controller.NewPokerWebController(func() usecase.PokerInteractorIF {
 		return mi
 	})
-	router, _ := rest.MakeRouter(
-		rest.Post("/poker/exec", pwc.Exec),
-	)
-	api.SetApp(router)
-	return api, pwc
+	return pwc
 }
 
 // --- reset command ---
 
 func TestPokerWebController_Reset_Default(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1,"message":""}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "reset",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "reset",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Reset_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1,"message":""}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "r",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "r",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Reset_WithCpuCount_Valid(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	cfg.CpuCount = 2
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "reset",
-				"sessionId": "s1",
-				"cpuCount":  2,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "reset",
+		"sessionId": "s1",
+		"cpuCount":  2,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Reset_WithCpuCount_BelowMin(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (CpuCount=3)
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "reset",
-				"sessionId": "s1",
-				"cpuCount":  0,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "reset",
+		"sessionId": "s1",
+		"cpuCount":  0,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Reset_WithCpuCount_AboveMax(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (CpuCount=3)
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "reset",
-				"sessionId": "s1",
-				"cpuCount":  5,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "reset",
+		"sessionId": "s1",
+		"cpuCount":  5,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Reset_WithJokerCount_Valid(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	cfg.JokerCount = 1
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":    "reset",
-				"sessionId":  "s1",
-				"jokerCount": 1,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":    "reset",
+		"sessionId":  "s1",
+		"jokerCount": 1,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Reset_WithJokerCount_BelowMin(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (JokerCount=0)
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":    "reset",
-				"sessionId":  "s1",
-				"jokerCount": -1,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":    "reset",
+		"sessionId":  "s1",
+		"jokerCount": -1,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Reset_WithJokerCount_AboveMax(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (JokerCount=0)
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":    "reset",
-				"sessionId":  "s1",
-				"jokerCount": 5,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":    "reset",
+		"sessionId":  "s1",
+		"jokerCount": 5,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Reset_WithBothCpuAndJoker(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
@@ -186,14 +165,12 @@ func TestPokerWebController_Reset_WithBothCpuAndJoker(t *testing.T) {
 	cfg.JokerCount = 2
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":    "reset",
-				"sessionId":  "s1",
-				"cpuCount":   2,
-				"jokerCount": 2,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":    "reset",
+		"sessionId":  "s1",
+		"cpuCount":   2,
+		"jokerCount": 2,
+	})
 	recorded.CodeIs(200)
 }
 
@@ -201,51 +178,45 @@ func TestPokerWebController_Reset_WithBothCpuAndJoker(t *testing.T) {
 
 func TestPokerWebController_Exchange_WithIndices(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Exchange", []int{0, 2}).Return(`{"phase":2}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "exchange",
-				"sessionId": "s1",
-				"indices":   []int{0, 2},
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "exchange",
+		"sessionId": "s1",
+		"indices":   []int{0, 2},
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Exchange_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Exchange", []int{1}).Return(`{"phase":2}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "e",
-				"sessionId": "s1",
-				"indices":   []int{1},
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "e",
+		"sessionId": "s1",
+		"indices":   []int{1},
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Exchange_NilIndices(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Exchange", []int{}).Return(`{"phase":2}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "exchange",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "exchange",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
@@ -253,33 +224,29 @@ func TestPokerWebController_Exchange_NilIndices(t *testing.T) {
 
 func TestPokerWebController_Stand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Stand").Return(`{"phase":3}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "stand",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "stand",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Stand_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Stand").Return(`{"phase":3}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "s",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "s",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
@@ -287,33 +254,29 @@ func TestPokerWebController_Stand_ShortCommand(t *testing.T) {
 
 func TestPokerWebController_Fold(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionFold, 0, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "fold",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "fold",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Fold_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionFold, 0, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "f",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "f",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
@@ -321,33 +284,29 @@ func TestPokerWebController_Fold_ShortCommand(t *testing.T) {
 
 func TestPokerWebController_Check(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionCheck, 0, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "check",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "check",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Check_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionCheck, 0, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "ck",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "ck",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
@@ -355,33 +314,29 @@ func TestPokerWebController_Check_ShortCommand(t *testing.T) {
 
 func TestPokerWebController_Call(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionCall, 0, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "call",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "call",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Call_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionCall, 0, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "c",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "c",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
@@ -389,70 +344,62 @@ func TestPokerWebController_Call_ShortCommand(t *testing.T) {
 
 func TestPokerWebController_Bet_ValidAmount(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionBet, 20, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "bet",
-				"sessionId": "s1",
-				"amount":    20,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "bet",
+		"sessionId": "s1",
+		"amount":    20,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Bet_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionBet, 10, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "b",
-				"sessionId": "s1",
-				"amount":    10,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "b",
+		"sessionId": "s1",
+		"amount":    10,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Bet_AmountZero(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	// amount=0 passes through to domain which validates
 	mi.On("Action", domain.PokerActionBet, 0, 0).Return(`{"phase":1,"message":"error"}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "bet",
-				"sessionId": "s1",
-				"amount":    0,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "bet",
+		"sessionId": "s1",
+		"amount":    0,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Bet_AmountMissing(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	// No amount field => defaults to 0, passes through to domain
 	mi.On("Action", domain.PokerActionBet, 0, 0).Return(`{"phase":1,"message":"error"}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "b",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "b",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
@@ -460,70 +407,62 @@ func TestPokerWebController_Bet_AmountMissing(t *testing.T) {
 
 func TestPokerWebController_Raise_ValidAmount(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionRaise, 30, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "raise",
-				"sessionId": "s1",
-				"amount":    30,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "raise",
+		"sessionId": "s1",
+		"amount":    30,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Raise_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionRaise, 10, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "ra",
-				"sessionId": "s1",
-				"amount":    10,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "ra",
+		"sessionId": "s1",
+		"amount":    10,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Raise_AmountZero(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	// amount=0 passes through to domain which validates
 	mi.On("Action", domain.PokerActionRaise, 0, 0).Return(`{"phase":1,"message":"error"}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "ra",
-				"sessionId": "s1",
-				"amount":    0,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "ra",
+		"sessionId": "s1",
+		"amount":    0,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Raise_AmountMissing(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	// No amount => defaults to 0, passes through to domain
 	mi.On("Action", domain.PokerActionRaise, 0, 0).Return(`{"phase":1,"message":"error"}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "raise",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "raise",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
@@ -531,33 +470,29 @@ func TestPokerWebController_Raise_AmountMissing(t *testing.T) {
 
 func TestPokerWebController_AllIn(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionAllIn, 0, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "allin",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "allin",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_AllIn_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Action", domain.PokerActionAllIn, 0, 0).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "a",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "a",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
@@ -565,51 +500,45 @@ func TestPokerWebController_AllIn_ShortCommand(t *testing.T) {
 
 func TestPokerWebController_Odds(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Odds", []int{0, 2}).Return(`{"phase":2,"odds":[]}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "odds",
-				"sessionId": "s1",
-				"indices":   []int{0, 2},
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "odds",
+		"sessionId": "s1",
+		"indices":   []int{0, 2},
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Odds_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Odds", []int{1}).Return(`{"phase":2,"odds":[]}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "o",
-				"sessionId": "s1",
-				"indices":   []int{1},
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "o",
+		"sessionId": "s1",
+		"indices":   []int{1},
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Odds_NilIndices(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mi.On("Odds", []int{}).Return(`{"phase":2}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "odds",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "odds",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
@@ -617,29 +546,25 @@ func TestPokerWebController_Odds_NilIndices(t *testing.T) {
 
 func TestPokerWebController_Quit(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "quit",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "quit",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Quit_ShortCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "q",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "q",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(200)
 }
 
@@ -647,22 +572,19 @@ func TestPokerWebController_Quit_ShortCommand(t *testing.T) {
 
 func TestPokerWebController_UnknownCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	// Must create session first
 	cfg := domain.DefaultPokerConfig()
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
-	test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{"command": "reset", "sessionId": "s1"}))
+	execRequest(t, pwc.Exec,
+		map[string]interface{}{"command": "reset", "sessionId": "s1"})
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "xyz",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "xyz",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(400)
 }
 
@@ -670,79 +592,69 @@ func TestPokerWebController_UnknownCommand(t *testing.T) {
 
 func TestPokerWebController_EmptyBody(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec", nil))
+	recorded := execRequest(t, pwc.Exec, nil)
 	recorded.CodeIs(400)
 }
 
 func TestPokerWebController_NoCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(400)
 }
 
 func TestPokerWebController_EmptyCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "",
-				"sessionId": "s1",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "",
+		"sessionId": "s1",
+	})
 	recorded.CodeIs(400)
 }
 
 func TestPokerWebController_NoSessionId(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command": "reset",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command": "reset",
+	})
 	recorded.CodeIs(400)
 }
 
 func TestPokerWebController_EmptySessionId(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "reset",
-				"sessionId": "",
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "reset",
+		"sessionId": "",
+	})
 	recorded.CodeIs(400)
 }
 
 func TestPokerWebController_LongSessionId(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "reset",
-				"sessionId": strings.Repeat("a", SessionMaxIDLen+1),
-			}))
+	recorded := execRequest(t, pwc.Exec,
+		map[string]interface{}{
+			"command":   "reset",
+			"sessionId": strings.Repeat("a", controller.SessionMaxIDLen+1),
+		})
 	recorded.CodeIs(400)
 }
 
@@ -750,7 +662,7 @@ func TestPokerWebController_LongSessionId(t *testing.T) {
 
 func TestPokerWebController_Stop(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	c := NewPokerWebController(func() usecase.PokerInteractorIF {
+	c := controller.NewPokerWebController(func() usecase.PokerInteractorIF {
 		return mi
 	})
 	c.Stop()
@@ -770,7 +682,7 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 	mockA.On("Stand").Return(`{"phase":3}`)
 
 	callCount := 0
-	pwc := NewPokerWebController(func() usecase.PokerInteractorIF {
+	pwc := controller.NewPokerWebController(func() usecase.PokerInteractorIF {
 		callCount++
 		if callCount == 1 {
 			return mockA
@@ -779,32 +691,21 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 	})
 	defer pwc.Stop()
 
-	api := rest.NewApi()
-	api.Use(rest.DefaultDevStack...)
-	router, _ := rest.MakeRouter(
-		rest.Post("/poker/exec", pwc.Exec),
-	)
-	api.SetApp(router)
-
 	// session-A creates mockA
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{"command": "reset", "sessionId": "session-A"}))
-	recorded.CodeIs(200)
+	rec := execRequest(t, pwc.Exec, map[string]interface{}{"command": "reset", "sessionId": "session-A"})
+	rec.CodeIs(200)
 	mockA.AssertCalled(t, "ResetWithConfig", cfgA, mock.Anything)
 
 	// session-B creates mockB
-	recorded = test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{"command": "reset", "sessionId": "session-B"}))
-	recorded.CodeIs(200)
+	rec = execRequest(t, pwc.Exec,
+		map[string]interface{}{"command": "reset", "sessionId": "session-B"})
+	rec.CodeIs(200)
 	mockB.AssertCalled(t, "ResetWithConfig", cfgB, mock.Anything)
 
 	// session-A reuses mockA (no new factory call)
-	recorded = test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{"command": "s", "sessionId": "session-A"}))
-	recorded.CodeIs(200)
+	rec = execRequest(t, pwc.Exec,
+		map[string]interface{}{"command": "s", "sessionId": "session-A"})
+	rec.CodeIs(200)
 	mockA.AssertCalled(t, "Stand")
 	if callCount != 2 {
 		t.Errorf("expected factory to be called 2 times, got %d", callCount)
@@ -815,7 +716,7 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 
 func TestPokerWebController_AllShortCommands(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
@@ -830,9 +731,7 @@ func TestPokerWebController_AllShortCommands(t *testing.T) {
 
 	commands := []string{"r", "e", "s", "f", "ck", "c", "a", "o"}
 	for _, cmd := range commands {
-		recorded := test.RunRequest(t, api.MakeHandler(),
-			test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-				map[string]interface{}{"command": cmd, "sessionId": "s-short"}))
+		recorded := execRequest(t, pwc.Exec, map[string]interface{}{"command": cmd, "sessionId": "s-short"})
 		recorded.CodeIs(200)
 	}
 }
@@ -841,108 +740,96 @@ func TestPokerWebController_AllShortCommands(t *testing.T) {
 
 func TestPokerWebController_Reset_IsLowball(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	cfg.IsLowball = true
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "reset",
-				"sessionId": "s1",
-				"isLowball": true,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":   "reset",
+		"sessionId": "s1",
+		"isLowball": true,
+	})
 	recorded.CodeIs(200)
 	mi.AssertCalled(t, "ResetWithConfig", cfg, mock.Anything)
 }
 
 func TestPokerWebController_Reset_WithBettingLimit_Valid(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitPotLimit
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":      "reset",
-				"sessionId":    "s1",
-				"bettingLimit": 1,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":      "reset",
+		"sessionId":    "s1",
+		"bettingLimit": 1,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Reset_WithBettingLimit_AboveMax(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (BettingLimit=0)
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":      "reset",
-				"sessionId":    "s1",
-				"bettingLimit": 5,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":      "reset",
+		"sessionId":    "s1",
+		"bettingLimit": 5,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (BettingLimit=0)
 	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":      "reset",
-				"sessionId":    "s1",
-				"bettingLimit": -1,
-			}))
+	recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+		"command":      "reset",
+		"sessionId":    "s1",
+		"bettingLimit": -1,
+	})
 	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Log(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
+	pwc := newPokerTestController(mi)
 	defer pwc.Stop()
 
 	mockLogOutput := `{"entries":[]}`
 	mi.On("ActionLog").Return(mockLogOutput)
 
 	t.Run("log command", func(t *testing.T) {
-		recorded := test.RunRequest(t, api.MakeHandler(),
-			test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-				map[string]interface{}{
-					"command":   "log",
-					"sessionId": "pk-log-1",
-				}))
+		recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+			"command":   "log",
+			"sessionId": "pk-log-1",
+		})
 		recorded.CodeIs(200)
 		recorded.ContentTypeIsJson()
 		mi.AssertCalled(t, "ActionLog")
 	})
 
 	t.Run("l shorthand", func(t *testing.T) {
-		recorded := test.RunRequest(t, api.MakeHandler(),
-			test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-				map[string]interface{}{
-					"command":   "l",
-					"sessionId": "pk-log-1",
-				}))
+		recorded := execRequest(t, pwc.Exec, map[string]interface{}{
+			"command":   "l",
+			"sessionId": "pk-log-1",
+		})
 		recorded.CodeIs(200)
 		recorded.ContentTypeIsJson()
 		mi.AssertCalled(t, "ActionLog")

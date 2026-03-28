@@ -6,8 +6,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // CribbageWebInput クリベッジWebインプット
@@ -100,7 +98,7 @@ func newCribbageDefaultOutput(msg string) *CribbageWebOutput {
 	}
 }
 
-func cribbageDispatch(bc *baseController, w rest.ResponseWriter, ci usecase.CribbageInteractorIF, param CribbageWebInput, newDefault func(string) *CribbageWebOutput) bool {
+func cribbageDispatch(bc *baseController, w http.ResponseWriter, ci usecase.CribbageInteractorIF, param CribbageWebInput, newDefault func(string) *CribbageWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, ci.ResetWithConfig(param.ToConfig()))

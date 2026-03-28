@@ -10,16 +10,15 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
-	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// makeRestRequest creates a rest.Request with the given JSON body.
-func makeRestRequest(body string) *rest.Request {
-	httpReq, _ := http.NewRequest("POST", "http://localhost/test", io.NopCloser(bytes.NewBufferString(body)))
-	httpReq.Header.Set("Content-Type", "application/json")
-	return &rest.Request{Request: httpReq}
+// makeHTTPRequest creates an *http.Request with the given JSON body.
+func makeHTTPRequest(body string) *http.Request {
+	req, _ := http.NewRequest("POST", "http://localhost/test", io.NopCloser(bytes.NewBufferString(body)))
+	req.Header.Set("Content-Type", "application/json")
+	return req
 }
 
 // --- BlackJack WriteJson error tests ---
@@ -59,34 +58,34 @@ func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 	ctrl := NewBlackJackWebController(factory)
 	defer ctrl.store.Stop()
 
-	t.Run("param error WriteJson fails", func(t *testing.T) {
+	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("quit WriteJson fails", func(t *testing.T) {
+	t.Run("quit write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "q", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "q", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusOK, fw.headerCode)
 	})
 
-	t.Run("session error WriteJson fails", func(t *testing.T) {
+	t.Run("session error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
+		req := makeHTTPRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("unsupported command WriteJson fails", func(t *testing.T) {
+	t.Run("unsupported command write fails", func(t *testing.T) {
 		bjMock2 := &mockBlackJackIF{}
 		factory2 := func() usecase.BlackJackInteractorIF { return bjMock2 }
 		ctrl2 := NewBlackJackWebController(factory2)
 		defer ctrl2.store.Stop()
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-bj-unsupported"}`)
+		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-bj-unsupported"}`)
 		ctrl2.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
@@ -117,34 +116,34 @@ func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 	ctrl := NewPokerWebController(factory)
 	defer ctrl.store.Stop()
 
-	t.Run("param error WriteJson fails", func(t *testing.T) {
+	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("quit WriteJson fails", func(t *testing.T) {
+	t.Run("quit write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "q", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "q", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusOK, fw.headerCode)
 	})
 
-	t.Run("session error WriteJson fails", func(t *testing.T) {
+	t.Run("session error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
+		req := makeHTTPRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("unsupported command WriteJson fails", func(t *testing.T) {
+	t.Run("unsupported command write fails", func(t *testing.T) {
 		pkMock2 := &mockPokerIF{}
 		factory2 := func() usecase.PokerInteractorIF { return pkMock2 }
 		ctrl2 := NewPokerWebController(factory2)
 		defer ctrl2.store.Stop()
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-pk-unsupported"}`)
+		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-pk-unsupported"}`)
 		ctrl2.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
@@ -172,34 +171,34 @@ func TestOldMaidWebController_WriteJsonErrors(t *testing.T) {
 	ctrl := NewOldMaidWebController(factory)
 	defer ctrl.store.Stop()
 
-	t.Run("param error WriteJson fails", func(t *testing.T) {
+	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("quit WriteJson fails", func(t *testing.T) {
+	t.Run("quit write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "q", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "q", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusOK, fw.headerCode)
 	})
 
-	t.Run("session error WriteJson fails", func(t *testing.T) {
+	t.Run("session error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
+		req := makeHTTPRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("unsupported command WriteJson fails", func(t *testing.T) {
+	t.Run("unsupported command write fails", func(t *testing.T) {
 		omMock2 := &mockOldMaidIF{}
 		factory2 := func() usecase.OldMaidInteractorIF { return omMock2 }
 		ctrl2 := NewOldMaidWebController(factory2)
 		defer ctrl2.store.Stop()
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-om-unsupported"}`)
+		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-om-unsupported"}`)
 		ctrl2.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
@@ -230,34 +229,34 @@ func TestDaifugoWebController_WriteJsonErrors(t *testing.T) {
 	ctrl := NewDaifugoWebController(factory)
 	defer ctrl.store.Stop()
 
-	t.Run("param error WriteJson fails", func(t *testing.T) {
+	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("quit WriteJson fails", func(t *testing.T) {
+	t.Run("quit write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "q", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "q", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusOK, fw.headerCode)
 	})
 
-	t.Run("session error WriteJson fails", func(t *testing.T) {
+	t.Run("session error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
+		req := makeHTTPRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("unsupported command WriteJson fails", func(t *testing.T) {
+	t.Run("unsupported command write fails", func(t *testing.T) {
 		dgMock2 := &mockDaifugoIF{}
 		factory2 := func() usecase.DaifugoInteractorIF { return dgMock2 }
 		ctrl2 := NewDaifugoWebController(factory2)
 		defer ctrl2.store.Stop()
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-dg-unsupported"}`)
+		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-dg-unsupported"}`)
 		ctrl2.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
@@ -283,34 +282,34 @@ func TestSevensWebController_WriteJsonErrors(t *testing.T) {
 	ctrl := NewSevensWebController(factory)
 	defer ctrl.store.Stop()
 
-	t.Run("param error WriteJson fails", func(t *testing.T) {
+	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("quit WriteJson fails", func(t *testing.T) {
+	t.Run("quit write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "q", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "q", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusOK, fw.headerCode)
 	})
 
-	t.Run("session error WriteJson fails", func(t *testing.T) {
+	t.Run("session error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
+		req := makeHTTPRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("unsupported command WriteJson fails", func(t *testing.T) {
+	t.Run("unsupported command write fails", func(t *testing.T) {
 		svMock2 := &mockSevensIF{}
 		factory2 := func() usecase.SevensInteractorIF { return svMock2 }
 		ctrl2 := NewSevensWebController(factory2)
 		defer ctrl2.store.Stop()
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-sv-unsupported"}`)
+		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-sv-unsupported"}`)
 		ctrl2.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
@@ -346,34 +345,34 @@ func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 	ctrl := NewDoubtWebController(factory)
 	defer ctrl.store.Stop()
 
-	t.Run("param error WriteJson fails", func(t *testing.T) {
+	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("quit WriteJson fails", func(t *testing.T) {
+	t.Run("quit write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "q", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "q", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusOK, fw.headerCode)
 	})
 
-	t.Run("session error WriteJson fails", func(t *testing.T) {
+	t.Run("session error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
+		req := makeHTTPRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("unsupported command WriteJson fails", func(t *testing.T) {
+	t.Run("unsupported command write fails", func(t *testing.T) {
 		dwMock2 := &mockDoubtIF{}
 		factory2 := func() usecase.DoubtInteractorIF { return dwMock2 }
 		ctrl2 := NewDoubtWebController(factory2)
 		defer ctrl2.store.Stop()
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-dw-unsupported"}`)
+		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-dw-unsupported"}`)
 		ctrl2.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
@@ -407,34 +406,34 @@ func TestHoldemWebController_WriteJsonErrors(t *testing.T) {
 	ctrl := NewHoldemWebController(factory)
 	defer ctrl.store.Stop()
 
-	t.Run("param error WriteJson fails", func(t *testing.T) {
+	t.Run("param error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("quit WriteJson fails", func(t *testing.T) {
+	t.Run("quit write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "q", "sessionId": "s1"}`)
+		req := makeHTTPRequest(`{"command": "q", "sessionId": "s1"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusOK, fw.headerCode)
 	})
 
-	t.Run("session error WriteJson fails", func(t *testing.T) {
+	t.Run("session error write fails", func(t *testing.T) {
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
+		req := makeHTTPRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
 		ctrl.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 
-	t.Run("unsupported command WriteJson fails", func(t *testing.T) {
+	t.Run("unsupported command write fails", func(t *testing.T) {
 		hmMock2 := &mockHoldemIF{}
 		factory2 := func() usecase.HoldemInteractorIF { return hmMock2 }
 		ctrl2 := NewHoldemWebController(factory2)
 		defer ctrl2.store.Stop()
 		fw := newFailWriter()
-		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-hm-unsupported"}`)
+		req := makeHTTPRequest(`{"command": "xyz", "sessionId": "s-hm-unsupported"}`)
 		ctrl2.Exec(fw, req)
 		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})

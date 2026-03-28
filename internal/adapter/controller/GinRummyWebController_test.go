@@ -13,9 +13,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ant0ine/go-json-rest/rest/test"
 )
 
 func mustGinRummyOutputJSON(msg string) string {
@@ -53,18 +50,10 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	ctrl := controller.NewGinRummyWebController(factory)
 	defer ctrl.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/ginrummy/exec", ctrl.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("success Exec q", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"q","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustGinRummyOutputJSON("bye."))
@@ -73,9 +62,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec quit", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"quit","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustGinRummyOutputJSON("bye."))
@@ -84,9 +71,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec r", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"r","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -95,9 +80,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec reset", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -106,9 +89,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec ds drawstock", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"ds","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -117,9 +98,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec drawstock", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"drawstock","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -128,9 +107,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec dd drawdiscard", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"dd","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -139,9 +116,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec drawdiscard", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"drawdiscard","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -152,9 +127,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "d", SessionID: "test-session-1"},
 			CardIndex:    func() *int { v := 3; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -165,9 +138,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "discard", SessionID: "test-session-1"},
 			CardIndex:    func() *int { v := 3; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -178,9 +149,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "k", SessionID: "test-session-1"},
 			CardIndex:    func() *int { v := 3; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -191,9 +160,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "knock", SessionID: "test-session-1"},
 			CardIndex:    func() *int { v := 3; return &v }(),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -204,9 +171,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 			BaseWebInput: controller.BaseWebInput{Command: "lo", SessionID: "test-session-1"},
 			CardIndices:  []int{1, 2},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -216,9 +181,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 		input := controller.GinRummyWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "layoff", SessionID: "test-session-1"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -227,9 +190,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec nr nextround", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"nr","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -238,9 +199,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec nextround", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"nextround","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -249,9 +208,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec log", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -260,9 +217,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("success Exec l shorthand", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(expectedBody)
@@ -272,9 +227,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("failed Exec other", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"other","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustGinRummyOutputJSON("Unsupported command."))
@@ -283,9 +236,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustGinRummyOutputJSON("param error."))
@@ -294,9 +245,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":""}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustGinRummyOutputJSON("param error."))
@@ -306,9 +255,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 		input := controller.GinRummyWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustGinRummyOutputJSON("param error."))
@@ -317,9 +264,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("failed Exec discard no cardIndex", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"d","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustGinRummyOutputJSON("param error: cardIndex is required."))
@@ -328,9 +273,7 @@ func TestGinRummyWebController_Method(t *testing.T) {
 	t.Run("failed Exec knock no cardIndex", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"k","sessionId":"test-session-1"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustGinRummyOutputJSON("param error: cardIndex is required."))
@@ -350,17 +293,12 @@ func TestGinRummyWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.GinRummyInteractorIF { return siMock }
 		ctrl := controller.NewGinRummyWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/ginrummy/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.GinRummyWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-1"},
 			Config:       &controller.GinRummyWebConfig{CpuDifficulty: &diff, PointLimit: &limit},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -374,17 +312,12 @@ func TestGinRummyWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.GinRummyInteractorIF { return siMock }
 		ctrl := controller.NewGinRummyWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/ginrummy/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.GinRummyWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-2"},
 			Config:       &controller.GinRummyWebConfig{CpuDifficulty: &diff},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -398,17 +331,12 @@ func TestGinRummyWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.GinRummyInteractorIF { return siMock }
 		ctrl := controller.NewGinRummyWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/ginrummy/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.GinRummyWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-3"},
 			Config:       &controller.GinRummyWebConfig{CpuDifficulty: &diff},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -422,17 +350,12 @@ func TestGinRummyWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.GinRummyInteractorIF { return siMock }
 		ctrl := controller.NewGinRummyWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/ginrummy/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.GinRummyWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-4"},
 			Config:       &controller.GinRummyWebConfig{PointLimit: &limit},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -446,17 +369,12 @@ func TestGinRummyWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.GinRummyInteractorIF { return siMock }
 		ctrl := controller.NewGinRummyWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/ginrummy/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.GinRummyWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-limit-max"},
 			Config:       &controller.GinRummyWebConfig{PointLimit: &limit},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -469,16 +387,11 @@ func TestGinRummyWebController_ResetWithConfig(t *testing.T) {
 		factory := func() uc.GinRummyInteractorIF { return siMock }
 		ctrl := controller.NewGinRummyWebController(factory)
 		defer ctrl.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/ginrummy/exec", ctrl.Exec))
-		api.SetApp(router)
 
 		input := controller.GinRummyWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-5"},
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
@@ -502,18 +415,10 @@ func TestGinRummyWebController_SessionIsolation(t *testing.T) {
 	})
 	defer isoController.Stop()
 
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(
-		rest.Post("/ginrummy/exec", isoController.Exec),
-	)
-	api.SetApp(router)
-
 	t.Run("session-A reset calls mockA", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockA.AssertCalled(t, "ResetWithConfig", domain.DefaultGinRummyConfig())
 		mockB.AssertNotCalled(t, "ResetWithConfig", domain.DefaultGinRummyConfig())
@@ -522,9 +427,7 @@ func TestGinRummyWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-B reset calls mockB", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"session-B"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		mockB.AssertCalled(t, "ResetWithConfig", domain.DefaultGinRummyConfig())
 	})
@@ -532,9 +435,7 @@ func TestGinRummyWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-A second call reuses mockA", func(t *testing.T) {
 		var input controller.GinRummyWebInput
 		_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/ginrummy/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded := execRequest(t, isoController.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		if callCount != 2 {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)

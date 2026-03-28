@@ -5,8 +5,6 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // SpiderWebInput スパイダーソリティアWebインプット
@@ -72,7 +70,7 @@ func newSpiderDefaultOutput(msg string) *SpiderWebOutput {
 	}
 }
 
-func spiderDispatch(bc *baseController, w rest.ResponseWriter, si usecase.SpiderInteractorIF, param SpiderWebInput, newDefault func(string) *SpiderWebOutput) bool {
+func spiderDispatch(bc *baseController, w http.ResponseWriter, si usecase.SpiderInteractorIF, param SpiderWebInput, newDefault func(string) *SpiderWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		if param.Config != nil {
@@ -104,7 +102,7 @@ func spiderDispatch(bc *baseController, w rest.ResponseWriter, si usecase.Spider
 	return true
 }
 
-func spiderMoveDispatch(bc *baseController, w rest.ResponseWriter, si usecase.SpiderInteractorIF, param SpiderWebInput, newDefault func(string) *SpiderWebOutput) bool {
+func spiderMoveDispatch(bc *baseController, w http.ResponseWriter, si usecase.SpiderInteractorIF, param SpiderWebInput, newDefault func(string) *SpiderWebOutput) bool {
 	if param.From == nil || param.To == nil {
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from and to are required."))
 		return true

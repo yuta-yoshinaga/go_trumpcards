@@ -6,8 +6,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
-	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // HeartsWebInput ハーツWebインプット
@@ -106,7 +104,7 @@ func newHeartsDefaultOutput(msg string) *HeartsWebOutput {
 	}
 }
 
-func heartsDispatch(bc *baseController, w rest.ResponseWriter, hi usecase.HeartsInteractorIF, param HeartsWebInput, newDefault func(string) *HeartsWebOutput) bool {
+func heartsDispatch(bc *baseController, w http.ResponseWriter, hi usecase.HeartsInteractorIF, param HeartsWebInput, newDefault func(string) *HeartsWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, hi.ResetWithConfig(param.ToConfig()))
