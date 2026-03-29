@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // MemoryGame 神経衰弱ゲームインタフェース
 type MemoryGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// PlayerFlip プレイヤーがカードをめくる
@@ -44,6 +45,4 @@ type MemoryGame interface {
 	GetBoard() [domain.MemoryBoardSize]*domain.MemoryBoardCard
 	// GetBoardCard 指定位置のボードカードを取得する
 	GetBoardCard(pos int) *domain.MemoryBoardCard
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }

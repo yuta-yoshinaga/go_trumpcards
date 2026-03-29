@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // FreeCellGame フリーセルゲームインタフェース
 type FreeCellGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// MoveTableauToTableau タブロー間でカードを移動する
@@ -37,8 +38,6 @@ type FreeCellGame interface {
 	GetFreeCells() [domain.FreeCellCellCnt]*domain.Card
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.FreeCellFoundationCnt][]*domain.Card
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// IsStalemate 手詰まり状態を取得する
 	IsStalemate() bool
 }

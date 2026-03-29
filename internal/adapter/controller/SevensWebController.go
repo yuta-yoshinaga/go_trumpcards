@@ -132,10 +132,8 @@ func sevensDispatch(bc *baseController, w http.ResponseWriter, sgi usecase.Seven
 		bc.writePresenterResponse(w, sgi.Play(param.Index))
 	case "j", "joker":
 		bc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue))
-	case "log", "l":
-		bc.writePresenterResponse(w, sgi.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, sgi.ActionLog)
 	}
 	return true
 }

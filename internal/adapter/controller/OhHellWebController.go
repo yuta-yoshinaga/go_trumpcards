@@ -143,12 +143,8 @@ func ohHellDispatch(bc *baseController, w http.ResponseWriter, oi usecase.OhHell
 		bc.writePresenterResponse(w, oi.NextTrick())
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, oi.NextRound())
-	case "h", "hint":
-		bc.writePresenterResponse(w, oi.Hint())
-	case "log", "l":
-		bc.writePresenterResponse(w, oi.ActionLog())
 	default:
-		return false
+		return dispatchHintAndLog(param.Command, bc, w, oi.Hint, oi.ActionLog)
 	}
 	return true
 }

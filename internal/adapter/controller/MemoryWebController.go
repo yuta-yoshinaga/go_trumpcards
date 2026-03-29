@@ -105,10 +105,8 @@ func memoryDispatch(bc *baseController, w http.ResponseWriter, mi usecase.Memory
 		bc.writePresenterResponse(w, mi.Flip(*param.Position))
 	case "n", "next":
 		bc.writePresenterResponse(w, mi.Next())
-	case "log", "l":
-		bc.writePresenterResponse(w, mi.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, mi.ActionLog)
 	}
 	return true
 }

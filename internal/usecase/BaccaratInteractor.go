@@ -62,9 +62,9 @@ func (bi *BaccaratInteractor) Snapshot() ([]byte, error) {
 
 // RestoreBaccaratInteractor deserialises JSON into a BaccaratInteractor.
 func RestoreBaccaratInteractor(data []byte, bp presenter.BaccaratPresenter) (*BaccaratInteractor, error) {
-	var bac domain.Baccarat
-	if err := json.Unmarshal(data, &bac); err != nil {
+	bac, err := restoreGame[domain.Baccarat](data)
+	if err != nil {
 		return nil, err
 	}
-	return &BaccaratInteractor{b: &bac, bp: bp}, nil
+	return &BaccaratInteractor{b: bac, bp: bp}, nil
 }

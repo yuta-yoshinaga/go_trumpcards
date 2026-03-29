@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // EuchreGame ユーカーゲームインタフェース
 type EuchreGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// NextRound 次のラウンドを開始する
@@ -82,8 +83,6 @@ type EuchreGame interface {
 	GetKitty() []*domain.Card
 	// GetHint ヒントを取得する
 	GetHint() *domain.EuchreHint
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 }

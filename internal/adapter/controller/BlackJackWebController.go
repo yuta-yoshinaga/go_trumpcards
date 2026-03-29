@@ -185,10 +185,8 @@ func blackJackDispatch(bc *baseController, w http.ResponseWriter, bji usecase.Bl
 		bc.writePresenterResponse(w, bji.SetDeckPenetration(param.Amount))
 	case "scc", "setcpucount":
 		bc.writePresenterResponse(w, bji.SetCpuPlayerCount(param.Amount))
-	case "log", "l":
-		bc.writePresenterResponse(w, bji.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, bji.ActionLog)
 	}
 	return true
 }

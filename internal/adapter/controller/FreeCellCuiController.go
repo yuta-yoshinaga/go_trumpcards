@@ -31,16 +31,13 @@ func (c *FreeCellCuiController) Exec(command string) string {
 				return c.handleMove(args), true
 			case "g", "giveup":
 				return c.fi.GiveUp(), true
-			case "h", "hint":
-				return c.fi.Hint(), true
 			case "ac", "autocomplete":
 				return c.fi.AutoComplete(), true
-			case "log", "l":
-				return c.fi.ActionLog(), true
 			case "u", "undo":
 				return c.fi.Undo(), true
+			default:
+				return handleCuiHintAndLog(cmd, c.fi.Hint, c.fi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

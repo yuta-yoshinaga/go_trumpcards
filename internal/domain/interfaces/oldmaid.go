@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // OldMaidGame ババ抜きゲームインタフェース
 type OldMaidGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// SetConfig ゲーム設定をセットする
@@ -66,6 +67,4 @@ type OldMaidGame interface {
 	GetRemovedCard() *domain.Card
 	// GetCpuHighlightedCardIdx CPU心理戦で強調された位置を取得する
 	GetCpuHighlightedCardIdx() int
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }

@@ -120,9 +120,9 @@ func (di *DoubtInteractor) Snapshot() ([]byte, error) {
 
 // RestoreDoubtInteractor deserialises JSON into a DoubtInteractor.
 func RestoreDoubtInteractor(data []byte, dp presenter.DoubtPresenter) (*DoubtInteractor, error) {
-	var d domain.Doubt
-	if err := json.Unmarshal(data, &d); err != nil {
+	d, err := restoreGame[domain.Doubt](data)
+	if err != nil {
 		return nil, err
 	}
-	return &DoubtInteractor{d: &d, dp: dp}, nil
+	return &DoubtInteractor{d: d, dp: dp}, nil
 }

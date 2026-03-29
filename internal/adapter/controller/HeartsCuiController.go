@@ -71,12 +71,9 @@ func (c *HeartsCuiController) Exec(command string) string {
 					cfg.PointLimit = v
 					return c.hi.ResetWithConfig(cfg)
 				})
-			case "h", "hint":
-				return c.hi.Hint(), true
-			case "log", "l":
-				return c.hi.ActionLog(), true
+			default:
+				return handleCuiHintAndLog(cmd, c.hi.Hint, c.hi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

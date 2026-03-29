@@ -41,6 +41,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 		[]string{
 			"p", "play", "d", "doubt", "s", "skip", "sw", "setwindow",
 			"sm", "setmemory", "smetaai", "smai", "rp", "resetprofile", "sp", "setpenalty",
+			"log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -83,8 +84,9 @@ func (c *DoubtCuiController) Exec(command string) string {
 					cfg.PenaltyDrawLimit = v
 					return c.di.ResetWithConfig(cfg, nil)
 				})
+			default:
+				return handleCuiLog(cmd, c.di.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

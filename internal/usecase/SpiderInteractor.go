@@ -94,9 +94,9 @@ func (si *SpiderInteractor) Snapshot() ([]byte, error) {
 
 // RestoreSpiderInteractor deserialises JSON into a SpiderInteractor.
 func RestoreSpiderInteractor(data []byte, sp presenter.SpiderPresenter) (*SpiderInteractor, error) {
-	var spi domain.Spider
-	if err := json.Unmarshal(data, &spi); err != nil {
+	spi, err := restoreGame[domain.Spider](data)
+	if err != nil {
 		return nil, err
 	}
-	return &SpiderInteractor{s: &spi, sp: sp}, nil
+	return &SpiderInteractor{s: spi, sp: sp}, nil
 }

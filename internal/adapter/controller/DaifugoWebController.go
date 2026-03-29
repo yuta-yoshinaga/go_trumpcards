@@ -171,10 +171,8 @@ func daifugoDispatch(bc *baseController, w http.ResponseWriter, dgi usecase.Daif
 			}
 		}
 		bc.writePresenterResponse(w, dgi.Sort(mode))
-	case "log", "l":
-		bc.writePresenterResponse(w, dgi.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, dgi.ActionLog)
 	}
 	return true
 }

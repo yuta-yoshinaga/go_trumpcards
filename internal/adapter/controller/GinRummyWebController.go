@@ -126,10 +126,8 @@ func ginRummyDispatch(bc *baseController, w http.ResponseWriter, ci usecase.GinR
 		bc.writePresenterResponse(w, ci.Layoff(param.CardIndices))
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, ci.NextRound())
-	case "log", "l":
-		bc.writePresenterResponse(w, ci.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, ci.ActionLog)
 	}
 	return true
 }

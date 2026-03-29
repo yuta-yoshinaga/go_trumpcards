@@ -27,6 +27,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 			"d", "draw", "s", "shuffle", "ro", "reorder", "sm", "setmode",
 			"sps", "setplacementstrategy", "smetaai", "smai",
 			"rp", "resetprofile", "sma", "setmemoryai",
+			"log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -63,8 +64,9 @@ func (c *OldMaidCuiController) Exec(command string) string {
 					cfg.CpuMemoryAI = v == 1
 					return c.omi.Reset(cfg, nil)
 				})
+			default:
+				return handleCuiLog(cmd, c.omi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

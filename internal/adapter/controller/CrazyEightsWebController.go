@@ -111,10 +111,8 @@ func crazyEightsDispatch(bc *baseController, w http.ResponseWriter, ci usecase.C
 		bc.writePresenterResponse(w, ci.ChooseSuit(*param.Suit))
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, ci.NextRound())
-	case "log", "l":
-		bc.writePresenterResponse(w, ci.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, ci.ActionLog)
 	}
 	return true
 }

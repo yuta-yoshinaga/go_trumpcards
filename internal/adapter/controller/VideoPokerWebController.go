@@ -64,10 +64,8 @@ func videoPokerDispatch(bc *baseController, w http.ResponseWriter, vi usecase.Vi
 			indices = []int{}
 		}
 		bc.writePresenterResponse(w, vi.Hold(indices))
-	case "log", "l":
-		bc.writePresenterResponse(w, vi.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, vi.ActionLog)
 	}
 	return true
 }

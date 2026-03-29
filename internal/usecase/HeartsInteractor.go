@@ -118,26 +118,12 @@ func (hi *HeartsInteractor) ActionLog() string {
 
 // runCpuTurns ゲームが終わるか人間の手番またはトリック/ラウンド終了になるまでCPUターンを実行
 func (hi *HeartsInteractor) runCpuTurns() {
-	for !hi.h.GetGameEndFlag() {
-		phase := hi.h.GetPhase()
-		if phase == domain.HeartsPhaseTrickEnd || phase == domain.HeartsPhaseRoundEnd || phase == domain.HeartsPhaseGameEnd {
-			break
-		}
-		if phase != domain.HeartsPhasePlay {
-			break
-		}
-		if hi.h.IsHumanTurn() {
-			break
-		}
-		hi.h.CpuPlay()
-		if hi.h.GetPhase() == domain.HeartsPhaseTrickEnd {
-			hi.h.ResolveTrick()
-			if hi.h.GetPhase() == domain.HeartsPhaseRoundEnd {
-				break
-			}
-			hi.h.NextTrick()
-		}
-	}
+	runCpuTurnsLoop(hi.h, trickPhases[domain.HeartsPhase]{
+		play:     domain.HeartsPhasePlay,
+		trickEnd: domain.HeartsPhaseTrickEnd,
+		roundEnd: domain.HeartsPhaseRoundEnd,
+		gameEnd:  domain.HeartsPhaseGameEnd,
+	})
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.
@@ -147,9 +133,9 @@ func (hi *HeartsInteractor) Snapshot() ([]byte, error) {
 
 // RestoreHeartsInteractor deserialises JSON into a HeartsInteractor.
 func RestoreHeartsInteractor(data []byte, hp presenter.HeartsPresenter) (*HeartsInteractor, error) {
-	var h domain.Hearts
-	if err := json.Unmarshal(data, &h); err != nil {
+	h, err := restoreGame[domain.Hearts](data)
+	if err != nil {
 		return nil, err
 	}
-	return &HeartsInteractor{h: &h, hp: hp}, nil
+	return &HeartsInteractor{h: h, hp: hp}, nil
 }

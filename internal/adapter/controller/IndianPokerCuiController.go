@@ -27,7 +27,7 @@ func (c *IndianPokerCuiController) Exec(command string) string {
 		[]string{
 			"f", "fold", "ck", "check", "c", "call", "b", "bet", "ra", "raise",
 			"a", "allin", "bl", "bettinglimit", "mai", "metaai", "an", "ante",
-			"log",
+			"log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -84,10 +84,9 @@ func (c *IndianPokerCuiController) Exec(command string) string {
 				cfg := c.ipi.GetConfig()
 				cfg.Ante = v
 				return c.ipi.ResetWithConfig(cfg, nil), true
-			case "log":
-				return c.ipi.ActionLog(), true
+			default:
+				return handleCuiLog(cmd, c.ipi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

@@ -88,12 +88,9 @@ func (c *EuchreCuiController) Exec(command string) string {
 					cfg.PointLimit = v
 					return c.ei.ResetWithConfig(cfg)
 				})
-			case "h", "hint":
-				return c.ei.Hint(), true
-			case "log", "l":
-				return c.ei.ActionLog(), true
+			default:
+				return handleCuiHintAndLog(cmd, c.ei.Hint, c.ei.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

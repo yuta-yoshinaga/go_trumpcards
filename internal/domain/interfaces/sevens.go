@@ -4,10 +4,11 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // SevensGame 7並べゲームインタフェース
 type SevensGame interface {
-	// SetConfig ゲーム設定をセットする
-	SetConfig(config domain.SevensConfig)
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
+	// SetConfig ゲーム設定をセットする
+	SetConfig(config domain.SevensConfig)
 	// GetGameEndFlag ゲーム終了フラグを取得する
 	GetGameEndFlag() bool
 	// IsHumanTurn 現在の手番が人間かを返す
@@ -41,6 +42,4 @@ type SevensGame interface {
 	GetCpuActions() []*domain.SevensCpuAction
 	// GetTablePlaced 各スートの配置済みビットマスクを取得する
 	GetTablePlaced() [5]uint16
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }

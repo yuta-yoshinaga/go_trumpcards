@@ -74,9 +74,9 @@ func (ipi *IndianPokerInteractor) Snapshot() ([]byte, error) {
 
 // RestoreIndianPokerInteractor deserialises JSON into an IndianPokerInteractor.
 func RestoreIndianPokerInteractor(data []byte, ipp presenter.IndianPokerPresenter) (*IndianPokerInteractor, error) {
-	var ip domain.IndianPoker
-	if err := json.Unmarshal(data, &ip); err != nil {
+	ip, err := restoreGame[domain.IndianPoker](data)
+	if err != nil {
 		return nil, err
 	}
-	return &IndianPokerInteractor{ip: &ip, ipp: ipp}, nil
+	return &IndianPokerInteractor{ip: ip, ipp: ipp}, nil
 }

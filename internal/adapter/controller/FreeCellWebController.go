@@ -77,16 +77,12 @@ func freeCellDispatch(bc *baseController, w http.ResponseWriter, fi usecase.Free
 		return freeCellMoveDispatch(bc, w, fi, param, newDefault)
 	case "g", "giveup":
 		bc.writePresenterResponse(w, fi.GiveUp())
-	case "h", "hint":
-		bc.writePresenterResponse(w, fi.Hint())
 	case "ac", "autocomplete":
 		bc.writePresenterResponse(w, fi.AutoComplete())
-	case "log", "l":
-		bc.writePresenterResponse(w, fi.ActionLog())
 	case "u", "undo":
 		bc.writePresenterResponse(w, fi.Undo())
 	default:
-		return false
+		return dispatchHintAndLog(param.Command, bc, w, fi.Hint, fi.ActionLog)
 	}
 	return true
 }

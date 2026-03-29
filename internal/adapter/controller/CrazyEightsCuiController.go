@@ -53,10 +53,9 @@ func (c *CrazyEightsCuiController) Exec(command string) string {
 					cfg.PointLimit = v
 					return c.ci.ResetWithConfig(cfg)
 				})
-			case "log", "l":
-				return c.ci.ActionLog(), true
+			default:
+				return handleCuiLog(cmd, c.ci.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

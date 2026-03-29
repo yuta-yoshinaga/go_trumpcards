@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // GinRummyGame ジンラミーゲームインタフェース
 type GinRummyGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// NextRound 次のラウンドを開始する
@@ -48,8 +49,6 @@ type GinRummyGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.GinRummyPlayer
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// GetKnockerIdx ノックしたプレイヤーインデックスを取得する
 	GetKnockerIdx() int
 	// GetKnockerMelds ノッカーのメルド一覧を取得する

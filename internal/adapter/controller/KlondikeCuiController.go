@@ -40,16 +40,13 @@ func (c *KlondikeCuiController) Exec(command string) string {
 				return c.handleMove(args), true
 			case "g", "giveup":
 				return c.ki.GiveUp(), true
-			case "h", "hint":
-				return c.ki.Hint(), true
 			case "ac", "autocomplete":
 				return c.ki.AutoComplete(), true
-			case "log", "l":
-				return c.ki.ActionLog(), true
 			case "u", "undo":
 				return c.ki.Undo(), true
+			default:
+				return handleCuiHintAndLog(cmd, c.ki.Hint, c.ki.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

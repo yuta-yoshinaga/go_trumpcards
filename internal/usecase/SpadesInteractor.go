@@ -134,26 +134,12 @@ func (si *SpadesInteractor) runCpuBids() {
 
 // runCpuTurns ゲームが終わるか人間の手番またはトリック/ラウンド終了になるまでCPUターンを実行
 func (si *SpadesInteractor) runCpuTurns() {
-	for !si.s.GetGameEndFlag() {
-		phase := si.s.GetPhase()
-		if phase == domain.SpadesPhaseTrickEnd || phase == domain.SpadesPhaseRoundEnd || phase == domain.SpadesPhaseGameEnd {
-			break
-		}
-		if phase != domain.SpadesPhasePlay {
-			break
-		}
-		if si.s.IsHumanTurn() {
-			break
-		}
-		si.s.CpuPlay()
-		if si.s.GetPhase() == domain.SpadesPhaseTrickEnd {
-			si.s.ResolveTrick()
-			if si.s.GetPhase() == domain.SpadesPhaseRoundEnd {
-				break
-			}
-			si.s.NextTrick()
-		}
-	}
+	runCpuTurnsLoop(si.s, trickPhases[domain.SpadesPhase]{
+		play:     domain.SpadesPhasePlay,
+		trickEnd: domain.SpadesPhaseTrickEnd,
+		roundEnd: domain.SpadesPhaseRoundEnd,
+		gameEnd:  domain.SpadesPhaseGameEnd,
+	})
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.
@@ -163,9 +149,9 @@ func (si *SpadesInteractor) Snapshot() ([]byte, error) {
 
 // RestoreSpadesInteractor deserialises JSON into a SpadesInteractor.
 func RestoreSpadesInteractor(data []byte, sp presenter.SpadesPresenter) (*SpadesInteractor, error) {
-	var s domain.Spades
-	if err := json.Unmarshal(data, &s); err != nil {
+	s, err := restoreGame[domain.Spades](data)
+	if err != nil {
 		return nil, err
 	}
-	return &SpadesInteractor{s: &s, sp: sp}, nil
+	return &SpadesInteractor{s: s, sp: sp}, nil
 }

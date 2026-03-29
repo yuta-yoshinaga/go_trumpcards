@@ -30,6 +30,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 			"sb", "smallblind", "bb", "bigblind", "lh", "levelhand", "ts", "tablesize",
 			"rb", "rebuy", "sr", "skiprebuy", "ad", "addon", "sa", "skipaddon", "m", "muck", "sh", "show",
 			"mai", "metaai",
+			"log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -142,8 +143,9 @@ func (c *HoldemCuiController) Exec(command string) string {
 				cfg := c.hi.GetConfig()
 				cfg.CpuMetaAI = v == 1
 				return c.hi.ResetWithConfig(cfg, nil), true
+			default:
+				return handleCuiLog(cmd, c.hi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

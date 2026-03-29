@@ -38,12 +38,11 @@ func (bcc *BaccaratCuiController) Exec(command string) string {
 					return errMsg, true
 				}
 				return bcc.bi.Bet(amount, betType, 0, 0), true
-			case "log", "l":
-				return bcc.bi.ActionLog(), true
 			case "ch", "clearhistory":
 				return bcc.bi.ClearHistory(), true
+			default:
+				return handleCuiLog(cmd, bcc.bi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

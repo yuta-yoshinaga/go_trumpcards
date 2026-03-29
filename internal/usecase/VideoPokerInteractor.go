@@ -62,9 +62,9 @@ func (vi *VideoPokerInteractor) Snapshot() ([]byte, error) {
 
 // RestoreVideoPokerInteractor deserialises JSON into a VideoPokerInteractor.
 func RestoreVideoPokerInteractor(data []byte, vpp presenter.VideoPokerPresenter) (*VideoPokerInteractor, error) {
-	var vp domain.VideoPoker
-	if err := json.Unmarshal(data, &vp); err != nil {
+	vp, err := restoreGame[domain.VideoPoker](data)
+	if err != nil {
 		return nil, err
 	}
-	return &VideoPokerInteractor{vp: &vp, vpp: vpp}, nil
+	return &VideoPokerInteractor{vp: vp, vpp: vpp}, nil
 }

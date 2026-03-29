@@ -32,6 +32,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 			"f", "fold", "ck", "check", "a", "allin", "bl", "bettinglimit",
 			"scc", "setcpucount", "sjc", "setjokercount", "o", "odds", "lw", "lowball",
 			"mai", "metaai",
+			"log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -100,8 +101,9 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				cfg := pcc.pi.GetConfig()
 				cfg.CpuMetaAI = v == 1
 				return pcc.pi.ResetWithConfig(cfg, nil), true
+			default:
+				return handleCuiLog(cmd, pcc.pi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

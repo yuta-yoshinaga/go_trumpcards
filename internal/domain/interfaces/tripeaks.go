@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // TriPeaksGame トリピークスゲームインタフェース
 type TriPeaksGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// Draw 山札からカードをめくる
@@ -29,8 +30,6 @@ type TriPeaksGame interface {
 	GetWaste() []*domain.Card
 	// GetLayout レイアウトを取得する
 	GetLayout() [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// IsExposed カードが露出しているかを返す
 	IsExposed(row, col int) bool
 	// AllRemoved 全タブローカードが除去されたかを返す

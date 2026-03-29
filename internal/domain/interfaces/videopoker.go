@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // VideoPokerGame ビデオポーカーゲームインタフェース
 type VideoPokerGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// Bet ベットしてディールする
@@ -31,8 +32,6 @@ type VideoPokerGame interface {
 	GetHandName() string
 	// GetHeldIndices ホールドインデックスを取得する
 	GetHeldIndices() [domain.VideoPokerHandSize]bool
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// GetVariantName バリアント名を取得する
 	GetVariantName() string
 }

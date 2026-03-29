@@ -84,14 +84,10 @@ func pyramidDispatch(bc *baseController, w http.ResponseWriter, pi usecase.Pyram
 		return pyramidRemoveDispatch(bc, w, pi, param, newDefault)
 	case "g", "giveup":
 		bc.writePresenterResponse(w, pi.GiveUp())
-	case "h", "hint":
-		bc.writePresenterResponse(w, pi.Hint())
-	case "log", "l":
-		bc.writePresenterResponse(w, pi.ActionLog())
 	case "u", "undo":
 		bc.writePresenterResponse(w, pi.Undo())
 	default:
-		return false
+		return dispatchHintAndLog(param.Command, bc, w, pi.Hint, pi.ActionLog)
 	}
 	return true
 }

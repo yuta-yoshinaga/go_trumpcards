@@ -222,26 +222,12 @@ func (ei *EuchreInteractor) runCpuDiscard() {
 
 // runCpuTurns プレイフェーズでCPUターンを自動実行する
 func (ei *EuchreInteractor) runCpuTurns() {
-	for !ei.e.GetGameEndFlag() {
-		phase := ei.e.GetPhase()
-		if phase == domain.EuchrePhaseTrickEnd || phase == domain.EuchrePhaseRoundEnd || phase == domain.EuchrePhaseGameEnd {
-			break
-		}
-		if phase != domain.EuchrePhasePlay {
-			break
-		}
-		if ei.e.IsHumanTurn() {
-			break
-		}
-		ei.e.CpuPlay()
-		if ei.e.GetPhase() == domain.EuchrePhaseTrickEnd {
-			ei.e.ResolveTrick()
-			if ei.e.GetPhase() == domain.EuchrePhaseRoundEnd {
-				break
-			}
-			ei.e.NextTrick()
-		}
-	}
+	runCpuTurnsLoop(ei.e, trickPhases[domain.EuchrePhase]{
+		play:     domain.EuchrePhasePlay,
+		trickEnd: domain.EuchrePhaseTrickEnd,
+		roundEnd: domain.EuchrePhaseRoundEnd,
+		gameEnd:  domain.EuchrePhaseGameEnd,
+	})
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.
@@ -251,9 +237,9 @@ func (ei *EuchreInteractor) Snapshot() ([]byte, error) {
 
 // RestoreEuchreInteractor deserialises JSON into an EuchreInteractor.
 func RestoreEuchreInteractor(data []byte, ep presenter.EuchrePresenter) (*EuchreInteractor, error) {
-	var e domain.Euchre
-	if err := json.Unmarshal(data, &e); err != nil {
+	e, err := restoreGame[domain.Euchre](data)
+	if err != nil {
 		return nil, err
 	}
-	return &EuchreInteractor{e: &e, ep: ep}, nil
+	return &EuchreInteractor{e: e, ep: ep}, nil
 }

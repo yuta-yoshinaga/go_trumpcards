@@ -102,9 +102,9 @@ func (pi *PokerInteractor) Snapshot() ([]byte, error) {
 
 // RestorePokerInteractor deserialises JSON into a PokerInteractor.
 func RestorePokerInteractor(data []byte, pp presenter.PokerPresenter) (*PokerInteractor, error) {
-	var p domain.Poker
-	if err := json.Unmarshal(data, &p); err != nil {
+	p, err := restoreGame[domain.Poker](data)
+	if err != nil {
 		return nil, err
 	}
-	return &PokerInteractor{p: &p, pp: pp}, nil
+	return &PokerInteractor{p: p, pp: pp}, nil
 }
