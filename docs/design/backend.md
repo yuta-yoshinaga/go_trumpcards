@@ -925,6 +925,7 @@ classDiagram
         -pyramid *PyramidWebController
         -tripeaks *TriPeaksWebController
         -cribbage *CribbageWebController
+        -threecard *ThreeCardWebController
         -ohhell *OhHellWebController
         +Exec()
     }
