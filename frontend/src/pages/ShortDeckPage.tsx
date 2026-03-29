@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { shortdeckApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
+import { CpuActionToast } from '../components/CpuActionToast';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { EquityDisplay } from '../components/EquityDisplay';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -20,7 +22,7 @@ import { RoundResults } from '../components/RoundResults';
 import { ShortDeckSkeleton } from '../components/skeleton/ShortDeckSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -141,6 +143,7 @@ function ShortDeckPageContent() {
     useGamePageSetup('shortdeck');
   const phaseNames = usePhaseNames('shortdeck', SHORTDECK_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi } = useGameApi(shortdeckApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
@@ -186,6 +189,7 @@ function ShortDeckPageContent() {
   const isAddonPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.ADDON;
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
+  const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
 
   const actionBindings = useMemo(
     () => [
@@ -236,11 +240,9 @@ function ShortDeckPageContent() {
 
       {/* Scrollable: community cards + CPU players */}
       <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Community cards + CPU players (poker table layout on desktop) */}
-        <PokerTableLayout
-          communityCardsTutorial="sd-community-cards"
-          cpuAreaTutorial="sd-cpu-area"
-          communityCards={
+        {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
+        {(() => {
+          const communityCardsContent = (
             <>
               <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
               <div className="flex flex-wrap gap-2">
@@ -256,25 +258,48 @@ function ShortDeckPageContent() {
                   : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
               </div>
             </>
-          }
-          cpuPlayers={state?.players
-            ?.filter((p) => !p.isHuman)
-            .map((p) => (
-              <CpuPlayerCard
-                key={p.id}
-                player={p}
-                showCards={isShowdown}
-                faceDownCount={2}
-                showHandName={isShowdown}
-                extraInfo={
-                  p.totalHands > 0 ? <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} /> : undefined
-                }
-              />
-            ))}
-        />
+          );
+          const cpuPlayerCards = cpuPlayers.map((p) => (
+            <CpuPlayerCard
+              key={p.id}
+              player={p}
+              showCards={isShowdown}
+              faceDownCount={2}
+              showHandName={isShowdown}
+              extraInfo={
+                p.totalHands > 0 ? <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} /> : undefined
+              }
+            />
+          ));
 
-        {/* CPU actions log */}
-        <CpuActionLog actions={state?.cpuActions} />
+          if (!isMobile) {
+            return (
+              <PokerTableLayout
+                communityCardsTutorial="sd-community-cards"
+                cpuAreaTutorial="sd-cpu-area"
+                communityCards={communityCardsContent}
+                cpuPlayers={cpuPlayerCards}
+              />
+            );
+          }
+
+          return (
+            <>
+              <div
+                className="sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm"
+                data-tutorial="sd-community-cards"
+              >
+                {communityCardsContent}
+              </div>
+              <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="sd-cpu-area">
+                {cpuPlayerCards}
+              </CpuAccordion>
+            </>
+          );
+        })()}
+
+        {/* CPU actions: toast on mobile, inline log on desktop */}
+        {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
 
         {/* Round results */}
         {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}

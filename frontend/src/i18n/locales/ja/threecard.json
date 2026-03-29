@@ -42,6 +42,20 @@
     "5": "スリーカード",
     "6": "ストレートフラッシュ"
   },
+  "betGuide": "アンテとペアプラスを設定してベット",
+  "payoutRef": {
+    "title": "配当表",
+    "anteBonusHeader": "アンテボーナス",
+    "anteBonusStraight": "ストレート: 1:1",
+    "anteBonusThreeOfAKind": "スリーカード: 4:1",
+    "anteBonusStraightFlush": "ストレートフラッシュ: 5:1",
+    "pairPlusHeader": "ペアプラス",
+    "pairPlusPair": "ペア: 1:1",
+    "pairPlusFlush": "フラッシュ: 4:1",
+    "pairPlusStraight": "ストレート: 6:1",
+    "pairPlusThreeOfAKind": "スリーカード: 30:1",
+    "pairPlusStraightFlush": "ストレートフラッシュ: 40:1"
+  },
   "dealerQualified": "クオリファイ",
   "dealerNotQualified": "未クオリファイ",
   "tutorial": {

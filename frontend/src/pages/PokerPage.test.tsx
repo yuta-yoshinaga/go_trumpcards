@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, pokerApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -1394,6 +1394,35 @@ describe('PokerPage', () => {
     mockExec.mockResolvedValue(initState);
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  // --- Mobile layout tests ---
+
+  describe('mobile viewport', () => {
+    const originalInnerWidth = window.innerWidth;
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    afterEach(() => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalInnerWidth });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('renders CpuAccordion on mobile', async () => {
+      mockExec.mockResolvedValue(dealState);
+      renderWithProviders(<PokerPage />);
+      await waitFor(() => expect(screen.getByTestId('cpu-accordion')).toBeInTheDocument());
+    });
+
+    it('renders CpuActionToast instead of CpuActionLog on mobile', async () => {
+      mockExec.mockResolvedValue(dealWithBetState);
+      renderWithProviders(<PokerPage />);
+      await waitFor(() => expect(screen.getByTestId('cpu-accordion')).toBeInTheDocument());
+      expect(screen.queryByText('CPU行動:')).not.toBeInTheDocument();
+    });
   });
 
   it('getElapsed returns non-zero time when cpuMetaAI is enabled and it is human turn', async () => {

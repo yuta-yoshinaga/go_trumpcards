@@ -42,6 +42,20 @@
     "5": "Three of a Kind",
     "6": "Straight Flush"
   },
+  "betGuide": "Set your ante and Pair Plus bet",
+  "payoutRef": {
+    "title": "Payout Table",
+    "anteBonusHeader": "Ante Bonus",
+    "anteBonusStraight": "Straight: 1:1",
+    "anteBonusThreeOfAKind": "Three of a Kind: 4:1",
+    "anteBonusStraightFlush": "Straight Flush: 5:1",
+    "pairPlusHeader": "Pair Plus",
+    "pairPlusPair": "Pair: 1:1",
+    "pairPlusFlush": "Flush: 4:1",
+    "pairPlusStraight": "Straight: 6:1",
+    "pairPlusThreeOfAKind": "Three of a Kind: 30:1",
+    "pairPlusStraightFlush": "Straight Flush: 40:1"
+  },
   "dealerQualified": "Qualified",
   "dealerNotQualified": "Not Qualified",
   "tutorial": {
