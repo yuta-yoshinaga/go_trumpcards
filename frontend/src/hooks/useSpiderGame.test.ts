@@ -146,7 +146,7 @@ describe('useSpiderGame', () => {
     expect(result.current.hint).toBeNull();
   });
 
-  it('handleAutoComplete dispatches autocomplete command', async () => {
+  it('handleAutoComplete dispatches autocomplete and sets isAutoCompleting', async () => {
     const { result } = renderHook(() => useSpiderGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
@@ -157,6 +157,9 @@ describe('useSpiderGame', () => {
     });
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+    expect(result.current.isAutoCompleting).toBe(true);
+
+    await waitFor(() => expect(result.current.isAutoCompleting).toBe(false), { timeout: 4000 });
   });
 
   it('handleUndo dispatches undo command', async () => {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { CountdownBar } from '../components/doubt/CountdownBar';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
 import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -242,9 +243,11 @@ function DoubtPageContent() {
                   <>
                     <div className="text-white font-bold mb-2">{t('doubtQuestion')}</div>
                     {countdown !== null && (
-                      <div className="text-yellow-300 text-lg font-bold mb-2" aria-live="assertive" aria-atomic="true">
-                        {t('countdown', { sec: countdown })}
-                      </div>
+                      <CountdownBar
+                        remaining={countdown}
+                        total={state.doubtWindowSec}
+                        label={t('countdown', { sec: countdown })}
+                      />
                     )}
                     {state.cpuDoubters.length > 0 && (
                       <div className="text-game-text-muted text-xs mb-2">

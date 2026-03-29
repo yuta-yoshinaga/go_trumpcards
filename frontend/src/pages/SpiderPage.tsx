@@ -101,6 +101,7 @@ function SpiderPageContent() {
     handleUndo,
     handleSelectSource,
     handleSelectTarget,
+    isAutoCompleting,
   } = useSpiderGame();
   const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
 
@@ -274,19 +275,29 @@ function SpiderPageContent() {
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (
             <div data-tutorial="spd-controls">
-              <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
+              <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading || isAutoCompleting}>
                 {t('deal')}
               </button>
-              <button type="button" className={btnPrimary} onClick={handleUndo} disabled={loading || !state.canUndo}>
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={handleUndo}
+                disabled={loading || isAutoCompleting || !state.canUndo}
+              >
                 {t('undo')}
               </button>
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || isAutoCompleting}>
                 {t('hint')}
               </button>
-              <button type="button" className={btnSuccess} onClick={handleAutoComplete} disabled={loading}>
+              <button
+                type="button"
+                className={btnSuccess}
+                onClick={handleAutoComplete}
+                disabled={loading || isAutoCompleting}
+              >
                 {t('autoComplete')}
               </button>
-              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading || isAutoCompleting}>
                 {t('giveup')}
               </button>
             </div>

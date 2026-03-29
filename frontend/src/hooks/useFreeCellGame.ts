@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { type FreeCellMoveZone, freecellApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { FreeCellHint } from '../types/card';
@@ -10,6 +10,8 @@ export function useFreeCellGame() {
   const [selectedSource, setSelectedSource] = useState<FreeCellMoveZone | null>(null);
   const [hint, setHint] = useState<FreeCellHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
+  const [isAutoCompleting, setIsAutoCompleting] = useState(false);
+  const autoCompleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const callExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -42,8 +44,16 @@ export function useFreeCellGame() {
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
+    setIsAutoCompleting(true);
     callExec('autocomplete');
+    autoCompleteTimerRef.current = setTimeout(() => setIsAutoCompleting(false), 3000);
   }, [callExec]);
+
+  useEffect(() => {
+    return () => {
+      if (autoCompleteTimerRef.current) clearTimeout(autoCompleteTimerRef.current);
+    };
+  }, []);
 
   const handleUndo = useCallback(() => {
     setSelectedSource(null);
@@ -91,5 +101,6 @@ export function useFreeCellGame() {
     handleUndo,
     handleSelectSource,
     handleSelectTarget,
+    isAutoCompleting,
   };
 }

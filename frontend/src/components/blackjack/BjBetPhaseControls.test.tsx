@@ -278,4 +278,31 @@ describe('BjBetPhaseControls', () => {
     fireEvent.change(screen.getByLabelText('サレンダー:'), { target: { value: '2' } });
     expect(onSurrenderRuleChange).toHaveBeenCalledWith(2);
   });
+
+  it('shows side bet badge when perfectPairsBet > 0', () => {
+    render(<BjBetPhaseControls {...defaultProps({ perfectPairsBet: 100 })} />);
+    expect(screen.getByText('サイドベットあり')).toBeInTheDocument();
+  });
+
+  it('shows side bet badge when twentyOnePlus3Bet > 0', () => {
+    render(<BjBetPhaseControls {...defaultProps({ twentyOnePlus3Bet: 50 })} />);
+    expect(screen.getByText('サイドベットあり')).toBeInTheDocument();
+  });
+
+  it('does not show side bet badge when both bets are 0', () => {
+    render(<BjBetPhaseControls {...defaultProps({ perfectPairsBet: 0, twentyOnePlus3Bet: 0 })} />);
+    expect(screen.queryByText('サイドベットあり')).not.toBeInTheDocument();
+  });
+
+  it('sets details open attribute when autoExpandAdvanced is true', () => {
+    const { container } = render(<BjBetPhaseControls {...defaultProps({ autoExpandAdvanced: true })} />);
+    const details = container.querySelector('details');
+    expect(details).toHaveAttribute('open');
+  });
+
+  it('does not set details open attribute when autoExpandAdvanced is false', () => {
+    const { container } = render(<BjBetPhaseControls {...defaultProps({ autoExpandAdvanced: false })} />);
+    const details = container.querySelector('details');
+    expect(details).not.toHaveAttribute('open');
+  });
 });

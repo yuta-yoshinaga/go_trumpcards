@@ -176,7 +176,21 @@ describe('useFreeCellGame', () => {
 
     expect(result.current.selectedSource).toBeNull();
     expect(result.current.hint).toBeNull();
+    expect(result.current.isAutoCompleting).toBe(true);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('isAutoCompleting resets to false after timeout', async () => {
+    const { result } = renderHook(() => useFreeCellGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    mockExec.mockResolvedValue(defaultState);
+    act(() => {
+      result.current.handleAutoComplete();
+    });
+    expect(result.current.isAutoCompleting).toBe(true);
+
+    await waitFor(() => expect(result.current.isAutoCompleting).toBe(false), { timeout: 4000 });
   });
 
   it('handleUndo dispatches undo and clears selection and hint', async () => {
