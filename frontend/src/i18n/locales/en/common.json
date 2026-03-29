@@ -107,7 +107,8 @@
     "waiting": "Waiting"
   },
   "card": {
-    "back": "Card back"
+    "back": "Card back",
+    "joker": "Joker"
   },
   "label": {
     "result": "Result:",

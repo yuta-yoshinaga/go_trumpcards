@@ -22,10 +22,15 @@ func setupSignalHandler() {
 		sigCh := make(chan os.Signal, 1)
 		signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 		go func() {
-			<-sigCh
+			sig := <-sigCh
 			signal.Stop(sigCh)
 			fmt.Println("\n" + i18n.T("bye"))
-			os.Exit(0)
+			// POSIX convention: exit code = 128 + signal number
+			exitCode := 128
+			if sigNum, ok := sig.(syscall.Signal); ok {
+				exitCode += int(sigNum)
+			}
+			os.Exit(exitCode)
 		}()
 	})
 }

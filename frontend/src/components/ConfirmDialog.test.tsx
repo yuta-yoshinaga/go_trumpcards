@@ -63,17 +63,17 @@ describe('ConfirmDialog', () => {
     expect(onCancel).not.toHaveBeenCalled();
   });
 
-  it('calls onCancel when Escape key is pressed on dialog', () => {
+  it('calls onCancel when Escape key is pressed at document level', () => {
     const onCancel = vi.fn();
     render(<ConfirmDialog {...defaultProps({ onCancel })} />);
-    fireEvent.keyDown(screen.getByRole('alertdialog'), { key: 'Escape' });
+    fireEvent.keyDown(document, { key: 'Escape' });
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
-  it('does not call onCancel for non-Escape key on dialog', () => {
+  it('does not call onCancel for non-Escape key at document level', () => {
     const onCancel = vi.fn();
     render(<ConfirmDialog {...defaultProps({ onCancel })} />);
-    fireEvent.keyDown(screen.getByRole('alertdialog'), { key: 'Enter' });
+    fireEvent.keyDown(document, { key: 'Enter' });
     expect(onCancel).not.toHaveBeenCalled();
   });
 

@@ -22,9 +22,9 @@ describe('LandscapeBanner', () => {
     expect(banner?.className).toContain('sm:hidden');
   });
 
-  it('has animate-pulse class on icon for attention', () => {
+  it('has animate-pulse-once class on icon for limited attention', () => {
     const { container } = render(<LandscapeBanner message="Test" />);
     const icon = container.querySelector('svg');
-    expect(icon?.getAttribute('class')).toContain('animate-pulse');
+    expect(icon?.getAttribute('class')).toContain('animate-pulse-once');
   });
 });
