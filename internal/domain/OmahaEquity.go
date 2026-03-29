@@ -4,9 +4,6 @@ import (
 	"math/rand"
 )
 
-// omahaEquitySimulations デフォルトのモンテカルロシミュレーション回数
-const omahaEquitySimulations = 50000
-
 // CalcOmahaEquity モンテカルロシミュレーションによるオマハエクイティ計算
 // humanCards: 人間の手札(4枚), communityCards: コミュニティカード,
 // activePlayers: アクティブ相手プレイヤー数, simulations: シミュレーション回数,

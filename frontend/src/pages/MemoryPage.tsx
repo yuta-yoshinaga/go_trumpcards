@@ -20,10 +20,10 @@ import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { cardAlt } from '../utils/cardAlt';
 import { gameTheme } from '../styles/gameTheme';
 import { MemoryPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 
 /** Memory tutorial step definitions. */
