@@ -47,10 +47,10 @@ func (p *BridgeCuiPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 		contractLevel := b.GetContractLevel()
 		if contractLevel > 0 {
 			fmt.Fprintf(sb, "コントラクト: %dレベル スート%d", contractLevel, b.GetContractSuit())
-			doubled := b.GetDoubled()
-			if doubled == 1 {
+			switch b.GetDoubled() {
+			case 1:
 				sb.WriteString(" ダブル")
-			} else if doubled == 2 {
+			case 2:
 				sb.WriteString(" リダブル")
 			}
 			sb.WriteString("\n")

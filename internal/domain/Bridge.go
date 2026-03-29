@@ -401,9 +401,10 @@ func (b *Bridge) finishAuction() {
 	suitName := b.bidSuitName(b.contractSuit)
 	b.appendLog(-1, "contract",
 		fmt.Sprintf("Contract: %d%s by %s", b.contractLevel, suitName, b.playerName(b.declarerIdx)), nil)
-	if b.doubled == 1 {
+	switch b.doubled {
+	case 1:
 		b.appendLog(-1, "doubled", "Doubled", nil)
-	} else if b.doubled == 2 {
+	case 2:
 		b.appendLog(-1, "redoubled", "Redoubled", nil)
 	}
 
@@ -619,13 +620,14 @@ func (b *Bridge) calcMadeContractScore(declarerTeam int, overtricks int) int {
 	}
 
 	// スラムボーナス
-	if b.contractLevel == 6 {
+	switch b.contractLevel {
+	case 6:
 		if isVul {
 			score += 750
 		} else {
 			score += 500
 		}
-	} else if b.contractLevel == 7 {
+	case 7:
 		if isVul {
 			score += 1500
 		} else {
@@ -634,9 +636,10 @@ func (b *Bridge) calcMadeContractScore(declarerTeam int, overtricks int) int {
 	}
 
 	// ダブル/リダブルで成功した場合の追加ボーナス
-	if b.doubled == 1 {
+	switch b.doubled {
+	case 1:
 		score += 50
-	} else if b.doubled == 2 {
+	case 2:
 		score += 100
 	}
 
