@@ -53,13 +53,13 @@ func calcEquityCore(humanCards, communityCards []*Card, activePlayers, simulatio
 			shufflePool := make([]*Card, len(pool))
 			simCommunity := make([]*Card, 0, 5)
 
+			if neededCards > len(shufflePool) {
+				return wins, handCounts
+			}
+
 			for i := 0; i < sims; i++ {
 				copy(shufflePool, pool)
 				shuffleCards(shufflePool, localRng)
-
-				if neededCards > len(shufflePool) {
-					continue
-				}
 
 				// シミュレーション用コミュニティカードを構築
 				simCommunity = simCommunity[:0]
