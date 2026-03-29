@@ -2577,8 +2577,8 @@ paths:
                     pairPlusPayout: 0
                     totalPayout: 0
                     dealerQualified: false
-                    playerHandRank: ""
-                    dealerHandRank: ""
+                    playerHandRank: 0
+                    dealerHandRank: 0
                     message: param error.
 
 components:
@@ -7729,13 +7729,13 @@ components:
           description: Whether the dealer qualified (Q-high or better)
           example: false
         playerHandRank:
-          type: string
-          description: Human-readable name of the player's hand rank
-          example: "Pair"
+          type: integer
+          description: Player's hand rank (1=High Card, 2=Pair, 3=Flush, 4=Straight, 5=Three of a Kind, 6=Straight Flush)
+          example: 2
         dealerHandRank:
-          type: string
-          description: Human-readable name of the dealer's hand rank
-          example: "High Card"
+          type: integer
+          description: Dealer's hand rank (1=High Card, 2=Pair, 3=Flush, 4=Straight, 5=Three of a Kind, 6=Straight Flush)
+          example: 1
         message:
           type: string
           description: Game result or error message. Empty during bet/action phase.

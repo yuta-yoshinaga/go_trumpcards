@@ -225,6 +225,15 @@ func TestThreeCard_DealerQualification(t *testing.T) {
 			qualified: true,
 		},
 		{
+			name: "QualifiesWithPairOfTwos",
+			dealer: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 2, false),
+				domain.NewCard(domain.CardDesignClover, 2, false),
+				domain.NewCard(domain.CardDesignHeart, 3, false),
+			},
+			qualified: true,
+		},
+		{
 			name: "NotQualified_JackHigh",
 			dealer: []*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 11, false),
@@ -376,7 +385,7 @@ func TestThreeCard_AnteBonus(t *testing.T) {
 				domain.NewCard(domain.CardDesignSpade, 6, false),
 				domain.NewCard(domain.CardDesignSpade, 7, false),
 			},
-			expected: 600, // 100 + 100*5 = 600
+			expected: 500, // 100*5 = 500
 		},
 		{
 			name: "ThreeOfAKind_4to1",
@@ -385,7 +394,7 @@ func TestThreeCard_AnteBonus(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 8, false),
 				domain.NewCard(domain.CardDesignHeart, 8, false),
 			},
-			expected: 500, // 100 + 100*4 = 500
+			expected: 400, // 100*4 = 400
 		},
 		{
 			name: "Straight_1to1",
@@ -394,7 +403,7 @@ func TestThreeCard_AnteBonus(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 5, false),
 				domain.NewCard(domain.CardDesignHeart, 6, false),
 			},
-			expected: 200, // 100 + 100*1 = 200
+			expected: 100, // 100*1 = 100
 		},
 		{
 			name: "Flush_NoAnteBonus",

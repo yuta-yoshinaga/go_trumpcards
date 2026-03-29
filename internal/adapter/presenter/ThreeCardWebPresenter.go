@@ -52,6 +52,7 @@ func (tp *ThreeCardWebPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 		default:
 		}
 		if !tc.GetDealerQualified() && tc.GetPlayBet() > 0 {
+			resObj.Message = "Dealer does not qualify!"
 			resObj.MessageCode = "threecard.result.dealerNotQualified"
 		}
 	}

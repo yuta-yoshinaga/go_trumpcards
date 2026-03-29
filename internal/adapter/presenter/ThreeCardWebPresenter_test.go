@@ -194,6 +194,7 @@ func TestThreeCardWebPresenter_Output_DealerNotQualified(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := parseThreeCardOutput(t, p.Output(m, nil))
+	assert.Equal(t, "Dealer does not qualify!", result.Message)
 	assert.Equal(t, "threecard.result.dealerNotQualified", result.MessageCode)
 }
 

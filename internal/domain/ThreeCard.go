@@ -220,11 +220,14 @@ func (tc *ThreeCard) resolve() {
 	tc.appendLog(-1, "result", resultStr, nil)
 }
 
-// checkDealerQualifies ディーラーがクオリファイするか（Qハイ以上）
+// checkDealerQualifies ディーラーがクオリファイするか（Qハイ以上、またはペア以上）
 func (tc *ThreeCard) checkDealerQualifies() bool {
+	// ペア以上は無条件でクオリファイ
+	if tc.dealerHandRank >= ThreeCardHandPair {
+		return true
+	}
+	// ハイカードの場合はQハイ以上が必要
 	vals := threeCardHandHighValues(tc.dealerHand)
-	// vals[0] is the highest card (Ace = 14)
-	// Queen = 12 -> with Ace conversion = 12; but Ace=14, King=13, Queen=12
 	return vals[0] >= 12 // Queen(12), King(13), Ace(14)
 }
 
@@ -251,14 +254,15 @@ func (tc *ThreeCard) calculatePayouts() {
 }
 
 // evaluateAnteBonus アンテボーナス評価（ディーラーの結果に関係なく）
+// アンテボーナスはアンテ配当とは別に支払われるボーナスのみ（元ベット返却なし）
 func (tc *ThreeCard) evaluateAnteBonus() {
 	switch tc.playerHandRank {
 	case ThreeCardHandStraightFlush:
-		tc.anteBonusPayout = tc.anteBet + tc.anteBet*ThreeCardAnteBonusStraightFlush
+		tc.anteBonusPayout = tc.anteBet * ThreeCardAnteBonusStraightFlush
 	case ThreeCardHandThreeOfAKind:
-		tc.anteBonusPayout = tc.anteBet + tc.anteBet*ThreeCardAnteBonusThreeOfAKind
+		tc.anteBonusPayout = tc.anteBet * ThreeCardAnteBonusThreeOfAKind
 	case ThreeCardHandStraight:
-		tc.anteBonusPayout = tc.anteBet + tc.anteBet*ThreeCardAnteBonusStraight
+		tc.anteBonusPayout = tc.anteBet * ThreeCardAnteBonusStraight
 	}
 }
 
