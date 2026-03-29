@@ -11,6 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -174,6 +175,7 @@ function IndianPokerPageContent() {
           {t('ante')} <strong>{state.ante ?? 0}</strong>
         </span>
         <TutorialButton />
+        <ManualButton gamePath="/indianpoker" />
         <span>
           {tc('label.dealer')} <strong>Player {state.dealerIdx ?? 0}</strong>
         </span>

@@ -15,6 +15,7 @@ import { GameFooter } from './GameFooter';
 import { GameMessageBox } from './GameMessageBox';
 import { GamePageHeading } from './GamePageHeading';
 import { GameResetDialog } from './GameResetDialog';
+import { ManualButton } from './ManualButton';
 import { AnimatedCard } from './motion/AnimatedCard';
 import { WinCelebration } from './motion/WinCelebration';
 import { PhaseIndicator } from './PhaseIndicator';
@@ -34,6 +35,8 @@ export interface VideoPokerGameContentProps {
   ) => Promise<VideoPokerResponse>;
   /** Payout table row keys (variant-specific) */
   payoutTableRows: string[];
+  /** Route path for the game manual lookup (e.g., "/videopoker") */
+  gamePath: string;
 }
 
 /** Payout table display component (collapsed by default, user can expand on tap). */
@@ -56,6 +59,7 @@ export function VideoPokerGameContent({
   i18nNamespace,
   apiExec,
   payoutTableRows,
+  gamePath,
 }: VideoPokerGameContentProps) {
   const { t: tNs } = useTranslation(i18nNamespace);
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -139,6 +143,7 @@ export function VideoPokerGameContent({
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isBetPhase || isDrawPhase}>
         <span>{t('label.chips', { chips: state.chips })}</span>
         <TutorialButton />
+        <ManualButton gamePath={gamePath} />
       </PhaseIndicator>
 
       <div

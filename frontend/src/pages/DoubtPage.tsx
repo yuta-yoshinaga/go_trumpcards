@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -169,6 +170,7 @@ function DoubtPageContent() {
         isHumanTurn={isHumanTurn}
       >
         <TutorialButton />
+        <ManualButton gamePath="/doubt" />
       </PhaseIndicator>
       {/* Settings panel */}
       <SettingsPanel

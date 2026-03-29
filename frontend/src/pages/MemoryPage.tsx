@@ -8,6 +8,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { LandscapeBanner } from '../components/LandscapeBanner';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -112,6 +113,7 @@ function MemoryPageContent() {
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
         <TutorialButton />
+        <ManualButton gamePath="/memory" />
       </PhaseIndicator>
 
       <LandscapeBanner message={t('landscapeBanner')} />

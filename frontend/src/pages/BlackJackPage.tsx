@@ -27,6 +27,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -243,6 +244,7 @@ function BlackJackPageContent() {
           {t('player')} {state.player.chips} chips
         </span>
         <TutorialButton />
+        <ManualButton gamePath="/" />
         <span>
           {t('deck')} {state.deckCount}
           {t('deckUnit')}
