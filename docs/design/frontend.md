@@ -17,6 +17,7 @@
   - [2.2 CPUリプレイアニメーションフロー](#22-cpuリプレイアニメーションフロー)
   - [2.3 ゲーム初期化フロー](#23-ゲーム初期化フロー)
   - [2.4 VideoPokerPage フェーズ別レンダリングフロー](#24-videopokerpage-フェーズ別レンダリングフロー)
+  - [2.5 ThreeCardPage フェーズ別レンダリングフロー](#25-threecardpage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -149,7 +150,7 @@ classDiagram
         +object config
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全27ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全28ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -363,7 +364,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全27ゲーム()
+        ...全28ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -376,7 +377,7 @@ classDiagram
     actionLogApi --> gameApi : uses gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全27ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage)"
+    note for BlackJackApi "全28ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -602,7 +603,7 @@ classDiagram
     useDoubtGame --> useGameApi : uses
     useDoubtGame --> useCardSelection : uses
 
-    note for useBlackJackGame "全27ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全28ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -856,6 +857,15 @@ classDiagram
         +ショーフェーズスコア詳細
     }
 
+    class ThreeCardPage {
+        +チップ表示
+        +アンティ/ペアプラスベット入力
+        +プレイヤー3枚カード表示
+        +ディーラー3枚カード表示
+        +プレイ/フォールドボタン
+        +配当詳細表示(アンティ/プレイ/ボーナス/ペアプラス)
+    }
+
     BlackJackPage --|> GamePage : follows pattern
     HeartsPage --|> GamePage : follows pattern
     KlondikePage --|> GamePage : follows pattern
@@ -881,6 +891,7 @@ classDiagram
 
     ShortDeckPage --|> GamePage : follows pattern
     CribbagePage --|> GamePage : follows pattern
+    ThreeCardPage --|> GamePage : follows pattern
 
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
@@ -894,7 +905,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全27ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全28ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1072,6 +1083,39 @@ sequenceDiagram
     Page->>Hook: handleReset()
     Hook->>API: gameExec("reset")
     API-->>Hook: VideoPokerResponse (phase=0)
+    Hook-->>Page: 再レンダリング → ベットフェーズUI
+```
+
+### 2.5 ThreeCardPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as ThreeCardPage
+    participant Hook as useThreeCardGame
+    participant API as gameApi
+
+    Note over User,API: ベットフェーズ (phase=1)
+    User->>Page: アンティ額・ペアプラス額を入力
+    User->>Page: ベットボタンクリック
+    Page->>Hook: handleBet(amount, pairPlusBet)
+    Hook->>API: gameExec("bet", {amount, pairPlusBet})
+    API-->>Hook: ThreeCardResponse (phase=2, playerHand=3枚)
+    Hook-->>Page: 再レンダリング → アクションフェーズUI
+
+    Note over User,API: アクションフェーズ (phase=2)
+    User->>Page: プレイまたはフォールドボタンクリック
+    Page->>Hook: handlePlay() / handleFold()
+    Hook->>API: gameExec("play") / gameExec("fold")
+    API-->>Hook: ThreeCardResponse (phase=3, result, payouts)
+    Hook-->>Page: 再レンダリング → 結果フェーズUI
+
+    Note over User,API: 結果フェーズ (phase=3)
+    Page-->>User: 両手札・結果・配当詳細表示
+    User->>Page: リセットボタンクリック
+    Page->>Hook: handleReset()
+    Hook->>API: gameExec("reset")
+    API-->>Hook: ThreeCardResponse (phase=1)
     Hook-->>Page: 再レンダリング → ベットフェーズUI
 ```
 

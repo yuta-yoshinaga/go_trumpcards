@@ -48,6 +48,7 @@ type TrumpCardsWeb struct {
 	pyc  *controller.PyramidWebController
 	cbc  *controller.CribbageWebController
 	tpc  *controller.TriPeaksWebController
+	tcc  *controller.ThreeCardWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -258,6 +259,12 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			cribbage := domain.NewCribbage(domain.NewTrumpCards(0), players, config)
 			return usecase.NewCribbageInteractor(cribbage, new(presenter.CribbageWebPresenter))
 		}),
+		tcc: controller.NewThreeCardWebController(func() usecase.ThreeCardInteractorIF {
+			return usecase.NewThreeCardInteractor(
+				domain.NewDefaultThreeCard(),
+				new(presenter.ThreeCardWebPresenter),
+			)
+		}),
 	}
 }
 
@@ -297,6 +304,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/pyramid/exec", web.pyc.Exec},
 		{"/tripeaks/exec", web.tpc.Exec},
 		{"/cribbage/exec", web.cbc.Exec},
+		{"/threecard/exec", web.tcc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -385,6 +393,8 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.euc.Stop()
 	web.pyc.Stop()
 	web.cbc.Stop()
+	web.tpc.Stop()
+	web.tcc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

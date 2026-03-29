@@ -1,0 +1,396 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { actionLogApi, threecardApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, ThreeCardResponse } from '../types/card';
+import { ThreeCardPage } from './ThreeCardPage';
+
+vi.mock('../api/gameApi', () => ({
+  threecardApi: { exec: vi.fn() },
+  actionLogApi: { threecard: vi.fn() },
+}));
+
+const mockExec = vi.mocked(threecardApi.exec);
+
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+const betPhaseState: ThreeCardResponse = {
+  playerHand: [],
+  dealerHand: [],
+  phase: 1,
+  chips: 1000,
+  anteBet: 0,
+  pairPlusBet: 0,
+  playBet: 0,
+  result: 0,
+  antePayout: 0,
+  playPayout: 0,
+  anteBonusPayout: 0,
+  pairPlusPayout: 0,
+  totalPayout: 0,
+  dealerQualified: false,
+  playerHandRank: 0,
+  dealerHandRank: 0,
+  message: '',
+};
+
+const actionPhaseState: ThreeCardResponse = {
+  ...betPhaseState,
+  phase: 2,
+  playerHand: [card('SPADE', 10), card('HEART', 11), card('DIAMOND', 13)],
+  dealerHand: [],
+  anteBet: 100,
+  chips: 900,
+};
+
+const endPhasePlayerWins: ThreeCardResponse = {
+  playerHand: [card('SPADE', 10), card('HEART', 11), card('DIAMOND', 13)],
+  dealerHand: [card('CLOVER', 5), card('DIAMOND', 2), card('HEART', 7)],
+  phase: 3,
+  chips: 1200,
+  anteBet: 100,
+  pairPlusBet: 0,
+  playBet: 100,
+  result: 1,
+  antePayout: 200,
+  playPayout: 200,
+  anteBonusPayout: 0,
+  pairPlusPayout: 0,
+  totalPayout: 400,
+  dealerQualified: true,
+  playerHandRank: 1,
+  dealerHandRank: 1,
+  message: '勝利！',
+  messageCode: 'threecard.result.playerWins',
+};
+
+const endPhaseDealerWins: ThreeCardResponse = {
+  ...endPhasePlayerWins,
+  result: -1,
+  antePayout: 0,
+  playPayout: 0,
+  totalPayout: 0,
+  message: 'ディーラー勝利！',
+  messageCode: 'threecard.result.dealerWins',
+};
+
+const endPhaseFold: ThreeCardResponse = {
+  ...endPhasePlayerWins,
+  result: -1,
+  playBet: 0,
+  antePayout: 0,
+  playPayout: 0,
+  totalPayout: 0,
+  dealerHand: [],
+  dealerQualified: false,
+  dealerHandRank: 0,
+  message: 'フォールド',
+  messageCode: 'threecard.result.fold',
+};
+
+const endPhasePush: ThreeCardResponse = {
+  ...endPhasePlayerWins,
+  result: 0,
+  antePayout: 100,
+  playPayout: 100,
+  totalPayout: 200,
+  message: '引き分け！',
+  messageCode: 'threecard.result.push',
+};
+
+const endPhaseDealerNotQualified: ThreeCardResponse = {
+  ...endPhasePlayerWins,
+  dealerQualified: false,
+  antePayout: 100,
+  playPayout: 0,
+  totalPayout: 100,
+  message: 'ディーラー未クオリファイ！',
+  messageCode: 'threecard.result.dealerNotQualified',
+};
+
+const endPhaseWithPairPlus: ThreeCardResponse = {
+  ...endPhasePlayerWins,
+  pairPlusBet: 50,
+  pairPlusPayout: 200,
+  anteBonusPayout: 100,
+  totalPayout: 700,
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe('ThreeCardPage', () => {
+  it('renders bet phase on mount', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
+  });
+
+  it('renders skeleton before state loads', () => {
+    mockExec.mockReturnValue(new Promise(() => {})); // never resolves
+    renderWithProviders(<ThreeCardPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('does not expand card area with flex-1 during bet phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.getByTestId('card-area')).not.toHaveClass('flex-1');
+  });
+
+  it('expands card area with flex-1 during action phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+    expect(screen.getByTestId('card-area')).toHaveClass('flex-1');
+  });
+
+  it('shows action phase with play and fold buttons', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+  });
+
+  it('shows end phase with player wins', async () => {
+    mockExec.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'プレイ' }));
+    await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
+    expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+  });
+
+  it('shows end phase with dealer wins', async () => {
+    mockExec.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhaseDealerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'プレイ' }));
+    await waitFor(() => expect(screen.getByText('ディーラー勝利！')).toBeInTheDocument());
+  });
+
+  it('shows end phase with fold', async () => {
+    mockExec.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhaseFold);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
+    await waitFor(() => expect(screen.getByText('フォールド')).toBeInTheDocument());
+  });
+
+  it('shows end phase with push', async () => {
+    mockExec.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhasePush);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'プレイ' }));
+    await waitFor(() => expect(screen.getByText('引き分け！')).toBeInTheDocument());
+  });
+
+  it('shows end phase with dealer not qualified', async () => {
+    mockExec.mockResolvedValueOnce(actionPhaseState).mockResolvedValueOnce(endPhaseDealerNotQualified);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'プレイ' }));
+    await waitFor(() => expect(screen.getAllByText(/未クオリファイ/).length).toBeGreaterThanOrEqual(1));
+  });
+
+  it('shows payout breakdown with pair plus and ante bonus', async () => {
+    mockExec.mockResolvedValue(endPhaseWithPairPlus);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+    expect(screen.getByText(/アンテボーナス: 100/)).toBeInTheDocument();
+    expect(screen.getByText(/ペアプラス: 200/)).toBeInTheDocument();
+    expect(screen.getByText(/合計: 700/)).toBeInTheDocument();
+  });
+
+  it('can change ante and pair plus amounts', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    fireEvent.change(anteInput, { target: { value: '200' } });
+
+    const ppInput = screen.getByLabelText('ペアプラス');
+    fireEvent.change(ppInput, { target: { value: '50' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200, 50));
+  });
+
+  it('resets after end phase', async () => {
+    mockExec
+      .mockResolvedValueOnce(betPhaseState)
+      .mockResolvedValueOnce(endPhasePlayerWins)
+      .mockResolvedValueOnce(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  // ── ConfirmDialog on reset ─────────────────────────────────────────────────
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('shows network error', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockRejectedValueOnce(new Error('Network'));
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+  });
+
+  it('shows action log', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    vi.mocked(actionLogApi.threecard).mockResolvedValue({ entries: [] as never[] });
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('棋譜を見る'));
+    await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
+  });
+
+  it('renders player and dealer cards in end phase', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getAllByRole('img').length).toBe(6));
+    expect(screen.getByText('🟡')).toBeInTheDocument();
+    expect(screen.getByText('🔴')).toBeInTheDocument();
+  });
+
+  it('shows hand rank names in end phase', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getAllByText(/ハイカード/).length).toBeGreaterThanOrEqual(1));
+  });
+
+  it('shows dealer qualification status', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText(/クオリファイ/)).toBeInTheDocument());
+  });
+
+  // --- Keyboard navigation tests ---
+
+  it('pressing b triggers bet in BET phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.keyDown(document, { key: 'b' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0));
+  });
+
+  it('pressing p triggers play in ACTION phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    fireEvent.keyDown(document, { key: 'p' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play'));
+  });
+
+  it('pressing f triggers fold in ACTION phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endPhaseFold);
+    fireEvent.keyDown(document, { key: 'f' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold'));
+  });
+
+  it('pressing r triggers reset in END phase', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText(/勝利/)).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(betPhaseState);
+    fireEvent.keyDown(document, { key: 'r' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('pressing b does not trigger bet in END phase', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText(/勝利/)).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'b' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('pressing r does not trigger reset in BET phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'r' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('renders tutorial button', async () => {
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+  });
+
+  it('starts tutorial when tutorial button is clicked', async () => {
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  it('tutorial can be skipped', async () => {
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('renders accessible h1 heading', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+});

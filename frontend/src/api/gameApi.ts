@@ -25,6 +25,7 @@ import type {
   ShortDeckResponse,
   SpadesResponse,
   SpiderResponse,
+  ThreeCardResponse,
   TriPeaksResponse,
   VideoPokerResponse,
 } from '../types/card';
@@ -49,6 +50,7 @@ const workerUrl: Record<string, string> = {
   videopoker: WORKER_CASINO,
   deuceswild: WORKER_CASINO,
   jokerpoker: WORKER_CASINO,
+  threecard: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
@@ -549,6 +551,12 @@ export const baccaratApi = {
   ) => gameExec<BaccaratResponse>('baccarat', { command, amount, betType, playerPairBet, bankerPairBet }),
 };
 
+/** API client for the Three Card Poker /threecard/exec endpoint. */
+export const threecardApi = {
+  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, pairPlusBet?: number) =>
+    gameExec<ThreeCardResponse>('threecard', { command, amount, pairPlusBet }),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -737,6 +745,7 @@ const games = [
   'pyramid',
   'tripeaks',
   'cribbage',
+  'threecard',
 ] as const;
 type Game = (typeof games)[number];
 

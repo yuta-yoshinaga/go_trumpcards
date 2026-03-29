@@ -16,6 +16,7 @@
  *   - Pyramid:    internal/domain/Pyramid.go  (PyramidPhasePlaying, PyramidPhaseGameClear, PyramidPhaseGameOver)
  *   - TriPeaks:   internal/domain/TriPeaks.go (TriPeaksPhasePlaying, TriPeaksPhaseGameClear, TriPeaksPhaseGameOver)
  *   - Cribbage:   internal/domain/Cribbage.go (CribbagePhaseDiscard, CribbagePhaseCut, CribbagePhasePegging, CribbagePhaseShow, CribbagePhaseRoundEnd, CribbagePhaseGameEnd)
+ *   - ThreeCard:  internal/domain/ThreeCard.go (ThreeCardPhaseBet, ThreeCardPhaseAction, ThreeCardPhaseEnd)
  */
 
 /** BlackJack phase constants (sync: internal/domain/BlackJack.go). */
@@ -227,4 +228,11 @@ export const EuchrePhase = {
   TRICK_END: 4,
   ROUND_END: 5,
   GAME_END: 6,
+} as const;
+
+/** Three Card Poker phase constants (sync: internal/domain/ThreeCard.go). */
+export const ThreeCardPhase = {
+  BET: 1,
+  ACTION: 2,
+  END: 3,
 } as const;

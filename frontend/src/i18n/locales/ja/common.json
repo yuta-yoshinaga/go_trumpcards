@@ -44,7 +44,8 @@
     "pyramid": "ピラミッド",
     "tripeaks": "トリピークス",
     "cribbage": "クリベッジ",
-    "shortdeck": "ショートデック"
+    "shortdeck": "ショートデック",
+    "threecard": "スリーカードポーカー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -180,6 +181,11 @@
     "baccarat.result.playerWins": "プレイヤーの勝ち！",
     "baccarat.result.bankerWins": "バンカーの勝ち！",
     "baccarat.result.tie": "引き分け！",
+    "threecard.result.playerWins": "勝利！",
+    "threecard.result.dealerWins": "ディーラー勝利！",
+    "threecard.result.push": "引き分け！",
+    "threecard.result.fold": "フォールド",
+    "threecard.result.dealerNotQualified": "ディーラー未クオリファイ！",
     "klondike.playing": "プレイ中",
     "klondike.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "klondike.gameOver": "ゲームオーバー",

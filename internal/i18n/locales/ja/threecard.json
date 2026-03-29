@@ -1,0 +1,6 @@
+{
+  "helpTitle": "Three Card Poker (スリーカードポーカー)",
+  "helpBet": "  b <ante> [pairplus]   ベット (アンテ必須、ペアプラス任意)",
+  "helpPlay": "  p                    プレイ (アンテと同額のプレイベット)",
+  "helpFold": "  f                    フォールド (アンテ没収)"
+}

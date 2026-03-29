@@ -238,6 +238,25 @@ func main() {
 		},
 	)
 
+	// Three Card Poker
+	registerKV(mux, "/threecard/exec", "threecard:",
+		func() usecase.ThreeCardInteractorIF {
+			return usecase.NewThreeCardInteractor(
+				domain.NewDefaultThreeCard(),
+				new(presenter.ThreeCardWebPresenter),
+			)
+		},
+		func(data []byte) (usecase.ThreeCardInteractorIF, error) {
+			return usecase.RestoreThreeCardInteractor(data, new(presenter.ThreeCardWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.ThreeCardInteractorIF], f func() usecase.ThreeCardInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewThreeCardWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

@@ -68,6 +68,8 @@ tags:
     description: TriPeaks (トリピークス) game
   - name: cribbage
     description: Cribbage (クリベッジ) game
+  - name: threecard
+    description: Three Card Poker (スリーカードポーカー) game
 
 paths:
   /blackjack/exec:
@@ -2483,6 +2485,100 @@ paths:
                     handScoreDetails: [null, null, null]
                     gameEndFlag: false
                     winnerIdx: -1
+                    message: param error.
+
+  /threecard/exec:
+    post:
+      tags:
+        - threecard
+      summary: Execute a Three Card Poker game command
+      description: |
+        Send a command to advance the Three Card Poker (スリーカードポーカー) game session
+        identified by `sessionId`.  Three Card Poker is a single-player casino card game
+        using a standard 52-card deck.  Player places an Ante bet and optional Pair Plus
+        side bet, receives 3 cards, then decides to Play (match Ante) or Fold (forfeit Ante).
+        Dealer must have Q-high or better to qualify.
+
+        Hand rankings (highest to lowest): Straight Flush, Three of a Kind, Straight,
+        Flush, Pair, High Card.
+
+        The game proceeds through these phases:
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `1`   | Place Ante and optional Pair Plus bet |
+        | Action | `2`   | Decide to Play or Fold |
+        | End    | `3`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `pairPlusBet`) |
+        | `play`  | `p`     | Place Play bet (equal to Ante) and see dealer's hand |
+        | `fold`  | `f`     | Forfeit Ante and Pair Plus bets |
+        | `log`   | `l`     | View action log |
+      operationId: threecardExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThreeCardRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante with 50 Pair Plus
+                value:
+                  command: bet
+                  amount: 100
+                  pairPlusBet: 50
+                  sessionId: my-session-001
+              play:
+                summary: Place Play bet
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreeCardResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreeCardResponse'
+              examples:
+                paramError:
+                  value:
+                    playerHand: []
+                    dealerHand: []
+                    phase: 0
+                    chips: 0
+                    anteBet: 0
+                    pairPlusBet: 0
+                    playBet: 0
+                    result: 0
+                    antePayout: 0
+                    playPayout: 0
+                    anteBonusPayout: 0
+                    pairPlusPayout: 0
+                    totalPayout: 0
+                    dealerQualified: false
+                    playerHandRank: 0
+                    dealerHandRank: 0
                     message: param error.
 
 components:
@@ -7514,3 +7610,141 @@ components:
               type: integer
               description: Point limit to win
               example: 121
+
+    # -------------------------------------------------------------------------
+    # Three Card Poker
+    # -------------------------------------------------------------------------
+    ThreeCardRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
+            `play` (`p`), `fold` (`f`), `log` (`l`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Ante bet amount.  Required for `bet` command (minimum 10, must be a
+            multiple of 10).  Ignored for other commands.
+          minimum: 10
+          example: 100
+        pairPlusBet:
+          type: integer
+          description: |
+            Pair Plus side bet amount.  Optional; used with the `bet`
+            command.  0 or omitted means no side bet.
+          minimum: 0
+          example: 50
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ThreeCardResponse:
+      type: object
+      description: Current state of the Three Card Poker game
+      required:
+        - playerHand
+        - dealerHand
+        - phase
+        - chips
+        - anteBet
+        - pairPlusBet
+        - playBet
+        - result
+        - antePayout
+        - playPayout
+        - anteBonusPayout
+        - pairPlusPayout
+        - totalPayout
+        - dealerQualified
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand (3 cards)
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Cards in the dealer's hand (3 cards; hidden until End phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Action, 3 = End"
+          enum: [1, 2, 3]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Current Ante bet amount
+          example: 100
+        pairPlusBet:
+          type: integer
+          description: Current Pair Plus side bet amount
+          example: 50
+        playBet:
+          type: integer
+          description: Current Play bet amount (equal to Ante when played)
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Dealer wins, 0 = Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          description: Payout from the Ante bet
+          example: 0
+        playPayout:
+          type: integer
+          description: Payout from the Play bet
+          example: 0
+        anteBonusPayout:
+          type: integer
+          description: Ante Bonus payout (Straight Flush 5:1, Three of a Kind 4:1, Straight 1:1)
+          example: 0
+        pairPlusPayout:
+          type: integer
+          description: Pair Plus side bet payout
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the current round (sum of all payouts)
+          example: 0
+        dealerQualified:
+          type: boolean
+          description: Whether the dealer qualified (Q-high or better)
+          example: false
+        playerHandRank:
+          type: integer
+          description: Player's hand rank (1=High Card, 2=Pair, 3=Flush, 4=Straight, 5=Three of a Kind, 6=Straight Flush)
+          example: 2
+        dealerHandRank:
+          type: integer
+          description: Dealer's hand rank (1=High Card, 2=Pair, 3=Flush, 4=Straight, 5=Three of a Kind, 6=Straight Flush)
+          example: 1
+        message:
+          type: string
+          description: Game result or error message. Empty during bet/action phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

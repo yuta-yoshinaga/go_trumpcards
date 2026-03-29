@@ -1315,3 +1315,28 @@ export interface CribbageResponse {
   messageParams?: Record<string, string>;
   config: CribbageConfig;
 }
+
+// --- Three Card Poker (スリーカードポーカー) ---
+
+/** Three Card Poker API response. */
+export interface ThreeCardResponse {
+  playerHand: Card[];
+  dealerHand: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  pairPlusBet: number;
+  playBet: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  anteBonusPayout: number;
+  pairPlusPayout: number;
+  totalPayout: number;
+  dealerQualified: boolean;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
