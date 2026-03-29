@@ -61,6 +61,7 @@ GAMES:
   pyramid      Pyramid (ピラミッド)
   tripeaks     TriPeaks (トリピークス)
   cribbage     Cribbage (クリベッジ)
+  threecard    Three Card Poker (スリーカードポーカー)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -160,6 +161,7 @@ ENVIRONMENT VARIABLES:
 		"pyramid":     func() int { ui.NewPyramidCui().Exec(); return 0 },
 		"tripeaks":    func() int { ui.NewTriPeaksCui().Exec(); return 0 },
 		"cribbage":    func() int { ui.NewCribbageCui().Exec(); return 0 },
+		"threecard":   func() int { ui.NewThreeCardCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
 			if err := updater.Exec(); err != nil {

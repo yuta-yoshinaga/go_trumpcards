@@ -44,7 +44,8 @@
     "pyramid": "Pyramid",
     "tripeaks": "TriPeaks",
     "cribbage": "Cribbage",
-    "shortdeck": "Short Deck"
+    "shortdeck": "Short Deck",
+    "threecard": "Three Card Poker"
   },
   "sound": {
     "mute": "Mute sound",
@@ -180,6 +181,11 @@
     "baccarat.result.playerWins": "Player wins!",
     "baccarat.result.bankerWins": "Banker wins!",
     "baccarat.result.tie": "Tie!",
+    "threecard.result.playerWins": "You win!",
+    "threecard.result.dealerWins": "Dealer wins!",
+    "threecard.result.push": "Push!",
+    "threecard.result.fold": "Folded",
+    "threecard.result.dealerNotQualified": "Dealer does not qualify!",
     "klondike.playing": "Playing",
     "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
     "klondike.gameOver": "Game Over",

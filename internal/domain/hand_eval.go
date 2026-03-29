@@ -2,6 +2,209 @@ package domain
 
 import "sort"
 
+// 3-card poker hand rank constants (descending order).
+// Note: In 3-card poker, Three of a Kind ranks ABOVE Straight.
+const (
+	ThreeCardHandHighCard      = 1
+	ThreeCardHandPair          = 2
+	ThreeCardHandFlush         = 3
+	ThreeCardHandStraight      = 4
+	ThreeCardHandThreeOfAKind  = 5
+	ThreeCardHandStraightFlush = 6
+)
+
+// ThreeCardHandNames maps 3-card hand ranks to display names.
+var ThreeCardHandNames = []string{
+	"", // 0 unused
+	"High Card",
+	"Pair",
+	"Flush",
+	"Straight",
+	"Three of a Kind",
+	"Straight Flush",
+}
+
+// evalThreeCardHand evaluates a 3-card poker hand and returns its rank.
+func evalThreeCardHand(cards []*Card) int {
+	if len(cards) != 3 {
+		return ThreeCardHandHighCard
+	}
+
+	values := make([]int, 3)
+	designs := make([]int, 3)
+	for i, c := range cards {
+		values[i] = c.GetValue()
+		designs[i] = c.GetDesign()
+	}
+	sort.Ints(values)
+
+	isFlush := designs[0] == designs[1] && designs[1] == designs[2]
+	isStraight := checkThreeCardStraight(values)
+
+	// Value frequency count
+	valueCounts := make(map[int]int)
+	for _, v := range values {
+		valueCounts[v]++
+	}
+
+	if isFlush && isStraight {
+		return ThreeCardHandStraightFlush
+	}
+	// Three of a Kind ranks above Straight in 3-card poker
+	for _, cnt := range valueCounts {
+		if cnt == 3 {
+			return ThreeCardHandThreeOfAKind
+		}
+	}
+	if isStraight {
+		return ThreeCardHandStraight
+	}
+	if isFlush {
+		return ThreeCardHandFlush
+	}
+	for _, cnt := range valueCounts {
+		if cnt == 2 {
+			return ThreeCardHandPair
+		}
+	}
+	return ThreeCardHandHighCard
+}
+
+// checkThreeCardStraight checks if 3 sorted values form a straight.
+// Valid wraps: A-2-3 and Q-K-A.
+func checkThreeCardStraight(sortedValues []int) bool {
+	if len(sortedValues) != 3 {
+		return false
+	}
+	// A-2-3
+	if sortedValues[0] == 1 && sortedValues[1] == 2 && sortedValues[2] == 3 {
+		return true
+	}
+	// Q-K-A
+	if sortedValues[0] == 1 && sortedValues[1] == 12 && sortedValues[2] == 13 {
+		return true
+	}
+	// Normal consecutive
+	return sortedValues[1] == sortedValues[0]+1 && sortedValues[2] == sortedValues[1]+1
+}
+
+// threeCardHandHighValues returns card values sorted for comparison,
+// treating Ace as 14 (high).
+func threeCardHandHighValues(cards []*Card) []int {
+	vals := make([]int, len(cards))
+	for i, c := range cards {
+		v := c.GetValue()
+		if v == 1 {
+			v = 14
+		}
+		vals[i] = v
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(vals)))
+	return vals
+}
+
+// threeCardStraightHighCard returns the high card value for a 3-card straight,
+// using special handling for A-2-3 (high card = 3) and Q-K-A (high card = 14).
+func threeCardStraightHighCard(cards []*Card) int {
+	values := make([]int, 3)
+	for i, c := range cards {
+		values[i] = c.GetValue()
+	}
+	sort.Ints(values)
+	// A-2-3: high card is 3
+	if values[0] == 1 && values[1] == 2 && values[2] == 3 {
+		return 3
+	}
+	// Q-K-A: high card is 14 (Ace high)
+	if values[0] == 1 && values[1] == 12 && values[2] == 13 {
+		return 14
+	}
+	return values[2]
+}
+
+// compareThreeCardHands compares two 3-card poker hands.
+// Returns 1 if a wins, -1 if b wins, 0 if tie.
+func compareThreeCardHands(a, b []*Card) int {
+	rankA := evalThreeCardHand(a)
+	rankB := evalThreeCardHand(b)
+	if rankA > rankB {
+		return 1
+	}
+	if rankA < rankB {
+		return -1
+	}
+
+	// Same rank — compare by kickers
+	switch rankA {
+	case ThreeCardHandStraight, ThreeCardHandStraightFlush:
+		highA := threeCardStraightHighCard(a)
+		highB := threeCardStraightHighCard(b)
+		if highA > highB {
+			return 1
+		}
+		if highA < highB {
+			return -1
+		}
+		return 0
+	case ThreeCardHandThreeOfAKind:
+		// All three same value; compare that value
+		vA := a[0].GetValue()
+		if vA == 1 {
+			vA = 14
+		}
+		vB := b[0].GetValue()
+		if vB == 1 {
+			vB = 14
+		}
+		if vA > vB {
+			return 1
+		}
+		if vA < vB {
+			return -1
+		}
+		return 0
+	default:
+		// High card, Flush, Pair: compare each card descending
+		valsA := threeCardHandHighValues(a)
+		valsB := threeCardHandHighValues(b)
+		// For pairs, sort so pair value comes first
+		if rankA == ThreeCardHandPair {
+			valsA = threeCardPairSortedValues(a)
+			valsB = threeCardPairSortedValues(b)
+		}
+		for i := 0; i < len(valsA); i++ {
+			if valsA[i] > valsB[i] {
+				return 1
+			}
+			if valsA[i] < valsB[i] {
+				return -1
+			}
+		}
+		return 0
+	}
+}
+
+// threeCardPairSortedValues returns values sorted with pair value first, then kicker.
+func threeCardPairSortedValues(cards []*Card) []int {
+	freq := make(map[int]int)
+	for _, c := range cards {
+		v := c.GetValue()
+		if v == 1 {
+			v = 14
+		}
+		freq[v]++
+	}
+	var pairVal, kickerVal int
+	for v, cnt := range freq {
+		if cnt == 2 {
+			pairVal = v
+		} else {
+			kickerVal = v
+		}
+	}
+	return []int{pairVal, kickerVal}
+}
+
 // evalFiveCardHand evaluates a 5-card poker hand and returns its rank.
 func evalFiveCardHand(cards []*Card) int {
 	if len(cards) != 5 {

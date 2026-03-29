@@ -1,0 +1,6 @@
+{
+  "helpTitle": "Three Card Poker",
+  "helpBet": "  b <ante> [pairplus]   bet (ante required, pair plus optional)",
+  "helpPlay": "  p                    play (place play bet equal to ante)",
+  "helpFold": "  f                    fold (forfeit ante)"
+}

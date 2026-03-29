@@ -1,0 +1,52 @@
+{
+  "title": "Three Card Poker",
+  "player": "Player",
+  "dealer": "Dealer",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "pairPlus": "Pair Plus",
+    "play": "Play Bet",
+    "handRank": "Hand"
+  },
+  "button": {
+    "bet": "Bet",
+    "play": "Play",
+    "fold": "Fold",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Betting",
+    "action": "Play or Fold",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "You win!",
+    "dealerWins": "Dealer wins!",
+    "push": "Push!",
+    "fold": "Folded",
+    "dealerNotQualified": "Dealer does not qualify!"
+  },
+  "payout": {
+    "ante": "Ante",
+    "play": "Play",
+    "anteBonus": "Ante Bonus",
+    "pairPlus": "Pair Plus",
+    "total": "Total"
+  },
+  "handRank": {
+    "1": "High Card",
+    "2": "Pair",
+    "3": "Flush",
+    "4": "Straight",
+    "5": "Three of a Kind",
+    "6": "Straight Flush"
+  },
+  "dealerQualified": "Qualified",
+  "dealerNotQualified": "Not Qualified",
+  "tutorial": {
+    "betControls": "Set your ante and optional Pair Plus bet, then press Bet.",
+    "actionButtons": "Choose Play to match your ante, or Fold to forfeit.",
+    "results": "Check your results and payouts here."
+  }
+}

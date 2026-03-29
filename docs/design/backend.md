@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全27ゲーム)](#12-ゲームドメイン-全27ゲーム)
+  - [1.2 ゲームドメイン (全28ゲーム)](#12-ゲームドメイン-全28ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -15,6 +15,7 @@
   - [2.2 Web APIゲーム実行フロー](#22-web-apiゲーム実行フロー)
   - [2.3 セッション管理フロー](#23-セッション管理フロー)
   - [2.4 VideoPoker ベット・ホールドフロー](#24-videopoker-ベットホールドフロー)
+  - [2.5 ThreeCard ベット・プレイフロー](#25-threecard-ベットプレイフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -33,6 +34,7 @@
   - [3.15 Euchre フェーズ遷移](#315-euchre-フェーズ遷移)
   - [3.16 Cribbage フェーズ遷移](#316-cribbage-フェーズ遷移)
   - [3.17 ShortDeck フェーズ遷移](#317-shortdeck-フェーズ遷移)
+  - [3.18 ThreeCard フェーズ遷移](#318-threecard-フェーズ遷移)
 
 ---
 
@@ -100,7 +102,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全27ゲーム)
+### 1.2 ゲームドメイン (全28ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -205,7 +207,25 @@ classDiagram
     BlackJackPlayer --> "*" BlackJackHand
     BlackJackPlayer --> "1" ChipHolder
     Poker --> "*" PokerPlayer
+    class ThreeCard {
+        -trumpCards *TrumpCards
+        -playerHand []*Card
+        -dealerHand []*Card
+        -phase int
+        -anteBet int
+        -pairPlusBet int
+        -playBet int
+        +Reset()
+        +PlayerBet(amount int, pairPlusBet int) error
+        +PlayerPlay() error
+        +PlayerFold() error
+        +Phase() int
+        +ActionLog() []*ActionLogEntry
+    }
+
     Baccarat --> "1" TrumpCards
+    ThreeCard --> "1" TrumpCards
+    ThreeCard --> "1" ChipHolder
     VideoPoker --> "1" TrumpCards
     VideoPoker --> "1" ChipHolder
     VideoPoker --> "0..1" VideoPokerVariantConfig
@@ -762,7 +782,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全27ゲーム共通)**
+**Interactor パターン (全28ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1030,6 +1050,42 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: 最終手札・役名・配当表示
+```
+
+### 2.5 ThreeCard ベット・プレイフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as ThreeCardInteractor
+    participant Domain as ThreeCard
+    participant Eval as evalThreeCardHand
+    participant Pres as Presenter
+
+    Note over User,Pres: ベットフロー
+    User->>Ctrl: bet 100 50
+    Ctrl->>Interactor: Bet(100, 50)
+    Interactor->>Domain: PlayerBet(100, 50)
+    Domain->>Domain: チップ減算 → 3枚ずつ配布 → phase=Action
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 手札3枚表示
+
+    Note over User,Pres: プレイフロー
+    User->>Ctrl: play
+    Ctrl->>Interactor: Play()
+    Interactor->>Domain: PlayerPlay()
+    Domain->>Domain: プレイベット = アンティ額
+    Domain->>Eval: evalThreeCardHand(playerHand)
+    Eval-->>Domain: playerRank
+    Domain->>Eval: evalThreeCardHand(dealerHand)
+    Eval-->>Domain: dealerRank
+    Domain->>Domain: ディーラー資格判定 → 勝敗判定 → 配当計算
+    Domain->>Domain: アンティボーナス・ペアプラス計算 → phase=End
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 両手札・結果・配当表示
 ```
 
 ---
@@ -1309,6 +1365,22 @@ stateDiagram-v2
 
 Short Deck Hold'em は Texas Hold'em と同一のフェーズ遷移を使用します（[3.3 Texas Hold'em フェーズ遷移](#33-texas-holdem-フェーズ遷移)を参照）。
 
-主な違いはデッキ構成（36枚、2〜5除去）とハンドランキング（フラッシュ > フルハウス、最低ストレート = A-6-7-8-9）のみで、フェーズ遷移ロジックは共通です。
+主な違いはデッキ構成（36枚、2〜5除去）とハンドランキング（フラッシュ > フルハウス、最低ストレート = A-6-7-8-9）のみで、フェーズ遷移ロジックは���通です。
+
+### 3.18 ThreeCard フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> Action : アンティベット → 3枚配布
+    Action --> End : プレイ → ディーラー公開 → 結果判定
+    Action --> End : フォールド → ベット没収
+    End --> Bet : 次ラウンド (Reset)
+    End --> [*] : チップ0 (ゲーム終了)
+
+    note right of Bet : ThreeCardPhaseBet = 1
+    note right of Action : ThreeCardPhaseAction = 2
+    note right of End : ThreeCardPhaseEnd = 3
+```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

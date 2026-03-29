@@ -79,6 +79,7 @@ import jaPoker from '../i18n/locales/ja/poker.json';
 import jaSevens from '../i18n/locales/ja/sevens.json';
 import jaSpades from '../i18n/locales/ja/spades.json';
 import jaSpider from '../i18n/locales/ja/spider.json';
+import jaThreecard from '../i18n/locales/ja/threecard.json';
 import jaTutorial from '../i18n/locales/ja/tutorial.json';
 
 i18n.use(initReactI18next).init({
@@ -106,6 +107,7 @@ i18n.use(initReactI18next).init({
     'napoleon',
     'spider',
     'indianpoker',
+    'threecard',
     'tutorial',
   ],
   resources: {
@@ -130,6 +132,7 @@ i18n.use(initReactI18next).init({
       napoleon: jaNapoleon,
       spider: jaSpider,
       indianpoker: jaIndianpoker,
+      threecard: jaThreecard,
       tutorial: jaTutorial,
     },
     en: {

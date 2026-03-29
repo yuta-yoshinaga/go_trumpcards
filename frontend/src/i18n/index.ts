@@ -28,6 +28,7 @@ import enSevens from './locales/en/sevens.json';
 import enShortdeck from './locales/en/shortdeck.json';
 import enSpades from './locales/en/spades.json';
 import enSpider from './locales/en/spider.json';
+import enThreecard from './locales/en/threecard.json';
 import enTripeaks from './locales/en/tripeaks.json';
 import enTutorial from './locales/en/tutorial.json';
 import enVideopoker from './locales/en/videopoker.json';
@@ -57,6 +58,7 @@ import jaSevens from './locales/ja/sevens.json';
 import jaShortdeck from './locales/ja/shortdeck.json';
 import jaSpades from './locales/ja/spades.json';
 import jaSpider from './locales/ja/spider.json';
+import jaThreecard from './locales/ja/threecard.json';
 import jaTripeaks from './locales/ja/tripeaks.json';
 import jaTutorial from './locales/ja/tutorial.json';
 import jaVideopoker from './locales/ja/videopoker.json';
@@ -91,6 +93,7 @@ i18n
         spider: jaSpider,
         indianpoker: jaIndianpoker,
         pyramid: jaPyramid,
+        threecard: jaThreecard,
         tripeaks: jaTripeaks,
         videopoker: jaVideopoker,
         deuceswild: jaDeuceswild,
@@ -122,6 +125,7 @@ i18n
         spider: enSpider,
         indianpoker: enIndianpoker,
         pyramid: enPyramid,
+        threecard: enThreecard,
         tripeaks: enTripeaks,
         videopoker: enVideopoker,
         deuceswild: enDeuceswild,
@@ -156,6 +160,7 @@ i18n
       'spider',
       'indianpoker',
       'pyramid',
+      'threecard',
       'tripeaks',
       'videopoker',
       'deuceswild',
