@@ -7,9 +7,6 @@ import (
 	"time"
 )
 
-// holdemEquitySimulations デフォルトのモンテカルロシミュレーション回数
-const holdemEquitySimulations = 50000
-
 // HoldemEquityResult エクイティ計算結果
 type HoldemEquityResult struct {
 	Equity   float64          // 勝率 (0.0 - 1.0)

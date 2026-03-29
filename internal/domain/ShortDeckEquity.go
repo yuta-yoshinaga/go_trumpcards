@@ -4,9 +4,6 @@ import (
 	"math/rand"
 )
 
-// shortDeckEquitySimulations デフォルトのモンテカルロシミュレーション回数
-const shortDeckEquitySimulations = 50000
-
 // CalcShortDeckEquity モンテカルロシミュレーションによるショートデックエクイティ計算
 // humanCards: 人間の手札(2枚), communityCards: コミュニティカード,
 // activePlayers: アクティブ相手プレイヤー数, simulations: シミュレーション回数,
