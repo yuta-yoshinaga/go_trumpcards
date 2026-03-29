@@ -1,0 +1,34 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "TriPeaks",
+  "stock": "Stock",
+  "waste": "Waste",
+  "moveCount": "Moves",
+  "draw": "Draw",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "empty": "Empty",
+  "playing": "Playing",
+  "stalemate": "No more moves",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "noHint": "No hints available",
+  "hintAvailable": "Hint available",
+  "hintType": {
+    "remove": "A card can be removed",
+    "draw": "Draw a card from the stock"
+  },
+  "tutorial": {
+    "peaks": "Three peaks. Click exposed cards to remove them.",
+    "stockWaste": "Click the stock to draw a card.",
+    "controls": "Control buttons.",
+    "hintDisplay": "Press the hint button for suggestions.",
+    "resetButton": "Press reset to start a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for easier play"
+}

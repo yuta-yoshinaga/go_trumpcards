@@ -47,6 +47,7 @@ type TrumpCardsWeb struct {
 	euc  *controller.EuchreWebController
 	pyc  *controller.PyramidWebController
 	cbc  *controller.CribbageWebController
+	tpc  *controller.TriPeaksWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -244,6 +245,10 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			pyramid := domain.NewPyramid(domain.NewTrumpCards(0))
 			return usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidWebPresenter))
 		}),
+		tpc: controller.NewTriPeaksWebController(func() usecase.TriPeaksInteractorIF {
+			triPeaks := domain.NewTriPeaks(domain.NewTrumpCards(0))
+			return usecase.NewTriPeaksInteractor(triPeaks, new(presenter.TriPeaksWebPresenter))
+		}),
 		cbc: controller.NewCribbageWebController(func() usecase.CribbageInteractorIF {
 			config := domain.DefaultCribbageConfig()
 			players := []*domain.CribbagePlayer{
@@ -290,6 +295,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/jokerpoker/exec", web.jpwc.Exec},
 		{"/euchre/exec", web.euc.Exec},
 		{"/pyramid/exec", web.pyc.Exec},
+		{"/tripeaks/exec", web.tpc.Exec},
 		{"/cribbage/exec", web.cbc.Exec},
 	}
 	for _, r := range routes {

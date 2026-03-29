@@ -115,6 +115,23 @@ func main() {
 		},
 	)
 
+	// TriPeaks
+	registerKV(mux, "/tripeaks/exec", "tripeaks:",
+		func() usecase.TriPeaksInteractorIF {
+			triPeaks := domain.NewTriPeaks(domain.NewTrumpCards(0))
+			return usecase.NewTriPeaksInteractor(triPeaks, new(presenter.TriPeaksWebPresenter))
+		},
+		func(data []byte) (usecase.TriPeaksInteractorIF, error) {
+			return usecase.RestoreTriPeaksInteractor(data, new(presenter.TriPeaksWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.TriPeaksInteractorIF], f func() usecase.TriPeaksInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewTriPeaksWebControllerWithProvider(p, f)
+		},
+	)
+
 	// Memory
 	registerKV(mux, "/memory/exec", "memory:",
 		func() usecase.MemoryInteractorIF {

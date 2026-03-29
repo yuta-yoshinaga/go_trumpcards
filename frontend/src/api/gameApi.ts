@@ -25,6 +25,7 @@ import type {
   ShortDeckResponse,
   SpadesResponse,
   SpiderResponse,
+  TriPeaksResponse,
   VideoPokerResponse,
 } from '../types/card';
 
@@ -61,6 +62,7 @@ const workerUrl: Record<string, string> = {
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
   pyramid: WORKER_SOLO,
+  tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
   cribbage: WORKER_SOLO,
@@ -683,6 +685,12 @@ export const pyramidApi = {
   ) => gameExec<PyramidResponse>('pyramid', { command, card1, card2 }),
 };
 
+/** API client for the TriPeaks /tripeaks/exec endpoint. */
+export const tripeaksApi = {
+  exec: (command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo', row?: number, col?: number) =>
+    gameExec<TriPeaksResponse>('tripeaks', { command, row, col }),
+};
+
 /** API client for the Video Poker /videopoker/exec endpoint. */
 export const videopokerApi = {
   exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
@@ -727,6 +735,7 @@ const games = [
   'jokerpoker',
   'euchre',
   'pyramid',
+  'tripeaks',
   'cribbage',
 ] as const;
 type Game = (typeof games)[number];

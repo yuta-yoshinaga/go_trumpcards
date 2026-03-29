@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全26ゲーム)](#12-ゲームドメイン-全26ゲーム)
+  - [1.2 ゲームドメイン (全27ゲーム)](#12-ゲームドメイン-全27ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -23,7 +23,7 @@
   - [3.5 Spades フェーズ遷移](#35-spades-フェーズ遷移)
   - [3.6 Doubt フェーズ遷移](#36-doubt-フェーズ遷移)
   - [3.7 Memory フェーズ遷移](#37-memory-フェーズ遷移)
-  - [3.8 Klondike / FreeCell / Spider / Pyramid フェーズ遷移](#38-klondike--freecell--spider--pyramid-フェーズ遷移)
+  - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks-フェーズ遷移)
   - [3.9 CrazyEights フェーズ遷移](#39-crazyeights-フェーズ遷移)
   - [3.10 GinRummy フェーズ遷移](#310-ginrummy-フェーズ遷移)
   - [3.11 Baccarat フェーズ遷移](#311-baccarat-フェーズ遷移)
@@ -100,7 +100,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全26ゲーム)
+### 1.2 ゲームドメイン (全27ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -628,6 +628,22 @@ classDiagram
         +Phase() PyramidPhase
     }
 
+    class TriPeaks {
+        -trumpCards *TrumpCards
+        -tableau [4][]*TriPeaksCard
+        -stock []*Card
+        -waste []*Card
+        -phase TriPeaksPhase
+        -history []*tripeaksSnapshot
+        +Reset()
+        +Draw() error
+        +Remove(row int, col int) error
+        +GetHint() *TriPeaksHint
+        +Undo() error
+        +GiveUp()
+        +Phase() TriPeaksPhase
+    }
+
     class Cribbage {
         -trumpCards *TrumpCards
         -players []*CribbagePlayer
@@ -673,6 +689,11 @@ classDiagram
         +bool Removed
     }
 
+    class TriPeaksCard {
+        +*Card Card
+        +bool Removed
+    }
+
     class MemoryBoardCard {
         +*Card Card
         +bool FaceUp
@@ -683,6 +704,7 @@ classDiagram
     FreeCell --> "*" Card
     Spider --> "*" SpiderTableauCard
     Pyramid --> "*" PyramidCard
+    TriPeaks --> "*" TriPeaksCard
     Cribbage --> "*" CribbagePlayer
     Memory --> "*" MemoryBoardCard
     Memory --> "*" MemoryPlayer
@@ -740,7 +762,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全23ゲーム共通)**
+**Interactor パターン (全27ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -812,8 +834,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "26ゲーム × CUI/Web = 52 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "26ゲーム × CUI/Web = 52 Presenter 実装"
+    note for GameCuiController "27ゲーム × CUI/Web = 54 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "27ゲーム × CUI/Web = 54 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -846,6 +868,7 @@ classDiagram
         -jokerpoker *JokerPokerWebController
         -euchre *EuchreWebController
         -pyramid *PyramidWebController
+        -tripeaks *TriPeaksWebController
         -cribbage *CribbageWebController
         +Exec()
     }
@@ -868,8 +891,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 26 controllers
-    GameManager --> "*" CuiExecer : holds 26 games
+    TrumpCardsWeb --> "*" GameWebController : holds 27 controllers
+    GameManager --> "*" CuiExecer : holds 27 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1123,28 +1146,30 @@ stateDiagram-v2
     note right of Result : MemoryPhaseResult = 2
 ```
 
-### 3.8 Klondike / FreeCell / Spider / Pyramid フェーズ遷移
+### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks フェーズ遷移
 
-4つのソリティア系ゲームは共通のフェーズ構造を持ちます。
+5つのソリティア系ゲームは共通のフェーズ構造を持ちます。
 
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
     Playing --> Playing : Move / Draw / Deal / Remove / Undo
-    Playing --> GameClear : 全カードをFoundation/Pyramid除去完了
+    Playing --> GameClear : 全カードをFoundation/Pyramid/Tableau除去完了
     Playing --> GameClear : Autocomplete成功 (Klondike/FreeCell/Spider のみ)
     Playing --> GameOver : GiveUp
     GameClear --> [*]
     GameOver --> [*]
 
-    note right of Playing : Klondike/FreeCell/Spider/Pyramid 共通 Phase = 0
+    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks 共通 Phase = 0
     note right of GameClear : Phase = 1
     note right of GameOver : Phase = 2
 ```
 
 Pyramid 固有のアクション: `Draw` / `RemovePair` / `RemoveKing` / `RemoveWithWaste` / `RemoveWasteKing` / `Undo`。クリア条件はピラミッドの28枚全除去。
 
-各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
+TriPeaks 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件はウェイストトップ±1ランク（K-Aラップ）。クリア条件はタブローの28枚全除去。
+
+各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
 
 ### 3.9 CrazyEights フェーズ遷移
 

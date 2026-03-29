@@ -42,6 +42,7 @@
     "jokerpoker": "Joker Poker",
     "euchre": "Euchre",
     "pyramid": "Pyramid",
+    "tripeaks": "TriPeaks",
     "cribbage": "Cribbage",
     "shortdeck": "Short Deck"
   },
@@ -202,6 +203,12 @@
     "pyramid.gameOver": "Game Over",
     "pyramid.hintAvailable": "Hint available",
     "pyramid.noHint": "No hint available",
-    "pyramid.stalemate": "No moves can lead to a win. Please undo or give up."
+    "pyramid.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "tripeaks.playing": "Playing",
+    "tripeaks.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "tripeaks.gameOver": "Game Over",
+    "tripeaks.hintAvailable": "Hint available",
+    "tripeaks.noHint": "No hint available",
+    "tripeaks.stalemate": "No moves can lead to a win. Please undo or give up."
   }
 }

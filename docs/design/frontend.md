@@ -116,6 +116,19 @@ classDiagram
         +object messageParams
     }
 
+    class TriPeaksResponse {
+        +object[][] tableau
+        +Card[] waste
+        +number stockCount
+        +number phase
+        +number moveCount
+        +boolean canUndo
+        +boolean isStalemate
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
     class CribbageResponse {
         +object[] players
         +number phase
@@ -136,7 +149,7 @@ classDiagram
         +object config
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全26ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全27ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -289,6 +302,13 @@ classDiagram
         GAME_OVER = 2
     }
 
+    class TriPeaksPhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
     class CribbagePhase {
         <<enumeration>>
         DISCARD = 0
@@ -299,7 +319,7 @@ classDiagram
         GAME_END = 5
     }
 
-    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase は、\nそれぞれ同一の値を持つ別定数です"
+    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase は、\nそれぞれ同一の値を持つ別定数です"
 ```
 
 ### 1.2 API クライアント層
@@ -332,6 +352,10 @@ classDiagram
         +run(cmd, card1?, card2?) Promise~PyramidResponse~
     }
 
+    class TriPeaksApi {
+        +run(cmd, row?, col?) Promise~TriPeaksResponse~
+    }
+
     class CribbageApi {
         +run(cmd, args?, config?) Promise~CribbageResponse~
     }
@@ -339,7 +363,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全26ゲーム()
+        ...全27ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -347,11 +371,12 @@ classDiagram
     HeartsApi --> gameApi : uses postJson/gameExec
     KlondikeApi --> gameApi : uses postJson/gameExec
     PyramidApi --> gameApi : uses postJson/gameExec
+    TriPeaksApi --> gameApi : uses postJson/gameExec
     CribbageApi --> gameApi : uses postJson/gameExec
     actionLogApi --> gameApi : uses gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全26ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, cribbage)"
+    note for BlackJackApi "全27ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -550,6 +575,15 @@ classDiagram
         +Function handleReset
     }
 
+    class useTriPeaksGame {
+        +TriPeaksResponse state
+        +Function handleDraw
+        +Function handleRemove
+        +Function handleHint
+        +Function handleUndo
+        +Function handleReset
+    }
+
     class useCribbageGame {
         +CribbageResponse state
         +Function handleDiscard
@@ -562,12 +596,13 @@ classDiagram
 
     useKlondikeGame --> useGameApi : uses
     usePyramidGame --> useGameApi : uses
+    useTriPeaksGame --> useGameApi : uses
     useCribbageGame --> useGameApi : uses
     useMemoryGame --> useGameApi : uses
     useDoubtGame --> useGameApi : uses
     useDoubtGame --> useCardSelection : uses
 
-    note for useBlackJackGame "全26ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全27ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -806,6 +841,13 @@ classDiagram
         +Undo/ヒント
     }
 
+    class TriPeaksPage {
+        +3ピークスタブロー表示
+        +ストック/ウェイスト
+        +カード除去 (±1ランク)
+        +Undo/ヒント
+    }
+
     class CribbagePage {
         +プレイヤー情報・スコア表示
         +スターターカード
@@ -828,6 +870,7 @@ classDiagram
     JokerPokerPage --> VideoPokerPage : reuses VideoPokerGameContent
     EuchrePage --|> GamePage : follows pattern
     PyramidPage --|> GamePage : follows pattern
+    TriPeaksPage --|> GamePage : follows pattern
     class ShortDeckPage {
         +ホールデム系共通UI
         +36枚デッキ表示
@@ -851,7 +894,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全26ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全27ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -874,7 +917,7 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (26ゲーム)
+        +Routes (27ゲーム)
     }
 
     class gameCategories {
@@ -882,7 +925,7 @@ classDiagram
         +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker]
         +trickTaking: [Hearts, Spades, Napoleon, Euchre]
         +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights]
-        +solitaire: [Klondike, FreeCell, Spider, Pyramid, Memory]
+        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Memory]
         +rummy: [GinRummy, Cribbage]
     }
 
@@ -897,11 +940,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 26 pages
+    App --> GamePage : routes to 27 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "28名前空間: common + 26ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "29名前空間: common + 27ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
