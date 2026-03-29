@@ -4,6 +4,7 @@ import { indianpokerApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CpuActionLog } from '../components/CpuActionLog';
+import { CpuActionToast } from '../components/CpuActionToast';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -18,7 +19,7 @@ import { RoundResults } from '../components/RoundResults';
 import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -87,6 +88,7 @@ function IndianPokerPageContent() {
     useGamePageSetup('indianpoker');
   const phaseNames = usePhaseNames('indianpoker', INDIAN_POKER_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi } = useGameApi(indianpokerApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [ante] = useState(10);
@@ -180,25 +182,26 @@ function IndianPokerPageContent() {
       {/* Scrollable: opponent cards + CPU players */}
       <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* CPU players - show cards face-up (opponents can see each other's cards) */}
-        <div data-tutorial="ip-cpu-cards">
+        <div data-tutorial="ip-cpu-cards" className={isMobile ? 'grid grid-cols-3 gap-2 mb-3' : ''}>
           {state.players
             ?.filter((p) => !p.isHuman)
             .map((p) => (
-              <div key={p.id} className="mb-3">
-                <div className="text-white text-sm mb-1">
-                  {tc('player.cpu', { id: p.id })} <span className="text-gray-300 text-xs">({p.playStyleName})</span>
-                  <span className="ml-2 text-xs">
+              <div key={p.id} className={isMobile ? 'text-center' : 'mb-3'}>
+                <div className={`text-white text-sm mb-1 ${isMobile ? 'truncate' : ''}`}>
+                  {tc('player.cpu', { id: p.id })}
+                  {!isMobile && <span className="text-gray-300 text-xs"> ({p.playStyleName})</span>}
+                  <span className={`text-xs ${isMobile ? 'block' : 'ml-2'}`}>
                     {tc('betting.chips')} {p.chips}
                   </span>
                   {p.currentBet > 0 && (
-                    <span className="ml-2 text-xs">
+                    <span className={`text-xs ${isMobile ? 'block' : 'ml-2'}`}>
                       {tc('betting.currentBet')} {p.currentBet}
                     </span>
                   )}
-                  {p.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
-                  {p.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
+                  {p.folded && <span className="ml-1 text-red-300 text-xs">[{tc('status.folded')}]</span>}
+                  {p.allIn && <span className="ml-1 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
                 </div>
-                <div className="flex flex-wrap gap-1">
+                <div className={isMobile ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
                   {p.card ? (
                     <AnimatedCard card={p.card} width={cardWidth} style={{ border: '3px solid transparent' }} />
                   ) : (
@@ -209,8 +212,8 @@ function IndianPokerPageContent() {
             ))}
         </div>
 
-        {/* CPU actions log */}
-        <CpuActionLog actions={state.cpuActions} />
+        {/* CPU actions: toast on mobile, inline log on desktop */}
+        {isMobile ? <CpuActionToast actions={state.cpuActions} /> : <CpuActionLog actions={state.cpuActions} />}
 
         {/* Round results */}
         {isShowdown && <RoundResults results={roundResultsForDisplay} players={state.players ?? []} />}

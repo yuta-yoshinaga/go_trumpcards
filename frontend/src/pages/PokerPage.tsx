@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
+import { CpuActionToast } from '../components/CpuActionToast';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -17,7 +19,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -97,6 +99,7 @@ function PokerPageContent() {
     useGamePageSetup('poker');
   const phaseNames = usePhaseNames('poker', POKER_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { state, loading, error, exec, selected, toggleCard, clearSelection, odds, canExchange } = usePokerGame();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('poker', state);
   const [betAmount, setBetAmount] = useState(10);
@@ -136,6 +139,7 @@ function PokerPageContent() {
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const minRaise = state?.minRaise ?? 10;
   const cardCount = humanPlayer?.cards?.length ?? 0;
+  const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
 
   useCardKeyboardNav({
     cardCount,
@@ -174,9 +178,8 @@ function PokerPageContent() {
       {/* Scrollable: CPU players + logs */}
       <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* CPU players */}
-        {state?.players
-          ?.filter((p) => !p.isHuman)
-          .map((p) => (
+        {(() => {
+          const cpuCards = cpuPlayers.map((p) => (
             <CpuPlayerCard
               key={p.id}
               player={p}
@@ -190,10 +193,12 @@ function PokerPageContent() {
                 ) : undefined
               }
             />
-          ))}
+          ));
+          return isMobile ? <CpuAccordion playerCount={cpuPlayers.length}>{cpuCards}</CpuAccordion> : cpuCards;
+        })()}
 
-        {/* CPU actions log */}
-        <CpuActionLog actions={state?.cpuActions} />
+        {/* CPU actions: toast on mobile, inline log on desktop */}
+        {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
 
         {/* CPU exchanges log */}
         {state?.cpuExchanges && state.cpuExchanges.length > 0 && (

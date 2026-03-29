@@ -268,14 +268,16 @@ function BlackJackPageContent() {
         {phase === BjPhase.BET && (
           <div className="flex flex-col items-center justify-center py-6 gap-4">
             <p className="text-white/50 text-lg">{t('betGuide')}</p>
-            <div className="bg-black/30 rounded-lg p-4 w-full max-w-sm">
-              <div className="text-white font-bold text-sm mb-2">{t('payoutRef.title')}</div>
-              <ul className="text-white/70 text-sm space-y-1">
+            <details className="bg-black/30 rounded-lg w-full max-w-sm">
+              <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
+                {t('payoutRef.title')}
+              </summary>
+              <ul className="text-white/70 text-sm space-y-1 px-4 pb-3">
                 {(['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const).map((key) => (
                   <li key={key}>{t(`payoutRef.${key}`)}</li>
                 ))}
               </ul>
-            </div>
+            </details>
           </div>
         )}
         {phase !== BjPhase.BET && (
