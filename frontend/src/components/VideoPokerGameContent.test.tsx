@@ -89,6 +89,7 @@ function renderContent() {
         i18nNamespace="videopoker"
         apiExec={mockExec}
         payoutTableRows={payoutRows}
+        gamePath="/videopoker"
       />
     </TutorialProvider>,
   );

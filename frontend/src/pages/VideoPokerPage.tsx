@@ -62,6 +62,7 @@ export function VideoPokerPage() {
         i18nNamespace="videopoker"
         apiExec={videopokerApi.exec}
         payoutTableRows={JOB_PAYOUT_ROWS}
+        gamePath="/videopoker"
       />
     </TutorialProvider>
   );

@@ -13,6 +13,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -162,6 +163,7 @@ function PokerPageContent() {
           {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
         </span>
         <TutorialButton />
+        <ManualButton gamePath="/poker" />
         <span>
           {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
         </span>
