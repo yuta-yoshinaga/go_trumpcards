@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Omaha Hold'em, Short Deck Hold'em, Hearts, Memory, Klondike, FreeCell, Baccarat, Spades, Crazy Eights, Gin Rummy, Napoleon, Indian Poker, Video Poker, Deuces Wild, Joker Poker, Euchre, Pyramid, TriPeaks, Cribbage, Three Card Poker, Oh Hell. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go trump card game algorithms -- Baccarat, BlackJack, Crazy Eights, Cribbage, Daifugo, Deuces Wild, Doubt, Euchre, FreeCell, Gin Rummy, Hearts, Indian Poker, Joker Poker, Klondike, Memory, Napoleon, Oh Hell, Old Maid, Omaha Hold'em, Poker, Pyramid, Sevens, Short Deck Hold'em, Spades, Spider Solitaire, Texas Hold'em, Three Card Poker, TriPeaks, Video Poker. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 

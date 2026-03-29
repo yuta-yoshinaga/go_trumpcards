@@ -491,9 +491,15 @@ classDiagram
     }
 
     class IndianPokerHumanProfile {
-        +float64 BluffRate
-        +float64 FoldRate
-        +int AvgHesitationMs
+        +[3]struct AggressiveByBracket
+        +int FoldToBetCount
+        +int FoldToBetTotal
+        +int GamesPlayed
+        +int HesitationCount
+        +float64 HesitationMean
+        +float64 HesitationM2
+        +BluffRate(bracket int) float64
+        +FoldRate() float64
     }
 
     IndianPoker --> "4" IndianPokerPlayer
@@ -919,6 +925,7 @@ classDiagram
         -pyramid *PyramidWebController
         -tripeaks *TriPeaksWebController
         -cribbage *CribbageWebController
+        -threecard *ThreeCardWebController
         -ohhell *OhHellWebController
         +Exec()
     }
@@ -941,7 +948,7 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 28 controllers
+    TrumpCardsWeb --> "*" GameWebController : holds 29 controllers
     GameManager --> "*" CuiExecer : holds 28 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates

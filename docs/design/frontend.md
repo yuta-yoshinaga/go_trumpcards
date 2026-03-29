@@ -321,6 +321,22 @@ classDiagram
         GAME_END = 5
     }
 
+    class OhHellPhase {
+        <<enumeration>>
+        BID = 0
+        PLAY = 1
+        TRICK_END = 2
+        ROUND_END = 3
+        GAME_END = 4
+    }
+
+    class ThreeCardPhase {
+        <<enumeration>>
+        BET = 1
+        ACTION = 2
+        END = 3
+    }
+
     note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase は、\nそれぞれ同一の値を持つ別定数です"
 ```
 
@@ -501,6 +517,38 @@ classDiagram
     class useLocalStorageToggle {
         +boolean value
         +Function setValue
+    }
+
+    class useCardGesture {
+        +Function onSwipe
+        +Function onTap
+    }
+
+    class useHaptics {
+        +Function vibrate
+    }
+
+    class useKlondikeTimer {
+        +number elapsed
+        +Function start
+        +Function stop
+        +Function reset
+    }
+
+    class useProfilePersistence {
+        +Function loadProfile
+        +Function saveProfile
+    }
+
+    class useFavoriteGames {
+        +string[] favorites
+        +Function toggle
+        +Function isFavorite
+    }
+
+    class useRecentGames {
+        +string[] recentGames
+        +Function addRecent
     }
 
     useGamePageSetup --> useActionLog : composes
@@ -954,13 +1002,13 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (27ゲーム)
+        +Routes (29ゲーム)
     }
 
     class gameCategories {
-        +table: [BlackJack, Baccarat, VideoPoker, DeucesWild, JokerPoker]
-        +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker]
-        +trickTaking: [Hearts, Spades, Napoleon, Euchre]
+        +table: [BlackJack, Baccarat, ThreeCard]
+        +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
+        +trickTaking: [Hearts, Spades, OhHell, Euchre, Napoleon]
         +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights]
         +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Memory]
         +rummy: [GinRummy, Cribbage]
@@ -977,11 +1025,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 27 pages
+    App --> GamePage : routes to 29 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "29名前空間: common + 27ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "31名前空間: common + 29ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
