@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { manualTexts } from '../constants/manualTexts';
@@ -14,6 +15,7 @@ export interface ManualModalProps {
 
 /** Renders a scrollable modal displaying the game manual as rendered Markdown. */
 export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
+  const { t } = useTranslation('common');
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
 
@@ -21,7 +23,9 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
     if (!open) return;
     triggerRef.current = document.activeElement;
 
-    const dialog = dialogRef.current as HTMLElement;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
     const focusable = getFocusableElements(dialog);
     if (focusable.length > 0) {
       focusable[0].focus();
@@ -75,12 +79,12 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Game Manual"
+        aria-label={t('manual.ariaLabel')}
         className="glass-panel rounded-lg shadow-xl p-6 mx-4 max-w-2xl w-full max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-end mb-2">
-          <button type="button" className={btnSecondary} onClick={onClose}>
+          <button type="button" className={btnSecondary} onClick={onClose} aria-label={t('manual.close')}>
             &times;
           </button>
         </div>

@@ -225,5 +225,10 @@
     "tripeaks.hintAvailable": "ヒントがあります",
     "tripeaks.noHint": "ヒントはありません",
     "tripeaks.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
+  },
+  "manual": {
+    "ariaLabel": "ゲームマニュアル",
+    "close": "閉じる",
+    "button": "マニュアル"
   }
 }
