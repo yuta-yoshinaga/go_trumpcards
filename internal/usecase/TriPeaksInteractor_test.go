@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -145,4 +146,35 @@ func TestTriPeaksInteractorUndo(t *testing.T) {
 
 	result := ti.Undo()
 	assert.Equal(t, "undo_output", result)
+}
+
+func TestTriPeaksInteractorSnapshot(t *testing.T) {
+	game := domain.NewTriPeaks(domain.NewTrumpCards(0))
+	game.Reset()
+	tp := newMockTriPeaksPresenter()
+	ti := NewTriPeaksInteractor(game, tp)
+
+	data, err := ti.Snapshot()
+	assert.NoError(t, err)
+	assert.NotEmpty(t, data)
+}
+
+func TestRestoreTriPeaksInteractor(t *testing.T) {
+	game := domain.NewTriPeaks(domain.NewTrumpCards(0))
+	game.Reset()
+	tp := newMockTriPeaksPresenter()
+	ti := NewTriPeaksInteractor(game, tp)
+
+	data, err := ti.Snapshot()
+	assert.NoError(t, err)
+
+	restored, err := RestoreTriPeaksInteractor(data, tp)
+	assert.NoError(t, err)
+	assert.NotNil(t, restored)
+}
+
+func TestRestoreTriPeaksInteractorInvalidJSON(t *testing.T) {
+	tp := newMockTriPeaksPresenter()
+	_, err := RestoreTriPeaksInteractor([]byte("invalid"), tp)
+	assert.Error(t, err)
 }
