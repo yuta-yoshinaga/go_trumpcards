@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, shortdeckApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -1080,5 +1080,35 @@ describe('ShortDeckPage', () => {
     mockExec.mockResolvedValue(initState);
     renderWithProviders(<ShortDeckPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  // --- Mobile layout tests ---
+
+  describe('mobile viewport', () => {
+    const originalInnerWidth = window.innerWidth;
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    afterEach(() => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalInnerWidth });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('renders CpuAccordion on mobile', async () => {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<ShortDeckPage />);
+      await waitFor(() => expect(screen.getByTestId('cpu-accordion')).toBeInTheDocument());
+    });
+
+    it('renders sticky community cards on mobile', async () => {
+      mockExec.mockResolvedValue(preFlopState);
+      const { container } = renderWithProviders(<ShortDeckPage />);
+      await waitFor(() => expect(screen.getByTestId('cpu-accordion')).toBeInTheDocument());
+      const stickyDiv = container.querySelector('[data-tutorial="sd-community-cards"]');
+      expect(stickyDiv).toHaveClass('sticky');
+    });
   });
 });

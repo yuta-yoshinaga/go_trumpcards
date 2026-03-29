@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { indianpokerApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -770,5 +770,36 @@ describe('IndianPokerPage', () => {
     mockExec.mockResolvedValue(initState);
     renderWithProviders(<IndianPokerPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  // --- Mobile layout tests ---
+
+  describe('mobile viewport', () => {
+    const originalInnerWidth = window.innerWidth;
+
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    afterEach(() => {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalInnerWidth });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('renders CPU cards in 3-column grid on mobile', async () => {
+      mockExec.mockResolvedValue(bettingState);
+      const { container } = renderWithProviders(<IndianPokerPage />);
+      await waitFor(() => expect(container.querySelector('[data-tutorial="ip-cpu-cards"]')).toBeInTheDocument());
+      const cpuGrid = container.querySelector('[data-tutorial="ip-cpu-cards"]');
+      expect(cpuGrid).toHaveClass('grid-cols-3');
+    });
+
+    it('hides playStyleName on mobile', async () => {
+      mockExec.mockResolvedValue(bettingState);
+      renderWithProviders(<IndianPokerPage />);
+      await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+      expect(screen.queryByText(/バランス型/)).not.toBeInTheDocument();
+    });
   });
 });
