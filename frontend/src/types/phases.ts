@@ -7,6 +7,7 @@
  *   - CrazyEights: internal/domain/CrazyEights.go (CrazyEightsPhasePlay, CrazyEightsPhaseChooseSuit, CrazyEightsPhaseRoundEnd, CrazyEightsPhaseGameEnd)
  *   - Cribbage:    internal/domain/Cribbage.go    (CribbagePhaseDiscard, CribbagePhaseCut, CribbagePhasePegging, CribbagePhaseShow, CribbagePhaseRoundEnd, CribbagePhaseGameEnd)
  *   - Doubt:       internal/domain/Doubt.go       (DoubtPhasePlay, DoubtPhaseDoubt, DoubtPhaseEnd)
+ *   - Bridge:      internal/domain/Bridge.go      (BridgePhaseBid, BridgePhasePlay, BridgePhaseTrickEnd, BridgePhaseRoundEnd, BridgePhaseGameEnd)
  *   - Euchre:      internal/domain/Euchre.go      (EuchrePhasePickUp, EuchrePhaseCallTrump, EuchrePhaseDiscard, EuchrePhasePlay, EuchrePhaseTrickEnd, EuchrePhaseRoundEnd, EuchrePhaseGameEnd)
  *   - FreeCell:    internal/domain/FreeCell.go    (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
  *   - GinRummy:    internal/domain/GinRummy.go    (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
@@ -246,6 +247,15 @@ export const EuchrePhase = {
   TRICK_END: 4,
   ROUND_END: 5,
   GAME_END: 6,
+} as const;
+
+/** Bridge phase constants (sync: internal/domain/Bridge.go). */
+export const BridgePhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
 } as const;
 
 /** Three Card Poker phase constants (sync: internal/domain/ThreeCard.go). */

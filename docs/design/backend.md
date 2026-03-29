@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全29ゲーム)](#12-ゲームドメイン-全29ゲーム)
+  - [1.2 ゲームドメイン (全30ゲーム)](#12-ゲームドメイン-全30ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -17,6 +17,7 @@
   - [2.4 VideoPoker ベット・ホールドフロー](#24-videopoker-ベットホールドフロー)
   - [2.5 ThreeCard ベット・プレイフロー](#25-threecard-ベットプレイフロー)
   - [2.6 OhHell ビッド・トリックフロー](#26-ohhell-ビッドトリックフロー)
+  - [2.7 Bridge オークション・トリックフロー](#27-bridge-オークショントリックフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -37,6 +38,7 @@
   - [3.17 ShortDeck フェーズ遷移](#317-shortdeck-フェーズ遷移)
   - [3.18 ThreeCard フェーズ遷移](#318-threecard-フェーズ遷移)
   - [3.19 OhHell フェーズ遷移](#319-ohhell-フェーズ遷移)
+  - [3.20 Bridge フェーズ遷移](#320-bridge-フェーズ遷移)
 
 ---
 
@@ -104,7 +106,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全29ゲーム)
+### 1.2 ゲームドメイン (全30ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -350,6 +352,32 @@ classDiagram
         +*Card Card
     }
 
+    class Bridge {
+        -trumpCards *TrumpCards
+        -players []*BridgePlayer
+        -config BridgeConfig
+        -phase BridgePhase
+        -trickCards []*BridgeTrickCard
+        -trumpSuit int
+        -contractLevel int
+        -contractSuit int
+        -declarerIdx int
+        -dummyIdx int
+        -vulnerability [2]bool
+        +Reset()
+        +Bid(bidType int, level int, suit int) error
+        +PlayCard(index int) error
+        +NextTrick() error
+        +NextRound() error
+        +Hint() *BridgeHint
+        +Phase() BridgePhase
+    }
+
+    class BridgeTrickCard {
+        +int PlayerIdx
+        +*Card Card
+    }
+
     Hearts --> "4" HeartsPlayer
     Hearts --> "*" HeartsTrickCard
     Spades --> "4" SpadesPlayer
@@ -360,11 +388,14 @@ classDiagram
     Euchre --> "*" EuchreTrickCard
     OhHell --> "4" OhHellPlayer
     OhHell --> "*" OhHellTrickCard
+    Bridge --> "4" BridgePlayer
+    Bridge --> "*" BridgeTrickCard
     HeartsPlayer --|> GamePlayer
     SpadesPlayer --|> GamePlayer
     NapoleonPlayer --|> GamePlayer
     EuchrePlayer --|> GamePlayer
     OhHellPlayer --|> GamePlayer
+    BridgePlayer --|> GamePlayer
 ```
 
 #### ホールデム系ゲーム
@@ -817,7 +848,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全29ゲーム共通)**
+**Interactor パターン (全30ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -927,6 +958,7 @@ classDiagram
         -cribbage *CribbageWebController
         -threecard *ThreeCardWebController
         -ohhell *OhHellWebController
+        -bridge *BridgeWebController
         +Exec()
     }
 
@@ -1149,6 +1181,36 @@ sequenceDiagram
     Ctrl->>Interactor: Play(3)
     Interactor->>Domain: PlayerPlay(3)
     Domain->>Domain: フォロースート検証 → カード出し → CPU自動プレイ
+    Domain->>Domain: トリック勝者判定 → phase=TrickEnd
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: トリック結果表示
+```
+
+### 2.7 Bridge オークション・トリックフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as BridgeInteractor
+    participant Domain as Bridge
+    participant Pres as Presenter
+
+    Note over User,Pres: オークションフロー
+    User->>Ctrl: bid 1 1 5
+    Ctrl->>Interactor: Bid(1, 1, 5)
+    Interactor->>Domain: Bid(BidTypeNormal, 1, NoTrump)
+    Domain->>Domain: ビッド記録 → CPU自動ビッド → コントラクト確定 → phase=Play
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: オークション完了・ダミー公開・プレイ開始表示
+
+    Note over User,Pres: トリックプレイフロー
+    User->>Ctrl: play 3
+    Ctrl->>Interactor: Play(3)
+    Interactor->>Domain: PlayCard(3)
+    Domain->>Domain: フォロースート検証 → カード出し → CPU/ダミー自動プレイ
     Domain->>Domain: トリック勝者判定 → phase=TrickEnd
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
@@ -1468,6 +1530,27 @@ stateDiagram-v2
     note right of TrickEnd : OhHellPhaseTrickEnd = 2
     note right of RoundEnd : OhHellPhaseRoundEnd = 3
     note right of GameEnd : OhHellPhaseGameEnd = 4
+```
+
+### 3.20 Bridge フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : Reset()
+    Bid --> Play : コントラクト確定(3連続パス) → ダミー公開
+    Play --> TrickEnd : 4人全員カード出し完了
+    TrickEnd --> Play : 次トリック開始
+    TrickEnd --> RoundEnd : 13トリック完了
+    RoundEnd --> Bid : 次ラウンド開始
+    RoundEnd --> GameEnd : ラバー完了(2ゲーム先勝)
+    Bid --> RoundEnd : 4人全員パス(パスアウト)
+    GameEnd --> [*]
+
+    note right of Bid : BridgePhaseBid = 0
+    note right of Play : BridgePhasePlay = 1
+    note right of TrickEnd : BridgePhaseTrickEnd = 2
+    note right of RoundEnd : BridgePhaseRoundEnd = 3
+    note right of GameEnd : BridgePhaseGameEnd = 4
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。
