@@ -107,7 +107,8 @@
     "waiting": "待機中"
   },
   "card": {
-    "back": "カード裏面"
+    "back": "カード裏面",
+    "joker": "ジョーカー"
   },
   "label": {
     "result": "結果:",

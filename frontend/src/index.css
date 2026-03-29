@@ -224,9 +224,23 @@ input[type="text"] {
   transform: rotateY(180deg);
 }
 
+@keyframes pulse-once {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+.animate-pulse-once {
+  animation: pulse-once 1s ease-in-out 2;
+}
+
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse,
+  .animate-pulse-once,
   .animate-shake,
   .animate-flipIn,
   .animate-sweat-drop {

@@ -33,6 +33,7 @@
   "didYouMean": "もしかして「{{name}}」ですか？",
   "cliUnsupportedLang": "警告: サポートされていない言語「{{lang}}」です。ja をデフォルトとして使用します",
   "emptyInputHint": "'help' でコマンド一覧を表示します。",
+  "cliStartupBanner": "trumpcards {{version}} - インタラクティブモード",
   "cliExtraArgsWarning": "警告: 余分な引数は無視されました: {{args}}",
   "metaAIRequired": "メタAI設定が必要です (0=オフ, 1=オン)。",
   "invalidMetaAI": "無効な値です: {{val}}。0 または 1 を入力してください。"

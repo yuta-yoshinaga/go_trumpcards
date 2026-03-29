@@ -165,7 +165,7 @@ ENVIRONMENT VARIABLES:
 		"threecard":   func() int { ui.NewThreeCardCui().Exec(); return 0 },
 		"ohhell":      func() int { ui.NewOhHellCui().Exec(); return 0 },
 		"update": func() int {
-			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
+			updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 			if err := updater.Exec(); err != nil {
 				return 1
 			}
@@ -201,7 +201,7 @@ ENVIRONMENT VARIABLES:
 	}
 
 	// No argument: start interactive multi-game mode (defaults to blackjack).
-	fmt.Printf("trumpcards %s - Interactive Mode\n", version)
+	fmt.Println(i18n.Tf("cliStartupBanner", "version", version))
 	manager := ui.NewGameManager("blackjack")
 	ui.RunInteractiveCuiLoop(manager)
 	return 0
