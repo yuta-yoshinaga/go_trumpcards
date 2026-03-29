@@ -1,0 +1,52 @@
+{
+  "title": "スリーカードポーカー",
+  "player": "プレイヤー",
+  "dealer": "ディーラー",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "pairPlus": "ペアプラス",
+    "play": "プレイベット",
+    "handRank": "役"
+  },
+  "button": {
+    "bet": "ベット",
+    "play": "プレイ",
+    "fold": "フォールド",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "action": "プレイ/フォールド",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "dealerWins": "ディーラー勝利！",
+    "push": "引き分け！",
+    "fold": "フォールド",
+    "dealerNotQualified": "ディーラー未クオリファイ！"
+  },
+  "payout": {
+    "ante": "アンテ",
+    "play": "プレイ",
+    "anteBonus": "アンテボーナス",
+    "pairPlus": "ペアプラス",
+    "total": "合計"
+  },
+  "handRank": {
+    "1": "ハイカード",
+    "2": "ペア",
+    "3": "フラッシュ",
+    "4": "ストレート",
+    "5": "スリーカード",
+    "6": "ストレートフラッシュ"
+  },
+  "dealerQualified": "クオリファイ",
+  "dealerNotQualified": "未クオリファイ",
+  "tutorial": {
+    "betControls": "アンテと任意のペアプラスを設定し、ベットを押してください。",
+    "actionButtons": "プレイでアンテと同額を賭けるか、フォールドで降りるか選択してください。",
+    "results": "結果と配当を確認してください。"
+  }
+}

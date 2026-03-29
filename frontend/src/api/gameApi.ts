@@ -17,6 +17,7 @@ import type {
   KlondikeResponse,
   MemoryResponse,
   NapoleonResponse,
+  OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
   PokerResponse,
@@ -25,6 +26,8 @@ import type {
   ShortDeckResponse,
   SpadesResponse,
   SpiderResponse,
+  ThreeCardResponse,
+  TriPeaksResponse,
   VideoPokerResponse,
 } from '../types/card';
 
@@ -48,10 +51,12 @@ const workerUrl: Record<string, string> = {
   videopoker: WORKER_CASINO,
   deuceswild: WORKER_CASINO,
   jokerpoker: WORKER_CASINO,
+  threecard: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
   napoleon: WORKER_CLASSIC,
+  ohhell: WORKER_CLASSIC,
   oldmaid: WORKER_CLASSIC,
   doubt: WORKER_CLASSIC,
   daifugo: WORKER_CLASSIC,
@@ -61,6 +66,7 @@ const workerUrl: Record<string, string> = {
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
   pyramid: WORKER_SOLO,
+  tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
   cribbage: WORKER_SOLO,
@@ -404,6 +410,30 @@ export const spadesApi = {
     }),
 };
 
+/** Configuration options for Oh Hell game settings. */
+export interface OhHellConfigInput {
+  cpuDifficulty?: number;
+  maxHandSize?: number;
+  scoringVariant?: number;
+  roundDirection?: number;
+}
+
+/** API client for the Oh Hell /ohhell/exec endpoint. */
+export const ohHellApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint',
+    bid?: number,
+    cardIndex?: number,
+    config?: OhHellConfigInput,
+  ) =>
+    gameExec<OhHellResponse>('ohhell', {
+      command,
+      bid,
+      cardIndex,
+      config,
+    }),
+};
+
 /** Configuration options for Memory game settings. */
 export interface MemoryConfigInput {
   cpuDifficulty?: number;
@@ -547,6 +577,12 @@ export const baccaratApi = {
   ) => gameExec<BaccaratResponse>('baccarat', { command, amount, betType, playerPairBet, bankerPairBet }),
 };
 
+/** API client for the Three Card Poker /threecard/exec endpoint. */
+export const threecardApi = {
+  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, pairPlusBet?: number) =>
+    gameExec<ThreeCardResponse>('threecard', { command, amount, pairPlusBet }),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -683,6 +719,12 @@ export const pyramidApi = {
   ) => gameExec<PyramidResponse>('pyramid', { command, card1, card2 }),
 };
 
+/** API client for the TriPeaks /tripeaks/exec endpoint. */
+export const tripeaksApi = {
+  exec: (command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo', row?: number, col?: number) =>
+    gameExec<TriPeaksResponse>('tripeaks', { command, row, col }),
+};
+
 /** API client for the Video Poker /videopoker/exec endpoint. */
 export const videopokerApi = {
   exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
@@ -714,6 +756,7 @@ const games = [
   'hearts',
   'spades',
   'napoleon',
+  'ohhell',
   'memory',
   'klondike',
   'freecell',
@@ -727,7 +770,9 @@ const games = [
   'jokerpoker',
   'euchre',
   'pyramid',
+  'tripeaks',
   'cribbage',
+  'threecard',
 ] as const;
 type Game = (typeof games)[number];
 

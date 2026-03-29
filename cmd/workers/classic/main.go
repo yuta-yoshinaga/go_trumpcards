@@ -261,6 +261,30 @@ func main() {
 		},
 	)
 
+	// Oh Hell
+	registerKV(mux, "/ohhell/exec", "ohhell:",
+		func() usecase.OhHellInteractorIF {
+			config := domain.DefaultOhHellConfig()
+			players := []*domain.OhHellPlayer{
+				domain.NewOhHellPlayer(true),
+				domain.NewOhHellPlayer(false),
+				domain.NewOhHellPlayer(false),
+				domain.NewOhHellPlayer(false),
+			}
+			ohHell := domain.NewOhHell(domain.NewTrumpCards(0), players, config)
+			return usecase.NewOhHellInteractor(ohHell, new(presenter.OhHellWebPresenter))
+		},
+		func(data []byte) (usecase.OhHellInteractorIF, error) {
+			return usecase.RestoreOhHellInteractor(data, new(presenter.OhHellWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.OhHellInteractorIF], f func() usecase.OhHellInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewOhHellWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

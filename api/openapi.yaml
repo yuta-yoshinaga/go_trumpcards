@@ -64,8 +64,14 @@ tags:
     description: Euchre (ユーカー) game
   - name: pyramid
     description: Pyramid (ピラミッド) game
+  - name: tripeaks
+    description: TriPeaks (トリピークス) game
   - name: cribbage
     description: Cribbage (クリベッジ) game
+  - name: threecard
+    description: Three Card Poker (スリーカードポーカー) game
+  - name: ohhell
+    description: Oh Hell (オー・ヘル) game
 
 paths:
   /blackjack/exec:
@@ -2312,6 +2318,83 @@ paths:
                     moveCount: 0
                     message: param error.
 
+  /tripeaks/exec:
+    post:
+      tags:
+        - tripeaks
+      summary: Execute a TriPeaks game command
+      description: |
+        Send a command to advance the TriPeaks (トリピークス) game session identified by
+        `sessionId`.  TriPeaks is a single-player solitaire card game using a
+        standard 52-card deck.  Three overlapping pyramids (peaks) form a 28-card
+        tableau.  Remove exposed cards that are ±1 rank from the waste pile top
+        card (K-A wrap).  Win by removing all 28 tableau cards.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All tableau cards removed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `draw`         | `d`  | Draw a card from stock to waste |
+        | `remove`       | `rm` | Remove an exposed card ±1 rank from waste top |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `undo`         | `u`  | Undo the last action |
+        | `log`          | `l`  | View action log |
+      operationId: tripeaksExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriPeaksRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw from stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              remove:
+                summary: Remove a tableau card
+                value:
+                  command: remove
+                  row: 3
+                  col: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriPeaksResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriPeaksResponse'
+              examples:
+                paramError:
+                  value:
+                    tableau: []
+                    stockCount: 0
+                    waste: []
+                    phase: 0
+                    moveCount: 0
+                    message: param error.
+
   /cribbage/exec:
     post:
       tags:
@@ -2405,6 +2488,172 @@ paths:
                     gameEndFlag: false
                     winnerIdx: -1
                     message: param error.
+
+  /threecard/exec:
+    post:
+      tags:
+        - threecard
+      summary: Execute a Three Card Poker game command
+      description: |
+        Send a command to advance the Three Card Poker (スリーカードポーカー) game session
+        identified by `sessionId`.  Three Card Poker is a single-player casino card game
+        using a standard 52-card deck.  Player places an Ante bet and optional Pair Plus
+        side bet, receives 3 cards, then decides to Play (match Ante) or Fold (forfeit Ante).
+        Dealer must have Q-high or better to qualify.
+
+        Hand rankings (highest to lowest): Straight Flush, Three of a Kind, Straight,
+        Flush, Pair, High Card.
+
+        The game proceeds through these phases:
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `1`   | Place Ante and optional Pair Plus bet |
+        | Action | `2`   | Decide to Play or Fold |
+        | End    | `3`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `pairPlusBet`) |
+        | `play`  | `p`     | Place Play bet (equal to Ante) and see dealer's hand |
+        | `fold`  | `f`     | Forfeit Ante and Pair Plus bets |
+        | `log`   | `l`     | View action log |
+      operationId: threecardExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThreeCardRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante with 50 Pair Plus
+                value:
+                  command: bet
+                  amount: 100
+                  pairPlusBet: 50
+                  sessionId: my-session-001
+              play:
+                summary: Place Play bet
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreeCardResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreeCardResponse'
+              examples:
+                paramError:
+                  value:
+                    playerHand: []
+                    dealerHand: []
+                    phase: 0
+                    chips: 0
+                    anteBet: 0
+                    pairPlusBet: 0
+                    playBet: 0
+                    result: 0
+                    antePayout: 0
+                    playPayout: 0
+                    anteBonusPayout: 0
+                    pairPlusPayout: 0
+                    totalPayout: 0
+                    dealerQualified: false
+                    playerHandRank: 0
+                    dealerHandRank: 0
+                    message: param error.
+
+  /ohhell/exec:
+    post:
+      tags:
+        - ohhell
+      summary: Execute an Oh Hell game command
+      description: |
+        Send a command to advance the Oh Hell (オー・ヘル) game session identified by
+        `sessionId`.  Oh Hell is a 4-player trick-taking game with variable hand sizes
+        per round.  Trump suit is determined by the top card of the remaining deck.
+        Players bid the exact number of tricks they expect to win; the dealer is
+        restricted so total bids cannot equal the number of tricks available ("hook"
+        rule).  Scoring: exact bid = 10 + bid; miss = 0 (standard) or -|difference|
+        (penalty variant).  The game ends after all rounds are played.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player declares expected trick wins |
+        | Play      | `1`   | Trick play (follow suit; trump suit wins) |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | All tricks played; advance with `nextround` |
+        | GameEnd   | `4`   | All rounds completed |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bid`       | `b`     | Place a bid (requires `bid` field, 0-handSize) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `hint`      | `h`     | Get recommended bid or play |
+        | `log`       | `l`     | View action log |
+      operationId: ohhellExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OhHellRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 2 tricks
+                value:
+                  command: bid
+                  bid: 2
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OhHellResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OhHellResponse'
 
 components:
   schemas:
@@ -7116,6 +7365,118 @@ components:
               type: integer
               description: Column of second card (-1 for king/waste operations)
 
+    TriPeaksRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
+            `remove` (`rm`), `giveup` (`g`), `hint` (`h`), `undo` (`u`),
+            `log` (`l`).
+          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+          example: remove
+        row:
+          type: integer
+          description: Row index of the tableau card to remove (0-based)
+          example: 3
+        col:
+          type: integer
+          description: Column index of the tableau card to remove (0-based)
+          example: 0
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    TriPeaksOutputCard:
+      type: object
+      description: A card in the TriPeaks tableau with its state
+      properties:
+        card:
+          description: Card details (null when removed)
+          $ref: '#/components/schemas/Card'
+        removed:
+          type: boolean
+          description: Whether the card has been removed
+          example: false
+        exposed:
+          type: boolean
+          description: Whether the card is exposed (can be selected)
+          example: true
+
+    TriPeaksResponse:
+      type: object
+      description: Current state of the TriPeaks game
+      required:
+        - tableau
+        - stockCount
+        - waste
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The tableau rows, each containing an array of cards (three overlapping peaks)
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/TriPeaksOutputCard'
+        stockCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+          example: 23
+        waste:
+          type: array
+          description: Cards in the waste pile (top card is the last element)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
+          example: false
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            row:
+              type: integer
+              description: Row of the card to remove
+            col:
+              type: integer
+              description: Column of the card to remove
+
     CribbageRequest:
       type: object
       required:
@@ -7323,3 +7684,316 @@ components:
               type: integer
               description: Point limit to win
               example: 121
+
+    # -------------------------------------------------------------------------
+    # Three Card Poker
+    # -------------------------------------------------------------------------
+    ThreeCardRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
+            `play` (`p`), `fold` (`f`), `log` (`l`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Ante bet amount.  Required for `bet` command (minimum 10, must be a
+            multiple of 10).  Ignored for other commands.
+          minimum: 10
+          example: 100
+        pairPlusBet:
+          type: integer
+          description: |
+            Pair Plus side bet amount.  Optional; used with the `bet`
+            command.  0 or omitted means no side bet.
+          minimum: 0
+          example: 50
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ThreeCardResponse:
+      type: object
+      description: Current state of the Three Card Poker game
+      required:
+        - playerHand
+        - dealerHand
+        - phase
+        - chips
+        - anteBet
+        - pairPlusBet
+        - playBet
+        - result
+        - antePayout
+        - playPayout
+        - anteBonusPayout
+        - pairPlusPayout
+        - totalPayout
+        - dealerQualified
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand (3 cards)
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Cards in the dealer's hand (3 cards; hidden until End phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Action, 3 = End"
+          enum: [1, 2, 3]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Current Ante bet amount
+          example: 100
+        pairPlusBet:
+          type: integer
+          description: Current Pair Plus side bet amount
+          example: 50
+        playBet:
+          type: integer
+          description: Current Play bet amount (equal to Ante when played)
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Dealer wins, 0 = Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          description: Payout from the Ante bet
+          example: 0
+        playPayout:
+          type: integer
+          description: Payout from the Play bet
+          example: 0
+        anteBonusPayout:
+          type: integer
+          description: Ante Bonus payout (Straight Flush 5:1, Three of a Kind 4:1, Straight 1:1)
+          example: 0
+        pairPlusPayout:
+          type: integer
+          description: Pair Plus side bet payout
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the current round (sum of all payouts)
+          example: 0
+        dealerQualified:
+          type: boolean
+          description: Whether the dealer qualified (Q-high or better)
+          example: false
+        playerHandRank:
+          type: integer
+          description: Player's hand rank (1=High Card, 2=Pair, 3=Flush, 4=Straight, 5=Three of a Kind, 6=Straight Flush)
+          example: 2
+        dealerHandRank:
+          type: integer
+          description: Dealer's hand rank (1=High Card, 2=Pair, 3=Flush, 4=Straight, 5=Three of a Kind, 6=Straight Flush)
+          example: 1
+        message:
+          type: string
+          description: Game result or error message. Empty during bet/action phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Oh Hell
+    # -------------------------------------------------------------------------
+    OhHellRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bid` (`b`),
+            `play` (`p`), `next` (`n`), `nextround` (`nr`), `hint` (`h`),
+            `log` (`l`).
+          enum: [reset, r, bid, b, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        bid:
+          type: integer
+          description: Bid value (0 to current hand size).  Required for `bid` command.
+          minimum: 0
+          example: 2
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            maxHandSize:
+              type: integer
+              minimum: 1
+              maximum: 13
+            scoringVariant:
+              type: integer
+              minimum: 0
+              maximum: 1
+            roundDirection:
+              type: integer
+              minimum: 0
+              maximum: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    OhHellResponse:
+      type: object
+      description: Current state of the Oh Hell game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        totalRounds:
+          type: integer
+          description: Total number of rounds in the game
+        handSize:
+          type: integer
+          description: Number of cards dealt to each player this round
+        trickNumber:
+          type: integer
+          description: Current trick number within the round
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        bidPlayerIdx:
+          type: integer
+          description: Index of the player currently bidding
+        dealerIdx:
+          type: integer
+          description: Index of the dealer for the current round
+        currentTrick:
+          type: array
+          description: Cards played in the current trick
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        trumpCard:
+          nullable: true
+          description: The card determining the trump suit (null if no trump)
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "Trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond, -1=none)"
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        winnerIdx:
+          type: integer
+          description: Index of the winning player (-1 if not ended)
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who leads the current trick
+        restrictedBid:
+          type: integer
+          description: The bid value the dealer cannot choose (-1 if no restriction)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            maxHandSize:
+              type: integer
+            scoringVariant:
+              type: integer
+            roundDirection:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play or bid hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index (null during bid phase)
+            bid:
+              type: integer
+              nullable: true
+              description: Recommended bid value (null during play phase)
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint

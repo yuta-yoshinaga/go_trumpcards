@@ -1219,6 +1219,37 @@ export interface PyramidResponse {
   hint?: PyramidHint;
 }
 
+// --- TriPeaks (トリピークス) ---
+
+/** A card in the TriPeaks tableau with removal and exposure status. */
+export interface TriPeaksCard {
+  card: Card | null;
+  removed: boolean;
+  exposed: boolean;
+}
+
+/** A suggested hint in TriPeaks. */
+export interface TriPeaksHint {
+  type: string;
+  row: number;
+  col: number;
+}
+
+/** Full TriPeaks game state returned from the API. */
+export interface TriPeaksResponse {
+  layout: TriPeaksCard[][];
+  stockCount: number;
+  waste: Card[];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: TriPeaksHint;
+}
+
 /** Full Video Poker game state returned from the API. */
 export interface VideoPokerResponse {
   hand: Card[];
@@ -1283,4 +1314,89 @@ export interface CribbageResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   config: CribbageConfig;
+}
+
+// --- Oh Hell (オー・ヘル) ---
+
+/** Oh Hell player data with scores. */
+export interface OhHellPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in an Oh Hell trick. */
+export interface OhHellTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Oh Hell game configuration. */
+export interface OhHellConfig {
+  cpuDifficulty: number;
+  maxHandSize: number;
+  scoringVariant: number;
+  roundDirection: number;
+}
+
+/** A suggested hint for Oh Hell. */
+export interface OhHellHint {
+  cardIndex?: number;
+  bid?: number;
+  reason: string;
+}
+
+/** Full Oh Hell game state returned from the API. */
+export interface OhHellResponse {
+  players: OhHellPlayerData[];
+  phase: number;
+  roundNumber: number;
+  totalRounds: number;
+  handSize: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  dealerIdx: number;
+  currentTrick: OhHellTrickCard[];
+  trumpCard: Card | null;
+  trumpSuit: number;
+  restrictedBid: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  hint?: OhHellHint;
+  config: OhHellConfig;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Three Card Poker (スリーカードポーカー) ---
+
+/** Three Card Poker API response. */
+export interface ThreeCardResponse {
+  playerHand: Card[];
+  dealerHand: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  pairPlusBet: number;
+  playBet: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  anteBonusPayout: number;
+  pairPlusPayout: number;
+  totalPayout: number;
+  dealerQualified: boolean;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }

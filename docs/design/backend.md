@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全26ゲーム)](#12-ゲームドメイン-全26ゲーム)
+  - [1.2 ゲームドメイン (全29ゲーム)](#12-ゲームドメイン-全29ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -15,6 +15,8 @@
   - [2.2 Web APIゲーム実行フロー](#22-web-apiゲーム実行フロー)
   - [2.3 セッション管理フロー](#23-セッション管理フロー)
   - [2.4 VideoPoker ベット・ホールドフロー](#24-videopoker-ベットホールドフロー)
+  - [2.5 ThreeCard ベット・プレイフロー](#25-threecard-ベットプレイフロー)
+  - [2.6 OhHell ビッド・トリックフロー](#26-ohhell-ビッドトリックフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -23,7 +25,7 @@
   - [3.5 Spades フェーズ遷移](#35-spades-フェーズ遷移)
   - [3.6 Doubt フェーズ遷移](#36-doubt-フェーズ遷移)
   - [3.7 Memory フェーズ遷移](#37-memory-フェーズ遷移)
-  - [3.8 Klondike / FreeCell / Spider / Pyramid フェーズ遷移](#38-klondike--freecell--spider--pyramid-フェーズ遷移)
+  - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks-フェーズ遷移)
   - [3.9 CrazyEights フェーズ遷移](#39-crazyeights-フェーズ遷移)
   - [3.10 GinRummy フェーズ遷移](#310-ginrummy-フェーズ遷移)
   - [3.11 Baccarat フェーズ遷移](#311-baccarat-フェーズ遷移)
@@ -33,6 +35,8 @@
   - [3.15 Euchre フェーズ遷移](#315-euchre-フェーズ遷移)
   - [3.16 Cribbage フェーズ遷移](#316-cribbage-フェーズ遷移)
   - [3.17 ShortDeck フェーズ遷移](#317-shortdeck-フェーズ遷移)
+  - [3.18 ThreeCard フェーズ遷移](#318-threecard-フェーズ遷移)
+  - [3.19 OhHell フェーズ遷移](#319-ohhell-フェーズ遷移)
 
 ---
 
@@ -100,7 +104,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全26ゲーム)
+### 1.2 ゲームドメイン (全29ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -205,7 +209,25 @@ classDiagram
     BlackJackPlayer --> "*" BlackJackHand
     BlackJackPlayer --> "1" ChipHolder
     Poker --> "*" PokerPlayer
+    class ThreeCard {
+        -trumpCards *TrumpCards
+        -playerHand []*Card
+        -dealerHand []*Card
+        -phase int
+        -anteBet int
+        -pairPlusBet int
+        -playBet int
+        +Reset()
+        +PlayerBet(amount int, pairPlusBet int) error
+        +PlayerPlay() error
+        +PlayerFold() error
+        +Phase() int
+        +ActionLog() []*ActionLogEntry
+    }
+
     Baccarat --> "1" TrumpCards
+    ThreeCard --> "1" TrumpCards
+    ThreeCard --> "1" ChipHolder
     VideoPoker --> "1" TrumpCards
     VideoPoker --> "1" ChipHolder
     VideoPoker --> "0..1" VideoPokerVariantConfig
@@ -304,6 +326,30 @@ classDiagram
         +*Card Card
     }
 
+    class OhHell {
+        -trumpCards *TrumpCards
+        -players []*OhHellPlayer
+        -config OhHellConfig
+        -phase OhHellPhase
+        -trickCards []*OhHellTrickCard
+        -trumpCard *Card
+        -trumpSuit int
+        -handSize int
+        +Reset()
+        +PlayerBid(bid int) error
+        +PlayerPlay(cardIndex int) error
+        +NextTrick()
+        +NextRound()
+        +ScoreRound()
+        +GetHint() *OhHellHint
+        +GetPhase() OhHellPhase
+    }
+
+    class OhHellTrickCard {
+        +int PlayerIdx
+        +*Card Card
+    }
+
     Hearts --> "4" HeartsPlayer
     Hearts --> "*" HeartsTrickCard
     Spades --> "4" SpadesPlayer
@@ -312,10 +358,13 @@ classDiagram
     Napoleon --> "*" NapoleonTrickCard
     Euchre --> "4" EuchrePlayer
     Euchre --> "*" EuchreTrickCard
+    OhHell --> "4" OhHellPlayer
+    OhHell --> "*" OhHellTrickCard
     HeartsPlayer --|> GamePlayer
     SpadesPlayer --|> GamePlayer
     NapoleonPlayer --|> GamePlayer
     EuchrePlayer --|> GamePlayer
+    OhHellPlayer --|> GamePlayer
 ```
 
 #### ホールデム系ゲーム
@@ -442,9 +491,15 @@ classDiagram
     }
 
     class IndianPokerHumanProfile {
-        +float64 BluffRate
-        +float64 FoldRate
-        +int AvgHesitationMs
+        +[3]struct AggressiveByBracket
+        +int FoldToBetCount
+        +int FoldToBetTotal
+        +int GamesPlayed
+        +int HesitationCount
+        +float64 HesitationMean
+        +float64 HesitationM2
+        +BluffRate(bracket int) float64
+        +FoldRate() float64
     }
 
     IndianPoker --> "4" IndianPokerPlayer
@@ -628,6 +683,22 @@ classDiagram
         +Phase() PyramidPhase
     }
 
+    class TriPeaks {
+        -trumpCards *TrumpCards
+        -tableau [4][]*TriPeaksCard
+        -stock []*Card
+        -waste []*Card
+        -phase TriPeaksPhase
+        -history []*tripeaksSnapshot
+        +Reset()
+        +Draw() error
+        +Remove(row int, col int) error
+        +GetHint() *TriPeaksHint
+        +Undo() error
+        +GiveUp()
+        +Phase() TriPeaksPhase
+    }
+
     class Cribbage {
         -trumpCards *TrumpCards
         -players []*CribbagePlayer
@@ -673,6 +744,11 @@ classDiagram
         +bool Removed
     }
 
+    class TriPeaksCard {
+        +*Card Card
+        +bool Removed
+    }
+
     class MemoryBoardCard {
         +*Card Card
         +bool FaceUp
@@ -683,6 +759,7 @@ classDiagram
     FreeCell --> "*" Card
     Spider --> "*" SpiderTableauCard
     Pyramid --> "*" PyramidCard
+    TriPeaks --> "*" TriPeaksCard
     Cribbage --> "*" CribbagePlayer
     Memory --> "*" MemoryBoardCard
     Memory --> "*" MemoryPlayer
@@ -740,7 +817,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全23ゲーム共通)**
+**Interactor パターン (全29ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -812,8 +889,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "26ゲーム × CUI/Web = 52 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "26ゲーム × CUI/Web = 52 Presenter 実装"
+    note for GameCuiController "27ゲーム × CUI/Web = 54 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "27ゲーム × CUI/Web = 54 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -846,7 +923,10 @@ classDiagram
         -jokerpoker *JokerPokerWebController
         -euchre *EuchreWebController
         -pyramid *PyramidWebController
+        -tripeaks *TriPeaksWebController
         -cribbage *CribbageWebController
+        -threecard *ThreeCardWebController
+        -ohhell *OhHellWebController
         +Exec()
     }
 
@@ -868,8 +948,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 26 controllers
-    GameManager --> "*" CuiExecer : holds 26 games
+    TrumpCardsWeb --> "*" GameWebController : holds 29 controllers
+    GameManager --> "*" CuiExecer : holds 28 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1009,6 +1089,72 @@ sequenceDiagram
     Pres-->>User: 最終手札・役名・配当表示
 ```
 
+### 2.5 ThreeCard ベット・プレイフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as ThreeCardInteractor
+    participant Domain as ThreeCard
+    participant Eval as evalThreeCardHand
+    participant Pres as Presenter
+
+    Note over User,Pres: ベットフロー
+    User->>Ctrl: bet 100 50
+    Ctrl->>Interactor: Bet(100, 50)
+    Interactor->>Domain: PlayerBet(100, 50)
+    Domain->>Domain: チップ減算 → 3枚ずつ配布 → phase=Action
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 手札3枚表示
+
+    Note over User,Pres: プレイフロー
+    User->>Ctrl: play
+    Ctrl->>Interactor: Play()
+    Interactor->>Domain: PlayerPlay()
+    Domain->>Domain: プレイベット = アンティ額
+    Domain->>Eval: evalThreeCardHand(playerHand)
+    Eval-->>Domain: playerRank
+    Domain->>Eval: evalThreeCardHand(dealerHand)
+    Eval-->>Domain: dealerRank
+    Domain->>Domain: ディーラー資格判定 → 勝敗判定 → 配当計算
+    Domain->>Domain: アンティボーナス・ペアプラス計算 → phase=End
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 両手札・結果・配当表示
+```
+
+### 2.6 OhHell ビッド・トリックフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as OhHellInteractor
+    participant Domain as OhHell
+    participant Pres as Presenter
+
+    Note over User,Pres: ビッドフロー
+    User->>Ctrl: bid 2
+    Ctrl->>Interactor: Bid(2)
+    Interactor->>Domain: PlayerBid(2)
+    Domain->>Domain: ビッド記録 → CPU自動ビッド → phase=Play
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ビッド完了・プレイ開始表示
+
+    Note over User,Pres: トリックプレイフロー
+    User->>Ctrl: play 3
+    Ctrl->>Interactor: Play(3)
+    Interactor->>Domain: PlayerPlay(3)
+    Domain->>Domain: フォロースート検証 → カード出し → CPU自動プレイ
+    Domain->>Domain: トリック勝者判定 → phase=TrickEnd
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: トリック結果表示
+```
+
 ---
 
 ## 3. ステートマシン図
@@ -1123,28 +1269,30 @@ stateDiagram-v2
     note right of Result : MemoryPhaseResult = 2
 ```
 
-### 3.8 Klondike / FreeCell / Spider / Pyramid フェーズ遷移
+### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks フェーズ遷移
 
-4つのソリティア系ゲームは共通のフェーズ構造を持ちます。
+5つのソリティア系ゲームは共通のフェーズ構造を持ちます。
 
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
     Playing --> Playing : Move / Draw / Deal / Remove / Undo
-    Playing --> GameClear : 全カードをFoundation/Pyramid除去完了
+    Playing --> GameClear : 全カードをFoundation/Pyramid/Tableau除去完了
     Playing --> GameClear : Autocomplete成功 (Klondike/FreeCell/Spider のみ)
     Playing --> GameOver : GiveUp
     GameClear --> [*]
     GameOver --> [*]
 
-    note right of Playing : Klondike/FreeCell/Spider/Pyramid 共通 Phase = 0
+    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks 共通 Phase = 0
     note right of GameClear : Phase = 1
     note right of GameOver : Phase = 2
 ```
 
 Pyramid 固有のアクション: `Draw` / `RemovePair` / `RemoveKing` / `RemoveWithWaste` / `RemoveWasteKing` / `Undo`。クリア条件はピラミッドの28枚全除去。
 
-各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
+TriPeaks 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件はウェイストトップ±1ランク（K-Aラップ）。クリア条件はタブローの28枚全除去。
+
+各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
 
 ### 3.9 CrazyEights フェーズ遷移
 
@@ -1284,6 +1432,42 @@ stateDiagram-v2
 
 Short Deck Hold'em は Texas Hold'em と同一のフェーズ遷移を使用します（[3.3 Texas Hold'em フェーズ遷移](#33-texas-holdem-フェーズ遷移)を参照）。
 
-主な違いはデッキ構成（36枚、2〜5除去）とハンドランキング（フラッシュ > フルハウス、最低ストレート = A-6-7-8-9）のみで、フェーズ遷移ロジックは共通です。
+主な違いはデッキ構成（36枚、2〜5除去）とハンドランキング（フラッシュ > フルハウス、最低ストレート = A-6-7-8-9）のみで、フェーズ遷移ロジックは���通です。
+
+### 3.18 ThreeCard フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> Action : アンティベット → 3枚配布
+    Action --> End : プレイ → ディーラー公開 → 結果判定
+    Action --> End : フォールド → ベット没収
+    End --> Bet : 次ラウンド (Reset)
+    End --> [*] : チップ0 (ゲーム終了)
+
+    note right of Bet : ThreeCardPhaseBet = 1
+    note right of Action : ThreeCardPhaseAction = 2
+    note right of End : ThreeCardPhaseEnd = 3
+```
+
+### 3.19 OhHell フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : Reset()
+    Bid --> Play : 4人全員ビッド完了
+    Play --> TrickEnd : 4人全員カード出し完了
+    TrickEnd --> Play : 次トリック開始
+    TrickEnd --> RoundEnd : 全トリック完了
+    RoundEnd --> Bid : 次ラウンド開始
+    RoundEnd --> GameEnd : 全ラウンド完了
+    GameEnd --> [*]
+
+    note right of Bid : OhHellPhaseBid = 0
+    note right of Play : OhHellPhasePlay = 1
+    note right of TrickEnd : OhHellPhaseTrickEnd = 2
+    note right of RoundEnd : OhHellPhaseRoundEnd = 3
+    note right of GameEnd : OhHellPhaseGameEnd = 4
+```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

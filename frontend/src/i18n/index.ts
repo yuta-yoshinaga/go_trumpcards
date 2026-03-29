@@ -20,6 +20,7 @@ import enJokerpoker from './locales/en/jokerpoker.json';
 import enKlondike from './locales/en/klondike.json';
 import enMemory from './locales/en/memory.json';
 import enNapoleon from './locales/en/napoleon.json';
+import enOhhell from './locales/en/ohhell.json';
 import enOldmaid from './locales/en/oldmaid.json';
 import enOmaha from './locales/en/omaha.json';
 import enPoker from './locales/en/poker.json';
@@ -28,6 +29,8 @@ import enSevens from './locales/en/sevens.json';
 import enShortdeck from './locales/en/shortdeck.json';
 import enSpades from './locales/en/spades.json';
 import enSpider from './locales/en/spider.json';
+import enThreecard from './locales/en/threecard.json';
+import enTripeaks from './locales/en/tripeaks.json';
 import enTutorial from './locales/en/tutorial.json';
 import enVideopoker from './locales/en/videopoker.json';
 import jaBaccarat from './locales/ja/baccarat.json';
@@ -48,6 +51,7 @@ import jaJokerpoker from './locales/ja/jokerpoker.json';
 import jaKlondike from './locales/ja/klondike.json';
 import jaMemory from './locales/ja/memory.json';
 import jaNapoleon from './locales/ja/napoleon.json';
+import jaOhhell from './locales/ja/ohhell.json';
 import jaOldmaid from './locales/ja/oldmaid.json';
 import jaOmaha from './locales/ja/omaha.json';
 import jaPoker from './locales/ja/poker.json';
@@ -56,6 +60,8 @@ import jaSevens from './locales/ja/sevens.json';
 import jaShortdeck from './locales/ja/shortdeck.json';
 import jaSpades from './locales/ja/spades.json';
 import jaSpider from './locales/ja/spider.json';
+import jaThreecard from './locales/ja/threecard.json';
+import jaTripeaks from './locales/ja/tripeaks.json';
 import jaTutorial from './locales/ja/tutorial.json';
 import jaVideopoker from './locales/ja/videopoker.json';
 
@@ -79,6 +85,7 @@ i18n
         hearts: jaHearts,
         spades: jaSpades,
         napoleon: jaNapoleon,
+        ohhell: jaOhhell,
         memory: jaMemory,
         klondike: jaKlondike,
         freecell: jaFreecell,
@@ -89,6 +96,8 @@ i18n
         spider: jaSpider,
         indianpoker: jaIndianpoker,
         pyramid: jaPyramid,
+        threecard: jaThreecard,
+        tripeaks: jaTripeaks,
         videopoker: jaVideopoker,
         deuceswild: jaDeuceswild,
         jokerpoker: jaJokerpoker,
@@ -109,6 +118,7 @@ i18n
         hearts: enHearts,
         spades: enSpades,
         napoleon: enNapoleon,
+        ohhell: enOhhell,
         memory: enMemory,
         klondike: enKlondike,
         freecell: enFreecell,
@@ -119,6 +129,8 @@ i18n
         spider: enSpider,
         indianpoker: enIndianpoker,
         pyramid: enPyramid,
+        threecard: enThreecard,
+        tripeaks: enTripeaks,
         videopoker: enVideopoker,
         deuceswild: enDeuceswild,
         jokerpoker: enJokerpoker,
@@ -142,6 +154,7 @@ i18n
       'hearts',
       'spades',
       'napoleon',
+      'ohhell',
       'memory',
       'klondike',
       'freecell',
@@ -152,6 +165,8 @@ i18n
       'spider',
       'indianpoker',
       'pyramid',
+      'threecard',
+      'tripeaks',
       'videopoker',
       'deuceswild',
       'jokerpoker',

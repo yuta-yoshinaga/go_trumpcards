@@ -1,0 +1,34 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "トリピークス",
+  "stock": "山札",
+  "waste": "捨て札",
+  "moveCount": "手数",
+  "draw": "引く",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "empty": "空",
+  "playing": "プレイ中",
+  "stalemate": "手詰まりです",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "hintType": {
+    "remove": "カードを除去できます",
+    "draw": "ストックからカードを引いてください"
+  },
+  "tutorial": {
+    "peaks": "3つのピークです。露出したカードをクリックして除去します。",
+    "stockWaste": "山札をクリックしてカードを引きます。",
+    "controls": "操作ボタンです。",
+    "hintDisplay": "ヒントボタンを押すとヒントが表示されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "landscapeBanner": "横向きにすると操作しやすくなります"
+}

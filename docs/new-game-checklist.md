@@ -10,6 +10,7 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 4. **Controller**: CUI controller in `internal/adapter/controller/`, Web controller in `internal/adapter/controller/`, reuse `cuiutil` package for input parsing and `ClampIntPtr` for config validation
 5. **Presenter**: CUI and Web presenters in `internal/adapter/presenter/`, reuse `buildCuiOutput`, `cuiCardListStr`, `ActionLogOutput` helpers, `WebOutputBase` for common web output fields
 6. **Infrastructure**: Register in `cmd/trumpcards/main.go` (CLI) and `internal/infrastructure/web/TrumpCardsWeb.go` (API route)
+6b. **Cloudflare Worker (WASM)**: Register in the appropriate `cmd/workers/{casino,classic,solo}/main.go` using `registerKV`. Worker assignment: casino (table/poker games), classic (trick-taking/matching), solo (solitaire/rummy). Also verify `frontend/src/api/gameApi.ts` `workerUrl` mapping matches.
 7. **Run `goimports -w` and `golangci-lint run ./...`** on all new files
 8. **80%+ branch coverage** for all new packages
 

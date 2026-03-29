@@ -42,8 +42,11 @@
     "jokerpoker": "ジョーカーポーカー",
     "euchre": "ユーカー",
     "pyramid": "ピラミッド",
+    "tripeaks": "トリピークス",
     "cribbage": "クリベッジ",
-    "shortdeck": "ショートデック"
+    "shortdeck": "ショートデック",
+    "threecard": "スリーカードポーカー",
+    "ohhell": "オー・ヘル"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -150,6 +153,13 @@
     "hearts.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "spades.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "spades.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "ohhell.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "ohhell.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "ohhell.bidPhase": "ビッド宣言",
+    "ohhell.playPhase.lead": "リードしてください",
+    "ohhell.playPhase.follow": "カードを出してください",
+    "ohhell.trickEnd": "トリック終了",
+    "ohhell.roundEnd": "ラウンド終了",
     "crazyeights.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "crazyeights.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "crazyeights.playPhase": "カードを出すか、山札から引いてください",
@@ -179,6 +189,11 @@
     "baccarat.result.playerWins": "プレイヤーの勝ち！",
     "baccarat.result.bankerWins": "バンカーの勝ち！",
     "baccarat.result.tie": "引き分け！",
+    "threecard.result.playerWins": "勝利！",
+    "threecard.result.dealerWins": "ディーラー勝利！",
+    "threecard.result.push": "引き分け！",
+    "threecard.result.fold": "フォールド",
+    "threecard.result.dealerNotQualified": "ディーラー未クオリファイ！",
     "klondike.playing": "プレイ中",
     "klondike.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "klondike.gameOver": "ゲームオーバー",
@@ -202,6 +217,12 @@
     "pyramid.gameOver": "ゲームオーバー",
     "pyramid.hintAvailable": "ヒントがあります",
     "pyramid.noHint": "ヒントはありません",
-    "pyramid.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
+    "pyramid.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "tripeaks.playing": "プレイ中",
+    "tripeaks.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "tripeaks.gameOver": "ゲームオーバー",
+    "tripeaks.hintAvailable": "ヒントがあります",
+    "tripeaks.noHint": "ヒントはありません",
+    "tripeaks.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
   }
 }

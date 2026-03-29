@@ -1,0 +1,79 @@
+package controller
+
+import (
+	"net/http"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// ThreeCardWebInput スリーカードポーカーWebインプット
+type ThreeCardWebInput struct {
+	BaseWebInput
+	Amount      int  `json:"amount,omitempty"`
+	PairPlusBet *int `json:"pairPlusBet,omitempty"`
+}
+
+// ThreeCardWebOutput スリーカードポーカーWebアウトプット
+type ThreeCardWebOutput struct {
+	PlayerHand      []*WebOutputCard `json:"playerHand"`
+	DealerHand      []*WebOutputCard `json:"dealerHand"`
+	Phase           int              `json:"phase"`
+	Chips           int              `json:"chips"`
+	AnteBet         int              `json:"anteBet"`
+	PairPlusBet     int              `json:"pairPlusBet"`
+	PlayBet         int              `json:"playBet"`
+	Result          int              `json:"result"`
+	AntePayout      int              `json:"antePayout"`
+	PlayPayout      int              `json:"playPayout"`
+	AnteBonusPayout int              `json:"anteBonusPayout"`
+	PairPlusPayout  int              `json:"pairPlusPayout"`
+	TotalPayout     int              `json:"totalPayout"`
+	DealerQualified bool             `json:"dealerQualified"`
+	PlayerHandRank  int              `json:"playerHandRank"`
+	DealerHandRank  int              `json:"dealerHandRank"`
+	WebOutputBase
+}
+
+// ThreeCardWebController スリーカードポーカーWebコントローラークラス
+type ThreeCardWebController = GameWebController[usecase.ThreeCardInteractorIF, ThreeCardWebInput, *ThreeCardWebOutput]
+
+// NewThreeCardWebController コンストラクタ
+func NewThreeCardWebController(factory func() usecase.ThreeCardInteractorIF) *ThreeCardWebController {
+	return NewGameWebController(factory, newThreeCardDefaultOutput, threeCardDispatch)
+}
+
+// NewThreeCardWebControllerWithProvider creates a ThreeCardWebController with an
+// explicit SessionProvider (e.g. KV-backed for Workers).
+func NewThreeCardWebControllerWithProvider(
+	provider SessionProvider[usecase.ThreeCardInteractorIF],
+	factory func() usecase.ThreeCardInteractorIF,
+) *ThreeCardWebController {
+	return NewGameWebControllerWithProvider(provider, factory, newThreeCardDefaultOutput, threeCardDispatch)
+}
+
+func newThreeCardDefaultOutput(msg string) *ThreeCardWebOutput {
+	return &ThreeCardWebOutput{
+		PlayerHand:    make([]*WebOutputCard, 0),
+		DealerHand:    make([]*WebOutputCard, 0),
+		WebOutputBase: WebOutputBase{Message: msg},
+	}
+}
+
+func threeCardDispatch(bc *baseController, w http.ResponseWriter, ti usecase.ThreeCardInteractorIF, param ThreeCardWebInput, _ func(string) *ThreeCardWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		bc.writePresenterResponse(w, ti.Reset())
+	case "b", "bet":
+		ppBet := deref(param.PairPlusBet)
+		bc.writePresenterResponse(w, ti.Bet(param.Amount, ppBet))
+	case "p", "play":
+		bc.writePresenterResponse(w, ti.Play())
+	case "f", "fold":
+		bc.writePresenterResponse(w, ti.Fold())
+	case "log", "l":
+		bc.writePresenterResponse(w, ti.ActionLog())
+	default:
+		return false
+	}
+	return true
+}

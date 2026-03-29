@@ -42,8 +42,11 @@
     "jokerpoker": "Joker Poker",
     "euchre": "Euchre",
     "pyramid": "Pyramid",
+    "tripeaks": "TriPeaks",
     "cribbage": "Cribbage",
-    "shortdeck": "Short Deck"
+    "shortdeck": "Short Deck",
+    "threecard": "Three Card Poker",
+    "ohhell": "Oh Hell"
   },
   "sound": {
     "mute": "Mute sound",
@@ -150,6 +153,13 @@
     "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "spades.result.humanWin": "Game over! You win!",
     "spades.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "ohhell.result.humanWin": "Game over! You win!",
+    "ohhell.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "ohhell.bidPhase": "Place your bid",
+    "ohhell.playPhase.lead": "Lead a card",
+    "ohhell.playPhase.follow": "Play a card",
+    "ohhell.trickEnd": "Trick complete",
+    "ohhell.roundEnd": "Round complete",
     "crazyeights.result.humanWin": "Game over! You win!",
     "crazyeights.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "crazyeights.playPhase": "Play a card or draw from the pile",
@@ -179,6 +189,11 @@
     "baccarat.result.playerWins": "Player wins!",
     "baccarat.result.bankerWins": "Banker wins!",
     "baccarat.result.tie": "Tie!",
+    "threecard.result.playerWins": "You win!",
+    "threecard.result.dealerWins": "Dealer wins!",
+    "threecard.result.push": "Push!",
+    "threecard.result.fold": "Folded",
+    "threecard.result.dealerNotQualified": "Dealer does not qualify!",
     "klondike.playing": "Playing",
     "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
     "klondike.gameOver": "Game Over",
@@ -202,6 +217,12 @@
     "pyramid.gameOver": "Game Over",
     "pyramid.hintAvailable": "Hint available",
     "pyramid.noHint": "No hint available",
-    "pyramid.stalemate": "No moves can lead to a win. Please undo or give up."
+    "pyramid.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "tripeaks.playing": "Playing",
+    "tripeaks.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "tripeaks.gameOver": "Game Over",
+    "tripeaks.hintAvailable": "Hint available",
+    "tripeaks.noHint": "No hint available",
+    "tripeaks.stalemate": "No moves can lead to a win. Please undo or give up."
   }
 }

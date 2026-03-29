@@ -47,6 +47,9 @@ type TrumpCardsWeb struct {
 	euc  *controller.EuchreWebController
 	pyc  *controller.PyramidWebController
 	cbc  *controller.CribbageWebController
+	tpc  *controller.TriPeaksWebController
+	tcc  *controller.ThreeCardWebController
+	ohlc *controller.OhHellWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -244,6 +247,10 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			pyramid := domain.NewPyramid(domain.NewTrumpCards(0))
 			return usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidWebPresenter))
 		}),
+		tpc: controller.NewTriPeaksWebController(func() usecase.TriPeaksInteractorIF {
+			triPeaks := domain.NewTriPeaks(domain.NewTrumpCards(0))
+			return usecase.NewTriPeaksInteractor(triPeaks, new(presenter.TriPeaksWebPresenter))
+		}),
 		cbc: controller.NewCribbageWebController(func() usecase.CribbageInteractorIF {
 			config := domain.DefaultCribbageConfig()
 			players := []*domain.CribbagePlayer{
@@ -252,6 +259,23 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			}
 			cribbage := domain.NewCribbage(domain.NewTrumpCards(0), players, config)
 			return usecase.NewCribbageInteractor(cribbage, new(presenter.CribbageWebPresenter))
+		}),
+		tcc: controller.NewThreeCardWebController(func() usecase.ThreeCardInteractorIF {
+			return usecase.NewThreeCardInteractor(
+				domain.NewDefaultThreeCard(),
+				new(presenter.ThreeCardWebPresenter),
+			)
+		}),
+		ohlc: controller.NewOhHellWebController(func() usecase.OhHellInteractorIF {
+			config := domain.DefaultOhHellConfig()
+			players := []*domain.OhHellPlayer{
+				domain.NewOhHellPlayer(true),
+				domain.NewOhHellPlayer(false),
+				domain.NewOhHellPlayer(false),
+				domain.NewOhHellPlayer(false),
+			}
+			ohHell := domain.NewOhHell(domain.NewTrumpCards(0), players, config)
+			return usecase.NewOhHellInteractor(ohHell, new(presenter.OhHellWebPresenter))
 		}),
 	}
 }
@@ -290,7 +314,10 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/jokerpoker/exec", web.jpwc.Exec},
 		{"/euchre/exec", web.euc.Exec},
 		{"/pyramid/exec", web.pyc.Exec},
+		{"/tripeaks/exec", web.tpc.Exec},
 		{"/cribbage/exec", web.cbc.Exec},
+		{"/threecard/exec", web.tcc.Exec},
+		{"/ohhell/exec", web.ohlc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -379,6 +406,8 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.euc.Stop()
 	web.pyc.Stop()
 	web.cbc.Stop()
+	web.tpc.Stop()
+	web.tcc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

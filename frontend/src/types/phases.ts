@@ -2,19 +2,30 @@
  * Game phase enums for all games.
  *
  * These values must stay in sync with the backend domain constants:
- *   - BlackJack:  internal/domain/BlackJack.go (BJPhaseBet, BJPhaseDeal, BJPhaseInsurance, BJPhaseAction, BJPhaseEnd)
- *   - Poker:      internal/domain/Poker.go     (PokerPhaseInit, PokerPhaseDeal, PokerPhaseExchange, PokerPhaseSecondBet, PokerPhaseEnd)
- *   - Hearts:     internal/domain/Hearts.go    (HeartsPhasePass, HeartsPhasePlay, HeartsPhaseTrickEnd, HeartsPhaseRoundEnd, HeartsPhaseGameEnd)
- *   - Spades:     internal/domain/Spades.go    (SpadesPhaseBid, SpadesPhasePlay, SpadesPhaseTrickEnd, SpadesPhaseRoundEnd, SpadesPhaseGameEnd)
- *   - Memory:     internal/domain/Memory.go    (MemoryPhaseFlip1, MemoryPhaseFlip2, MemoryPhaseResult, MemoryPhaseGameEnd)
- *   - Klondike:   internal/domain/Klondike.go  (KlondikePhasePlaying, KlondikePhaseGameClear, KlondikePhaseGameOver)
- *   - FreeCell:   internal/domain/FreeCell.go  (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
+ *   - Baccarat:    internal/domain/Baccarat.go    (BaccaratPhaseBet, BaccaratPhaseEnd)
+ *   - BlackJack:   internal/domain/BlackJack.go   (BJPhaseBet, BJPhaseDeal, BJPhaseInsurance, BJPhaseAction, BJPhaseEnd)
  *   - CrazyEights: internal/domain/CrazyEights.go (CrazyEightsPhasePlay, CrazyEightsPhaseChooseSuit, CrazyEightsPhaseRoundEnd, CrazyEightsPhaseGameEnd)
- *   - GinRummy:  internal/domain/GinRummy.go   (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
- *   - Baccarat:   internal/domain/Baccarat.go  (BaccaratPhaseBet, BaccaratPhaseEnd)
- *   - Euchre:     internal/domain/Euchre.go    (EuchrePhasePickUp, EuchrePhaseCallTrump, EuchrePhaseDiscard, EuchrePhasePlay, EuchrePhaseTrickEnd, EuchrePhaseRoundEnd, EuchrePhaseGameEnd)
- *   - Pyramid:    internal/domain/Pyramid.go  (PyramidPhasePlaying, PyramidPhaseGameClear, PyramidPhaseGameOver)
- *   - Cribbage:   internal/domain/Cribbage.go (CribbagePhaseDiscard, CribbagePhaseCut, CribbagePhasePegging, CribbagePhaseShow, CribbagePhaseRoundEnd, CribbagePhaseGameEnd)
+ *   - Cribbage:    internal/domain/Cribbage.go    (CribbagePhaseDiscard, CribbagePhaseCut, CribbagePhasePegging, CribbagePhaseShow, CribbagePhaseRoundEnd, CribbagePhaseGameEnd)
+ *   - Doubt:       internal/domain/Doubt.go       (DoubtPhasePlay, DoubtPhaseDoubt, DoubtPhaseEnd)
+ *   - Euchre:      internal/domain/Euchre.go      (EuchrePhasePickUp, EuchrePhaseCallTrump, EuchrePhaseDiscard, EuchrePhasePlay, EuchrePhaseTrickEnd, EuchrePhaseRoundEnd, EuchrePhaseGameEnd)
+ *   - FreeCell:    internal/domain/FreeCell.go    (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
+ *   - GinRummy:    internal/domain/GinRummy.go    (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
+ *   - Hearts:      internal/domain/Hearts.go      (HeartsPhasePass, HeartsPhasePlay, HeartsPhaseTrickEnd, HeartsPhaseRoundEnd, HeartsPhaseGameEnd)
+ *   - Holdem:      internal/domain/Holdem.go      (HoldemPhaseInit, HoldemPhasePreFlop, HoldemPhaseFlop, HoldemPhaseTurn, HoldemPhaseRiver, HoldemPhaseShowdown, HoldemPhaseEnd, HoldemPhaseRebuy)
+ *   - IndianPoker: internal/domain/IndianPoker.go (IndianPokerPhaseInit, IndianPokerPhaseAnte, IndianPokerPhaseBetting, IndianPokerPhaseShowdown, IndianPokerPhaseEnd)
+ *   - Klondike:    internal/domain/Klondike.go    (KlondikePhasePlaying, KlondikePhaseGameClear, KlondikePhaseGameOver)
+ *   - Memory:      internal/domain/Memory.go      (MemoryPhaseFlip1, MemoryPhaseFlip2, MemoryPhaseResult, MemoryPhaseGameEnd)
+ *   - Napoleon:    internal/domain/Napoleon.go    (NapoleonPhaseBid, NapoleonPhaseTrumpDeclaration, NapoleonPhaseKittyExchange, NapoleonPhasePlay, NapoleonPhaseTrickEnd, NapoleonPhaseRoundEnd, NapoleonPhaseGameEnd)
+ *   - OhHell:      internal/domain/OhHell.go      (OhHellPhaseBid, OhHellPhasePlay, OhHellPhaseTrickEnd, OhHellPhaseRoundEnd, OhHellPhaseGameEnd)
+ *   - Omaha:       (alias of HoldemPhase)
+ *   - Poker:       internal/domain/Poker.go       (PokerPhaseInit, PokerPhaseDeal, PokerPhaseExchange, PokerPhaseSecondBet, PokerPhaseEnd)
+ *   - Pyramid:     internal/domain/Pyramid.go     (PyramidPhasePlaying, PyramidPhaseGameClear, PyramidPhaseGameOver)
+ *   - ShortDeck:   (alias of HoldemPhase)
+ *   - Spades:      internal/domain/Spades.go      (SpadesPhaseBid, SpadesPhasePlay, SpadesPhaseTrickEnd, SpadesPhaseRoundEnd, SpadesPhaseGameEnd)
+ *   - Spider:      internal/domain/Spider.go      (SpiderPhasePlaying, SpiderPhaseGameClear, SpiderPhaseGameOver)
+ *   - ThreeCard:   internal/domain/ThreeCard.go   (ThreeCardPhaseBet, ThreeCardPhaseAction, ThreeCardPhaseEnd)
+ *   - TriPeaks:    internal/domain/TriPeaks.go    (TriPeaksPhasePlaying, TriPeaksPhaseGameClear, TriPeaksPhaseGameOver)
+ *   - VideoPoker:  internal/domain/VideoPoker.go  (VideoPokerPhaseBet, VideoPokerPhaseDraw, VideoPokerPhaseResult)
  */
 
 /** BlackJack phase constants (sync: internal/domain/BlackJack.go). */
@@ -121,6 +132,15 @@ export const SpadesPhase = {
   GAME_END: 4,
 } as const;
 
+/** Oh Hell phase constants (sync: internal/domain/OhHell.go). */
+export const OhHellPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Crazy Eights phase constants (sync: internal/domain/CrazyEights.go). */
 export const CrazyEightsPhase = {
   PLAY: 0,
@@ -200,6 +220,13 @@ export const PyramidPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** TriPeaks phase constants (sync: internal/domain/TriPeaks.go). */
+export const TriPeaksPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Cribbage phase constants (sync: internal/domain/Cribbage.go). */
 export const CribbagePhase = {
   DISCARD: 0,
@@ -219,4 +246,11 @@ export const EuchrePhase = {
   TRICK_END: 4,
   ROUND_END: 5,
   GAME_END: 6,
+} as const;
+
+/** Three Card Poker phase constants (sync: internal/domain/ThreeCard.go). */
+export const ThreeCardPhase = {
+  BET: 1,
+  ACTION: 2,
+  END: 3,
 } as const;

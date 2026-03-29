@@ -22,6 +22,7 @@ export const gameCategories: readonly GameCategory[] = [
     routes: [
       { path: '/', labelKey: 'nav.blackjack', icon: '🃏' },
       { path: '/baccarat', labelKey: 'nav.baccarat', icon: '💎' },
+      { path: '/threecard', labelKey: 'nav.threecard', icon: '🎴' },
     ],
   },
   {
@@ -44,6 +45,7 @@ export const gameCategories: readonly GameCategory[] = [
     routes: [
       { path: '/hearts', labelKey: 'nav.hearts', icon: '♥️' },
       { path: '/spades', labelKey: 'nav.spades', icon: '♠️' },
+      { path: '/ohhell', labelKey: 'nav.ohhell', icon: '🔔' },
       { path: '/euchre', labelKey: 'nav.euchre', icon: '🎩' },
       { path: '/napoleon', labelKey: 'nav.napoleon', icon: '👑' },
     ],
@@ -67,6 +69,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/freecell', labelKey: 'nav.freecell', icon: '🔲' },
       { path: '/spider', labelKey: 'nav.spider', icon: '🕷️' },
       { path: '/pyramid', labelKey: 'nav.pyramid', icon: '🔺' },
+      { path: '/tripeaks', labelKey: 'nav.tripeaks', icon: '⛰️' },
       { path: '/memory', labelKey: 'nav.memory', icon: '🧠' },
     ],
   },

@@ -3,6 +3,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   // Table games
   blackjack: { bg: 'bg-game-bg-green-bright', footer: 'bg-game-bg-green-bright-dark border-white/20' },
   baccarat: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  threecard: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   // Poker
   poker: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
   holdem: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
@@ -15,6 +16,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   // Trick-taking
   hearts: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   spades: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  ohhell: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   euchre: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   napoleon: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   // Matching/Pass — unified to green
@@ -28,6 +30,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   freecell: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   spider: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   pyramid: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  tripeaks: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   memory: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   // Counting/Rummy — unified to blue
   ginrummy: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },

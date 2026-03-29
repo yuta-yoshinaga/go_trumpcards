@@ -24,6 +24,7 @@ import { JokerPokerPage } from './pages/JokerPokerPage';
 import { KlondikePage } from './pages/KlondikePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { NapoleonPage } from './pages/NapoleonPage';
+import { OhHellPage } from './pages/OhHellPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
 import { PokerPage } from './pages/PokerPage';
@@ -32,6 +33,8 @@ import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
 import { SpadesPage } from './pages/SpadesPage';
 import { SpiderPage } from './pages/SpiderPage';
+import { ThreeCardPage } from './pages/ThreeCardPage';
+import { TriPeaksPage } from './pages/TriPeaksPage';
 import { VideoPokerPage } from './pages/VideoPokerPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
@@ -48,6 +51,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/shortdeck': <ShortDeckPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,
+  '/ohhell': <OhHellPage />,
   '/napoleon': <NapoleonPage />,
   '/memory': <MemoryPage />,
   '/klondike': <KlondikePage />,
@@ -58,10 +62,12 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/cribbage': <CribbagePage />,
   '/spider': <SpiderPage />,
   '/pyramid': <PyramidPage />,
+  '/tripeaks': <TriPeaksPage />,
   '/indianpoker': <IndianPokerPage />,
   '/videopoker': <VideoPokerPage />,
   '/deuceswild': <DeucesWildPage />,
   '/jokerpoker': <JokerPokerPage />,
+  '/threecard': <ThreeCardPage />,
 };
 
 /** Root application component with router and game page routes. */
