@@ -191,13 +191,33 @@ func TestOhHellInteractor_Play(t *testing.T) {
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("IsHumanTurn").Return(true).Once()
 		gameMock.On("PlayerPlay", 0).Return(nil)
-		// runCpuTurns: phase=TrickEnd → break
-		gameMock.On("GetPhase").Return(domain.OhHellPhaseTrickEnd)
+		// After play, phase=Play (CPU still need to play)
+		gameMock.On("GetPhase").Return(domain.OhHellPhasePlay)
+		// runCpuTurns: human turn → break
+		gameMock.On("IsHumanTurn").Return(true)
 
 		oi := usecase.NewOhHellInteractor(gameMock, opMock)
 		result := oi.Play(0)
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertCalled(t, "PlayerPlay", 0)
+		gameMock.AssertNotCalled(t, "ResolveTrick")
+	})
+
+	t.Run("human completes trick calls ResolveTrick", func(t *testing.T) {
+		opMock := new(presenter.MockOhHellPresenter)
+		opMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+		gameMock := new(interfaces.MockOhHellGame)
+		gameMock.On("GetGameEndFlag").Return(false)
+		gameMock.On("IsHumanTurn").Return(true).Once()
+		gameMock.On("PlayerPlay", 0).Return(nil)
+		// After play, phase=TrickEnd (human was last to play)
+		gameMock.On("GetPhase").Return(domain.OhHellPhaseTrickEnd)
+		gameMock.On("ResolveTrick").Return()
+
+		oi := usecase.NewOhHellInteractor(gameMock, opMock)
+		result := oi.Play(0)
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertCalled(t, "ResolveTrick")
 	})
 }
 

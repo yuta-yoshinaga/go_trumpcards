@@ -82,6 +82,10 @@ func (oi *OhHellInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return oi.op.Output(oi.o, err)
 	}
+	// 人間が最後のカードを出してトリック完了した場合、即座に解決
+	if oi.o.GetPhase() == domain.OhHellPhaseTrickEnd {
+		oi.o.ResolveTrick()
+	}
 	oi.runCpuTurns()
 	return oi.op.Output(oi.o, nil)
 }
