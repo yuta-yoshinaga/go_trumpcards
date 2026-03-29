@@ -1,0 +1,7 @@
+{
+  "helpTitle": "TriPeaks",
+  "helpDraw": "  d                        draw from stock",
+  "helpRemove": "  rm <row> <col>            remove card",
+  "helpGiveUp": "  g                        give up",
+  "helpHint": "  h                        hint"
+}

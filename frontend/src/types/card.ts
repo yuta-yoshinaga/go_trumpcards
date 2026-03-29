@@ -1219,6 +1219,37 @@ export interface PyramidResponse {
   hint?: PyramidHint;
 }
 
+// --- TriPeaks (トリピークス) ---
+
+/** A card in the TriPeaks tableau with removal and exposure status. */
+export interface TriPeaksCard {
+  card: Card | null;
+  removed: boolean;
+  exposed: boolean;
+}
+
+/** A suggested hint in TriPeaks. */
+export interface TriPeaksHint {
+  type: string;
+  row: number;
+  col: number;
+}
+
+/** Full TriPeaks game state returned from the API. */
+export interface TriPeaksResponse {
+  layout: TriPeaksCard[][];
+  stockCount: number;
+  waste: Card[];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: TriPeaksHint;
+}
+
 /** Full Video Poker game state returned from the API. */
 export interface VideoPokerResponse {
   hand: Card[];

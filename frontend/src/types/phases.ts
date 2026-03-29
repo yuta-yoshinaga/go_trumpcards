@@ -14,6 +14,7 @@
  *   - Baccarat:   internal/domain/Baccarat.go  (BaccaratPhaseBet, BaccaratPhaseEnd)
  *   - Euchre:     internal/domain/Euchre.go    (EuchrePhasePickUp, EuchrePhaseCallTrump, EuchrePhaseDiscard, EuchrePhasePlay, EuchrePhaseTrickEnd, EuchrePhaseRoundEnd, EuchrePhaseGameEnd)
  *   - Pyramid:    internal/domain/Pyramid.go  (PyramidPhasePlaying, PyramidPhaseGameClear, PyramidPhaseGameOver)
+ *   - TriPeaks:   internal/domain/TriPeaks.go (TriPeaksPhasePlaying, TriPeaksPhaseGameClear, TriPeaksPhaseGameOver)
  *   - Cribbage:   internal/domain/Cribbage.go (CribbagePhaseDiscard, CribbagePhaseCut, CribbagePhasePegging, CribbagePhaseShow, CribbagePhaseRoundEnd, CribbagePhaseGameEnd)
  */
 
@@ -195,6 +196,13 @@ export const VideoPokerPhase = {
 
 /** Pyramid phase constants (sync: internal/domain/Pyramid.go). */
 export const PyramidPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** TriPeaks phase constants (sync: internal/domain/TriPeaks.go). */
+export const TriPeaksPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,

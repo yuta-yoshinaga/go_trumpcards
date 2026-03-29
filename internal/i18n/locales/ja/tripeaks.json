@@ -1,0 +1,7 @@
+{
+  "helpTitle": "TriPeaks (トリピークス)",
+  "helpDraw": "  d                        ストックからカードを引く",
+  "helpRemove": "  rm <row> <col>            カードを除去",
+  "helpGiveUp": "  g                        ギブアップ",
+  "helpHint": "  h                        ヒント"
+}

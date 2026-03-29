@@ -59,6 +59,7 @@ GAMES:
   jokerpoker   Joker Poker (ジョーカーポーカー)
   euchre       Euchre (ユーカー)
   pyramid      Pyramid (ピラミッド)
+  tripeaks     TriPeaks (トリピークス)
   cribbage     Cribbage (クリベッジ)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
@@ -157,6 +158,7 @@ ENVIRONMENT VARIABLES:
 		"jokerpoker":  func() int { ui.NewJokerPokerCui().Exec(); return 0 },
 		"euchre":      func() int { ui.NewEuchreCui().Exec(); return 0 },
 		"pyramid":     func() int { ui.NewPyramidCui().Exec(); return 0 },
+		"tripeaks":    func() int { ui.NewTriPeaksCui().Exec(); return 0 },
 		"cribbage":    func() int { ui.NewCribbageCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)

@@ -32,6 +32,7 @@ import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
 import { SpadesPage } from './pages/SpadesPage';
 import { SpiderPage } from './pages/SpiderPage';
+import { TriPeaksPage } from './pages/TriPeaksPage';
 import { VideoPokerPage } from './pages/VideoPokerPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
@@ -58,6 +59,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/cribbage': <CribbagePage />,
   '/spider': <SpiderPage />,
   '/pyramid': <PyramidPage />,
+  '/tripeaks': <TriPeaksPage />,
   '/indianpoker': <IndianPokerPage />,
   '/videopoker': <VideoPokerPage />,
   '/deuceswild': <DeucesWildPage />,

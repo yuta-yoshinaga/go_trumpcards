@@ -42,6 +42,7 @@
     "jokerpoker": "ジョーカーポーカー",
     "euchre": "ユーカー",
     "pyramid": "ピラミッド",
+    "tripeaks": "トリピークス",
     "cribbage": "クリベッジ",
     "shortdeck": "ショートデック"
   },
@@ -202,6 +203,12 @@
     "pyramid.gameOver": "ゲームオーバー",
     "pyramid.hintAvailable": "ヒントがあります",
     "pyramid.noHint": "ヒントはありません",
-    "pyramid.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
+    "pyramid.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "tripeaks.playing": "プレイ中",
+    "tripeaks.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "tripeaks.gameOver": "ゲームオーバー",
+    "tripeaks.hintAvailable": "ヒントがあります",
+    "tripeaks.noHint": "ヒントはありません",
+    "tripeaks.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
   }
 }

@@ -64,6 +64,8 @@ tags:
     description: Euchre (ユーカー) game
   - name: pyramid
     description: Pyramid (ピラミッド) game
+  - name: tripeaks
+    description: TriPeaks (トリピークス) game
   - name: cribbage
     description: Cribbage (クリベッジ) game
 
@@ -2306,6 +2308,83 @@ paths:
                 paramError:
                   value:
                     pyramid: []
+                    stockCount: 0
+                    waste: []
+                    phase: 0
+                    moveCount: 0
+                    message: param error.
+
+  /tripeaks/exec:
+    post:
+      tags:
+        - tripeaks
+      summary: Execute a TriPeaks game command
+      description: |
+        Send a command to advance the TriPeaks (トリピークス) game session identified by
+        `sessionId`.  TriPeaks is a single-player solitaire card game using a
+        standard 52-card deck.  Three overlapping pyramids (peaks) form a 28-card
+        tableau.  Remove exposed cards that are ±1 rank from the waste pile top
+        card (K-A wrap).  Win by removing all 28 tableau cards.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All tableau cards removed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `draw`         | `d`  | Draw a card from stock to waste |
+        | `remove`       | `rm` | Remove an exposed card ±1 rank from waste top |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `undo`         | `u`  | Undo the last action |
+        | `log`          | `l`  | View action log |
+      operationId: tripeaksExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriPeaksRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw from stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              remove:
+                summary: Remove a tableau card
+                value:
+                  command: remove
+                  row: 3
+                  col: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriPeaksResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriPeaksResponse'
+              examples:
+                paramError:
+                  value:
+                    tableau: []
                     stockCount: 0
                     waste: []
                     phase: 0
@@ -7115,6 +7194,118 @@ components:
             col2:
               type: integer
               description: Column of second card (-1 for king/waste operations)
+
+    TriPeaksRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
+            `remove` (`rm`), `giveup` (`g`), `hint` (`h`), `undo` (`u`),
+            `log` (`l`).
+          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+          example: remove
+        row:
+          type: integer
+          description: Row index of the tableau card to remove (0-based)
+          example: 3
+        col:
+          type: integer
+          description: Column index of the tableau card to remove (0-based)
+          example: 0
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    TriPeaksOutputCard:
+      type: object
+      description: A card in the TriPeaks tableau with its state
+      properties:
+        card:
+          description: Card details (null when removed)
+          $ref: '#/components/schemas/Card'
+        removed:
+          type: boolean
+          description: Whether the card has been removed
+          example: false
+        exposed:
+          type: boolean
+          description: Whether the card is exposed (can be selected)
+          example: true
+
+    TriPeaksResponse:
+      type: object
+      description: Current state of the TriPeaks game
+      required:
+        - tableau
+        - stockCount
+        - waste
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The tableau rows, each containing an array of cards (three overlapping peaks)
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/TriPeaksOutputCard'
+        stockCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+          example: 23
+        waste:
+          type: array
+          description: Cards in the waste pile (top card is the last element)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
+          example: false
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            row:
+              type: integer
+              description: Row of the card to remove
+            col:
+              type: integer
+              description: Column of the card to remove
 
     CribbageRequest:
       type: object
