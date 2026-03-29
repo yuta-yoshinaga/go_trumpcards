@@ -100,9 +100,9 @@ func (mi *MemoryInteractor) Snapshot() ([]byte, error) {
 
 // RestoreMemoryInteractor deserialises JSON into a MemoryInteractor.
 func RestoreMemoryInteractor(data []byte, mp presenter.MemoryPresenter) (*MemoryInteractor, error) {
-	var mem domain.Memory
-	if err := json.Unmarshal(data, &mem); err != nil {
+	mem, err := restoreGame[domain.Memory](data)
+	if err != nil {
 		return nil, err
 	}
-	return &MemoryInteractor{m: &mem, mp: mp}, nil
+	return &MemoryInteractor{m: mem, mp: mp}, nil
 }

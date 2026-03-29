@@ -141,26 +141,12 @@ func (oi *OhHellInteractor) runCpuBids() {
 
 // runCpuTurns ゲームが終わるか人間の手番またはトリック/ラウンド終了になるまでCPUターンを実行
 func (oi *OhHellInteractor) runCpuTurns() {
-	for !oi.o.GetGameEndFlag() {
-		phase := oi.o.GetPhase()
-		if phase == domain.OhHellPhaseTrickEnd || phase == domain.OhHellPhaseRoundEnd || phase == domain.OhHellPhaseGameEnd {
-			break
-		}
-		if phase != domain.OhHellPhasePlay {
-			break
-		}
-		if oi.o.IsHumanTurn() {
-			break
-		}
-		oi.o.CpuPlay()
-		if oi.o.GetPhase() == domain.OhHellPhaseTrickEnd {
-			oi.o.ResolveTrick()
-			if oi.o.GetPhase() == domain.OhHellPhaseRoundEnd {
-				break
-			}
-			oi.o.NextTrick()
-		}
-	}
+	runCpuTurnsLoop(oi.o, trickPhases[domain.OhHellPhase]{
+		play:     domain.OhHellPhasePlay,
+		trickEnd: domain.OhHellPhaseTrickEnd,
+		roundEnd: domain.OhHellPhaseRoundEnd,
+		gameEnd:  domain.OhHellPhaseGameEnd,
+	})
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.
@@ -170,9 +156,9 @@ func (oi *OhHellInteractor) Snapshot() ([]byte, error) {
 
 // RestoreOhHellInteractor deserialises JSON into an OhHellInteractor.
 func RestoreOhHellInteractor(data []byte, op presenter.OhHellPresenter) (*OhHellInteractor, error) {
-	var o domain.OhHell
-	if err := json.Unmarshal(data, &o); err != nil {
+	o, err := restoreGame[domain.OhHell](data)
+	if err != nil {
 		return nil, err
 	}
-	return &OhHellInteractor{o: &o, op: op}, nil
+	return &OhHellInteractor{o: o, op: op}, nil
 }

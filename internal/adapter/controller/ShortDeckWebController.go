@@ -74,10 +74,8 @@ func shortDeckDispatch(bc *baseController, w http.ResponseWriter, ogi usecase.Sh
 		bc.writePresenterResponse(w, ogi.Muck())
 	case "sh", "show":
 		bc.writePresenterResponse(w, ogi.ShowHand())
-	case "log", "l":
-		bc.writePresenterResponse(w, ogi.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, ogi.ActionLog)
 	}
 	return true
 }

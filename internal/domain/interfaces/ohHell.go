@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // OhHellGame オー・ヘルゲームインタフェース
 type OhHellGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// NextRound 次のラウンドを開始する
@@ -70,6 +71,4 @@ type OhHellGame interface {
 	GetValidPlayIndices(playerIdx int) []int
 	// GetHint ヒントを取得する
 	GetHint() *domain.OhHellHint
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }

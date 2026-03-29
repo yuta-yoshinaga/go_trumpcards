@@ -119,9 +119,9 @@ func (oi *ShortDeckInteractor) Snapshot() ([]byte, error) {
 
 // RestoreShortDeckInteractor deserialises JSON into a ShortDeckInteractor.
 func RestoreShortDeckInteractor(data []byte, op presenter.ShortDeckPresenter) (*ShortDeckInteractor, error) {
-	var sd domain.ShortDeck
-	if err := json.Unmarshal(data, &sd); err != nil {
+	sd, err := restoreGame[domain.ShortDeck](data)
+	if err != nil {
 		return nil, err
 	}
-	return &ShortDeckInteractor{o: &sd, op: op}, nil
+	return &ShortDeckInteractor{o: sd, op: op}, nil
 }

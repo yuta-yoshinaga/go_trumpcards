@@ -150,9 +150,9 @@ func (ci *CrazyEightsInteractor) Snapshot() ([]byte, error) {
 
 // RestoreCrazyEightsInteractor deserialises JSON into a CrazyEightsInteractor.
 func RestoreCrazyEightsInteractor(data []byte, gp presenter.CrazyEightsPresenter) (*CrazyEightsInteractor, error) {
-	var g domain.CrazyEights
-	if err := json.Unmarshal(data, &g); err != nil {
+	g, err := restoreGame[domain.CrazyEights](data)
+	if err != nil {
 		return nil, err
 	}
-	return &CrazyEightsInteractor{g: &g, gp: gp}, nil
+	return &CrazyEightsInteractor{g: g, gp: gp}, nil
 }

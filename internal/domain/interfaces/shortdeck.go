@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // ShortDeckGame ショートデックホールデムゲームインタフェース
 type ShortDeckGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset() error
 	// PlayerAction プレイヤーのベッティングアクションを実行する
@@ -83,8 +84,6 @@ type ShortDeckGame interface {
 	ExportProfile() interface{}
 	// ImportProfile JSONバイトからメタAIプロファイルをインポートする
 	ImportProfile(data []byte) error
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// GetEquity エクイティ計算結果を取得する
 	GetEquity() *domain.HoldemEquityResult
 	// GetPotOdds ポットオッズを取得する

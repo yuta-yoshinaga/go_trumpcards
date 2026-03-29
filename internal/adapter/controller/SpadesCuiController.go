@@ -64,12 +64,9 @@ func (c *SpadesCuiController) Exec(command string) string {
 					cfg.PointLimit = v
 					return c.si.ResetWithConfig(cfg)
 				})
-			case "h", "hint":
-				return c.si.Hint(), true
-			case "log", "l":
-				return c.si.ActionLog(), true
+			default:
+				return handleCuiHintAndLog(cmd, c.si.Hint, c.si.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

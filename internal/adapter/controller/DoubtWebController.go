@@ -165,10 +165,8 @@ func doubtDispatch(bc *baseController, w http.ResponseWriter, dgi usecase.DoubtI
 		} else {
 			bc.writePresenterResponse(w, dgi.SkipDoubt())
 		}
-	case "log", "l":
-		bc.writePresenterResponse(w, dgi.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, dgi.ActionLog)
 	}
 	return true
 }

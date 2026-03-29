@@ -33,14 +33,11 @@ func (c *TriPeaksCuiController) Exec(command string) string {
 				return c.handleRemove(args), true
 			case "g", "giveup":
 				return c.ti.GiveUp(), true
-			case "h", "hint":
-				return c.ti.Hint(), true
-			case "log", "l":
-				return c.ti.ActionLog(), true
 			case "u", "undo":
 				return c.ti.Undo(), true
+			default:
+				return handleCuiHintAndLog(cmd, c.ti.Hint, c.ti.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

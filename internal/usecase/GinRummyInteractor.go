@@ -162,9 +162,9 @@ func (ci *GinRummyInteractor) Snapshot() ([]byte, error) {
 
 // RestoreGinRummyInteractor deserialises JSON into a GinRummyInteractor.
 func RestoreGinRummyInteractor(data []byte, gp presenter.GinRummyPresenter) (*GinRummyInteractor, error) {
-	var g domain.GinRummy
-	if err := json.Unmarshal(data, &g); err != nil {
+	g, err := restoreGame[domain.GinRummy](data)
+	if err != nil {
 		return nil, err
 	}
-	return &GinRummyInteractor{g: &g, gp: gp}, nil
+	return &GinRummyInteractor{g: g, gp: gp}, nil
 }

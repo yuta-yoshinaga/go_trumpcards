@@ -106,9 +106,9 @@ func (si *SevensInteractor) Snapshot() ([]byte, error) {
 
 // RestoreSevensInteractor deserialises JSON into a SevensInteractor.
 func RestoreSevensInteractor(data []byte, sp presenter.SevensPresenter) (*SevensInteractor, error) {
-	var s domain.Sevens
-	if err := json.Unmarshal(data, &s); err != nil {
+	s, err := restoreGame[domain.Sevens](data)
+	if err != nil {
 		return nil, err
 	}
-	return &SevensInteractor{s: &s, sp: sp}, nil
+	return &SevensInteractor{s: s, sp: sp}, nil
 }

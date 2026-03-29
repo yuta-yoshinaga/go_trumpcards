@@ -145,10 +145,8 @@ func oldMaidDispatch(bc *baseController, w http.ResponseWriter, omi usecase.OldM
 			return true
 		}
 		bc.writePresenterResponse(w, omi.Reorder(param.ReorderIndices))
-	case "log", "l":
-		bc.writePresenterResponse(w, omi.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, omi.ActionLog)
 	}
 	return true
 }

@@ -63,6 +63,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 			"ssr", "setsurrenderrule", "hint", "togglehint", "soft17", "togglesoft17",
 			"counting", "togglecounting", "das", "toggledas",
 			"sd", "setdeckcount", "scc", "setcpucount", "scs", "setcountingsystem", "pen", "setpenetration",
+			"log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			if fn, ok := bjNoArgCommands[cmd]; ok {
@@ -88,8 +89,9 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Counting system is required.", "Invalid counting system: %s. Please enter a number (0-3).", 0, domain.BJCountingMax, bcc.bji.SetCountingSystem)
 			case "pen", "setpenetration":
 				return cuiutil.WithParsedInt(args, "Penetration rate is required.", "Invalid penetration rate. Please enter a number.", cuiutil.NoMin, cuiutil.NoMax, bcc.bji.SetDeckPenetration)
+			default:
+				return handleCuiLog(cmd, bcc.bji.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

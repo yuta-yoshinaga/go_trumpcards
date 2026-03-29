@@ -137,12 +137,8 @@ func spadesDispatch(bc *baseController, w http.ResponseWriter, si usecase.Spades
 		bc.writePresenterResponse(w, si.NextTrick())
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, si.NextRound())
-	case "h", "hint":
-		bc.writePresenterResponse(w, si.Hint())
-	case "log", "l":
-		bc.writePresenterResponse(w, si.ActionLog())
 	default:
-		return false
+		return dispatchHintAndLog(param.Command, bc, w, si.Hint, si.ActionLog)
 	}
 	return true
 }

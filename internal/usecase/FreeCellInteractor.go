@@ -108,9 +108,9 @@ func (fi *FreeCellInteractor) Snapshot() ([]byte, error) {
 
 // RestoreFreeCellInteractor deserialises JSON into a FreeCellInteractor.
 func RestoreFreeCellInteractor(data []byte, fp presenter.FreeCellPresenter) (*FreeCellInteractor, error) {
-	var fc domain.FreeCell
-	if err := json.Unmarshal(data, &fc); err != nil {
+	fc, err := restoreGame[domain.FreeCell](data)
+	if err != nil {
 		return nil, err
 	}
-	return &FreeCellInteractor{f: &fc, fp: fp}, nil
+	return &FreeCellInteractor{f: fc, fp: fp}, nil
 }

@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // CrazyEightsGame クレイジーエイトゲームインタフェース
 type CrazyEightsGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// NextRound 次のラウンドを開始する
@@ -48,6 +49,4 @@ type CrazyEightsGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.CrazyEightsPlayer
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }

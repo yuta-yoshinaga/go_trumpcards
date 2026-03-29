@@ -97,16 +97,12 @@ func spiderDispatch(bc *baseController, w http.ResponseWriter, si usecase.Spider
 		return spiderMoveDispatch(bc, w, si, param, newDefault)
 	case "g", "giveup":
 		bc.writePresenterResponse(w, si.GiveUp())
-	case "h", "hint":
-		bc.writePresenterResponse(w, si.Hint())
 	case "ac", "autocomplete":
 		bc.writePresenterResponse(w, si.AutoComplete())
-	case "log", "l":
-		bc.writePresenterResponse(w, si.ActionLog())
 	case "u", "undo":
 		bc.writePresenterResponse(w, si.Undo())
 	default:
-		return false
+		return dispatchHintAndLog(param.Command, bc, w, si.Hint, si.ActionLog)
 	}
 	return true
 }

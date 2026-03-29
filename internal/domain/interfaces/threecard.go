@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // ThreeCardGame スリーカードポーカーゲームインタフェース
 type ThreeCardGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// Bet アンテベットを行いカードを配る
@@ -47,6 +48,4 @@ type ThreeCardGame interface {
 	GetDealerHandRank() int
 	// GetChips チップを取得する
 	GetChips() int
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }

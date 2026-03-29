@@ -33,14 +33,11 @@ func (c *PyramidCuiController) Exec(command string) string {
 				return c.handleRemove(args), true
 			case "g", "giveup":
 				return c.pi.GiveUp(), true
-			case "h", "hint":
-				return c.pi.Hint(), true
-			case "log", "l":
-				return c.pi.ActionLog(), true
 			case "u", "undo":
 				return c.pi.Undo(), true
+			default:
+				return handleCuiHintAndLog(cmd, c.pi.Hint, c.pi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

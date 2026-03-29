@@ -101,9 +101,9 @@ func (pi *PyramidInteractor) Snapshot() ([]byte, error) {
 
 // RestorePyramidInteractor deserialises JSON into a PyramidInteractor.
 func RestorePyramidInteractor(data []byte, pp presenter.PyramidPresenter) (*PyramidInteractor, error) {
-	var pyr domain.Pyramid
-	if err := json.Unmarshal(data, &pyr); err != nil {
+	pyr, err := restoreGame[domain.Pyramid](data)
+	if err != nil {
 		return nil, err
 	}
-	return &PyramidInteractor{p: &pyr, pp: pp}, nil
+	return &PyramidInteractor{p: pyr, pp: pp}, nil
 }

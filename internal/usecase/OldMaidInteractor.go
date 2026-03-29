@@ -109,9 +109,9 @@ func (oi *OldMaidInteractor) Snapshot() ([]byte, error) {
 
 // RestoreOldMaidInteractor deserialises JSON into an OldMaidInteractor.
 func RestoreOldMaidInteractor(data []byte, omp presenter.OldMaidPresenter) (*OldMaidInteractor, error) {
-	var om domain.OldMaid
-	if err := json.Unmarshal(data, &om); err != nil {
+	om, err := restoreGame[domain.OldMaid](data)
+	if err != nil {
 		return nil, err
 	}
-	return &OldMaidInteractor{om: &om, omp: omp}, nil
+	return &OldMaidInteractor{om: om, omp: omp}, nil
 }

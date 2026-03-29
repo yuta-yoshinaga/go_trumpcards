@@ -119,9 +119,9 @@ func (oi *OmahaInteractor) Snapshot() ([]byte, error) {
 
 // RestoreOmahaInteractor deserialises JSON into an OmahaInteractor.
 func RestoreOmahaInteractor(data []byte, op presenter.OmahaPresenter) (*OmahaInteractor, error) {
-	var o domain.Omaha
-	if err := json.Unmarshal(data, &o); err != nil {
+	o, err := restoreGame[domain.Omaha](data)
+	if err != nil {
 		return nil, err
 	}
-	return &OmahaInteractor{o: &o, op: op}, nil
+	return &OmahaInteractor{o: o, op: op}, nil
 }

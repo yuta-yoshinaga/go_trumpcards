@@ -150,12 +150,8 @@ func euchreDispatch(bc *baseController, w http.ResponseWriter, ei usecase.Euchre
 		bc.writePresenterResponse(w, ei.NextTrick())
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, ei.NextRound())
-	case "h", "hint":
-		bc.writePresenterResponse(w, ei.Hint())
-	case "log", "l":
-		bc.writePresenterResponse(w, ei.ActionLog())
 	default:
-		return false
+		return dispatchHintAndLog(param.Command, bc, w, ei.Hint, ei.ActionLog)
 	}
 	return true
 }

@@ -62,12 +62,9 @@ func (c *OhHellCuiController) Exec(command string) string {
 					cfg.MaxHandSize = v
 					return c.oi.ResetWithConfig(cfg)
 				})
-			case "h", "hint":
-				return c.oi.Hint(), true
-			case "log", "l":
-				return c.oi.ActionLog(), true
+			default:
+				return handleCuiHintAndLog(cmd, c.oi.Hint, c.oi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

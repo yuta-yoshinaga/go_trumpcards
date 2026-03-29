@@ -22,6 +22,26 @@ func unknownCommandMessage(command string, validCommands []string) string {
 // commonCommands は全CUIコントローラーで共通のコマンド。
 var commonCommands = []string{"q", "quit", "r", "reset", "help", "?"}
 
+// handleCuiLog は "log"/"l" コマンドを処理する。処理した場合 true を返す。
+func handleCuiLog(cmd string, actionLogFn func() string) (string, bool) {
+	switch cmd {
+	case "log", "l":
+		return actionLogFn(), true
+	}
+	return "", false
+}
+
+// handleCuiHintAndLog は "h"/"hint" と "log"/"l" コマンドを処理する。処理した場合 true を返す。
+func handleCuiHintAndLog(cmd string, hintFn, actionLogFn func() string) (string, bool) {
+	switch cmd {
+	case "h", "hint":
+		return hintFn(), true
+	case "log", "l":
+		return actionLogFn(), true
+	}
+	return "", false
+}
+
 // execCuiCommand は全CUIコントローラーで共通のコマンド解析を行うヘルパー関数。
 // command を strings.Fields で分割し、空入力・q/quit・r/reset を共通処理する。
 // ゲーム固有コマンドは gameHandler で処理し、未知コマンドは validCommands に基づく提案付きメッセージで応答する。

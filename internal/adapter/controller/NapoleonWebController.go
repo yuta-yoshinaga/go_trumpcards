@@ -167,12 +167,8 @@ func napoleonDispatch(bc *baseController, w http.ResponseWriter, ni usecase.Napo
 		bc.writePresenterResponse(w, ni.NextTrick())
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, ni.NextRound())
-	case "h", "hint":
-		bc.writePresenterResponse(w, ni.Hint())
-	case "log", "l":
-		bc.writePresenterResponse(w, ni.ActionLog())
 	default:
-		return false
+		return dispatchHintAndLog(param.Command, bc, w, ni.Hint, ni.ActionLog)
 	}
 	return true
 }

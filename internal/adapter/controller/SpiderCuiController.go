@@ -40,16 +40,13 @@ func (c *SpiderCuiController) Exec(command string) string {
 				return c.handleMove(args), true
 			case "g", "giveup":
 				return c.si.GiveUp(), true
-			case "h", "hint":
-				return c.si.Hint(), true
 			case "ac", "autocomplete":
 				return c.si.AutoComplete(), true
-			case "log", "l":
-				return c.si.ActionLog(), true
 			case "u", "undo":
 				return c.si.Undo(), true
+			default:
+				return handleCuiHintAndLog(cmd, c.si.Hint, c.si.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

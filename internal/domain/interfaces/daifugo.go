@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // DaifugoGame 大富豪ゲームインタフェース
 type DaifugoGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// GetGameEndFlag ゲーム終了フラグを取得する
@@ -63,6 +64,4 @@ type DaifugoGame interface {
 	GetSequenceLocked() bool
 	// GetSortMode 現在のソートモードを取得する
 	GetSortMode() domain.DaifugoSortMode
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }

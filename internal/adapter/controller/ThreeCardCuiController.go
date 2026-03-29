@@ -45,10 +45,9 @@ func (tcc *ThreeCardCuiController) Exec(command string) string {
 				return tcc.ti.Play(), true
 			case "f", "fold":
 				return tcc.ti.Fold(), true
-			case "log", "l":
-				return tcc.ti.ActionLog(), true
+			default:
+				return handleCuiLog(cmd, tcc.ti.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

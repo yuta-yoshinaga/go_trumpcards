@@ -94,12 +94,9 @@ func (c *NapoleonCuiController) Exec(command string) string {
 					cfg.MinBid = v
 					return c.ni.ResetWithConfig(cfg)
 				})
-			case "h", "hint":
-				return c.ni.Hint(), true
-			case "log", "l":
-				return c.ni.ActionLog(), true
+			default:
+				return handleCuiHintAndLog(cmd, c.ni.Hint, c.ni.ActionLog)
 			}
-			return "", false
 		},
 	)
 }
