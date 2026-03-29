@@ -498,7 +498,7 @@ classDiagram
         +int HesitationCount
         +float64 HesitationMean
         +float64 HesitationM2
-        +BluffRate() float64
+        +BluffRate(bracket int) float64
         +FoldRate() float64
     }
 
