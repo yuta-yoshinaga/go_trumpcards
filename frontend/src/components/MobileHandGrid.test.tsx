@@ -105,6 +105,65 @@ describe('MobileHandGrid', () => {
     expect(buttons[0].style.marginLeft).toBe('0px');
   });
 
+  it('applies scroll fallback when many cards on narrow viewport exceed minimum tap target', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      // 15 cards split into 2 rows: ceil(15/2)=8 cards per row.
+      // buttonWidth = 40+6 = 46. 8*46=368, available=375-32=343 => overlap needed = 25/7 ≈ 3.6px.
+      // But with even more cards in a row this should trigger scroll.
+      // Use 20 cards: ceil(20/2)=10 per row. 10*46=460 >> 343 => overlap = 117/9 ≈ 13px.
+      // 46 - 13 = 33 visible < 44 minimum → scroll fallback expected.
+      const cards = makeCards(20);
+      const { container } = render(
+        <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+      );
+      const rows = container.querySelectorAll('[data-testid="hand-row"]');
+      // At least one row should have scroll fallback class
+      const hasScroll = Array.from(rows).some((row) => row.classList.contains('overflow-x-auto'));
+      expect(hasScroll).toBe(true);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    }
+  });
+
+  it('does not apply scroll fallback when cards fit with adequate tap targets', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      // 8 cards: ceil(8/2)=4 per row. 4*46=184, available=343 → cards fit with gap, no scroll.
+      const cards = makeCards(8);
+      const { container } = render(
+        <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+      );
+      const rows = container.querySelectorAll('[data-testid="hand-row"]');
+      const hasScroll = Array.from(rows).some((row) => row.classList.contains('overflow-x-auto'));
+      expect(hasScroll).toBe(false);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    }
+  });
+
+  it('card buttons have flex-shrink-0 in scroll fallback mode', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const cards = makeCards(20);
+      const { container } = render(
+        <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+      );
+      const scrollRow = container.querySelector('.overflow-x-auto');
+      expect(scrollRow).not.toBeNull();
+      const buttons = scrollRow?.querySelectorAll('button') ?? [];
+      // Buttons in scroll row should have flex-shrink: 0
+      for (const btn of buttons) {
+        expect(btn.style.flexShrink).toBe('0');
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    }
+  });
+
   it('uses positive gap when viewport is wide enough for all cards', () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });

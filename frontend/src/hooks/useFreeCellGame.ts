@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { type FreeCellMoveZone, freecellApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { FreeCellHint } from '../types/card';
+import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
 
 /** Hook that manages FreeCell game state, source selection, hints, and moves. */
@@ -10,6 +11,7 @@ export function useFreeCellGame() {
   const [selectedSource, setSelectedSource] = useState<FreeCellMoveZone | null>(null);
   const [hint, setHint] = useState<FreeCellHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
+  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
 
   const callExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -42,8 +44,9 @@ export function useFreeCellGame() {
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
+    startAutoComplete();
     callExec('autocomplete');
-  }, [callExec]);
+  }, [callExec, startAutoComplete]);
 
   const handleUndo = useCallback(() => {
     setSelectedSource(null);
@@ -91,5 +94,6 @@ export function useFreeCellGame() {
     handleUndo,
     handleSelectSource,
     handleSelectTarget,
+    isAutoCompleting,
   };
 }

@@ -95,6 +95,7 @@ function FreeCellPageContent() {
     handleUndo,
     handleSelectSource,
     handleSelectTarget,
+    isAutoCompleting,
   } = useFreeCellGame();
   const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
 
@@ -197,14 +198,18 @@ function FreeCellPageContent() {
                   <button
                     type="button"
                     onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
-                    disabled={!isPlaying || loading || !selectedSource}
+                    disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                     aria-label={t('foundationAriaLabel', {
                       suit: FOUNDATION_SUITS[idx],
                       cardCount: String(pile.length),
                     })}
                     className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                   >
-                    <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
+                    <AnimatedCard
+                      card={pile[pile.length - 1]}
+                      width={cardWidth}
+                      dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                    />
                   </button>
                 ) : (
                   <button
@@ -305,16 +310,26 @@ function FreeCellPageContent() {
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (
             <div data-tutorial="fc-controls">
-              <button type="button" className={btnPrimary} onClick={handleUndo} disabled={loading || !state.canUndo}>
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={handleUndo}
+                disabled={loading || isAutoCompleting || !state.canUndo}
+              >
                 {t('undo')}
               </button>
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || isAutoCompleting}>
                 {t('hint')}
               </button>
-              <button type="button" className={btnSuccess} onClick={handleAutoComplete} disabled={loading}>
+              <button
+                type="button"
+                className={btnSuccess}
+                onClick={handleAutoComplete}
+                disabled={loading || isAutoCompleting}
+              >
                 {t('autoComplete')}
               </button>
-              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading || isAutoCompleting}>
                 {t('giveup')}
               </button>
             </div>

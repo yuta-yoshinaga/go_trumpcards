@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { type SpiderConfigInput, type SpiderMoveZone, spiderApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { SpiderHint } from '../types/card';
+import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
 
 /** Hook that manages Spider Solitaire game state, source selection, hints, and moves. */
@@ -10,6 +11,7 @@ export function useSpiderGame() {
   const [selectedSource, setSelectedSource] = useState<SpiderMoveZone | null>(null);
   const [hint, setHint] = useState<SpiderHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
+  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
 
   const apiExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -57,8 +59,9 @@ export function useSpiderGame() {
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
+    startAutoComplete();
     apiExec('autocomplete');
-  }, [apiExec]);
+  }, [apiExec, startAutoComplete]);
 
   const handleUndo = useCallback(() => {
     setSelectedSource(null);
@@ -101,5 +104,6 @@ export function useSpiderGame() {
     handleUndo,
     handleSelectSource,
     handleSelectTarget,
+    isAutoCompleting,
   };
 }

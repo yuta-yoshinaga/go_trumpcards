@@ -131,7 +131,7 @@ function BlackJackPageContent() {
   const phaseNames = usePhaseNames('blackjack', BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const [message, setMessage] = useState('');
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
@@ -465,6 +465,7 @@ function BlackJackPageContent() {
                   onPerfectPairsBetChange={setPerfectPairsBet}
                   twentyOnePlus3Bet={twentyOnePlus3Bet}
                   onTwentyOnePlus3BetChange={setTwentyOnePlus3Bet}
+                  autoExpandAdvanced={!isMobile}
                 />
               </div>
               <div className="flex items-center justify-center gap-2 mt-2">

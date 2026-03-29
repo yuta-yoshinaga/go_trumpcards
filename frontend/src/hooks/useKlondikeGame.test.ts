@@ -94,7 +94,7 @@ describe('useKlondikeGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 
-  it('handleAutoComplete dispatches autocomplete command', async () => {
+  it('handleAutoComplete dispatches autocomplete command and sets isAutoCompleting', async () => {
     const { result } = renderHook(() => useKlondikeGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
@@ -105,6 +105,10 @@ describe('useKlondikeGame', () => {
     });
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+    expect(result.current.isAutoCompleting).toBe(true);
+
+    // Wait for the 3s timeout to clear isAutoCompleting
+    await waitFor(() => expect(result.current.isAutoCompleting).toBe(false), { timeout: 4000 });
   });
 
   it('handleHint calls exec with hint and sets hint state', async () => {
