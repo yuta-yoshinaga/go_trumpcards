@@ -107,7 +107,7 @@ function computeOverlap(cardCount: number, buttonWidth: number, viewportWidth: n
   const maxNegative = -buttonWidth * MAX_OVERLAP_RATIO;
   const minExposureOverlap = -(buttonWidth - MIN_CARD_EXPOSURE_PX);
   if (rawOverlap < minExposureOverlap) {
-    return { overlap: minExposureOverlap, useScroll: true };
+    return { overlap: DEFAULT_CARD_GAP, useScroll: true };
   }
   return { overlap: Math.max(rawOverlap, maxNegative), useScroll: false };
 }

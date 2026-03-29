@@ -57,17 +57,27 @@ describe('CountdownBar', () => {
     vi.mocked(useReducedMotion).mockReturnValue(false);
   });
 
-  it('shows aria-live announcement at 3 seconds', () => {
-    const { container } = render(<CountdownBar remaining={3} total={10} />);
-    const liveRegion = container.querySelector('[aria-live="assertive"]');
-    expect(liveRegion).not.toBeNull();
-    expect(liveRegion?.textContent).not.toBe('');
+  it('renders label text in aria-live region when provided', () => {
+    render(<CountdownBar remaining={3} total={10} label="残り 3 秒" />);
+    const liveRegion = screen.getByText('残り 3 秒');
+    expect(liveRegion).toHaveAttribute('aria-live', 'assertive');
+    expect(liveRegion).toHaveAttribute('aria-atomic', 'true');
   });
 
-  it('does not show aria-live announcement when remaining != 3', () => {
+  it('does not render label region when label is omitted', () => {
     const { container } = render(<CountdownBar remaining={7} total={10} />);
-    const liveRegion = container.querySelector('[aria-live="assertive"]');
-    // The region exists but should have empty content
-    expect(liveRegion?.textContent).toBe('');
+    expect(container.querySelector('[aria-live="assertive"]')).toBeNull();
+  });
+
+  it('sets aria-label on progressbar from label prop', () => {
+    render(<CountdownBar remaining={5} total={10} label="残り 5 秒" />);
+    const bar = screen.getByRole('progressbar');
+    expect(bar).toHaveAttribute('aria-label', '残り 5 秒');
+  });
+
+  it('uses default aria-label on progressbar when label is omitted', () => {
+    render(<CountdownBar remaining={5} total={10} />);
+    const bar = screen.getByRole('progressbar');
+    expect(bar).toHaveAttribute('aria-label', 'Countdown');
   });
 });

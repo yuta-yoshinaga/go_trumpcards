@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { type KlondikeConfigInput, type KlondikeMoveZone, klondikeApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { KlondikeHint } from '../types/card';
+import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
 
 /** Hook that manages Klondike game state, source selection, hints, and moves. */
@@ -10,8 +11,7 @@ export function useKlondikeGame() {
   const [selectedSource, setSelectedSource] = useState<KlondikeMoveZone | null>(null);
   const [hint, setHint] = useState<KlondikeHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
-  const [isAutoCompleting, setIsAutoCompleting] = useState(false);
-  const autoCompleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
 
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -59,16 +59,9 @@ export function useKlondikeGame() {
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
-    setIsAutoCompleting(true);
+    startAutoComplete();
     exec('autocomplete');
-    autoCompleteTimerRef.current = setTimeout(() => setIsAutoCompleting(false), 3000);
-  }, [exec]);
-
-  useEffect(() => {
-    return () => {
-      if (autoCompleteTimerRef.current) clearTimeout(autoCompleteTimerRef.current);
-    };
-  }, []);
+  }, [exec, startAutoComplete]);
 
   const handleUndo = useCallback(() => {
     setSelectedSource(null);

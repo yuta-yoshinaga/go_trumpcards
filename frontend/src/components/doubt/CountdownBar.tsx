@@ -32,6 +32,7 @@ export function CountdownBar({ remaining, total, label }: CountdownBarProps) {
         aria-valuenow={remaining}
         aria-valuemax={total}
         aria-valuemin={0}
+        aria-label={label ?? 'Countdown'}
         className="h-3 rounded-full bg-white/20 overflow-hidden"
       >
         <div
@@ -48,9 +49,6 @@ export function CountdownBar({ remaining, total, label }: CountdownBarProps) {
           {label}
         </div>
       )}
-      <span aria-live="assertive" className="sr-only">
-        {remaining === 3 ? `${remaining}` : ''}
-      </span>
     </div>
   );
 }

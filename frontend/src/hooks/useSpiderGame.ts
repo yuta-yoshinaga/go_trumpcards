@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { type SpiderConfigInput, type SpiderMoveZone, spiderApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { SpiderHint } from '../types/card';
+import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
 
 /** Hook that manages Spider Solitaire game state, source selection, hints, and moves. */
@@ -10,8 +11,7 @@ export function useSpiderGame() {
   const [selectedSource, setSelectedSource] = useState<SpiderMoveZone | null>(null);
   const [hint, setHint] = useState<SpiderHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
-  const [isAutoCompleting, setIsAutoCompleting] = useState(false);
-  const autoCompleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
 
   const apiExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -59,16 +59,9 @@ export function useSpiderGame() {
   const handleAutoComplete = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
-    setIsAutoCompleting(true);
+    startAutoComplete();
     apiExec('autocomplete');
-    autoCompleteTimerRef.current = setTimeout(() => setIsAutoCompleting(false), 3000);
-  }, [apiExec]);
-
-  useEffect(() => {
-    return () => {
-      if (autoCompleteTimerRef.current) clearTimeout(autoCompleteTimerRef.current);
-    };
-  }, []);
+  }, [apiExec, startAutoComplete]);
 
   const handleUndo = useCallback(() => {
     setSelectedSource(null);
