@@ -355,6 +355,9 @@ func (o *OhHell) GetTrumpCard() *Card { return o.trumpCard }
 // GetTrumpSuit 切り札スート取得 (-1 = 切り札なし)
 func (o *OhHell) GetTrumpSuit() int { return o.trumpSuit }
 
+// SetTrumpSuit 切り札スート設定 (テスト用)
+func (o *OhHell) SetTrumpSuit(suit int) { o.trumpSuit = suit }
+
 // GetDealerIdx ディーラーインデックス取得
 func (o *OhHell) GetDealerIdx() int { return o.dealerIdx }
 
@@ -535,6 +538,18 @@ func (o *OhHell) isRestrictedBid(bid int) bool {
 }
 
 // startPlayPhase プ���イフェーズ開始: ディーラーの左がリード
+// adjustBidForRestriction ディーラー制限を考慮してビッドを調整する
+func (o *OhHell) adjustBidForRestriction(bid int) int {
+	if o.isRestrictedBid(bid) {
+		if bid > 0 {
+			bid--
+		} else {
+			bid++
+		}
+	}
+	return bid
+}
+
 func (o *OhHell) startPlayPhase() {
 	o.trickNumber = 1
 	o.currentTrick = nil
@@ -701,14 +716,7 @@ func (o *OhHell) GetHint() *OhHellHint {
 	}
 	if o.phase == OhHellPhaseBid && o.bidPlayerIdx == humanIdx {
 		bid := o.cpuBidHard(humanIdx)
-		// ディーラー制限を考慮
-		if o.isRestrictedBid(bid) {
-			if bid > 0 {
-				bid--
-			} else {
-				bid++
-			}
-		}
+		bid = o.adjustBidForRestriction(bid)
 		return &OhHellHint{Bid: &bid, Reason: "strategic_bid"}
 	}
 	if o.phase == OhHellPhasePlay && o.currentPlayerIdx == humanIdx {
@@ -758,15 +766,7 @@ func (o *OhHell) cpuSelectBid(playerIdx int) int {
 		bid = o.cpuBidEasy(playerIdx)
 	}
 
-	// ディーラー制限を考慮
-	if o.isRestrictedBid(bid) {
-		if bid > 0 {
-			bid--
-		} else {
-			bid++
-		}
-	}
-	return bid
+	return o.adjustBidForRestriction(bid)
 }
 
 // cpuBidEasy ランダムなビッド
@@ -1172,6 +1172,25 @@ func (o *OhHell) UnmarshalJSON(data []byte) error {
 	o.players = j.Players
 	if o.players == nil {
 		o.players = make([]*OhHellPlayer, 0)
+	}
+	// インデックスの範囲チェック
+	pCnt := len(j.Players)
+	if pCnt > 0 {
+		if j.CurrentPlayerIdx < -1 || j.CurrentPlayerIdx >= pCnt {
+			return fmt.Errorf("ohhell: currentPlayerIdx %d out of range [−1, %d)", j.CurrentPlayerIdx, pCnt)
+		}
+		if j.DealerIdx < 0 || j.DealerIdx >= pCnt {
+			return fmt.Errorf("ohhell: dealerIdx %d out of range [0, %d)", j.DealerIdx, pCnt)
+		}
+		if j.BidPlayerIdx < -1 || j.BidPlayerIdx >= pCnt {
+			return fmt.Errorf("ohhell: bidPlayerIdx %d out of range [−1, %d)", j.BidPlayerIdx, pCnt)
+		}
+		if j.LeadPlayerIdx < -1 || j.LeadPlayerIdx >= pCnt {
+			return fmt.Errorf("ohhell: leadPlayerIdx %d out of range [−1, %d)", j.LeadPlayerIdx, pCnt)
+		}
+	}
+	if j.TrickNumber < 0 {
+		return fmt.Errorf("ohhell: trickNumber %d must be >= 0", j.TrickNumber)
 	}
 	o.config = j.Config
 	o.phase = j.Phase

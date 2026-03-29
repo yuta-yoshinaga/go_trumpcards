@@ -493,32 +493,26 @@ func TestOhHell_ResolveTrick_HighestLeadWins(t *testing.T) {
 }
 
 func TestOhHell_ResolveTrick_TrumpWins(t *testing.T) {
-	// Retry until we get a non-heart trump so trump differs from lead suit
-	for range 1000 {
-		o := newTestOhHell()
-		o.Reset()
+	o := newTestOhHell()
+	o.Reset()
 
-		trumpSuit := o.GetTrumpSuit()
-		if trumpSuit < 0 || trumpSuit == domain.CardDesignHeart {
-			continue
-		}
+	// Explicitly set trump to spade for deterministic testing
+	o.SetTrumpSuit(domain.CardDesignSpade)
 
-		o.SetPhase(domain.OhHellPhaseTrickEnd)
-		o.SetTrickNumber(1)
-		o.SetHandSize(3)
-		o.SetCurrentTrick([]*domain.OhHellTrickCard{
-			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
-			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
-			{PlayerIdx: 2, Card: domain.NewCard(trumpSuit, 2, false)},
-			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
-		})
+	o.SetPhase(domain.OhHellPhaseTrickEnd)
+	o.SetTrickNumber(1)
+	o.SetHandSize(3)
+	o.SetCurrentTrick([]*domain.OhHellTrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 2, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
+	})
 
-		o.ResolveTrick()
-		// Player 2 wins with trump (even low trump beats high non-trump)
-		assert.Equal(t, 2, o.GetLeadPlayerIdx())
-		return
-	}
-	t.Skip("could not get a non-heart trump in 1000 attempts")
+	o.ResolveTrick()
+	// Player 2 wins with trump (even low ♠2 beats high ♥K)
+	assert.Equal(t, 2, o.GetLeadPlayerIdx())
+	assert.Equal(t, 1, o.GetPlayer(2).GetTrickCount())
 }
 
 func TestOhHell_ResolveTrick_NoTrump(t *testing.T) {
@@ -855,6 +849,26 @@ func TestOhHell_UnmarshalJSON_NilFields(t *testing.T) {
 	err := json.Unmarshal([]byte(`{}`), o)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, o.GetPlayerCnt())
+}
+
+func TestOhHell_UnmarshalJSON_InvalidIndices(t *testing.T) {
+	tests := []struct {
+		name string
+		json string
+	}{
+		{"currentPlayerIdx out of range", `{"ps":[{},{},{},{}],"ci":99}`},
+		{"dealerIdx negative", `{"ps":[{},{},{},{}],"di":-1}`},
+		{"bidPlayerIdx out of range", `{"ps":[{},{},{},{}],"bi":99}`},
+		{"leadPlayerIdx out of range", `{"ps":[{},{},{},{}],"li":99}`},
+		{"trickNumber negative", `{"ps":[{},{},{},{}],"tn":-1}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o := &domain.OhHell{}
+			err := json.Unmarshal([]byte(tt.json), o)
+			assert.Error(t, err)
+		})
+	}
 }
 
 // --- CPU bidding difficulties ---
