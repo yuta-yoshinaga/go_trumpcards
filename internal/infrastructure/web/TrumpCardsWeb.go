@@ -49,6 +49,7 @@ type TrumpCardsWeb struct {
 	cbc  *controller.CribbageWebController
 	tpc  *controller.TriPeaksWebController
 	tcc  *controller.ThreeCardWebController
+	ohlc *controller.OhHellWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -265,6 +266,17 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				new(presenter.ThreeCardWebPresenter),
 			)
 		}),
+		ohlc: controller.NewOhHellWebController(func() usecase.OhHellInteractorIF {
+			config := domain.DefaultOhHellConfig()
+			players := []*domain.OhHellPlayer{
+				domain.NewOhHellPlayer(true),
+				domain.NewOhHellPlayer(false),
+				domain.NewOhHellPlayer(false),
+				domain.NewOhHellPlayer(false),
+			}
+			ohHell := domain.NewOhHell(domain.NewTrumpCards(0), players, config)
+			return usecase.NewOhHellInteractor(ohHell, new(presenter.OhHellWebPresenter))
+		}),
 	}
 }
 
@@ -305,6 +317,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/tripeaks/exec", web.tpc.Exec},
 		{"/cribbage/exec", web.cbc.Exec},
 		{"/threecard/exec", web.tcc.Exec},
+		{"/ohhell/exec", web.ohlc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)

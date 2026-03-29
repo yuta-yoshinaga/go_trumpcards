@@ -24,6 +24,7 @@ import { JokerPokerPage } from './pages/JokerPokerPage';
 import { KlondikePage } from './pages/KlondikePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { NapoleonPage } from './pages/NapoleonPage';
+import { OhHellPage } from './pages/OhHellPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
 import { PokerPage } from './pages/PokerPage';
@@ -50,6 +51,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/shortdeck': <ShortDeckPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,
+  '/ohhell': <OhHellPage />,
   '/napoleon': <NapoleonPage />,
   '/memory': <MemoryPage />,
   '/klondike': <KlondikePage />,

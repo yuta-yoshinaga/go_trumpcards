@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全28ゲーム)](#12-ゲームドメイン-全28ゲーム)
+  - [1.2 ゲームドメイン (全29ゲーム)](#12-ゲームドメイン-全29ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -16,6 +16,7 @@
   - [2.3 セッション管理フロー](#23-セッション管理フロー)
   - [2.4 VideoPoker ベット・ホールドフロー](#24-videopoker-ベットホールドフロー)
   - [2.5 ThreeCard ベット・プレイフロー](#25-threecard-ベットプレイフロー)
+  - [2.6 OhHell ビッド・トリックフロー](#26-ohhell-ビッドトリックフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -35,6 +36,7 @@
   - [3.16 Cribbage フェーズ遷移](#316-cribbage-フェーズ遷移)
   - [3.17 ShortDeck フェーズ遷移](#317-shortdeck-フェーズ遷移)
   - [3.18 ThreeCard フェーズ遷移](#318-threecard-フェーズ遷移)
+  - [3.19 OhHell フェーズ遷移](#319-ohhell-フェーズ遷移)
 
 ---
 
@@ -102,7 +104,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全28ゲーム)
+### 1.2 ゲームドメイン (全29ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -324,6 +326,30 @@ classDiagram
         +*Card Card
     }
 
+    class OhHell {
+        -trumpCards *TrumpCards
+        -players []*OhHellPlayer
+        -config OhHellConfig
+        -phase OhHellPhase
+        -trickCards []*OhHellTrickCard
+        -trumpCard *Card
+        -trumpSuit int
+        -handSize int
+        +Reset()
+        +PlayerBid(bid int) error
+        +PlayerPlay(cardIndex int) error
+        +NextTrick()
+        +NextRound()
+        +ScoreRound()
+        +GetHint() *OhHellHint
+        +GetPhase() OhHellPhase
+    }
+
+    class OhHellTrickCard {
+        +int PlayerIdx
+        +*Card Card
+    }
+
     Hearts --> "4" HeartsPlayer
     Hearts --> "*" HeartsTrickCard
     Spades --> "4" SpadesPlayer
@@ -332,10 +358,13 @@ classDiagram
     Napoleon --> "*" NapoleonTrickCard
     Euchre --> "4" EuchrePlayer
     Euchre --> "*" EuchreTrickCard
+    OhHell --> "4" OhHellPlayer
+    OhHell --> "*" OhHellTrickCard
     HeartsPlayer --|> GamePlayer
     SpadesPlayer --|> GamePlayer
     NapoleonPlayer --|> GamePlayer
     EuchrePlayer --|> GamePlayer
+    OhHellPlayer --|> GamePlayer
 ```
 
 #### ホールデム系ゲーム
@@ -782,7 +811,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全28ゲーム共通)**
+**Interactor パターン (全29ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -890,6 +919,7 @@ classDiagram
         -pyramid *PyramidWebController
         -tripeaks *TriPeaksWebController
         -cribbage *CribbageWebController
+        -ohhell *OhHellWebController
         +Exec()
     }
 
@@ -911,8 +941,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 27 controllers
-    GameManager --> "*" CuiExecer : holds 27 games
+    TrumpCardsWeb --> "*" GameWebController : holds 28 controllers
+    GameManager --> "*" CuiExecer : holds 28 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1086,6 +1116,36 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: 両手札・結果・配当表示
+```
+
+### 2.6 OhHell ビッド・トリックフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as OhHellInteractor
+    participant Domain as OhHell
+    participant Pres as Presenter
+
+    Note over User,Pres: ビッドフロー
+    User->>Ctrl: bid 2
+    Ctrl->>Interactor: Bid(2)
+    Interactor->>Domain: PlayerBid(2)
+    Domain->>Domain: ビッド記録 → CPU自動ビッド → phase=Play
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ビッド完了・プレイ開始表示
+
+    Note over User,Pres: トリックプレイフロー
+    User->>Ctrl: play 3
+    Ctrl->>Interactor: Play(3)
+    Interactor->>Domain: PlayerPlay(3)
+    Domain->>Domain: フォロースート検証 → カード出し → CPU自動プレイ
+    Domain->>Domain: トリック勝者判定 → phase=TrickEnd
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: トリック結果表示
 ```
 
 ---
@@ -1381,6 +1441,26 @@ stateDiagram-v2
     note right of Bet : ThreeCardPhaseBet = 1
     note right of Action : ThreeCardPhaseAction = 2
     note right of End : ThreeCardPhaseEnd = 3
+```
+
+### 3.19 OhHell フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : Reset()
+    Bid --> Play : 4人全員ビッド完了
+    Play --> TrickEnd : 4人全員カード出し完了
+    TrickEnd --> Play : 次トリック開始
+    TrickEnd --> RoundEnd : 全トリック完了
+    RoundEnd --> Bid : 次ラウンド開始
+    RoundEnd --> GameEnd : 全ラウンド完了
+    GameEnd --> [*]
+
+    note right of Bid : OhHellPhaseBid = 0
+    note right of Play : OhHellPhasePlay = 1
+    note right of TrickEnd : OhHellPhaseTrickEnd = 2
+    note right of RoundEnd : OhHellPhaseRoundEnd = 3
+    note right of GameEnd : OhHellPhaseGameEnd = 4
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

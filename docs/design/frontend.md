@@ -18,6 +18,7 @@
   - [2.3 ゲーム初期化フロー](#23-ゲーム初期化フロー)
   - [2.4 VideoPokerPage フェーズ別レンダリングフロー](#24-videopokerpage-フェーズ別レンダリングフロー)
   - [2.5 ThreeCardPage フェーズ別レンダリングフロー](#25-threecardpage-フェーズ別レンダリングフロー)
+  - [2.6 OhHellPage フェーズ別レンダリングフロー](#26-ohhellpage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -150,7 +151,7 @@ classDiagram
         +object config
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全28ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全29ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -364,7 +365,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全28ゲーム()
+        ...全29ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -377,7 +378,7 @@ classDiagram
     actionLogApi --> gameApi : uses gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全28ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage)"
+    note for BlackJackApi "全29ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage,\nthreecard, ohhell)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -603,7 +604,21 @@ classDiagram
     useDoubtGame --> useGameApi : uses
     useDoubtGame --> useCardSelection : uses
 
-    note for useBlackJackGame "全28ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    class useOhHellGame {
+        +OhHellResponse state
+        +number[] selectedCards
+        +Function handleBid
+        +Function handlePlay
+        +Function handleNextTrick
+        +Function handleNextRound
+        +Function handleHint
+        +Function handleReset
+    }
+
+    useOhHellGame --> useGameApi : uses
+    useOhHellGame --> useCardSelection : uses
+
+    note for useBlackJackGame "全29ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -893,6 +908,17 @@ classDiagram
     CribbagePage --|> GamePage : follows pattern
     ThreeCardPage --|> GamePage : follows pattern
 
+    class OhHellPage {
+        +プレイヤー情報・スコア表示
+        +切り札カード・スート表示
+        +ラウンド/トリック情報
+        +ビッド入力(フック制限表示)
+        +トリックカード表示
+        +ヒントボタン
+    }
+
+    OhHellPage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -905,7 +931,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全28ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全29ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1117,6 +1143,46 @@ sequenceDiagram
     Hook->>API: gameExec("reset")
     API-->>Hook: ThreeCardResponse (phase=1)
     Hook-->>Page: 再レンダリング → ベットフェーズUI
+```
+
+### 2.6 OhHellPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as OhHellPage
+    participant Hook as useOhHellGame
+    participant API as gameApi
+
+    Note over User,API: ビッドフェーズ (phase=0)
+    User->>Page: ビッド数を入力
+    User->>Page: ビッドボタンクリック
+    Page->>Hook: handleBid(bidValue)
+    Hook->>API: gameExec("bid", {bid})
+    API-->>Hook: OhHellResponse (phase=1, 全員ビッド完了)
+    Hook-->>Page: 再レンダリング → プレイフェーズUI
+
+    Note over User,API: プレイフェーズ (phase=1)
+    User->>Page: 手札カードをクリック
+    User->>Page: 出すボタンクリック
+    Page->>Hook: handlePlay(cardIndex)
+    Hook->>API: gameExec("play", {cardIndex})
+    API-->>Hook: OhHellResponse (phase=2, トリック完了)
+    Hook-->>Page: 再レンダリング → トリック結果UI
+
+    Note over User,API: トリック終了 (phase=2)
+    User->>Page: 次のトリックボタンクリック
+    Page->>Hook: handleNextTrick()
+    Hook->>API: gameExec("next")
+    API-->>Hook: OhHellResponse (phase=1 or 3)
+    Hook-->>Page: 再レンダリング → 次トリックUIまたはラウンド終了UI
+
+    Note over User,API: ラウンド終了 (phase=3)
+    User->>Page: 次のラウンドボタンクリック
+    Page->>Hook: handleNextRound()
+    Hook->>API: gameExec("nextround")
+    API-->>Hook: OhHellResponse (phase=0 or 4)
+    Hook-->>Page: 再レンダリング → 次ラウンドUIまたはゲーム終了UI
 ```
 
 ---

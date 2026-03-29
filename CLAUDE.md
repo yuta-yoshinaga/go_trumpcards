@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Omaha Hold'em, Short Deck Hold'em, Hearts, Memory, Klondike, FreeCell, Baccarat, Spades, Crazy Eights, Gin Rummy, Napoleon, Indian Poker, Video Poker, Deuces Wild, Joker Poker, Euchre, Pyramid, TriPeaks, Cribbage, Three Card Poker. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Omaha Hold'em, Short Deck Hold'em, Hearts, Memory, Klondike, FreeCell, Baccarat, Spades, Crazy Eights, Gin Rummy, Napoleon, Indian Poker, Video Poker, Deuces Wild, Joker Poker, Euchre, Pyramid, TriPeaks, Cribbage, Three Card Poker, Oh Hell. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -25,7 +25,7 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # Available games: blackjack, poker, oldmaid, daifugo, sevens, doubt, holdem, omaha,
 # shortdeck, hearts, memory, klondike, freecell, baccarat, spades, crazyeights,
 # ginrummy, spider, napoleon, indianpoker, videopoker, deuceswild, jokerpoker,
-# euchre, pyramid, tripeaks, cribbage, threecard
+# euchre, pyramid, tripeaks, cribbage, threecard, ohhell
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server                # Start REST API + web GUI server (direct)
@@ -123,7 +123,7 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 | Worker | Entry point | Games |
 |--------|-------------|-------|
 | **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, indianpoker, videopoker, deuceswild, jokerpoker, threecard) |
-| **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights) |
+| **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell) |
 | **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, cribbage) |
 
 **When adding/modifying a game, always update both:**

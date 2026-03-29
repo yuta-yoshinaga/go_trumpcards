@@ -45,7 +45,8 @@
     "tripeaks": "トリピークス",
     "cribbage": "クリベッジ",
     "shortdeck": "ショートデック",
-    "threecard": "スリーカードポーカー"
+    "threecard": "スリーカードポーカー",
+    "ohhell": "オー・ヘル"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -152,6 +153,13 @@
     "hearts.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "spades.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "spades.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "ohhell.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "ohhell.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "ohhell.bidPhase": "ビッド宣言",
+    "ohhell.playPhase.lead": "リードしてください",
+    "ohhell.playPhase.follow": "カードを出してください",
+    "ohhell.trickEnd": "トリック終了",
+    "ohhell.roundEnd": "ラウンド終了",
     "crazyeights.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "crazyeights.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "crazyeights.playPhase": "カードを出すか、山札から引いてください",

@@ -1,0 +1,87 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "maxHandSize": "最大手札枚数",
+    "scoringVariant": "スコアリング方式",
+    "roundDirection": "ラウンド進行",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "scoringStandard": "スタンダード (ビッド成功=10+bid, 失敗=0)",
+    "scoringPenalty": "ペナルティ (ビッド成功=10+bid, 失敗=-差分)",
+    "roundDownOnly": "降順のみ (max→1)",
+    "roundDownAndUp": "降順＋昇順 (max→1→max)"
+  },
+  "round": "ラウンド {{n}}/{{total}}",
+  "trick": "トリック {{n}}",
+  "handSize": "手札枚数: {{n}}",
+  "trump": "切り札: {{suit}}",
+  "dealer": "ディーラー: {{name}}",
+  "restrictedBid": "※ ディーラーはビッド {{n}} を選択できません",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "bid": "ビッド {{n}}",
+  "bidNone": "未ビッド",
+  "currentTrick": "現在のトリック",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresBid": "ビッド",
+  "scoresTricks": "トリック",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "bidButton": "ビッド",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "bidPhase": "ビッド宣言 (0-{{max}})",
+  "playPhase": {
+    "lead": "リードしてください",
+    "follow": "カードを出してください"
+  },
+  "trickEnd": "トリック終了",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "hintBid": "推奨ビッド",
+  "hintPlay": "推奨カード",
+  "hintReason": {
+    "strategic_bid": "戦略的なビッド",
+    "lead_strong": "強いカードでリード",
+    "lead_low": "低いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "切り札でカット",
+    "discard_high": "高いカードを捨てる"
+  },
+  "suitName": {
+    "1": "スペード",
+    "2": "クローバー",
+    "3": "ハート",
+    "4": "ダイヤ"
+  },
+  "tutorial": {
+    "bidControls": "ビッドフェーズでは取れると思うトリック数を宣言します。ディーラーにはビッド制限があります。",
+    "trickDisplay": "現在のトリックです。切り札スートは毎ラウンド変わります。",
+    "playerHand": "あなたの手札です。リードスートに従う必要があります。",
+    "playButton": "カードを選んだらこのボタンで出します。",
+    "scoreTable": "スコア表です。ビッド達成で10+ビッド数のポイント獲得です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "bidEstimate": "手札の強さに基づくビッド推奨",
+    "leadStrategic": "戦略的にリード推奨",
+    "followSuit": "リードされたスートに従ってプレイ推奨",
+    "trumpWithCard": "切り札を使うチャンス",
+    "discardLowest": "最も低いカードを捨てることを推奨"
+  }
+}

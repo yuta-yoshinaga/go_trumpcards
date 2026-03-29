@@ -1,0 +1,9 @@
+{
+  "helpTitle": "Oh Hell (オー・ヘル)",
+  "helpBid": "  b <n>                ビッド (0〜手札枚数)",
+  "helpPlay": "  p <idx>              カードを出す",
+  "helpNext": "  n                    次のトリックへ",
+  "helpNextRound": "  nr                   次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetMaxHand": "  sm <n>               最大手札枚数 (1-13)"
+}

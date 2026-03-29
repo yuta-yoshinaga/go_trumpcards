@@ -16,6 +16,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   // Trick-taking
   hearts: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   spades: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  ohhell: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   euchre: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   napoleon: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   // Matching/Pass — unified to green

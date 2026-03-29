@@ -6,6 +6,7 @@
  *   - Poker:      internal/domain/Poker.go     (PokerPhaseInit, PokerPhaseDeal, PokerPhaseExchange, PokerPhaseSecondBet, PokerPhaseEnd)
  *   - Hearts:     internal/domain/Hearts.go    (HeartsPhasePass, HeartsPhasePlay, HeartsPhaseTrickEnd, HeartsPhaseRoundEnd, HeartsPhaseGameEnd)
  *   - Spades:     internal/domain/Spades.go    (SpadesPhaseBid, SpadesPhasePlay, SpadesPhaseTrickEnd, SpadesPhaseRoundEnd, SpadesPhaseGameEnd)
+ *   - OhHell:     internal/domain/OhHell.go    (OhHellPhaseBid, OhHellPhasePlay, OhHellPhaseTrickEnd, OhHellPhaseRoundEnd, OhHellPhaseGameEnd)
  *   - Memory:     internal/domain/Memory.go    (MemoryPhaseFlip1, MemoryPhaseFlip2, MemoryPhaseResult, MemoryPhaseGameEnd)
  *   - Klondike:   internal/domain/Klondike.go  (KlondikePhasePlaying, KlondikePhaseGameClear, KlondikePhaseGameOver)
  *   - FreeCell:   internal/domain/FreeCell.go  (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
@@ -116,6 +117,15 @@ export const FreeCellPhase = {
 
 /** Spades phase constants (sync: internal/domain/Spades.go). */
 export const SpadesPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Oh Hell phase constants (sync: internal/domain/OhHell.go). */
+export const OhHellPhase = {
   BID: 0,
   PLAY: 1,
   TRICK_END: 2,
