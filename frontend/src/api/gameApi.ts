@@ -17,6 +17,7 @@ import type {
   KlondikeResponse,
   MemoryResponse,
   NapoleonResponse,
+  OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
   PokerResponse,
@@ -55,6 +56,7 @@ const workerUrl: Record<string, string> = {
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
   napoleon: WORKER_CLASSIC,
+  ohhell: WORKER_CLASSIC,
   oldmaid: WORKER_CLASSIC,
   doubt: WORKER_CLASSIC,
   daifugo: WORKER_CLASSIC,
@@ -408,6 +410,30 @@ export const spadesApi = {
     }),
 };
 
+/** Configuration options for Oh Hell game settings. */
+export interface OhHellConfigInput {
+  cpuDifficulty?: number;
+  maxHandSize?: number;
+  scoringVariant?: number;
+  roundDirection?: number;
+}
+
+/** API client for the Oh Hell /ohhell/exec endpoint. */
+export const ohHellApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint',
+    bid?: number,
+    cardIndex?: number,
+    config?: OhHellConfigInput,
+  ) =>
+    gameExec<OhHellResponse>('ohhell', {
+      command,
+      bid,
+      cardIndex,
+      config,
+    }),
+};
+
 /** Configuration options for Memory game settings. */
 export interface MemoryConfigInput {
   cpuDifficulty?: number;
@@ -730,6 +756,7 @@ const games = [
   'hearts',
   'spades',
   'napoleon',
+  'ohhell',
   'memory',
   'klondike',
   'freecell',

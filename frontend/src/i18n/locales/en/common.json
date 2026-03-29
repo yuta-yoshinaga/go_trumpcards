@@ -45,7 +45,8 @@
     "tripeaks": "TriPeaks",
     "cribbage": "Cribbage",
     "shortdeck": "Short Deck",
-    "threecard": "Three Card Poker"
+    "threecard": "Three Card Poker",
+    "ohhell": "Oh Hell"
   },
   "sound": {
     "mute": "Mute sound",
@@ -152,6 +153,13 @@
     "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "spades.result.humanWin": "Game over! You win!",
     "spades.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "ohhell.result.humanWin": "Game over! You win!",
+    "ohhell.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "ohhell.bidPhase": "Place your bid",
+    "ohhell.playPhase.lead": "Lead a card",
+    "ohhell.playPhase.follow": "Play a card",
+    "ohhell.trickEnd": "Trick complete",
+    "ohhell.roundEnd": "Round complete",
     "crazyeights.result.humanWin": "Game over! You win!",
     "crazyeights.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "crazyeights.playPhase": "Play a card or draw from the pile",

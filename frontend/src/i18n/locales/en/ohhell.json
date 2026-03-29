@@ -1,0 +1,87 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "maxHandSize": "Max Hand Size",
+    "scoringVariant": "Scoring Variant",
+    "roundDirection": "Round Direction",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard",
+    "scoringStandard": "Standard (exact bid = 10+bid, miss = 0)",
+    "scoringPenalty": "Penalty (exact bid = 10+bid, miss = -diff)",
+    "roundDownOnly": "Down only (max to 1)",
+    "roundDownAndUp": "Down and up (max to 1 to max)"
+  },
+  "round": "Round {{n}}/{{total}}",
+  "trick": "Trick {{n}}",
+  "handSize": "Hand size: {{n}}",
+  "trump": "Trump: {{suit}}",
+  "dealer": "Dealer: {{name}}",
+  "restrictedBid": "* Dealer cannot bid {{n}}",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "bid": "Bid {{n}}",
+  "bidNone": "No bid",
+  "currentTrick": "Current Trick",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresBid": "Bid",
+  "scoresTricks": "Tricks",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "bidButton": "Bid",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "bidPhase": "Place your bid (0-{{max}})",
+  "playPhase": {
+    "lead": "Lead a card",
+    "follow": "Play a card"
+  },
+  "trickEnd": "Trick complete",
+  "roundEnd": "Round complete",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "hintBid": "Recommended bid",
+  "hintPlay": "Recommended card",
+  "hintReason": {
+    "strategic_bid": "Strategic bid",
+    "lead_strong": "Lead with a strong card",
+    "lead_low": "Lead with a low card",
+    "follow_suit": "Follow the lead suit",
+    "trump_cut": "Cut with trump",
+    "discard_high": "Discard a high card"
+  },
+  "suitName": {
+    "1": "Spades",
+    "2": "Clubs",
+    "3": "Hearts",
+    "4": "Diamonds"
+  },
+  "tutorial": {
+    "bidControls": "In the bid phase, declare how many tricks you expect to win. The dealer has a bid restriction.",
+    "trickDisplay": "The current trick. The trump suit changes each round.",
+    "playerHand": "Your hand. You must follow the lead suit.",
+    "playButton": "Press this button to play the selected card.",
+    "scoreTable": "Score table. Exact bids earn 10 + bid points.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "bidEstimate": "Bid based on high cards and trumps",
+    "leadStrategic": "Lead strategically",
+    "followSuit": "Follow the led suit",
+    "trumpWithCard": "Trump with a card",
+    "discardLowest": "Discard your lowest card"
+  }
+}
