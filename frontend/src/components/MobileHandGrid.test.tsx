@@ -154,7 +154,7 @@ describe('MobileHandGrid', () => {
       );
       const scrollRow = container.querySelector('.overflow-x-auto');
       expect(scrollRow).not.toBeNull();
-      const buttons = scrollRow?.querySelectorAll('button');
+      const buttons = scrollRow?.querySelectorAll('button') ?? [];
       // Buttons in scroll row should have flex-shrink: 0
       for (const btn of buttons) {
         expect(btn.style.flexShrink).toBe('0');
