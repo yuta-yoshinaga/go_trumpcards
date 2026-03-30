@@ -50,6 +50,7 @@ type TrumpCardsWeb struct {
 	tpc  *controller.TriPeaksWebController
 	tcc  *controller.ThreeCardWebController
 	ohlc *controller.OhHellWebController
+	brc  *controller.BridgeWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -277,6 +278,17 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			ohHell := domain.NewOhHell(domain.NewTrumpCards(0), players, config)
 			return usecase.NewOhHellInteractor(ohHell, new(presenter.OhHellWebPresenter))
 		}),
+		brc: controller.NewBridgeWebController(func() usecase.BridgeInteractorIF {
+			config := domain.DefaultBridgeConfig()
+			players := []*domain.BridgePlayer{
+				domain.NewBridgePlayer(true, 0),
+				domain.NewBridgePlayer(false, 1),
+				domain.NewBridgePlayer(false, 0),
+				domain.NewBridgePlayer(false, 1),
+			}
+			bridge := domain.NewBridge(domain.NewTrumpCards(0), players, config)
+			return usecase.NewBridgeInteractor(bridge, new(presenter.BridgeWebPresenter))
+		}),
 	}
 }
 
@@ -318,6 +330,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/cribbage/exec", web.cbc.Exec},
 		{"/threecard/exec", web.tcc.Exec},
 		{"/ohhell/exec", web.ohlc.Exec},
+		{"/bridge/exec", web.brc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -408,6 +421,8 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.cbc.Stop()
 	web.tpc.Stop()
 	web.tcc.Stop()
+	web.ohlc.Stop()
+	web.brc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

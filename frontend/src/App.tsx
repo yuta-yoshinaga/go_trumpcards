@@ -9,6 +9,7 @@ import { gameRoutes } from './constants/gameRoutes';
 import { useGameSound } from './hooks/useGameSound';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
+import { BridgePage } from './pages/BridgePage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { CribbagePage } from './pages/CribbagePage';
 import { DaifugoPage } from './pages/DaifugoPage';
@@ -46,6 +47,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/sevens': <SevensPage />,
   '/doubt': <DoubtPage />,
   '/euchre': <EuchrePage />,
+  '/bridge': <BridgePage />,
   '/holdem': <HoldemPage />,
   '/omaha': <OmahaPage />,
   '/shortdeck': <ShortDeckPage />,

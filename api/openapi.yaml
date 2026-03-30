@@ -72,6 +72,8 @@ tags:
     description: Three Card Poker (スリーカードポーカー) game
   - name: ohhell
     description: Oh Hell (オー・ヘル) game
+  - name: bridge
+    description: Contract Bridge (コントラクトブリッジ) game
 
 paths:
   /blackjack/exec:
@@ -2654,6 +2656,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OhHellResponse'
+
+  /bridge/exec:
+    post:
+      tags:
+        - bridge
+      summary: Execute a Contract Bridge game command
+      description: |
+        Send a command to advance the Contract Bridge (コントラクトブリッジ) game session
+        identified by `sessionId`.  Contract Bridge is a 4-player, 2-team trick-taking
+        game with a standard 52-card deck (13 cards per player).  Features an auction
+        (bidding) phase with Pass/Double/Redouble, a dummy hand (partner of declarer),
+        and rubber bridge scoring.  First team to win 2 games wins the rubber.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Bid        | `0`   | Auction phase (players bid to set the contract) |
+        | Play       | `1`   | Trick play (follow suit; trump suit wins) |
+        | TrickEnd   | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd   | `3`   | All 13 tricks played; advance with `nextround` |
+        | GameEnd    | `4`   | A team won the rubber (2 games) |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bid`       | `b`     | Place a bid (requires `bidType`, and `bidLevel`+`bidSuit` for normal bids) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `hint`      | `h`     | Get recommended bid or play |
+        | `log`       | `l`     | View action log |
+      operationId: bridgeExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BridgeRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bidPass:
+                summary: Pass during auction
+                value:
+                  command: bid
+                  bidType: 0
+                  sessionId: my-session-001
+              bidNormal:
+                summary: Bid 1 NoTrump
+                value:
+                  command: bid
+                  bidType: 1
+                  bidLevel: 1
+                  bidSuit: 5
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BridgeResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BridgeResponse'
 
 components:
   schemas:
@@ -7945,7 +8025,7 @@ components:
             - $ref: '#/components/schemas/Card'
         trumpSuit:
           type: integer
-          description: "Trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond, -1=none)"
+          description: "Trump suit, same enum as contractSuit (0=not determined, 1=Clubs, 2=Diamonds, 3=Hearts, 4=Spades, 5=NoTrump)"
         gameEndFlag:
           type: boolean
           description: Whether the game has ended
@@ -7994,6 +8074,208 @@ components:
               type: integer
               nullable: true
               description: Recommended bid value (null during play phase)
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
+    # Contract Bridge
+    # -------------------------------------------------------------------------
+    BridgeRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bid` (`b`),
+            `play` (`p`), `next` (`n`), `nextround` (`nr`), `hint` (`h`),
+            `log` (`l`).
+          enum: [reset, r, bid, b, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        bidType:
+          type: integer
+          description: |
+            Bid type.  Required for `bid` command.
+            0 = Pass, 1 = Normal bid (requires bidLevel + bidSuit),
+            2 = Double, 3 = Redouble.
+          minimum: 0
+          maximum: 3
+          example: 1
+        bidLevel:
+          type: integer
+          description: "Bid level (1-7).  Required when bidType = 1."
+          minimum: 1
+          maximum: 7
+          example: 1
+        bidSuit:
+          type: integer
+          description: "Bid suit (1=Clubs, 2=Diamonds, 3=Hearts, 4=Spades, 5=NoTrump).  Required when bidType = 1."
+          minimum: 1
+          maximum: 5
+          example: 5
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BridgeResponse:
+      type: object
+      description: Current state of the Contract Bridge game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              trickCount:
+                type: integer
+        teams:
+          type: array
+          description: Array of team objects (2 teams)
+          items:
+            type: object
+            properties:
+              belowLine:
+                type: integer
+                description: Points below the line (towards game)
+              aboveLine:
+                type: integer
+                description: Points above the line (bonuses/penalties)
+              gamesWon:
+                type: integer
+                description: Number of games won in the rubber
+              vulnerable:
+                type: boolean
+                description: Whether the team is vulnerable
+        phase:
+          type: integer
+          description: "Game phase: 0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round (deal) number
+        trickNumber:
+          type: integer
+          description: Current trick number within the round
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        dealerIdx:
+          type: integer
+          description: Index of the dealer
+        declarerIdx:
+          type: integer
+          description: Index of the declarer (-1 if not yet determined)
+        dummyIdx:
+          type: integer
+          description: Index of the dummy (-1 if not yet determined)
+        contractLevel:
+          type: integer
+          description: Contract level (1-7, 0 if not yet determined)
+        contractSuit:
+          type: integer
+          description: "Contract suit (1=Clubs, 2=Diamonds, 3=Hearts, 4=Spades, 5=NoTrump, 0=not yet determined)"
+        contractDoubled:
+          type: integer
+          description: "Double state (0=none, 1=doubled, 2=redoubled)"
+        trumpSuit:
+          type: integer
+          description: "Trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond, -1=NoTrump, 0=not yet determined)"
+        currentTrick:
+          type: array
+          description: Cards played in the current trick
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        bidHistory:
+          type: array
+          description: Auction bid history
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              bidType:
+                type: integer
+              level:
+                type: integer
+              suit:
+                type: integer
+        gameEndFlag:
+          type: boolean
+          description: Whether the game (rubber) has ended
+        winnerTeamIdx:
+          type: integer
+          description: Index of the winning team (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play or bid hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index (null during bid phase)
+            bidType:
+              type: integer
+              nullable: true
+              description: Recommended bid type (null during play phase)
+            bidLevel:
+              type: integer
+              nullable: true
+              description: Recommended bid level (null during play phase)
+            bidSuit:
+              type: integer
+              nullable: true
+              description: Recommended bid suit (null during play phase)
             reason:
               type: string
               description: Machine-readable reason key for the hint

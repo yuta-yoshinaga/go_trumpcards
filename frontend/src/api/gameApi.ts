@@ -2,6 +2,7 @@ import type {
   ActionLogResponse,
   BaccaratResponse,
   BlackJackResponse,
+  BridgeResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoConfigInput,
@@ -55,6 +56,7 @@ const workerUrl: Record<string, string> = {
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
+  bridge: WORKER_CLASSIC,
   napoleon: WORKER_CLASSIC,
   ohhell: WORKER_CLASSIC,
   oldmaid: WORKER_CLASSIC,
@@ -679,6 +681,31 @@ export const indianpokerApi = {
     }),
 };
 
+/** Configuration options for Bridge game settings. */
+export interface BridgeConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Bridge /bridge/exec endpoint. */
+export const bridgeApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    cardIndex?: number,
+    bidType?: number,
+    bidLevel?: number,
+    bidSuit?: number,
+    config?: BridgeConfigInput,
+  ) =>
+    gameExec<BridgeResponse>('bridge', {
+      command,
+      cardIndex,
+      bidType,
+      bidLevel,
+      bidSuit,
+      config,
+    }),
+};
+
 /** Configuration options for Euchre game settings. */
 export interface EuchreConfigInput {
   cpuDifficulty?: number;
@@ -769,6 +796,7 @@ const games = [
   'deuceswild',
   'jokerpoker',
   'euchre',
+  'bridge',
   'pyramid',
   'tripeaks',
   'cribbage',

@@ -1,0 +1,456 @@
+//go:build test
+
+package presenter_test
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+// setupBridgeCuiMock creates a MockBridgeGame with sensible defaults for CUI tests.
+func setupBridgeCuiMock() *interfaces.MockBridgeGame {
+	m := new(interfaces.MockBridgeGame)
+	m.On("GetRoundNumber").Return(1)
+	m.On("GetTrickNumber").Return(1)
+	m.On("GetCurrentTrick").Return([]*domain.BridgeTrickCard(nil))
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetPhase").Return(domain.BridgePhasePlay)
+	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetBidPlayerIdx").Return(0)
+	m.On("GetDealerIdx").Return(0)
+	m.On("GetTrumpSuit").Return(1) // Spade
+	m.On("GetContractLevel").Return(1)
+	m.On("GetContractSuit").Return(3)
+	m.On("GetDoubled").Return(0)
+	m.On("GetDeclarerIdx").Return(0)
+	m.On("GetDummyIdx").Return(2)
+	m.On("GetBidHistory").Return([]*domain.BridgeBidEntry(nil))
+	m.On("GetVulnerability", 0).Return(false)
+	m.On("GetVulnerability", 1).Return(false)
+	m.On("GetTeamScore", 0).Return(0)
+	m.On("GetTeamScore", 1).Return(0)
+	m.On("GetGamesWon", 0).Return(0)
+	m.On("GetGamesWon", 1).Return(0)
+	m.On("GetBelowLine", 0).Return(0)
+	m.On("GetBelowLine", 1).Return(0)
+	m.On("GetWinnerTeam").Return(-1)
+	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("IsOpeningLeadDone").Return(false)
+	m.On("GetDummyHand").Return(([]*domain.Card)(nil))
+	m.On("GetConfig").Return(domain.DefaultBridgeConfig())
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	return m
+}
+
+func setupBridgeCuiMockWithPlayers() (*interfaces.MockBridgeGame, []*domain.BridgePlayer) {
+	m := setupBridgeCuiMock()
+	players := makeBridgePlayers()
+	m.On("GetPlayerCnt").Return(4)
+	m.On("GetPlayer", 0).Return(players[0])
+	m.On("GetPlayer", 1).Return(players[1])
+	m.On("GetPlayer", 2).Return(players[2])
+	m.On("GetPlayer", 3).Return(players[3])
+	return m, players
+}
+
+func TestBridgeCuiPresenter_Output(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.BridgeCuiPresenter)
+
+	t.Run("initial state with header and player info", func(t *testing.T) {
+		m, players := setupBridgeCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Contract Bridge (コントラクトブリッジ)")
+		assert.Contains(t, result, "ラウンド: 1")
+		assert.Contains(t, result, "トリック: 1")
+		assert.Contains(t, result, "あなた: チーム0 獲得0トリック 2枚")
+		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "CPU 1: チーム1 獲得0トリック 1枚")
+		assert.Contains(t, result, "手番: あなた")
+		assert.Contains(t, result, "p <i> (play)")
+	})
+
+	t.Run("trump suit shown", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "切り札: SPADE")
+	})
+
+	t.Run("trump suit notrump", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpSuit")
+		m.On("GetTrumpSuit").Return(-1)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "切り札: ノートランプ")
+	})
+
+	t.Run("trump suit undecided", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpSuit")
+		m.On("GetTrumpSuit").Return(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "切り札: 未決定")
+	})
+
+	t.Run("contract info shown", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "コントラクト: 1レベル")
+	})
+
+	t.Run("contract doubled", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDoubled")
+		m.On("GetDoubled").Return(1)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ダブル")
+	})
+
+	t.Run("contract redoubled", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDoubled")
+		m.On("GetDoubled").Return(2)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "リダブル")
+	})
+
+	t.Run("declarer and dummy shown", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "デクレアラー: あなた")
+		assert.Contains(t, result, "ダミー: CPU 2")
+	})
+
+	t.Run("no contract hides contract section", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetContractLevel")
+		m.On("GetContractLevel").Return(0)
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "コントラクト:")
+	})
+
+	t.Run("vulnerability shown", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetVulnerability")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetVulnerability")
+		m.On("GetVulnerability", 0).Return(true)
+		m.On("GetVulnerability", 1).Return(false)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "バルネラビリティ: チーム0=true チーム1=false")
+	})
+
+	t.Run("team scores shown", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTeamScore")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTeamScore")
+		m.On("GetTeamScore", 0).Return(5)
+		m.On("GetTeamScore", 1).Return(3)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "チーム0: 5点")
+		assert.Contains(t, result, "チーム1: 3点")
+	})
+
+	t.Run("dealer shown", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ディーラー: あなた")
+	})
+
+	t.Run("dummy hand shown after opening lead", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsOpeningLeadDone")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDummyHand")
+		m.On("IsOpeningLeadDone").Return(true)
+		m.On("GetDummyHand").Return([]*domain.Card{
+			domain.NewCard(domain.CardDesignHeart, 10, false),
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+		})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ダミー手札: HEART 10, SPADE 1")
+	})
+
+	t.Run("current trick shown", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		trick := []*domain.BridgeTrickCard{
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
+		}
+		m.On("GetCurrentTrick").Return(trick)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+	})
+
+	t.Run("no trick cards hides trick section", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "トリック: あなた")
+	})
+
+	t.Run("error message shown", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		testErr := errors.New("invalid card index")
+
+		result := p.Output(m, testErr)
+		assert.Contains(t, result, "invalid card index")
+	})
+
+	t.Run("game ended shows winner team", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerTeam")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerTeam").Return(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ゲーム終了！")
+		assert.Contains(t, result, "チーム0の勝利です！")
+	})
+
+	t.Run("bid phase shows bidder and command", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.BridgePhaseBid)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ビッドフェーズ: あなたの番")
+		assert.Contains(t, result, "b <type>")
+	})
+
+	t.Run("trick end phase shows next command", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.BridgePhaseTrickEnd)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "トリック終了")
+		assert.Contains(t, result, "n (next trick)")
+	})
+
+	t.Run("round end phase shows next round command", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.BridgePhaseRoundEnd)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ラウンド終了")
+		assert.Contains(t, result, "nr (next round)")
+	})
+
+	t.Run("human with no cards does not print extra cards line", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "あなた: チーム0 獲得0トリック 0枚")
+	})
+
+	t.Run("player with tricks", func(t *testing.T) {
+		m, players := setupBridgeCuiMockWithPlayers()
+		players[1].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1: チーム1 獲得1トリック 0枚")
+	})
+}
+
+func TestBridgeCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.BridgeCuiPresenter)
+
+	t.Run("with entries", func(t *testing.T) {
+		m := new(interfaces.MockBridgeGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5"},
+		}
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "played SPADE 5")
+		m.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜はありません")
+		m.AssertExpectations(t)
+	})
+
+	t.Run("game not ended", func(t *testing.T) {
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜はありません")
+		m.AssertExpectations(t)
+	})
+}
+
+func TestBridgeCuiPresenter_HintOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	t.Run("no hint", func(t *testing.T) {
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetHint").Return((*domain.BridgeHint)(nil))
+
+		p := new(presenter.BridgeCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+
+	t.Run("bid pass hint", func(t *testing.T) {
+		bidType := int(domain.BridgeBidPass)
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetHint").Return(&domain.BridgeHint{
+			BidType: &bidType,
+			Reason:  "weak_hand",
+		})
+
+		p := new(presenter.BridgeCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "パス")
+		assert.Contains(t, result, "弱い手札")
+	})
+
+	t.Run("bid normal hint", func(t *testing.T) {
+		bidType := int(domain.BridgeBidNormal)
+		bidLevel := 2
+		bidSuit := 3
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetHint").Return(&domain.BridgeHint{
+			BidType:  &bidType,
+			BidLevel: &bidLevel,
+			BidSuit:  &bidSuit,
+			Reason:   "strong_hand",
+		})
+
+		p := new(presenter.BridgeCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ビッド")
+		assert.Contains(t, result, "2レベル")
+		assert.Contains(t, result, "スート3")
+		assert.Contains(t, result, "強い手札")
+	})
+
+	t.Run("bid double hint", func(t *testing.T) {
+		bidType := int(domain.BridgeBidDouble)
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetHint").Return(&domain.BridgeHint{
+			BidType: &bidType,
+			Reason:  "competitive_bid",
+		})
+
+		p := new(presenter.BridgeCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "ダブル")
+		assert.Contains(t, result, "競り合い")
+	})
+
+	t.Run("bid redouble hint", func(t *testing.T) {
+		bidType := int(domain.BridgeBidRedouble)
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetHint").Return(&domain.BridgeHint{
+			BidType: &bidType,
+			Reason:  "strong_hand",
+		})
+
+		p := new(presenter.BridgeCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "リダブル")
+	})
+
+	t.Run("play hint", func(t *testing.T) {
+		idx := 1
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetHint").Return(&domain.BridgeHint{
+			CardIndex: &idx,
+			Reason:    "follow_suit",
+		})
+		player := domain.NewBridgePlayer(true, 0)
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+		m.On("GetPlayer", 0).Return(player)
+
+		p := new(presenter.BridgeCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "リードスートに追随")
+	})
+
+	t.Run("hint with nil fields returns no hint", func(t *testing.T) {
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetHint").Return(&domain.BridgeHint{
+			Reason: "unknown",
+		})
+
+		p := new(presenter.BridgeCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+
+	t.Run("hint reason strings", func(t *testing.T) {
+		reasons := map[string]string{
+			"trump_cut":       "切り札でカット",
+			"lead_strong":     "強いカードでリード",
+			"lead_low":        "低いカードでリード",
+			"support_partner": "パートナーをサポート",
+			"competitive_bid": "競り合い",
+			"unknown_reason":  "unknown_reason",
+		}
+		for key, expected := range reasons {
+			idx := 0
+			m := new(interfaces.MockBridgeGame)
+			m.On("GetHint").Return(&domain.BridgeHint{
+				CardIndex: &idx,
+				Reason:    key,
+			})
+			player := domain.NewBridgePlayer(true, 0)
+			player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+			m.On("GetPlayer", 0).Return(player)
+
+			p := new(presenter.BridgeCuiPresenter)
+			result := p.HintOutput(m)
+			assert.Contains(t, result, expected, "reason: "+key)
+		}
+	})
+}
