@@ -691,7 +691,7 @@ export const bridgeApi = {
   exec: (
     command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
     cardIndex?: number,
-    bidType?: string,
+    bidType?: number,
     bidLevel?: number,
     bidSuit?: number,
     config?: BridgeConfigInput,

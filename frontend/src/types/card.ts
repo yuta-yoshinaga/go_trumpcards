@@ -1207,7 +1207,7 @@ export interface BridgeTrickCard {
 /** A bid entry in the Bridge bid history. */
 export interface BridgeBidEntry {
   playerIdx: number;
-  bidType: string;
+  bidType: number;
   bidLevel: number;
   bidSuit: number;
 }
@@ -1220,7 +1220,7 @@ export interface BridgeConfig {
 /** A suggested hint for Bridge. */
 export interface BridgeHint {
   cardIndex?: number;
-  bidType?: string;
+  bidType?: number;
   bidLevel?: number;
   bidSuit?: number;
   reason: string;

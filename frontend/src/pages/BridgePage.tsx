@@ -30,7 +30,7 @@ const DENOMINATIONS: readonly { suit: number; labelKey: string }[] = [
   { suit: 2, labelKey: 'denominationDiamond' },
   { suit: 3, labelKey: 'denominationHeart' },
   { suit: 4, labelKey: 'denominationSpade' },
-  { suit: -1, labelKey: 'denominationNoTrump' },
+  { suit: 5, labelKey: 'denominationNoTrump' },
 ] as const;
 
 /** Suit display name map for trump/contract display. */
@@ -75,7 +75,7 @@ export function BridgePage() {
   } = useBridgeGame();
   const { cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
   const [bidLevel, setBidLevel] = useState(1);
-  const [bidSuit, setBidSuit] = useState(-1);
+  const [bidSuit, setBidSuit] = useState(5);
 
   const isPlayPhaseForKbd = state?.phase === BridgePhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
@@ -209,11 +209,11 @@ export function BridgePage() {
                         state.players[entry.playerIdx]?.isHuman ?? false,
                       )}
                       :{' '}
-                      {entry.bidType === 'pass'
+                      {entry.bidType === 0
                         ? t('passButton')
-                        : entry.bidType === 'double'
+                        : entry.bidType === 2
                           ? t('doubleButton')
-                          : entry.bidType === 'redouble'
+                          : entry.bidType === 3
                             ? t('redoubleButton')
                             : `${entry.bidLevel}${suitLabel(entry.bidSuit)}`}
                     </span>
@@ -398,18 +398,18 @@ export function BridgePage() {
               <button
                 type="button"
                 className={btnPrimary}
-                onClick={() => handleBid('bid', bidLevel, bidSuit)}
+                onClick={() => handleBid(1, bidLevel, bidSuit)}
                 disabled={loading}
               >
                 {t('bidButton')}
               </button>
-              <button type="button" className={btnSecondary} onClick={() => handleBid('pass')} disabled={loading}>
+              <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
                 {t('passButton')}
               </button>
-              <button type="button" className={btnSecondary} onClick={() => handleBid('double')} disabled={loading}>
+              <button type="button" className={btnSecondary} onClick={() => handleBid(2)} disabled={loading}>
                 {t('doubleButton')}
               </button>
-              <button type="button" className={btnSecondary} onClick={() => handleBid('redouble')} disabled={loading}>
+              <button type="button" className={btnSecondary} onClick={() => handleBid(3)} disabled={loading}>
                 {t('redoubleButton')}
               </button>
             </>

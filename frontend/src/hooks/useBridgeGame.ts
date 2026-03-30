@@ -39,7 +39,7 @@ export function useBridgeGame() {
   }, [apiExec]);
 
   const handleBid = useCallback(
-    (bidType: string, bidLevel?: number, bidSuit?: number) => {
+    (bidType: number, bidLevel?: number, bidSuit?: number) => {
       apiExec('bid', undefined, bidType, bidLevel, bidSuit);
     },
     [apiExec],

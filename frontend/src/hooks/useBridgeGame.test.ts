@@ -69,8 +69,8 @@ describe('useBridgeGame', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(baseBridgeState);
-    act(() => result.current.handleBid('bid', 1, 1));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 'bid', 1, 1));
+    act(() => result.current.handleBid(1, 1, 1));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 1, 1, 1));
   });
 
   it('handleBid with pass calls apiExec correctly', async () => {
@@ -80,8 +80,8 @@ describe('useBridgeGame', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(baseBridgeState);
-    act(() => result.current.handleBid('pass'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 'pass', undefined, undefined));
+    act(() => result.current.handleBid(0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 0, undefined, undefined));
   });
 
   it('handlePlay does nothing if no card selected', async () => {
@@ -160,7 +160,7 @@ describe('useBridgeGame', () => {
     expect(result.current.hint).not.toBeNull();
 
     mockExec.mockResolvedValue(baseBridgeState);
-    act(() => result.current.handleBid('pass'));
+    act(() => result.current.handleBid(0));
     await waitFor(() => expect(result.current.hint).toBeNull());
   });
 });

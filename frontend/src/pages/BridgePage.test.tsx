@@ -116,9 +116,9 @@ const gameEndByFlagState: BridgeResponse = {
 const bidHistoryState: BridgeResponse = {
   ...bidPhaseState,
   bidHistory: [
-    { playerIdx: 0, bidType: 'bid', bidLevel: 1, bidSuit: -1 },
-    { playerIdx: 1, bidType: 'pass', bidLevel: 0, bidSuit: 0 },
-    { playerIdx: 2, bidType: 'double', bidLevel: 0, bidSuit: 0 },
+    { playerIdx: 0, bidType: 1, bidLevel: 1, bidSuit: 5 },
+    { playerIdx: 1, bidType: 0, bidLevel: 0, bidSuit: 0 },
+    { playerIdx: 2, bidType: 2, bidLevel: 0, bidSuit: 0 },
   ],
 };
 
@@ -189,7 +189,7 @@ describe('BridgePage', () => {
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 'bid', 1, -1));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 1, 1, 5));
   });
 
   it('calls pass command when pass button is clicked', async () => {
@@ -200,7 +200,7 @@ describe('BridgePage', () => {
     mockExec.mockResolvedValue(bidPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '\u30d1\u30b9' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 'pass', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 0, undefined, undefined));
   });
 
   it('calls double command when double button is clicked', async () => {
@@ -211,7 +211,7 @@ describe('BridgePage', () => {
     mockExec.mockResolvedValue(bidPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '\u30c0\u30d6\u30eb' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 'double', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, 2, undefined, undefined));
   });
 
   it('renders play phase with human cards', async () => {
