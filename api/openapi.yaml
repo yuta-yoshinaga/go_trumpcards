@@ -8025,7 +8025,7 @@ components:
             - $ref: '#/components/schemas/Card'
         trumpSuit:
           type: integer
-          description: "Trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond, -1=none)"
+          description: "Trump suit, same enum as contractSuit (0=not determined, 1=Clubs, 2=Diamonds, 3=Hearts, 4=Spades, 5=NoTrump)"
         gameEndFlag:
           type: boolean
           description: Whether the game has ended

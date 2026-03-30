@@ -39,7 +39,7 @@ const SUIT_DISPLAY: Readonly<Record<number, string>> = {
   2: 'suitDiamond',
   3: 'suitHeart',
   4: 'suitSpade',
-  [-1]: 'suitNoTrump',
+  5: 'suitNoTrump',
 };
 
 const BRIDGE_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -155,7 +155,7 @@ export function BridgePage() {
           {isPlayPhase && <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>}
           {contractDisplay() && <span className="mr-4">{contractDisplay()}</span>}
           {state.trumpSuit !== 0 && state.contractLevel > 0 && (
-            <span>{state.trumpSuit === -1 ? t('noTrump') : t('trumpSuit', { suit: suitLabel(state.trumpSuit) })}</span>
+            <span>{state.trumpSuit === 5 ? t('noTrump') : t('trumpSuit', { suit: suitLabel(state.trumpSuit) })}</span>
           )}
         </div>
 

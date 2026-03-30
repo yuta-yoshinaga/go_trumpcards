@@ -20,7 +20,7 @@ func (p *BridgeWebPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 	resObj.CurrentPlayerIdx = b.GetCurrentPlayerIdx()
 	resObj.BidPlayerIdx = b.GetBidPlayerIdx()
 	resObj.DealerIdx = b.GetDealerIdx()
-	resObj.TrumpSuit = b.GetTrumpSuit()
+	resObj.TrumpSuit = trumpSuitForAPI(b.GetTrumpSuit(), b.GetContractSuit())
 	resObj.ContractLevel = b.GetContractLevel()
 	resObj.ContractSuit = b.GetContractSuit()
 	resObj.Doubled = b.GetDoubled()
@@ -135,7 +135,7 @@ func (p *BridgeWebPresenter) HintOutput(b interfaces.BridgeGame) string {
 	resObj.CurrentPlayerIdx = b.GetCurrentPlayerIdx()
 	resObj.BidPlayerIdx = b.GetBidPlayerIdx()
 	resObj.DealerIdx = b.GetDealerIdx()
-	resObj.TrumpSuit = b.GetTrumpSuit()
+	resObj.TrumpSuit = trumpSuitForAPI(b.GetTrumpSuit(), b.GetContractSuit())
 	resObj.ContractLevel = b.GetContractLevel()
 	resObj.ContractSuit = b.GetContractSuit()
 	resObj.Doubled = b.GetDoubled()
@@ -174,4 +174,29 @@ func (p *BridgeWebPresenter) HintOutput(b interfaces.BridgeGame) string {
 // ActionLogOutput 棋譜をJSON出力
 func (p *BridgeWebPresenter) ActionLogOutput(b interfaces.BridgeGame) string {
 	return actionLogOutputJSON(b)
+}
+
+// trumpSuitForAPI converts internal CardDesign-based trumpSuit to BridgeBidSuit
+// enum for consistent API output. Uses contractSuit to distinguish NoTrump (-1
+// internally) from "not yet determined" (-1 before auction).
+// Output: 0=not determined, 1=Club, 2=Diamond, 3=Heart, 4=Spade, 5=NoTrump.
+func trumpSuitForAPI(trumpSuit int, contractSuit int) int {
+	if trumpSuit == -1 {
+		if contractSuit == domain.BridgeBidSuitNT {
+			return domain.BridgeBidSuitNT // 5 = NoTrump
+		}
+		return 0 // not yet determined
+	}
+	switch trumpSuit {
+	case domain.CardDesignClover:
+		return domain.BridgeBidSuitClub
+	case domain.CardDesignDiamond:
+		return domain.BridgeBidSuitDiamond
+	case domain.CardDesignHeart:
+		return domain.BridgeBidSuitHeart
+	case domain.CardDesignSpade:
+		return domain.BridgeBidSuitSpade
+	default:
+		return 0
+	}
 }
