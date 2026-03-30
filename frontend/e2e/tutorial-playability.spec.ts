@@ -59,8 +59,8 @@ test.describe('Tutorial → Game Playability', () => {
 
       // Step 2: Click through all tutorial steps
       // The tutorial overlay should appear with a "次へ" or "完了" button
-      const maxSteps = 30; // Safety limit
-      for (let i = 0; i < maxSteps; i++) {
+      const MAX_TUTORIAL_STEPS = 30; // Safety limit to prevent infinite loops
+      for (let i = 0; i < MAX_TUTORIAL_STEPS; i++) {
         // Wait for a tutorial tooltip button (次へ or 完了)
         const nextBtn = page.getByRole('button', { name: '次へ' });
         const completeBtn = page.getByRole('button', { name: '完了' });
@@ -87,7 +87,8 @@ test.describe('Tutorial → Game Playability', () => {
 
       // Step 4: Verify the game is still playable — at least one interactive button exists
       // (excluding NavBar buttons by scoping to main content area)
-      const mainContent = page.locator('main, [role="main"], .game-container, [aria-busy]').first();
+      await waitForLoaded(page);
+      const mainContent = page.locator('main, [role="main"], .game-container').first();
       const gameButtons = mainContent.getByRole('button');
       const buttonCount = await gameButtons.count();
 

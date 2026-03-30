@@ -17,6 +17,9 @@ const SPOTLIGHT_PADDING = 8;
 /** Border radius for the spotlight cutout. */
 const SPOTLIGHT_RADIUS = 8;
 
+/** Minimum distance between tooltip and viewport edge in pixels. */
+const TOOLTIP_VIEWPORT_MARGIN = 8;
+
 /** Props for the TutorialOverlay component. */
 export interface TutorialOverlayProps {
   /** The current tutorial step definition. */
@@ -163,22 +166,30 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
     const el = tooltipRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const margin = 8;
-    if (rect.left < margin) {
-      el.style.left = `${margin}px`;
-      el.style.transform = el.style.transform.replace(/translateX\([^)]*\)/, '');
+    let clamped = false;
+    let newLeft = Number.parseFloat(el.style.left) || 0;
+    let newTop = Number.parseFloat(el.style.top) || 0;
+
+    if (rect.left < TOOLTIP_VIEWPORT_MARGIN) {
+      newLeft = TOOLTIP_VIEWPORT_MARGIN;
+      clamped = true;
+    } else if (rect.right > window.innerWidth - TOOLTIP_VIEWPORT_MARGIN) {
+      newLeft = window.innerWidth - TOOLTIP_VIEWPORT_MARGIN - rect.width;
+      clamped = true;
     }
-    if (rect.right > window.innerWidth - margin) {
-      el.style.left = `${window.innerWidth - margin - rect.width}px`;
-      el.style.transform = el.style.transform.replace(/translateX\([^)]*\)/, '');
+
+    if (rect.top < TOOLTIP_VIEWPORT_MARGIN) {
+      newTop = TOOLTIP_VIEWPORT_MARGIN;
+      clamped = true;
+    } else if (rect.bottom > window.innerHeight - TOOLTIP_VIEWPORT_MARGIN) {
+      newTop = window.innerHeight - TOOLTIP_VIEWPORT_MARGIN - rect.height;
+      clamped = true;
     }
-    if (rect.top < margin) {
-      el.style.top = `${margin}px`;
-      el.style.transform = el.style.transform.replace(/translate\([^)]*\)|translateY\([^)]*\)/, '');
-    }
-    if (rect.bottom > window.innerHeight - margin) {
-      el.style.top = `${window.innerHeight - margin - rect.height}px`;
-      el.style.transform = el.style.transform.replace(/translate\([^)]*\)|translateY\([^)]*\)/, '');
+
+    if (clamped) {
+      el.style.left = `${newLeft}px`;
+      el.style.top = `${newTop}px`;
+      el.style.transform = 'none';
     }
   }, [tooltipStyle]);
 
