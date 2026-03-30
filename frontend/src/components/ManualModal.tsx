@@ -15,6 +15,27 @@ export interface ManualModalProps {
   gamePath: string;
 }
 
+/** Static remark plugins array — defined outside component to avoid re-creating on every render. */
+const remarkPlugins = [remarkGfm];
+
+/** Static markdown component overrides — defined outside component to avoid re-rendering the entire tree on every render. */
+const markdownComponents: Components = {
+  pre({ children }) {
+    // Unwrap <pre> when the child is a mermaid diagram rendered by the code override
+    const child = Array.isArray(children) ? children[0] : children;
+    if (child && typeof child === 'object' && 'type' in child && child.type === MermaidBlock) {
+      return <>{children}</>;
+    }
+    return <pre>{children}</pre>;
+  },
+  code({ className, children }) {
+    if (className === 'language-mermaid') {
+      return <MermaidBlock code={String(children).trim()} />;
+    }
+    return <code className={className}>{children}</code>;
+  },
+};
+
 /** Renders a scrollable modal displaying the game manual as rendered Markdown. */
 export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
   const { t } = useTranslation('common');
@@ -69,23 +90,6 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
 
   const markdown = manualTexts[gamePath] ?? '';
 
-  const markdownComponents: Components = {
-    pre({ children }) {
-      // Unwrap <pre> when the child is a mermaid diagram rendered by the code override
-      const child = Array.isArray(children) ? children[0] : children;
-      if (child && typeof child === 'object' && 'type' in child && child.type === MermaidBlock) {
-        return <>{children}</>;
-      }
-      return <pre>{children}</pre>;
-    },
-    code({ className, children }) {
-      if (className === 'language-mermaid') {
-        return <MermaidBlock code={String(children).trim()} />;
-      }
-      return <code className={className}>{children}</code>;
-    },
-  };
-
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses modal on click
     <div
@@ -108,7 +112,7 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
           </button>
         </div>
         <div className="overflow-y-auto flex-1 prose prose-invert prose-sm max-w-none">
-          <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          <Markdown remarkPlugins={remarkPlugins} components={markdownComponents}>
             {markdown}
           </Markdown>
         </div>

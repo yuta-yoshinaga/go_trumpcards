@@ -14,6 +14,7 @@ vi.mock('../constants/manualTexts', () => ({
     '/': '# BlackJack\n\nTest **bold** content\n\n| A | B |\n|---|---|\n| 1 | 2 |',
     '/poker': '# Poker\n\nPoker manual',
     '/mermaid': '# Flow\n\n```mermaid\nflowchart TD\n    A-->B\n```',
+    '/code': '# Code\n\n```js\nconsole.log("hello");\n```',
   },
 }));
 
@@ -119,5 +120,18 @@ describe('ManualModal', () => {
     closeBtn.focus();
     fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
     expect(document.activeElement).toBe(closeBtn);
+  });
+
+  it('renders regular code block inside pre without unwrapping', () => {
+    const { container } = render(<ManualModal open={true} onClose={vi.fn()} gamePath="/code" />);
+    expect(container.querySelector('pre')).toBeInTheDocument();
+    expect(container.querySelector('code')).toBeInTheDocument();
+  });
+
+  it('ignores non-Tab/non-Escape keydown events', () => {
+    const onClose = vi.fn();
+    render(<ManualModal open={true} onClose={onClose} gamePath="/" />);
+    fireEvent.keyDown(document, { key: 'Enter' });
+    expect(onClose).not.toHaveBeenCalled();
   });
 });
