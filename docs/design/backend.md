@@ -1622,12 +1622,12 @@ stateDiagram-v2
     note right of Init : PineapplePhaseInit = 0
     note right of PreFlop : PineapplePhasePreFlop = 1
     note right of Flop : PineapplePhaseFlop = 2
-    note right of Discard : PineapplePhaseDiscard = 3
-    note right of Turn : PineapplePhaseTurn = 4
-    note right of River : PineapplePhaseRiver = 5
-    note right of Showdown : PineapplePhaseShowdown = 6
-    note right of End : PineapplePhaseEnd = 7
-    note right of Rebuy : PineapplePhaseRebuy = 8
+    note right of Discard : PineapplePhaseDiscard = 8
+    note right of Turn : PineapplePhaseTurn = 3
+    note right of River : PineapplePhaseRiver = 4
+    note right of Showdown : PineapplePhaseShowdown = 5
+    note right of End : PineapplePhaseEnd = 6
+    note right of Rebuy : PineapplePhaseRebuy = 7
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

@@ -119,7 +119,7 @@ const preFlopState: PineappleResponse = {
 /** Discard phase state */
 const discardState: PineappleResponse = {
   ...preFlopState,
-  phase: 2,
+  phase: 8,
   isDiscardPhase: true,
   discardDone: [false, true, true, true],
   communityCards: [

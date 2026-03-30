@@ -2755,13 +2755,13 @@ paths:
         |------------|-------|-------------|
         | Init       | `0`   | Before any cards are dealt |
         | PreFlop    | `1`   | Three hole cards dealt; first betting round |
+        | Discard    | `8`   | Each player discards 1 hole card (after flop is dealt) |
         | Flop       | `2`   | Three community cards revealed; betting round |
-        | Discard    | `3`   | Each player discards 1 hole card |
-        | Turn       | `4`   | Fourth community card revealed |
-        | River      | `5`   | Fifth community card revealed |
-        | Showdown   | `6`   | Hands evaluated; winners determined |
-        | End        | `7`   | Round complete; results displayed |
-        | Rebuy      | `8`   | Rebuy/addon decision phase |
+        | Turn       | `3`   | Fourth community card revealed; betting round |
+        | River      | `4`   | Fifth community card revealed; betting round |
+        | Showdown   | `5`   | Hands evaluated; winners determined |
+        | End        | `6`   | Round complete; results displayed |
+        | Rebuy      | `7`   | Rebuy/addon decision phase |
 
         | Command     | Aliases | Description |
         |-------------|---------|-------------|
@@ -8548,12 +8548,12 @@ components:
             - `0` — Init
             - `1` — PreFlop
             - `2` — Flop
-            - `3` — Discard
-            - `4` — Turn
-            - `5` — River
-            - `6` — Showdown
-            - `7` — End
-            - `8` — Rebuy/Addon
+            - `3` — Turn
+            - `4` — River
+            - `5` — Showdown
+            - `6` — End
+            - `7` — Rebuy/Addon
+            - `8` — Discard
           enum: [0, 1, 2, 3, 4, 5, 6, 7, 8]
           example: 1
         gameEndFlag:
@@ -8597,7 +8597,7 @@ components:
             $ref: '#/components/schemas/HoldemCpuAction'
         isDiscardPhase:
           type: boolean
-          description: Whether the game is currently in the discard phase (phase=3)
+          description: Whether the game is currently in the discard phase (phase=8)
           example: false
         discardDone:
           type: boolean

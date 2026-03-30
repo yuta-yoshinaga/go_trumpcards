@@ -50,6 +50,12 @@ const PN_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
+    target: '[data-tutorial="pn-discard-controls"]',
+    messageKey: 'tutorial.discardPhase',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
     target: '[data-tutorial="pn-action-buttons"]',
     messageKey: 'tutorial.actionButtons',
     placement: 'top',
@@ -418,7 +424,7 @@ function PineapplePageContent() {
 
         {/* Discard controls */}
         {canDiscard && (
-          <div className="mb-2 text-center" data-testid="discard-controls">
+          <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
             <p className="text-white mb-2">{t('discard.select')}</p>
             <button
               type="button"
