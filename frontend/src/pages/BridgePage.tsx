@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -11,16 +12,19 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BridgeSkeleton } from '../components/skeleton/BridgeSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { CPU_DIFFICULTY_OPTIONS, useBridgeGame } from '../hooks/useBridgeGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { BridgePhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 
@@ -42,6 +46,64 @@ const SUIT_DISPLAY: Readonly<Record<number, string>> = {
   5: 'suitNoTrump',
 };
 
+/** Bridge tutorial step definitions. */
+const BR_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="br-bid-controls"]',
+    messageKey: 'tutorial.bidControls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="br-bid-history"]',
+    messageKey: 'tutorial.bidHistory',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="br-trick-display"]',
+    messageKey: 'tutorial.trickDisplay',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="br-dummy-hand"]',
+    messageKey: 'tutorial.dummyHand',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="br-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="br-play-button"]',
+    messageKey: 'tutorial.playButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="br-team-scores"]',
+    messageKey: 'tutorial.teamScores',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="br-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Bridge tutorial configuration. */
+const BR_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'bridge',
+  steps: BR_TUTORIAL_STEPS,
+};
+
 const BRIDGE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [BridgePhase.BID]: 'bid',
   [BridgePhase.PLAY]: 'play',
@@ -52,6 +114,16 @@ const BRIDGE_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Bridge game page with auction, trick play, and team scoring. */
 export function BridgePage() {
+  const { t: tBridge } = useTranslation('bridge');
+  return (
+    <TutorialProvider config={BR_TUTORIAL_CONFIG} translateMessage={tBridge}>
+      <BridgePageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Bridge page, wrapped by TutorialProvider. */
+function BridgePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('bridge');
   const {
@@ -123,6 +195,7 @@ export function BridgePage() {
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanBidTurn || isHumanTurn}>
         <ManualButton gamePath="/bridge" />
+        <TutorialButton />
       </PhaseIndicator>
 
       {/* Settings */}
@@ -199,7 +272,7 @@ export function BridgePage() {
 
             {/* Bid History */}
             {state.bidHistory.length > 0 && (
-              <div className="my-2 p-2 rounded bg-black/30">
+              <div className="my-2 p-2 rounded bg-black/30" data-tutorial="br-bid-history">
                 <div className="text-white/70 text-sm mb-1">{t('bidHistory')}</div>
                 <div className="flex flex-wrap gap-1">
                   {state.bidHistory.map((entry, idx) => (
@@ -224,7 +297,7 @@ export function BridgePage() {
 
             {/* Current trick */}
             {state.currentTrick.length > 0 && (
-              <div className="my-3 p-3 rounded bg-black/40">
+              <div className="my-3 p-3 rounded bg-black/40" data-tutorial="br-trick-display">
                 <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
                 <div className="flex gap-2">
                   {state.currentTrick.map((trickCard) => (
@@ -244,7 +317,7 @@ export function BridgePage() {
 
             {/* Dummy hand */}
             {state.openingLeadDone && state.dummyHand && state.dummyHand.length > 0 && (
-              <div className="my-3 p-3 rounded bg-black/40">
+              <div className="my-3 p-3 rounded bg-black/40" data-tutorial="br-dummy-hand">
                 <div className="text-white/70 text-sm mb-1">{t('dummyHand')}</div>
                 <div className="flex gap-1 flex-wrap">
                   {state.dummyHand.map((card, idx) => (
@@ -283,7 +356,7 @@ export function BridgePage() {
               ))}
 
             {/* Team scores */}
-            <div className="my-3 p-2 rounded bg-black/30">
+            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="br-team-scores">
               <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
               <table className="w-full text-sm text-white/70">
                 <thead>
@@ -327,7 +400,10 @@ export function BridgePage() {
       <GameFooter className={`${gameTheme.bridge.footer} px-4 py-2.5`}>
         {/* Human cards */}
         {humanPlayer && (
-          <div className={isMobile ? 'flex gap-1 overflow-x-auto mb-2' : 'flex flex-wrap gap-1 mb-2'}>
+          <div
+            className={isMobile ? 'flex gap-1 overflow-x-auto mb-2' : 'flex flex-wrap gap-1 mb-2'}
+            data-tutorial="br-player-hand"
+          >
             {humanPlayer.cards.map((card, idx) => (
               <button
                 type="button"
@@ -361,7 +437,7 @@ export function BridgePage() {
           </div>
         )}
 
-        <div className="flex gap-2 items-center flex-wrap">
+        <div className="flex gap-2 items-center flex-wrap" data-tutorial="br-play-button">
           {(isHumanBidTurn || isHumanTurn) && (
             <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
               {tc('button.hint')}
@@ -370,7 +446,7 @@ export function BridgePage() {
 
           {/* Bid phase controls */}
           {isHumanBidTurn && (
-            <>
+            <span data-tutorial="br-bid-controls" className="contents">
               <select
                 className="text-sm rounded bg-black/50 text-white px-2 py-1"
                 value={bidLevel}
@@ -412,7 +488,7 @@ export function BridgePage() {
               <button type="button" className={btnSecondary} onClick={() => handleBid(3)} disabled={loading}>
                 {t('redoubleButton')}
               </button>
-            </>
+            </span>
           )}
 
           {/* Play phase */}
@@ -445,6 +521,7 @@ export function BridgePage() {
           <button
             type="button"
             className={btnOutline}
+            data-tutorial="br-reset-button"
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();

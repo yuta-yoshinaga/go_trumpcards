@@ -71,5 +71,15 @@
     "trump_cut": "Cut with trump",
     "bid_strong": "Bid with strong hand",
     "pass_weak": "Pass with weak hand"
+  },
+  "tutorial": {
+    "bidControls": "In the bid phase, choose a level and suit to bid. You can also pass, double, or redouble.",
+    "bidHistory": "The bid history. Each player's bid is shown in order.",
+    "trickDisplay": "The current trick. Each player plays one card.",
+    "dummyHand": "Dummy's hand. Revealed after the opening lead.",
+    "playerHand": "Your hand. Click a card to select it.",
+    "playButton": "Press this button to play the selected card. Use the hint button for suggestions.",
+    "teamScores": "Team scores. Reaching 100+ below the line wins a game; winning 2 games wins the rubber.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }
