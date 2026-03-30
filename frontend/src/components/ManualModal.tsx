@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { manualTexts } from '../constants/manualTexts';
 import { btnSecondary } from '../styles/buttonStyles';
 import { getFocusableElements } from '../utils/dom';
+import { MermaidBlock } from './MermaidBlock';
 
 /** Props for the ManualModal component. */
 export interface ManualModalProps {
@@ -67,6 +69,23 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
 
   const markdown = manualTexts[gamePath] ?? '';
 
+  const markdownComponents: Components = {
+    pre({ children }) {
+      // Unwrap <pre> when the child is a mermaid diagram rendered by the code override
+      const child = Array.isArray(children) ? children[0] : children;
+      if (child && typeof child === 'object' && 'type' in child && child.type === MermaidBlock) {
+        return <>{children}</>;
+      }
+      return <pre>{children}</pre>;
+    },
+    code({ className, children }) {
+      if (className === 'language-mermaid') {
+        return <MermaidBlock code={String(children).trim()} />;
+      }
+      return <code className={className}>{children}</code>;
+    },
+  };
+
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses modal on click
     <div
@@ -80,7 +99,7 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
         role="dialog"
         aria-modal="true"
         aria-label={t('manual.ariaLabel')}
-        className="glass-panel rounded-lg shadow-xl p-6 mx-4 max-w-2xl w-full max-h-[80vh] flex flex-col"
+        className="rounded-lg shadow-xl p-6 mx-4 max-w-2xl w-full max-h-[80vh] flex flex-col bg-gray-900 border border-gray-700"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-end mb-2">
@@ -89,7 +108,9 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
           </button>
         </div>
         <div className="overflow-y-auto flex-1 prose prose-invert prose-sm max-w-none">
-          <Markdown remarkPlugins={[remarkGfm]}>{markdown}</Markdown>
+          <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {markdown}
+          </Markdown>
         </div>
       </div>
     </div>
