@@ -31,6 +31,7 @@ import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess, focusRingB
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoubtCpuAction } from '../types/card';
+import { DoubtPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
@@ -152,7 +153,7 @@ function DoubtPageContent() {
   if (!state) return <DoubtSkeleton />;
 
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
-  const isDoubtPhase = state.phase === 1;
+  const isDoubtPhase = state.phase === DoubtPhase.DOUBT;
   const cpuPlayed = isDoubtPhase && state.lastAction !== null && !state.players[state.lastAction.playerIdx]?.isHuman;
 
   const cpuTells = new Set(
