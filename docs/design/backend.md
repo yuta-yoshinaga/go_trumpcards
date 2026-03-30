@@ -19,6 +19,7 @@
   - [2.6 OhHell ビッド・トリックフロー](#26-ohhell-ビッドトリックフロー)
   - [2.7 Bridge オークション・トリックフロー](#27-bridge-オークショントリックフロー)
   - [2.8 Pineapple ディスカードフロー](#28-pineapple-ディスカードフロー)
+  - [2.9 Speed プレイフロー](#29-speed-プレイフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -41,6 +42,7 @@
   - [3.19 OhHell フェーズ遷移](#319-ohhell-フェーズ遷移)
   - [3.20 Bridge フェーズ遷移](#320-bridge-フェーズ遷移)
   - [3.21 Pineapple フェーズ遷移](#321-pineapple-フェーズ遷移)
+  - [3.22 Speed フェーズ遷移](#322-speed-フェーズ遷移)
 
 ---
 
@@ -108,7 +110,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全31ゲーム)
+### 1.2 ゲームドメイン (全32ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -650,18 +652,44 @@ classDiagram
         +Phase() GinRummyPhase
     }
 
+    class Speed {
+        -trumpCards *TrumpCards
+        -players []*SpeedPlayer
+        -config SpeedConfig
+        -centerPiles [2]*Card
+        -phase SpeedPhase
+        +Reset()
+        +Play(cardIndex int, pileIndex int) error
+        +Flip() error
+        +Hint() *SpeedHint
+        +Phase() SpeedPhase
+        +ActionLog() []*ActionLogEntry
+    }
+
+    class SpeedPlayer {
+        -hand []*Card
+        -drawPile []*Card
+    }
+
+    class SpeedConfig {
+        +int HandSize
+    }
+
     OldMaid --> "*" OldMaidPlayer
     Daifugo --> "*" DaifugoPlayer
     Sevens --> "*" SevensPlayer
     Doubt --> "*" DoubtPlayer
     CrazyEights --> "*" CrazyEightsPlayer
     GinRummy --> "2" GinRummyPlayer
+    Speed --> "2" SpeedPlayer
+    Speed --> "1" SpeedConfig
     OldMaidPlayer --|> GamePlayer
     DaifugoPlayer --|> RankedGamePlayer
     SevensPlayer --|> RankedGamePlayer
     DoubtPlayer --|> GamePlayer
     CrazyEightsPlayer --|> GamePlayer
     GinRummyPlayer --|> GamePlayer
+    SpeedPlayer --|> Player
 ```
 
 #### ソリティア系ゲーム
@@ -874,7 +902,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全30ゲーム共通)**
+**Interactor パターン (全31ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -985,6 +1013,7 @@ classDiagram
         -threecard *ThreeCardWebController
         -ohhell *OhHellWebController
         -bridge *BridgeWebController
+        -speed *SpeedWebController
         +Exec()
     }
 
@@ -1006,8 +1035,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 29 controllers
-    GameManager --> "*" CuiExecer : holds 28 games
+    TrumpCardsWeb --> "*" GameWebController : holds 30 controllers
+    GameManager --> "*" CuiExecer : holds 29 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1261,6 +1290,35 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: ディスカード完了・ターンカード公開表示
+```
+
+### 2.9 Speed プレイフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as SpeedInteractor
+    participant Domain as Speed
+    participant Pres as Presenter
+
+    Note over User,Pres: プレイフロー
+    User->>Ctrl: play 0 1
+    Ctrl->>Interactor: Play(0, 1)
+    Interactor->>Domain: Play(0, 1)
+    Domain->>Domain: 手札[0]を場札[1]に出す → 手札補充 → CPU自動プレイ
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 場札・手札更新表示
+
+    Note over User,Pres: スタック → フリップフロー
+    User->>Ctrl: flip
+    Ctrl->>Interactor: Flip()
+    Interactor->>Domain: Flip()
+    Domain->>Domain: 山札から場札に新カード配置 → phase=Play
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 新しい場札表示
 ```
 
 ---
@@ -1628,6 +1686,23 @@ stateDiagram-v2
     note right of Showdown : PineapplePhaseShowdown = 5
     note right of End : PineapplePhaseEnd = 6
     note right of Rebuy : PineapplePhaseRebuy = 7
+```
+
+### 3.22 Speed フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : カードを場札に出す + CPU自動プレイ
+    Play --> Stuck : 両プレイヤーが出せるカードなし
+    Stuck --> Play : Flip() → 新しい場札をめくる
+    Stuck --> GameEnd : 山札なし(フリップ不可)
+    Play --> GameEnd : 手札+山札が空(勝利)
+    GameEnd --> [*]
+
+    note right of Play : SpeedPhasePlay = 0
+    note right of Stuck : SpeedPhaseStuck = 1
+    note right of GameEnd : SpeedPhaseGameEnd = 2
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

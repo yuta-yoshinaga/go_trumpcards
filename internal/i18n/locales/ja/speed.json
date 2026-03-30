@@ -1,0 +1,7 @@
+{
+  "helpTitle": "Speed (スピード)",
+  "helpPlay": "  p <card> <pile>      play card (card=hand index, pile=center pile index)",
+  "helpFlip": "  f                    flip center cards (when stuck)",
+  "helpHint": "  h                    show hint",
+  "helpSetDifficulty": "  sd <level>           CPU difficulty (0=Easy, 1=Normal, 2=Hard)"
+}

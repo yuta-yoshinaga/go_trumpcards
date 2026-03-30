@@ -34,6 +34,7 @@ import { PyramidPage } from './pages/PyramidPage';
 import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
 import { SpadesPage } from './pages/SpadesPage';
+import { SpeedPage } from './pages/SpeedPage';
 import { SpiderPage } from './pages/SpiderPage';
 import { ThreeCardPage } from './pages/ThreeCardPage';
 import { TriPeaksPage } from './pages/TriPeaksPage';
@@ -72,6 +73,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/deuceswild': <DeucesWildPage />,
   '/jokerpoker': <JokerPokerPage />,
   '/threecard': <ThreeCardPage />,
+  '/speed': <SpeedPage />,
 };
 
 /** Root application component with router and game page routes. */

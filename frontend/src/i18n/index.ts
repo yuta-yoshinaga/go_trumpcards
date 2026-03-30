@@ -30,6 +30,7 @@ import enPyramid from './locales/en/pyramid.json';
 import enSevens from './locales/en/sevens.json';
 import enShortdeck from './locales/en/shortdeck.json';
 import enSpades from './locales/en/spades.json';
+import enSpeed from './locales/en/speed.json';
 import enSpider from './locales/en/spider.json';
 import enThreecard from './locales/en/threecard.json';
 import enTripeaks from './locales/en/tripeaks.json';
@@ -63,6 +64,7 @@ import jaPyramid from './locales/ja/pyramid.json';
 import jaSevens from './locales/ja/sevens.json';
 import jaShortdeck from './locales/ja/shortdeck.json';
 import jaSpades from './locales/ja/spades.json';
+import jaSpeed from './locales/ja/speed.json';
 import jaSpider from './locales/ja/spider.json';
 import jaThreecard from './locales/ja/threecard.json';
 import jaTripeaks from './locales/ja/tripeaks.json';
@@ -107,6 +109,7 @@ i18n
         videopoker: jaVideopoker,
         deuceswild: jaDeuceswild,
         jokerpoker: jaJokerpoker,
+        speed: jaSpeed,
         tutorial: jaTutorial,
       },
       en: {
@@ -142,6 +145,7 @@ i18n
         videopoker: enVideopoker,
         deuceswild: enDeuceswild,
         jokerpoker: enJokerpoker,
+        speed: enSpeed,
         tutorial: enTutorial,
       },
     },
@@ -180,6 +184,7 @@ i18n
       'videopoker',
       'deuceswild',
       'jokerpoker',
+      'speed',
       'tutorial',
     ],
     detection: {

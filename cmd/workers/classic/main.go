@@ -309,6 +309,28 @@ func main() {
 		},
 	)
 
+	// Speed
+	registerKV(mux, "/speed/exec", "speed:",
+		func() usecase.SpeedInteractorIF {
+			config := domain.DefaultSpeedConfig()
+			players := []*domain.SpeedPlayer{
+				domain.NewSpeedPlayer(true),
+				domain.NewSpeedPlayer(false),
+			}
+			speed := domain.NewSpeed(domain.NewTrumpCards(0), players, config)
+			return usecase.NewSpeedInteractor(speed, new(presenter.SpeedWebPresenter))
+		},
+		func(data []byte) (usecase.SpeedInteractorIF, error) {
+			return usecase.RestoreSpeedInteractor(data, new(presenter.SpeedWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.SpeedInteractorIF], f func() usecase.SpeedInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewSpeedWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

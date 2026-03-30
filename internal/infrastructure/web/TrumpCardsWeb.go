@@ -52,6 +52,7 @@ type TrumpCardsWeb struct {
 	ohlc *controller.OhHellWebController
 	brc  *controller.BridgeWebController
 	pnc  *controller.PineappleWebController
+	spdc *controller.SpeedWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -295,6 +296,15 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			pineapple := domain.NewPineapple(domain.NewTrumpCards(0), domain.NewPineapplePlayersForTable(cfg.TableSize), cfg)
 			return usecase.NewPineappleInteractor(pineapple, new(presenter.PineappleWebPresenter))
 		}),
+		spdc: controller.NewSpeedWebController(func() usecase.SpeedInteractorIF {
+			config := domain.DefaultSpeedConfig()
+			players := []*domain.SpeedPlayer{
+				domain.NewSpeedPlayer(true),
+				domain.NewSpeedPlayer(false),
+			}
+			speed := domain.NewSpeed(domain.NewTrumpCards(0), players, config)
+			return usecase.NewSpeedInteractor(speed, new(presenter.SpeedWebPresenter))
+		}),
 	}
 }
 
@@ -338,6 +348,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/ohhell/exec", web.ohlc.Exec},
 		{"/bridge/exec", web.brc.Exec},
 		{"/pineapple/exec", web.pnc.Exec},
+		{"/speed/exec", web.spdc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)

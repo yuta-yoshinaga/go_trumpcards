@@ -27,6 +27,8 @@ import type {
   SevensResponse,
   ShortDeckResponse,
   SpadesResponse,
+  SpeedConfig,
+  SpeedResponse,
   SpiderResponse,
   ThreeCardResponse,
   TriPeaksResponse,
@@ -66,6 +68,7 @@ const workerUrl: Record<string, string> = {
   daifugo: WORKER_CLASSIC,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
+  speed: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
@@ -824,6 +827,16 @@ export const jokerpokerApi = {
     gameExec<VideoPokerResponse>('jokerpoker', { command, amount, indices }),
 };
 
+/** API client for the Speed /speed/exec endpoint. */
+export const speedApi = {
+  exec: (
+    command: 'reset' | 'play' | 'flip' | 'hint' | 'log',
+    cardIndex?: number,
+    pileIndex?: number,
+    config?: SpeedConfig,
+  ) => gameExec<SpeedResponse>('speed', { command, cardIndex, pileIndex, ...config }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -856,6 +869,7 @@ const games = [
   'tripeaks',
   'cribbage',
   'threecard',
+  'speed',
 ] as const;
 type Game = (typeof games)[number];
 

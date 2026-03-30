@@ -1481,3 +1481,45 @@ export interface ThreeCardResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+/** Speed player data with hand and draw pile info. */
+export interface SpeedPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  drawPileSize: number;
+}
+
+/** Speed CPU action record. */
+export interface SpeedCpuAction {
+  cardIndex: number;
+  pileIndex: number;
+}
+
+/** Speed hint information. */
+export interface SpeedHint {
+  cardIndex: number;
+  pileIndex: number;
+  found: boolean;
+}
+
+/** Speed game configuration. */
+export interface SpeedConfig {
+  cpuDifficulty: number;
+}
+
+/** Full Speed game state returned from the API. */
+export interface SpeedResponse {
+  players: SpeedPlayerData[];
+  centerPiles: Card[];
+  phase: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  cpuActions?: SpeedCpuAction[];
+  hint?: SpeedHint;
+  config: SpeedConfig;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
