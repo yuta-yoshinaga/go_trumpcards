@@ -76,6 +76,8 @@ tags:
     description: Contract Bridge (コントラクトブリッジ) game
   - name: pineapple
     description: Pineapple Poker (パイナップルポーカー) game
+  - name: speed
+    description: Speed (スピード) game
 
 paths:
   /blackjack/exec:
@@ -2838,6 +2840,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PineappleResponse'
+
+  /speed/exec:
+    post:
+      tags:
+        - speed
+      summary: Execute a Speed (スピード) game command
+      description: |
+        Send a command to advance the Speed game session identified by
+        `sessionId`.  Speed is a 2-player (1 human vs 1 CPU) real-time card
+        game.  Players play cards ±1 rank onto two shared center piles.
+        When both players are stuck, they flip new cards onto the center piles.
+        First player to empty all cards wins.
+
+        The game proceeds through three phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Players play cards onto center piles |
+        | Stuck    | `1`   | Both players are stuck; flip new center cards |
+        | GameEnd  | `2`   | A player has emptied all cards |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `play`  | `p`     | Play a card onto a center pile (requires `cardIndex` and `pileIndex`) |
+        | `flip`  | `f`     | Flip new cards onto center piles (only in Stuck phase) |
+        | `hint`  | `h`     | Get a hint for the next move |
+        | `log`   | `l`     | View action log |
+      operationId: speedExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpeedRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play card at hand index 2 onto center pile 0
+                value:
+                  command: play
+                  cardIndex: 2
+                  pileIndex: 0
+                  sessionId: my-session-001
+              flip:
+                summary: Flip new center cards when stuck
+                value:
+                  command: flip
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeedResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeedResponse'
 
 components:
   schemas:
@@ -8651,3 +8719,102 @@ components:
           format: double
           description: Pot odds percentage (0-100).
           example: 33.33
+
+    # -------------------------------------------------------------------------
+    # Speed
+    # -------------------------------------------------------------------------
+    SpeedRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Game command
+          enum: [reset, r, play, p, flip, f, hint, h, log, l, quit, q]
+          example: play
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play (required for `play` command)
+          minimum: 0
+          example: 2
+        pileIndex:
+          type: integer
+          description: Center pile index (0 or 1) to play onto (required for `play` command)
+          minimum: 0
+          maximum: 1
+          example: 0
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    SpeedResponse:
+      type: object
+      description: Current state of the Speed game
+      required:
+        - players
+        - centerPiles
+        - phase
+        - currentTurn
+        - winnerIdx
+        - message
+      properties:
+        players:
+          type: array
+          description: Both players (index 0 = human, index 1 = CPU)
+          items:
+            type: object
+            properties:
+              hand:
+                type: array
+                description: Cards in the player's hand (only populated for human player)
+                items:
+                  $ref: '#/components/schemas/Card'
+              handCount:
+                type: integer
+                description: Number of cards in hand
+              drawPileCount:
+                type: integer
+                description: Number of cards remaining in the draw pile
+        centerPiles:
+          type: array
+          description: The two center piles (top card of each)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Play, 1 = Stuck, 2 = GameEnd"
+          enum: [0, 1, 2]
+          example: 0
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        winnerIdx:
+          type: integer
+          description: Index of the winning player (-1 if game is not over)
+          example: -1
+        cpuActions:
+          type: array
+          description: CPU play actions that occurred since the last human action
+          items:
+            type: object
+            properties:
+              cardIndex:
+                type: integer
+              pileIndex:
+                type: integer
+        message:
+          type: string
+          description: Game status or result message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

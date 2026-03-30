@@ -1,0 +1,33 @@
+{
+  "title": "スピード",
+  "phase": {
+    "play": "プレイ",
+    "stuck": "膠着",
+    "gameEnd": "ゲーム終了"
+  },
+  "yourHand": "手札",
+  "cpuHand": "CPU手札",
+  "drawPile": "山札",
+  "centerPile": "台札",
+  "selectCard": "手札からカードを選択",
+  "selectPile": "台札をクリックして出す",
+  "playButton": "出す",
+  "flipButton": "めくる",
+  "stuckMessage": "膠着状態です。めくるボタンを押してください。",
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "イージー",
+    "normal": "ノーマル",
+    "hard": "ハード"
+  },
+  "hint": {
+    "play": "カード{{cardIndex}}を台札{{pileIndex}}に出せます"
+  },
+  "tutorial": {
+    "centerPiles": "台札エリア：2つの台札にカードを出していきます",
+    "playerHand": "あなたの手札：タップして台札に出します",
+    "drawPile": "山札：カードを出すと自動で補充されます",
+    "flipButton": "めくるボタン：膠着時に押してカードをめくります"
+  }
+}

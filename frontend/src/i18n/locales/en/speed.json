@@ -1,0 +1,33 @@
+{
+  "title": "Speed",
+  "phase": {
+    "play": "Play",
+    "stuck": "Stuck",
+    "gameEnd": "Game End"
+  },
+  "yourHand": "Your Hand",
+  "cpuHand": "CPU Hand",
+  "drawPile": "Draw Pile",
+  "centerPile": "Center Pile",
+  "selectCard": "Select a card from your hand",
+  "selectPile": "Click a center pile to play",
+  "playButton": "Play",
+  "flipButton": "Flip",
+  "stuckMessage": "Stuck! Press flip to turn over new center cards.",
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "hint": {
+    "play": "Play card {{cardIndex}} to pile {{pileIndex}}"
+  },
+  "tutorial": {
+    "centerPiles": "Center piles: play cards that are ±1 of the top card",
+    "playerHand": "Your hand: tap a card to select, then tap a center pile to play",
+    "drawPile": "Draw pile: cards are automatically drawn when you play",
+    "flipButton": "Flip button: press when stuck to turn over new center cards"
+  }
+}
