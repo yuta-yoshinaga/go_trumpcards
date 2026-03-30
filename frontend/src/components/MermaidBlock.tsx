@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /** Mermaid API surface used by this component. */
 interface MermaidApi {
@@ -23,7 +23,6 @@ function loadMermaid(): Promise<MermaidApi> {
 
 /** Renders a Mermaid diagram from the given code string. */
 export function MermaidBlock({ code }: { code: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
 
@@ -55,7 +54,6 @@ export function MermaidBlock({ code }: { code: string }) {
 
   return (
     <div
-      ref={containerRef}
       className="my-4 flex justify-center overflow-x-auto"
       // biome-ignore lint/security/noDangerouslySetInnerHtml: mermaid.render produces trusted SVG from bundled manual markdown
       dangerouslySetInnerHTML={{ __html: svg }}
