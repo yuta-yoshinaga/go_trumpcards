@@ -170,4 +170,38 @@ describe('SpeedPage', () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了')).toBeInTheDocument());
   });
+
+  it('selects and deselects a hand card on click', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    const cardBtn = screen.getByRole('button', { name: 'SPADE 4' });
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('plays a card to a center pile when a card is selected', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    // Select a hand card
+    fireEvent.click(screen.getByRole('button', { name: 'SPADE 4' }));
+    // Click first center pile
+    const pileBtns = screen.getAllByRole('button', { name: /台札/ });
+    fireEvent.click(pileBtns[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
+  });
+
+  it('clicking hint button calls hint command', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('shows phase as stuck when phase is 1', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('膠着')).toBeInTheDocument());
+  });
 });

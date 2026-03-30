@@ -8835,14 +8835,6 @@ components:
           example: ""
         messageCode:
           type: string
-          description: Machine-readable message code for i18n
-        messageParams:
-          type: object
-          description: Interpolation parameters for the message
-          additionalProperties:
-            type: string
-        messageCode:
-          type: string
           description: Machine-readable message code corresponding to the message field.
         messageParams:
           type: object
