@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全30ゲーム)](#12-ゲームドメイン-全30ゲーム)
+  - [1.2 ゲームドメイン (全31ゲーム)](#12-ゲームドメイン-全31ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -18,6 +18,7 @@
   - [2.5 ThreeCard ベット・プレイフロー](#25-threecard-ベットプレイフロー)
   - [2.6 OhHell ビッド・トリックフロー](#26-ohhell-ビッドトリックフロー)
   - [2.7 Bridge オークション・トリックフロー](#27-bridge-オークショントリックフロー)
+  - [2.8 Pineapple ディスカードフロー](#28-pineapple-ディスカードフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -39,6 +40,7 @@
   - [3.18 ThreeCard フェーズ遷移](#318-threecard-フェーズ遷移)
   - [3.19 OhHell フェーズ遷移](#319-ohhell-フェーズ遷移)
   - [3.20 Bridge フェーズ遷移](#320-bridge-フェーズ遷移)
+  - [3.21 Pineapple フェーズ遷移](#321-pineapple-フェーズ遷移)
 
 ---
 
@@ -106,7 +108,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全30ゲーム)
+### 1.2 ゲームドメイン (全31ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -480,6 +482,30 @@ classDiagram
 
     ShortDeck --> "*" ShortDeckPlayer
     ShortDeckPlayer --|> GamePlayer
+
+    class Pineapple {
+        -trumpCards *TrumpCards
+        -players []*PineapplePlayer
+        -config PineappleConfig
+        -communityCards []*Card
+        -phase int
+        -isDiscardPhase bool
+        -discardDone bool
+        +Reset()
+        +PlayerFold() error
+        +PlayerCheck() error
+        +PlayerCall() error
+        +PlayerBet(amount int) error
+        +PlayerRaise(amount int) error
+        +PlayerAllIn() error
+        +PlayerDiscard(cardIdx int) error
+        +PlayerRebuy() error
+        +PlayerAddon() error
+        +Phase() int
+    }
+
+    Pineapple --> "*" HoldemPlayer
+    Pineapple --> "1" BettingState
 ```
 
 #### インディアンポーカー
@@ -1217,6 +1243,26 @@ sequenceDiagram
     Pres-->>User: トリック結果表示
 ```
 
+### 2.8 Pineapple ディスカードフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as PineappleInteractor
+    participant Domain as Pineapple
+    participant Pres as Presenter
+
+    Note over User,Pres: フロップベッティング完了 → ディスカードフェーズ
+    User->>Ctrl: discard 1
+    Ctrl->>Interactor: Discard(1)
+    Interactor->>Domain: PlayerDiscard(1)
+    Domain->>Domain: ホールカード[1]を除去 → CPU自動ディスカード → phase=Turn
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ディスカード完了・ターンカード公開表示
+```
+
 ---
 
 ## 3. ステートマシン図
@@ -1551,6 +1597,37 @@ stateDiagram-v2
     note right of TrickEnd : BridgePhaseTrickEnd = 2
     note right of RoundEnd : BridgePhaseRoundEnd = 3
     note right of GameEnd : BridgePhaseGameEnd = 4
+```
+
+### 3.21 Pineapple フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Init : Reset()
+    Init --> PreFlop : ブラインド + ホールカード3枚配布
+    PreFlop --> Flop : ベッティング完了
+    PreFlop --> Showdown : 1人以外 Fold
+    Flop --> Discard : ベッティング完了
+    Flop --> Showdown : 1人以外 Fold
+    Discard --> Turn : 全員ディスカード完了
+    Turn --> River : ベッティング完了
+    Turn --> Showdown : 1人以外 Fold
+    River --> Showdown : ベッティング完了
+    Showdown --> End : 勝者決定
+    End --> Rebuy : リバイ/アドオン有効
+    End --> Init : 次ラウンド (Reset)
+    Rebuy --> Init : リバイ/アドオン完了
+    End --> [*] : ゲーム終了
+
+    note right of Init : PineapplePhaseInit = 0
+    note right of PreFlop : PineapplePhasePreFlop = 1
+    note right of Flop : PineapplePhaseFlop = 2
+    note right of Discard : PineapplePhaseDiscard = 3
+    note right of Turn : PineapplePhaseTurn = 4
+    note right of River : PineapplePhaseRiver = 5
+    note right of Showdown : PineapplePhaseShowdown = 6
+    note right of End : PineapplePhaseEnd = 7
+    note right of Rebuy : PineapplePhaseRebuy = 8
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

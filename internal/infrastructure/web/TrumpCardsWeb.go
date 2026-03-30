@@ -51,6 +51,7 @@ type TrumpCardsWeb struct {
 	tcc  *controller.ThreeCardWebController
 	ohlc *controller.OhHellWebController
 	brc  *controller.BridgeWebController
+	pnc  *controller.PineappleWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -289,6 +290,11 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			bridge := domain.NewBridge(domain.NewTrumpCards(0), players, config)
 			return usecase.NewBridgeInteractor(bridge, new(presenter.BridgeWebPresenter))
 		}),
+		pnc: controller.NewPineappleWebController(func() usecase.PineappleInteractorIF {
+			cfg := domain.DefaultPineappleConfig()
+			pineapple := domain.NewPineapple(domain.NewTrumpCards(0), domain.NewPineapplePlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewPineappleInteractor(pineapple, new(presenter.PineappleWebPresenter))
+		}),
 	}
 }
 
@@ -331,6 +337,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/threecard/exec", web.tcc.Exec},
 		{"/ohhell/exec", web.ohlc.Exec},
 		{"/bridge/exec", web.brc.Exec},
+		{"/pineapple/exec", web.pnc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)

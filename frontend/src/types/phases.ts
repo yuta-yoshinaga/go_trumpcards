@@ -82,6 +82,14 @@ export const OmahaPhase = HoldemPhase;
 /** Omaha Hold'em rebuy phase type constants (same as Holdem). */
 export const OmahaRebuyPhaseType = HoldemRebuyPhaseType;
 
+/** Pineapple Poker phase constants (extends Hold'em with DISCARD phase). */
+export const PineapplePhase = {
+  ...HoldemPhase,
+  DISCARD: 8,
+} as const;
+/** Pineapple Poker rebuy phase type constants (same as Holdem). */
+export const PineappleRebuyPhaseType = HoldemRebuyPhaseType;
+
 /** Short Deck Hold'em phase constants (same as Holdem). */
 export const ShortDeckPhase = HoldemPhase;
 /** Short Deck Hold'em rebuy phase type constants (same as Holdem). */

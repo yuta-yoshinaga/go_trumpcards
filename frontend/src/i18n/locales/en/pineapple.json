@@ -1,0 +1,67 @@
+{
+  "phase": {
+    "preFlop": "Pre-Flop",
+    "flop": "Flop",
+    "turn": "Turn",
+    "river": "River",
+    "showdown": "Showdown",
+    "end": "Result",
+    "init": "Initializing",
+    "rebuy": "Rebuy/Addon",
+    "discard": "Discard"
+  },
+  "communityCards": "Community Cards",
+  "yourHand": "Your Hand",
+  "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
+  "discard": {
+    "prompt": "Discard one card.",
+    "select": "Select a card to discard"
+  },
+  "rebuy": {
+    "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
+    "accept": "Rebuy",
+    "skip": "Skip"
+  },
+  "addon": {
+    "prompt": "Addon? ({{chips}} chips)",
+    "accept": "Addon",
+    "skip": "Skip"
+  },
+  "muck": {
+    "prompt": "Muck or show your hand.",
+    "muck": "Muck",
+    "show": "Show"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP (Voluntarily Put In Pot): % of hands where player voluntarily put chips in the pot",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR (Pre-Flop Raise): % of hands where player raised pre-flop",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
+    "af": "AF",
+    "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
+  },
+  "learning": {
+    "title": "Learning Mode",
+    "toggle": "Learning Mode",
+    "equity": "Equity",
+    "potOdds": "Pot Odds",
+    "plusEV": "+EV (Positive Expected Value)",
+    "minusEV": "-EV (Negative Expected Value)",
+    "handOdds": "Hand Odds"
+  },
+  "settings": {
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  },
+  "tutorial": {
+    "communityCards": "Community cards shared by all players. Five cards are revealed progressively.",
+    "playerHand": "Your hole cards (3 cards). After the flop, discard one to play with the remaining 2 and community cards.",
+    "actionButtons": "Choose your action: Bet, Call, Raise, Fold, or All In.",
+    "potDisplay": "Shows the current pot size and blind levels.",
+    "cpuArea": "CPU opponent information. Cards are revealed at showdown.",
+    "learningMode": "Learning mode shows equity and pot odds to help your decisions.",
+    "resetButton": "Press the reset button to start a new game.",
+    "discardPhase": "Discard phase: select one of your 3 hole cards to discard."
+  }
+}

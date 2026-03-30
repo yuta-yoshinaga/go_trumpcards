@@ -28,6 +28,7 @@ import { NapoleonPage } from './pages/NapoleonPage';
 import { OhHellPage } from './pages/OhHellPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
+import { PineapplePage } from './pages/PineapplePage';
 import { PokerPage } from './pages/PokerPage';
 import { PyramidPage } from './pages/PyramidPage';
 import { SevensPage } from './pages/SevensPage';
@@ -50,6 +51,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/bridge': <BridgePage />,
   '/holdem': <HoldemPage />,
   '/omaha': <OmahaPage />,
+  '/pineapple': <PineapplePage />,
   '/shortdeck': <ShortDeckPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,
