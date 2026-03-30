@@ -1,11 +1,20 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ManualModal } from './ManualModal';
+
+vi.mock('mermaid', () => ({
+  default: {
+    initialize: vi.fn(),
+    render: vi.fn().mockResolvedValue({ svg: '<svg>mermaid</svg>' }),
+  },
+}));
 
 vi.mock('../constants/manualTexts', () => ({
   manualTexts: {
     '/': '# BlackJack\n\nTest **bold** content\n\n| A | B |\n|---|---|\n| 1 | 2 |',
     '/poker': '# Poker\n\nPoker manual',
+    '/mermaid': '# Flow\n\n```mermaid\nflowchart TD\n    A-->B\n```',
+    '/code': '# Code\n\n```js\nconsole.log("hello");\n```',
   },
 }));
 
@@ -36,6 +45,20 @@ describe('ManualModal', () => {
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/unknown" />);
     const dialog = screen.getByRole('dialog');
     expect(dialog).toBeInTheDocument();
+  });
+
+  it('renders mermaid diagram', async () => {
+    const { container } = render(<ManualModal open={true} onClose={vi.fn()} gamePath="/mermaid" />);
+    await waitFor(() => {
+      expect(container.querySelector('svg')).toBeTruthy();
+    });
+  });
+
+  it('has opaque background instead of glass-panel', () => {
+    render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.className).toContain('bg-gray-900');
+    expect(dialog.className).not.toContain('glass-panel');
   });
 
   it('calls onClose when close button is clicked', () => {
@@ -97,5 +120,18 @@ describe('ManualModal', () => {
     closeBtn.focus();
     fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
     expect(document.activeElement).toBe(closeBtn);
+  });
+
+  it('renders regular code block inside pre without unwrapping', () => {
+    const { container } = render(<ManualModal open={true} onClose={vi.fn()} gamePath="/code" />);
+    expect(container.querySelector('pre')).toBeInTheDocument();
+    expect(container.querySelector('code')).toBeInTheDocument();
+  });
+
+  it('ignores non-Tab/non-Escape keydown events', () => {
+    const onClose = vi.fn();
+    render(<ManualModal open={true} onClose={onClose} gamePath="/" />);
+    fireEvent.keyDown(document, { key: 'Enter' });
+    expect(onClose).not.toHaveBeenCalled();
   });
 });
