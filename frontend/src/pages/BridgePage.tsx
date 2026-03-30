@@ -446,7 +446,7 @@ function BridgePageContent() {
 
           {/* Bid phase controls */}
           {isHumanBidTurn && (
-            <span data-tutorial="br-bid-controls" className="contents">
+            <span data-tutorial="br-bid-controls" className="flex gap-2 items-center flex-wrap">
               <select
                 className="text-sm rounded bg-black/50 text-white px-2 py-1"
                 value={bidLevel}
