@@ -273,6 +273,13 @@ export const ThreeCardPhase = {
   END: 3,
 } as const;
 
+/** Doubt phase constants (sync: internal/domain/Doubt.go). */
+export const DoubtPhase = {
+  PLAY: 0,
+  DOUBT: 1,
+  END: 2,
+} as const;
+
 /** Speed phase constants (sync: internal/domain/Speed.go). */
 export const SpeedPhase = {
   PLAY: 0,
