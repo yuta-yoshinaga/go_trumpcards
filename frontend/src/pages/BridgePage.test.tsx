@@ -116,9 +116,9 @@ const gameEndByFlagState: BridgeResponse = {
 const bidHistoryState: BridgeResponse = {
   ...bidPhaseState,
   bidHistory: [
-    { playerIdx: 0, bidType: 1, bidLevel: 1, bidSuit: 5 },
-    { playerIdx: 1, bidType: 0, bidLevel: 0, bidSuit: 0 },
-    { playerIdx: 2, bidType: 2, bidLevel: 0, bidSuit: 0 },
+    { playerIdx: 0, bidType: 1, level: 1, suit: 5 },
+    { playerIdx: 1, bidType: 0, level: 0, suit: 0 },
+    { playerIdx: 2, bidType: 2, level: 0, suit: 0 },
   ],
 };
 
@@ -405,5 +405,26 @@ describe('BridgePage', () => {
       expect(allText).toContain('\u30c7\u30a3\u30af\u30ec\u30a2\u30e9\u30fc');
       expect(allText).toContain('\u30c0\u30df\u30fc');
     });
+  });
+
+  it('renders tutorial button', async () => {
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+  });
+
+  it('starts tutorial when tutorial button is clicked', async () => {
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  it('tutorial can be skipped', async () => {
+    renderWithProviders(<BridgePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

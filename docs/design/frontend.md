@@ -854,6 +854,37 @@ classDiagram
     TutorialOverlay --> ConfirmDialog : reuses getFocusableElements
 ```
 
+**マニュアル表示コンポーネント**
+
+```mermaid
+classDiagram
+    class ManualButton {
+        +boolean open 状態管理
+        +ManualModal 表示制御
+    }
+
+    class ManualModal {
+        +boolean open
+        +Function onClose
+        +string gamePath
+        +react-markdown レンダリング
+        +remark-gfm テーブル対応
+        +bg-gray-900 不透明背景
+        +フォーカストラップ
+        +Escape キー対応
+    }
+
+    class MermaidBlock {
+        +string code
+        +dynamic import('mermaid')
+        +SVG ダイアグラムレンダリング
+        +エラー時フォールバック表示
+    }
+
+    ManualButton --> ManualModal : renders
+    ManualModal --> MermaidBlock : renders mermaid code blocks
+```
+
 ### 1.6 ページコンポーネント層
 
 ```mermaid
@@ -1022,6 +1053,7 @@ classDiagram
         +切り札・コントラクト表示
         +バルネラビリティ表示
         +ヒントシステム
+        +チュートリアル (TutorialProvider)
     }
 
     BridgePage --|> GamePage : follows pattern
@@ -1054,6 +1086,7 @@ classDiagram
     GamePage --> ConfirmDialog : renders
     GamePage --> ErrorAlert : renders
     GamePage --> GamePageHeading : renders
+    GamePage --> ManualButton : renders
 
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple)
     PokerTableLayout --> CpuPlayerCard : wraps
@@ -1108,7 +1141,7 @@ classDiagram
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "33名前空間: common + 31ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "34名前空間: common + 32ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
