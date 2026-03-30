@@ -20,6 +20,7 @@
   - [2.5 ThreeCardPage フェーズ別レンダリングフロー](#25-threecardpage-フェーズ別レンダリングフロー)
   - [2.6 OhHellPage フェーズ別レンダリングフロー](#26-ohhellpage-フェーズ別レンダリングフロー)
   - [2.7 BridgePage フェーズ別レンダリングフロー](#27-bridgepage-フェーズ別レンダリングフロー)
+  - [2.8 PineapplePage フェーズ別レンダリングフロー](#28-pineapplepage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -989,6 +990,16 @@ classDiagram
 
     BridgePage --|> GamePage : follows pattern
 
+    class PineapplePage {
+        +ホールデム系共通UI
+        +ホールカード3枚表示
+        +ディスカードフェーズUI (カード選択・捨てるボタン)
+        +コミュニティカード表示
+        +ベッティングアクションボタン
+    }
+
+    PineapplePage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -998,10 +1009,10 @@ classDiagram
     GamePage --> ErrorAlert : renders
     GamePage --> GamePageHeading : renders
 
-    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck)
+    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全30ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全31ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1024,7 +1035,7 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (30ゲーム)
+        +Routes (31ゲーム)
     }
 
     class gameCategories {
@@ -1293,6 +1304,42 @@ sequenceDiagram
     Hook->>API: gameExec("nextround")
     API-->>Hook: BridgeResponse (phase=0 or 4)
     Hook-->>Page: 再レンダリング → 次ラウンドUIまたはゲーム終了UI
+```
+
+### 2.8 PineapplePage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as PineapplePage
+    participant Hook as usePineappleGame
+    participant API as gameApi
+
+    Note over User,API: プリフロップ・フロップ (phase=1,2)
+    User->>Page: ベッティングアクションボタンクリック
+    Page->>Hook: handleBet/handleCall/handleFold/etc.
+    Hook->>API: gameExec("bet", {amount})
+    API-->>Hook: PineappleResponse
+    Hook-->>Page: 再レンダリング → ベッティングUI
+
+    Note over User,API: ディスカードフェーズ (phase=3)
+    User->>Page: 手札カードをクリック (捨てるカード選択)
+    User->>Page: ディスカードボタンクリック
+    Page->>Hook: handleDiscard(cardIdx)
+    Hook->>API: gameExec("discard", {cardIdx})
+    API-->>Hook: PineappleResponse (phase=4, ターン)
+    Hook-->>Page: 再レンダリング → 手札2枚 + ターンカード公開UI
+
+    Note over User,API: ターン・リバー (phase=4,5)
+    User->>Page: ベッティングアクションボタンクリック
+    Page->>Hook: handleBet/handleCall/etc.
+    Hook->>API: gameExec("bet", {amount})
+    API-->>Hook: PineappleResponse
+    Hook-->>Page: 再レンダリング → ベッティングUI
+
+    Note over User,API: ショーダウン・エンド (phase=6,7)
+    Page->>Hook: 自動表示
+    Hook-->>Page: 再レンダリング → ショーダウン結果UI
 ```
 
 ---

@@ -47,6 +47,7 @@
     "cribbage": "Cribbage",
     "shortdeck": "Short Deck",
     "threecard": "Three Card Poker",
+    "pineapple": "Pineapple Poker",
     "ohhell": "Oh Hell"
   },
   "sound": {
@@ -145,6 +146,13 @@
     "holdem.result.lose": "You lose.",
     "holdem.result.mucked": "You mucked.",
     "holdem.muck.prompt": "Muck or show your hand.",
+    "pineapple.result.gameOver": "Game over.",
+    "pineapple.result.win": "You are the winner.",
+    "pineapple.result.folded": "You folded.",
+    "pineapple.result.lose": "You lose.",
+    "pineapple.result.mucked": "You mucked.",
+    "pineapple.muck.prompt": "Muck or show your hand.",
+    "pineapple.discard.prompt": "Discard one card.",
     "shortdeck.result.gameOver": "Game over.",
     "shortdeck.result.win": "You are the winner.",
     "shortdeck.result.folded": "You folded.",

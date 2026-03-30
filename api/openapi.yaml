@@ -74,6 +74,8 @@ tags:
     description: Oh Hell (オー・ヘル) game
   - name: bridge
     description: Contract Bridge (コントラクトブリッジ) game
+  - name: pineapple
+    description: Pineapple Poker (パイナップルポーカー) game
 
 paths:
   /blackjack/exec:
@@ -2734,6 +2736,108 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BridgeResponse'
+
+  /pineapple/exec:
+    post:
+      tags:
+        - pineapple
+      summary: Execute a Pineapple Poker game command
+      description: |
+        Send a command to advance the Pineapple Poker (パイナップルポーカー) game
+        session identified by `sessionId`.  Pineapple Poker is a Crazy Pineapple
+        variant of Texas Hold'em where each player receives 3 hole cards and must
+        discard 1 after the flop betting round.  Supports configurable table sizes:
+        4-max (default), 6-max, or 9-max.
+
+        The game proceeds through nine phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Init       | `0`   | Before any cards are dealt |
+        | PreFlop    | `1`   | Three hole cards dealt; first betting round |
+        | Discard    | `8`   | Each player discards 1 hole card (after flop is dealt) |
+        | Flop       | `2`   | Three community cards revealed; betting round |
+        | Turn       | `3`   | Fourth community card revealed; betting round |
+        | River      | `4`   | Fifth community card revealed; betting round |
+        | Showdown   | `5`   | Hands evaluated; winners determined |
+        | End        | `6`   | Round complete; results displayed |
+        | Rebuy      | `7`   | Rebuy/addon decision phase |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `fold`      | `f`     | Fold and forfeit the pot |
+        | `check`     | `ck`    | Pass without betting (only when no outstanding bet) |
+        | `call`      | `c`     | Match the current bet |
+        | `bet`       | `b`     | Place a bet (use `amount`) |
+        | `raise`     | `ra`    | Raise by a specified amount on top of calling (use `amount`) |
+        | `allin`     | `a`     | Go all-in with all remaining chips |
+        | `discard`   | `d`     | Discard a hole card (use `cardIdx` during Discard phase) |
+        | `rebuy`     | `rb`    | Buy back chips during rebuy period |
+        | `skiprebuy` | `sr`    | Skip rebuy opportunity |
+        | `addon`     | `ad`    | Add chips (one-time addon purchase) |
+        | `skipaddon` | `sa`    | Skip addon opportunity |
+        | `quit`      | `q`     | End the session |
+      operationId: pineappleExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PineappleRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              resetCustomBlinds:
+                summary: Start with custom blinds
+                value:
+                  command: reset
+                  smallBlind: 10
+                  bigBlind: 20
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              call:
+                summary: Call
+                value:
+                  command: call
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 40
+                value:
+                  command: bet
+                  amount: 40
+                  sessionId: my-session-001
+              discard:
+                summary: Discard hole card at index 1
+                value:
+                  command: discard
+                  cardIdx: 1
+                  sessionId: my-session-001
+              allin:
+                summary: Go all-in
+                value:
+                  command: allin
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PineappleResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PineappleResponse'
 
 components:
   schemas:
@@ -8279,3 +8383,271 @@ components:
             reason:
               type: string
               description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
+    # Pineapple Poker
+    # -------------------------------------------------------------------------
+    PineappleRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `fold` (`f`),
+            `check` (`ck`), `call` (`c`), `bet` (`b`), `raise` (`ra`),
+            `allin` (`a`), `discard` (`d`), `rebuy` (`rb`), `skiprebuy` (`sr`),
+            `addon` (`ad`), `skipaddon` (`sa`), `muck` (`m`),
+            `show` (`sh`), `quit` (`q`).
+          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, d, discard, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, m, muck, sh, show, log, q, quit]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Bet/raise amount (for the `bet` and `raise` commands).
+            Ignored for other commands.
+          minimum: 1
+          example: 40
+        cardIdx:
+          type: integer
+          description: |
+            Index of the hole card to discard (for the `discard` command).
+            Must be 0, 1, or 2 (index into the 3 hole cards).
+          minimum: 0
+          maximum: 2
+          example: 1
+        smallBlind:
+          type: integer
+          description: |
+            Small blind amount (for the `reset` command).
+            Defaults to 5 when omitted.
+          minimum: 1
+          example: 5
+        bigBlind:
+          type: integer
+          description: |
+            Big blind amount (for the `reset` command).
+            Defaults to 10 when omitted.
+          minimum: 1
+          example: 10
+        tournamentMode:
+          type: boolean
+          description: |
+            Enable tournament mode with blind escalation (for the `reset` command).
+            Defaults to false when omitted.
+          example: false
+        blindLevelHands:
+          type: integer
+          description: |
+            Number of hands before blinds increase in tournament mode.
+            Defaults to 10.
+          minimum: 1
+          example: 10
+        blindMultiplier:
+          type: integer
+          description: |
+            Blind multiplier as a percentage when blinds increase.
+            Defaults to 200 (= 2x).
+          minimum: 101
+          example: 200
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type (used with `reset` command).
+            0 = Fixed (default), 1 = Pot Limit, 2 = No Limit.
+          minimum: 0
+          maximum: 2
+          example: 0
+        tableSize:
+          type: integer
+          description: |
+            Table size (used with `reset` command).
+            4 = 4-max (default), 6 = 6-max, 9 = 9-max.
+          enum: [4, 6, 9]
+          example: 4
+        rebuyEnabled:
+          type: boolean
+          description: |
+            Enable rebuy (used with `reset` command).
+            Defaults to false when omitted.
+          example: false
+        addonEnabled:
+          type: boolean
+          description: |
+            Enable addon (used with `reset` command).
+            Defaults to false when omitted.
+          example: false
+        isDiscardPhase:
+          type: boolean
+          description: |
+            Indicates whether the client is in the discard phase.
+            Used internally to track discard state.
+          example: false
+        discardDone:
+          type: boolean
+          description: |
+            Indicates whether the discard has been completed.
+            Used internally to track discard completion.
+          example: false
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PineappleResponse:
+      type: object
+      required:
+        - players
+        - communityCards
+        - pot
+        - sidePots
+        - dealerIdx
+        - currentTurn
+        - phase
+        - gameEndFlag
+        - lastBet
+        - minRaise
+        - roundResults
+        - cpuActions
+        - message
+      properties:
+        players:
+          type: array
+          description: State of all players (4/6/9 depending on table size)
+          items:
+            $ref: '#/components/schemas/HoldemPlayer'
+        communityCards:
+          type: array
+          description: Community cards on the board (0/3/4/5 cards based on phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        pot:
+          type: integer
+          description: Current main pot size
+          minimum: 0
+          example: 30
+        sidePots:
+          type: array
+          description: Side pots (created when players go all-in with different amounts)
+          items:
+            $ref: '#/components/schemas/HoldemSidePot'
+        dealerIdx:
+          type: integer
+          description: Index of the dealer for this round
+          example: 0
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        phase:
+          type: integer
+          description: |
+            Current game phase:
+            - `0` — Init
+            - `1` — PreFlop
+            - `2` — Flop
+            - `3` — Turn
+            - `4` — River
+            - `5` — Showdown
+            - `6` — End
+            - `7` — Rebuy/Addon
+            - `8` — Discard
+          enum: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+          example: 1
+        gameEndFlag:
+          type: boolean
+          description: Whether the round has ended
+          example: false
+        lastBet:
+          type: integer
+          description: The current highest bet in this betting round
+          minimum: 0
+          example: 10
+        minRaise:
+          type: integer
+          description: Minimum raise amount
+          minimum: 0
+          example: 20
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type: 0 = Fixed, 1 = Pot Limit, 2 = No Limit.
+          enum: [0, 1, 2]
+        raiseCount:
+          type: integer
+          description: Number of raises in the current betting round.
+          minimum: 0
+        maxBetAmount:
+          type: integer
+          description: |
+            Maximum allowed bet/raise amount for Pot Limit mode.
+            0 means no limit (Fixed or No Limit mode).
+          minimum: 0
+        roundResults:
+          type: array
+          description: Results for each non-folded player at showdown
+          items:
+            $ref: '#/components/schemas/HoldemResult'
+        cpuActions:
+          type: array
+          description: CPU actions that occurred since the last human action
+          items:
+            $ref: '#/components/schemas/HoldemCpuAction'
+        isDiscardPhase:
+          type: boolean
+          description: Whether the game is currently in the discard phase (phase=8)
+          example: false
+        discardDone:
+          type: boolean
+          description: Whether the human player has completed discarding
+          example: false
+        message:
+          type: string
+          description: |
+            Game result or status message.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        handCount:
+          type: integer
+          description: Number of hands played (for tournament mode display)
+          minimum: 0
+          example: 0
+        smallBlind:
+          type: integer
+          description: Current small blind amount
+          minimum: 1
+          example: 5
+        bigBlind:
+          type: integer
+          description: Current big blind amount
+          minimum: 2
+          example: 10
+        tournamentMode:
+          type: boolean
+          description: Whether tournament mode (blind escalation) is active
+          example: false
+        tableSize:
+          type: integer
+          description: Current table size (4/6/9)
+          enum: [4, 6, 9]
+          example: 4
+        muckAvailable:
+          type: boolean
+          description: Whether the human player can muck (hide) their hand at showdown
+          example: false
+        equity:
+          $ref: '#/components/schemas/HoldemEquity'
+        potOdds:
+          type: number
+          format: double
+          description: Pot odds percentage (0-100).
+          example: 33.33

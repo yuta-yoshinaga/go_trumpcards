@@ -21,6 +21,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  PineappleResponse,
   PokerResponse,
   PyramidResponse,
   SevensResponse,
@@ -53,6 +54,7 @@ const workerUrl: Record<string, string> = {
   deuceswild: WORKER_CASINO,
   jokerpoker: WORKER_CASINO,
   threecard: WORKER_CASINO,
+  pineapple: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
@@ -294,6 +296,58 @@ export const holdemApi = {
       humanPlayMs,
       profile,
       ...config,
+    }),
+};
+
+/** Configuration options for Pineapple Poker (extends Hold'em with cardIdx for discard). */
+export interface PineappleConfigInput extends HoldemConfigInput {
+  cardIdx?: number;
+}
+
+/** API client for the Pineapple Poker /pineapple/exec endpoint. */
+export const pineappleApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'fold'
+      | 'check'
+      | 'call'
+      | 'bet'
+      | 'raise'
+      | 'allin'
+      | 'rebuy'
+      | 'skiprebuy'
+      | 'addon'
+      | 'skipaddon'
+      | 'muck'
+      | 'show'
+      | 'discard',
+    amount?: number,
+    config?: PineappleConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) =>
+    gameExec<PineappleResponse>('pineapple', {
+      command,
+      amount,
+      humanPlayMs,
+      profile,
+      cardIdx: config?.cardIdx,
+      smallBlind: config?.smallBlind,
+      bigBlind: config?.bigBlind,
+      tournamentMode: config?.tournamentMode,
+      blindLevelHands: config?.blindLevelHands,
+      blindMultiplier: config?.blindMultiplier,
+      bettingLimit: config?.bettingLimit,
+      tableSize: config?.tableSize,
+      rebuyEnabled: config?.rebuyEnabled,
+      rebuyMaxCount: config?.rebuyMaxCount,
+      rebuyChips: config?.rebuyChips,
+      rebuyPeriodHands: config?.rebuyPeriodHands,
+      addonEnabled: config?.addonEnabled,
+      addonChips: config?.addonChips,
+      addonAfterHand: config?.addonAfterHand,
+      cpuMetaAI: config?.cpuMetaAI,
     }),
 };
 
@@ -780,6 +834,7 @@ const games = [
   'holdem',
   'omaha',
   'shortdeck',
+  'pineapple',
   'hearts',
   'spades',
   'napoleon',

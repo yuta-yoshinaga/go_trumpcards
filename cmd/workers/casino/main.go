@@ -257,6 +257,24 @@ func main() {
 		},
 	)
 
+	// Pineapple Poker
+	registerKV(mux, "/pineapple/exec", "pineapple:",
+		func() usecase.PineappleInteractorIF {
+			cfg := domain.DefaultPineappleConfig()
+			pineapple := domain.NewPineapple(domain.NewTrumpCards(0), domain.NewPineapplePlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewPineappleInteractor(pineapple, new(presenter.PineappleWebPresenter))
+		},
+		func(data []byte) (usecase.PineappleInteractorIF, error) {
+			return usecase.RestorePineappleInteractor(data, new(presenter.PineappleWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.PineappleInteractorIF], f func() usecase.PineappleInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewPineappleWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

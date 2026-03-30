@@ -64,6 +64,7 @@ GAMES:
   threecard    Three Card Poker (スリーカードポーカー)
   ohhell       Oh Hell (オー・ヘル)
   bridge       Contract Bridge (コントラクトブリッジ)
+  pineapple    Pineapple Poker (パイナップルポーカー)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -166,6 +167,7 @@ ENVIRONMENT VARIABLES:
 		"threecard":   func() int { ui.NewThreeCardCui().Exec(); return 0 },
 		"ohhell":      func() int { ui.NewOhHellCui().Exec(); return 0 },
 		"bridge":      func() int { ui.NewBridgeCui().Exec(); return 0 },
+		"pineapple":   func() int { ui.NewPineappleCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 			if err := updater.Exec(); err != nil {

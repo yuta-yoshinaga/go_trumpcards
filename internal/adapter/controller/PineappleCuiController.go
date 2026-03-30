@@ -1,0 +1,173 @@
+package controller
+
+import (
+	"errors"
+	"strconv"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// PineappleCuiController パイナップルポーカーCUIコントローラークラス
+type PineappleCuiController struct {
+	pi usecase.PineappleInteractorIF
+}
+
+// NewPineappleCuiController コンストラクタ
+func NewPineappleCuiController(pi usecase.PineappleInteractorIF) *PineappleCuiController {
+	return &PineappleCuiController{pi: pi}
+}
+
+// Exec コマンド実行
+func (c *PineappleCuiController) Exec(command string) string {
+	return execCuiCommand(
+		command,
+		func(_ []string) string { return c.pi.Reset() },
+		[]string{
+			"f", "fold", "ck", "check", "c", "call", "b", "bet", "ra", "raise",
+			"a", "allin", "d", "discard",
+			"bl", "bettinglimit", "tm", "tournament",
+			"sb", "smallblind", "bb", "bigblind", "lh", "levelhand", "ts", "tablesize",
+			"rb", "rebuy", "sr", "skiprebuy", "ad", "addon", "sa", "skipaddon", "m", "muck", "sh", "show",
+			"mai", "metaai",
+			"log", "l",
+		},
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "f", "fold":
+				return c.pi.Action(domain.PineappleActionFold, 0, 0), true
+			case "ck", "check":
+				return c.pi.Action(domain.PineappleActionCheck, 0, 0), true
+			case "c", "call":
+				return c.pi.Action(domain.PineappleActionCall, 0, 0), true
+			case "b", "bet":
+				amount, err := parsePineappleAmount(args)
+				if err != nil {
+					return err.Error(), true
+				}
+				return c.pi.Action(domain.PineappleActionBet, amount, 0), true
+			case "ra", "raise":
+				amount, err := parsePineappleAmount(args)
+				if err != nil {
+					return err.Error(), true
+				}
+				return c.pi.Action(domain.PineappleActionRaise, amount, 0), true
+			case "a", "allin":
+				return c.pi.Action(domain.PineappleActionAllIn, 0, 0), true
+			case "d", "discard":
+				if len(args) < 1 {
+					return i18n.T("pineapple.discardIdxRequired"), true
+				}
+				idx, err := strconv.Atoi(args[0])
+				if err != nil {
+					return i18n.Tf("pineapple.invalidDiscardIdx", "val", args[0]), true
+				}
+				return c.pi.Discard(idx), true
+			case "bl", "bettinglimit":
+				if len(args) < 1 {
+					return i18n.T("holdem.bettingLimitRequired"), true
+				}
+				bl, err := strconv.Atoi(args[0])
+				if err != nil {
+					return i18n.Tf("holdem.invalidBettingLimit", "val", args[0]), true
+				}
+				cfg := c.pi.GetConfig()
+				cfg.BettingLimit = domain.BettingLimitType(bl)
+				return c.pi.ResetWithConfig(cfg, nil), true
+			case "tm", "tournament":
+				if len(args) < 1 {
+					return i18n.T("holdem.tournamentModeRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return i18n.Tf("holdem.invalidTournamentMode", "val", args[0]), true
+				}
+				cfg := c.pi.GetConfig()
+				cfg.TournamentMode = v == 1
+				return c.pi.ResetWithConfig(cfg, nil), true
+			case "sb", "smallblind":
+				if len(args) < 1 {
+					return i18n.T("holdem.smallBlindRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil {
+					return i18n.Tf("holdem.invalidSmallBlind", "val", args[0]), true
+				}
+				cfg := c.pi.GetConfig()
+				cfg.SmallBlind = v
+				return c.pi.ResetWithConfig(cfg, nil), true
+			case "bb", "bigblind":
+				if len(args) < 1 {
+					return i18n.T("holdem.bigBlindRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil {
+					return i18n.Tf("holdem.invalidBigBlind", "val", args[0]), true
+				}
+				cfg := c.pi.GetConfig()
+				cfg.BigBlind = v
+				return c.pi.ResetWithConfig(cfg, nil), true
+			case "lh", "levelhand":
+				if len(args) < 1 {
+					return i18n.T("holdem.levelHandRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil {
+					return i18n.Tf("holdem.invalidLevelHand", "val", args[0]), true
+				}
+				cfg := c.pi.GetConfig()
+				cfg.BlindLevelHands = v
+				return c.pi.ResetWithConfig(cfg, nil), true
+			case "ts", "tablesize":
+				if len(args) < 1 {
+					return i18n.T("holdem.tableSizeRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil {
+					return i18n.Tf("holdem.invalidTableSize", "val", args[0]), true
+				}
+				cfg := c.pi.GetConfig()
+				cfg.TableSize = v
+				return c.pi.ResetWithConfig(cfg, nil), true
+			case "rb", "rebuy":
+				return c.pi.Rebuy(), true
+			case "sr", "skiprebuy":
+				return c.pi.SkipRebuy(), true
+			case "ad", "addon":
+				return c.pi.Addon(), true
+			case "sa", "skipaddon":
+				return c.pi.SkipAddon(), true
+			case "m", "muck":
+				return c.pi.Muck(), true
+			case "sh", "show":
+				return c.pi.ShowHand(), true
+			case "mai", "metaai":
+				if len(args) < 1 {
+					return i18n.T("metaAIRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return i18n.Tf("invalidMetaAI", "val", args[0]), true
+				}
+				cfg := c.pi.GetConfig()
+				cfg.CpuMetaAI = v == 1
+				return c.pi.ResetWithConfig(cfg, nil), true
+			default:
+				return handleCuiLog(cmd, c.pi.ActionLog)
+			}
+		},
+	)
+}
+
+// parsePineappleAmount 引数スライスからベット額を抽出する
+func parsePineappleAmount(args []string) (int, error) {
+	if len(args) < 1 {
+		return 0, errors.New(i18n.T("holdem.amountRequired"))
+	}
+	amount, err := strconv.Atoi(args[0])
+	if err != nil || amount <= 0 {
+		return 0, errors.New(i18n.Tf("holdem.invalidAmount", "val", args[0]))
+	}
+	return amount, nil
+}

@@ -47,6 +47,7 @@
     "cribbage": "クリベッジ",
     "shortdeck": "ショートデック",
     "threecard": "スリーカードポーカー",
+    "pineapple": "パイナップルポーカー",
     "ohhell": "オー・ヘル"
   },
   "sound": {
@@ -145,6 +146,13 @@
     "holdem.result.lose": "あなたの負けです。",
     "holdem.result.mucked": "マックしました。",
     "holdem.muck.prompt": "マックしますか?",
+    "pineapple.result.gameOver": "ゲーム終了。",
+    "pineapple.result.win": "あなたの勝ちです。",
+    "pineapple.result.folded": "フォールドしました。",
+    "pineapple.result.lose": "あなたの負けです。",
+    "pineapple.result.mucked": "マックしました。",
+    "pineapple.muck.prompt": "マックしますか?",
+    "pineapple.discard.prompt": "1枚捨ててください。",
     "shortdeck.result.gameOver": "ゲーム終了。",
     "shortdeck.result.win": "あなたの勝ちです。",
     "shortdeck.result.folded": "フォールドしました。",

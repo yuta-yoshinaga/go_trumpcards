@@ -618,6 +618,14 @@ export interface HoldemHandOdds {
   probability: number;
 }
 
+// --- Pineapple Poker ---
+
+/** Pineapple Poker response extending Hold'em with discard phase fields. */
+export interface PineappleResponse extends HoldemResponse {
+  isDiscardPhase: boolean;
+  discardDone: boolean[];
+}
+
 // --- Omaha Hold'em ---
 // Omaha shares identical response/player structures with Holdem
 /** Omaha player data (same structure as Hold'em). */
