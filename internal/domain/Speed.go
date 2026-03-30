@@ -192,6 +192,7 @@ func (s *Speed) CpuPlay() []*SpeedCpuAction {
 	case SpeedCpuDifficultyEasy:
 		return s.cpuPlayEasy()
 	default:
+		// Normal と Hard は同じ貪欲戦略 (v1; Hard 固有の戦略は将来追加)
 		return s.cpuPlayGreedy()
 	}
 }

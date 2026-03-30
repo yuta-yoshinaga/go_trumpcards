@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
@@ -67,7 +68,7 @@ func buildSpeedMessage(s interfaces.SpeedGame, lastErr error) (string, string, m
 	if s.GetGameEndFlag() {
 		return "", "gameEnd", nil
 	}
-	if s.GetPhase() == 1 { // Stuck
+	if s.GetPhase() == domain.SpeedPhaseStuck {
 		return "", "stuck", nil
 	}
 	return "", "play", nil

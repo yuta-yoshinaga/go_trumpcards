@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
@@ -44,7 +45,7 @@ func (p *SpeedCuiPresenter) Output(s interfaces.SpeedGame, lastErr error) string
 
 		// フェーズ状態
 		switch s.GetPhase() {
-		case 1: // Stuck
+		case domain.SpeedPhaseStuck:
 			b.WriteString(color.Yellow("膠着状態です。flip コマンドでカードをめくってください。\n"))
 		}
 
