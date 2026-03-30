@@ -17,6 +17,9 @@ const SPOTLIGHT_PADDING = 8;
 /** Border radius for the spotlight cutout. */
 const SPOTLIGHT_RADIUS = 8;
 
+/** Minimum distance between tooltip and viewport edge in pixels. */
+const TOOLTIP_VIEWPORT_MARGIN = 8;
+
 /** Props for the TutorialOverlay component. */
 export interface TutorialOverlayProps {
   /** The current tutorial step definition. */
@@ -66,6 +69,7 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
   const maskId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
 
   // Lock background scroll while overlay is visible
@@ -155,6 +159,40 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
   const tooltipStyle = getTooltipStyle(spotlightRect, step.placement);
   const transitionStyle = reducedMotion ? {} : { transition: 'opacity 0.2s ease-in-out' };
 
+  // Clamp tooltip within viewport after render — depends on tooltipStyle which
+  // is derived from spotlightRect and step.placement, so it re-runs when they change.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tooltipStyle captures spotlightRect+placement changes
+  useLayoutEffect(() => {
+    const el = tooltipRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    let clamped = false;
+    let newLeft = Number.parseFloat(el.style.left) || 0;
+    let newTop = Number.parseFloat(el.style.top) || 0;
+
+    if (rect.left < TOOLTIP_VIEWPORT_MARGIN) {
+      newLeft = TOOLTIP_VIEWPORT_MARGIN;
+      clamped = true;
+    } else if (rect.right > window.innerWidth - TOOLTIP_VIEWPORT_MARGIN) {
+      newLeft = window.innerWidth - TOOLTIP_VIEWPORT_MARGIN - rect.width;
+      clamped = true;
+    }
+
+    if (rect.top < TOOLTIP_VIEWPORT_MARGIN) {
+      newTop = TOOLTIP_VIEWPORT_MARGIN;
+      clamped = true;
+    } else if (rect.bottom > window.innerHeight - TOOLTIP_VIEWPORT_MARGIN) {
+      newTop = window.innerHeight - TOOLTIP_VIEWPORT_MARGIN - rect.height;
+      clamped = true;
+    }
+
+    if (clamped) {
+      el.style.left = `${newLeft}px`;
+      el.style.top = `${newTop}px`;
+      el.style.transform = 'none';
+    }
+  }, [tooltipStyle]);
+
   return (
     <div
       ref={dialogRef}
@@ -187,7 +225,7 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
       </svg>
 
       {/* Tooltip positioned relative to spotlight */}
-      <div className="absolute z-10" style={tooltipStyle}>
+      <div ref={tooltipRef} className="absolute z-10" style={tooltipStyle}>
         <TutorialTooltip
           message={step.messageKey}
           stepIndex={stepIndex}
