@@ -1216,8 +1216,8 @@ export interface BridgeTrickCard {
 export interface BridgeBidEntry {
   playerIdx: number;
   bidType: number;
-  bidLevel: number;
-  bidSuit: number;
+  level: number;
+  suit: number;
 }
 
 /** Bridge game configuration. */

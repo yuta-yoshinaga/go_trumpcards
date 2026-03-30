@@ -116,9 +116,9 @@ const gameEndByFlagState: BridgeResponse = {
 const bidHistoryState: BridgeResponse = {
   ...bidPhaseState,
   bidHistory: [
-    { playerIdx: 0, bidType: 1, bidLevel: 1, bidSuit: 5 },
-    { playerIdx: 1, bidType: 0, bidLevel: 0, bidSuit: 0 },
-    { playerIdx: 2, bidType: 2, bidLevel: 0, bidSuit: 0 },
+    { playerIdx: 0, bidType: 1, level: 1, suit: 5 },
+    { playerIdx: 1, bidType: 0, level: 0, suit: 0 },
+    { playerIdx: 2, bidType: 2, level: 0, suit: 0 },
   ],
 };
 

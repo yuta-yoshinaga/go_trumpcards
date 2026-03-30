@@ -215,7 +215,7 @@ export function BridgePage() {
                           ? t('doubleButton')
                           : entry.bidType === 3
                             ? t('redoubleButton')
-                            : `${entry.bidLevel}${suitLabel(entry.bidSuit)}`}
+                            : `${entry.level}${suitLabel(entry.suit)}`}
                     </span>
                   ))}
                 </div>
