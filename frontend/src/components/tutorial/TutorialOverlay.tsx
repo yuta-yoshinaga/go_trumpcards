@@ -66,6 +66,7 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
   const maskId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
 
   // Lock background scroll while overlay is visible
@@ -155,6 +156,32 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
   const tooltipStyle = getTooltipStyle(spotlightRect, step.placement);
   const transitionStyle = reducedMotion ? {} : { transition: 'opacity 0.2s ease-in-out' };
 
+  // Clamp tooltip within viewport after render — depends on tooltipStyle which
+  // is derived from spotlightRect and step.placement, so it re-runs when they change.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tooltipStyle captures spotlightRect+placement changes
+  useLayoutEffect(() => {
+    const el = tooltipRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const margin = 8;
+    if (rect.left < margin) {
+      el.style.left = `${margin}px`;
+      el.style.transform = el.style.transform.replace(/translateX\([^)]*\)/, '');
+    }
+    if (rect.right > window.innerWidth - margin) {
+      el.style.left = `${window.innerWidth - margin - rect.width}px`;
+      el.style.transform = el.style.transform.replace(/translateX\([^)]*\)/, '');
+    }
+    if (rect.top < margin) {
+      el.style.top = `${margin}px`;
+      el.style.transform = el.style.transform.replace(/translate\([^)]*\)|translateY\([^)]*\)/, '');
+    }
+    if (rect.bottom > window.innerHeight - margin) {
+      el.style.top = `${window.innerHeight - margin - rect.height}px`;
+      el.style.transform = el.style.transform.replace(/translate\([^)]*\)|translateY\([^)]*\)/, '');
+    }
+  }, [tooltipStyle]);
+
   return (
     <div
       ref={dialogRef}
@@ -187,7 +214,7 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
       </svg>
 
       {/* Tooltip positioned relative to spotlight */}
-      <div className="absolute z-10" style={tooltipStyle}>
+      <div ref={tooltipRef} className="absolute z-10" style={tooltipStyle}>
         <TutorialTooltip
           message={step.messageKey}
           stepIndex={stepIndex}
