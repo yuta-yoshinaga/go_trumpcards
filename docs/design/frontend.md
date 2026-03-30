@@ -1053,6 +1053,7 @@ classDiagram
         +切り札・コントラクト表示
         +バルネラビリティ表示
         +ヒントシステム
+        +チュートリアル (TutorialProvider)
     }
 
     BridgePage --|> GamePage : follows pattern
@@ -1140,7 +1141,7 @@ classDiagram
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "33名前空間: common + 31ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "34名前空間: common + 32ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
