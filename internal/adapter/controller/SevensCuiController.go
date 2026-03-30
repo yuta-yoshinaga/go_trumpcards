@@ -64,7 +64,7 @@ func (c *SevensCuiController) Exec(command string) string {
 			}
 			return c.sgi.Reset()
 		},
-		[]string{"p", "play", "j", "joker"},
+		[]string{"p", "play", "j", "joker", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
@@ -74,8 +74,9 @@ func (c *SevensCuiController) Exec(command string) string {
 				targetSuit := cuiutil.ParseOptionalInt(args, 1, 0)
 				targetValue := cuiutil.ParseOptionalInt(args, 2, 0)
 				return c.sgi.PlayJoker(cardIdx, targetSuit, targetValue), true
+			default:
+				return handleCuiLog(cmd, c.sgi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

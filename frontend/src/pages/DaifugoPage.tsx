@@ -11,6 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -170,6 +171,7 @@ function DaifugoPageContent() {
       <GamePageHeading title={tc('nav.daifugo')} />
       <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
         <TutorialButton />
+        <ManualButton gamePath="/daifugo" />
       </PhaseIndicator>
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />

@@ -38,3 +38,23 @@ func TestBoundedIntPtr(t *testing.T) {
 		assert.Equal(t, 10, BoundedIntPtr(&v, 1, 10, 5))
 	})
 }
+
+func TestBoolPtrOr(t *testing.T) {
+	t.Run("nil pointer returns defaultVal true", func(t *testing.T) {
+		assert.Equal(t, true, BoolPtrOr(nil, true))
+	})
+
+	t.Run("nil pointer returns defaultVal false", func(t *testing.T) {
+		assert.Equal(t, false, BoolPtrOr(nil, false))
+	})
+
+	t.Run("non-nil true returns true", func(t *testing.T) {
+		v := true
+		assert.Equal(t, true, BoolPtrOr(&v, false))
+	})
+
+	t.Run("non-nil false returns false", func(t *testing.T) {
+		v := false
+		assert.Equal(t, false, BoolPtrOr(&v, true))
+	})
+}

@@ -76,9 +76,7 @@ func (c *HeartsWebConfig) ToConfig() domain.HeartsConfig {
 	cfg := domain.DefaultHeartsConfig()
 	cfg.CpuDifficulty = domain.HeartsCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.HeartsCpuDifficultyEasy), int(domain.HeartsCpuDifficultyHard), int(cfg.CpuDifficulty)))
 	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
-	if c.OmnibusJD != nil {
-		cfg.OmnibusJD = *c.OmnibusJD
-	}
+	cfg.OmnibusJD = webutil.BoolPtrOr(c.OmnibusJD, cfg.OmnibusJD)
 	return cfg
 }
 
@@ -133,12 +131,8 @@ func heartsDispatch(bc *baseController, w http.ResponseWriter, hi usecase.Hearts
 		bc.writePresenterResponse(w, hi.NextTrick())
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, hi.NextRound())
-	case "h", "hint":
-		bc.writePresenterResponse(w, hi.Hint())
-	case "log", "l":
-		bc.writePresenterResponse(w, hi.ActionLog())
 	default:
-		return false
+		return dispatchHintAndLog(param.Command, bc, w, hi.Hint, hi.ActionLog)
 	}
 	return true
 }

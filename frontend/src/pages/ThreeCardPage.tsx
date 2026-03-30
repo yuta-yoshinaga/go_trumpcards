@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -138,6 +139,7 @@ function ThreeCardPageContent() {
           {t('label.chips')}: {state.chips}
         </span>
         <TutorialButton />
+        <ManualButton gamePath="/threecard" />
       </PhaseIndicator>
 
       <div
@@ -147,6 +149,44 @@ function ThreeCardPageContent() {
           .join(' ')}
       >
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+        {/* Payout table during bet phase */}
+        {isBetPhase && (
+          <div className="flex flex-col items-center justify-center py-4 gap-4">
+            <p className="text-white/50 text-lg">{t('betGuide')}</p>
+            <details className="bg-black/30 rounded-lg w-full max-w-sm">
+              <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
+                {t('payoutRef.title')}
+              </summary>
+              <div className="px-4 pb-3 text-white/70 text-sm space-y-2">
+                <div>
+                  <div className="font-bold text-white/90 mb-1">{t('payoutRef.anteBonusHeader')}</div>
+                  <ul className="space-y-0.5">
+                    {(['anteBonusStraight', 'anteBonusThreeOfAKind', 'anteBonusStraightFlush'] as const).map((key) => (
+                      <li key={key}>{t(`payoutRef.${key}`)}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <div className="font-bold text-white/90 mb-1">{t('payoutRef.pairPlusHeader')}</div>
+                  <ul className="space-y-0.5">
+                    {(
+                      [
+                        'pairPlusPair',
+                        'pairPlusFlush',
+                        'pairPlusStraight',
+                        'pairPlusThreeOfAKind',
+                        'pairPlusStraightFlush',
+                      ] as const
+                    ).map((key) => (
+                      <li key={key}>{t(`payoutRef.${key}`)}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </details>
+          </div>
+        )}
 
         {/* Player Hand */}
         {state.playerHand.length > 0 && (

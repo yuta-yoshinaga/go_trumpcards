@@ -7,6 +7,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { LandscapeBanner } from '../components/LandscapeBanner';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -142,6 +143,7 @@ function TriPeaksPageContent() {
           {t('moveCount')}: {state.moveCount}
         </span>
         <TutorialButton />
+        <ManualButton gamePath="/tripeaks" />
       </PhaseIndicator>
 
       <LandscapeBanner message={t('landscapeBanner')} />

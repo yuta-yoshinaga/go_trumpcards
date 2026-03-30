@@ -44,6 +44,8 @@ export interface BjBetPhaseControlsProps {
   onPerfectPairsBetChange: (v: number) => void;
   twentyOnePlus3Bet: number;
   onTwentyOnePlus3BetChange: (v: number) => void;
+  /** When true, the advanced settings section is expanded by default (e.g. on desktop). */
+  autoExpandAdvanced?: boolean;
 }
 
 /** Renders BlackJack bet phase controls with basic settings and collapsible advanced options. */
@@ -88,9 +90,14 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
       </div>
 
       {/* Advanced settings: collapsible */}
-      <details className="mb-2 text-white text-sm">
+      <details className="mb-2 text-white text-sm" open={props.autoExpandAdvanced || undefined}>
         <summary className="cursor-pointer select-none text-center text-yellow-300 hover:text-yellow-200 py-1">
           {t('advancedSettings')}
+          {(props.perfectPairsBet > 0 || props.twentyOnePlus3Bet > 0) && (
+            <span className="ml-2 inline-block bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded-full">
+              {t('sideBetActive')}
+            </span>
+          )}
         </summary>
         <div className="mt-2 space-y-2 glass-panel rounded-lg p-3">
           {/* Side bets */}

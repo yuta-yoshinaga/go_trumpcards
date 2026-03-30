@@ -27,6 +27,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -131,7 +132,7 @@ function BlackJackPageContent() {
   const phaseNames = usePhaseNames('blackjack', BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const [message, setMessage] = useState('');
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
@@ -243,6 +244,7 @@ function BlackJackPageContent() {
           {t('player')} {state.player.chips} chips
         </span>
         <TutorialButton />
+        <ManualButton gamePath="/" />
         <span>
           {t('deck')} {state.deckCount}
           {t('deckUnit')}
@@ -268,14 +270,16 @@ function BlackJackPageContent() {
         {phase === BjPhase.BET && (
           <div className="flex flex-col items-center justify-center py-6 gap-4">
             <p className="text-white/50 text-lg">{t('betGuide')}</p>
-            <div className="bg-black/30 rounded-lg p-4 w-full max-w-sm">
-              <div className="text-white font-bold text-sm mb-2">{t('payoutRef.title')}</div>
-              <ul className="text-white/70 text-sm space-y-1">
+            <details className="bg-black/30 rounded-lg w-full max-w-sm">
+              <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
+                {t('payoutRef.title')}
+              </summary>
+              <ul className="text-white/70 text-sm space-y-1 px-4 pb-3">
                 {(['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const).map((key) => (
                   <li key={key}>{t(`payoutRef.${key}`)}</li>
                 ))}
               </ul>
-            </div>
+            </details>
           </div>
         )}
         {phase !== BjPhase.BET && (
@@ -463,6 +467,7 @@ function BlackJackPageContent() {
                   onPerfectPairsBetChange={setPerfectPairsBet}
                   twentyOnePlus3Bet={twentyOnePlus3Bet}
                   onTwentyOnePlus3BetChange={setTwentyOnePlus3Bet}
+                  autoExpandAdvanced={!isMobile}
                 />
               </div>
               <div className="flex items-center justify-center gap-2 mt-2">

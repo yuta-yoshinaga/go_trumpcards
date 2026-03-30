@@ -33,6 +33,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/holdem', labelKey: 'nav.holdem', icon: '🤠' },
       { path: '/omaha', labelKey: 'nav.omaha', icon: '4️⃣' },
       { path: '/shortdeck', labelKey: 'nav.shortdeck', icon: '6️⃣' },
+      { path: '/pineapple', labelKey: 'nav.pineapple', icon: '🍍' },
       { path: '/indianpoker', labelKey: 'nav.indianpoker', icon: '🙈' },
       { path: '/videopoker', labelKey: 'nav.videopoker', icon: '📺' },
       { path: '/deuceswild', labelKey: 'nav.deuceswild', icon: '2️⃣' },
@@ -47,6 +48,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/spades', labelKey: 'nav.spades', icon: '♠️' },
       { path: '/ohhell', labelKey: 'nav.ohhell', icon: '🔔' },
       { path: '/euchre', labelKey: 'nav.euchre', icon: '🎩' },
+      { path: '/bridge', labelKey: 'nav.bridge', icon: '🌉' },
       { path: '/napoleon', labelKey: 'nav.napoleon', icon: '👑' },
     ],
   },
@@ -59,6 +61,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/daifugo', labelKey: 'nav.daifugo', icon: '💰' },
       { path: '/sevens', labelKey: 'nav.sevens', icon: '7️⃣' },
       { path: '/crazyeights', labelKey: 'nav.crazyeights', icon: '8️⃣' },
+      { path: '/speed', labelKey: 'nav.speed', icon: '⚡' },
     ],
   },
   {

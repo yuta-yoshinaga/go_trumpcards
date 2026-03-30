@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // BaccaratGame バカラゲームインタフェース
 type BaccaratGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// Bet ベットしてゲームを実行する
@@ -33,8 +34,6 @@ type BaccaratGame interface {
 	GetPlayerHandValue() int
 	// GetBankerHandValue バンカーハンド合計値を取得する
 	GetBankerHandValue() int
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// GetHistory 罫線履歴を取得する
 	GetHistory() []int
 	// GetPlayerPairBet プレイヤーペアベット額を取得する

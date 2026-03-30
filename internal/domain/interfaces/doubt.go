@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // DoubtGame ダウトゲームインタフェース
 type DoubtGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// PlayerPlay プレイヤーがカードを出す
@@ -57,6 +58,4 @@ type DoubtGame interface {
 	GetHumanAction() *domain.DoubtCpuAction
 	// GetLastDoubtResult 最後のダウト結果を取得する
 	GetLastDoubtResult() *domain.DoubtDoubtResult
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }

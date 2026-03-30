@@ -35,6 +35,10 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     first.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        props.onCancel();
+        return;
+      }
       if (e.key !== 'Tab') return;
       if (e.shiftKey) {
         if (document.activeElement === first) {
@@ -49,14 +53,14 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
       }
     };
 
-    dialog.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
-      dialog.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
       if (triggerRef.current instanceof HTMLElement) {
         triggerRef.current.focus();
       }
     };
-  }, [props.open]);
+  }, [props.open, props.onCancel]);
 
   if (!props.open) return null;
 
@@ -67,6 +71,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
       onClick={props.onCancel}
       role="presentation"
     >
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: keyboard events handled at document level via useEffect */}
       <div
         ref={dialogRef}
         role="alertdialog"
@@ -74,9 +79,6 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         aria-labelledby="confirm-dialog-title"
         className="glass-panel rounded-lg shadow-xl p-6 max-w-sm mx-4"
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') props.onCancel();
-        }}
       >
         <h2 id="confirm-dialog-title" className="text-lg font-bold text-white mb-2">
           {props.title}

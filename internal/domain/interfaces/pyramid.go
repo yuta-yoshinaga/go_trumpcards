@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // PyramidGame ピラミッドゲームインタフェース
 type PyramidGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// Draw 山札からカードをめくる
@@ -35,8 +36,6 @@ type PyramidGame interface {
 	GetWaste() []*domain.Card
 	// GetPyramid ピラミッドを取得する
 	GetPyramid() [domain.PyramidRowCnt][]*domain.PyramidCard
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// IsExposed カードが露出しているかを返す
 	IsExposed(row, col int) bool
 	// AllRemoved 全ピラミッドカードが除去されたかを返す

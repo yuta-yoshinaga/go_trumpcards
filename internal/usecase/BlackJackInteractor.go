@@ -202,9 +202,9 @@ func (bi *BlackJackInteractor) Snapshot() ([]byte, error) {
 
 // RestoreBlackJackInteractor deserialises JSON into a BlackJackInteractor.
 func RestoreBlackJackInteractor(data []byte, bjp presenter.BlackJackPresenter) (*BlackJackInteractor, error) {
-	var bj domain.BlackJack
-	if err := json.Unmarshal(data, &bj); err != nil {
+	bj, err := restoreGame[domain.BlackJack](data)
+	if err != nil {
 		return nil, err
 	}
-	return &BlackJackInteractor{bj: &bj, bjp: bjp}, nil
+	return &BlackJackInteractor{bj: bj, bjp: bjp}, nil
 }

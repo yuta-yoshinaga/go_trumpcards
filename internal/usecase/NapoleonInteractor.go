@@ -189,26 +189,12 @@ func (ni *NapoleonInteractor) runCpuDeclareAndExchange() {
 
 // runCpuTurns CPUターンを実行
 func (ni *NapoleonInteractor) runCpuTurns() {
-	for !ni.n.GetGameEndFlag() {
-		phase := ni.n.GetPhase()
-		if phase == domain.NapoleonPhaseTrickEnd || phase == domain.NapoleonPhaseRoundEnd || phase == domain.NapoleonPhaseGameEnd {
-			break
-		}
-		if phase != domain.NapoleonPhasePlay {
-			break
-		}
-		if ni.n.IsHumanTurn() {
-			break
-		}
-		ni.n.CpuPlay()
-		if ni.n.GetPhase() == domain.NapoleonPhaseTrickEnd {
-			ni.n.ResolveTrick()
-			if ni.n.GetPhase() == domain.NapoleonPhaseRoundEnd {
-				break
-			}
-			ni.n.NextTrick()
-		}
-	}
+	runCpuTurnsLoop(ni.n, trickPhases[domain.NapoleonPhase]{
+		play:     domain.NapoleonPhasePlay,
+		trickEnd: domain.NapoleonPhaseTrickEnd,
+		roundEnd: domain.NapoleonPhaseRoundEnd,
+		gameEnd:  domain.NapoleonPhaseGameEnd,
+	})
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.
@@ -218,9 +204,9 @@ func (ni *NapoleonInteractor) Snapshot() ([]byte, error) {
 
 // RestoreNapoleonInteractor deserialises JSON into a NapoleonInteractor.
 func RestoreNapoleonInteractor(data []byte, np presenter.NapoleonPresenter) (*NapoleonInteractor, error) {
-	var n domain.Napoleon
-	if err := json.Unmarshal(data, &n); err != nil {
+	n, err := restoreGame[domain.Napoleon](data)
+	if err != nil {
 		return nil, err
 	}
-	return &NapoleonInteractor{n: &n, np: np}, nil
+	return &NapoleonInteractor{n: n, np: np}, nil
 }

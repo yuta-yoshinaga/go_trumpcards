@@ -93,9 +93,9 @@ func (di *DaifugoInteractor) Snapshot() ([]byte, error) {
 
 // RestoreDaifugoInteractor deserialises JSON into a DaifugoInteractor.
 func RestoreDaifugoInteractor(data []byte, dgp presenter.DaifugoPresenter) (*DaifugoInteractor, error) {
-	var dg domain.Daifugo
-	if err := json.Unmarshal(data, &dg); err != nil {
+	dg, err := restoreGame[domain.Daifugo](data)
+	if err != nil {
 		return nil, err
 	}
-	return &DaifugoInteractor{dg: &dg, dgp: dgp}, nil
+	return &DaifugoInteractor{dg: dg, dgp: dgp}, nil
 }

@@ -13,6 +13,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -237,6 +238,7 @@ function OmahaPageContent() {
           <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
         )}
         <TutorialButton />
+        <ManualButton gamePath="/omaha" />
       </PhaseIndicator>
 
       {/* Scrollable: community cards + CPU players */}

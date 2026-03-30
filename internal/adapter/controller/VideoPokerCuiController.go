@@ -41,10 +41,9 @@ func (vpc *VideoPokerCuiController) Exec(command string) string {
 					return errMsg, true
 				}
 				return vpc.vi.Hold(indices), true
-			case "log", "l":
-				return vpc.vi.ActionLog(), true
+			default:
+				return handleCuiLog(cmd, vpc.vi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

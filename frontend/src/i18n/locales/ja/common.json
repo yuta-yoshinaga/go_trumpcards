@@ -41,12 +41,15 @@
     "deuceswild": "デューシーズワイルド",
     "jokerpoker": "ジョーカーポーカー",
     "euchre": "ユーカー",
+    "bridge": "コントラクトブリッジ",
     "pyramid": "ピラミッド",
     "tripeaks": "トリピークス",
     "cribbage": "クリベッジ",
     "shortdeck": "ショートデック",
     "threecard": "スリーカードポーカー",
-    "ohhell": "オー・ヘル"
+    "pineapple": "パイナップルポーカー",
+    "ohhell": "オー・ヘル",
+    "speed": "スピード"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -107,7 +110,8 @@
     "waiting": "待機中"
   },
   "card": {
-    "back": "カード裏面"
+    "back": "カード裏面",
+    "joker": "ジョーカー"
   },
   "label": {
     "result": "結果:",
@@ -143,6 +147,13 @@
     "holdem.result.lose": "あなたの負けです。",
     "holdem.result.mucked": "マックしました。",
     "holdem.muck.prompt": "マックしますか?",
+    "pineapple.result.gameOver": "ゲーム終了。",
+    "pineapple.result.win": "あなたの勝ちです。",
+    "pineapple.result.folded": "フォールドしました。",
+    "pineapple.result.lose": "あなたの負けです。",
+    "pineapple.result.mucked": "マックしました。",
+    "pineapple.muck.prompt": "マックしますか?",
+    "pineapple.discard.prompt": "1枚捨ててください。",
     "shortdeck.result.gameOver": "ゲーム終了。",
     "shortdeck.result.win": "あなたの勝ちです。",
     "shortdeck.result.folded": "フォールドしました。",
@@ -224,5 +235,10 @@
     "tripeaks.hintAvailable": "ヒントがあります",
     "tripeaks.noHint": "ヒントはありません",
     "tripeaks.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
+  },
+  "manual": {
+    "ariaLabel": "ゲームマニュアル",
+    "close": "閉じる",
+    "button": "マニュアル"
   }
 }

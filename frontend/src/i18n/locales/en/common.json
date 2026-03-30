@@ -41,12 +41,15 @@
     "deuceswild": "Deuces Wild",
     "jokerpoker": "Joker Poker",
     "euchre": "Euchre",
+    "bridge": "Contract Bridge",
     "pyramid": "Pyramid",
     "tripeaks": "TriPeaks",
     "cribbage": "Cribbage",
     "shortdeck": "Short Deck",
     "threecard": "Three Card Poker",
-    "ohhell": "Oh Hell"
+    "pineapple": "Pineapple Poker",
+    "ohhell": "Oh Hell",
+    "speed": "Speed"
   },
   "sound": {
     "mute": "Mute sound",
@@ -107,7 +110,8 @@
     "waiting": "Waiting"
   },
   "card": {
-    "back": "Card back"
+    "back": "Card back",
+    "joker": "Joker"
   },
   "label": {
     "result": "Result:",
@@ -143,6 +147,13 @@
     "holdem.result.lose": "You lose.",
     "holdem.result.mucked": "You mucked.",
     "holdem.muck.prompt": "Muck or show your hand.",
+    "pineapple.result.gameOver": "Game over.",
+    "pineapple.result.win": "You are the winner.",
+    "pineapple.result.folded": "You folded.",
+    "pineapple.result.lose": "You lose.",
+    "pineapple.result.mucked": "You mucked.",
+    "pineapple.muck.prompt": "Muck or show your hand.",
+    "pineapple.discard.prompt": "Discard one card.",
     "shortdeck.result.gameOver": "Game over.",
     "shortdeck.result.win": "You are the winner.",
     "shortdeck.result.folded": "You folded.",
@@ -224,5 +235,10 @@
     "tripeaks.hintAvailable": "Hint available",
     "tripeaks.noHint": "No hint available",
     "tripeaks.stalemate": "No moves can lead to a win. Please undo or give up."
+  },
+  "manual": {
+    "ariaLabel": "Game Manual",
+    "close": "Close",
+    "button": "Manual"
   }
 }

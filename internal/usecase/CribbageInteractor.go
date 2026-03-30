@@ -147,9 +147,9 @@ func (ci *CribbageInteractor) Snapshot() ([]byte, error) {
 
 // RestoreCribbageInteractor deserialises JSON into a CribbageInteractor.
 func RestoreCribbageInteractor(data []byte, gp presenter.CribbagePresenter) (*CribbageInteractor, error) {
-	var g domain.Cribbage
-	if err := json.Unmarshal(data, &g); err != nil {
+	g, err := restoreGame[domain.Cribbage](data)
+	if err != nil {
 		return nil, err
 	}
-	return &CribbageInteractor{g: &g, gp: gp}, nil
+	return &CribbageInteractor{g: g, gp: gp}, nil
 }

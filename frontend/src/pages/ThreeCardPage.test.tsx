@@ -393,4 +393,28 @@ describe('ThreeCardPage', () => {
     renderWithProviders(<ThreeCardPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
+
+  // --- Payout table tests ---
+
+  it('shows payout table in bet phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('配当表')).toBeInTheDocument());
+  });
+
+  it('payout table contains ante bonus and pair plus sections', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('配当表')).toBeInTheDocument());
+    expect(screen.getByText('アンテボーナス')).toBeInTheDocument();
+    // 'ペアプラス' appears in both the payout header and bet label; check for payout-specific entries
+    expect(screen.getByText('ペア: 1:1')).toBeInTheDocument();
+  });
+
+  it('does not show payout table in action phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+    expect(screen.queryByText('配当表')).not.toBeInTheDocument();
+  });
 });

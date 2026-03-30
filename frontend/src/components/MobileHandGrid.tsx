@@ -14,6 +14,8 @@ const BUTTON_EXTRA = 6;
 const DEFAULT_CARD_GAP = 2;
 /** Maximum overlap ratio — each card stays at least 30% visible. */
 const MAX_OVERLAP_RATIO = 0.7;
+/** Minimum visible width (px) per card to meet WCAG 2.5.8 tap-target guidelines. */
+const MIN_CARD_EXPOSURE_PX = 44;
 
 /** Props for the MobileHandGrid component. */
 interface MobileHandGridProps {
@@ -45,14 +47,14 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
   return (
     <div className="mb-2" data-tutorial={dataTutorial}>
       {rows.map((rowCards, rowIdx) => {
-        const overlap = computeOverlap(rowCards.length, buttonWidth, viewportWidth);
+        const { overlap, useScroll } = computeOverlap(rowCards.length, buttonWidth, viewportWidth);
         const startIdx = rowIdx === 0 ? 0 : splitAt;
 
         return (
           <div
             key={`row-${rowIdx}`}
             data-testid="hand-row"
-            className="flex justify-center"
+            className={useScroll ? 'flex overflow-x-auto' : 'flex justify-center'}
             style={{ marginBottom: rowIdx === 0 && rows.length > 1 ? 4 : 0 }}
           >
             {rowCards.map((card, i) => {
@@ -73,6 +75,7 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
                     ...selectedCardStyle(isSelected),
                     boxSizing: 'border-box',
                     marginLeft: i === 0 ? 0 : overlap,
+                    ...(useScroll ? { flexShrink: 0 } : {}),
                   }}
                 >
                   <AnimatedCard card={card} width={cardWidth} />
@@ -86,12 +89,25 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
   );
 }
 
+/** Result of overlap computation including scroll-fallback flag. */
+interface OverlapResult {
+  /** Negative margin-left in px (or positive gap). */
+  overlap: number;
+  /** True when cards cannot fit with minimum tap-target exposure. */
+  useScroll: boolean;
+}
+
 /** Compute negative margin-left overlap so cards fit within the viewport. */
-function computeOverlap(cardCount: number, buttonWidth: number, viewportWidth: number): number {
-  if (cardCount <= 1) return 0;
+function computeOverlap(cardCount: number, buttonWidth: number, viewportWidth: number): OverlapResult {
+  if (cardCount <= 1) return { overlap: 0, useScroll: false };
   const availableWidth = viewportWidth - CONTAINER_PADDING;
   const totalNeeded = cardCount * buttonWidth;
-  if (totalNeeded <= availableWidth) return DEFAULT_CARD_GAP;
+  if (totalNeeded <= availableWidth) return { overlap: DEFAULT_CARD_GAP, useScroll: false };
   const rawOverlap = -((totalNeeded - availableWidth) / (cardCount - 1));
-  return Math.max(rawOverlap, -buttonWidth * MAX_OVERLAP_RATIO);
+  const maxNegative = -buttonWidth * MAX_OVERLAP_RATIO;
+  const minExposureOverlap = -(buttonWidth - MIN_CARD_EXPOSURE_PX);
+  if (rawOverlap < minExposureOverlap) {
+    return { overlap: DEFAULT_CARD_GAP, useScroll: true };
+  }
+  return { overlap: Math.max(rawOverlap, maxNegative), useScroll: false };
 }

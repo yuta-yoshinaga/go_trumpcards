@@ -70,10 +70,8 @@ func threeCardDispatch(bc *baseController, w http.ResponseWriter, ti usecase.Thr
 		bc.writePresenterResponse(w, ti.Play())
 	case "f", "fold":
 		bc.writePresenterResponse(w, ti.Fold())
-	case "log", "l":
-		bc.writePresenterResponse(w, ti.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, ti.ActionLog)
 	}
 	return true
 }

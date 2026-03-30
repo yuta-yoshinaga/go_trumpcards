@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全29ゲーム)](#12-ゲームドメイン-全29ゲーム)
+  - [1.2 ゲームドメイン (全32ゲーム)](#12-ゲームドメイン-全32ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -17,6 +17,9 @@
   - [2.4 VideoPoker ベット・ホールドフロー](#24-videopoker-ベットホールドフロー)
   - [2.5 ThreeCard ベット・プレイフロー](#25-threecard-ベットプレイフロー)
   - [2.6 OhHell ビッド・トリックフロー](#26-ohhell-ビッドトリックフロー)
+  - [2.7 Bridge オークション・トリックフロー](#27-bridge-オークショントリックフロー)
+  - [2.8 Pineapple ディスカードフロー](#28-pineapple-ディスカードフロー)
+  - [2.9 Speed プレイフロー](#29-speed-プレイフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -37,6 +40,9 @@
   - [3.17 ShortDeck フェーズ遷移](#317-shortdeck-フェーズ遷移)
   - [3.18 ThreeCard フェーズ遷移](#318-threecard-フェーズ遷移)
   - [3.19 OhHell フェーズ遷移](#319-ohhell-フェーズ遷移)
+  - [3.20 Bridge フェーズ遷移](#320-bridge-フェーズ遷移)
+  - [3.21 Pineapple フェーズ遷移](#321-pineapple-フェーズ遷移)
+  - [3.22 Speed フェーズ遷移](#322-speed-フェーズ遷移)
 
 ---
 
@@ -104,7 +110,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全29ゲーム)
+### 1.2 ゲームドメイン (全32ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -350,6 +356,32 @@ classDiagram
         +*Card Card
     }
 
+    class Bridge {
+        -trumpCards *TrumpCards
+        -players []*BridgePlayer
+        -config BridgeConfig
+        -phase BridgePhase
+        -trickCards []*BridgeTrickCard
+        -trumpSuit int
+        -contractLevel int
+        -contractSuit int
+        -declarerIdx int
+        -dummyIdx int
+        -vulnerability [2]bool
+        +Reset()
+        +Bid(bidType int, level int, suit int) error
+        +PlayCard(index int) error
+        +NextTrick() error
+        +NextRound() error
+        +Hint() *BridgeHint
+        +Phase() BridgePhase
+    }
+
+    class BridgeTrickCard {
+        +int PlayerIdx
+        +*Card Card
+    }
+
     Hearts --> "4" HeartsPlayer
     Hearts --> "*" HeartsTrickCard
     Spades --> "4" SpadesPlayer
@@ -360,11 +392,14 @@ classDiagram
     Euchre --> "*" EuchreTrickCard
     OhHell --> "4" OhHellPlayer
     OhHell --> "*" OhHellTrickCard
+    Bridge --> "4" BridgePlayer
+    Bridge --> "*" BridgeTrickCard
     HeartsPlayer --|> GamePlayer
     SpadesPlayer --|> GamePlayer
     NapoleonPlayer --|> GamePlayer
     EuchrePlayer --|> GamePlayer
     OhHellPlayer --|> GamePlayer
+    BridgePlayer --|> GamePlayer
 ```
 
 #### ホールデム系ゲーム
@@ -449,6 +484,30 @@ classDiagram
 
     ShortDeck --> "*" ShortDeckPlayer
     ShortDeckPlayer --|> GamePlayer
+
+    class Pineapple {
+        -trumpCards *TrumpCards
+        -players []*PineapplePlayer
+        -config PineappleConfig
+        -communityCards []*Card
+        -phase int
+        -isDiscardPhase bool
+        -discardDone bool
+        +Reset()
+        +PlayerFold() error
+        +PlayerCheck() error
+        +PlayerCall() error
+        +PlayerBet(amount int) error
+        +PlayerRaise(amount int) error
+        +PlayerAllIn() error
+        +PlayerDiscard(cardIdx int) error
+        +PlayerRebuy() error
+        +PlayerAddon() error
+        +Phase() int
+    }
+
+    Pineapple --> "*" HoldemPlayer
+    Pineapple --> "1" BettingState
 ```
 
 #### インディアンポーカー
@@ -593,18 +652,44 @@ classDiagram
         +Phase() GinRummyPhase
     }
 
+    class Speed {
+        -trumpCards *TrumpCards
+        -players []*SpeedPlayer
+        -config SpeedConfig
+        -centerPiles [2]*Card
+        -phase SpeedPhase
+        +Reset()
+        +Play(cardIndex int, pileIndex int) error
+        +Flip() error
+        +Hint() *SpeedHint
+        +Phase() SpeedPhase
+        +ActionLog() []*ActionLogEntry
+    }
+
+    class SpeedPlayer {
+        -hand []*Card
+        -drawPile []*Card
+    }
+
+    class SpeedConfig {
+        +int HandSize
+    }
+
     OldMaid --> "*" OldMaidPlayer
     Daifugo --> "*" DaifugoPlayer
     Sevens --> "*" SevensPlayer
     Doubt --> "*" DoubtPlayer
     CrazyEights --> "*" CrazyEightsPlayer
     GinRummy --> "2" GinRummyPlayer
+    Speed --> "2" SpeedPlayer
+    Speed --> "1" SpeedConfig
     OldMaidPlayer --|> GamePlayer
     DaifugoPlayer --|> RankedGamePlayer
     SevensPlayer --|> RankedGamePlayer
     DoubtPlayer --|> GamePlayer
     CrazyEightsPlayer --|> GamePlayer
     GinRummyPlayer --|> GamePlayer
+    SpeedPlayer --|> Player
 ```
 
 #### ソリティア系ゲーム
@@ -817,7 +902,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全29ゲーム共通)**
+**Interactor パターン (全31ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -927,6 +1012,8 @@ classDiagram
         -cribbage *CribbageWebController
         -threecard *ThreeCardWebController
         -ohhell *OhHellWebController
+        -bridge *BridgeWebController
+        -speed *SpeedWebController
         +Exec()
     }
 
@@ -948,8 +1035,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 29 controllers
-    GameManager --> "*" CuiExecer : holds 28 games
+    TrumpCardsWeb --> "*" GameWebController : holds 30 controllers
+    GameManager --> "*" CuiExecer : holds 29 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1153,6 +1240,85 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: トリック結果表示
+```
+
+### 2.7 Bridge オークション・トリックフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as BridgeInteractor
+    participant Domain as Bridge
+    participant Pres as Presenter
+
+    Note over User,Pres: オークションフロー
+    User->>Ctrl: bid 1 1 5
+    Ctrl->>Interactor: Bid(1, 1, 5)
+    Interactor->>Domain: Bid(BidTypeNormal, 1, NoTrump)
+    Domain->>Domain: ビッド記録 → CPU自動ビッド → コントラクト確定 → phase=Play
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: オークション完了・ダミー公開・プレイ開始表示
+
+    Note over User,Pres: トリックプレイフロー
+    User->>Ctrl: play 3
+    Ctrl->>Interactor: Play(3)
+    Interactor->>Domain: PlayCard(3)
+    Domain->>Domain: フォロースート検証 → カード出し → CPU/ダミー自動プレイ
+    Domain->>Domain: トリック勝者判定 → phase=TrickEnd
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: トリック結果表示
+```
+
+### 2.8 Pineapple ディスカードフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as PineappleInteractor
+    participant Domain as Pineapple
+    participant Pres as Presenter
+
+    Note over User,Pres: フロップベッティング完了 → ディスカードフェーズ
+    User->>Ctrl: discard 1
+    Ctrl->>Interactor: Discard(1)
+    Interactor->>Domain: PlayerDiscard(1)
+    Domain->>Domain: ホールカード[1]を除去 → CPU自動ディスカード → phase=Turn
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ディスカード完了・ターンカード公開表示
+```
+
+### 2.9 Speed プレイフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as SpeedInteractor
+    participant Domain as Speed
+    participant Pres as Presenter
+
+    Note over User,Pres: プレイフロー
+    User->>Ctrl: play 0 1
+    Ctrl->>Interactor: Play(0, 1)
+    Interactor->>Domain: Play(0, 1)
+    Domain->>Domain: 手札[0]を場札[1]に出す → 手札補充 → CPU自動プレイ
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 場札・手札更新表示
+
+    Note over User,Pres: スタック → フリップフロー
+    User->>Ctrl: flip
+    Ctrl->>Interactor: Flip()
+    Interactor->>Domain: Flip()
+    Domain->>Domain: 山札から場札に新カード配置 → phase=Play
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 新しい場札表示
 ```
 
 ---
@@ -1468,6 +1634,75 @@ stateDiagram-v2
     note right of TrickEnd : OhHellPhaseTrickEnd = 2
     note right of RoundEnd : OhHellPhaseRoundEnd = 3
     note right of GameEnd : OhHellPhaseGameEnd = 4
+```
+
+### 3.20 Bridge フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : Reset()
+    Bid --> Play : コントラクト確定(3連続パス) → ダミー公開
+    Play --> TrickEnd : 4人全員カード出し完了
+    TrickEnd --> Play : 次トリック開始
+    TrickEnd --> RoundEnd : 13トリック完了
+    RoundEnd --> Bid : 次ラウンド開始
+    RoundEnd --> GameEnd : ラバー完了(2ゲーム先勝)
+    Bid --> RoundEnd : 4人全員パス(パスアウト)
+    GameEnd --> [*]
+
+    note right of Bid : BridgePhaseBid = 0
+    note right of Play : BridgePhasePlay = 1
+    note right of TrickEnd : BridgePhaseTrickEnd = 2
+    note right of RoundEnd : BridgePhaseRoundEnd = 3
+    note right of GameEnd : BridgePhaseGameEnd = 4
+```
+
+### 3.21 Pineapple フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Init : Reset()
+    Init --> PreFlop : ブラインド + ホールカード3枚配布
+    PreFlop --> Flop : ベッティング完了
+    PreFlop --> Showdown : 1人以外 Fold
+    Flop --> Discard : ベッティング完了
+    Flop --> Showdown : 1人以外 Fold
+    Discard --> Turn : 全員ディスカード完了
+    Turn --> River : ベッティング完了
+    Turn --> Showdown : 1人以外 Fold
+    River --> Showdown : ベッティング完了
+    Showdown --> End : 勝者決定
+    End --> Rebuy : リバイ/アドオン有効
+    End --> Init : 次ラウンド (Reset)
+    Rebuy --> Init : リバイ/アドオン完了
+    End --> [*] : ゲーム終了
+
+    note right of Init : PineapplePhaseInit = 0
+    note right of PreFlop : PineapplePhasePreFlop = 1
+    note right of Flop : PineapplePhaseFlop = 2
+    note right of Discard : PineapplePhaseDiscard = 8
+    note right of Turn : PineapplePhaseTurn = 3
+    note right of River : PineapplePhaseRiver = 4
+    note right of Showdown : PineapplePhaseShowdown = 5
+    note right of End : PineapplePhaseEnd = 6
+    note right of Rebuy : PineapplePhaseRebuy = 7
+```
+
+### 3.22 Speed フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : カードを場札に出す + CPU自動プレイ
+    Play --> Stuck : 両プレイヤーが出せるカードなし
+    Stuck --> Play : Flip() → 新しい場札をめくる
+    Stuck --> GameEnd : 山札なし(フリップ不可)
+    Play --> GameEnd : 手札+山札が空(勝利)
+    GameEnd --> [*]
+
+    note right of Play : SpeedPhasePlay = 0
+    note right of Stuck : SpeedPhaseStuck = 1
+    note right of GameEnd : SpeedPhaseGameEnd = 2
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

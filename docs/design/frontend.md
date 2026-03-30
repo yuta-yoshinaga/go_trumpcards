@@ -19,6 +19,9 @@
   - [2.4 VideoPokerPage フェーズ別レンダリングフロー](#24-videopokerpage-フェーズ別レンダリングフロー)
   - [2.5 ThreeCardPage フェーズ別レンダリングフロー](#25-threecardpage-フェーズ別レンダリングフロー)
   - [2.6 OhHellPage フェーズ別レンダリングフロー](#26-ohhellpage-フェーズ別レンダリングフロー)
+  - [2.7 BridgePage フェーズ別レンダリングフロー](#27-bridgepage-フェーズ別レンダリングフロー)
+  - [2.8 PineapplePage フェーズ別レンダリングフロー](#28-pineapplepage-フェーズ別レンダリングフロー)
+  - [2.9 SpeedPage フェーズ別レンダリングフロー](#29-speedpage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -151,7 +154,19 @@ classDiagram
         +object config
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全29ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    class SpeedResponse {
+        +object[] players
+        +Card[] centerPiles
+        +number phase
+        +number currentTurn
+        +number winnerIdx
+        +object[] cpuActions
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全31ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -330,11 +345,27 @@ classDiagram
         GAME_END = 4
     }
 
+    class BridgePhase {
+        <<enumeration>>
+        BID = 0
+        PLAY = 1
+        TRICK_END = 2
+        ROUND_END = 3
+        GAME_END = 4
+    }
+
     class ThreeCardPhase {
         <<enumeration>>
         BET = 1
         ACTION = 2
         END = 3
+    }
+
+    class SpeedPhase {
+        <<enumeration>>
+        PLAY = 0
+        STUCK = 1
+        GAME_END = 2
     }
 
     note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase は、\nそれぞれ同一の値を持つ別定数です"
@@ -381,7 +412,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全29ゲーム()
+        ...全30ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -393,8 +424,14 @@ classDiagram
     CribbageApi --> gameApi : uses postJson/gameExec
     actionLogApi --> gameApi : uses gameExec
 
+    class SpeedApi {
+        +run(cmd, args?) Promise~SpeedResponse~
+    }
+
+    SpeedApi --> gameApi : uses postJson/gameExec
+
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全29ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage,\nthreecard, ohhell)"
+    note for BlackJackApi "全31ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage,\nthreecard, ohhell, bridge, speed)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -666,7 +703,17 @@ classDiagram
     useOhHellGame --> useGameApi : uses
     useOhHellGame --> useCardSelection : uses
 
-    note for useBlackJackGame "全29ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    class useSpeedGame {
+        +SpeedResponse state
+        +Function handlePlay
+        +Function handleFlip
+        +Function handleHint
+        +Function handleReset
+    }
+
+    useSpeedGame --> useGameApi : uses
+
+    note for useBlackJackGame "全31ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -967,6 +1014,38 @@ classDiagram
 
     OhHellPage --|> GamePage : follows pattern
 
+    class BridgePage {
+        +チーム別スコア表示(ラバー/ゲーム)
+        +オークションUI (ビッドレベル/スート/パス/ダブル/リダブル)
+        +ダミーハンド公開表示
+        +トリック表示エリア
+        +切り札・コントラクト表示
+        +バルネラビリティ表示
+        +ヒントシステム
+    }
+
+    BridgePage --|> GamePage : follows pattern
+
+    class PineapplePage {
+        +ホールデム系共通UI
+        +ホールカード3枚表示
+        +ディスカードフェーズUI (カード選択・捨てるボタン)
+        +コミュニティカード表示
+        +ベッティングアクションボタン
+    }
+
+    PineapplePage --|> GamePage : follows pattern
+
+    class SpeedPage {
+        +中央場札2枚表示
+        +手札カード選択
+        +CPUカード裏向き表示
+        +フリップボタン (スタック時)
+        +ヒントボタン
+    }
+
+    SpeedPage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -976,10 +1055,10 @@ classDiagram
     GamePage --> ErrorAlert : renders
     GamePage --> GamePageHeading : renders
 
-    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck)
+    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全29ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全32ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1002,14 +1081,14 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (29ゲーム)
+        +Routes (32ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Baccarat, ThreeCard]
         +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
-        +trickTaking: [Hearts, Spades, OhHell, Euchre, Napoleon]
-        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights]
+        +trickTaking: [Hearts, Spades, OhHell, Euchre, Napoleon, Bridge]
+        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed]
         +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Memory]
         +rummy: [GinRummy, Cribbage]
     }
@@ -1025,11 +1104,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 29 pages
+    App --> GamePage : routes to 31 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "31名前空間: common + 29ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "33名前空間: common + 31ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
@@ -1231,6 +1310,115 @@ sequenceDiagram
     Hook->>API: gameExec("nextround")
     API-->>Hook: OhHellResponse (phase=0 or 4)
     Hook-->>Page: 再レンダリング → 次ラウンドUIまたはゲーム終了UI
+```
+
+### 2.7 BridgePage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as BridgePage
+    participant Hook as useBridgeGame
+    participant API as gameApi
+
+    Note over User,API: オークションフェーズ (phase=0)
+    User->>Page: ビッドレベル・スート選択
+    User->>Page: ビッドボタンクリック
+    Page->>Hook: handleBid(bidType, bidLevel, bidSuit)
+    Hook->>API: gameExec("bid", {bidType, bidLevel, bidSuit})
+    API-->>Hook: BridgeResponse (phase=1, コントラクト確定)
+    Hook-->>Page: 再レンダリング → ダミー公開・プレイフェーズUI
+
+    Note over User,API: プレイフェーズ (phase=1)
+    User->>Page: 手札カードをクリック (またはダミーハンド操作)
+    User->>Page: 出すボタンクリック
+    Page->>Hook: handlePlay(cardIndex)
+    Hook->>API: gameExec("play", {cardIndex})
+    API-->>Hook: BridgeResponse (phase=2, トリック完了)
+    Hook-->>Page: 再レンダリング → トリック結果UI
+
+    Note over User,API: トリック終了 (phase=2)
+    User->>Page: 次のトリックボタンクリック
+    Page->>Hook: handleNextTrick()
+    Hook->>API: gameExec("next")
+    API-->>Hook: BridgeResponse (phase=1 or 3)
+    Hook-->>Page: 再レンダリング → 次トリックUIまたはラウンド終了UI
+
+    Note over User,API: ラウンド終了 (phase=3)
+    User->>Page: 次のラウンドボタンクリック
+    Page->>Hook: handleNextRound()
+    Hook->>API: gameExec("nextround")
+    API-->>Hook: BridgeResponse (phase=0 or 4)
+    Hook-->>Page: 再レンダリング → 次ラウンドUIまたはゲーム終了UI
+```
+
+### 2.8 PineapplePage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as PineapplePage
+    participant Hook as usePineappleGame
+    participant API as gameApi
+
+    Note over User,API: プリフロップ・フロップ (phase=1,2)
+    User->>Page: ベッティングアクションボタンクリック
+    Page->>Hook: handleBet/handleCall/handleFold/etc.
+    Hook->>API: gameExec("bet", {amount})
+    API-->>Hook: PineappleResponse
+    Hook-->>Page: 再レンダリング → ベッティングUI
+
+    Note over User,API: ディスカードフェーズ (phase=3)
+    User->>Page: 手札カードをクリック (捨てるカード選択)
+    User->>Page: ディスカードボタンクリック
+    Page->>Hook: handleDiscard(cardIdx)
+    Hook->>API: gameExec("discard", {cardIdx})
+    API-->>Hook: PineappleResponse (phase=4, ターン)
+    Hook-->>Page: 再レンダリング → 手札2枚 + ターンカード公開UI
+
+    Note over User,API: ターン・リバー (phase=4,5)
+    User->>Page: ベッティングアクションボタンクリック
+    Page->>Hook: handleBet/handleCall/etc.
+    Hook->>API: gameExec("bet", {amount})
+    API-->>Hook: PineappleResponse
+    Hook-->>Page: 再レンダリング → ベッティングUI
+
+    Note over User,API: ショーダウン・エンド (phase=6,7)
+    Page->>Hook: 自動表示
+    Hook-->>Page: 再レンダリング → ショーダウン結果UI
+```
+
+### 2.9 SpeedPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as SpeedPage
+    participant Hook as useSpeedGame
+    participant API as gameApi
+
+    Note over User,API: プレイフェーズ (phase=0)
+    User->>Page: 手札カードをクリックして選択
+    User->>Page: 場札をクリックしてカードを出す
+    Page->>Hook: handlePlay(cardIndex, pileIndex)
+    Hook->>API: gameExec("play", {cardIndex, pileIndex})
+    API-->>Hook: SpeedResponse (phase=0 or 1 or 2)
+    Hook-->>Page: 再レンダリング → プレイUI
+
+    Note over User,API: スタックフェーズ (phase=1)
+    User->>Page: めくるボタンクリック
+    Page->>Hook: handleFlip()
+    Hook->>API: gameExec("flip")
+    API-->>Hook: SpeedResponse (phase=0)
+    Hook-->>Page: 再レンダリング → 新しい場札表示
+
+    Note over User,API: ゲーム終了 (phase=2)
+    Page-->>User: 勝者表示
+    User->>Page: リセットボタンクリック
+    Page->>Hook: handleReset()
+    Hook->>API: gameExec("reset")
+    API-->>Hook: SpeedResponse (phase=0)
+    Hook-->>Page: 再レンダリング → プレイフェーズUI
 ```
 
 ---

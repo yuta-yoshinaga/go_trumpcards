@@ -285,6 +285,52 @@ func main() {
 		},
 	)
 
+	// Contract Bridge
+	registerKV(mux, "/bridge/exec", "bridge:",
+		func() usecase.BridgeInteractorIF {
+			config := domain.DefaultBridgeConfig()
+			players := []*domain.BridgePlayer{
+				domain.NewBridgePlayer(true, 0),
+				domain.NewBridgePlayer(false, 1),
+				domain.NewBridgePlayer(false, 0),
+				domain.NewBridgePlayer(false, 1),
+			}
+			bridge := domain.NewBridge(domain.NewTrumpCards(0), players, config)
+			return usecase.NewBridgeInteractor(bridge, new(presenter.BridgeWebPresenter))
+		},
+		func(data []byte) (usecase.BridgeInteractorIF, error) {
+			return usecase.RestoreBridgeInteractor(data, new(presenter.BridgeWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.BridgeInteractorIF], f func() usecase.BridgeInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewBridgeWebControllerWithProvider(p, f)
+		},
+	)
+
+	// Speed
+	registerKV(mux, "/speed/exec", "speed:",
+		func() usecase.SpeedInteractorIF {
+			config := domain.DefaultSpeedConfig()
+			players := []*domain.SpeedPlayer{
+				domain.NewSpeedPlayer(true),
+				domain.NewSpeedPlayer(false),
+			}
+			speed := domain.NewSpeed(domain.NewTrumpCards(0), players, config)
+			return usecase.NewSpeedInteractor(speed, new(presenter.SpeedWebPresenter))
+		},
+		func(data []byte) (usecase.SpeedInteractorIF, error) {
+			return usecase.RestoreSpeedInteractor(data, new(presenter.SpeedWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.SpeedInteractorIF], f func() usecase.SpeedInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewSpeedWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

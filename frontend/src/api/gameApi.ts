@@ -2,6 +2,7 @@ import type {
   ActionLogResponse,
   BaccaratResponse,
   BlackJackResponse,
+  BridgeResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoConfigInput,
@@ -20,11 +21,14 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  PineappleResponse,
   PokerResponse,
   PyramidResponse,
   SevensResponse,
   ShortDeckResponse,
   SpadesResponse,
+  SpeedConfig,
+  SpeedResponse,
   SpiderResponse,
   ThreeCardResponse,
   TriPeaksResponse,
@@ -52,9 +56,11 @@ const workerUrl: Record<string, string> = {
   deuceswild: WORKER_CASINO,
   jokerpoker: WORKER_CASINO,
   threecard: WORKER_CASINO,
+  pineapple: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
+  bridge: WORKER_CLASSIC,
   napoleon: WORKER_CLASSIC,
   ohhell: WORKER_CLASSIC,
   oldmaid: WORKER_CLASSIC,
@@ -62,6 +68,7 @@ const workerUrl: Record<string, string> = {
   daifugo: WORKER_CLASSIC,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
+  speed: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
@@ -292,6 +299,58 @@ export const holdemApi = {
       humanPlayMs,
       profile,
       ...config,
+    }),
+};
+
+/** Configuration options for Pineapple Poker (extends Hold'em with cardIdx for discard). */
+export interface PineappleConfigInput extends HoldemConfigInput {
+  cardIdx?: number;
+}
+
+/** API client for the Pineapple Poker /pineapple/exec endpoint. */
+export const pineappleApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'fold'
+      | 'check'
+      | 'call'
+      | 'bet'
+      | 'raise'
+      | 'allin'
+      | 'rebuy'
+      | 'skiprebuy'
+      | 'addon'
+      | 'skipaddon'
+      | 'muck'
+      | 'show'
+      | 'discard',
+    amount?: number,
+    config?: PineappleConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) =>
+    gameExec<PineappleResponse>('pineapple', {
+      command,
+      amount,
+      humanPlayMs,
+      profile,
+      cardIdx: config?.cardIdx,
+      smallBlind: config?.smallBlind,
+      bigBlind: config?.bigBlind,
+      tournamentMode: config?.tournamentMode,
+      blindLevelHands: config?.blindLevelHands,
+      blindMultiplier: config?.blindMultiplier,
+      bettingLimit: config?.bettingLimit,
+      tableSize: config?.tableSize,
+      rebuyEnabled: config?.rebuyEnabled,
+      rebuyMaxCount: config?.rebuyMaxCount,
+      rebuyChips: config?.rebuyChips,
+      rebuyPeriodHands: config?.rebuyPeriodHands,
+      addonEnabled: config?.addonEnabled,
+      addonChips: config?.addonChips,
+      addonAfterHand: config?.addonAfterHand,
+      cpuMetaAI: config?.cpuMetaAI,
     }),
 };
 
@@ -679,6 +738,31 @@ export const indianpokerApi = {
     }),
 };
 
+/** Configuration options for Bridge game settings. */
+export interface BridgeConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Bridge /bridge/exec endpoint. */
+export const bridgeApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    cardIndex?: number,
+    bidType?: number,
+    bidLevel?: number,
+    bidSuit?: number,
+    config?: BridgeConfigInput,
+  ) =>
+    gameExec<BridgeResponse>('bridge', {
+      command,
+      cardIndex,
+      bidType,
+      bidLevel,
+      bidSuit,
+      config,
+    }),
+};
+
 /** Configuration options for Euchre game settings. */
 export interface EuchreConfigInput {
   cpuDifficulty?: number;
@@ -743,6 +827,16 @@ export const jokerpokerApi = {
     gameExec<VideoPokerResponse>('jokerpoker', { command, amount, indices }),
 };
 
+/** API client for the Speed /speed/exec endpoint. */
+export const speedApi = {
+  exec: (
+    command: 'reset' | 'play' | 'flip' | 'hint' | 'log',
+    cardIndex?: number,
+    pileIndex?: number,
+    config?: SpeedConfig,
+  ) => gameExec<SpeedResponse>('speed', { command, cardIndex, pileIndex, ...config }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -753,6 +847,7 @@ const games = [
   'holdem',
   'omaha',
   'shortdeck',
+  'pineapple',
   'hearts',
   'spades',
   'napoleon',
@@ -769,10 +864,12 @@ const games = [
   'deuceswild',
   'jokerpoker',
   'euchre',
+  'bridge',
   'pyramid',
   'tripeaks',
   'cribbage',
   'threecard',
+  'speed',
 ] as const;
 type Game = (typeof games)[number];
 

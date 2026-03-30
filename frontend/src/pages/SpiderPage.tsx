@@ -7,6 +7,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { LandscapeBanner } from '../components/LandscapeBanner';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -101,6 +102,7 @@ function SpiderPageContent() {
     handleUndo,
     handleSelectSource,
     handleSelectTarget,
+    isAutoCompleting,
   } = useSpiderGame();
   const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
 
@@ -153,6 +155,7 @@ function SpiderPageContent() {
           {t('score')}: {state.score}
         </span>
         <TutorialButton />
+        <ManualButton gamePath="/spider" />
         <span className="ml-3" data-tutorial="spd-completed-suits">
           {t('completed')}: {state.completedSuits}/8
         </span>
@@ -274,19 +277,29 @@ function SpiderPageContent() {
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (
             <div data-tutorial="spd-controls">
-              <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
+              <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading || isAutoCompleting}>
                 {t('deal')}
               </button>
-              <button type="button" className={btnPrimary} onClick={handleUndo} disabled={loading || !state.canUndo}>
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={handleUndo}
+                disabled={loading || isAutoCompleting || !state.canUndo}
+              >
                 {t('undo')}
               </button>
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || isAutoCompleting}>
                 {t('hint')}
               </button>
-              <button type="button" className={btnSuccess} onClick={handleAutoComplete} disabled={loading}>
+              <button
+                type="button"
+                className={btnSuccess}
+                onClick={handleAutoComplete}
+                disabled={loading || isAutoCompleting}
+              >
                 {t('autoComplete')}
               </button>
-              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading || isAutoCompleting}>
                 {t('giveup')}
               </button>
             </div>

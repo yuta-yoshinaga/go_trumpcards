@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { CountdownBar } from '../components/doubt/CountdownBar';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
 import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -9,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -29,6 +31,7 @@ import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess, focusRingB
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoubtCpuAction } from '../types/card';
+import { DoubtPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
@@ -150,7 +153,7 @@ function DoubtPageContent() {
   if (!state) return <DoubtSkeleton />;
 
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
-  const isDoubtPhase = state.phase === 1;
+  const isDoubtPhase = state.phase === DoubtPhase.DOUBT;
   const cpuPlayed = isDoubtPhase && state.lastAction !== null && !state.players[state.lastAction.playerIdx]?.isHuman;
 
   const cpuTells = new Set(
@@ -168,6 +171,7 @@ function DoubtPageContent() {
         isHumanTurn={isHumanTurn}
       >
         <TutorialButton />
+        <ManualButton gamePath="/doubt" />
       </PhaseIndicator>
       {/* Settings panel */}
       <SettingsPanel
@@ -242,9 +246,11 @@ function DoubtPageContent() {
                   <>
                     <div className="text-white font-bold mb-2">{t('doubtQuestion')}</div>
                     {countdown !== null && (
-                      <div className="text-yellow-300 text-lg font-bold mb-2" aria-live="assertive" aria-atomic="true">
-                        {t('countdown', { sec: countdown })}
-                      </div>
+                      <CountdownBar
+                        remaining={countdown}
+                        total={state.doubtWindowSec}
+                        label={t('countdown', { sec: countdown })}
+                      />
                     )}
                     {state.cpuDoubters.length > 0 && (
                       <div className="text-game-text-muted text-xs mb-2">

@@ -69,9 +69,9 @@ func (ti *ThreeCardInteractor) Snapshot() ([]byte, error) {
 
 // RestoreThreeCardInteractor deserialises JSON into a ThreeCardInteractor.
 func RestoreThreeCardInteractor(data []byte, tp presenter.ThreeCardPresenter) (*ThreeCardInteractor, error) {
-	var tc domain.ThreeCard
-	if err := json.Unmarshal(data, &tc); err != nil {
+	tc, err := restoreGame[domain.ThreeCard](data)
+	if err != nil {
 		return nil, err
 	}
-	return &ThreeCardInteractor{tc: &tc, tp: tp}, nil
+	return &ThreeCardInteractor{tc: tc, tp: tp}, nil
 }

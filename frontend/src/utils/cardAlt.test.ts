@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import i18n from '../i18n';
 import type { CardDesign } from '../types/card';
 import { cardAlt } from './cardAlt';
 
 describe('cardAlt', () => {
-  it('returns ジョーカー for JOKER', () => {
-    expect(cardAlt({ design: 'JOKER', value: 0 })).toBe('ジョーカー');
+  it('returns localized joker text for JOKER', () => {
+    expect(cardAlt({ design: 'JOKER', value: 0 })).toBe(i18n.t('common:card.joker'));
   });
 
   it.each<[CardDesign, string]>([

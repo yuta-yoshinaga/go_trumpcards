@@ -150,10 +150,8 @@ func indianPokerDispatch(bc *baseController, w http.ResponseWriter, ipi usecase.
 		bc.writePresenterResponse(w, ipi.Action(domain.IndianPokerActionRaise, param.Amount, param.HumanPlayMs))
 	case "a", "allin":
 		bc.writePresenterResponse(w, ipi.Action(domain.IndianPokerActionAllIn, 0, param.HumanPlayMs))
-	case "log", "l":
-		bc.writePresenterResponse(w, ipi.ActionLog())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, ipi.ActionLog)
 	}
 	return true
 }

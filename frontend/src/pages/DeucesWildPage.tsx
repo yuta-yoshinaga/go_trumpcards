@@ -63,6 +63,7 @@ export function DeucesWildPage() {
         i18nNamespace="deuceswild"
         apiExec={deuceswildApi.exec}
         payoutTableRows={DW_PAYOUT_ROWS}
+        gamePath="/deuceswild"
       />
     </TutorialProvider>
   );

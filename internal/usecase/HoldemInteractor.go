@@ -120,9 +120,9 @@ func (hi *HoldemInteractor) Snapshot() ([]byte, error) {
 
 // RestoreHoldemInteractor deserialises JSON into a HoldemInteractor.
 func RestoreHoldemInteractor(data []byte, hp presenter.HoldemPresenter) (*HoldemInteractor, error) {
-	var h domain.Holdem
-	if err := json.Unmarshal(data, &h); err != nil {
+	h, err := restoreGame[domain.Holdem](data)
+	if err != nil {
 		return nil, err
 	}
-	return &HoldemInteractor{h: &h, hp: hp}, nil
+	return &HoldemInteractor{h: h, hp: hp}, nil
 }

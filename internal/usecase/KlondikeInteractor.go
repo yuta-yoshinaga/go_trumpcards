@@ -115,9 +115,9 @@ func (ki *KlondikeInteractor) Snapshot() ([]byte, error) {
 
 // RestoreKlondikeInteractor deserialises JSON into a KlondikeInteractor.
 func RestoreKlondikeInteractor(data []byte, kp presenter.KlondikePresenter) (*KlondikeInteractor, error) {
-	var kl domain.Klondike
-	if err := json.Unmarshal(data, &kl); err != nil {
+	kl, err := restoreGame[domain.Klondike](data)
+	if err != nil {
 		return nil, err
 	}
-	return &KlondikeInteractor{k: &kl, kp: kp}, nil
+	return &KlondikeInteractor{k: kl, kp: kp}, nil
 }

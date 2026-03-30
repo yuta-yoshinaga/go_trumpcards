@@ -18,4 +18,14 @@ describe('ScrollFadeHint', () => {
     const { container } = render(<ScrollFadeHint />);
     expect(container.firstElementChild?.className).toContain('pointer-events-none');
   });
+
+  it('uses from-black/50 gradient for dark background visibility', () => {
+    const { container } = render(<ScrollFadeHint />);
+    expect(container.firstElementChild?.className).toContain('from-black/50');
+  });
+
+  it('has w-8 width for sufficient gradient visibility', () => {
+    const { container } = render(<ScrollFadeHint />);
+    expect(container.firstElementChild?.className).toContain('w-8');
+  });
 });

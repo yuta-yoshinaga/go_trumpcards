@@ -441,4 +441,19 @@ describe('MemoryPage', () => {
     const faceUpBtn = screen.getByTestId('board-5');
     expect(faceUpBtn).toHaveAttribute('aria-label', '♠ 3');
   });
+
+  it('board grid uses 6-column layout on mobile', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    const boardGrid = screen.getByTestId('board-0').parentElement;
+    expect(boardGrid).toHaveClass('grid-cols-6');
+  });
+
+  it('face-down cards have subtle border instead of thick blue border', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
+    const cardBtn = screen.getByTestId('board-0');
+    expect(cardBtn.className).not.toContain('border-blue-600');
+    expect(cardBtn.className).toContain('border-white/10');
+  });
 });

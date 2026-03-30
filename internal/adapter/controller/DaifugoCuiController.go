@@ -55,6 +55,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 		[]string{
 			"p", "play", "sort", "sd", "setdifficulty", "sj", "setjoker",
 			"sr", "setrule", "suitlockmode", "5skipcount",
+			"log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -108,8 +109,9 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					cfg.FiveSkipCount = v
 					return c.dgi.ResetWithConfig(cfg)
 				})
+			default:
+				return handleCuiLog(cmd, c.dgi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

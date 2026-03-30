@@ -64,6 +64,7 @@ export function JokerPokerPage() {
         i18nNamespace="jokerpoker"
         apiExec={jokerpokerApi.exec}
         payoutTableRows={JP_PAYOUT_ROWS}
+        gamePath="/jokerpoker"
       />
     </TutorialProvider>
   );

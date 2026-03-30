@@ -79,12 +79,10 @@ func baccaratDispatch(bc *baseController, w http.ResponseWriter, bi usecase.Bacc
 		ppBet := deref(param.PlayerPairBet)
 		bpBet := deref(param.BankerPairBet)
 		bc.writePresenterResponse(w, bi.Bet(param.Amount, bt, ppBet, bpBet))
-	case "log", "l":
-		bc.writePresenterResponse(w, bi.ActionLog())
 	case "ch", "clearhistory":
 		bc.writePresenterResponse(w, bi.ClearHistory())
 	default:
-		return false
+		return dispatchLog(param.Command, bc, w, bi.ActionLog)
 	}
 	return true
 }

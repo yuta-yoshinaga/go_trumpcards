@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // KlondikeGame クロンダイクゲームインタフェース
 type KlondikeGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// ResetWithConfig 指定設定でゲームを初期化する
@@ -43,8 +44,6 @@ type KlondikeGame interface {
 	GetFoundation() [domain.KlondikeFoundationCnt][]*domain.Card
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// GetDrawCount ドロー枚数設定を取得する
 	GetDrawCount() int
 	// GetScore 現在のスコアを取得する

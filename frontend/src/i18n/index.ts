@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 
 import enBaccarat from './locales/en/baccarat.json';
 import enBlackjack from './locales/en/blackjack.json';
+import enBridge from './locales/en/bridge.json';
 import enCommon from './locales/en/common.json';
 import enCrazyeights from './locales/en/crazyeights.json';
 import enCribbage from './locales/en/cribbage.json';
@@ -23,11 +24,13 @@ import enNapoleon from './locales/en/napoleon.json';
 import enOhhell from './locales/en/ohhell.json';
 import enOldmaid from './locales/en/oldmaid.json';
 import enOmaha from './locales/en/omaha.json';
+import enPineapple from './locales/en/pineapple.json';
 import enPoker from './locales/en/poker.json';
 import enPyramid from './locales/en/pyramid.json';
 import enSevens from './locales/en/sevens.json';
 import enShortdeck from './locales/en/shortdeck.json';
 import enSpades from './locales/en/spades.json';
+import enSpeed from './locales/en/speed.json';
 import enSpider from './locales/en/spider.json';
 import enThreecard from './locales/en/threecard.json';
 import enTripeaks from './locales/en/tripeaks.json';
@@ -35,6 +38,7 @@ import enTutorial from './locales/en/tutorial.json';
 import enVideopoker from './locales/en/videopoker.json';
 import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
+import jaBridge from './locales/ja/bridge.json';
 import jaCommon from './locales/ja/common.json';
 import jaCrazyeights from './locales/ja/crazyeights.json';
 import jaCribbage from './locales/ja/cribbage.json';
@@ -54,11 +58,13 @@ import jaNapoleon from './locales/ja/napoleon.json';
 import jaOhhell from './locales/ja/ohhell.json';
 import jaOldmaid from './locales/ja/oldmaid.json';
 import jaOmaha from './locales/ja/omaha.json';
+import jaPineapple from './locales/ja/pineapple.json';
 import jaPoker from './locales/ja/poker.json';
 import jaPyramid from './locales/ja/pyramid.json';
 import jaSevens from './locales/ja/sevens.json';
 import jaShortdeck from './locales/ja/shortdeck.json';
 import jaSpades from './locales/ja/spades.json';
+import jaSpeed from './locales/ja/speed.json';
 import jaSpider from './locales/ja/spider.json';
 import jaThreecard from './locales/ja/threecard.json';
 import jaTripeaks from './locales/ja/tripeaks.json';
@@ -79,8 +85,10 @@ i18n
         sevens: jaSevens,
         doubt: jaDoubt,
         euchre: jaEuchre,
+        bridge: jaBridge,
         holdem: jaHoldem,
         omaha: jaOmaha,
+        pineapple: jaPineapple,
         shortdeck: jaShortdeck,
         hearts: jaHearts,
         spades: jaSpades,
@@ -101,6 +109,7 @@ i18n
         videopoker: jaVideopoker,
         deuceswild: jaDeuceswild,
         jokerpoker: jaJokerpoker,
+        speed: jaSpeed,
         tutorial: jaTutorial,
       },
       en: {
@@ -112,8 +121,10 @@ i18n
         sevens: enSevens,
         doubt: enDoubt,
         euchre: enEuchre,
+        bridge: enBridge,
         holdem: enHoldem,
         omaha: enOmaha,
+        pineapple: enPineapple,
         shortdeck: enShortdeck,
         hearts: enHearts,
         spades: enSpades,
@@ -134,6 +145,7 @@ i18n
         videopoker: enVideopoker,
         deuceswild: enDeuceswild,
         jokerpoker: enJokerpoker,
+        speed: enSpeed,
         tutorial: enTutorial,
       },
     },
@@ -148,8 +160,10 @@ i18n
       'sevens',
       'doubt',
       'euchre',
+      'bridge',
       'holdem',
       'omaha',
+      'pineapple',
       'shortdeck',
       'hearts',
       'spades',
@@ -170,6 +184,7 @@ i18n
       'videopoker',
       'deuceswild',
       'jokerpoker',
+      'speed',
       'tutorial',
     ],
     detection: {

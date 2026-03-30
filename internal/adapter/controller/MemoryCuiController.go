@@ -37,10 +37,9 @@ func (c *MemoryCuiController) Exec(command string) string {
 					cfg.CpuDifficulty = domain.MemoryCpuDifficulty(v)
 					return c.mi.ResetWithConfig(cfg)
 				})
-			case "log", "l":
-				return c.mi.ActionLog(), true
+			default:
+				return handleCuiLog(cmd, c.mi.ActionLog)
 			}
-			return "", false
 		},
 	)
 }

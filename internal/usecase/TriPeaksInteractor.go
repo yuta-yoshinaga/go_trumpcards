@@ -80,9 +80,9 @@ func (ti *TriPeaksInteractor) Snapshot() ([]byte, error) {
 
 // RestoreTriPeaksInteractor deserialises JSON into a TriPeaksInteractor.
 func RestoreTriPeaksInteractor(data []byte, tp presenter.TriPeaksPresenter) (*TriPeaksInteractor, error) {
-	var tripeaks domain.TriPeaks
-	if err := json.Unmarshal(data, &tripeaks); err != nil {
+	tripeaks, err := restoreGame[domain.TriPeaks](data)
+	if err != nil {
 		return nil, err
 	}
-	return &TriPeaksInteractor{t: &tripeaks, tp: tp}, nil
+	return &TriPeaksInteractor{t: tripeaks, tp: tp}, nil
 }

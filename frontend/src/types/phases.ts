@@ -7,6 +7,7 @@
  *   - CrazyEights: internal/domain/CrazyEights.go (CrazyEightsPhasePlay, CrazyEightsPhaseChooseSuit, CrazyEightsPhaseRoundEnd, CrazyEightsPhaseGameEnd)
  *   - Cribbage:    internal/domain/Cribbage.go    (CribbagePhaseDiscard, CribbagePhaseCut, CribbagePhasePegging, CribbagePhaseShow, CribbagePhaseRoundEnd, CribbagePhaseGameEnd)
  *   - Doubt:       internal/domain/Doubt.go       (DoubtPhasePlay, DoubtPhaseDoubt, DoubtPhaseEnd)
+ *   - Bridge:      internal/domain/Bridge.go      (BridgePhaseBid, BridgePhasePlay, BridgePhaseTrickEnd, BridgePhaseRoundEnd, BridgePhaseGameEnd)
  *   - Euchre:      internal/domain/Euchre.go      (EuchrePhasePickUp, EuchrePhaseCallTrump, EuchrePhaseDiscard, EuchrePhasePlay, EuchrePhaseTrickEnd, EuchrePhaseRoundEnd, EuchrePhaseGameEnd)
  *   - FreeCell:    internal/domain/FreeCell.go    (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
  *   - GinRummy:    internal/domain/GinRummy.go    (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
@@ -80,6 +81,14 @@ export const HoldemRebuyPhaseType = {
 export const OmahaPhase = HoldemPhase;
 /** Omaha Hold'em rebuy phase type constants (same as Holdem). */
 export const OmahaRebuyPhaseType = HoldemRebuyPhaseType;
+
+/** Pineapple Poker phase constants (extends Hold'em with DISCARD phase). */
+export const PineapplePhase = {
+  ...HoldemPhase,
+  DISCARD: 8,
+} as const;
+/** Pineapple Poker rebuy phase type constants (same as Holdem). */
+export const PineappleRebuyPhaseType = HoldemRebuyPhaseType;
 
 /** Short Deck Hold'em phase constants (same as Holdem). */
 export const ShortDeckPhase = HoldemPhase;
@@ -248,9 +257,32 @@ export const EuchrePhase = {
   GAME_END: 6,
 } as const;
 
+/** Bridge phase constants (sync: internal/domain/Bridge.go). */
+export const BridgePhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Three Card Poker phase constants (sync: internal/domain/ThreeCard.go). */
 export const ThreeCardPhase = {
   BET: 1,
   ACTION: 2,
   END: 3,
+} as const;
+
+/** Doubt phase constants (sync: internal/domain/Doubt.go). */
+export const DoubtPhase = {
+  PLAY: 0,
+  DOUBT: 1,
+  END: 2,
+} as const;
+
+/** Speed phase constants (sync: internal/domain/Speed.go). */
+export const SpeedPhase = {
+  PLAY: 0,
+  STUCK: 1,
+  GAME_END: 2,
 } as const;

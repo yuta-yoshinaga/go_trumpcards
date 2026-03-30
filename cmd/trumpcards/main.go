@@ -63,6 +63,9 @@ GAMES:
   cribbage     Cribbage (クリベッジ)
   threecard    Three Card Poker (スリーカードポーカー)
   ohhell       Oh Hell (オー・ヘル)
+  bridge       Contract Bridge (コントラクトブリッジ)
+  pineapple    Pineapple Poker (パイナップルポーカー)
+  speed        Speed (スピード)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -164,8 +167,11 @@ ENVIRONMENT VARIABLES:
 		"cribbage":    func() int { ui.NewCribbageCui().Exec(); return 0 },
 		"threecard":   func() int { ui.NewThreeCardCui().Exec(); return 0 },
 		"ohhell":      func() int { ui.NewOhHellCui().Exec(); return 0 },
+		"bridge":      func() int { ui.NewBridgeCui().Exec(); return 0 },
+		"pineapple":   func() int { ui.NewPineappleCui().Exec(); return 0 },
+		"speed":       func() int { ui.NewSpeedCui().Exec(); return 0 },
 		"update": func() int {
-			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
+			updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 			if err := updater.Exec(); err != nil {
 				return 1
 			}
@@ -201,7 +207,7 @@ ENVIRONMENT VARIABLES:
 	}
 
 	// No argument: start interactive multi-game mode (defaults to blackjack).
-	fmt.Printf("trumpcards %s - Interactive Mode\n", version)
+	fmt.Println(i18n.Tf("cliStartupBanner", "version", version))
 	manager := ui.NewGameManager("blackjack")
 	ui.RunInteractiveCuiLoop(manager)
 	return 0

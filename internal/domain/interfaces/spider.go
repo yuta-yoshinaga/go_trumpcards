@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // SpiderGame スパイダーソリティアゲームインタフェース
 type SpiderGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// ResetWithConfig 指定設定でゲームを初期化する
@@ -35,8 +36,6 @@ type SpiderGame interface {
 	GetCompletedSuits() int
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// GetScore 現在のスコアを取得する
 	GetScore() int
 	// GetDifficulty 難易度を取得する

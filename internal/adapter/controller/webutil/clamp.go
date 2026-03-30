@@ -11,3 +11,11 @@ func BoundedIntPtr(ptr *int, lo, hi, defaultVal int) int {
 	}
 	return val
 }
+
+// BoolPtrOr returns *ptr if non-nil, otherwise defaultVal.
+func BoolPtrOr(ptr *bool, defaultVal bool) bool {
+	if ptr == nil {
+		return defaultVal
+	}
+	return *ptr
+}

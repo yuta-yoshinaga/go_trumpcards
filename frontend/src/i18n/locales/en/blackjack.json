@@ -51,6 +51,7 @@
   },
   "trueCountNA": "TC=N/A",
   "advancedSettings": "Advanced Settings",
+  "sideBetActive": "Side Bets",
   "sideBetLabel": {
     "pp": "PP (Pair Bet):",
     "t3": "21+3:"

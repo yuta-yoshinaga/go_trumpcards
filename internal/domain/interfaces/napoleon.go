@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // NapoleonGame ナポレオンゲームインタフェース
 type NapoleonGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// NextRound 次のラウンドを開始する
@@ -86,6 +87,4 @@ type NapoleonGame interface {
 	GetValidPlayIndices(playerIdx int) []int
 	// GetHint ヒントを取得する
 	GetHint() *domain.NapoleonHint
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }

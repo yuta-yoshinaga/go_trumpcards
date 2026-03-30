@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // CribbageGame クリベッジゲームインタフェース
 type CribbageGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// NextRound 次のラウンドを開始する
@@ -40,8 +41,6 @@ type CribbageGame interface {
 	GetWinnerIdx() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.CribbagePlayer
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 	// GetCrib クリブを取得する
 	GetCrib() []*domain.Card
 	// GetStarter スターターカードを取得する

@@ -107,16 +107,12 @@ func klondikeDispatch(bc *baseController, w http.ResponseWriter, ki usecase.Klon
 		return klondikeMoveDispatch(bc, w, ki, param, newDefault)
 	case "g", "giveup":
 		bc.writePresenterResponse(w, ki.GiveUp())
-	case "h", "hint":
-		bc.writePresenterResponse(w, ki.Hint())
 	case "ac", "autocomplete":
 		bc.writePresenterResponse(w, ki.AutoComplete())
-	case "log", "l":
-		bc.writePresenterResponse(w, ki.ActionLog())
 	case "u", "undo":
 		bc.writePresenterResponse(w, ki.Undo())
 	default:
-		return false
+		return dispatchHintAndLog(param.Command, bc, w, ki.Hint, ki.ActionLog)
 	}
 	return true
 }

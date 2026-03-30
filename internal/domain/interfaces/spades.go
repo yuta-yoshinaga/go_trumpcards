@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // SpadesGame スペードゲームインタフェース
 type SpadesGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// NextRound 次のラウンドを開始する
@@ -58,6 +59,4 @@ type SpadesGame interface {
 	GetPlayer(i int) *domain.SpadesPlayer
 	// GetHint ヒントを取得する
 	GetHint() *domain.SpadesHint
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }

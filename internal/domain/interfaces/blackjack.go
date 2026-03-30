@@ -4,6 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // BlackJackGame ブラックジャックゲームインタフェース
 type BlackJackGame interface {
+	BaseGame
 	// Reset ゲームを初期化する
 	Reset()
 	// PlayerBet プレイヤーがベットしてゲームを開始する
@@ -83,6 +84,4 @@ type BlackJackGame interface {
 	CanSurrenderHand(handIdx int) bool
 	// CanSurrenderCpuHand CPUハンドのサレンダー可否を返す
 	CanSurrenderCpuHand(cpuIdx, handIdx int) bool
-	// GetActionLog 棋譜を取得する
-	GetActionLog() []*domain.ActionLogEntry
 }
