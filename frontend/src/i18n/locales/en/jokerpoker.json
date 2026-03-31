@@ -42,6 +42,16 @@
     "drawButton": "Press Draw to replace unheld cards. Kings or Better wins!",
     "resetButton": "Press New Hand to start the next round."
   },
+  "hint": {
+    "holdPair": "Hold the pair",
+    "holdTrips": "Hold three of a kind",
+    "holdQuads": "Hold four of a kind",
+    "holdFlushDraw": "Hold the flush draw",
+    "holdStraightDraw": "Hold the straight draw",
+    "holdHighCards": "Hold high cards",
+    "holdWild": "Always hold wild cards",
+    "drawAll": "No strong holds — draw all"
+  },
   "card": "Card {{index}}",
   "dealGuide": "Select coins and deal to start"
 }

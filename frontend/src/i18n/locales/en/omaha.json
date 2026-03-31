@@ -57,5 +57,13 @@
     "potDisplay": "Shows pot size and blind levels.",
     "cpuArea": "CPU opponent information.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "positiveEV": "Positive expected value — raise recommended",
+    "marginalEV": "Marginal expected value — call recommended",
+    "negativeEV": "Negative expected value — fold recommended",
+    "strongHandRank": "Strong hand — raise recommended",
+    "decentHandRank": "Decent hand — call recommended",
+    "weakHandRank": "Weak hand — fold recommended"
   }
 }

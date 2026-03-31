@@ -1,14 +1,45 @@
 import { useMemo } from 'react';
-import type { BlackJackResponse, HeartsResponse, PokerResponse, SpadesResponse } from '../types/card';
+import type {
+  BlackJackResponse,
+  HeartsResponse,
+  HoldemResponse,
+  IndianPokerResponse,
+  OmahaResponse,
+  PineappleResponse,
+  PokerResponse,
+  ShortDeckResponse,
+  SpadesResponse,
+  VideoPokerResponse,
+} from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
+import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
+import { getHoldemHint } from '../utils/hints/holdemHint';
+import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
+import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
+import { getOmahaHint } from '../utils/hints/omahaHint';
+import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
+import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
+import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
 /** Supported game names for the hint system. */
-type HintGameName = 'blackjack' | 'poker' | 'hearts' | 'spades';
+type HintGameName =
+  | 'blackjack'
+  | 'poker'
+  | 'hearts'
+  | 'spades'
+  | 'holdem'
+  | 'omaha'
+  | 'shortdeck'
+  | 'pineapple'
+  | 'videopoker'
+  | 'deuceswild'
+  | 'jokerpoker'
+  | 'indianpoker';
 
 /** Return type of the useGameHint hook. */
 export interface UseGameHintReturn {
@@ -35,6 +66,22 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
         return getHeartsHint(state as HeartsResponse);
       case 'spades':
         return getSpadesHint(state as SpadesResponse);
+      case 'holdem':
+        return getHoldemHint(state as HoldemResponse);
+      case 'omaha':
+        return getOmahaHint(state as OmahaResponse);
+      case 'shortdeck':
+        return getShortDeckHint(state as ShortDeckResponse);
+      case 'pineapple':
+        return getPineappleHint(state as PineappleResponse);
+      case 'videopoker':
+        return getVideoPokerHint(state as VideoPokerResponse);
+      case 'deuceswild':
+        return getDeucesWildHint(state as VideoPokerResponse);
+      case 'jokerpoker':
+        return getJokerPokerHint(state as VideoPokerResponse);
+      case 'indianpoker':
+        return getIndianPokerHint(state as IndianPokerResponse);
       default:
         return null;
     }

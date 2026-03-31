@@ -13,6 +13,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -25,6 +26,7 @@ import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -156,6 +158,7 @@ function PineapplePageContent() {
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('pineapple', state);
   const [selectedDiscard, setSelectedDiscard] = useState<number | null>(null);
   const turnStartRef = useRef(0);
 
@@ -516,6 +519,9 @@ function PineapplePageContent() {
           </div>
         )}
 
+        {/* Hint */}
+        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
         {/* Betting controls */}
         {canAct && (
           <div data-tutorial="pn-action-buttons">
@@ -539,6 +545,10 @@ function PineapplePageContent() {
 
         {/* Settings + Reset */}
         <div className="text-center flex items-center justify-center gap-3" data-tutorial="pn-reset-button">
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+            {tc('hint.toggle', { ns: 'tutorial' })}
+          </label>
           <label className="text-white text-sm flex items-center gap-1">
             <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
             {t('settings.cpuMetaAI')}

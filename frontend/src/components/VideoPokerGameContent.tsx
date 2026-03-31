@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -15,6 +16,7 @@ import { GameFooter } from './GameFooter';
 import { GameMessageBox } from './GameMessageBox';
 import { GamePageHeading } from './GamePageHeading';
 import { GameResetDialog } from './GameResetDialog';
+import { HintTooltip } from './hint/HintTooltip';
 import { ManualButton } from './ManualButton';
 import { AnimatedCard } from './motion/AnimatedCard';
 import { WinCelebration } from './motion/WinCelebration';
@@ -70,6 +72,10 @@ export function VideoPokerGameContent({
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi } = useGameApi(apiExec);
+  const { hint, hintEnabled, setHintEnabled } = useGameHint(
+    gameName as 'videopoker' | 'deuceswild' | 'jokerpoker',
+    state,
+  );
 
   useEffect(() => {
     execApi('reset');
@@ -211,6 +217,7 @@ export function VideoPokerGameContent({
 
       <GameFooter className={`${gameTheme[gameName].footer} px-4 pt-3`}>
         {!isBetPhase && <ErrorAlert message={error} />}
+        {hintEnabled && hint && <HintTooltip reason={tNs(hint.reason)} confidence={hint.confidence} />}
         {isDrawPhase && (
           <div className="flex justify-center gap-2 pb-2" data-tutorial="vp-draw-button">
             <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
@@ -235,6 +242,12 @@ export function VideoPokerGameContent({
             </button>
           </div>
         )}
+        <div className="flex justify-center pb-2">
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+            {tc('hint.toggle', { ns: 'tutorial' })}
+          </label>
+        </div>
       </GameFooter>
       <WinCelebration show={isResultPhase && state.result === 1} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
