@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -17,6 +18,7 @@ import { OhHellSkeleton } from '../components/skeleton/OhHellSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import {
   CPU_DIFFICULTY_OPTIONS,
@@ -123,6 +125,11 @@ function OhHellPageContent() {
     hintLoading,
     handleHint,
   } = useOhHellGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('ohhell', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const [bidValue, setBidValue] = useState(0);
 
@@ -215,6 +222,13 @@ function OhHellPageContent() {
                   label: t(`settings.${o.labelKey}`),
                 })),
                 onSelect: (v) => handleConfigChange('roundDirection', v),
+              },
+              {
+                type: 'checkbox',
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
               },
             ],
           },
@@ -384,6 +398,9 @@ function OhHellPageContent() {
               ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
               : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
           </div>
+        )}
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
         )}
         <div className="flex gap-2 items-center" data-tutorial="oh-play-button">
           {(isHumanBidTurn || isHumanTurn) && (

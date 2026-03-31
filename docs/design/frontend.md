@@ -937,6 +937,7 @@ classDiagram
         +トリック表示エリア
         +スコアテーブル
         +ヒントシステム
+        +フロントエンドヒント (useGameHint)
     }
 
     class IndianPokerPage {
@@ -974,6 +975,7 @@ classDiagram
         +切り札・ターンアップカード表示
         +ゴーイングアローン選択
         +ヒントシステム
+        +フロントエンドヒント (useGameHint)
     }
 
     class PyramidPage {
@@ -1051,6 +1053,7 @@ classDiagram
         +ビッド入力(フック制限表示)
         +トリックカード表示
         +ヒントボタン
+        +フロントエンドヒント (useGameHint)
     }
 
     OhHellPage --|> GamePage : follows pattern

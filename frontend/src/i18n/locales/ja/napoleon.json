@@ -87,6 +87,18 @@
     "play_joker": "ジョーカーを使用",
     "discard_low": "低いカードを捨てる"
   },
+  "hint": {
+    "bidStrong": "強い手札 — 高くビッド推奨",
+    "bidModerate": "中程度の手札 — 控えめにビッド推奨",
+    "declareTrump": "最も強いスートを切り札に宣言推奨",
+    "discardWeakest": "最も弱い切り札以外のカードを捨てることを推奨",
+    "leadStrong": "強いカードでリード推奨",
+    "leadLow": "弱いカードでリード推奨",
+    "followSuit": "リードされたスートに従ってプレイ推奨",
+    "trumpCut": "切り札でカットするチャンス",
+    "playJoker": "ジョーカーを戦略的に使う",
+    "discardLow": "最も低いカードを捨てることを推奨"
+  },
   "tutorial": {
     "bidControls": "ビッドフェーズでは取れるトリック数を宣言します。最高ビッドの人がナポレオンになります。",
     "trumpDeclaration": "ナポレオンは切り札スートと副官カードを選びます。",
