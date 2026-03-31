@@ -61,6 +61,20 @@ describe('getVideoPokerBaseHint', () => {
     expect(result?.targetAction).toBe('hold:0,1');
   });
 
+  // Two pair — hold all 4 cards
+  it('suggests holding two pair', () => {
+    const hand = [
+      makeCard('SPADE', 10),
+      makeCard('HEART', 10),
+      makeCard('DIAMOND', 5),
+      makeCard('CLOVER', 5),
+      makeCard('SPADE', 3),
+    ];
+    const result = getVideoPokerBaseHint(makeState({ hand }), noWild);
+    expect(result?.reason).toBe('hint.holdPair');
+    expect(result?.targetAction).toBe('hold:0,1,2,3');
+  });
+
   // Three of a kind
   it('suggests holding three of a kind', () => {
     const hand = [
@@ -116,6 +130,33 @@ describe('getVideoPokerBaseHint', () => {
     const result = getVideoPokerBaseHint(makeState({ hand }), noWild);
     expect(result?.reason).toBe('hint.holdStraightDraw');
     expect(result?.targetAction).toBe('hold:0,1,2,3');
+  });
+
+  // Made straight (5 sequential)
+  it('suggests holding a made straight (5 cards)', () => {
+    const hand = [
+      makeCard('SPADE', 5),
+      makeCard('HEART', 6),
+      makeCard('DIAMOND', 7),
+      makeCard('CLOVER', 8),
+      makeCard('SPADE', 9),
+    ];
+    const result = getVideoPokerBaseHint(makeState({ hand }), noWild);
+    expect(result?.reason).toBe('hint.holdStraightDraw');
+    expect(result?.targetAction).toBe('hold:0,1,2,3,4');
+  });
+
+  // Ace-low wheel straight draw (A-2-3-4)
+  it('suggests holding Ace-low wheel straight draw', () => {
+    const hand = [
+      makeCard('SPADE', 14),
+      makeCard('HEART', 2),
+      makeCard('DIAMOND', 3),
+      makeCard('CLOVER', 4),
+      makeCard('SPADE', 10),
+    ];
+    const result = getVideoPokerBaseHint(makeState({ hand }), noWild);
+    expect(result?.reason).toBe('hint.holdStraightDraw');
   });
 
   // High cards

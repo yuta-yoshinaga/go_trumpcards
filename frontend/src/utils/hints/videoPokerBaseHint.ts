@@ -41,18 +41,20 @@ function getWildAwareHint(hand: Card[], wildIndices: number[], isWild: (card: Ca
 
 /** Hint for standard (no wild) video poker hands. */
 function getStandardHint(hand: Card[]): HintResult {
-  // Check for existing pairs/trips/quads
+  // Check for existing pairs/trips/quads — hold all groups of 2+
   const groups = groupByValue(hand);
-  const best = getBestGroup(groups);
+  const allGroupIndices = Array.from(groups.values())
+    .filter((indices) => indices.length >= 2)
+    .flat();
 
-  if (best.count >= 4) {
-    return { targetAction: formatHoldAction(best.indices, []), reason: 'hint.holdQuads', confidence: 'strong' };
-  }
-  if (best.count >= 3) {
-    return { targetAction: formatHoldAction(best.indices, []), reason: 'hint.holdTrips', confidence: 'strong' };
-  }
-  if (best.count >= 2) {
-    return { targetAction: formatHoldAction(best.indices, []), reason: 'hint.holdPair', confidence: 'moderate' };
+  if (allGroupIndices.length > 0) {
+    const maxCount = Math.max(...Array.from(groups.values()).map((g) => g.length));
+    const reason = maxCount >= 4 ? 'hint.holdQuads' : maxCount >= 3 ? 'hint.holdTrips' : 'hint.holdPair';
+    return {
+      targetAction: formatHoldAction(allGroupIndices, []),
+      reason,
+      confidence: maxCount >= 3 ? 'strong' : 'moderate',
+    };
   }
 
   // Check flush draw (4+ same suit)
@@ -92,17 +94,6 @@ function groupByValue(hand: Card[]): Map<number, number[]> {
   return groups;
 }
 
-/** Find the largest group of same-value cards. */
-function getBestGroup(groups: Map<number, number[]>): { count: number; indices: number[] } {
-  let best = { count: 0, indices: [] as number[] };
-  for (const indices of groups.values()) {
-    if (indices.length > best.count) {
-      best = { count: indices.length, indices };
-    }
-  }
-  return best;
-}
-
 /** Find 4+ cards of the same suit (flush draw). */
 function findFlushDraw(hand: Card[]): number[] | null {
   const suits = new Map<string, number[]>();
@@ -118,24 +109,45 @@ function findFlushDraw(hand: Card[]): number[] | null {
   return null;
 }
 
-/** Find 4+ sequential card values (straight draw). */
+/** Ace value used for high straights. */
+const ACE_HIGH = 14;
+
+/** Find 4+ sequential card values (straight draw), including Ace-low wheel (A-2-3-4-5). */
 function findStraightDraw(hand: Card[]): number[] | null {
-  const sorted = hand.map((c, i) => ({ value: c.value, index: i })).sort((a, b) => a.value - b.value);
-  for (let start = 0; start <= sorted.length - STRAIGHT_DRAW_COUNT; start++) {
+  const entries = hand.map((c, i) => ({ value: c.value, index: i }));
+
+  // Add Ace as low (value 1) for wheel detection
+  for (const e of hand) {
+    if (e.value === ACE_HIGH) {
+      entries.push({ value: 1, index: hand.indexOf(e) });
+    }
+  }
+
+  const sorted = entries.sort((a, b) => a.value - b.value);
+  let bestSeq: typeof sorted = [];
+
+  for (let start = 0; start < sorted.length; start++) {
     const seq = [sorted[start]];
-    for (let j = start + 1; j < sorted.length && seq.length < STRAIGHT_DRAW_COUNT; j++) {
+    for (let j = start + 1; j < sorted.length; j++) {
       if (sorted[j].value === seq[seq.length - 1].value + 1) {
         seq.push(sorted[j]);
+      } else if (sorted[j].value !== seq[seq.length - 1].value) {
+        break;
       }
     }
-    if (seq.length >= STRAIGHT_DRAW_COUNT) {
-      return seq.map((s) => s.index);
+    if (seq.length > bestSeq.length) {
+      bestSeq = seq;
     }
+  }
+
+  if (bestSeq.length >= STRAIGHT_DRAW_COUNT) {
+    const indices = [...new Set(bestSeq.map((s) => s.index))];
+    return indices;
   }
   return null;
 }
 
-/** Find pairs among non-wild cards and return their original indices. */
+/** Find all pairs/trips/quads among non-wild cards and return their indices. */
 function findPairHold(hand: Card[], isWild: (card: Card) => boolean): { indices: number[] } | null {
   const groups = new Map<number, number[]>();
   for (let i = 0; i < hand.length; i++) {
@@ -145,11 +157,10 @@ function findPairHold(hand: Card[], isWild: (card: Card) => boolean): { indices:
     arr.push(i);
     groups.set(v, arr);
   }
-  let best: number[] = [];
-  for (const indices of groups.values()) {
-    if (indices.length > best.length) best = indices;
-  }
-  return best.length >= 2 ? { indices: best } : null;
+  const allIndices = Array.from(groups.values())
+    .filter((indices) => indices.length >= 2)
+    .flat();
+  return allIndices.length >= 2 ? { indices: allIndices } : null;
 }
 
 /** Format hold action as "hold:0,1,3" string. */
