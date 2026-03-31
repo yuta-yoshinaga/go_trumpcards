@@ -55,7 +55,7 @@ describe('getBaccaratHint', () => {
     });
   });
 
-  it('returns moderate confidence player hint when betType is PLAYER', () => {
+  it('returns strong confidence banker hint when betType is PLAYER', () => {
     const result = getBaccaratHint(makeState({ phase: 1, betType: 0 }));
     expect(result).toEqual({
       targetAction: 'banker',

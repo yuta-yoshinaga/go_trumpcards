@@ -199,7 +199,8 @@ function BaccaratPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi } = useGameApi(baccaratApi.exec);
-  const { hint, hintEnabled, setHintEnabled } = useGameHint('baccarat', state);
+  const hintState = useMemo(() => (state ? { ...state, betType } : null), [state, betType]);
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('baccarat', hintState);
 
   useEffect(() => {
     execApi('reset');
