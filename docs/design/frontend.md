@@ -998,6 +998,14 @@ classDiagram
         +ショーフェーズスコア詳細
     }
 
+    class BaccaratPage {
+        +ベッティングUI (プレイヤー/バンカー/タイ)
+        +サイドベット (ペア)
+        +カード表示
+        +罫線 (Big Road)
+        +ヒントシステム
+    }
+
     class ThreeCardPage {
         +チップ表示
         +アンティ/ペアプラスベット入力
@@ -1005,6 +1013,7 @@ classDiagram
         +ディーラー3枚カード表示
         +プレイ/フォールドボタン
         +配当詳細表示(アンティ/プレイ/ボーナス/ペアプラス)
+        +ヒントシステム
     }
 
     BlackJackPage --|> GamePage : follows pattern
@@ -1032,6 +1041,7 @@ classDiagram
 
     ShortDeckPage --|> GamePage : follows pattern
     CribbagePage --|> GamePage : follows pattern
+    BaccaratPage --|> GamePage : follows pattern
     ThreeCardPage --|> GamePage : follows pattern
 
     class OhHellPage {

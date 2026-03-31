@@ -42,6 +42,14 @@
     "5": "スリーカード",
     "6": "ストレートフラッシュ"
   },
+  "hintReason": {
+    "strongHand": "ペア以上の役あり — プレイ推奨",
+    "queenHighPlay": "Q-6-4基準を満たしています — プレイ推奨",
+    "weakHand": "Q-6-4基準未満 — フォールド推奨"
+  },
+  "settings": {
+    "title": "設定"
+  },
   "betGuide": "アンテとペアプラスを設定してベット",
   "payoutRef": {
     "title": "配当表",

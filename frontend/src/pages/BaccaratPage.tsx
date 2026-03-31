@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -16,6 +18,7 @@ import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -196,6 +199,8 @@ function BaccaratPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi } = useGameApi(baccaratApi.exec);
+  const hintState = useMemo(() => (state ? { ...state, betType } : null), [state, betType]);
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('baccarat', hintState);
 
   useEffect(() => {
     execApi('reset');
@@ -327,6 +332,23 @@ function BaccaratPageContent() {
       {/* Footer */}
       <GameFooter className={`${gameTheme.baccarat.footer} px-4 pt-3`}>
         <ErrorAlert message={error} />
+        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+        <SettingsPanel
+          title={t('settings.title')}
+          groups={[
+            {
+              items: [
+                {
+                  type: 'checkbox',
+                  id: 'baccarat-hint',
+                  label: tc('hint.toggle', { ns: 'tutorial' }),
+                  checked: hintEnabled,
+                  onToggle: setHintEnabled,
+                },
+              ],
+            },
+          ]}
+        />
         {isBetPhase && (
           <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="bac-bet-controls">
             <div className="flex items-center gap-2">
