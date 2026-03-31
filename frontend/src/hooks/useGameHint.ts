@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type {
+  BaccaratResponse,
   BlackJackResponse,
   HeartsResponse,
   HoldemResponse,
@@ -9,9 +10,11 @@ import type {
   PokerResponse,
   ShortDeckResponse,
   SpadesResponse,
+  ThreeCardResponse,
   VideoPokerResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
+import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
@@ -23,11 +26,13 @@ import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
+import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
 /** Supported game names for the hint system. */
 type HintGameName =
+  | 'baccarat'
   | 'blackjack'
   | 'poker'
   | 'hearts'
@@ -39,7 +44,8 @@ type HintGameName =
   | 'videopoker'
   | 'deuceswild'
   | 'jokerpoker'
-  | 'indianpoker';
+  | 'indianpoker'
+  | 'threecard';
 
 /** Return type of the useGameHint hook. */
 export interface UseGameHintReturn {
@@ -58,6 +64,8 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
   const hint = useMemo(() => {
     if (!hintEnabled || !state) return null;
     switch (gameName) {
+      case 'baccarat':
+        return getBaccaratHint(state as BaccaratResponse);
       case 'blackjack':
         return getBlackjackHint(state as BlackJackResponse);
       case 'poker':
@@ -82,6 +90,8 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
         return getJokerPokerHint(state as VideoPokerResponse);
       case 'indianpoker':
         return getIndianPokerHint(state as IndianPokerResponse);
+      case 'threecard':
+        return getThreeCardHint(state as ThreeCardResponse);
       default:
         return null;
     }

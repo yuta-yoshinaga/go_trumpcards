@@ -38,6 +38,10 @@
     "resetButton": "Press the reset button to start a new game."
   },
   "betGuide": "Place your bet to start",
+  "hintReason": {
+    "bankerBestOdds": "Banker bet has the lowest house edge (1.06%) — recommended",
+    "avoidTie": "Tie bet has a very high house edge (14.36%) — Banker bet recommended"
+  },
   "payoutRef": {
     "title": "Payouts",
     "playerWin": "Player Win (1:1)",
