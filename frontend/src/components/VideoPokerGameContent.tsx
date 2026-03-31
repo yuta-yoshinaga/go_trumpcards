@@ -26,7 +26,7 @@ import { TutorialButton } from './tutorial/TutorialButton';
 /** Props for the VideoPokerGameContent shared component. */
 export interface VideoPokerGameContentProps {
   /** Game identifier used for i18n and action log (e.g., "videopoker", "deuceswild") */
-  gameName: Parameters<typeof useGamePageSetup>[0];
+  gameName: 'videopoker' | 'deuceswild' | 'jokerpoker';
   /** i18n namespace (e.g., "videopoker", "deuceswild", "jokerpoker") */
   i18nNamespace: string;
   /** API exec function */
@@ -72,10 +72,7 @@ export function VideoPokerGameContent({
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi } = useGameApi(apiExec);
-  const { hint, hintEnabled, setHintEnabled } = useGameHint(
-    gameName as 'videopoker' | 'deuceswild' | 'jokerpoker',
-    state,
-  );
+  const { hint, hintEnabled, setHintEnabled } = useGameHint(gameName, state);
 
   useEffect(() => {
     execApi('reset');

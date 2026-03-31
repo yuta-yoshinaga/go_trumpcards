@@ -50,6 +50,7 @@
     "holdStraightDraw": "Hold the straight draw",
     "holdHighCards": "Hold high cards",
     "holdWild": "Always hold wild cards",
+    "holdWildAndPair": "Hold wild cards and the pair",
     "drawAll": "No strong holds — draw all"
   },
   "card": "Card {{index}}",

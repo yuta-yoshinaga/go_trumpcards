@@ -32,7 +32,7 @@ function getWildAwareHint(hand: Card[], wildIndices: number[], isWild: (card: Ca
   if (pairResult) {
     return {
       targetAction: formatHoldAction(wildIndices, pairResult.indices),
-      reason: 'hint.holdWild',
+      reason: 'hint.holdWildAndPair',
       confidence: 'strong',
     };
   }

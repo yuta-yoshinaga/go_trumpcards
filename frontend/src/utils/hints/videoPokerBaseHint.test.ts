@@ -211,7 +211,7 @@ describe('getVideoPokerBaseHint', () => {
       makeCard('SPADE', 10),
     ];
     const result = getVideoPokerBaseHint(makeState({ hand }), deucesWild);
-    expect(result?.reason).toBe('hint.holdWild');
+    expect(result?.reason).toBe('hint.holdWildAndPair');
     expect(result?.targetAction).toBe('hold:0,1,2');
   });
 

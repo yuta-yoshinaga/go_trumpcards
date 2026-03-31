@@ -50,6 +50,7 @@
     "holdStraightDraw": "ストレートドローをホールド",
     "holdHighCards": "ハイカードをホールド",
     "holdWild": "ワイルドカードは必ずホールド",
+    "holdWildAndPair": "ワイルドカードとペアをホールド",
     "drawAll": "ホールドなし — 全て交換"
   },
   "card": "カード {{index}}",
