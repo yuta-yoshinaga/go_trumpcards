@@ -11,6 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -22,6 +23,7 @@ import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -95,6 +97,7 @@ function IndianPokerPageContent() {
   const [ante] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(2);
   const [cpuMetaAI, setCpuMetaAI] = useState(true);
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('indianpoker', state);
   const turnStartRef = useRef(0);
 
   useEffect(() => {
@@ -267,6 +270,9 @@ function IndianPokerPageContent() {
 
         <ErrorAlert message={error} />
 
+        {/* Hint */}
+        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
         {/* Betting controls */}
         {canAct && (
           <div data-tutorial="ip-action-buttons">
@@ -305,6 +311,13 @@ function IndianPokerPageContent() {
                     { value: 2, label: tc('betting.noLimit') },
                   ],
                   onSelect: (v: string) => setBettingLimit(Number(v)),
+                },
+                {
+                  type: 'checkbox' as const,
+                  id: 'indianpoker-hint',
+                  label: tc('hint.toggle', { ns: 'tutorial' }),
+                  checked: hintEnabled,
+                  onToggle: setHintEnabled,
                 },
                 {
                   type: 'checkbox' as const,

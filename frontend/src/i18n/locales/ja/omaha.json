@@ -57,5 +57,13 @@
     "potDisplay": "ポットとブラインドレベルが表示されます。",
     "cpuArea": "CPU対戦相手の情報です。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "positiveEV": "期待値プラス — レイズ推奨",
+    "marginalEV": "期待値ほぼ均衡 — コール推奨",
+    "negativeEV": "期待値マイナス — フォールド推奨",
+    "strongHandRank": "強いハンド — レイズ推奨",
+    "decentHandRank": "まずまずのハンド — コール推奨",
+    "weakHandRank": "弱いハンド — フォールド推奨"
   }
 }

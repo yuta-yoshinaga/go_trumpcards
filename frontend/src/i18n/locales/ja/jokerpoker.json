@@ -42,6 +42,17 @@
     "drawButton": "ドローを押してホールドしていないカードを交換。キングス・オア・ベター以上で配当獲得!",
     "resetButton": "次のハンドを押して次のラウンドを始めます。"
   },
+  "hint": {
+    "holdPair": "ペアをホールド",
+    "holdTrips": "スリーカードをホールド",
+    "holdQuads": "フォーカードをホールド",
+    "holdFlushDraw": "フラッシュドローをホールド",
+    "holdStraightDraw": "ストレートドローをホールド",
+    "holdHighCards": "ハイカードをホールド",
+    "holdWild": "ワイルドカードは必ずホールド",
+    "holdWildAndPair": "ワイルドカードとペアをホールド",
+    "drawAll": "ホールドなし — 全て交換"
+  },
   "card": "カード {{index}}",
   "dealGuide": "コイン数を選んでディールしてゲーム開始"
 }

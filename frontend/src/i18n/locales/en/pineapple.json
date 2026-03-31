@@ -63,5 +63,14 @@
     "learningMode": "Learning mode shows equity and pot odds to help your decisions.",
     "resetButton": "Press the reset button to start a new game.",
     "discardPhase": "Discard phase: select one of your 3 hole cards to discard."
+  },
+  "hint": {
+    "positiveEV": "Positive expected value — raise recommended",
+    "marginalEV": "Marginal expected value — call recommended",
+    "negativeEV": "Negative expected value — fold recommended",
+    "strongHandRank": "Strong hand — raise recommended",
+    "decentHandRank": "Decent hand — call recommended",
+    "weakHandRank": "Weak hand — fold recommended",
+    "discardWeakest": "Discard the weakest card"
   }
 }

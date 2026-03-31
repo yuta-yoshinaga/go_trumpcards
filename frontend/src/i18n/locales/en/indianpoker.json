@@ -20,5 +20,10 @@
     "playerCard": "Your card is hidden from you. It will be revealed at showdown.",
     "actionButtons": "Choose an action: Bet, Call, Raise, or Fold. Make your decision based on opponents' cards.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "opponentsStrong": "Opponents show strong cards — your card may be weak",
+    "opponentsWeak": "Opponents show weak cards — your card may be strong",
+    "uncertain": "Mixed opponent cards — call recommended"
   }
 }
