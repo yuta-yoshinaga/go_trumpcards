@@ -1,7 +1,14 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { BJ_SUGGEST_HIT, BJ_SUGGEST_NONE } from '../components/blackjack/bjConstants';
-import type { BaccaratResponse, BlackJackResponse, ThreeCardResponse } from '../types/card';
+import type {
+  BaccaratResponse,
+  BlackJackResponse,
+  EuchreResponse,
+  NapoleonResponse,
+  OhHellResponse,
+  ThreeCardResponse,
+} from '../types/card';
 import { useGameHint } from './useGameHint';
 
 function makeBjState(overrides: Partial<BlackJackResponse> = {}): BlackJackResponse {
@@ -130,5 +137,100 @@ describe('useGameHint', () => {
     const { result } = renderHook(() => useGameHint('threecard', state as ThreeCardResponse));
     expect(result.current.hint).not.toBeNull();
     expect(result.current.hint?.targetAction).toBe('play');
+  });
+
+  it('returns euchre hint when enabled', () => {
+    localStorage.setItem('hint_enabled_euchre', 'true');
+    const state: Partial<EuchreResponse> = {
+      phase: 3, // EuchrePhase.PLAY
+      currentPlayerIdx: 0,
+      players: [
+        { id: 0, isHuman: true, cardCount: 1, cards: [{ design: 'SPADE', value: 14 }], team: 0, trickCount: 0 },
+        { id: 1, isHuman: false, cardCount: 1, cards: [], team: 1, trickCount: 0 },
+      ],
+      trumpSuit: 1,
+      currentTrick: [],
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('euchre', state as EuchreResponse));
+    expect(result.current.hint).not.toBeNull();
+  });
+
+  it('returns napoleon hint when enabled', () => {
+    localStorage.setItem('hint_enabled_napoleon', 'true');
+    const state: Partial<NapoleonResponse> = {
+      phase: 3, // NapoleonPhase.PLAY
+      currentPlayerIdx: 0,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 1,
+          cards: [{ design: 'SPADE', value: 14 }],
+          bid: -1,
+          isNapoleon: false,
+          isAdjutant: false,
+          adjutantRevealed: false,
+          pictureCards: 0,
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+        },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 1,
+          cards: [],
+          bid: -1,
+          isNapoleon: false,
+          isAdjutant: false,
+          adjutantRevealed: false,
+          pictureCards: 0,
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+        },
+      ],
+      trumpSuit: 1,
+      currentTrick: [],
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('napoleon', state as NapoleonResponse));
+    expect(result.current.hint).not.toBeNull();
+  });
+
+  it('returns ohhell hint when enabled', () => {
+    localStorage.setItem('hint_enabled_ohhell', 'true');
+    const state: Partial<OhHellResponse> = {
+      phase: 0, // OhHellPhase.BID
+      bidPlayerIdx: 0,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 1,
+          cards: [{ design: 'SPADE', value: 14 }],
+          bid: -1,
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+        },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 1,
+          cards: [],
+          bid: -1,
+          roundScore: 0,
+          cumulativeScore: 0,
+          trickCount: 0,
+        },
+      ],
+      trumpSuit: 1,
+      restrictedBid: -1,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('ohhell', state as OhHellResponse));
+    expect(result.current.hint).not.toBeNull();
   });
 });
