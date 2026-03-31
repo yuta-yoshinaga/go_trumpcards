@@ -1,9 +1,12 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, threecardApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ThreeCardResponse } from '../types/card';
 import { ThreeCardPage } from './ThreeCardPage';
+
+vi.mock('../hooks/useGameHint');
 
 vi.mock('../api/gameApi', () => ({
   threecardApi: { exec: vi.fn() },
@@ -118,6 +121,7 @@ const endPhaseWithPairPlus: ThreeCardResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
 describe('ThreeCardPage', () => {
@@ -416,5 +420,41 @@ describe('ThreeCardPage', () => {
     renderWithProviders(<ThreeCardPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
     expect(screen.queryByText('配当表')).not.toBeInTheDocument();
+  });
+
+  // --- Hint UI tests ---
+
+  it('shows hint tooltip when hintEnabled is true and hint is available', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'play', reason: 'hintReason.strongHand', confidence: 'strong' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+  });
+
+  it('hides hint tooltip when hintEnabled is false', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'play', reason: 'hintReason.strongHand', confidence: 'strong' },
+      hintEnabled: false,
+      setHintEnabled: vi.fn(),
+    });
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ' })).toBeInTheDocument());
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('hint settings checkbox calls setHintEnabled on toggle', async () => {
+    const mockSetHintEnabled = vi.fn();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: mockSetHintEnabled });
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    const checkbox = screen.getByRole('checkbox', { name: 'ヒント表示' });
+    fireEvent.click(checkbox);
+    expect(mockSetHintEnabled).toHaveBeenCalledWith(true);
   });
 });

@@ -334,7 +334,7 @@ function BaccaratPageContent() {
         <ErrorAlert message={error} />
         {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
         <SettingsPanel
-          title={tc('hint.toggle', { ns: 'tutorial' })}
+          title={t('settings.title')}
           groups={[
             {
               items: [

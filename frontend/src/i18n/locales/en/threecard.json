@@ -47,6 +47,9 @@
     "queenHighPlay": "Hand meets Q-6-4 threshold — play recommended",
     "weakHand": "Hand is below Q-6-4 threshold — fold recommended"
   },
+  "settings": {
+    "title": "Settings"
+  },
   "betGuide": "Set your ante and Pair Plus bet",
   "payoutRef": {
     "title": "Payout Table",

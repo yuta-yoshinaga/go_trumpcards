@@ -37,6 +37,9 @@
     "bankerHand": "This is the Banker's hand. Compare values to determine the winner.",
     "resetButton": "Press the reset button to start a new game."
   },
+  "settings": {
+    "title": "Settings"
+  },
   "betGuide": "Place your bet to start",
   "hintReason": {
     "bankerBestOdds": "Banker bet has the lowest house edge (1.06%) — recommended",

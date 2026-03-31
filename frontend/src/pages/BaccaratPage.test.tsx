@@ -1,9 +1,12 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, baccaratApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BaccaratResponse, Card, CardDesign } from '../types/card';
 import { BaccaratPage } from './BaccaratPage';
+
+vi.mock('../hooks/useGameHint');
 
 vi.mock('../api/gameApi', () => ({
   baccaratApi: { exec: vi.fn() },
@@ -107,6 +110,7 @@ const endPhaseWithOnlyTies: BaccaratResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
 describe('BaccaratPage', () => {
@@ -429,5 +433,41 @@ describe('BaccaratPage', () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<BaccaratPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  // --- Hint UI tests ---
+
+  it('shows hint tooltip when hintEnabled is true and hint is available', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'banker', reason: 'hintReason.bankerBestOdds', confidence: 'strong' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+  });
+
+  it('hides hint tooltip when hintEnabled is false', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'banker', reason: 'hintReason.bankerBestOdds', confidence: 'strong' },
+      hintEnabled: false,
+      setHintEnabled: vi.fn(),
+    });
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('hint settings checkbox calls setHintEnabled on toggle', async () => {
+    const mockSetHintEnabled = vi.fn();
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: mockSetHintEnabled });
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    const checkbox = screen.getByRole('checkbox', { name: 'ヒント表示' });
+    fireEvent.click(checkbox);
+    expect(mockSetHintEnabled).toHaveBeenCalledWith(true);
   });
 });
