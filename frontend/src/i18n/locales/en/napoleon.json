@@ -87,6 +87,18 @@
     "play_joker": "Play joker",
     "discard_low": "Discard a low card"
   },
+  "hint": {
+    "bidStrong": "Strong hand — bid high",
+    "bidModerate": "Moderate hand — bid conservatively",
+    "declareTrump": "Declare your strongest suit as trump",
+    "discardWeakest": "Discard weakest non-trump card",
+    "leadStrong": "Lead with a strong card",
+    "leadLow": "Lead with a low card",
+    "followSuit": "Follow the led suit",
+    "trumpCut": "Cut with trump",
+    "playJoker": "Play the Joker strategically",
+    "discardLow": "Discard your lowest card"
+  },
   "tutorial": {
     "bidControls": "Bid phase: declare how many tricks you can win. The highest bidder becomes Napoleon.",
     "trumpDeclaration": "Napoleon chooses the trump suit and adjutant card.",

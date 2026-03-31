@@ -2,9 +2,12 @@ import { useMemo } from 'react';
 import type {
   BaccaratResponse,
   BlackJackResponse,
+  EuchreResponse,
   HeartsResponse,
   HoldemResponse,
   IndianPokerResponse,
+  NapoleonResponse,
+  OhHellResponse,
   OmahaResponse,
   PineappleResponse,
   PokerResponse,
@@ -17,10 +20,13 @@ import type { HintResult } from '../types/hint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
+import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
+import { getNapoleonHint } from '../utils/hints/napoleonHint';
+import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
@@ -45,7 +51,10 @@ type HintGameName =
   | 'deuceswild'
   | 'jokerpoker'
   | 'indianpoker'
-  | 'threecard';
+  | 'threecard'
+  | 'euchre'
+  | 'napoleon'
+  | 'ohhell';
 
 /** Return type of the useGameHint hook. */
 export interface UseGameHintReturn {
@@ -92,6 +101,12 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
         return getIndianPokerHint(state as IndianPokerResponse);
       case 'threecard':
         return getThreeCardHint(state as ThreeCardResponse);
+      case 'euchre':
+        return getEuchreHint(state as EuchreResponse);
+      case 'napoleon':
+        return getNapoleonHint(state as NapoleonResponse);
+      case 'ohhell':
+        return getOhHellHint(state as OhHellResponse);
       default:
         return null;
     }

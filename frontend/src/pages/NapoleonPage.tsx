@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -17,6 +18,7 @@ import { NapoleonSkeleton } from '../components/skeleton/NapoleonSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import {
   CPU_DIFFICULTY_OPTIONS,
@@ -142,6 +144,11 @@ function NapoleonPageContent() {
     hintLoading,
     handleHint,
   } = useNapoleonGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('napoleon', state);
   const { cardWidth, isMobile } = useCardDimensions();
 
   const [bidValue, setBidValue] = useState(12);
@@ -234,6 +241,13 @@ function NapoleonPageContent() {
                 value: napoleonConfig.minBid,
                 options: MIN_BID_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                 onSelect: (v) => handleConfigChange('minBid', v),
+              },
+              {
+                type: 'checkbox',
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
               },
             ],
           },
@@ -439,6 +453,9 @@ function NapoleonPageContent() {
                   ? `${t('hintDiscard')}: [${hint.discardIndex}] (${t(`hintReason.${hint.reason}`)})`
                   : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
           </div>
+        )}
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
         )}
 
         <div className="flex gap-2 items-center flex-wrap">

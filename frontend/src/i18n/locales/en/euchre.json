@@ -79,6 +79,7 @@
     "leadTrump": "Recommend leading with trump",
     "followSuit": "Follow the led suit",
     "trumpCut": "Opportunity to cut with trump",
-    "discardWeakest": "Recommend discarding the weakest card"
+    "discardWeakest": "Recommend discarding the weakest card",
+    "leadOffSuit": "Lead with a non-trump card"
   }
 }

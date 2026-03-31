@@ -79,6 +79,7 @@
     "leadTrump": "切り札でリード推奨",
     "followSuit": "リードされたスートに従ってプレイ推奨",
     "trumpCut": "切り札でカットするチャンス",
-    "discardWeakest": "最も弱いカードを捨てることを推奨"
+    "discardWeakest": "最も弱いカードを捨てることを推奨",
+    "leadOffSuit": "切り札以外のカードでリード推奨"
   }
 }
