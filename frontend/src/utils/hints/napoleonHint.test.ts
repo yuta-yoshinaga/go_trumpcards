@@ -136,7 +136,7 @@ describe('getNapoleonHint', () => {
     const state = makeState({ phase: NapoleonPhase.BID, bidPlayerIdx: 0 });
     state.players[0].cards = [card('SPADE', 14), card('HEART', 13), card('DIAMOND', 12), card('CLOVER', 11)];
     const result = getNapoleonHint(state);
-    expect(result?.targetAction).toMatch(/^bid:\d+$/);
+    expect(result?.targetAction).toBe('bid:14');
     expect(result?.reason).toBe('hint.bidStrong');
     expect(result?.confidence).toBe('strong');
   });
@@ -145,6 +145,7 @@ describe('getNapoleonHint', () => {
     const state = makeState({ phase: NapoleonPhase.BID, bidPlayerIdx: 0 });
     state.players[0].cards = [card('CLOVER', 3), card('DIAMOND', 5), card('HEART', 7)];
     const result = getNapoleonHint(state);
+    expect(result?.targetAction).toBe('bid:12');
     expect(result?.reason).toBe('hint.bidModerate');
     expect(result?.confidence).toBe('moderate');
   });

@@ -68,13 +68,7 @@ function getCallTrumpHint(cards: Card[]): HintResult {
 }
 
 /** Hint for discard phase: discard weakest non-trump card. */
-function getDiscardHint(cards: Card[], trumpSuit: number): HintResult {
-  const trumpDesign = SUIT_NUM_TO_DESIGN[trumpSuit];
-  const nonTrump = cards.filter((c) => c.design !== trumpDesign);
-  // If all cards are trump, still suggest discarding weakest
-  if (nonTrump.length === 0) {
-    return { targetAction: 'discard', reason: 'hint.discardWeakest', confidence: 'strong' };
-  }
+function getDiscardHint(_cards: Card[], _trumpSuit: number): HintResult {
   return { targetAction: 'discard', reason: 'hint.discardWeakest', confidence: 'strong' };
 }
 

@@ -50,7 +50,7 @@ export function getNapoleonHint(state: NapoleonResponse): HintResult | null {
 /** Estimate bid from high cards and suit distribution. */
 function getBidHint(cards: Card[]): HintResult {
   const highCards = cards.filter((c) => c.value >= HIGH_CARD_VALUE).length;
-  const estimatedTricks = Math.max(12, Math.round(highCards * 0.8 + cards.length * 0.2));
+  const estimatedTricks = Math.min(17, 12 + Math.round(highCards * 0.5));
   const confidence = highCards >= STRONG_BID_THRESHOLD ? 'strong' : 'moderate';
   const reason = confidence === 'strong' ? 'hint.bidStrong' : 'hint.bidModerate';
   return { targetAction: `bid:${estimatedTricks}`, reason, confidence };
@@ -69,12 +69,7 @@ function getTrumpDeclarationHint(cards: Card[]): HintResult {
 }
 
 /** Suggest discarding weakest non-trump card during kitty exchange. */
-function getKittyExchangeHint(cards: Card[], trumpSuit: number): HintResult {
-  const trumpDesign = SUIT_NUM_TO_DESIGN[trumpSuit];
-  const nonTrump = cards.filter((c) => c.design !== trumpDesign && c.design !== 'JOKER');
-  if (nonTrump.length === 0) {
-    return { targetAction: 'discard', reason: 'hint.discardWeakest', confidence: 'strong' };
-  }
+function getKittyExchangeHint(_cards: Card[], _trumpSuit: number): HintResult {
   return { targetAction: 'discard', reason: 'hint.discardWeakest', confidence: 'strong' };
 }
 
