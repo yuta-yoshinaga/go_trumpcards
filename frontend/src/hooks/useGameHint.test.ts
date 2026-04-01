@@ -4,9 +4,15 @@ import { BJ_SUGGEST_HIT, BJ_SUGGEST_NONE } from '../components/blackjack/bjConst
 import type {
   BaccaratResponse,
   BlackJackResponse,
+  CrazyEightsResponse,
+  DaifugoResponse,
+  DoubtResponse,
   EuchreResponse,
   NapoleonResponse,
   OhHellResponse,
+  OldMaidResponse,
+  SevensResponse,
+  SpeedResponse,
   ThreeCardResponse,
 } from '../types/card';
 import { useGameHint } from './useGameHint';
@@ -232,5 +238,160 @@ describe('useGameHint', () => {
     };
     const { result } = renderHook(() => useGameHint('ohhell', state as OhHellResponse));
     expect(result.current.hint).not.toBeNull();
+  });
+
+  it('returns oldmaid hint when enabled', () => {
+    localStorage.setItem('hint_enabled_oldmaid', 'true');
+    const state: Partial<OldMaidResponse> = {
+      players: [
+        { id: 0, isHuman: true, isFinished: false, cardCount: 3, cards: [] },
+        { id: 1, isHuman: false, isFinished: false, cardCount: 5, cards: [] },
+      ],
+      currentTurn: 0,
+      nextDrawTargetIdx: 1,
+      gameEndFlag: false,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('oldmaid', state as OldMaidResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('draw');
+  });
+
+  it('returns doubt hint when enabled', () => {
+    localStorage.setItem('hint_enabled_doubt', 'true');
+    const state: Partial<DoubtResponse> = {
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          cardCount: 3,
+          cards: [
+            { design: 'HEART', value: 3 },
+            { design: 'SPADE', value: 3 },
+            { design: 'DIAMOND', value: 7 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: false, cardCount: 3, cards: [] },
+      ],
+      currentTurn: 0,
+      phase: 0,
+      gameEndFlag: false,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('doubt', state as DoubtResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('play');
+  });
+
+  it('returns crazyeights hint when enabled', () => {
+    localStorage.setItem('hint_enabled_crazyeights', 'true');
+    const state: Partial<CrazyEightsResponse> = {
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 2,
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'SPADE', value: 10 },
+          ],
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
+      ],
+      phase: 0,
+      currentPlayerIdx: 0,
+      discardTop: { design: 'HEART', value: 7 },
+      chosenSuit: 0,
+      gameEndFlag: false,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('crazyeights', state as CrazyEightsResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.reason).toBe('hint.playMatchingSuit');
+  });
+
+  it('returns sevens hint when enabled', () => {
+    localStorage.setItem('hint_enabled_sevens', 'true');
+    const state: Partial<SevensResponse> = {
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          rank: 0,
+          cardCount: 1,
+          passesUsed: 0,
+          maxPasses: 3,
+          cards: [{ design: 'HEART', value: 6 }],
+          lastPlayedJoker: false,
+        },
+      ],
+      currentTurn: 0,
+      tableMinVals: [0, 7, 7, 7, 7],
+      tableMaxVals: [0, 7, 7, 7, 7],
+      gameEndFlag: false,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('sevens', state as SevensResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.reason).toBe('hint.playExtend');
+  });
+
+  it('returns daifugo hint when enabled', () => {
+    localStorage.setItem('hint_enabled_daifugo', 'true');
+    const state: Partial<DaifugoResponse> = {
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          rank: 0,
+          cardCount: 2,
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'SPADE', value: 8 },
+          ],
+        },
+      ],
+      currentTurn: 0,
+      tableCards: [],
+      gameEndFlag: false,
+      pendingAction: 'none',
+      revolutionActive: false,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('daifugo', state as DaifugoResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.reason).toBe('hint.playLowest');
+  });
+
+  it('returns speed hint when enabled', () => {
+    localStorage.setItem('hint_enabled_speed', 'true');
+    const state: Partial<SpeedResponse> = {
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 2,
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'SPADE', value: 8 },
+          ],
+          drawPileSize: 10,
+        },
+      ],
+      centerPiles: [
+        { design: 'HEART', value: 6 },
+        { design: 'SPADE', value: 3 },
+      ],
+      phase: 0,
+      gameEndFlag: false,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('speed', state as SpeedResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.reason).toBe('hint.hasPlayable');
   });
 });

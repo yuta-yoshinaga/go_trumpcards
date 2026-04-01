@@ -94,5 +94,11 @@
     "sortButtons": "Sort your hand by different criteria.",
     "specialActions": "Special actions (ten discard, queen bomber, etc.) may trigger.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "playLowest": "Free turn — start with your weakest cards",
+    "revolutionChance": "You have 4 of a kind — consider a revolution",
+    "playStronger": "You can beat the table — play a stronger card",
+    "passNoPlay": "No cards strong enough — pass"
   }
 }

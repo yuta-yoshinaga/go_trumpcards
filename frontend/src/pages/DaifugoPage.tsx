@@ -11,6 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -20,6 +21,7 @@ import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -109,6 +111,11 @@ function DaifugoPageContent() {
     handleDrop,
     handleConfigChange,
   } = useDaifugoGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('daifugo', state);
 
   const { cardWidth } = useCardDimensions();
 
@@ -295,6 +302,21 @@ function DaifugoPageContent() {
         )}
 
         <ErrorAlert message={error} />
+
+        <div className="flex items-center gap-2 mb-1 justify-center">
+          <label htmlFor="df-hint-toggle" className="text-white text-xs flex items-center gap-1 cursor-pointer">
+            <input
+              id="df-hint-toggle"
+              type="checkbox"
+              checked={frontendHintEnabled}
+              onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+            />
+            {tc('hint.toggle', { ns: 'tutorial' })}
+          </label>
+        </div>
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+        )}
 
         <div className="text-center" data-tutorial="df-play-pass">
           <button

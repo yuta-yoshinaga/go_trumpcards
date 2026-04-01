@@ -6,6 +6,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -19,6 +20,7 @@ import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -102,6 +104,11 @@ function OldMaidPageContent() {
     setSetupHesitation,
     setSetupMetaAI,
   } = useOldMaidGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('oldmaid', displayState);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -287,6 +294,22 @@ function OldMaidPageContent() {
         )}
 
         <ErrorAlert message={error} />
+
+        {/* Hint toggle + tooltip */}
+        <div className="flex items-center gap-2 mb-1 justify-center">
+          <label htmlFor="om-hint-toggle" className="text-white text-xs flex items-center gap-1 cursor-pointer">
+            <input
+              id="om-hint-toggle"
+              type="checkbox"
+              checked={frontendHintEnabled}
+              onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+            />
+            {tc('hint.toggle', { ns: 'tutorial' })}
+          </label>
+        </div>
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+        )}
 
         {/* Buttons */}
         <div className="text-center">

@@ -22,7 +22,9 @@
     "hard": "Hard"
   },
   "hint": {
-    "play": "Play card {{cardIndex}} to pile {{pileIndex}}"
+    "play": "Play card {{cardIndex}} to pile {{pileIndex}}",
+    "hasPlayable": "You have a playable card — act fast!",
+    "noPlayable": "No playable cards right now — wait for changes"
   },
   "tutorial": {
     "centerPiles": "Center piles: play cards that are ±1 of the top card",

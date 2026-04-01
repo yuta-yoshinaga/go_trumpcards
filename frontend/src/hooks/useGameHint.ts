@@ -2,24 +2,33 @@ import { useMemo } from 'react';
 import type {
   BaccaratResponse,
   BlackJackResponse,
+  CrazyEightsResponse,
+  DaifugoResponse,
+  DoubtResponse,
   EuchreResponse,
   HeartsResponse,
   HoldemResponse,
   IndianPokerResponse,
   NapoleonResponse,
   OhHellResponse,
+  OldMaidResponse,
   OmahaResponse,
   PineappleResponse,
   PokerResponse,
+  SevensResponse,
   ShortDeckResponse,
   SpadesResponse,
+  SpeedResponse,
   ThreeCardResponse,
   VideoPokerResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
+import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
+import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
+import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
@@ -27,11 +36,14 @@ import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
+import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
+import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
+import { getSpeedHint } from '../utils/hints/speedHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
@@ -54,7 +66,13 @@ type HintGameName =
   | 'threecard'
   | 'euchre'
   | 'napoleon'
-  | 'ohhell';
+  | 'ohhell'
+  | 'oldmaid'
+  | 'doubt'
+  | 'daifugo'
+  | 'sevens'
+  | 'crazyeights'
+  | 'speed';
 
 /** Return type of the useGameHint hook. */
 export interface UseGameHintReturn {
@@ -107,6 +125,18 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
         return getNapoleonHint(state as NapoleonResponse);
       case 'ohhell':
         return getOhHellHint(state as OhHellResponse);
+      case 'oldmaid':
+        return getOldMaidHint(state as OldMaidResponse);
+      case 'doubt':
+        return getDoubtHint(state as DoubtResponse);
+      case 'daifugo':
+        return getDaifugoHint(state as DaifugoResponse);
+      case 'sevens':
+        return getSevensHint(state as SevensResponse);
+      case 'crazyeights':
+        return getCrazyEightsHint(state as CrazyEightsResponse);
+      case 'speed':
+        return getSpeedHint(state as SpeedResponse);
       default:
         return null;
     }

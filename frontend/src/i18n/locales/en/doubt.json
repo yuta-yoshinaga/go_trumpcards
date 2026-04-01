@@ -55,5 +55,11 @@
     "playButton": "After selecting cards and setting the claim, press this to play.",
     "doubtWindow": "Decide whether to doubt. Press Doubt if you think the opponent is bluffing.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "playTruth": "You have matching cards — play truthfully",
+    "bluffCarefully": "No matching pairs — bluff carefully",
+    "doubtTell": "Opponent showed a tell — consider doubting",
+    "skipSafe": "No obvious tell — safer to skip"
   }
 }

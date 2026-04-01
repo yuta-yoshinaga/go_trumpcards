@@ -22,7 +22,9 @@
     "hard": "ハード"
   },
   "hint": {
-    "play": "カード{{cardIndex}}を台札{{pileIndex}}に出せます"
+    "play": "カード{{cardIndex}}を台札{{pileIndex}}に出せます",
+    "hasPlayable": "出せるカードがあります — 素早くプレイ！",
+    "noPlayable": "今は出せるカードなし — 変化を待ちましょう"
   },
   "tutorial": {
     "centerPiles": "台札エリア：2つの台札にカードを出していきます",
