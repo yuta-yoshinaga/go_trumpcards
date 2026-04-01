@@ -45,5 +45,13 @@
     "playDraw": "Play a card or draw from the stock pile.",
     "suitChoice": "When you play an 8, choose the next suit.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "playMatchingSuit": "Play a card matching the current suit",
+    "playMatchingValue": "Play a card matching the current value",
+    "saveEight": "Save your 8 — play a regular card instead",
+    "playEight": "Play your 8 to change the suit",
+    "drawCard": "No playable cards — draw from the pile",
+    "chooseMostSuit": "Choose the suit you have the most of"
   }
 }

@@ -8,6 +8,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -17,6 +18,7 @@ import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { SevensSkeleton } from '../components/skeleton/SevensSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -94,6 +96,11 @@ function SevensPageContent() {
     handleCardPlay,
     handleJokerPlace,
   } = useSevensGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('sevens', state);
 
   const isHumanTurnForKbd = !!state && !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const humanCardCount = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
@@ -221,6 +228,13 @@ function SevensPageContent() {
             { value: 0, label: t('config.passUnlimited') },
           ],
           onSelect: (v) => setCfgMaxPasses(Number(v)),
+        },
+        {
+          type: 'checkbox',
+          id: 'frontendHint',
+          label: tc('hint.toggle', { ns: 'tutorial' }),
+          checked: frontendHintEnabled,
+          onToggle: setFrontendHintEnabled,
         },
       ],
     },
@@ -351,6 +365,10 @@ function SevensPageContent() {
         </div>
 
         <ErrorAlert message={error} />
+
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+        )}
 
         <div className="text-center">
           <button

@@ -928,6 +928,7 @@ classDiagram
         +カード選択UI
         +カウントダウンタイマー
         +ダウト判定表示
+        +フロントエンドヒント (useGameHint)
     }
 
     class NapoleonPage {
@@ -1087,6 +1088,7 @@ classDiagram
         +CPUカード裏向き表示
         +フリップボタン (スタック時)
         +ヒントボタン
+        +フロントエンドヒント (useGameHint)
     }
 
     SpeedPage --|> GamePage : follows pattern

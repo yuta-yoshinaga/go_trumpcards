@@ -60,5 +60,10 @@
   "phase": {
     "play": "Playing",
     "end": "End"
+  },
+  "hint": {
+    "playExtend": "You have a playable card — extend the range",
+    "passAvailable": "No playable cards — pass",
+    "passLimitWarning": "Almost out of passes — be careful"
   }
 }

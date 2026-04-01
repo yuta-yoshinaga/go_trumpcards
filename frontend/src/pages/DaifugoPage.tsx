@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
 import { DaifugoHumanArea } from '../components/daifugo/DaifugoHumanArea';
@@ -11,6 +12,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -20,6 +22,7 @@ import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -109,6 +112,11 @@ function DaifugoPageContent() {
     handleDrop,
     handleConfigChange,
   } = useDaifugoGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('daifugo', state);
 
   const { cardWidth } = useCardDimensions();
 
@@ -175,6 +183,22 @@ function DaifugoPageContent() {
       </PhaseIndicator>
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
+        <SettingsPanel
+          title=""
+          groups={[
+            {
+              items: [
+                {
+                  type: 'checkbox',
+                  id: 'frontendHint',
+                  label: tc('hint.toggle', { ns: 'tutorial' }),
+                  checked: frontendHintEnabled,
+                  onToggle: setFrontendHintEnabled,
+                },
+              ],
+            },
+          ]}
+        />
         <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (
             <DaifugoCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
@@ -295,6 +319,10 @@ function DaifugoPageContent() {
         )}
 
         <ErrorAlert message={error} />
+
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+        )}
 
         <div className="text-center" data-tutorial="df-play-pass">
           <button
