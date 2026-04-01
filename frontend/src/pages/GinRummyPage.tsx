@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -15,6 +16,7 @@ import { GinRummySkeleton } from '../components/skeleton/GinRummySkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '../hooks/useGinRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -109,6 +111,11 @@ function GinRummyPageContent() {
     handleSkipLayoff,
     handleNextRound,
   } = useGinRummyGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('ginrummy', state);
   const { cardWidth } = useCardDimensions();
 
   const isDiscardPhaseForKbd = state?.phase === GinRummyPhase.DISCARD;
@@ -177,6 +184,13 @@ function GinRummyPageContent() {
                 value: ginRummyConfig.pointLimit,
                 options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                 onSelect: (v) => handleConfigChange('pointLimit', v),
+              },
+              {
+                type: 'checkbox',
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
               },
             ],
           },
@@ -310,6 +324,10 @@ function GinRummyPageContent() {
         )}
 
         <ErrorAlert message={error} />
+
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+        )}
 
         <div className="flex gap-2 items-center flex-wrap">
           {isDrawPhase && isHumanTurn && (

@@ -30,11 +30,11 @@ test.describe('Bridge E2E', () => {
         bidButton.or(passButton).or(playButton).or(nextTrickButton).or(nextRoundButton).or(resetButton).first(),
       ).toBeVisible({ timeout: 10_000 });
 
-      const bidVisible = await bidButton.isVisible().catch(() => false);
-      const passVisible = await passButton.isVisible().catch(() => false);
-      const playVisible = await playButton.isVisible().catch(() => false);
-      const nextTrickVisible = await nextTrickButton.isVisible().catch(() => false);
-      const nextRoundVisible = await nextRoundButton.isVisible().catch(() => false);
+      const bidVisible = await bidButton.isVisible();
+      const passVisible = await passButton.isVisible();
+      const playVisible = await playButton.isVisible();
+      const nextTrickVisible = await nextTrickButton.isVisible();
+      const nextRoundVisible = await nextRoundButton.isVisible();
 
       // Game end: no action buttons visible
       if (!bidVisible && !passVisible && !playVisible && !nextTrickVisible && !nextRoundVisible) break;
@@ -54,7 +54,7 @@ test.describe('Bridge E2E', () => {
         if (cardCount > 0) {
           await handCards.first().click();
         }
-        if ((await playButton.isVisible().catch(() => false)) && (await playButton.isEnabled())) {
+        if ((await playButton.isVisible()) && (await playButton.isEnabled())) {
           await playButton.click();
           await waitForLoaded(page);
         }

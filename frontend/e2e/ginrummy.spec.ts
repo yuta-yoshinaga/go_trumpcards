@@ -41,12 +41,12 @@ test.describe('Gin Rummy E2E', () => {
           .first(),
       ).toBeVisible({ timeout: 10_000 });
 
-      const drawStockVisible = await drawStockButton.isVisible().catch(() => false);
-      const drawDiscardVisible = await drawDiscardButton.isVisible().catch(() => false);
-      const discardVisible = await discardButton.isVisible().catch(() => false);
-      const layoffVisible = await layoffButton.isVisible().catch(() => false);
-      const skipVisible = await skipButton.isVisible().catch(() => false);
-      const nextRoundVisible = await nextRoundButton.isVisible().catch(() => false);
+      const drawStockVisible = await drawStockButton.isVisible();
+      const drawDiscardVisible = await drawDiscardButton.isVisible();
+      const discardVisible = await discardButton.isVisible();
+      const layoffVisible = await layoffButton.isVisible();
+      const skipVisible = await skipButton.isVisible();
+      const nextRoundVisible = await nextRoundButton.isVisible();
 
       // Game end: no action buttons visible
       if (
@@ -91,14 +91,14 @@ test.describe('Gin Rummy E2E', () => {
         if (layoffVisible) {
           const cardCount = await handCards.count();
           if (cardCount > 0) await handCards.first().click();
-          if ((await layoffButton.isVisible().catch(() => false)) && (await layoffButton.isEnabled())) {
+          if ((await layoffButton.isVisible()) && (await layoffButton.isEnabled())) {
             await layoffButton.click();
             await waitForLoaded(page);
             continue;
           }
         }
         // Fall through to skip if layoff is not possible
-        if (skipVisible || (await skipButton.isVisible().catch(() => false))) {
+        if (skipVisible || (await skipButton.isVisible())) {
           await skipButton.click();
           await waitForLoaded(page);
         }

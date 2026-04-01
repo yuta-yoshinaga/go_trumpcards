@@ -45,5 +45,13 @@
     "playDraw": "カードを出すか、山札から1枚引きます。",
     "suitChoice": "8を出した場合、次のスートを指定できます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "playMatchingSuit": "同じスートのカードをプレイ推奨",
+    "playMatchingValue": "同じ数字のカードをプレイ推奨",
+    "saveEight": "8を温存 — 通常カードをプレイ推奨",
+    "playEight": "8をプレイしてスートを変更推奨",
+    "drawCard": "出せるカードなし — 山札から引く",
+    "chooseMostSuit": "手札に最も多いスートを選択推奨"
   }
 }

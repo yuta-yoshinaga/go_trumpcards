@@ -30,5 +30,10 @@
     "hintDisplay": "Press the hint button for suggestions.",
     "resetButton": "Press reset to start a new game."
   },
-  "landscapeBanner": "Rotate to landscape for easier play"
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "frontendHint": {
+    "canRemove": "An exposed card can be removed — it is adjacent to the waste top",
+    "multipleRemovable": "Multiple cards can be removed — look for chain opportunities",
+    "drawFromStock": "No removable cards — try drawing from the stock"
+  }
 }

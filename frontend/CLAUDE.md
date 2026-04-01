@@ -49,7 +49,10 @@ bun run e2e:ui       # Run with Playwright UI
 - **Never assert on specific card values** -- card games involve shuffling; assertions on card content will be flaky
 - **Verify phase transitions** -- check that buttons appear/disappear and the game progresses through phases
 - **Verify reset behavior** -- ensure the game can be reset and restarted
-- **Avoid cumulative timeouts** -- use `waitFor` with reasonable timeouts; don't chain multiple long waits
+- **Use timeout constants** -- import `TIMEOUT_QUICK`, `TIMEOUT_ACTION`, `TIMEOUT_TRANSITION`, `TIMEOUT_GAME_LOOP` from `./helpers` instead of magic numbers
+- **Use `isVisibleWithin()` for conditional checks** -- import from `./helpers` instead of using `.isVisible({ timeout }).catch(() => false)` directly
+- **Never use `.catch(() => false)` on bare `isVisible()`** -- Playwright's `locator.isVisible()` already returns `false` for missing elements without throwing
+- **Avoid count-then-act patterns** -- use `locator.first().click({ timeout })` with try/catch instead of checking `.count()` then clicking, to prevent race conditions
 - **Use `.first()` on `.or()` chains** -- Playwright strict mode requires a single element; use `.first()` when combining locators
 - **Scope selectors carefully** -- e.g., scope card selectors to exclude NavBar elements to avoid false matches
 - **Handle confirm dialogs** -- if the game has a reset confirmation dialog, click it in the test after reset

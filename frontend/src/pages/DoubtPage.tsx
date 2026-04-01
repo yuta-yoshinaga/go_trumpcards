@@ -10,6 +10,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -25,6 +26,7 @@ import {
   PENALTY_DRAW_LIMIT_OPTIONS,
   useDoubtGame,
 } from '../hooks/useDoubtGame';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess, focusRingBlue } from '../styles/buttonStyles';
@@ -115,6 +117,11 @@ function DoubtPageContent() {
     handleCpuDoubtConfirm,
     clearSelection,
   } = useDoubtGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('doubt', state);
 
   const { cardWidth } = useCardDimensions();
 
@@ -219,6 +226,13 @@ function DoubtPageContent() {
                 label: t('settings.cpuMetaAI'),
                 checked: doubtConfig.cpuMetaAI,
                 onToggle: (checked) => handleConfigToggle('cpuMetaAI', checked),
+              },
+              {
+                type: 'checkbox',
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
               },
             ],
           },
@@ -446,6 +460,10 @@ function DoubtPageContent() {
         )}
 
         <ErrorAlert message={error} />
+
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+        )}
 
         {/* Action buttons */}
         <div className="text-center">

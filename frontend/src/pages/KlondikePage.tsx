@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -17,6 +19,7 @@ import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
@@ -107,6 +110,11 @@ function KlondikePageContent() {
     handleSelectTarget,
     isAutoCompleting,
   } = useKlondikeGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('klondike', state);
   const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === KlondikePhase.PLAYING;
@@ -360,6 +368,11 @@ function KlondikePageContent() {
             </div>
           )}
         </div>
+        {frontendHintEnabled && frontendHint && (
+          <div className="flex justify-center">
+            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+          </div>
+        )}
 
         {/* Score display on game clear */}
         {isGameClear && isVegas && (
@@ -379,6 +392,24 @@ function KlondikePageContent() {
           hideActionLog={hideActionLog}
         />
       </div>
+
+      {/* Settings */}
+      <SettingsPanel
+        title={tc('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'checkbox' as const,
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
+              },
+            ],
+          },
+        ]}
+      />
 
       {/* Footer */}
       <GameFooter className={`${gameTheme.klondike.footer} px-4 py-2.5`}>

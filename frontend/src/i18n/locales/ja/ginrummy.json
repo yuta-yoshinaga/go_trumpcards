@@ -42,6 +42,15 @@
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！"
   },
+  "hint": {
+    "drawFromDiscard": "捨て札から引きましょう — 手札に合います",
+    "drawFromStock": "山札から引きましょう",
+    "discardDeadwood": "デッドウッドが最も高いカードを捨てましょう",
+    "knockNow": "ノックしましょう — デッドウッドが十分低いです",
+    "ginOpportunity": "ジンができます！",
+    "layoffCards": "ノッカーのメルドにカードをレイオフしましょう",
+    "skipLayoff": "メルドに合うカードがありません — スキップしましょう"
+  },
   "tutorial": {
     "drawArea": "山札または捨て札から1枚引きます。",
     "playerHand": "あなたの手札です。メルド（3枚以上の組み合わせ）を作りましょう。",

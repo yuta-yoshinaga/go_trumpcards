@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, memoryApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, MemoryBoardCard, MemoryResponse } from '../types/card';
 import { MemoryPage } from './MemoryPage';
@@ -8,6 +9,10 @@ import { MemoryPage } from './MemoryPage';
 vi.mock('../api/gameApi', () => ({
   memoryApi: { exec: vi.fn() },
   actionLogApi: { memory: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
 const mockExec = vi.mocked(memoryApi.exec);
@@ -84,6 +89,7 @@ const cpuTurnState: MemoryResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(flip1State);
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
 describe('MemoryPage', () => {
@@ -455,5 +461,22 @@ describe('MemoryPage', () => {
     const cardBtn = screen.getByTestId('board-0');
     expect(cardBtn.className).not.toContain('border-blue-600');
     expect(cardBtn.className).toContain('border-white/10');
+  });
+
+  // --- Frontend hint ---
+
+  it('renders hint toggle checkbox in SettingsPanel', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument());
+  });
+
+  it('renders HintTooltip when hintEnabled is true and hint is available', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'flip', reason: 'frontendHint.flipAny', confidence: 'moderate' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 });

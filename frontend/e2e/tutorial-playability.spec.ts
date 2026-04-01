@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { waitForLoaded } from './helpers';
+import { isVisibleWithin, TIMEOUT_QUICK, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 /**
  * All game paths (excluding bridge which has no tutorial).
@@ -43,17 +43,19 @@ const gamesWithTutorial = [
 test.describe('Tutorial → Game Playability', () => {
   for (const { path, name } of gamesWithTutorial) {
     test(`${name}: tutorial completes and game remains playable`, async ({ page }) => {
-      // Do NOT suppress tutorial_no_suggest — we want the dialog to appear
+      // Ensure clean localStorage so the tutorial suggest dialog always appears
+      await page.addInitScript(() => {
+        localStorage.removeItem('tutorial_no_suggest');
+        localStorage.removeItem('tutorial_completed');
+      });
       await page.goto(`/#${path}`);
       await waitForLoaded(page);
 
       // Step 1: The first-visit tutorial suggestion dialog should appear
       const startButton = page.getByRole('button', { name: 'チュートリアルを開始' });
-      const dialogVisible = await startButton.isVisible({ timeout: 5_000 }).catch(() => false);
+      const dialogVisible = await isVisibleWithin(startButton, TIMEOUT_TRANSITION);
       if (!dialogVisible) {
-        // If dialog doesn't appear (e.g., localStorage already set), skip this game
-        test.skip();
-        return;
+        throw new Error(`Tutorial suggest dialog did not appear for ${name} — possible localStorage leak`);
       }
       await startButton.click();
 
@@ -66,14 +68,14 @@ test.describe('Tutorial → Game Playability', () => {
         const completeBtn = page.getByRole('button', { name: '完了' });
         const tutorialBtn = nextBtn.or(completeBtn).first();
 
-        const visible = await tutorialBtn.isVisible({ timeout: 5_000 }).catch(() => false);
+        const visible = await isVisibleWithin(tutorialBtn, TIMEOUT_TRANSITION);
         if (!visible) {
           // Tutorial overlay gone — tutorial ended
           break;
         }
 
         // Check if this is the last step (完了 button)
-        const isComplete = await completeBtn.isVisible({ timeout: 500 }).catch(() => false);
+        const isComplete = await isVisibleWithin(completeBtn, TIMEOUT_QUICK);
         if (isComplete) {
           await completeBtn.click();
           break;
@@ -83,7 +85,7 @@ test.describe('Tutorial → Game Playability', () => {
 
       // Step 3: After tutorial ends, verify the tutorial overlay is gone
       const tutorialDialog = page.locator('[role="dialog"][aria-label="Tutorial"]');
-      await expect(tutorialDialog).toBeHidden({ timeout: 5_000 });
+      await expect(tutorialDialog).toBeHidden({ timeout: TIMEOUT_TRANSITION });
 
       // Step 4: Verify the game is still playable — at least one interactive button exists
       // (excluding NavBar buttons by scoping to main content area)
@@ -97,11 +99,11 @@ test.describe('Tutorial → Game Playability', () => {
 
       // Step 5: Verify the first game button is actually clickable (not blocked by overlay)
       const firstButton = gameButtons.first();
-      await expect(firstButton).toBeEnabled({ timeout: 5_000 });
+      await expect(firstButton).toBeEnabled({ timeout: TIMEOUT_TRANSITION });
 
       // Try clicking the first button — it should not throw
       // (if an overlay is still blocking, this would fail)
-      await firstButton.click({ timeout: 5_000 });
+      await firstButton.click({ timeout: TIMEOUT_TRANSITION });
     });
   }
 });

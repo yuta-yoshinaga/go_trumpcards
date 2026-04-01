@@ -10,6 +10,7 @@ import (
 
 // OmahaInteractorIF オマハホールデムインタラクターインタフェース
 type OmahaInteractorIF interface {
+	TournamentInteractorIF
 	// Reset ゲーム初期化
 	Reset() string
 	// ResetWithConfig 設定を変更してゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
@@ -18,18 +19,6 @@ type OmahaInteractorIF interface {
 	Action(action int, amount int, humanPlayMs int) string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.OmahaConfig
-	// Rebuy リバイ実行
-	Rebuy() string
-	// SkipRebuy リバイ辞退
-	SkipRebuy() string
-	// Addon アドオン実行
-	Addon() string
-	// SkipAddon アドオン辞退
-	SkipAddon() string
-	// Muck マック
-	Muck() string
-	// ShowHand ハンドを公開する
-	ShowHand() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -38,12 +27,17 @@ type OmahaInteractorIF interface {
 type OmahaInteractor struct {
 	o  interfaces.OmahaGame
 	op presenter.OmahaPresenter
+	tournamentActions[interfaces.OmahaGame]
 }
 
 // NewOmahaInteractor コンストラクタ
 func NewOmahaInteractor(o interfaces.OmahaGame, op presenter.OmahaPresenter) *OmahaInteractor {
 	mustNotNil("OmahaInteractor", map[string]any{"o": o, "op": op})
-	return &OmahaInteractor{o: o, op: op}
+	return &OmahaInteractor{
+		o:                 o,
+		op:                op,
+		tournamentActions: newTournamentActions[interfaces.OmahaGame](o, op),
+	}
 }
 
 // Reset ゲーム初期化
@@ -77,36 +71,6 @@ func (oi *OmahaInteractor) GetConfig() domain.OmahaConfig {
 	return oi.o.GetConfig()
 }
 
-// Rebuy リバイ実行
-func (oi *OmahaInteractor) Rebuy() string {
-	return execAndPresent(oi.o, oi.op, oi.o.Rebuy)
-}
-
-// SkipRebuy リバイ辞退
-func (oi *OmahaInteractor) SkipRebuy() string {
-	return execAndPresent(oi.o, oi.op, oi.o.SkipRebuy)
-}
-
-// Addon アドオン実行
-func (oi *OmahaInteractor) Addon() string {
-	return execAndPresent(oi.o, oi.op, oi.o.Addon)
-}
-
-// SkipAddon アドオン辞退
-func (oi *OmahaInteractor) SkipAddon() string {
-	return execAndPresent(oi.o, oi.op, oi.o.SkipAddon)
-}
-
-// Muck マック
-func (oi *OmahaInteractor) Muck() string {
-	return execAndPresent(oi.o, oi.op, oi.o.Muck)
-}
-
-// ShowHand ハンドを公開する
-func (oi *OmahaInteractor) ShowHand() string {
-	return execAndPresent(oi.o, oi.op, oi.o.ShowHand)
-}
-
 // ActionLog 棋譜を出力する
 func (oi *OmahaInteractor) ActionLog() string {
 	return oi.op.ActionLogOutput(oi.o)
@@ -123,5 +87,5 @@ func RestoreOmahaInteractor(data []byte, op presenter.OmahaPresenter) (*OmahaInt
 	if err != nil {
 		return nil, err
 	}
-	return &OmahaInteractor{o: o, op: op}, nil
+	return &OmahaInteractor{o: o, op: op, tournamentActions: newTournamentActions[interfaces.OmahaGame](o, op)}, nil
 }

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_QUICK, waitForLoaded } from './helpers';
 
 test.describe("Texas Hold'em E2E", () => {
   test('plays a full round: reset → check/call through rounds → showdown → reset', async ({ page }) => {
@@ -15,13 +15,13 @@ test.describe("Texas Hold'em E2E", () => {
     // Play through betting rounds: PRE_FLOP → FLOP → TURN → RIVER → SHOWDOWN
     let roundEnded = false;
     for (let round = 0; round < 20; round++) {
-      const checkButton = page.getByRole('button', { name: 'チェック' });
-      const callButton = page.getByRole('button', { name: 'コール' });
+      const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
+      const callButton = page.getByRole('button', { name: 'コール', exact: true });
 
       // Check if we've reached the end
-      if (await resetButton.isVisible({ timeout: 1_000 }).catch(() => false)) {
-        const checkVisible = await checkButton.isVisible().catch(() => false);
-        const callVisible = await callButton.isVisible().catch(() => false);
+      if (await isVisibleWithin(resetButton, TIMEOUT_QUICK)) {
+        const checkVisible = await checkButton.isVisible();
+        const callVisible = await callButton.isVisible();
         if (!checkVisible && !callVisible) {
           roundEnded = true;
           break;
@@ -29,7 +29,7 @@ test.describe("Texas Hold'em E2E", () => {
       }
 
       // Try check first, then call
-      if (await checkButton.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      if (await isVisibleWithin(checkButton, TIMEOUT_ACTION)) {
         if (await checkButton.isEnabled()) {
           await checkButton.click();
           await waitForLoaded(page);
@@ -37,7 +37,7 @@ test.describe("Texas Hold'em E2E", () => {
         }
       }
 
-      if (await callButton.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      if (await isVisibleWithin(callButton, TIMEOUT_ACTION)) {
         if (await callButton.isEnabled()) {
           await callButton.click();
           await waitForLoaded(page);

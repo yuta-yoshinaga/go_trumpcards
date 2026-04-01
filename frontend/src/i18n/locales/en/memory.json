@@ -26,5 +26,9 @@
     "board": "This is the card board. Click cards on your turn to flip them. Match two cards to collect a pair.",
     "nextButton": "After a match result, press this button to proceed to the next turn.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "frontendHint": {
+    "flipAny": "Choose a card to flip — try to remember positions you have seen",
+    "findMatch": "Try to find the matching card — recall previously flipped positions"
   }
 }

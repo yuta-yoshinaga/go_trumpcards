@@ -52,5 +52,9 @@
   "phase": {
     "play": "Playing",
     "end": "End"
+  },
+  "hint": {
+    "drawFromEdge": "Try drawing from the edges of the hand",
+    "drawAny": "Few cards left — any position is fine"
   }
 }

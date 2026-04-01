@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
@@ -19,6 +21,7 @@ import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -102,6 +105,11 @@ function OldMaidPageContent() {
     setSetupHesitation,
     setSetupMetaAI,
   } = useOldMaidGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('oldmaid', displayState);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -166,6 +174,22 @@ function OldMaidPageContent() {
         <TutorialButton />
         <ManualButton gamePath="/oldmaid" />
       </PhaseIndicator>
+      <SettingsPanel
+        title={t('button.settings')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'checkbox',
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
+              },
+            ],
+          },
+        ]}
+      />
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* Mode badge */}
@@ -287,6 +311,10 @@ function OldMaidPageContent() {
         )}
 
         <ErrorAlert message={error} />
+
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+        )}
 
         {/* Buttons */}
         <div className="text-center">

@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -16,6 +17,7 @@ import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useEuchreGame } from '../hooks/useEuchreGame';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -133,6 +135,11 @@ function EuchrePageContent() {
     hintLoading,
     handleHint,
   } = useEuchreGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('euchre', state);
   const { cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
   const [goAlone, setGoAlone] = useState(false);
 
@@ -211,6 +218,13 @@ function EuchrePageContent() {
                 value: euchreConfig.pointLimit,
                 options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                 onSelect: (v) => handleConfigChange('pointLimit', v),
+              },
+              {
+                type: 'checkbox',
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
               },
             ],
           },
@@ -385,6 +399,9 @@ function EuchrePageContent() {
               ? `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`
               : `(${t(`hintReason.${hint.reason}`)})`}
           </div>
+        )}
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
         )}
 
         <div className="flex gap-2 items-center flex-wrap" data-tutorial="eu-play-button">
