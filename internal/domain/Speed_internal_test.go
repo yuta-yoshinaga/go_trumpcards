@@ -136,8 +136,8 @@ func TestSpeed_scoreHardPlay_BlocksOpponent(t *testing.T) {
 		NewCard(CardDesignHeart, 9, false), // pile 1
 	)
 
-	score5on0 := s.scoreHardPlay(0) // play 5 on pile 0 (6->5, human 7 not adj to 5)
-	score8on1 := s.scoreHardPlay(1) // play 8 on pile 1 (9->8, human 7 adj to 8)
+	score5on0 := s.scoreHardPlay(s.players[1].GetCard(0)) // play 5 (6->5, human 7 not adj to 5)
+	score8on1 := s.scoreHardPlay(s.players[1].GetCard(1)) // play 8 (9->8, human 7 adj to 8)
 	assert.Greater(t, score5on0, score8on1, "should prefer blocking play")
 }
 
@@ -191,7 +191,7 @@ func TestSpeed_scoreHardPlay_PrefersCombo(t *testing.T) {
 		NewCard(CardDesignSpade, 12, false), // pile 1 (far away, irrelevant)
 	)
 
-	score6on0 := s.scoreHardPlay(0) // play 6 on pile 0 -> no combo
-	score4on0 := s.scoreHardPlay(1) // play 4 on pile 0 -> enables 3 combo
+	score6on0 := s.scoreHardPlay(s.players[1].GetCard(0)) // play 6 -> no combo
+	score4on0 := s.scoreHardPlay(s.players[1].GetCard(1)) // play 4 -> enables 3 combo
 	assert.Greater(t, score4on0, score6on0, "should prefer play that enables combo")
 }

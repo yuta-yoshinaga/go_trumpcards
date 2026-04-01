@@ -271,10 +271,10 @@ func (s *Speed) cpuPlayHard() []*SpeedCpuAction {
 		bestScore := -1000
 		bestDiff := -1
 		for ci := 0; ci < p.GetCardsSize(); ci++ {
+			card := p.GetCard(ci)
+			score := s.scoreHardPlay(card)
 			for pi := range SpeedCenterPileCnt {
 				if s.CanPlay(1, ci, pi) {
-					score := s.scoreHardPlay(ci)
-					card := p.GetCard(ci)
 					pile := s.centerPiles[pi]
 					diff := card.GetValue() - pile.GetValue()
 					if diff < 0 {
@@ -304,12 +304,8 @@ func (s *Speed) cpuPlayHard() []*SpeedCpuAction {
 	return actions
 }
 
-// scoreHardPlay カード ci を出した場合のスコアを返す
-func (s *Speed) scoreHardPlay(cardIdx int) int {
-	card := s.players[1].GetCard(cardIdx)
-	if card == nil {
-		return -1000
-	}
+// scoreHardPlay カードを出した場合のスコアを返す
+func (s *Speed) scoreHardPlay(card *Card) int {
 	newValue := card.GetValue()
 
 	// 自分の残り手札で新しい台札値に隣接するカード数 (コンボ)
