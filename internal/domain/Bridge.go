@@ -1263,7 +1263,7 @@ func (b *Bridge) playHintReason(playerIdx int, chosenIdx int) string {
 func (b *Bridge) cpuSelectBid(playerIdx int) (BridgeBidType, int, int) {
 	switch b.config.CpuDifficulty {
 	case BridgeCpuDifficultyHard:
-		return b.cpuBidNormal(playerIdx) // Hard = Normal for now
+		return b.cpuBidHard(playerIdx)
 	case BridgeCpuDifficultyNormal:
 		return b.cpuBidNormal(playerIdx)
 	default:
@@ -1348,6 +1348,147 @@ func (b *Bridge) cpuBidNormal(playerIdx int) (BridgeBidType, int, int) {
 	return BridgeBidPass, 0, 0
 }
 
+// cpuBidHard 高度なビッド戦略 (HCP+分布点、パートナー連携)
+func (b *Bridge) cpuBidHard(playerIdx int) (BridgeBidType, int, int) {
+	hcp := b.calcHCP(playerIdx)
+	distPts := b.calcDistributionPoints(playerIdx)
+	totalPts := hcp + distPts
+	player := b.players[playerIdx]
+
+	// パートナーフィットボーナス
+	partnerSuit := b.partnerBidSuit(playerIdx)
+	if partnerSuit > 0 {
+		partnerCardDesign := b.bidSuitToCardDesign(partnerSuit)
+		if b.countSuitCards(playerIdx, partnerCardDesign) >= 3 {
+			totalPts += 3
+		}
+	}
+
+	// ダブル判定: 相手チームのビッド、totalPts>=14、コントラクトスートに2枚以上
+	// NT契約の場合はbidSuitToCardDesignが-1を返すためcountSuitCardsは常に0となりダブルしない
+	if b.contractLevel > 0 && b.doubled == 0 &&
+		b.players[playerIdx].GetTeam() != b.lastBidTeam && totalPts >= 14 {
+		contractCardDesign := b.bidSuitToCardDesign(b.contractSuit)
+		if b.countSuitCards(playerIdx, contractCardDesign) >= 2 {
+			return BridgeBidDouble, 0, 0
+		}
+	}
+
+	// リダブル判定: 味方ビッドがダブルされた場合、totalPts>=12
+	if b.doubled == 1 && b.players[playerIdx].GetTeam() == b.lastBidTeam && totalPts >= 12 {
+		return BridgeBidRedouble, 0, 0
+	}
+
+	// totalPts < 12 ならパス
+	if totalPts < 12 {
+		return BridgeBidPass, 0, 0
+	}
+
+	// パートナーのスートを支持 (3枚以上のフィット)
+	if partnerSuit > 0 {
+		partnerCardDesign := b.bidSuitToCardDesign(partnerSuit)
+		if b.countSuitCards(playerIdx, partnerCardDesign) >= 3 {
+			// パートナーのスートでレイズ
+			bidLevel := b.contractLevel + 1
+			if totalPts >= 13 {
+				// ゲームレベルへジャンプ
+				if partnerSuit == BridgeBidSuitHeart || partnerSuit == BridgeBidSuitSpade {
+					bidLevel = 4
+				} else {
+					bidLevel = 5
+				}
+			}
+			if bidLevel > 7 {
+				bidLevel = 7
+			}
+			if b.isHigherBid(bidLevel, partnerSuit) {
+				return BridgeBidNormal, bidLevel, partnerSuit
+			}
+		}
+	}
+
+	// 最長スートを見つける
+	bestSuit, bestLen := b.findLongestSuit(player)
+	bidSuit := b.cardDesignToBidSuit(bestSuit)
+
+	// メジャースート優先 (同じ長さならハート/スペードを優先)
+	if bestLen >= 4 {
+		suitCounts := [5]int{}
+		for i := 0; i < player.GetCardsSize(); i++ {
+			d := player.GetCard(i).GetDesign()
+			if d >= CardDesignSpade && d <= CardDesignDiamond {
+				suitCounts[d]++
+			}
+		}
+		// メジャースートで同じ長さがあれば優先
+		for _, major := range []int{CardDesignSpade, CardDesignHeart} {
+			if suitCounts[major] >= bestLen {
+				bidSuit = b.cardDesignToBidSuit(major)
+				break
+			}
+		}
+	}
+
+	// NT判定: バランスハンド
+	if b.isBalancedHand(player) {
+		if totalPts >= 20 {
+			bidSuit = BridgeBidSuitNT
+			if b.isHigherBid(2, bidSuit) {
+				return BridgeBidNormal, 2, bidSuit
+			}
+		} else if totalPts >= 15 {
+			bidSuit = BridgeBidSuitNT
+			if b.isHigherBid(1, bidSuit) {
+				return BridgeBidNormal, 1, bidSuit
+			}
+		}
+	}
+
+	// ビッドレベル判定
+	bidLevel := 1
+	if totalPts >= 23 {
+		// ゲームレベル
+		switch bidSuit {
+		case BridgeBidSuitHeart, BridgeBidSuitSpade:
+			bidLevel = 4
+		case BridgeBidSuitNT:
+			bidLevel = 3
+		default:
+			bidLevel = 5
+		}
+	} else if totalPts >= 20 {
+		bidLevel = 2
+	}
+
+	// 有効なビッドか確認
+	if b.isHigherBid(bidLevel, bidSuit) {
+		return BridgeBidNormal, bidLevel, bidSuit
+	}
+
+	// レベルを上げてリトライ (まず最強スートで試行)
+	for level := bidLevel; level <= 7; level++ {
+		if level > 3 && totalPts < 18 {
+			return BridgeBidPass, 0, 0
+		}
+		if level > 5 && totalPts < 25 {
+			return BridgeBidPass, 0, 0
+		}
+		if b.isHigherBid(level, bidSuit) {
+			return BridgeBidNormal, level, bidSuit
+		}
+		for suit := BridgeBidSuitClub; suit <= BridgeBidSuitNT; suit++ {
+			if suit == bidSuit {
+				continue
+			}
+			if b.isHigherBid(level, suit) {
+				return BridgeBidNormal, level, suit
+			}
+		}
+	}
+
+	return BridgeBidPass, 0, 0
+}
+
 // calcHCP ハイカードポイントを計算する (A=4, K=3, Q=2, J=1)
 func (b *Bridge) calcHCP(playerIdx int) int {
 	player := b.players[playerIdx]
@@ -1406,6 +1547,104 @@ func (b *Bridge) isBalancedHand(player *BridgePlayer) bool {
 	return true
 }
 
+// calcDistributionPoints 分布点を計算する (ボイド=3, シングルトン=2, ダブルトン=1)
+func (b *Bridge) calcDistributionPoints(playerIdx int) int {
+	player := b.players[playerIdx]
+	suitCounts := [5]int{}
+	for i := 0; i < player.GetCardsSize(); i++ {
+		d := player.GetCard(i).GetDesign()
+		if d >= CardDesignSpade && d <= CardDesignDiamond {
+			suitCounts[d]++
+		}
+	}
+	pts := 0
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		switch suitCounts[suit] {
+		case 0:
+			pts += 3
+		case 1:
+			pts += 2
+		case 2:
+			pts++
+		}
+	}
+	return pts
+}
+
+// countSuitCards 指定スートのカード枚数を返す
+func (b *Bridge) countSuitCards(playerIdx int, suit int) int {
+	player := b.players[playerIdx]
+	count := 0
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if player.GetCard(i).GetDesign() == suit {
+			count++
+		}
+	}
+	return count
+}
+
+// partnerBidSuit パートナーの最新ビッドスートを返す (0=なし)
+func (b *Bridge) partnerBidSuit(playerIdx int) int {
+	partnerIdx := (playerIdx + 2) % BridgePlayerCnt
+	lastSuit := 0
+	for _, entry := range b.bidHistory {
+		if entry.PlayerIdx == partnerIdx && entry.BidType == BridgeBidNormal {
+			lastSuit = entry.Suit
+		}
+	}
+	return lastSuit
+}
+
+// countTrumpsRemaining プレイヤーの手札にある切り札の枚数を返す
+func (b *Bridge) countTrumpsRemaining(playerIdx int) int {
+	if b.trumpSuit < 0 {
+		return 0
+	}
+	return b.countSuitCards(playerIdx, b.trumpSuit)
+}
+
+// findShortestSuitCard ボイド作りのため最も短いスートの最弱カードを返す
+func (b *Bridge) findShortestSuitCard(playerIdx int, validIndices []int) int {
+	player := b.players[playerIdx]
+	// 各スートの枚数を数える (validIndicesの中だけ、固定順序配列)
+	suitCounts := [5]int{} // index 0=unused, 1-4=CardDesign
+	for _, idx := range validIndices {
+		d := player.GetCard(idx).GetDesign()
+		if d >= CardDesignSpade && d <= CardDesignDiamond {
+			suitCounts[d]++
+		}
+	}
+
+	// 最短スートを見つける (固定順序で決定的)
+	shortestLen := 14
+	shortestSuit := -1
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		if suitCounts[suit] > 0 && suitCounts[suit] < shortestLen {
+			shortestLen = suitCounts[suit]
+			shortestSuit = suit
+		}
+	}
+
+	// 最短スートの中で最弱カードを選ぶ
+	best := validIndices[0]
+	bestRank := b.cardRank(player.GetCard(best))
+	bestInShortest := false
+	for _, idx := range validIndices {
+		card := player.GetCard(idx)
+		rank := b.cardRank(card)
+		inShortest := card.GetDesign() == shortestSuit
+		if !bestInShortest && inShortest {
+			best = idx
+			bestRank = rank
+			bestInShortest = true
+		} else if inShortest == bestInShortest && rank < bestRank {
+			best = idx
+			bestRank = rank
+		}
+	}
+	return best
+}
+
 // cardDesignToBidSuit カードデザインをビッドスートに変換する
 func (b *Bridge) cardDesignToBidSuit(design int) int {
 	switch design {
@@ -1449,19 +1688,146 @@ func (b *Bridge) cpuPlayNormal(playerIdx int, validIndices []int) int {
 	return b.selectSmartFollow(playerIdx, validIndices)
 }
 
-// cpuPlayHard 戦略的プレイ
+// cpuPlayHard 戦略的プレイ (切り札管理、パートナー連携、ボイド戦略)
 func (b *Bridge) cpuPlayHard(playerIdx int, validIndices []int) int {
+	player := b.players[playerIdx]
+
 	if len(b.currentTrick) == 0 {
-		return b.selectStrongestCard(playerIdx, validIndices)
+		return b.cpuLeadHard(playerIdx, validIndices)
 	}
 
-	// パートナーが勝っているなら弱いカード
+	leadSuit := b.currentTrick[0].Card.GetDesign()
 	currentWinner := b.currentTrickWinner()
-	if b.players[currentWinner].GetTeam() == b.players[playerIdx].GetTeam() {
+	isPartnerWinning := b.players[currentWinner].GetTeam() == player.GetTeam()
+
+	// パートナーが勝っている場合は弱いカード
+	if isPartnerWinning {
 		return b.selectWeakestCard(playerIdx, validIndices)
 	}
 
-	return b.selectSmartFollow(playerIdx, validIndices)
+	// リードスートをフォローできるか確認
+	hasLeadSuit := false
+	for _, idx := range validIndices {
+		if player.GetCard(idx).GetDesign() == leadSuit {
+			hasLeadSuit = true
+			break
+		}
+	}
+
+	if hasLeadSuit {
+		return b.selectSmartFollow(playerIdx, validIndices)
+	}
+
+	// ボイド: リードスートがない
+	if b.trumpSuit >= 0 {
+		// 切り札で勝てるか確認
+		trumpIndices := []int{}
+		for _, idx := range validIndices {
+			if player.GetCard(idx).GetDesign() == b.trumpSuit {
+				trumpIndices = append(trumpIndices, idx)
+			}
+		}
+		if len(trumpIndices) > 0 {
+			// 既にトリックに切り札があるか確認
+			highestTrumpRank := 0
+			for _, tc := range b.currentTrick {
+				if tc.Card.GetDesign() == b.trumpSuit {
+					r := b.cardRank(tc.Card)
+					if r > highestTrumpRank {
+						highestTrumpRank = r
+					}
+				}
+			}
+			// 既存の切り札に勝てる最低の切り札を選ぶ
+			var winningTrumps []int
+			for _, idx := range trumpIndices {
+				if b.cardRank(player.GetCard(idx)) > highestTrumpRank {
+					winningTrumps = append(winningTrumps, idx)
+				}
+			}
+			if len(winningTrumps) > 0 {
+				return b.selectWeakestCard(playerIdx, winningTrumps)
+			}
+			// 切り札はあるが勝てない: 切り札は温存して他を捨てる
+			nonTrumpIndices := []int{}
+			for _, idx := range validIndices {
+				if player.GetCard(idx).GetDesign() != b.trumpSuit {
+					nonTrumpIndices = append(nonTrumpIndices, idx)
+				}
+			}
+			if len(nonTrumpIndices) > 0 {
+				return b.findShortestSuitCard(playerIdx, nonTrumpIndices)
+			}
+			return b.selectWeakestCard(playerIdx, validIndices)
+		}
+	}
+
+	// 切り札なし / ノートランプ: 最短スートから捨てる
+	return b.findShortestSuitCard(playerIdx, validIndices)
+}
+
+// cpuLeadHard Hard難易度のリード戦略
+func (b *Bridge) cpuLeadHard(playerIdx int, validIndices []int) int {
+	player := b.players[playerIdx]
+	isDeclaringTeam := player.GetTeam() == b.players[b.declarerIdx].GetTeam()
+
+	// 終盤: 最強カードでキャッシュ
+	if b.trickNumber >= 10 {
+		return b.selectStrongestCard(playerIdx, validIndices)
+	}
+
+	// ディクレアラー側: 切り札ドロー
+	if isDeclaringTeam && b.trumpSuit >= 0 {
+		trumpCount := b.countTrumpsRemaining(playerIdx)
+		if trumpCount >= 3 && b.trickNumber <= 4 {
+			// 中程度の切り札でリード
+			trumpIndices := []int{}
+			for _, idx := range validIndices {
+				if player.GetCard(idx).GetDesign() == b.trumpSuit {
+					trumpIndices = append(trumpIndices, idx)
+				}
+			}
+			if len(trumpIndices) > 0 {
+				// 中間ランクの切り札を選ぶ (ソートして中央を取る)
+				sort.Slice(trumpIndices, func(i, j int) bool {
+					return b.cardRank(player.GetCard(trumpIndices[i])) < b.cardRank(player.GetCard(trumpIndices[j]))
+				})
+				mid := len(trumpIndices) / 2
+				return trumpIndices[mid]
+			}
+		}
+	}
+
+	// ディフェンス側: パートナーのビッドスートをリード
+	if !isDeclaringTeam {
+		pSuit := b.partnerBidSuit(playerIdx)
+		if pSuit > 0 {
+			pDesign := b.bidSuitToCardDesign(pSuit)
+			var suitIndices []int
+			for _, idx := range validIndices {
+				if player.GetCard(idx).GetDesign() == pDesign {
+					suitIndices = append(suitIndices, idx)
+				}
+			}
+			if len(suitIndices) > 0 {
+				return b.selectStrongestCard(playerIdx, suitIndices)
+			}
+		}
+	}
+
+	// デフォルト: 最長スートの最強カード
+	longestSuit, _ := b.findLongestSuit(player)
+	var longestSuitIndices []int
+	for _, idx := range validIndices {
+		if player.GetCard(idx).GetDesign() == longestSuit {
+			longestSuitIndices = append(longestSuitIndices, idx)
+		}
+	}
+	if len(longestSuitIndices) > 0 {
+		return b.selectStrongestCard(playerIdx, longestSuitIndices)
+	}
+
+	return b.selectStrongestCard(playerIdx, validIndices)
 }
 
 // selectStrongestCard 最も強いカードを選択する
