@@ -87,5 +87,5 @@ func RestoreShortDeckInteractor(data []byte, op presenter.ShortDeckPresenter) (*
 	if err != nil {
 		return nil, err
 	}
-	return &ShortDeckInteractor{o: sd, op: op}, nil
+	return &ShortDeckInteractor{o: sd, op: op, tournamentActions: newTournamentActions[interfaces.ShortDeckGame](sd, op)}, nil
 }

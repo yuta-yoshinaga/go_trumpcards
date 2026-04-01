@@ -95,5 +95,5 @@ func RestorePineappleInteractor(data []byte, pp presenter.PineapplePresenter) (*
 	if err != nil {
 		return nil, err
 	}
-	return &PineappleInteractor{p: p, pp: pp}, nil
+	return &PineappleInteractor{p: p, pp: pp, tournamentActions: newTournamentActions[interfaces.PineappleGame](p, pp)}, nil
 }

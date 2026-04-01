@@ -87,5 +87,5 @@ func RestoreOmahaInteractor(data []byte, op presenter.OmahaPresenter) (*OmahaInt
 	if err != nil {
 		return nil, err
 	}
-	return &OmahaInteractor{o: o, op: op}, nil
+	return &OmahaInteractor{o: o, op: op, tournamentActions: newTournamentActions[interfaces.OmahaGame](o, op)}, nil
 }

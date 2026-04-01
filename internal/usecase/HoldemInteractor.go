@@ -88,5 +88,5 @@ func RestoreHoldemInteractor(data []byte, hp presenter.HoldemPresenter) (*Holdem
 	if err != nil {
 		return nil, err
 	}
-	return &HoldemInteractor{h: h, hp: hp}, nil
+	return &HoldemInteractor{h: h, hp: hp, tournamentActions: newTournamentActions[interfaces.HoldemGame](h, hp)}, nil
 }
