@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, spiderApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SpiderResponse, SpiderTableauCard } from '../types/card';
 import { SpiderPage } from './SpiderPage';
@@ -8,6 +9,10 @@ import { SpiderPage } from './SpiderPage';
 vi.mock('../api/gameApi', () => ({
   spiderApi: { exec: vi.fn() },
   actionLogApi: { spider: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
 const mockExec = vi.mocked(spiderApi.exec);
@@ -66,6 +71,7 @@ const gameOverState: SpiderResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
 describe('SpiderPage', () => {
@@ -507,5 +513,22 @@ describe('SpiderPage', () => {
     // Click ♠K again (same col 0) — triggers handleSelectSource which deselects
     fireEvent.click(cardButton);
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  // --- Frontend hint ---
+
+  it('renders hint toggle checkbox in SettingsPanel', async () => {
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument());
+  });
+
+  it('renders HintTooltip when hintEnabled is true and hint is available', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { reason: 'frontendHint.dealFromStock', confidence: 'moderate' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 });

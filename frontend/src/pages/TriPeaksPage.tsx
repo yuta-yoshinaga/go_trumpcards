@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -16,6 +18,7 @@ import { TriPeaksSkeleton } from '../components/skeleton/TriPeaksSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -100,6 +103,11 @@ function TriPeaksPageContent() {
     handleUndo,
     handleSelectCard,
   } = useTriPeaksGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('tripeaks', state);
   const { cardHeight, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === TriPeaksPhase.PLAYING;
@@ -246,6 +254,11 @@ function TriPeaksPageContent() {
             </div>
           )}
         </div>
+        {frontendHintEnabled && frontendHint && (
+          <div className="flex justify-center">
+            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+          </div>
+        )}
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
@@ -256,6 +269,24 @@ function TriPeaksPageContent() {
           hideActionLog={hideActionLog}
         />
       </div>
+
+      {/* Settings */}
+      <SettingsPanel
+        title={tc('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'checkbox' as const,
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
+              },
+            ],
+          },
+        ]}
+      />
 
       <GameFooter className={`${gameTheme.tripeaks.footer} px-4 py-2.5`}>
         <ErrorAlert message={error ?? hintError} />

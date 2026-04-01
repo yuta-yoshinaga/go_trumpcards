@@ -25,5 +25,11 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "landscapeBanner": "横向きにすると操作しやすくなります",
-  "freecellShort": "FC"
+  "freecellShort": "FC",
+  "frontendHint": {
+    "moveToFoundation": "組札に移動できるカードがあります",
+    "freeCellsFilling": "フリーセルがほぼ満杯です — 空けることを検討しましょう",
+    "useEmptyColumn": "空の列があります — 整理に活用しましょう",
+    "useFreeCells": "フリーセルにカードを移動して手を広げましょう"
+  }
 }

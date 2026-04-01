@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, freecellApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FreeCellResponse } from '../types/card';
 import { FreeCellPage } from './FreeCellPage';
@@ -8,6 +9,10 @@ import { FreeCellPage } from './FreeCellPage';
 vi.mock('../api/gameApi', () => ({
   freecellApi: { exec: vi.fn() },
   actionLogApi: { freecell: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
 const mockExec = vi.mocked(freecellApi.exec);
@@ -63,6 +68,7 @@ const withFreeCellCardState: FreeCellResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
 describe('FreeCellPage', () => {
@@ -313,7 +319,7 @@ describe('FreeCellPage', () => {
     mockExec.mockResolvedValue(withHintState);
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    await waitFor(() => expect(screen.getByText(/ヒント/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText(/ヒント/).length).toBeGreaterThanOrEqual(1));
   });
 
   it('hint display shows fromCol when fromCol is non-negative', async () => {
@@ -629,5 +635,22 @@ describe('FreeCellPage', () => {
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
+  });
+
+  // --- Frontend hint ---
+
+  it('renders hint toggle checkbox in SettingsPanel', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument());
+  });
+
+  it('renders HintTooltip when hintEnabled is true and hint is available', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { reason: 'frontendHint.useFreeCells', confidence: 'moderate' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 });
