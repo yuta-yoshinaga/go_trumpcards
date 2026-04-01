@@ -7,11 +7,11 @@ const KNOCK_THRESHOLD = 10;
 
 /** Returns a frontend HintResult for Gin Rummy, or null if no suggestion. */
 export function getGinRummyHint(state: GinRummyResponse): HintResult | null {
-  const human = state.players.find((p) => p.isHuman);
-  if (!human || human.cards.length === 0) return null;
-  if (state.gameEndFlag) return null;
-
   const humanIdx = state.players.findIndex((p) => p.isHuman);
+  if (humanIdx === -1) return null;
+  const human = state.players[humanIdx];
+  if (human.cards.length === 0) return null;
+  if (state.gameEndFlag) return null;
 
   if (state.phase === GinRummyPhase.DRAW) {
     if (state.currentPlayerIdx !== humanIdx) return null;
