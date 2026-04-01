@@ -524,7 +524,7 @@ describe('SpiderPage', () => {
 
   it('renders HintTooltip when hintEnabled is true and hint is available', async () => {
     vi.mocked(useGameHint).mockReturnValue({
-      hint: { reason: 'frontendHint.dealFromStock', confidence: 'moderate' },
+      hint: { targetAction: 'deal', reason: 'frontendHint.dealFromStock', confidence: 'moderate' },
       hintEnabled: true,
       setHintEnabled: vi.fn(),
     });
