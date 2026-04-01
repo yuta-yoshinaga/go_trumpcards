@@ -40,25 +40,19 @@ export function getKlondikeHint(state: KlondikeResponse): HintResult | null {
 
 /** Check if any face-up tableau top card or waste top can go to a foundation. */
 function hasFoundationMove(state: KlondikeResponse): boolean {
-  const topCards = getTableauTopCards(state.tableau);
+  // Tableau top cards
+  for (const col of state.tableau) {
+    if (col.length > 0) {
+      const top = col[col.length - 1];
+      if (top.card && top.faceUp && canMoveToFoundation(top.card, state.foundation)) return true;
+    }
+  }
+
+  // Waste top
   const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
-  const candidates = wasteTop ? [...topCards, wasteTop] : topCards;
+  if (wasteTop && canMoveToFoundation(wasteTop, state.foundation)) return true;
 
-  for (const card of candidates) {
-    if (canMoveToFoundation(card, state.foundation)) return true;
-  }
   return false;
-}
-
-/** Get top face-up card from each non-empty tableau column. */
-function getTableauTopCards(tableau: KlondikeTableauCard[][]): Card[] {
-  const cards: Card[] = [];
-  for (const col of tableau) {
-    if (col.length === 0) continue;
-    const top = col[col.length - 1];
-    if (top.card && top.faceUp) cards.push(top.card);
-  }
-  return cards;
 }
 
 /** Check if a card can be placed on any foundation pile. */

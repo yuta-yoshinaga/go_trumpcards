@@ -1,4 +1,4 @@
-import type { SpiderResponse, SpiderTableauCard } from '../../types/card';
+import type { Card, SpiderResponse, SpiderTableauCard } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { SpiderPhase } from '../../types/phases';
 
@@ -78,7 +78,7 @@ function hasFaceDownToReveal(tableau: SpiderTableauCard[][]): boolean {
 
 /** Get the length of the same-suit descending sequence from the bottom of face-up cards. */
 function getSameSuitSequenceLength(col: SpiderTableauCard[]): number {
-  if (col.length === 0) return 0;
+  if (col.length === 0 || !col[col.length - 1].faceUp) return 0;
   let count = 1;
   for (let i = col.length - 1; i > 0; i--) {
     const current = col[i];
@@ -99,7 +99,7 @@ function getSameSuitSequenceLength(col: SpiderTableauCard[]): number {
 }
 
 /** Get the card at the bottom of the same-suit run from the top of a column. */
-function getBottomOfSameSuitRun(col: SpiderTableauCard[]): { design: string; value: number } | null {
+function getBottomOfSameSuitRun(col: SpiderTableauCard[]): { design: Card['design']; value: number } | null {
   if (col.length === 0) return null;
   const top = col[col.length - 1];
   if (!top.faceUp || !top.card) return null;

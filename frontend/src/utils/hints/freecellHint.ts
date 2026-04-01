@@ -42,21 +42,20 @@ export function getFreeCellHint(state: FreeCellResponse): HintResult | null {
 
 /** Check if any tableau top card or free cell card can go to a foundation. */
 function hasFoundationMove(state: FreeCellResponse): boolean {
-  const candidates: Card[] = [];
-
   // Tableau top cards
   for (const col of state.tableau) {
-    if (col.length === 0) continue;
-    const top = col[col.length - 1];
-    if (top) candidates.push(top);
+    if (col.length > 0) {
+      const top = col[col.length - 1];
+      if (top && canMoveToFoundation(top, state.foundation)) return true;
+    }
   }
 
   // Free cell cards
   for (const cell of state.freeCells) {
-    if (cell) candidates.push(cell);
+    if (cell && canMoveToFoundation(cell, state.foundation)) return true;
   }
 
-  return candidates.some((card) => canMoveToFoundation(card, state.foundation));
+  return false;
 }
 
 /** Check if a card can be placed on any foundation pile. */
