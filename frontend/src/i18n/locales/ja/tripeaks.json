@@ -30,5 +30,10 @@
     "hintDisplay": "ヒントボタンを押すとヒントが表示されます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
-  "landscapeBanner": "横向きにすると操作しやすくなります"
+  "landscapeBanner": "横向きにすると操作しやすくなります",
+  "frontendHint": {
+    "canRemove": "除去できるカードがあります — 捨て札と隣接しています",
+    "multipleRemovable": "複数のカードが除去可能です — 連鎖を狙いましょう",
+    "drawFromStock": "除去できるカードがありません — 山札から引いてみましょう"
+  }
 }

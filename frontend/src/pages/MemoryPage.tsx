@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -16,6 +17,7 @@ import { MemorySkeleton } from '../components/skeleton/MemorySkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -84,6 +86,11 @@ function MemoryPageContent() {
     useGamePageSetup('memory');
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec, memoryConfig, handleConfigChange, handleFlip, handleNext } = useMemoryGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('memory', state);
 
   const isResultForKbd = state?.phase === MemoryPhase.RESULT;
 
@@ -134,6 +141,13 @@ function MemoryPageContent() {
                   label: t(`settings.${o.label.toLowerCase()}`),
                 })),
                 onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+              },
+              {
+                type: 'checkbox' as const,
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
               },
             ],
           },
@@ -195,6 +209,12 @@ function MemoryPageContent() {
             ))}
           </div>
         </div>
+
+        {frontendHintEnabled && frontendHint && (
+          <div className="flex justify-center">
+            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+          </div>
+        )}
 
         {/* Message */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />

@@ -313,7 +313,7 @@ describe('FreeCellPage', () => {
     mockExec.mockResolvedValue(withHintState);
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
-    await waitFor(() => expect(screen.getByText(/ヒント/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText(/ヒント/).length).toBeGreaterThanOrEqual(1));
   });
 
   it('hint display shows fromCol when fromCol is non-negative', async () => {

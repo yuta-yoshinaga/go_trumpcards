@@ -6,20 +6,26 @@ import type {
   DaifugoResponse,
   DoubtResponse,
   EuchreResponse,
+  FreeCellResponse,
   HeartsResponse,
   HoldemResponse,
   IndianPokerResponse,
+  KlondikeResponse,
+  MemoryResponse,
   NapoleonResponse,
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
   PineappleResponse,
   PokerResponse,
+  PyramidResponse,
   SevensResponse,
   ShortDeckResponse,
   SpadesResponse,
   SpeedResponse,
+  SpiderResponse,
   ThreeCardResponse,
+  TriPeaksResponse,
   VideoPokerResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
@@ -30,21 +36,27 @@ import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
+import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
+import { getKlondikeHint } from '../utils/hints/klondikeHint';
+import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
+import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
+import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
+import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
@@ -72,7 +84,13 @@ type HintGameName =
   | 'daifugo'
   | 'sevens'
   | 'crazyeights'
-  | 'speed';
+  | 'speed'
+  | 'klondike'
+  | 'freecell'
+  | 'spider'
+  | 'pyramid'
+  | 'tripeaks'
+  | 'memory';
 
 /** Return type of the useGameHint hook. */
 export interface UseGameHintReturn {
@@ -137,6 +155,18 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
         return getCrazyEightsHint(state as CrazyEightsResponse);
       case 'speed':
         return getSpeedHint(state as SpeedResponse);
+      case 'klondike':
+        return getKlondikeHint(state as KlondikeResponse);
+      case 'freecell':
+        return getFreeCellHint(state as FreeCellResponse);
+      case 'spider':
+        return getSpiderHint(state as SpiderResponse);
+      case 'pyramid':
+        return getPyramidHint(state as PyramidResponse);
+      case 'tripeaks':
+        return getTriPeaksHint(state as TriPeaksResponse);
+      case 'memory':
+        return getMemoryHint(state as MemoryResponse);
       default:
         return null;
     }
