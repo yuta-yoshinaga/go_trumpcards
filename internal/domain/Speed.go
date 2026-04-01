@@ -191,8 +191,9 @@ func (s *Speed) CpuPlay() []*SpeedCpuAction {
 	switch s.config.CpuDifficulty {
 	case SpeedCpuDifficultyEasy:
 		return s.cpuPlayEasy()
+	case SpeedCpuDifficultyHard:
+		return s.cpuPlayHard()
 	default:
-		// Normal と Hard は同じ貪欲戦略 (v1; Hard 固有の戦略は将来追加)
 		return s.cpuPlayGreedy()
 	}
 }
@@ -259,6 +260,81 @@ func (s *Speed) cpuPlayGreedy() []*SpeedCpuAction {
 		s.checkWin()
 	}
 	return actions
+}
+
+// cpuPlayHard ブロッキングとコンボを考慮した戦略的プレイ
+func (s *Speed) cpuPlayHard() []*SpeedCpuAction {
+	var actions []*SpeedCpuAction
+	for !s.gameEndFlag {
+		p := s.players[1]
+		bestCI, bestPI := -1, -1
+		bestScore := -1000
+		bestDiff := -1
+		for ci := 0; ci < p.GetCardsSize(); ci++ {
+			for pi := range SpeedCenterPileCnt {
+				if s.CanPlay(1, ci, pi) {
+					score := s.scoreHardPlay(ci)
+					card := p.GetCard(ci)
+					pile := s.centerPiles[pi]
+					diff := card.GetValue() - pile.GetValue()
+					if diff < 0 {
+						diff = -diff
+					}
+					if score > bestScore || (score == bestScore && diff > bestDiff) {
+						bestScore = score
+						bestDiff = diff
+						bestCI = ci
+						bestPI = pi
+					}
+				}
+			}
+		}
+		if bestCI < 0 {
+			break
+		}
+		played := p.RemoveCard(bestCI)
+		s.centerPiles[bestPI] = played
+		p.RefillHand(SpeedHandSize)
+
+		s.appendLog(1, "play", fmt.Sprintf("→ pile %d", bestPI), []*Card{played})
+
+		actions = append(actions, &SpeedCpuAction{CardIndex: bestCI, PileIndex: bestPI})
+		s.checkWin()
+	}
+	return actions
+}
+
+// scoreHardPlay カード ci を出した場合のスコアを返す
+func (s *Speed) scoreHardPlay(cardIdx int) int {
+	card := s.players[1].GetCard(cardIdx)
+	if card == nil {
+		return -1000
+	}
+	newValue := card.GetValue()
+
+	// 自分の残り手札で新しい台札値に隣接するカード数 (コンボ)
+	ownFuture := s.countAdjacentCards(1, newValue)
+
+	// 相手の手札で新しい台札値に隣接するカード数 (ブロッキング)
+	opponentPlays := s.countAdjacentCards(0, newValue)
+
+	return ownFuture*10 - opponentPlays*15
+}
+
+// countAdjacentCards 指定プレイヤーの手札のうち value に隣接するカードの枚数を返す
+func (s *Speed) countAdjacentCards(playerIdx, value int) int {
+	if playerIdx < 0 || playerIdx >= SpeedPlayerCnt {
+		return 0
+	}
+	p := s.players[playerIdx]
+	count := 0
+	for i := 0; i < p.GetCardsSize(); i++ {
+		c := p.GetCard(i)
+		if c != nil && isAdjacentRank(c.GetValue(), value) {
+			count++
+		}
+	}
+	return count
 }
 
 // Flip 膠着時に台札をめくる
