@@ -21,6 +21,9 @@ export function getFreeCellHint(state: FreeCellResponse): HintResult | null {
   }
 
   // Priority 2: Free cells nearly full
+  // This fires before checking for tableau-to-tableau moves because the warning is about resource
+  // scarcity — when cells are nearly full, freeing them is more urgent than individual moves.
+  // When all 4 cells are full, this also subsumes Priority 4 (usedFreeCells < SUIT_COUNT is false).
   const usedFreeCells = state.freeCells.filter((c) => c !== null).length;
   if (usedFreeCells >= FREE_CELL_WARNING_THRESHOLD) {
     return { targetAction: 'move', reason: 'frontendHint.freeCellsFilling', confidence: 'strong' };

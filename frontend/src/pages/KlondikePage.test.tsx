@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, klondikeApi } from '../api/gameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, KlondikeResponse, KlondikeTableauCard } from '../types/card';
 import { KlondikePage } from './KlondikePage';
@@ -8,6 +9,10 @@ import { KlondikePage } from './KlondikePage';
 vi.mock('../api/gameApi', () => ({
   klondikeApi: { exec: vi.fn() },
   actionLogApi: { klondike: vi.fn() },
+}));
+
+vi.mock('../hooks/useGameHint', () => ({
+  useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
 const mockExec = vi.mocked(klondikeApi.exec);
@@ -90,6 +95,7 @@ const withHintTableauState: KlondikeResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
 describe('KlondikePage', () => {
@@ -820,5 +826,22 @@ describe('KlondikePage', () => {
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
+  });
+
+  // --- Frontend hint ---
+
+  it('renders hint toggle checkbox in SettingsPanel', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument());
+  });
+
+  it('renders HintTooltip when hintEnabled is true and hint is available', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { reason: 'frontendHint.drawFromStock', confidence: 'moderate' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 });

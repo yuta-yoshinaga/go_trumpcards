@@ -2,7 +2,7 @@ import type { Card, SpiderResponse, SpiderTableauCard } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { SpiderPhase } from '../../types/phases';
 
-/** Threshold for a near-complete sequence. */
+/** Threshold for a near-complete sequence (10 of 13 cards K→A in the same suit). */
 const NEAR_COMPLETE_THRESHOLD = 10;
 
 /** Returns a frontend HintResult for Spider, or null if no suggestion. */

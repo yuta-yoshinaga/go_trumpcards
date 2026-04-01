@@ -88,7 +88,7 @@ describe('getKlondikeHint', () => {
     });
     const hint = getKlondikeHint(state);
     expect(hint?.reason).toBe('frontendHint.revealFaceDown');
-    expect(hint?.confidence).toBe('strong');
+    expect(hint?.confidence).toBe('moderate');
   });
 
   it('suggests moving King to empty column', () => {
@@ -123,7 +123,7 @@ describe('getKlondikeHint', () => {
       stockCount: 0,
       waste: [],
     });
-    // King is at base (firstFaceUpIdx = 0), no face-down beneath → null
+    // King is at array index 0 (base of column) — i > 0 guard in hasKingForEmptyColumn prevents hint; no face-down cards, no stock → null
     expect(getKlondikeHint(state)).toBeNull();
   });
 

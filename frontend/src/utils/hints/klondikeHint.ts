@@ -21,8 +21,10 @@ export function getKlondikeHint(state: KlondikeResponse): HintResult | null {
   }
 
   // Priority 2: Reveal face-down card
+  // Confidence is moderate because hasRevealableColumn only checks that face-up cards exist above
+  // face-down cards — it does not verify that those face-up cards can actually be moved anywhere.
   if (hasRevealableColumn(state.tableau)) {
-    return { targetAction: 'move', reason: 'frontendHint.revealFaceDown', confidence: 'strong' };
+    return { targetAction: 'move', reason: 'frontendHint.revealFaceDown', confidence: 'moderate' };
   }
 
   // Priority 3: Move King to empty column
