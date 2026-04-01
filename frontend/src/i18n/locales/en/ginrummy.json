@@ -42,6 +42,15 @@
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"
   },
+  "hint": {
+    "drawFromDiscard": "Draw from the discard pile — it fits your hand",
+    "drawFromStock": "Draw from the stock pile",
+    "discardDeadwood": "Discard your highest deadwood card",
+    "knockNow": "Knock — your deadwood is low enough",
+    "ginOpportunity": "You can go Gin!",
+    "layoffCards": "Lay off cards onto the knocker's melds",
+    "skipLayoff": "No cards fit the knocker's melds — skip"
+  },
   "tutorial": {
     "drawArea": "Draw a card from the stock pile or discard pile.",
     "playerHand": "This is your hand. Form melds (sets of 3+ cards) to reduce deadwood.",

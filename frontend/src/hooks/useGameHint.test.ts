@@ -5,9 +5,11 @@ import type {
   BaccaratResponse,
   BlackJackResponse,
   CrazyEightsResponse,
+  CribbageResponse,
   DaifugoResponse,
   DoubtResponse,
   EuchreResponse,
+  GinRummyResponse,
   NapoleonResponse,
   OhHellResponse,
   OldMaidResponse,
@@ -393,5 +395,85 @@ describe('useGameHint', () => {
     const { result } = renderHook(() => useGameHint('speed', state as SpeedResponse));
     expect(result.current.hint).not.toBeNull();
     expect(result.current.hint?.reason).toBe('hint.hasPlayable');
+  });
+
+  it('returns ginrummy hint when enabled', () => {
+    localStorage.setItem('hint_enabled_ginrummy', 'true');
+    const state: Partial<GinRummyResponse> = {
+      phase: 1, // DISCARD
+      currentPlayerIdx: 0,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 11,
+          cards: [
+            { design: 'HEART', value: 2 },
+            { design: 'SPADE', value: 5 },
+            { design: 'CLOVER', value: 8 },
+            { design: 'DIAMOND', value: 11 },
+            { design: 'HEART', value: 13 },
+            { design: 'SPADE', value: 9 },
+            { design: 'CLOVER', value: 4 },
+            { design: 'DIAMOND', value: 6 },
+            { design: 'HEART', value: 1 },
+            { design: 'SPADE', value: 12 },
+            { design: 'DIAMOND', value: 10 },
+          ],
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
+        { id: 1, isHuman: false, cardCount: 10, cards: [], roundScore: 0, cumulativeScore: 0 },
+      ],
+      discardTop: null,
+      drawPileCount: 20,
+      knockerMelds: [],
+      knockerDeadwood: [],
+      isGin: false,
+      gameEndFlag: false,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 100 },
+    };
+    const { result } = renderHook(() => useGameHint('ginrummy', state as GinRummyResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('discard');
+  });
+
+  it('returns cribbage hint when enabled', () => {
+    localStorage.setItem('hint_enabled_cribbage', 'true');
+    const state: Partial<CribbageResponse> = {
+      phase: 2, // PEGGING
+      currentPlayerIdx: 0,
+      dealerIdx: 1,
+      pegCount: 10,
+      pegPlayedCards: [],
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 4,
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'SPADE', value: 3 },
+            { design: 'CLOVER', value: 7 },
+            { design: 'DIAMOND', value: 9 },
+          ],
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
+        { id: 1, isHuman: false, cardCount: 4, cards: [], roundScore: 0, cumulativeScore: 0 },
+      ],
+      crib: [],
+      starter: null,
+      showPhaseStep: 0,
+      handScoreDetails: [null, null],
+      gameEndFlag: false,
+      winnerIdx: -1,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 121 },
+    };
+    const { result } = renderHook(() => useGameHint('cribbage', state as CribbageResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.reason).toBe('hint.pegFifteen');
   });
 });

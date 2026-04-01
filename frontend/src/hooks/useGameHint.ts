@@ -3,10 +3,12 @@ import type {
   BaccaratResponse,
   BlackJackResponse,
   CrazyEightsResponse,
+  CribbageResponse,
   DaifugoResponse,
   DoubtResponse,
   EuchreResponse,
   FreeCellResponse,
+  GinRummyResponse,
   HeartsResponse,
   HoldemResponse,
   IndianPokerResponse,
@@ -32,11 +34,13 @@ import type { HintResult } from '../types/hint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
+import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
+import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
@@ -85,6 +89,8 @@ type HintGameName =
   | 'sevens'
   | 'crazyeights'
   | 'speed'
+  | 'ginrummy'
+  | 'cribbage'
   | 'klondike'
   | 'freecell'
   | 'spider'
@@ -167,6 +173,10 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
         return getTriPeaksHint(state as TriPeaksResponse);
       case 'memory':
         return getMemoryHint(state as MemoryResponse);
+      case 'ginrummy':
+        return getGinRummyHint(state as GinRummyResponse);
+      case 'cribbage':
+        return getCribbageHint(state as CribbageResponse);
       default:
         return null;
     }

@@ -56,6 +56,17 @@
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"
   },
+  "hint": {
+    "keepFivesAndTens": "Keep fives and tens — don't give scoring cards to opponent's crib",
+    "discardToCribDealer": "You're the dealer — consider putting fives or tens in your crib",
+    "keepBestHand": "Keep cards that make fifteens, pairs, or runs",
+    "discardAny": "Select 2 cards to discard",
+    "mustGo": "No card can be played without exceeding 31 — say Go",
+    "pegFifteen": "Play a card to reach exactly 15 for 2 points",
+    "pegThirtyOne": "Play a card to reach exactly 31 for 2 points",
+    "pegSafe": "Play a card that avoids leaving a scoring opportunity",
+    "pegPlay": "Play a card"
+  },
   "tutorial": {
     "playerHand": "This is your hand. Select 2 cards to discard to the crib.",
     "discardButton": "Discard 2 selected cards to the crib.",
