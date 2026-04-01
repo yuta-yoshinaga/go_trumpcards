@@ -1469,66 +1469,6 @@ func TestBridge_countSuitCards(t *testing.T) {
 	assert.Equal(t, 0, b.countSuitCards(1, CardDesignDiamond))
 }
 
-func TestBridge_countHighCards(t *testing.T) {
-	tests := []struct {
-		name     string
-		cards    []struct{ design, value int }
-		suit     int
-		expected int
-	}{
-		{
-			name: "AKQ in 4-card suit counts 3",
-			cards: []struct{ design, value int }{
-				{CardDesignSpade, 1}, {CardDesignSpade, 13}, {CardDesignSpade, 12}, {CardDesignSpade, 5},
-			},
-			suit:     CardDesignSpade,
-			expected: 3,
-		},
-		{
-			name: "K singleton counts 0",
-			cards: []struct{ design, value int }{
-				{CardDesignSpade, 13},
-			},
-			suit:     CardDesignSpade,
-			expected: 0,
-		},
-		{
-			name: "Q in doubleton counts 0",
-			cards: []struct{ design, value int }{
-				{CardDesignSpade, 12}, {CardDesignSpade, 5},
-			},
-			suit:     CardDesignSpade,
-			expected: 0,
-		},
-		{
-			name: "A alone counts 1",
-			cards: []struct{ design, value int }{
-				{CardDesignSpade, 1},
-			},
-			suit:     CardDesignSpade,
-			expected: 1,
-		},
-		{
-			name: "AK in doubleton counts 2",
-			cards: []struct{ design, value int }{
-				{CardDesignSpade, 1}, {CardDesignSpade, 13},
-			},
-			suit:     CardDesignSpade,
-			expected: 2,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			b := newTestBridgeHard()
-			b.players[1].Reset()
-			for _, c := range tt.cards {
-				b.players[1].AddCard(NewCard(c.design, c.value, true))
-			}
-			assert.Equal(t, tt.expected, b.countHighCards(1, tt.suit))
-		})
-	}
-}
-
 func TestBridge_partnerBidSuit(t *testing.T) {
 	b := newTestBridgeHard()
 
@@ -1569,24 +1509,6 @@ func TestBridge_countTrumpsRemaining(t *testing.T) {
 	// NoTrump game
 	b.trumpSuit = -1
 	assert.Equal(t, 0, b.countTrumpsRemaining(1))
-}
-
-func TestBridge_isLastToPlay(t *testing.T) {
-	b := newTestBridgeHard()
-	b.currentTrick = nil
-	assert.False(t, b.isLastToPlay())
-
-	b.currentTrick = []*BridgeTrickCard{
-		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 1, true)},
-	}
-	assert.False(t, b.isLastToPlay())
-
-	b.currentTrick = []*BridgeTrickCard{
-		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 1, true)},
-		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 2, true)},
-		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 3, true)},
-	}
-	assert.True(t, b.isLastToPlay())
 }
 
 // --- cpuBidHard tests ---
@@ -1757,23 +1679,6 @@ func TestBridgeCpuBidHard_Redouble(t *testing.T) {
 	b.lastBidderIdx = 3
 
 	// Player 1 has totalPts >= 12
-	b.players[1].Reset()
-	b.players[1].AddCard(NewCard(CardDesignSpade, 1, true))  // A=4
-	b.players[1].AddCard(NewCard(CardDesignSpade, 13, true)) // K=3
-	b.players[1].AddCard(NewCard(CardDesignSpade, 5, true))
-	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true)) // A=4
-	b.players[1].AddCard(NewCard(CardDesignHeart, 5, true))
-	b.players[1].AddCard(NewCard(CardDesignHeart, 4, true))
-	b.players[1].AddCard(NewCard(CardDesignClover, 2, true))
-	b.players[1].AddCard(NewCard(CardDesignClover, 3, true))
-	b.players[1].AddCard(NewCard(CardDesignClover, 4, true))
-	b.players[1].AddCard(NewCard(CardDesignClover, 5, true))
-	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
-	b.players[1].AddCard(NewCard(CardDesignDiamond, 3, true))
-	b.players[1].AddCard(NewCard(CardDesignDiamond, 4, true))
-	// HCP = 4+3+4 = 11, distPts = 0 -> but wait, need 12. Let me recalculate.
-	// Actually totalPts = HCP + distPts = 11 + 0 = 11, need >= 12
-	// Need one more point -> add a J
 	b.players[1].Reset()
 	b.players[1].AddCard(NewCard(CardDesignSpade, 1, true))  // A=4
 	b.players[1].AddCard(NewCard(CardDesignSpade, 13, true)) // K=3

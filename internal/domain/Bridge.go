@@ -1365,6 +1365,7 @@ func (b *Bridge) cpuBidHard(playerIdx int) (BridgeBidType, int, int) {
 	}
 
 	// ダブル判定: 相手チームのビッド、totalPts>=14、コントラクトスートに2枚以上
+	// NT契約の場合はbidSuitToCardDesignが-1を返すためcountSuitCardsは常に0となりダブルしない
 	if b.contractLevel > 0 && b.doubled == 0 &&
 		b.players[playerIdx].GetTeam() != b.lastBidTeam && totalPts >= 14 {
 		contractCardDesign := b.bidSuitToCardDesign(b.contractSuit)
@@ -1464,16 +1465,22 @@ func (b *Bridge) cpuBidHard(playerIdx int) (BridgeBidType, int, int) {
 		return BridgeBidNormal, bidLevel, bidSuit
 	}
 
-	// レベルを上げてリトライ
+	// レベルを上げてリトライ (まず最強スートで試行)
 	for level := bidLevel; level <= 7; level++ {
+		if level > 3 && totalPts < 18 {
+			return BridgeBidPass, 0, 0
+		}
+		if level > 5 && totalPts < 25 {
+			return BridgeBidPass, 0, 0
+		}
+		if b.isHigherBid(level, bidSuit) {
+			return BridgeBidNormal, level, bidSuit
+		}
 		for suit := BridgeBidSuitClub; suit <= BridgeBidSuitNT; suit++ {
+			if suit == bidSuit {
+				continue
+			}
 			if b.isHigherBid(level, suit) {
-				if level > 3 && totalPts < 18 {
-					return BridgeBidPass, 0, 0
-				}
-				if level > 5 && totalPts < 25 {
-					return BridgeBidPass, 0, 0
-				}
 				return BridgeBidNormal, level, suit
 			}
 		}
@@ -1576,32 +1583,6 @@ func (b *Bridge) countSuitCards(playerIdx int, suit int) int {
 	return count
 }
 
-// countHighCards 指定スートのウィナー枚数を返す (A=1, K=1 if len>=2, Q=1 if len>=3)
-func (b *Bridge) countHighCards(playerIdx int, suit int) int {
-	player := b.players[playerIdx]
-	suitLen := b.countSuitCards(playerIdx, suit)
-	winners := 0
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		if card.GetDesign() != suit {
-			continue
-		}
-		switch card.GetValue() {
-		case 1: // Ace
-			winners++
-		case 13: // King
-			if suitLen >= 2 {
-				winners++
-			}
-		case 12: // Queen
-			if suitLen >= 3 {
-				winners++
-			}
-		}
-	}
-	return winners
-}
-
 // partnerBidSuit パートナーの最新ビッドスートを返す (0=なし)
 func (b *Bridge) partnerBidSuit(playerIdx int) int {
 	partnerIdx := (playerIdx + 2) % BridgePlayerCnt
@@ -1622,27 +1603,24 @@ func (b *Bridge) countTrumpsRemaining(playerIdx int) int {
 	return b.countSuitCards(playerIdx, b.trumpSuit)
 }
 
-// isLastToPlay 4番手（最後のプレイヤー）かどうか
-func (b *Bridge) isLastToPlay() bool {
-	return len(b.currentTrick) == 3
-}
-
 // findShortestSuitCard ボイド作りのため最も短いスートの最弱カードを返す
 func (b *Bridge) findShortestSuitCard(playerIdx int, validIndices []int) int {
 	player := b.players[playerIdx]
-	// 各スートの枚数を数える (validIndicesの中だけ)
-	suitCounts := map[int]int{}
+	// 各スートの枚数を数える (validIndicesの中だけ、固定順序配列)
+	suitCounts := [5]int{} // index 0=unused, 1-4=CardDesign
 	for _, idx := range validIndices {
 		d := player.GetCard(idx).GetDesign()
-		suitCounts[d]++
+		if d >= CardDesignSpade && d <= CardDesignDiamond {
+			suitCounts[d]++
+		}
 	}
 
-	// 最短スートを見つける
+	// 最短スートを見つける (固定順序で決定的)
 	shortestLen := 14
 	shortestSuit := -1
-	for suit, cnt := range suitCounts {
-		if cnt < shortestLen {
-			shortestLen = cnt
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		if suitCounts[suit] > 0 && suitCounts[suit] < shortestLen {
+			shortestLen = suitCounts[suit]
 			shortestSuit = suit
 		}
 	}
@@ -1737,10 +1715,6 @@ func (b *Bridge) cpuPlayHard(playerIdx int, validIndices []int) int {
 	}
 
 	if hasLeadSuit {
-		// 4番手なら最小勝利カード or 最弱
-		if b.isLastToPlay() {
-			return b.selectSmartFollow(playerIdx, validIndices)
-		}
 		return b.selectSmartFollow(playerIdx, validIndices)
 	}
 
@@ -1842,26 +1816,15 @@ func (b *Bridge) cpuLeadHard(playerIdx int, validIndices []int) int {
 	}
 
 	// デフォルト: 最長スートの最強カード
-	_, longestLen := b.findLongestSuit(player)
-	if longestLen > 0 {
-		// 最長スートに属する有効カードを集める
-		suitCounts := [5]int{}
-		for i := 0; i < player.GetCardsSize(); i++ {
-			d := player.GetCard(i).GetDesign()
-			if d >= CardDesignSpade && d <= CardDesignDiamond {
-				suitCounts[d]++
-			}
+	longestSuit, _ := b.findLongestSuit(player)
+	var longestSuitIndices []int
+	for _, idx := range validIndices {
+		if player.GetCard(idx).GetDesign() == longestSuit {
+			longestSuitIndices = append(longestSuitIndices, idx)
 		}
-		var longestSuitIndices []int
-		for _, idx := range validIndices {
-			d := player.GetCard(idx).GetDesign()
-			if suitCounts[d] == longestLen {
-				longestSuitIndices = append(longestSuitIndices, idx)
-			}
-		}
-		if len(longestSuitIndices) > 0 {
-			return b.selectStrongestCard(playerIdx, longestSuitIndices)
-		}
+	}
+	if len(longestSuitIndices) > 0 {
+		return b.selectStrongestCard(playerIdx, longestSuitIndices)
 	}
 
 	return b.selectStrongestCard(playerIdx, validIndices)
