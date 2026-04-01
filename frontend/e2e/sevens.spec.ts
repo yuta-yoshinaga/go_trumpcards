@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_QUICK, waitForLoaded } from './helpers';
 
 test.describe('Sevens E2E', () => {
   test('plays a full game: reset → play or pass each turn → end → reset', async ({ page }) => {
@@ -19,7 +19,7 @@ test.describe('Sevens E2E', () => {
 
       // Check if game ended: all players finished
       const gameEnd = page.locator('text=ゲーム終了');
-      if (await gameEnd.isVisible({ timeout: 1_000 }).catch(() => false)) {
+      if (await isVisibleWithin(gameEnd, TIMEOUT_QUICK)) {
         gameEnded = true;
         break;
       }
@@ -31,7 +31,7 @@ test.describe('Sevens E2E', () => {
       if (playableCount > 0) {
         await playableCards.first().click();
         await waitForLoaded(page);
-      } else if (await passButton.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      } else if (await isVisibleWithin(passButton, TIMEOUT_ACTION)) {
         if (await passButton.isEnabled()) {
           await passButton.click();
           await waitForLoaded(page);

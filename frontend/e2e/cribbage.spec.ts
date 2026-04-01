@@ -33,11 +33,11 @@ test.describe('Cribbage E2E', () => {
         discardButton.or(pegButton).or(goButton).or(showNextButton).or(nextRoundButton).or(resetButton).first(),
       ).toBeVisible({ timeout: 10_000 });
 
-      const discardVisible = await discardButton.isVisible().catch(() => false);
-      const pegVisible = await pegButton.isVisible().catch(() => false);
-      const goVisible = await goButton.isVisible().catch(() => false);
-      const showNextVisible = await showNextButton.isVisible().catch(() => false);
-      const nextRoundVisible = await nextRoundButton.isVisible().catch(() => false);
+      const discardVisible = await discardButton.isVisible();
+      const pegVisible = await pegButton.isVisible();
+      const goVisible = await goButton.isVisible();
+      const showNextVisible = await showNextButton.isVisible();
+      const nextRoundVisible = await nextRoundButton.isVisible();
 
       // Game end: no action buttons visible
       if (!discardVisible && !pegVisible && !goVisible && !showNextVisible && !nextRoundVisible) break;
@@ -65,14 +65,14 @@ test.describe('Cribbage E2E', () => {
           if (cardCount > 0) {
             await handCards.first().click();
           }
-          if ((await pegButton.isVisible().catch(() => false)) && (await pegButton.isEnabled())) {
+          if ((await pegButton.isVisible()) && (await pegButton.isEnabled())) {
             await pegButton.click();
             await waitForLoaded(page);
             continue;
           }
         }
         // Fall through to go
-        if (goVisible || (await goButton.isVisible().catch(() => false))) {
+        if (goVisible || (await goButton.isVisible())) {
           await goButton.click();
           await waitForLoaded(page);
         }

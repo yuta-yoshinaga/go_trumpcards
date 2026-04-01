@@ -39,10 +39,10 @@ test.describe('Spades E2E', () => {
         bidButton.or(playButton).or(nextTrickButton).or(nextRoundButton).or(resetButton).first(),
       ).toBeVisible({ timeout: 10_000 });
 
-      const bidVisible = await bidButton.isVisible().catch(() => false);
-      const playVisible = await playButton.isVisible().catch(() => false);
-      const nextTrickVisible = await nextTrickButton.isVisible().catch(() => false);
-      const nextRoundVisible = await nextRoundButton.isVisible().catch(() => false);
+      const bidVisible = await bidButton.isVisible();
+      const playVisible = await playButton.isVisible();
+      const nextTrickVisible = await nextTrickButton.isVisible();
+      const nextRoundVisible = await nextRoundButton.isVisible();
 
       // Game end: no action buttons visible
       if (!bidVisible && !playVisible && !nextTrickVisible && !nextRoundVisible) break;
@@ -63,7 +63,7 @@ test.describe('Spades E2E', () => {
         if (cardCount > 0) {
           await handCards.first().click();
         }
-        if ((await playButton.isVisible().catch(() => false)) && (await playButton.isEnabled())) {
+        if ((await playButton.isVisible()) && (await playButton.isEnabled())) {
           await playButton.click();
           await waitForLoaded(page);
         }

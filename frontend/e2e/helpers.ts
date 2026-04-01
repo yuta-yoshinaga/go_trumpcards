@@ -1,8 +1,32 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+
+/** Timeout for quick UI checks (button appeared after an action). */
+export const TIMEOUT_QUICK = 1_000;
+/** Timeout for standard action visibility (betting round transitions, card animations). */
+export const TIMEOUT_ACTION = 3_000;
+/** Timeout for slow transitions (tutorial dialogs, post-animation waits). */
+export const TIMEOUT_TRANSITION = 5_000;
+/** Timeout for game loop iterations (waiting for any actionable element). */
+export const TIMEOUT_GAME_LOOP = 10_000;
+/** Timeout for full page load (aria-busy). */
+export const TIMEOUT_LOADED = 30_000;
+
+/**
+ * Check if a locator becomes visible within the given timeout.
+ * Returns false on timeout instead of throwing. Use this for
+ * conditional branching (e.g., "if insurance button appears, decline it").
+ */
+export async function isVisibleWithin(locator: Locator, timeout: number): Promise<boolean> {
+  try {
+    return await locator.isVisible({ timeout });
+  } catch {
+    return false;
+  }
+}
 
 /** Wait for the page to finish loading (aria-busy becomes "false"). */
 export async function waitForLoaded(page: Page) {
-  await page.waitForSelector('[aria-busy="false"]', { timeout: 30_000 });
+  await page.waitForSelector('[aria-busy="false"]', { timeout: TIMEOUT_LOADED });
 }
 
 /** Navigate to a hash-routed page and wait for it to load. Suppresses the tutorial suggestion dialog. */

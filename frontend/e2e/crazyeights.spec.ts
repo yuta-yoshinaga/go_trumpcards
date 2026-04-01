@@ -32,10 +32,10 @@ test.describe('Crazy Eights E2E', () => {
         timeout: 10_000,
       });
 
-      const playVisible = await playButton.isVisible().catch(() => false);
-      const drawVisible = await drawButton.isVisible().catch(() => false);
-      const nextRoundVisible = await nextRoundButton.isVisible().catch(() => false);
-      const suitVisible = await suitSpade.isVisible().catch(() => false);
+      const playVisible = await playButton.isVisible();
+      const drawVisible = await drawButton.isVisible();
+      const nextRoundVisible = await nextRoundButton.isVisible();
+      const suitVisible = await suitSpade.isVisible();
 
       // Game end: no action buttons visible
       if (!playVisible && !drawVisible && !nextRoundVisible && !suitVisible) break;
@@ -55,13 +55,13 @@ test.describe('Crazy Eights E2E', () => {
         if (cardCount > 0) {
           await handCards.first().click();
         }
-        if ((await playButton.isVisible().catch(() => false)) && (await playButton.isEnabled())) {
+        if ((await playButton.isVisible()) && (await playButton.isEnabled())) {
           await playButton.click();
           await waitForLoaded(page);
           continue;
         }
         // If play not possible, draw
-        if ((await drawButton.isVisible().catch(() => false)) && (await drawButton.isEnabled())) {
+        if ((await drawButton.isVisible()) && (await drawButton.isEnabled())) {
           await drawButton.click();
           await waitForLoaded(page);
         }
