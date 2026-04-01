@@ -78,22 +78,8 @@ function fitsWithHand(card: Card, hand: Card[]): boolean {
   const sameSuit = hand.filter((c) => c.design === card.design);
   for (const c of sameSuit) {
     const diff = Math.abs(c.value - card.value);
-    if (diff === 1) {
-      // Check if there's a third card to form a 3-card run
-      const needed1 = card.value + (c.value > card.value ? 2 : -1);
-      const needed2 = c.value + (card.value > c.value ? 2 : -1);
-      if (
-        sameSuit.some((s) => s.value === needed1 || s.value === needed2) ||
-        needed1 === card.value ||
-        needed2 === card.value
-      ) {
-        return true;
-      }
-      // Even a 2-card partial run is worth drawing
-      return true;
-    }
-    if (diff === 2) {
-      // Gap of 1: the drawn card fills the middle
+    // Adjacent (diff === 1) or gap of 1 (diff === 2): partial run worth drawing
+    if (diff === 1 || diff === 2) {
       return true;
     }
   }
@@ -169,29 +155,85 @@ function findBestDiscard(hand: Card[]): number | null {
   return bestIdx;
 }
 
-/** Find melds (sets and runs) in a hand. Returns arrays of card indices. */
+/** Find melds (sets and runs) in a hand. Tries both sets-first and runs-first, returns the configuration that minimizes deadwood. */
 function findMelds(hand: Card[]): number[][] {
-  const melds: number[][] = [];
+  const setsFirst = findMeldsSetsFirst(hand);
+  const runsFirst = findMeldsRunsFirst(hand);
 
-  // Find sets (3+ cards of same value)
+  const deadwoodSF = calcDeadwoodForMelds(hand, setsFirst);
+  const deadwoodRF = calcDeadwoodForMelds(hand, runsFirst);
+
+  return deadwoodSF <= deadwoodRF ? setsFirst : runsFirst;
+}
+
+/** Calculate deadwood for a given set of melds. */
+function calcDeadwoodForMelds(hand: Card[], melds: number[][]): number {
+  const inMeld = new Set<number>();
+  for (const meld of melds) {
+    for (const idx of meld) inMeld.add(idx);
+  }
+  let dw = 0;
+  for (let i = 0; i < hand.length; i++) {
+    if (!inMeld.has(i)) dw += cardPoint(hand[i]);
+  }
+  return dw;
+}
+
+/** Find melds prioritizing sets first, then runs from remaining cards. */
+function findMeldsSetsFirst(hand: Card[]): number[][] {
+  const melds: number[][] = [];
+  const used = new Set<number>();
+
+  // Sets first
   const byValue = new Map<number, number[]>();
   for (let i = 0; i < hand.length; i++) {
     const v = hand[i].value;
     if (!byValue.has(v)) byValue.set(v, []);
     byValue.get(v)?.push(i);
   }
-  const usedInSet = new Set<number>();
   for (const [, indices] of byValue) {
     if (indices.length >= 3) {
       melds.push(indices);
-      for (const idx of indices) usedInSet.add(idx);
+      for (const idx of indices) used.add(idx);
     }
   }
 
-  // Find runs (3+ consecutive cards of same suit)
+  // Runs from remaining
+  findRuns(hand, used, melds);
+  return melds;
+}
+
+/** Find melds prioritizing runs first, then sets from remaining cards. */
+function findMeldsRunsFirst(hand: Card[]): number[][] {
+  const melds: number[][] = [];
+  const used = new Set<number>();
+
+  // Runs first
+  findRuns(hand, used, melds);
+
+  // Sets from remaining
+  const byValue = new Map<number, number[]>();
+  for (let i = 0; i < hand.length; i++) {
+    if (used.has(i)) continue;
+    const v = hand[i].value;
+    if (!byValue.has(v)) byValue.set(v, []);
+    byValue.get(v)?.push(i);
+  }
+  for (const [, indices] of byValue) {
+    if (indices.length >= 3) {
+      melds.push(indices);
+      for (const idx of indices) used.add(idx);
+    }
+  }
+
+  return melds;
+}
+
+/** Find runs (3+ consecutive cards of same suit) from unused cards. Adds to melds and used set. */
+function findRuns(hand: Card[], used: Set<number>, melds: number[][]): void {
   const bySuit = new Map<string, { idx: number; value: number }[]>();
   for (let i = 0; i < hand.length; i++) {
-    if (usedInSet.has(i)) continue;
+    if (used.has(i)) continue;
     const s = hand[i].design;
     if (!bySuit.has(s)) bySuit.set(s, []);
     bySuit.get(s)?.push({ idx: i, value: hand[i].value });
@@ -205,14 +247,14 @@ function findMelds(hand: Card[]): number[][] {
       } else {
         if (run.length >= 3) {
           melds.push(run.map((r) => r.idx));
+          for (const r of run) used.add(r.idx);
         }
         run = [cards[i]];
       }
     }
     if (run.length >= 3) {
       melds.push(run.map((r) => r.idx));
+      for (const r of run) used.add(r.idx);
     }
   }
-
-  return melds;
 }

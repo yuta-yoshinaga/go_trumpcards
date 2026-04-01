@@ -398,4 +398,23 @@ describe('calcDeadwood', () => {
     ];
     expect(calcDeadwood(hand)).toBe(10);
   });
+
+  it('chooses runs-first when it yields lower deadwood than sets-first', () => {
+    // Cards: 3H 4H 5H 5S 5C 9D
+    // Sets-first: {5H,5S,5C} as set => remaining 3H,4H,9D = 3+4+9 = 16 deadwood
+    // Runs-first: {3H,4H,5H} as run => remaining 5S,5C,9D = 5+5+9 = 19 deadwood
+    // Actually sets-first is better here. Let's construct the opposite:
+    // Cards: 3H 4H 5H 5S 5C 6H
+    // Sets-first: {5H,5S,5C} as set => remaining 3H,4H,6H = 3+4+6 = 13 deadwood
+    // Runs-first: {3H,4H,5H,6H} as run => remaining 5S,5C = 5+5 = 10 deadwood
+    const hand = [
+      card('HEART', 3),
+      card('HEART', 4),
+      card('HEART', 5),
+      card('SPADE', 5),
+      card('CLOVER', 5),
+      card('HEART', 6),
+    ];
+    expect(calcDeadwood(hand)).toBe(10); // runs-first wins
+  });
 });

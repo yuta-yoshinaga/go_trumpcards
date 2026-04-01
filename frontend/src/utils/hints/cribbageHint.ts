@@ -4,11 +4,11 @@ import { CribbagePhase } from '../../types/phases';
 
 /** Returns a frontend HintResult for Cribbage, or null if no suggestion. */
 export function getCribbageHint(state: CribbageResponse): HintResult | null {
-  const human = state.players.find((p) => p.isHuman);
-  if (!human || human.cards.length === 0) return null;
-  if (state.gameEndFlag) return null;
-
   const humanIdx = state.players.findIndex((p) => p.isHuman);
+  if (humanIdx === -1) return null;
+  const human = state.players[humanIdx];
+  if (human.cards.length === 0) return null;
+  if (state.gameEndFlag) return null;
 
   if (state.phase === CribbagePhase.DISCARD) {
     if (state.currentPlayerIdx !== humanIdx) return null;
