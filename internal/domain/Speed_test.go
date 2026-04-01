@@ -606,6 +606,94 @@ func TestSpeed_KingAceWrap(t *testing.T) {
 	assert.Equal(t, 13, s.GetCenterPile(0).GetValue())
 }
 
+func TestSpeed_CpuPlay_Hard_Basic(t *testing.T) {
+	s := setupSpeedManual(
+		[]*domain.Card{newCard(domain.CardDesignSpade, 10)},
+		[]*domain.Card{newCard(domain.CardDesignClover, 4)},
+		newCard(domain.CardDesignDiamond, 5), // 4 adj to 5
+		newCard(domain.CardDesignSpade, 9),
+		nil, nil,
+	)
+	s.SetConfig(domain.SpeedConfig{CpuDifficulty: domain.SpeedCpuDifficultyHard})
+
+	actions := s.CpuPlay()
+	assert.NotEmpty(t, actions)
+	assert.Equal(t, 4, s.GetCenterPile(0).GetValue())
+}
+
+func TestSpeed_CpuPlay_Hard_MultipleCards(t *testing.T) {
+	// CPU has chain 4,3,2 and pile 0 = 5. Should play all 3 in sequence.
+	s := setupSpeedManual(
+		[]*domain.Card{newCard(domain.CardDesignSpade, 10)},
+		[]*domain.Card{
+			newCard(domain.CardDesignClover, 4),
+			newCard(domain.CardDesignHeart, 3),
+			newCard(domain.CardDesignDiamond, 2),
+		},
+		newCard(domain.CardDesignSpade, 5),
+		newCard(domain.CardDesignHeart, 12),
+		nil, nil,
+	)
+	s.SetConfig(domain.SpeedConfig{CpuDifficulty: domain.SpeedCpuDifficultyHard})
+
+	actions := s.CpuPlay()
+	assert.GreaterOrEqual(t, len(actions), 2, "should play multiple cards in a chain")
+}
+
+func TestSpeed_CpuPlay_Hard_BlockingChoice(t *testing.T) {
+	// CPU has 5 and 8. Human has 6. Pile 0=6, Pile 1=9.
+	// 5 on pile 0 (6->5): human's 6 adj to 5 -> opp=1 (bad)
+	// 8 on pile 1 (9->8): human's 6 not adj to 8 -> opp=0 (blocks)
+	// Hard should prefer 8 on pile 1.
+	s := setupSpeedManual(
+		[]*domain.Card{newCard(domain.CardDesignHeart, 6)},
+		[]*domain.Card{
+			newCard(domain.CardDesignClover, 5),
+			newCard(domain.CardDesignDiamond, 8),
+		},
+		newCard(domain.CardDesignSpade, 6), // pile 0: 5 adj (6->5, human 6 adj to 5)
+		newCard(domain.CardDesignHeart, 9), // pile 1: 8 adj (9->8, human 6 NOT adj to 8)
+		nil, nil,
+	)
+	s.SetConfig(domain.SpeedConfig{CpuDifficulty: domain.SpeedCpuDifficultyHard})
+
+	actions := s.CpuPlay()
+	require.NotEmpty(t, actions)
+	// First action should prefer the blocking play (8 on pile 1)
+	assert.Equal(t, 1, actions[0].PileIndex, "should prefer pile that blocks opponent")
+}
+
+func TestSpeed_CpuPlay_Hard_WinCondition(t *testing.T) {
+	// CPU has 1 card (6), no draw pile, center has 5 -> CPU wins
+	s := setupSpeedManual(
+		[]*domain.Card{newCard(domain.CardDesignSpade, 10)},
+		[]*domain.Card{newCard(domain.CardDesignClover, 6)},
+		newCard(domain.CardDesignDiamond, 5),
+		newCard(domain.CardDesignSpade, 2),
+		nil, nil,
+	)
+	s.SetConfig(domain.SpeedConfig{CpuDifficulty: domain.SpeedCpuDifficultyHard})
+
+	actions := s.CpuPlay()
+	assert.Len(t, actions, 1)
+	assert.True(t, s.GetGameEndFlag())
+	assert.Equal(t, 1, s.GetWinnerIdx())
+}
+
+func TestSpeed_CpuPlay_Hard_NoValidPlay(t *testing.T) {
+	s := setupSpeedManual(
+		[]*domain.Card{newCard(domain.CardDesignSpade, 10)},
+		[]*domain.Card{newCard(domain.CardDesignClover, 10)},
+		newCard(domain.CardDesignDiamond, 5),
+		newCard(domain.CardDesignSpade, 2),
+		nil, nil,
+	)
+	s.SetConfig(domain.SpeedConfig{CpuDifficulty: domain.SpeedCpuDifficultyHard})
+
+	actions := s.CpuPlay()
+	assert.Empty(t, actions)
+}
+
 func TestSpeed_AceKingWrap(t *testing.T) {
 	// A(1) adjacent to K(13)
 	s := setupSpeedManual(
