@@ -18,7 +18,8 @@ export const TIMEOUT_LOADED = 30_000;
  */
 export async function isVisibleWithin(locator: Locator, timeout: number): Promise<boolean> {
   try {
-    return await locator.isVisible({ timeout });
+    await locator.waitFor({ state: 'visible', timeout });
+    return true;
   } catch {
     return false;
   }
