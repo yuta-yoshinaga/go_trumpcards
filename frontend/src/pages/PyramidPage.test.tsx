@@ -475,7 +475,7 @@ describe('PyramidPage', () => {
 
   it('renders HintTooltip when hintEnabled is true and hint is available', async () => {
     vi.mocked(useGameHint).mockReturnValue({
-      hint: { reason: 'frontendHint.drawFromStock', confidence: 'moderate' },
+      hint: { targetAction: 'draw', reason: 'frontendHint.drawFromStock', confidence: 'moderate' },
       hintEnabled: true,
       setHintEnabled: vi.fn(),
     });
