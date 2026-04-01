@@ -1367,3 +1367,699 @@ func TestBridgeSmartFollowTrumpCut(t *testing.T) {
 	card := b.players[1].GetCard(idx)
 	assert.Equal(t, CardDesignSpade, card.GetDesign())
 }
+
+// --- Hard difficulty helper tests ---
+
+func newTestBridgeHard() *Bridge {
+	players := []*BridgePlayer{
+		NewBridgePlayer(true, 0),  // North (human, team 0)
+		NewBridgePlayer(false, 1), // East (CPU, team 1)
+		NewBridgePlayer(false, 0), // South (CPU, team 0)
+		NewBridgePlayer(false, 1), // West (CPU, team 1)
+	}
+	return NewBridge(NewTrumpCards(0), players, BridgeConfig{
+		CpuDifficulty: BridgeCpuDifficultyHard,
+	})
+}
+
+func TestBridge_calcDistributionPoints(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []struct{ design, value int }
+		expected int
+	}{
+		{
+			name: "void in one suit gives 3 points",
+			cards: []struct{ design, value int }{
+				// 5 spades, 4 hearts, 4 clubs, 0 diamonds = void
+				{CardDesignSpade, 1}, {CardDesignSpade, 2}, {CardDesignSpade, 3}, {CardDesignSpade, 4}, {CardDesignSpade, 5},
+				{CardDesignHeart, 1}, {CardDesignHeart, 2}, {CardDesignHeart, 3}, {CardDesignHeart, 4},
+				{CardDesignClover, 1}, {CardDesignClover, 2}, {CardDesignClover, 3}, {CardDesignClover, 4},
+			},
+			expected: 3,
+		},
+		{
+			name: "singleton gives 2 points",
+			cards: []struct{ design, value int }{
+				// 5 spades, 4 hearts, 3 clubs, 1 diamond = singleton
+				{CardDesignSpade, 1}, {CardDesignSpade, 2}, {CardDesignSpade, 3}, {CardDesignSpade, 4}, {CardDesignSpade, 5},
+				{CardDesignHeart, 1}, {CardDesignHeart, 2}, {CardDesignHeart, 3}, {CardDesignHeart, 4},
+				{CardDesignClover, 1}, {CardDesignClover, 2}, {CardDesignClover, 3},
+				{CardDesignDiamond, 1},
+			},
+			expected: 2,
+		},
+		{
+			name: "doubleton gives 1 point",
+			cards: []struct{ design, value int }{
+				// 4 spades, 4 hearts, 3 clubs, 2 diamonds = doubleton
+				{CardDesignSpade, 1}, {CardDesignSpade, 2}, {CardDesignSpade, 3}, {CardDesignSpade, 4},
+				{CardDesignHeart, 1}, {CardDesignHeart, 2}, {CardDesignHeart, 3}, {CardDesignHeart, 4},
+				{CardDesignClover, 1}, {CardDesignClover, 2}, {CardDesignClover, 3},
+				{CardDesignDiamond, 1}, {CardDesignDiamond, 2},
+			},
+			expected: 1,
+		},
+		{
+			name: "balanced hand gives 0 points",
+			cards: []struct{ design, value int }{
+				// 4-3-3-3
+				{CardDesignSpade, 1}, {CardDesignSpade, 2}, {CardDesignSpade, 3}, {CardDesignSpade, 4},
+				{CardDesignHeart, 1}, {CardDesignHeart, 2}, {CardDesignHeart, 3},
+				{CardDesignClover, 1}, {CardDesignClover, 2}, {CardDesignClover, 3},
+				{CardDesignDiamond, 1}, {CardDesignDiamond, 2}, {CardDesignDiamond, 3},
+			},
+			expected: 0,
+		},
+		{
+			name: "multiple short suits accumulate",
+			cards: []struct{ design, value int }{
+				// 6 spades, 5 hearts, 1 club, 1 diamond = 2+2=4
+				{CardDesignSpade, 1}, {CardDesignSpade, 2}, {CardDesignSpade, 3}, {CardDesignSpade, 4}, {CardDesignSpade, 5}, {CardDesignSpade, 6},
+				{CardDesignHeart, 1}, {CardDesignHeart, 2}, {CardDesignHeart, 3}, {CardDesignHeart, 4}, {CardDesignHeart, 5},
+				{CardDesignClover, 1},
+				{CardDesignDiamond, 1},
+			},
+			expected: 4,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := newTestBridgeHard()
+			b.players[1].Reset()
+			for _, c := range tt.cards {
+				b.players[1].AddCard(NewCard(c.design, c.value, true))
+			}
+			assert.Equal(t, tt.expected, b.calcDistributionPoints(1))
+		})
+	}
+}
+
+func TestBridge_countSuitCards(t *testing.T) {
+	b := newTestBridgeHard()
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignSpade, 1, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true))
+
+	assert.Equal(t, 3, b.countSuitCards(1, CardDesignSpade))
+	assert.Equal(t, 1, b.countSuitCards(1, CardDesignHeart))
+	assert.Equal(t, 0, b.countSuitCards(1, CardDesignDiamond))
+}
+
+func TestBridge_countHighCards(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []struct{ design, value int }
+		suit     int
+		expected int
+	}{
+		{
+			name: "AKQ in 4-card suit counts 3",
+			cards: []struct{ design, value int }{
+				{CardDesignSpade, 1}, {CardDesignSpade, 13}, {CardDesignSpade, 12}, {CardDesignSpade, 5},
+			},
+			suit:     CardDesignSpade,
+			expected: 3,
+		},
+		{
+			name: "K singleton counts 0",
+			cards: []struct{ design, value int }{
+				{CardDesignSpade, 13},
+			},
+			suit:     CardDesignSpade,
+			expected: 0,
+		},
+		{
+			name: "Q in doubleton counts 0",
+			cards: []struct{ design, value int }{
+				{CardDesignSpade, 12}, {CardDesignSpade, 5},
+			},
+			suit:     CardDesignSpade,
+			expected: 0,
+		},
+		{
+			name: "A alone counts 1",
+			cards: []struct{ design, value int }{
+				{CardDesignSpade, 1},
+			},
+			suit:     CardDesignSpade,
+			expected: 1,
+		},
+		{
+			name: "AK in doubleton counts 2",
+			cards: []struct{ design, value int }{
+				{CardDesignSpade, 1}, {CardDesignSpade, 13},
+			},
+			suit:     CardDesignSpade,
+			expected: 2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := newTestBridgeHard()
+			b.players[1].Reset()
+			for _, c := range tt.cards {
+				b.players[1].AddCard(NewCard(c.design, c.value, true))
+			}
+			assert.Equal(t, tt.expected, b.countHighCards(1, tt.suit))
+		})
+	}
+}
+
+func TestBridge_partnerBidSuit(t *testing.T) {
+	b := newTestBridgeHard()
+
+	// No bids yet
+	assert.Equal(t, 0, b.partnerBidSuit(1))
+
+	// Partner of player 1 (team 1) is player 3
+	b.bidHistory = []*BridgeBidEntry{
+		{PlayerIdx: 0, BidType: BridgeBidNormal, Level: 1, Suit: BridgeBidSuitHeart},
+		{PlayerIdx: 3, BidType: BridgeBidNormal, Level: 1, Suit: BridgeBidSuitSpade},
+	}
+	assert.Equal(t, BridgeBidSuitSpade, b.partnerBidSuit(1))
+
+	// Partner passed only
+	b.bidHistory = []*BridgeBidEntry{
+		{PlayerIdx: 3, BidType: BridgeBidPass, Level: 0, Suit: 0},
+	}
+	assert.Equal(t, 0, b.partnerBidSuit(1))
+}
+
+func TestBridge_countTrumpsRemaining(t *testing.T) {
+	b := newTestBridgeHard()
+	setupBridgePlayPhase(b)
+
+	// Player 1 has all clubs by default, trump is spades
+	assert.Equal(t, 0, b.countTrumpsRemaining(1))
+
+	// Player 0 has all spades, trump is spades
+	assert.Equal(t, 13, b.countTrumpsRemaining(0))
+
+	// Give player 1 some spades
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignSpade, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 3, true))
+	assert.Equal(t, 2, b.countTrumpsRemaining(1))
+
+	// NoTrump game
+	b.trumpSuit = -1
+	assert.Equal(t, 0, b.countTrumpsRemaining(1))
+}
+
+func TestBridge_isLastToPlay(t *testing.T) {
+	b := newTestBridgeHard()
+	b.currentTrick = nil
+	assert.False(t, b.isLastToPlay())
+
+	b.currentTrick = []*BridgeTrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 1, true)},
+	}
+	assert.False(t, b.isLastToPlay())
+
+	b.currentTrick = []*BridgeTrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 1, true)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 2, true)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 3, true)},
+	}
+	assert.True(t, b.isLastToPlay())
+}
+
+// --- cpuBidHard tests ---
+
+func TestBridgeCpuBidHard_WeakHand(t *testing.T) {
+	b := newTestBridgeHard()
+	b.Reset()
+	b.phase = BridgePhaseBid
+	b.contractLevel = 0
+	b.doubled = 0
+
+	// Give player 1 a weak hand (HCP < 12, no distribution)
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignSpade, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 4, true))
+
+	bt, _, _ := b.cpuBidHard(1)
+	assert.Equal(t, BridgeBidPass, bt)
+}
+
+func TestBridgeCpuBidHard_StrongHand(t *testing.T) {
+	b := newTestBridgeHard()
+	b.Reset()
+	b.phase = BridgePhaseBid
+	b.contractLevel = 0
+	b.doubled = 0
+
+	// Give player 1 a strong hand (HCP=20 + distribution)
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignSpade, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignSpade, 13, true)) // K=3
+	b.players[1].AddCard(NewCard(CardDesignSpade, 12, true)) // Q=2
+	b.players[1].AddCard(NewCard(CardDesignSpade, 11, true)) // J=1
+	b.players[1].AddCard(NewCard(CardDesignSpade, 10, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignHeart, 13, true)) // K=3
+	b.players[1].AddCard(NewCard(CardDesignHeart, 12, true)) // Q=2
+	b.players[1].AddCard(NewCard(CardDesignClover, 1, true)) // A=4 -> HCP=23 total, singleton diamond? no, need 13 cards
+	b.players[1].AddCard(NewCard(CardDesignClover, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 1, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
+	// HCP = 4+3+2+1+4+3+2+4 = 23, distPoints = 0 (3-2-5-3), totalPts = 23
+
+	bt, level, _ := b.cpuBidHard(1)
+	assert.Equal(t, BridgeBidNormal, bt)
+	assert.GreaterOrEqual(t, level, 2)
+}
+
+func TestBridgeCpuBidHard_BalancedNT(t *testing.T) {
+	b := newTestBridgeHard()
+	b.Reset()
+	b.phase = BridgePhaseBid
+	b.contractLevel = 0
+	b.doubled = 0
+
+	// Give player 1 a balanced hand with HCP=16
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignSpade, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignSpade, 13, true)) // K=3
+	b.players[1].AddCard(NewCard(CardDesignSpade, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignHeart, 12, true)) // Q=2
+	b.players[1].AddCard(NewCard(CardDesignHeart, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 11, true)) // J=1
+	b.players[1].AddCard(NewCard(CardDesignClover, 12, true)) // Q=2
+	b.players[1].AddCard(NewCard(CardDesignClover, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 4, true))
+	// HCP = 4+3+4+2+1+2 = 16, balanced (3-4-3-3), totalPts = 16
+
+	bt, level, suit := b.cpuBidHard(1)
+	assert.Equal(t, BridgeBidNormal, bt)
+	assert.Equal(t, 1, level)
+	assert.Equal(t, BridgeBidSuitNT, suit)
+}
+
+func TestBridgeCpuBidHard_PartnerFit(t *testing.T) {
+	b := newTestBridgeHard()
+	b.Reset()
+	b.phase = BridgePhaseBid
+	b.contractLevel = 1
+	b.contractSuit = BridgeBidSuitHeart
+	b.doubled = 0
+	b.lastBidTeam = 1 // Partner's team bid
+	b.lastBidderIdx = 3
+
+	// Partner (player 3) bid hearts
+	b.bidHistory = []*BridgeBidEntry{
+		{PlayerIdx: 3, BidType: BridgeBidNormal, Level: 1, Suit: BridgeBidSuitHeart},
+	}
+
+	// Player 1 has 4 hearts and moderate HCP
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true)) // A=4
+	b.players[1].AddCard(NewCard(CardDesignHeart, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 6, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 7, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 13, true)) // K=3
+	b.players[1].AddCard(NewCard(CardDesignSpade, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 12, true)) // Q=2
+	b.players[1].AddCard(NewCard(CardDesignClover, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 4, true))
+	// HCP = 4+3+2 = 9, distPts = 0 (balanced), partnerFit = +3 -> totalPts = 12
+
+	bt, _, suit := b.cpuBidHard(1)
+	// Should raise partner's hearts
+	assert.Equal(t, BridgeBidNormal, bt)
+	assert.Equal(t, BridgeBidSuitHeart, suit)
+}
+
+func TestBridgeCpuBidHard_Double(t *testing.T) {
+	b := newTestBridgeHard()
+	b.Reset()
+	b.phase = BridgePhaseBid
+	b.contractLevel = 2
+	b.contractSuit = BridgeBidSuitHeart
+	b.doubled = 0
+	b.lastBidTeam = 0 // Opponent's team (player 1 is team 1)
+	b.lastBidderIdx = 0
+
+	// Player 1 has strong hand and 3+ cards in opponent's suit (hearts)
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignHeart, 13, true)) // K=3
+	b.players[1].AddCard(NewCard(CardDesignHeart, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignSpade, 13, true)) // K=3
+	b.players[1].AddCard(NewCard(CardDesignSpade, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 4, true))
+	// HCP = 4+3+4+3 = 14, 3 hearts (can defend)
+
+	bt, _, _ := b.cpuBidHard(1)
+	assert.Equal(t, BridgeBidDouble, bt)
+}
+
+func TestBridgeCpuBidHard_Redouble(t *testing.T) {
+	b := newTestBridgeHard()
+	b.Reset()
+	b.phase = BridgePhaseBid
+	b.contractLevel = 1
+	b.contractSuit = BridgeBidSuitSpade
+	b.doubled = 1
+	b.lastBidTeam = 1 // Own team bid
+	b.lastBidderIdx = 3
+
+	// Player 1 has totalPts >= 12
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignSpade, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignSpade, 13, true)) // K=3
+	b.players[1].AddCard(NewCard(CardDesignSpade, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true)) // A=4
+	b.players[1].AddCard(NewCard(CardDesignHeart, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 4, true))
+	// HCP = 4+3+4 = 11, distPts = 0 -> but wait, need 12. Let me recalculate.
+	// Actually totalPts = HCP + distPts = 11 + 0 = 11, need >= 12
+	// Need one more point -> add a J
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignSpade, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignSpade, 13, true)) // K=3
+	b.players[1].AddCard(NewCard(CardDesignSpade, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignHeart, 11, true)) // J=1
+	b.players[1].AddCard(NewCard(CardDesignHeart, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 4, true))
+	// HCP = 4+3+4+1 = 12, distPts = 0 -> totalPts = 12
+
+	bt, _, _ := b.cpuBidHard(1)
+	assert.Equal(t, BridgeBidRedouble, bt)
+}
+
+func TestBridgeCpuBidHard_PreferMajor(t *testing.T) {
+	b := newTestBridgeHard()
+	b.Reset()
+	b.phase = BridgePhaseBid
+	b.contractLevel = 0
+	b.doubled = 0
+
+	// Player 1 has equal-length hearts and clubs (4 each), moderate HCP
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignHeart, 13, true)) // K=3
+	b.players[1].AddCard(NewCard(CardDesignHeart, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignClover, 12, true)) // Q=2
+	b.players[1].AddCard(NewCard(CardDesignClover, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 4, true))
+	// HCP = 4+3+4+2 = 13, distPts = 0, totalPts = 13
+	// Hearts and clubs both 4 cards, should prefer hearts (major)
+
+	bt, _, suit := b.cpuBidHard(1)
+	assert.Equal(t, BridgeBidNormal, bt)
+	assert.Equal(t, BridgeBidSuitHeart, suit)
+}
+
+func TestBridgeCpuBidHard_SafetyCap(t *testing.T) {
+	b := newTestBridgeHard()
+	b.Reset()
+	b.phase = BridgePhaseBid
+	b.contractLevel = 4
+	b.contractSuit = BridgeBidSuitSpade
+	b.doubled = 0
+	b.lastBidTeam = 0
+	b.lastBidderIdx = 0
+
+	// Player 1 has moderate hand, shouldn't overbid at level 5+
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true))  // A=4
+	b.players[1].AddCard(NewCard(CardDesignHeart, 13, true)) // K=3
+	b.players[1].AddCard(NewCard(CardDesignHeart, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 11, true)) // J=1
+	b.players[1].AddCard(NewCard(CardDesignSpade, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 12, true)) // Q=2
+	b.players[1].AddCard(NewCard(CardDesignClover, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 3, true))
+	// HCP = 4+3+1+2 = 10, distPts = 0 -> totalPts = 10 -> should pass (< 12)
+
+	bt, _, _ := b.cpuBidHard(1)
+	assert.Equal(t, BridgeBidPass, bt)
+}
+
+// --- cpuPlayHard enhanced tests ---
+
+func setupBridgePlayPhaseHard(b *Bridge) {
+	for _, p := range b.players {
+		p.ResetRound()
+	}
+	b.phase = BridgePhasePlay
+	b.contractLevel = 2
+	b.contractSuit = BridgeBidSuitSpade
+	b.trumpSuit = CardDesignSpade
+	b.declarerIdx = 0
+	b.dummyIdx = 2
+	b.leadPlayerIdx = 1
+	b.currentPlayerIdx = 1
+	b.trickNumber = 1
+	b.openingLeadDone = true
+	b.currentTrick = nil
+}
+
+func TestBridgeCpuPlayHard_LeadTrumpDraw(t *testing.T) {
+	b := newTestBridgeHard()
+	setupBridgePlayPhaseHard(b)
+	b.declarerIdx = 1 // Player 1 is declarer (declaring team)
+	b.dummyIdx = 3
+	b.trickNumber = 2
+
+	// Player 1 has 4 trumps + non-trump cards
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignSpade, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 8, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 10, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 1, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 4, true))
+
+	idx := b.cpuPlayHard(1, []int{0, 1, 2, 3, 4, 5})
+	card := b.players[1].GetCard(idx)
+	assert.Equal(t, CardDesignSpade, card.GetDesign())
+}
+
+func TestBridgeCpuPlayHard_LeadPartnerSuit(t *testing.T) {
+	b := newTestBridgeHard()
+	setupBridgePlayPhaseHard(b)
+	b.declarerIdx = 0 // Player 0 is declarer, so player 1 is defending
+	b.dummyIdx = 2
+
+	// Partner (player 3) bid hearts
+	b.bidHistory = []*BridgeBidEntry{
+		{PlayerIdx: 3, BidType: BridgeBidNormal, Level: 1, Suit: BridgeBidSuitHeart},
+	}
+
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignHeart, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 8, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 4, true))
+
+	idx := b.cpuPlayHard(1, []int{0, 1, 2, 3})
+	card := b.players[1].GetCard(idx)
+	assert.Equal(t, CardDesignHeart, card.GetDesign())
+}
+
+func TestBridgeCpuPlayHard_LeadLateGame(t *testing.T) {
+	b := newTestBridgeHard()
+	setupBridgePlayPhaseHard(b)
+	b.trickNumber = 11
+
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignHeart, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true)) // Ace
+
+	idx := b.cpuPlayHard(1, []int{0, 1})
+	card := b.players[1].GetCard(idx)
+	// Late game: should lead strongest
+	assert.Equal(t, 1, card.GetValue()) // Ace
+}
+
+func TestBridgeCpuPlayHard_PartnerWinning(t *testing.T) {
+	b := newTestBridgeHard()
+	setupBridgePlayPhaseHard(b)
+
+	// Player 3 (team 1, partner of player 1) is winning
+	b.currentTrick = []*BridgeTrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 5, true)},
+		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 1, true)}, // Partner winning with Ace
+	}
+	b.currentPlayerIdx = 1
+
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignHeart, 13, true)) // K
+	b.players[1].AddCard(NewCard(CardDesignHeart, 2, true))  // 2
+
+	idx := b.cpuPlayHard(1, []int{0, 1})
+	card := b.players[1].GetCard(idx)
+	// Partner winning, should play weakest
+	assert.Equal(t, 2, card.GetValue())
+}
+
+func TestBridgeCpuPlayHard_4thSeatMinWin(t *testing.T) {
+	b := newTestBridgeHard()
+	setupBridgePlayPhaseHard(b)
+
+	// Player 1 (team 1) is 4th to play. Opponent (team 0) is winning.
+	b.currentTrick = []*BridgeTrickCard{
+		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 5, true)},  // team 1 (partner, low)
+		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, true)}, // team 0 (opponent, winning)
+		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 8, true)},  // team 0
+	}
+
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true))  // Ace
+	b.players[1].AddCard(NewCard(CardDesignHeart, 11, true)) // Jack (just above 10)
+	b.players[1].AddCard(NewCard(CardDesignHeart, 3, true))  // Can't win
+
+	idx := b.cpuPlayHard(1, []int{0, 1, 2})
+	card := b.players[1].GetCard(idx)
+	// Should play Jack (minimum winning card), not Ace
+	assert.Equal(t, 11, card.GetValue())
+}
+
+func TestBridgeCpuPlayHard_TrumpCutLowest(t *testing.T) {
+	b := newTestBridgeHard()
+	setupBridgePlayPhaseHard(b)
+
+	// Lead is hearts, player 1 has no hearts but has multiple trumps (spades)
+	b.currentTrick = []*BridgeTrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, true)},
+	}
+
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignSpade, 2, true))  // Low trump
+	b.players[1].AddCard(NewCard(CardDesignSpade, 10, true)) // High trump
+	b.players[1].AddCard(NewCard(CardDesignClover, 3, true)) // Non-trump
+
+	idx := b.cpuPlayHard(1, []int{0, 1, 2})
+	card := b.players[1].GetCard(idx)
+	// Should trump with lowest trump (spade 2)
+	assert.Equal(t, CardDesignSpade, card.GetDesign())
+	assert.Equal(t, 2, card.GetValue())
+}
+
+func TestBridgeCpuPlayHard_DiscardShortSuit(t *testing.T) {
+	b := newTestBridgeHard()
+	setupBridgePlayPhaseHard(b)
+	b.trumpSuit = -1 // NoTrump
+
+	// Lead is hearts, player 1 has no hearts and no trumps
+	b.currentTrick = []*BridgeTrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, true)},
+	}
+
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignClover, 3, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true)) // Shortest suit (1 card)
+
+	idx := b.cpuPlayHard(1, []int{0, 1, 2})
+	card := b.players[1].GetCard(idx)
+	// Should discard from shortest suit (diamond)
+	assert.Equal(t, CardDesignDiamond, card.GetDesign())
+}
+
+func TestBridgeCpuPlayHard_OpponentWinningSmartFollow(t *testing.T) {
+	b := newTestBridgeHard()
+	setupBridgePlayPhaseHard(b)
+
+	// Lead is hearts, opponent winning, player 1 can follow
+	b.currentTrick = []*BridgeTrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 10, true)},
+	}
+
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignHeart, 11, true)) // J (wins)
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true))  // A (wins)
+	b.players[1].AddCard(NewCard(CardDesignHeart, 3, true))  // Loses
+
+	idx := b.cpuPlayHard(1, []int{0, 1, 2})
+	card := b.players[1].GetCard(idx)
+	// Should play lowest winning card (Jack)
+	assert.Equal(t, 11, card.GetValue())
+}
+
+func TestBridgeCpuSelectBid_HardDispatch(t *testing.T) {
+	b := newTestBridgeHard()
+	b.Reset()
+	b.phase = BridgePhaseBid
+	b.contractLevel = 0
+	b.doubled = 0
+
+	// Strong hand for a clear bid
+	b.players[1].Reset()
+	b.players[1].AddCard(NewCard(CardDesignSpade, 1, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 13, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 12, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 11, true))
+	b.players[1].AddCard(NewCard(CardDesignSpade, 10, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 1, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 13, true))
+	b.players[1].AddCard(NewCard(CardDesignHeart, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 1, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 5, true))
+	b.players[1].AddCard(NewCard(CardDesignClover, 4, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 2, true))
+	b.players[1].AddCard(NewCard(CardDesignDiamond, 3, true))
+
+	bt, _, _ := b.cpuSelectBid(1)
+	assert.NotEqual(t, BridgeBidPass, bt)
+}
