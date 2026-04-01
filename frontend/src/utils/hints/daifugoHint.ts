@@ -4,6 +4,26 @@ import type { HintResult } from '../../types/hint';
 /** Minimum cards of the same value to trigger a revolution. */
 const REVOLUTION_COUNT = 4;
 
+/**
+ * Daifugo strength ranking: 3<4<5<6<7<8<9<10<J<Q<K<A<2.
+ * Lower index = weaker card in normal order.
+ */
+const STRENGTH_ORDER: Record<number, number> = {
+  3: 0,
+  4: 1,
+  5: 2,
+  6: 3,
+  7: 4,
+  8: 5,
+  9: 6,
+  10: 7,
+  11: 8,
+  12: 9,
+  13: 10,
+  1: 11,
+  2: 12,
+};
+
 /** Returns a frontend HintResult for Daifugo, or null if no suggestion. */
 export function getDaifugoHint(state: DaifugoResponse): HintResult | null {
   const human = state.players.find((p) => p.isHuman);
@@ -34,23 +54,35 @@ function getFreeTurnHint(cards: Card[]): HintResult {
 /** Hint when following an existing play. */
 function getFollowHint(cards: Card[], state: DaifugoResponse): HintResult {
   const tableValue = state.tableCards[0]?.value ?? 0;
+  const requiredCount = state.tableCards.length;
   const revolution = state.revolutionActive;
 
-  const hasStronger = cards.some((c) => isStrongerThan(c.value, tableValue, revolution));
+  // Count cards by value
+  const valueCounts = new Map<number, number>();
+  for (const c of cards) {
+    valueCounts.set(c.value, (valueCounts.get(c.value) ?? 0) + 1);
+  }
 
-  if (hasStronger) {
+  // Check if human has enough cards of a single stronger value
+  const canFollow = [...valueCounts.entries()].some(
+    ([value, count]) => count >= requiredCount && isStrongerThan(value, tableValue, revolution),
+  );
+
+  if (canFollow) {
     return { targetAction: 'play', reason: 'hint.playStronger', confidence: 'strong' };
   }
 
   return { targetAction: 'pass', reason: 'hint.passNoPlay', confidence: 'moderate' };
 }
 
-/** Check if a card value beats the table value, considering revolution. */
+/** Check if a card value beats the table value using Daifugo strength ordering. */
 function isStrongerThan(cardValue: number, tableValue: number, revolution: boolean): boolean {
+  const cardStrength = STRENGTH_ORDER[cardValue] ?? cardValue;
+  const tableStrength = STRENGTH_ORDER[tableValue] ?? tableValue;
   if (revolution) {
-    return cardValue < tableValue;
+    return cardStrength < tableStrength;
   }
-  return cardValue > tableValue;
+  return cardStrength > tableStrength;
 }
 
 /** Check if hand contains 4+ cards of the same value (revolution potential). */

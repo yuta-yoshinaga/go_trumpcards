@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
 import { DaifugoHumanArea } from '../components/daifugo/DaifugoHumanArea';
@@ -182,6 +183,22 @@ function DaifugoPageContent() {
       </PhaseIndicator>
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
+        <SettingsPanel
+          title=""
+          groups={[
+            {
+              items: [
+                {
+                  type: 'checkbox',
+                  id: 'frontendHint',
+                  label: tc('hint.toggle', { ns: 'tutorial' }),
+                  checked: frontendHintEnabled,
+                  onToggle: setFrontendHintEnabled,
+                },
+              ],
+            },
+          ]}
+        />
         <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (
             <DaifugoCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
@@ -303,17 +320,6 @@ function DaifugoPageContent() {
 
         <ErrorAlert message={error} />
 
-        <div className="flex items-center gap-2 mb-1 justify-center">
-          <label htmlFor="df-hint-toggle" className="text-white text-xs flex items-center gap-1 cursor-pointer">
-            <input
-              id="df-hint-toggle"
-              type="checkbox"
-              checked={frontendHintEnabled}
-              onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-            />
-            {tc('hint.toggle', { ns: 'tutorial' })}
-          </label>
-        </div>
         {frontendHintEnabled && frontendHint && (
           <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
         )}

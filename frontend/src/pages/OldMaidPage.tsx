@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -173,6 +174,22 @@ function OldMaidPageContent() {
         <TutorialButton />
         <ManualButton gamePath="/oldmaid" />
       </PhaseIndicator>
+      <SettingsPanel
+        title={t('button.settings')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'checkbox',
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
+              },
+            ],
+          },
+        ]}
+      />
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* Mode badge */}
@@ -295,18 +312,6 @@ function OldMaidPageContent() {
 
         <ErrorAlert message={error} />
 
-        {/* Hint toggle + tooltip */}
-        <div className="flex items-center gap-2 mb-1 justify-center">
-          <label htmlFor="om-hint-toggle" className="text-white text-xs flex items-center gap-1 cursor-pointer">
-            <input
-              id="om-hint-toggle"
-              type="checkbox"
-              checked={frontendHintEnabled}
-              onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-            />
-            {tc('hint.toggle', { ns: 'tutorial' })}
-          </label>
-        </div>
         {frontendHintEnabled && frontendHint && (
           <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
         )}

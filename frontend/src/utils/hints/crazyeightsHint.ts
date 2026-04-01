@@ -33,7 +33,18 @@ export function getCrazyEightsHint(state: CrazyEightsResponse): HintResult | nul
 }
 
 /** Hint for choose suit phase: pick the suit with most cards in hand. */
-function getChooseSuitHint(_cards: Card[]): HintResult {
+function getChooseSuitHint(cards: Card[]): HintResult {
+  const suitCounts = new Map<Card['design'], number>();
+  for (const c of cards) {
+    if (c.value !== EIGHT) {
+      suitCounts.set(c.design, (suitCounts.get(c.design) ?? 0) + 1);
+    }
+  }
+
+  if (suitCounts.size === 0) {
+    return { targetAction: 'chooseSuit', reason: 'hint.chooseMostSuit', confidence: 'moderate' };
+  }
+
   return { targetAction: 'chooseSuit', reason: 'hint.chooseMostSuit', confidence: 'strong' };
 }
 

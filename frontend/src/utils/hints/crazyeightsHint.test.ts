@@ -96,13 +96,21 @@ describe('getCrazyEightsHint', () => {
     expect(result?.confidence).toBe('moderate');
   });
 
-  it('suggests best suit in choose suit phase', () => {
+  it('suggests best suit in choose suit phase with strong confidence', () => {
     const state = makeState({ phase: CrazyEightsPhase.CHOOSE_SUIT });
     state.players[0].cards = [card('HEART', 5), card('HEART', 9), card('SPADE', 2)];
     const result = getCrazyEightsHint(state);
     expect(result?.targetAction).toBe('chooseSuit');
     expect(result?.reason).toBe('hint.chooseMostSuit');
     expect(result?.confidence).toBe('strong');
+  });
+
+  it('returns moderate confidence in choose suit phase when only 8s remain', () => {
+    const state = makeState({ phase: CrazyEightsPhase.CHOOSE_SUIT });
+    state.players[0].cards = [card('HEART', 8), card('SPADE', 8)];
+    const result = getCrazyEightsHint(state);
+    expect(result?.targetAction).toBe('chooseSuit');
+    expect(result?.confidence).toBe('moderate');
   });
 
   it('handles chosen suit override in play phase', () => {

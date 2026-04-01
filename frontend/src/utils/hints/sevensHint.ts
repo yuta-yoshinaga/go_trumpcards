@@ -32,7 +32,7 @@ export function getSevensHint(state: SevensResponse): HintResult | null {
   return { targetAction: 'pass', reason: 'hint.passAvailable', confidence: 'moderate' };
 }
 
-/** Check if a card can be placed on the table (adjacent to current range). */
+/** Check if a card can be placed on the table (adjacent to current range, with tunnel wrap). */
 function isPlayable(card: Card, state: SevensResponse): boolean {
   const suitIdx = SUIT_INDEX[card.design];
   if (suitIdx === undefined) return false;
@@ -40,5 +40,13 @@ function isPlayable(card: Card, state: SevensResponse): boolean {
   const min = state.tableMinVals[suitIdx];
   const max = state.tableMaxVals[suitIdx];
 
-  return card.value === min - 1 || card.value === max + 1;
+  if (card.value === min - 1 || card.value === max + 1) return true;
+
+  // Tunnel rule: A and K wrap around
+  if (state.config.tunnelEnabled) {
+    if (min === 1 && card.value === 13) return true;
+    if (max === 13 && card.value === 1) return true;
+  }
+
+  return false;
 }
