@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
 
 test.describe('Memory E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -27,7 +27,7 @@ test.describe('Memory E2E', () => {
       // Wait for something actionable
       await expect(nextButton.or(resetButton).first()).toBeVisible({ timeout: 10_000 });
 
-      const nextVisible = await nextButton.isVisible().catch(() => false);
+      const nextVisible = await nextButton.isVisible();
 
       if (nextVisible) {
         await nextButton.click();
@@ -36,20 +36,20 @@ test.describe('Memory E2E', () => {
       }
 
       // Try to flip a card (human turn in flip1 phase)
-      // Find an enabled board card and click it
       const enabledCards = page.locator('[data-testid^="board-"]:not([disabled]):not(.hidden)');
-      const cardCount = await enabledCards.count();
-      if (cardCount === 0) break; // Game may have ended or CPU turn
-
-      await enabledCards.first().click();
+      try {
+        await enabledCards.first().click({ timeout: TIMEOUT_ACTION });
+      } catch {
+        break; // No enabled cards — game ended or CPU turn
+      }
       await waitForLoaded(page);
 
       // If still in flip phase, flip a second card
-      const enabledCards2 = page.locator('[data-testid^="board-"]:not([disabled]):not(.hidden)');
-      const cardCount2 = await enabledCards2.count();
-      if (cardCount2 > 0) {
-        await enabledCards2.first().click();
+      try {
+        await enabledCards.first().click({ timeout: TIMEOUT_ACTION });
         await waitForLoaded(page);
+      } catch {
+        // No more enabled cards to flip — continue to next turn
       }
     }
 

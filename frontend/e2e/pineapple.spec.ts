@@ -16,8 +16,8 @@ test.describe('Pineapple Poker E2E', () => {
     await expect(page.getByText('あなたの手札')).toBeVisible({ timeout: 10_000 });
 
     // Look for betting or discard controls
-    const checkButton = page.getByRole('button', { name: 'チェック' });
-    const callButton = page.getByRole('button', { name: 'コール' });
+    const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
+    const callButton = page.getByRole('button', { name: 'コール', exact: true });
     const foldButton = page.getByRole('button', { name: 'フォールド' });
     const discardControls = page.getByTestId('discard-controls');
 

@@ -38,10 +38,10 @@ test.describe('Hearts E2E', () => {
         passButton.or(playButton).or(nextTrickButton).or(nextRoundButton).or(resetButton).first(),
       ).toBeVisible({ timeout: 10_000 });
 
-      const passVisible = await passButton.isVisible().catch(() => false);
-      const playVisible = await playButton.isVisible().catch(() => false);
-      const nextTrickVisible = await nextTrickButton.isVisible().catch(() => false);
-      const nextRoundVisible = await nextRoundButton.isVisible().catch(() => false);
+      const passVisible = await passButton.isVisible();
+      const playVisible = await playButton.isVisible();
+      const nextTrickVisible = await nextTrickButton.isVisible();
+      const nextRoundVisible = await nextRoundButton.isVisible();
 
       // Game end: no action buttons visible
       if (!passVisible && !playVisible && !nextTrickVisible && !nextRoundVisible) break;

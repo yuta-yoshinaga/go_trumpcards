@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
 
 test.describe('BlackJack E2E', () => {
   test('plays a round: bet → stand → result', async ({ page }) => {
@@ -14,7 +14,7 @@ test.describe('BlackJack E2E', () => {
     // ACTION or INSURANCE phase should appear after bet
     // If insurance is offered, decline it
     const declineButton = page.getByRole('button', { name: '辞退' });
-    if (await declineButton.isVisible({ timeout: 2_000 }).catch(() => false)) {
+    if (await isVisibleWithin(declineButton, TIMEOUT_ACTION)) {
       await declineButton.click();
       await waitForLoaded(page);
     }

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
 
 test.describe('Poker E2E', () => {
   test('plays a full round: reset → bet → stand (no exchange) → bet → result → reset', async ({ page }) => {
@@ -13,9 +13,9 @@ test.describe('Poker E2E', () => {
     await waitForLoaded(page);
 
     // DEAL phase: use チェック or コール to proceed
-    const checkButton = page.getByRole('button', { name: 'チェック' });
-    const callButton = page.getByRole('button', { name: 'コール' });
-    if (await checkButton.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
+    const callButton = page.getByRole('button', { name: 'コール', exact: true });
+    if (await isVisibleWithin(checkButton, TIMEOUT_ACTION)) {
       await checkButton.click();
     } else {
       await callButton.click();
@@ -24,15 +24,15 @@ test.describe('Poker E2E', () => {
 
     // EXCHANGE phase: click スタンド (no exchange)
     const standButton = page.getByRole('button', { name: 'スタンド' });
-    if (await standButton.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    if (await isVisibleWithin(standButton, TIMEOUT_ACTION)) {
       await standButton.click();
       await waitForLoaded(page);
     }
 
     // SECOND_BET phase: チェック or コール
-    if (await checkButton.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    if (await isVisibleWithin(checkButton, TIMEOUT_ACTION)) {
       await checkButton.click();
-    } else if (await callButton.isVisible({ timeout: 2_000 }).catch(() => false)) {
+    } else if (await isVisibleWithin(callButton, TIMEOUT_ACTION)) {
       await callButton.click();
     }
     await waitForLoaded(page);

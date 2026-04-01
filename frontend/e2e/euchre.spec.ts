@@ -42,12 +42,12 @@ test.describe('Euchre E2E', () => {
           .first(),
       ).toBeVisible({ timeout: 10_000 });
 
-      const orderUpVisible = await orderUpButton.isVisible().catch(() => false);
-      const passVisible = await passButton.isVisible().catch(() => false);
-      const playVisible = await playButton.isVisible().catch(() => false);
-      const discardVisible = await discardButton.isVisible().catch(() => false);
-      const nextTrickVisible = await nextTrickButton.isVisible().catch(() => false);
-      const nextRoundVisible = await nextRoundButton.isVisible().catch(() => false);
+      const orderUpVisible = await orderUpButton.isVisible();
+      const passVisible = await passButton.isVisible();
+      const playVisible = await playButton.isVisible();
+      const discardVisible = await discardButton.isVisible();
+      const nextTrickVisible = await nextTrickButton.isVisible();
+      const nextRoundVisible = await nextRoundButton.isVisible();
 
       // Game end: no action buttons visible
       if (!orderUpVisible && !passVisible && !playVisible && !discardVisible && !nextTrickVisible && !nextRoundVisible)
@@ -66,7 +66,7 @@ test.describe('Euchre E2E', () => {
         interactions++;
         // Try to select a suit button if visible, otherwise pass
         const suitButton = page.getByRole('button', { name: /♠|♣|♥|♦/ }).first();
-        const suitVisible = await suitButton.isVisible().catch(() => false);
+        const suitVisible = await suitButton.isVisible();
         if (suitVisible) {
           await suitButton.click();
         } else {
@@ -83,7 +83,7 @@ test.describe('Euchre E2E', () => {
         if (cardCount > 0) {
           await handCards.first().click();
         }
-        if ((await discardButton.isVisible().catch(() => false)) && (await discardButton.isEnabled())) {
+        if ((await discardButton.isVisible()) && (await discardButton.isEnabled())) {
           await discardButton.click();
           await waitForLoaded(page);
         }
@@ -97,7 +97,7 @@ test.describe('Euchre E2E', () => {
         if (cardCount > 0) {
           await handCards.first().click();
         }
-        if ((await playButton.isVisible().catch(() => false)) && (await playButton.isEnabled())) {
+        if ((await playButton.isVisible()) && (await playButton.isEnabled())) {
           await playButton.click();
           await waitForLoaded(page);
         }
