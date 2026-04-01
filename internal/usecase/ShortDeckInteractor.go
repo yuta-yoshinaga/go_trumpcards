@@ -10,6 +10,7 @@ import (
 
 // ShortDeckInteractorIF ショートデックホールデムインタラクターインタフェース
 type ShortDeckInteractorIF interface {
+	TournamentInteractorIF
 	// Reset ゲーム初期化
 	Reset() string
 	// ResetWithConfig 設定を変更してゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
@@ -18,18 +19,6 @@ type ShortDeckInteractorIF interface {
 	Action(action int, amount int, humanPlayMs int) string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.ShortDeckConfig
-	// Rebuy リバイ実行
-	Rebuy() string
-	// SkipRebuy リバイ辞退
-	SkipRebuy() string
-	// Addon アドオン実行
-	Addon() string
-	// SkipAddon アドオン辞退
-	SkipAddon() string
-	// Muck マック
-	Muck() string
-	// ShowHand ハンドを公開する
-	ShowHand() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -38,12 +27,17 @@ type ShortDeckInteractorIF interface {
 type ShortDeckInteractor struct {
 	o  interfaces.ShortDeckGame
 	op presenter.ShortDeckPresenter
+	tournamentActions[interfaces.ShortDeckGame]
 }
 
 // NewShortDeckInteractor コンストラクタ
 func NewShortDeckInteractor(o interfaces.ShortDeckGame, op presenter.ShortDeckPresenter) *ShortDeckInteractor {
 	mustNotNil("ShortDeckInteractor", map[string]any{"o": o, "op": op})
-	return &ShortDeckInteractor{o: o, op: op}
+	return &ShortDeckInteractor{
+		o:                 o,
+		op:                op,
+		tournamentActions: newTournamentActions[interfaces.ShortDeckGame](o, op),
+	}
 }
 
 // Reset ゲーム初期化
@@ -75,36 +69,6 @@ func (oi *ShortDeckInteractor) Action(action int, amount int, humanPlayMs int) s
 // GetConfig 現在の設定を取得
 func (oi *ShortDeckInteractor) GetConfig() domain.ShortDeckConfig {
 	return oi.o.GetConfig()
-}
-
-// Rebuy リバイ実行
-func (oi *ShortDeckInteractor) Rebuy() string {
-	return execAndPresent(oi.o, oi.op, oi.o.Rebuy)
-}
-
-// SkipRebuy リバイ辞退
-func (oi *ShortDeckInteractor) SkipRebuy() string {
-	return execAndPresent(oi.o, oi.op, oi.o.SkipRebuy)
-}
-
-// Addon アドオン実行
-func (oi *ShortDeckInteractor) Addon() string {
-	return execAndPresent(oi.o, oi.op, oi.o.Addon)
-}
-
-// SkipAddon アドオン辞退
-func (oi *ShortDeckInteractor) SkipAddon() string {
-	return execAndPresent(oi.o, oi.op, oi.o.SkipAddon)
-}
-
-// Muck マック
-func (oi *ShortDeckInteractor) Muck() string {
-	return execAndPresent(oi.o, oi.op, oi.o.Muck)
-}
-
-// ShowHand ハンドを公開する
-func (oi *ShortDeckInteractor) ShowHand() string {
-	return execAndPresent(oi.o, oi.op, oi.o.ShowHand)
 }
 
 // ActionLog 棋譜を出力する

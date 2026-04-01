@@ -10,6 +10,7 @@ import (
 
 // PineappleInteractorIF パイナップルポーカーインタラクターインタフェース
 type PineappleInteractorIF interface {
+	TournamentInteractorIF
 	// Reset ゲーム初期化
 	Reset() string
 	// ResetWithConfig 設定を変更してゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
@@ -20,18 +21,6 @@ type PineappleInteractorIF interface {
 	Discard(cardIdx int) string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.PineappleConfig
-	// Rebuy リバイ実行
-	Rebuy() string
-	// SkipRebuy リバイ辞退
-	SkipRebuy() string
-	// Addon アドオン実行
-	Addon() string
-	// SkipAddon アドオン辞退
-	SkipAddon() string
-	// Muck マック (ハンドを伏せる)
-	Muck() string
-	// ShowHand ハンドを公開する
-	ShowHand() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -40,12 +29,17 @@ type PineappleInteractorIF interface {
 type PineappleInteractor struct {
 	p  interfaces.PineappleGame
 	pp presenter.PineapplePresenter
+	tournamentActions[interfaces.PineappleGame]
 }
 
 // NewPineappleInteractor コンストラクタ
 func NewPineappleInteractor(p interfaces.PineappleGame, pp presenter.PineapplePresenter) *PineappleInteractor {
 	mustNotNil("PineappleInteractor", map[string]any{"p": p, "pp": pp})
-	return &PineappleInteractor{p: p, pp: pp}
+	return &PineappleInteractor{
+		p:                 p,
+		pp:                pp,
+		tournamentActions: newTournamentActions[interfaces.PineappleGame](p, pp),
+	}
 }
 
 // Reset ゲーム初期化
@@ -83,36 +77,6 @@ func (pi *PineappleInteractor) Discard(cardIdx int) string {
 // GetConfig 現在の設定を取得
 func (pi *PineappleInteractor) GetConfig() domain.PineappleConfig {
 	return pi.p.GetConfig()
-}
-
-// Rebuy リバイ実行
-func (pi *PineappleInteractor) Rebuy() string {
-	return execAndPresent(pi.p, pi.pp, pi.p.Rebuy)
-}
-
-// SkipRebuy リバイ辞退
-func (pi *PineappleInteractor) SkipRebuy() string {
-	return execAndPresent(pi.p, pi.pp, pi.p.SkipRebuy)
-}
-
-// Addon アドオン実行
-func (pi *PineappleInteractor) Addon() string {
-	return execAndPresent(pi.p, pi.pp, pi.p.Addon)
-}
-
-// SkipAddon アドオン辞退
-func (pi *PineappleInteractor) SkipAddon() string {
-	return execAndPresent(pi.p, pi.pp, pi.p.SkipAddon)
-}
-
-// Muck マック (ハンドを伏せる)
-func (pi *PineappleInteractor) Muck() string {
-	return execAndPresent(pi.p, pi.pp, pi.p.Muck)
-}
-
-// ShowHand ハンドを公開する
-func (pi *PineappleInteractor) ShowHand() string {
-	return execAndPresent(pi.p, pi.pp, pi.p.ShowHand)
 }
 
 // ActionLog 棋譜を出力する
