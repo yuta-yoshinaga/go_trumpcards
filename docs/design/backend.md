@@ -46,6 +46,7 @@
   - [3.22 Speed フェーズ遷移](#322-speed-フェーズ遷移)
   - [3.23 GoFish フェーズ遷移](#323-gofish-フェーズ遷移)
   - [3.24 Canasta フェーズ遷移](#324-canasta-フェーズ遷移)
+  - [3.25 Pinochle フェーズ遷移](#325-pinochle-フェーズ遷移)
 
 ---
 
@@ -746,6 +747,41 @@ classDiagram
     Canasta --> "2" CanastaPlayer
     CanastaPlayer --> "*" CanastaMeld
     CanastaPlayer --|> GamePlayer
+
+    class Pinochle {
+        -trumpCards *TrumpCards
+        -players []*PinochlePlayer
+        -config PinochleConfig
+        -phase PinochlePhase
+        -trumpSuit int
+        -highestBid int
+        -highestBidder int
+        -playerMelds [4][]*PinochleMeld
+        +Reset()
+        +PlayerBid(amount int) error
+        +PlayerPass() error
+        +CpuBid()
+        +PlayerCallTrump(suit int) error
+        +CpuCallTrump()
+        +ConfirmMelds()
+        +PlayerPlay(cardIndex int) error
+        +CpuPlay()
+        +ResolveTrick()
+        +NextTrick()
+        +NextRound()
+    }
+
+    class PinochlePlayer {
+        -team int
+        -bid int
+        -hasPassed bool
+        -meldScore int
+        -trickPoints int
+    }
+
+    Pinochle --> "4" PinochlePlayer
+    PinochlePlayer --|> GamePlayer
+
     OldMaidPlayer --|> GamePlayer
     DaifugoPlayer --|> RankedGamePlayer
     SevensPlayer --|> RankedGamePlayer
@@ -1833,6 +1869,31 @@ stateDiagram-v2
     note right of Discard : CanastaPhaseDiscard = 2
     note right of RoundEnd : CanastaPhaseRoundEnd = 3
     note right of GameEnd : CanastaPhaseGameEnd = 4
+```
+
+### 3.25 Pinochle フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : Reset()
+    Bid --> Trump : ビッド勝者決定
+    Bid --> Trump : 全員パス → ディーラー強制ビッド
+    Trump --> Meld : トランプスート宣言
+    Meld --> Play : メルド確認 (ConfirmMelds)
+    Play --> TrickEnd : 4人プレイ完了
+    TrickEnd --> Play : NextTrick() → 次トリック
+    TrickEnd --> RoundEnd : 12トリック完了 → 得点計算
+    RoundEnd --> Bid : NextRound()
+    RoundEnd --> GameEnd : ポイント上限到達
+    GameEnd --> [*]
+
+    note right of Bid : PinochlePhaseBid = 0
+    note right of Trump : PinochlePhaseTrump = 1
+    note right of Meld : PinochlePhaseMeld = 2
+    note right of Play : PinochlePhasePlay = 3
+    note right of TrickEnd : PinochlePhaseTrickEnd = 4
+    note right of RoundEnd : PinochlePhaseRoundEnd = 5
+    note right of GameEnd : PinochlePhaseGameEnd = 6
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

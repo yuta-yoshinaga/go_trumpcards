@@ -131,6 +131,27 @@ func NewTrumpCardsEuchre() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsPinochle ピノクル用48枚デッキコンストラクタ
+// 9,10,J,Q,K,A (値: 1,9,10,11,12,13) × 4スート × 2セット = 48枚
+func NewTrumpCardsPinochle() *TrumpCards {
+	pinochleValues := []int{1, 9, 10, 11, 12, 13} // A,9,10,J,Q,K
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(pinochleValues) * len(suits) * 2 // 48
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for range 2 {
+		for _, suit := range suits {
+			for _, val := range pinochleValues {
+				t.deck = append(t.deck, NewCard(suit, val, false))
+			}
+		}
+	}
+	t.deckInit()
+	return t
+}
+
 // NewTrumpCardsShortDeck ショートデック(6+)用36枚デッキコンストラクタ
 // A,6,7,8,9,10,J,Q,K (値: 1,6,7,8,9,10,11,12,13) × 4スート = 36枚
 func NewTrumpCardsShortDeck() *TrumpCards {

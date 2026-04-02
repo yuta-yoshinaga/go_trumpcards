@@ -51,7 +51,8 @@
     "pineapple": "Pineapple Poker",
     "ohhell": "Oh Hell",
     "speed": "Speed",
-    "gofish": "Go Fish"
+    "gofish": "Go Fish",
+    "pinochle": "Pinochle"
   },
   "sound": {
     "mute": "Mute sound",
@@ -190,6 +191,14 @@
     "canasta.roundEnd": "Round over.",
     "canasta.result.humanWin": "Game over! You win!",
     "canasta.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "pinochle.bidPhase": "Place your bid (bid <n> / pass)",
+    "pinochle.trumpPhase": "Declare the trump suit",
+    "pinochle.meldPhase": "Review your melds",
+    "pinochle.playPhase": "Play a card",
+    "pinochle.trickEndPhase": "Trick ended",
+    "pinochle.roundEndPhase": "Round ended",
+    "pinochle.result.team0Win": "Game over! Team 0 wins!",
+    "pinochle.result.team1Win": "Game over! Team 1 wins!",
     "napoleon.result.napoleonWins": "Napoleon's team wins!",
     "napoleon.result.alliedWins": "Allied team wins!",
     "napoleon.bidPhase": "Place your bid",

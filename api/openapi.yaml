@@ -50,6 +50,8 @@ tags:
     description: Gin Rummy (ジンラミー) game
   - name: canasta
     description: Canasta (カナスタ) game
+  - name: pinochle
+    description: Pinochle (ピノクル) game
   - name: spider
     description: Spider Solitaire (スパイダーソリティア) game
   - name: napoleon
@@ -1758,6 +1760,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CanastaResponse'
+
+  /pinochle/exec:
+    post:
+      tags:
+        - pinochle
+      summary: Execute a Pinochle game command
+      description: |
+        Send a command to advance the Pinochle (ピノクル) game session
+        identified by `sessionId`.  Pinochle is a 4-player 2-team trick-taking
+        card game with bidding and melding using a 48-card double deck
+        (9,10,J,Q,K,A × 2 per suit).  12 cards dealt to each player.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Players bid expected total points |
+        | Trump     | `1`   | Highest bidder declares trump suit |
+        | Meld      | `2`   | All players display melds |
+        | Play      | `3`   | 12 tricks with must-follow/trump/win rules |
+        | TrickEnd  | `4`   | Trick resolved |
+        | RoundEnd  | `5`   | Round scored |
+        | GameEnd   | `6`   | A team reached the point limit |
+
+        **Commands:**
+        | Command     | Parameters              | Description |
+        |-------------|-------------------------|-------------|
+        | `reset`     | `config` (opt)          | Start a new game |
+        | `bid`       | `bidAmount`             | Place a bid |
+        | `pass`      |                         | Pass on bidding |
+        | `trump`     | `suit`                  | Declare trump suit (1-4) |
+        | `meld`      |                         | Confirm melds and proceed to play |
+        | `play`      | `cardIndex`             | Play a card from hand |
+        | `next`      |                         | Proceed to next trick |
+        | `nextround` |                         | Proceed to next round |
+        | `hint`      |                         | Get AI hint |
+        | `log`       |                         | Get action log |
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PinochleRequest'
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinochleResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinochleResponse'
 
   /spider/exec:
     post:
@@ -7076,6 +7132,160 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Pinochle types
+    # -------------------------------------------------------------------------
+    PinochleRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bid` (`b`),
+            `pass` (`pa`), `trump` (`t`), `meld` (`m`), `play` (`p`),
+            `next` (`n`), `nextround` (`nr`), `hint` (`h`), `log` (`l`).
+          enum: [reset, r, bid, b, pass, pa, trump, t, meld, m, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        bidAmount:
+          type: integer
+          description: Bid amount.  Required for `bid` command.  Minimum 20.
+          example: 25
+        suit:
+          type: integer
+          description: Trump suit (1=Spade, 2=Club, 3=Heart, 4=Diamond).  Required for `trump` command.
+          minimum: 1
+          maximum: 4
+          example: 3
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 0
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 10000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PinochleResponse:
+      type: object
+      description: Current state of the Pinochle game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              team:
+                type: integer
+              trickCount:
+                type: integer
+              bid:
+                type: integer
+              hasPassed:
+                type: boolean
+              meldScore:
+                type: integer
+              trickPoints:
+                type: integer
+        phase:
+          type: integer
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+        highestBid:
+          type: integer
+        highestBidder:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        playerMelds:
+          type: array
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: integer
+                points:
+                  type: integer
+                cards:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          items:
+            type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
 
     # -------------------------------------------------------------------------
     # Spider Solitaire types

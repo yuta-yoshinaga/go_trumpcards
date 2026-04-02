@@ -55,6 +55,7 @@ type TrumpCardsWeb struct {
 	spdc *controller.SpeedWebController
 	gfc  *controller.GoFishWebController
 	cnc  *controller.CanastaWebController
+	pinc *controller.PinochleWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -326,6 +327,17 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			canasta := domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, config)
 			return usecase.NewCanastaInteractor(canasta, new(presenter.CanastaWebPresenter))
 		}),
+		pinc: controller.NewPinochleWebController(func() usecase.PinochleInteractorIF {
+			config := domain.DefaultPinochleConfig()
+			players := []*domain.PinochlePlayer{
+				domain.NewPinochlePlayer(true, 0),
+				domain.NewPinochlePlayer(false, 1),
+				domain.NewPinochlePlayer(false, 0),
+				domain.NewPinochlePlayer(false, 1),
+			}
+			pinochle := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, config)
+			return usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleWebPresenter))
+		}),
 	}
 }
 
@@ -372,6 +384,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/speed/exec", web.spdc.Exec},
 		{"/gofish/exec", web.gfc.Exec},
 		{"/canasta/exec", web.cnc.Exec},
+		{"/pinochle/exec", web.pinc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)

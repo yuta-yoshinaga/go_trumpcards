@@ -1,0 +1,12 @@
+{
+  "pinochle.helpTitle": "Pinochle",
+  "pinochle.helpBid": "  b <n>                bid",
+  "pinochle.helpPass": "  pa                   pass",
+  "pinochle.helpTrump": "  t <suit>             declare trump (1=S,2=C,3=H,4=D)",
+  "pinochle.helpMeld": "  m                    confirm melds",
+  "pinochle.helpPlay": "  p <idx>              play a card",
+  "pinochle.helpNext": "  n                    next trick",
+  "pinochle.helpNextRound": "  nr                   next round",
+  "pinochle.helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "pinochle.helpSetLimit": "  sl <n>               point limit"
+}

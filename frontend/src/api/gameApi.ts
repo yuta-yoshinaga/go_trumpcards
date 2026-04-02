@@ -24,6 +24,7 @@ import type {
   OldMaidResponse,
   OmahaResponse,
   PineappleResponse,
+  PinochleResponse,
   PokerResponse,
   PyramidResponse,
   SevensResponse,
@@ -72,6 +73,7 @@ const workerUrl: Record<string, string> = {
   crazyeights: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
   gofish: WORKER_CLASSIC,
+  pinochle: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
@@ -631,6 +633,30 @@ export const canastaApi = {
     }),
 };
 
+/** Configuration options for Pinochle game settings. */
+export interface PinochleConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Pinochle /pinochle/exec endpoint. */
+export const pinochleApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'pass' | 'trump' | 'meld' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    cardIndex?: number,
+    config?: PinochleConfigInput,
+    bidAmount?: number,
+    suit?: number,
+  ) =>
+    gameExec<PinochleResponse>('pinochle', {
+      command,
+      cardIndex,
+      config,
+      bidAmount,
+      suit,
+    }),
+};
+
 /** Configuration options for Cribbage game settings. */
 export interface CribbageConfigInput {
   cpuDifficulty?: number;
@@ -911,6 +937,7 @@ const games = [
   'threecard',
   'speed',
   'gofish',
+  'pinochle',
 ] as const;
 type Game = (typeof games)[number];
 

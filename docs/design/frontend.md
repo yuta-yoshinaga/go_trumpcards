@@ -24,6 +24,7 @@
   - [2.9 SpeedPage フェーズ別レンダリングフロー](#29-speedpage-フェーズ別レンダリングフロー)
   - [2.10 GoFishPage フェーズ別レンダリングフロー](#210-gofishpage-フェーズ別レンダリングフロー)
   - [2.11 CanastaPage フェーズ別レンダリングフロー](#211-canastapage-フェーズ別レンダリングフロー)
+  - [2.12 PinochlePage フェーズ別レンダリングフロー](#212-pinochlepage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -198,7 +199,27 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全34ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    class PinochleResponse {
+        +PinochlePlayerData[] players
+        +number phase
+        +number roundNumber
+        +number trickNumber
+        +number currentPlayerIdx
+        +number bidPlayerIdx
+        +number trumpSuit
+        +number highestBid
+        +number highestBidder
+        +PinochleTrickCard[] currentTrick
+        +number[] teamScores
+        +boolean gameEndFlag
+        +number winnerTeam
+        +PinochleMeldData[][] playerMelds
+        +number[] validPlayIndices
+        +PinochleConfig config
+        +string message
+    }
+
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全35ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -413,6 +434,17 @@ classDiagram
         DISCARD = 2
         ROUND_END = 3
         GAME_END = 4
+    }
+
+    class PinochlePhase {
+        <<enumeration>>
+        BID = 0
+        TRUMP = 1
+        MELD = 2
+        PLAY = 3
+        TRICK_END = 4
+        ROUND_END = 5
+        GAME_END = 6
     }
 
     note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase は、\nそれぞれ同一の値を持つ別定数です"
@@ -1637,6 +1669,58 @@ sequenceDiagram
     Hook->>API: gameExec("nextround")
     API-->>Hook: CanastaResponse (phase=0)
     Hook-->>Page: 再レンダリング → ドローフェーズUI
+```
+
+### 2.12 PinochlePage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as PinochlePage
+    participant Hook as usePinochleGame
+    participant API as gameApi
+
+    Note over User,API: ビッドフェーズ (phase=0)
+    User->>Page: ビッド額入力 → ビッドボタン
+    Page->>Hook: handleBid(amount)
+    Hook->>API: gameExec("bid", {bidAmount})
+    API-->>Hook: PinochleResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → CPUビッド後
+
+    Note over User,API: トランプ宣言フェーズ (phase=1)
+    User->>Page: スートボタンクリック
+    Page->>Hook: handleCallTrump(suit)
+    Hook->>API: gameExec("trump", {suit})
+    API-->>Hook: PinochleResponse (phase=2)
+    Hook-->>Page: 再レンダリング → メルドフェーズUI
+
+    Note over User,API: メルドフェーズ (phase=2)
+    User->>Page: メルド確認ボタン
+    Page->>Hook: handleConfirmMelds()
+    Hook->>API: gameExec("meld")
+    API-->>Hook: PinochleResponse (phase=3)
+    Hook-->>Page: 再レンダリング → プレイフェーズUI
+
+    Note over User,API: プレイフェーズ (phase=3)
+    User->>Page: カードクリック
+    Page->>Hook: handlePlay(cardIndex)
+    Hook->>API: gameExec("play", {cardIndex})
+    API-->>Hook: PinochleResponse (phase=3 or 4)
+    Hook-->>Page: 再レンダリング → CPUプレイ後
+
+    Note over User,API: トリック終了 (phase=4)
+    User->>Page: 次のトリックボタン
+    Page->>Hook: handleNextTrick()
+    Hook->>API: gameExec("next")
+    API-->>Hook: PinochleResponse (phase=3 or 5)
+    Hook-->>Page: 再レンダリング
+
+    Note over User,API: ラウンド終了 (phase=5)
+    User->>Page: 次のラウンドボタン
+    Page->>Hook: handleNextRound()
+    Hook->>API: gameExec("nextround")
+    API-->>Hook: PinochleResponse (phase=0)
+    Hook-->>Page: 再レンダリング → ビッドフェーズUI
 ```
 
 ---
