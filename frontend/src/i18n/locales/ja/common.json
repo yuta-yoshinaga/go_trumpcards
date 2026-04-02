@@ -49,7 +49,8 @@
     "threecard": "スリーカードポーカー",
     "pineapple": "パイナップルポーカー",
     "ohhell": "オー・ヘル",
-    "speed": "スピード"
+    "speed": "スピード",
+    "gofish": "Go Fish"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -234,7 +235,9 @@
     "tripeaks.gameOver": "ゲームオーバー",
     "tripeaks.hintAvailable": "ヒントがあります",
     "tripeaks.noHint": "ヒントはありません",
-    "tripeaks.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
+    "tripeaks.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "gofish.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "gofish.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

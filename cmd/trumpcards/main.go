@@ -66,6 +66,7 @@ GAMES:
   bridge       Contract Bridge (コントラクトブリッジ)
   pineapple    Pineapple Poker (パイナップルポーカー)
   speed        Speed (スピード)
+  gofish       Go Fish (ゴーフィッシュ)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -170,6 +171,7 @@ ENVIRONMENT VARIABLES:
 		"bridge":      func() int { ui.NewBridgeCui().Exec(); return 0 },
 		"pineapple":   func() int { ui.NewPineappleCui().Exec(); return 0 },
 		"speed":       func() int { ui.NewSpeedCui().Exec(); return 0 },
+		"gofish":      func() int { ui.NewGoFishCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 			if err := updater.Exec(); err != nil {

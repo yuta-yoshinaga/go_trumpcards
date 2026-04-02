@@ -286,3 +286,9 @@ export const SpeedPhase = {
   STUCK: 1,
   GAME_END: 2,
 } as const;
+
+/** Go Fish phase constants (sync: internal/domain/GoFish.go). */
+export const GoFishPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;

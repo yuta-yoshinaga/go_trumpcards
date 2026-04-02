@@ -1,0 +1,37 @@
+{
+  "title": "Go Fish",
+  "setup": {
+    "title": "Go Fish Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "button": {
+    "ask": "Ask",
+    "settings": "Settings"
+  },
+  "phase": {
+    "play": "Play",
+    "end": "End"
+  },
+  "selectOpponent": "Select an opponent",
+  "selectRank": "Select a rank to ask for",
+  "askResult": {
+    "hit": "{{asker}} asked {{target}} for rank {{rank}} → got {{count}} card(s)!",
+    "miss": "{{asker}} asked {{target}} for rank {{rank}} → Go Fish!",
+    "bookFormed": "Book complete! Rank {{rank}}"
+  },
+  "result": {
+    "humanWin": "Game over! You win!",
+    "cpuWin": "Game over! CPU {{cpuId}} wins!"
+  },
+  "deck": "Deck: {{count}} cards",
+  "books": "Books: {{count}}",
+  "tutorial": {
+    "cpuArea": "Opponent's card count and books. Click to select them as your target.",
+    "playerHand": "Your hand. Click a card to select the rank you want to ask for.",
+    "askButton": "After selecting an opponent and rank, press this button to ask.",
+    "resetButton": "Press reset to start a new game."
+  }
+}

@@ -12,6 +12,7 @@ import type {
   EuchreResponse,
   FreeCellResponse,
   GinRummyResponse,
+  GoFishResponse,
   HeartsResponse,
   HoldemResponse,
   IndianPokerResponse,
@@ -69,6 +70,7 @@ const workerUrl: Record<string, string> = {
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
+  gofish: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
@@ -837,6 +839,17 @@ export const speedApi = {
   ) => gameExec<SpeedResponse>('speed', { command, cardIndex, pileIndex, ...config }),
 };
 
+/** Configuration options for Go Fish game settings. */
+export interface GoFishConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Go Fish /gofish/exec endpoint. */
+export const goFishApi = {
+  exec: (command: 'reset' | 'ask' | 'log', targetIdx?: number, rank?: number, config?: GoFishConfigInput) =>
+    gameExec<GoFishResponse>('gofish', { command, targetIdx, rank, config }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -870,6 +883,7 @@ const games = [
   'cribbage',
   'threecard',
   'speed',
+  'gofish',
 ] as const;
 type Game = (typeof games)[number];
 

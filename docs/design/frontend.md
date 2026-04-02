@@ -22,6 +22,7 @@
   - [2.7 BridgePage フェーズ別レンダリングフロー](#27-bridgepage-フェーズ別レンダリングフロー)
   - [2.8 PineapplePage フェーズ別レンダリングフロー](#28-pineapplepage-フェーズ別レンダリングフロー)
   - [2.9 SpeedPage フェーズ別レンダリングフロー](#29-speedpage-フェーズ別レンダリングフロー)
+  - [2.10 GoFishPage フェーズ別レンダリングフロー](#210-gofishpage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -166,7 +167,20 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全31ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    class GoFishResponse {
+        +object[] players
+        +number phase
+        +number currentTurn
+        +number winnerIdx
+        +number stockCount
+        +object humanAction
+        +object[] cpuActions
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全33ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -368,6 +382,12 @@ classDiagram
         GAME_END = 2
     }
 
+    class GoFishPhase {
+        <<enumeration>>
+        PLAY = 0
+        GAME_END = 1
+    }
+
     note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase は、\nそれぞれ同一の値を持つ別定数です"
 ```
 
@@ -430,8 +450,14 @@ classDiagram
 
     SpeedApi --> gameApi : uses postJson/gameExec
 
+    class GoFishApi {
+        +run(cmd, args?) Promise~GoFishResponse~
+    }
+
+    GoFishApi --> gameApi : uses postJson/gameExec
+
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全31ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage,\nthreecard, ohhell, bridge, speed)"
+    note for BlackJackApi "全33ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage,\nthreecard, ohhell, bridge, speed, gofish)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -713,7 +739,15 @@ classDiagram
 
     useSpeedGame --> useGameApi : uses
 
-    note for useBlackJackGame "全31ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    class useGoFishGame {
+        +GoFishResponse state
+        +Function handleAsk
+        +Function handleReset
+    }
+
+    useGoFishGame --> useGameApi : uses
+
+    note for useBlackJackGame "全33ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1093,6 +1127,16 @@ classDiagram
 
     SpeedPage --|> GamePage : follows pattern
 
+    class GoFishPage {
+        +CPUプレイヤーエリア (要求先選択)
+        +ランク選択ボタン
+        +ブック表示
+        +山札残り枚数
+        +CPU行動アニメーション
+    }
+
+    GoFishPage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -1106,7 +1150,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全32ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全33ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1129,14 +1173,14 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (32ゲーム)
+        +Routes (33ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Baccarat, ThreeCard]
         +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, OhHell, Euchre, Napoleon, Bridge]
-        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed]
+        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish]
         +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Memory]
         +rummy: [GinRummy, Cribbage]
     }
@@ -1466,6 +1510,35 @@ sequenceDiagram
     Page->>Hook: handleReset()
     Hook->>API: gameExec("reset")
     API-->>Hook: SpeedResponse (phase=0)
+    Hook-->>Page: 再レンダリング → プレイフェーズUI
+```
+
+### 2.10 GoFishPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as GoFishPage
+    participant Hook as useGoFishGame
+    participant API as gameApi
+
+    Note over User,API: プレイフェーズ (phase=0) - 要求
+    User->>Page: CPUプレイヤーをクリック (相手選択)
+    User->>Page: ランクボタンをクリック (ランク選択)
+    Page->>Hook: handleAsk(targetIdx, rank)
+    Hook->>API: gameExec("ask", {target, rank})
+    API-->>Hook: GoFishResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → 要求結果UI
+
+    Note over User,API: CPU行動アニメーション
+    Page-->>User: CPU要求をアニメーション再生
+
+    Note over User,API: ゲーム終了 (phase=1)
+    Page-->>User: 勝者・ブック数表示
+    User->>Page: リセットボタンクリック
+    Page->>Hook: handleReset()
+    Hook->>API: gameExec("reset")
+    API-->>Hook: GoFishResponse (phase=0)
     Hook-->>Page: 再レンダリング → プレイフェーズUI
 ```
 

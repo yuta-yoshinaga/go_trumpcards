@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全32ゲーム)](#12-ゲームドメイン-全32ゲーム)
+  - [1.2 ゲームドメイン (全33ゲーム)](#12-ゲームドメイン-全33ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -20,6 +20,7 @@
   - [2.7 Bridge オークション・トリックフロー](#27-bridge-オークショントリックフロー)
   - [2.8 Pineapple ディスカードフロー](#28-pineapple-ディスカードフロー)
   - [2.9 Speed プレイフロー](#29-speed-プレイフロー)
+  - [2.10 GoFish 要求フロー](#210-gofish-要求フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -43,6 +44,7 @@
   - [3.20 Bridge フェーズ遷移](#320-bridge-フェーズ遷移)
   - [3.21 Pineapple フェーズ遷移](#321-pineapple-フェーズ遷移)
   - [3.22 Speed フェーズ遷移](#322-speed-フェーズ遷移)
+  - [3.23 GoFish フェーズ遷移](#323-gofish-フェーズ遷移)
 
 ---
 
@@ -110,7 +112,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全32ゲーム)
+### 1.2 ゲームドメイン (全33ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -683,6 +685,33 @@ classDiagram
     GinRummy --> "2" GinRummyPlayer
     Speed --> "2" SpeedPlayer
     Speed --> "1" SpeedConfig
+
+    class GoFish {
+        -trumpCards *TrumpCards
+        -players []*GoFishPlayer
+        -config GoFishConfig
+        -phase GoFishPhase
+        -currentTurn int
+        +Reset()
+        +Ask(targetIdx int, rank int) error
+        +Phase() GoFishPhase
+        +ActionLog() []*ActionLogEntry
+    }
+
+    class GoFishPlayer {
+        -books [][]*Card
+        +GetBooks() [][]*Card
+        +GetBookCount() int
+        +HasRank(rank int) bool
+    }
+
+    class GoFishConfig {
+        +GoFishCpuDifficulty CpuDifficulty
+        +bool CpuMetaAI
+    }
+
+    GoFish --> "4" GoFishPlayer
+    GoFish --> "1" GoFishConfig
     OldMaidPlayer --|> GamePlayer
     DaifugoPlayer --|> RankedGamePlayer
     SevensPlayer --|> RankedGamePlayer
@@ -690,6 +719,7 @@ classDiagram
     CrazyEightsPlayer --|> GamePlayer
     GinRummyPlayer --|> GamePlayer
     SpeedPlayer --|> Player
+    GoFishPlayer --|> GamePlayer
 ```
 
 #### ソリティア系ゲーム
@@ -1014,6 +1044,7 @@ classDiagram
         -ohhell *OhHellWebController
         -bridge *BridgeWebController
         -speed *SpeedWebController
+        -gofish *GoFishWebController
         +Exec()
     }
 
@@ -1319,6 +1350,35 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: 新しい場札表示
+```
+
+### 2.10 GoFish 要求フロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as GoFishInteractor
+    participant Domain as GoFish
+    participant Pres as Presenter
+
+    Note over User,Pres: 要求フロー
+    User->>Ctrl: ask 1 7
+    Ctrl->>Interactor: Ask(1, 7)
+    Interactor->>Domain: Ask(1, 7)
+    Domain->>Domain: 相手が持っていればカード移動 → ブックチェック → CPU自動プレイ
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 要求結果・手札更新表示
+
+    Note over User,Pres: Go Fish (相手が持っていない場合)
+    User->>Ctrl: ask 2 13
+    Ctrl->>Interactor: Ask(2, 13)
+    Interactor->>Domain: Ask(2, 13)
+    Domain->>Domain: 相手が持っていない → 山札から1枚引く → ブックチェック → CPU自動プレイ
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: Go Fish結果・手札更新表示
 ```
 
 ---
@@ -1703,6 +1763,20 @@ stateDiagram-v2
     note right of Play : SpeedPhasePlay = 0
     note right of Stuck : SpeedPhaseStuck = 1
     note right of GameEnd : SpeedPhaseGameEnd = 2
+```
+
+### 3.23 GoFish フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : Ask成功 → もう一度要求 + CPU自動プレイ
+    Play --> Play : Go Fish → 山札から引く + CPU自動プレイ
+    Play --> GameEnd : 全13ブック完成 or 山札枯渇
+    GameEnd --> [*]
+
+    note right of Play : GoFishPhasePlay = 0
+    note right of GameEnd : GoFishPhaseGameEnd = 1
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。
