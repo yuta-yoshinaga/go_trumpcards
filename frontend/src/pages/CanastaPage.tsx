@@ -117,7 +117,7 @@ function CanastaPageContent() {
   if (!state) {
     return (
       <div className="p-4 text-center text-white">
-        <p>{tc('loading')}</p>
+        <p>{tc('status.thinking')}</p>
       </div>
     );
   }

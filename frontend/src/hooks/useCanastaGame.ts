@@ -68,10 +68,6 @@ export function useCanastaGame() {
     gameExec('nextround');
   }, [gameExec]);
 
-  const handleReset = useCallback(() => {
-    gameExec('reset', undefined, canastaConfig);
-  }, [gameExec, canastaConfig]);
-
   return {
     state,
     loading,
@@ -89,6 +85,5 @@ export function useCanastaGame() {
     handleDiscard,
     handleGoOut,
     handleNextRound,
-    handleReset,
   };
 }
