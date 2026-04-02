@@ -185,7 +185,7 @@ function GoFishPageContent() {
         {/* Human cards */}
         {humanPlayer && (
           <div className="flex flex-wrap gap-1 mb-2" data-tutorial="gf-player-hand">
-            {humanPlayer.cards.map((card, idx) => (
+            {humanPlayer.cards.map((card) => (
               <button
                 type="button"
                 key={`${card.design}-${card.value}`}
