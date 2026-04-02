@@ -54,6 +54,7 @@ type TrumpCardsWeb struct {
 	pnc  *controller.PineappleWebController
 	spdc *controller.SpeedWebController
 	gfc  *controller.GoFishWebController
+	cnc  *controller.CanastaWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -316,6 +317,15 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			goFish := domain.NewGoFish(domain.NewTrumpCards(0), players)
 			return usecase.NewGoFishInteractor(goFish, new(presenter.GoFishWebPresenter))
 		}),
+		cnc: controller.NewCanastaWebController(func() usecase.CanastaInteractorIF {
+			config := domain.DefaultCanastaConfig()
+			players := []*domain.CanastaPlayer{
+				domain.NewCanastaPlayer(true),
+				domain.NewCanastaPlayer(false),
+			}
+			canasta := domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, config)
+			return usecase.NewCanastaInteractor(canasta, new(presenter.CanastaWebPresenter))
+		}),
 	}
 }
 
@@ -361,6 +371,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/pineapple/exec", web.pnc.Exec},
 		{"/speed/exec", web.spdc.Exec},
 		{"/gofish/exec", web.gfc.Exec},
+		{"/canasta/exec", web.cnc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -453,6 +464,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.tcc.Stop()
 	web.ohlc.Stop()
 	web.brc.Stop()
+	web.cnc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

@@ -82,6 +82,7 @@ export const gameCategories: readonly GameCategory[] = [
     icon: '🍸',
     routes: [
       { path: '/ginrummy', labelKey: 'nav.ginrummy', icon: '🫐' },
+      { path: '/canasta', labelKey: 'nav.canasta', icon: '🃏' },
       { path: '/cribbage', labelKey: 'nav.cribbage', icon: '📌' },
     ],
   },
