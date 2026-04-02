@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { canastaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
-import type { CanastaResponse } from '../types/card';
+import type { CanastaPlayerData, CanastaResponse } from '../types/card';
 import { CanastaPage } from './CanastaPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -11,7 +11,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 const mockExec = vi.mocked(canastaApi.exec);
 
-const basePlayers = [
+const basePlayers: CanastaPlayerData[] = [
   {
     id: 0,
     isHuman: true,
