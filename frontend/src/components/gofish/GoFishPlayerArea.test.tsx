@@ -15,16 +15,16 @@ const cpuPlayer: GoFishPlayerData = {
 
 describe('GoFishPlayerArea', () => {
   it('renders player name, card count, and book count', () => {
-    renderWithProviders(
-      <GoFishPlayerArea player={cpuPlayer} isSelected={false} onSelect={vi.fn()} disabled={false} />,
-    );
+    renderWithProviders(<GoFishPlayerArea player={cpuPlayer} isSelected={false} onSelect={vi.fn()} disabled={false} />);
     expect(screen.getByRole('button')).toBeInTheDocument();
     expect(screen.getByText(/CPU/)).toBeInTheDocument();
   });
 
   it('calls onSelect with player id when clicked', () => {
     const onSelect = vi.fn();
-    renderWithProviders(<GoFishPlayerArea player={cpuPlayer} isSelected={false} onSelect={onSelect} disabled={false} />);
+    renderWithProviders(
+      <GoFishPlayerArea player={cpuPlayer} isSelected={false} onSelect={onSelect} disabled={false} />,
+    );
     fireEvent.click(screen.getByRole('button'));
     expect(onSelect).toHaveBeenCalledWith(1);
   });
@@ -36,16 +36,12 @@ describe('GoFishPlayerArea', () => {
   });
 
   it('sets aria-pressed when selected', () => {
-    renderWithProviders(
-      <GoFishPlayerArea player={cpuPlayer} isSelected={true} onSelect={vi.fn()} disabled={false} />,
-    );
+    renderWithProviders(<GoFishPlayerArea player={cpuPlayer} isSelected={true} onSelect={vi.fn()} disabled={false} />);
     expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('sets aria-pressed false when not selected', () => {
-    renderWithProviders(
-      <GoFishPlayerArea player={cpuPlayer} isSelected={false} onSelect={vi.fn()} disabled={false} />,
-    );
+    renderWithProviders(<GoFishPlayerArea player={cpuPlayer} isSelected={false} onSelect={vi.fn()} disabled={false} />);
     expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'false');
   });
 });

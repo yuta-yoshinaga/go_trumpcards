@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { goFishApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
-import type { GoFishResponse } from '../types/card';
+import type { Card, GoFishResponse } from '../types/card';
 import { GoFishPhase } from '../types/phases';
 import { GoFishPage } from './GoFishPage';
 
@@ -14,7 +14,7 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(goFishApi.exec);
 
-const humanCards = [
+const humanCards: Card[] = [
   { design: 'SPADE', value: 7 },
   { design: 'HEART', value: 7 },
   { design: 'DIAMOND', value: 3 },
@@ -79,9 +79,7 @@ describe('GoFishPage', () => {
 
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<GoFishPage />);
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1 }),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1 }));
   });
 
   it('renders player cards in footer', async () => {
@@ -147,7 +145,7 @@ describe('GoFishPage', () => {
   it('hides ask button on CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<GoFishPage />);
-    await waitFor(() => expect(screen.getByText(/CPU/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '要求する' })).not.toBeInTheDocument();
   });
 
@@ -203,9 +201,7 @@ describe('GoFishPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1 }),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1 }));
   });
 
   it('renders game end state', async () => {
@@ -222,7 +218,7 @@ describe('GoFishPage', () => {
 
   it('settings change updates difficulty for reset', async () => {
     renderWithProviders(<GoFishPage />);
-    await waitFor(() => expect(screen.getByText(/CPU/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
 
     fireEvent.click(screen.getByText('Go Fish 設定'));
     const select = screen.getByRole('combobox');
@@ -233,9 +229,7 @@ describe('GoFishPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 2 }),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 2 }));
   });
 
   it('loading state disables reset button', async () => {
@@ -268,6 +262,6 @@ describe('GoFishPage', () => {
     };
     mockExec.mockResolvedValue(stateWithBooks);
     renderWithProviders(<GoFishPage />);
-    await waitFor(() => expect(screen.getByText(/ブック.*1/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText(/ブック.*1/).length).toBeGreaterThanOrEqual(1));
   });
 });

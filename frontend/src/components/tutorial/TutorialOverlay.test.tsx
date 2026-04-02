@@ -228,7 +228,7 @@ describe('TutorialOverlay', () => {
       expect(tooltip).not.toBeNull();
       // The tooltip should be clamped — getBoundingClientRect in jsdom returns 0s,
       // so left < 8 triggers the clamp and transform becomes 'none'
-      expect(tooltip!.style.transform).toBe('none');
+      expect(tooltip?.style.transform).toBe('none');
     });
 
     it('clamps tooltip when overflowing bottom edge', () => {
@@ -246,7 +246,7 @@ describe('TutorialOverlay', () => {
       const { container } = render(<TutorialOverlay {...defaultProps} step={bottomStep} />);
       const tooltip = getTooltipContainer(container);
       expect(tooltip).not.toBeNull();
-      expect(tooltip!.style.transform).toBe('none');
+      expect(tooltip?.style.transform).toBe('none');
     });
 
     it('clamps tooltip when overflowing right edge', () => {
@@ -262,7 +262,7 @@ describe('TutorialOverlay', () => {
       const { container } = render(<TutorialOverlay {...defaultProps} />);
       const tooltip = getTooltipContainer(container);
       expect(tooltip).not.toBeNull();
-      expect(tooltip!.style.transform).toBe('none');
+      expect(tooltip?.style.transform).toBe('none');
     });
 
     it('clamps tooltip when overflowing top edge', () => {
@@ -278,7 +278,7 @@ describe('TutorialOverlay', () => {
       const { container } = render(<TutorialOverlay {...defaultProps} step={topStep} />);
       const tooltip = getTooltipContainer(container);
       expect(tooltip).not.toBeNull();
-      expect(tooltip!.style.transform).toBe('none');
+      expect(tooltip?.style.transform).toBe('none');
     });
 
     it('does not clamp tooltip when within viewport bounds', () => {
@@ -296,14 +296,15 @@ describe('TutorialOverlay', () => {
       const tooltip = getTooltipContainer(container);
       expect(tooltip).not.toBeNull();
       // Mock the tooltip element's getBoundingClientRect to be within viewport
-      tooltip!.getBoundingClientRect = vi.fn().mockReturnValue({
-        top: 252,
-        left: 192,
-        width: 300,
-        height: 100,
-        right: 492,
-        bottom: 352,
-      });
+      if (tooltip)
+        tooltip.getBoundingClientRect = vi.fn().mockReturnValue({
+          top: 252,
+          left: 192,
+          width: 300,
+          height: 100,
+          right: 492,
+          bottom: 352,
+        });
       // Re-render to trigger the useLayoutEffect with mocked tooltip rect
       const { container: c2 } = render(<TutorialOverlay {...defaultProps} />);
       const tooltip2 = getTooltipContainer(c2);
@@ -312,7 +313,7 @@ describe('TutorialOverlay', () => {
       // which triggers clamping. Verify the clamped state sets left/top to margin values.
       // This test verifies the clamp logic runs; the "within bounds" case
       // cannot be reliably tested in jsdom without full layout engine.
-      expect(tooltip2!.style.left).toBeDefined();
+      expect(tooltip2?.style.left).toBeDefined();
     });
   });
 });

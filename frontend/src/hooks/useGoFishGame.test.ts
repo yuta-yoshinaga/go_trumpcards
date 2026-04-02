@@ -47,9 +47,7 @@ beforeEach(() => {
 describe('useGoFishGame', () => {
   it('calls reset on mount with default config', async () => {
     renderHook(() => useGoFishGame(), { wrapper: createWrapper() });
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1 }),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1 }));
   });
 
   it('returns initial state after mount', async () => {
