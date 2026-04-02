@@ -14,12 +14,12 @@ test.describe('Go Fish E2E', () => {
 
     // Verify game elements are visible
     // Player hand area should be present
-    const playerCards = page.locator('[data-tutorial="playerHand"]');
+    const playerCards = page.locator('[data-tutorial="gf-player-hand"]');
     await expect(playerCards).toBeVisible({ timeout: TIMEOUT_ACTION });
 
     // CPU player areas should be present
-    const cpuAreas = page.locator('[data-tutorial="cpuArea"]');
-    await expect(cpuAreas.first()).toBeVisible({ timeout: TIMEOUT_ACTION });
+    const cpuAreas = page.locator('[data-tutorial="gf-cpu-area"]');
+    await expect(cpuAreas).toBeVisible({ timeout: TIMEOUT_ACTION });
 
     // Ask button should be present (may be disabled)
     const askButton = page.getByRole('button', { name: '要求する' });
