@@ -188,7 +188,7 @@ function GoFishPageContent() {
             {humanPlayer.cards.map((card, idx) => (
               <button
                 type="button"
-                key={`${card.design}-${card.value}-${idx}`}
+                key={`${card.design}-${card.value}`}
                 onClick={() => handleSelectRank(card.value)}
                 aria-label={cardAlt(card)}
                 aria-pressed={selectedRank === card.value}

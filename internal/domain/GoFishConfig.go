@@ -18,7 +18,6 @@ const (
 // GoFishConfig Go Fishゲーム設定
 type GoFishConfig struct {
 	CpuDifficulty GoFishCpuDifficulty
-	CpuMetaAI     bool // メタAI: セッション内学習
 }
 
 // DefaultGoFishConfig デフォルト設定を返す
@@ -34,7 +33,6 @@ func (c GoFishConfig) Validate() error {
 // goFishConfigJSON is the JSON wire format for GoFishConfig.
 type goFishConfigJSON struct {
 	CpuDifficulty GoFishCpuDifficulty `json:"cd"`
-	CpuMetaAI     bool                `json:"ma"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -49,6 +47,5 @@ func (c *GoFishConfig) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	c.CpuDifficulty = j.CpuDifficulty
-	c.CpuMetaAI = j.CpuMetaAI
 	return nil
 }

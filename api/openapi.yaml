@@ -8916,9 +8916,9 @@ components:
         command:
           type: string
           description: Game command
-          enum: [reset, r, ask, a, sd, log, l, quit, q]
+          enum: [reset, r, ask, log, l]
           example: ask
-        target:
+        targetIdx:
           type: integer
           description: Target player index to ask (required for `ask` command)
           minimum: 0
@@ -8930,12 +8930,16 @@ components:
           minimum: 1
           maximum: 13
           example: 7
-        amount:
-          type: integer
-          description: CPU difficulty for `sd` command (0=Easy, 1=Normal, 2=Hard)
-          minimum: 0
-          maximum: 2
-          example: 1
+        config:
+          type: object
+          description: Game configuration (for `reset` command)
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0=Easy, 1=Normal, 2=Hard)
+              minimum: 0
+              maximum: 2
+              example: 1
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)

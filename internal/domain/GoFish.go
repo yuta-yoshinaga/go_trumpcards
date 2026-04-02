@@ -171,10 +171,10 @@ func (g *GoFish) PlayerAsk(targetIdx, rank int) error {
 	if !g.IsHumanTurn() {
 		return ErrGoFishNotYourTurn
 	}
-	if targetIdx < 0 || targetIdx >= len(g.players) || targetIdx == g.currentTurn {
-		if targetIdx == g.currentTurn {
-			return ErrGoFishAskSelf
-		}
+	if targetIdx == g.currentTurn {
+		return ErrGoFishAskSelf
+	}
+	if targetIdx < 0 || targetIdx >= len(g.players) {
 		return ErrGoFishInvalidTarget
 	}
 	if g.players[targetIdx].GetCardsSize() == 0 {

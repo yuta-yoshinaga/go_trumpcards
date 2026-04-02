@@ -13,7 +13,6 @@ import (
 func TestGoFishConfig_Default(t *testing.T) {
 	cfg := DefaultGoFishConfig()
 	assert.Equal(t, GoFishCpuDifficultyNormal, cfg.CpuDifficulty)
-	assert.False(t, cfg.CpuMetaAI)
 }
 
 func TestGoFishConfig_Validate(t *testing.T) {
@@ -41,7 +40,7 @@ func TestGoFishConfig_Validate(t *testing.T) {
 }
 
 func TestGoFishConfig_JSON(t *testing.T) {
-	cfg := GoFishConfig{CpuDifficulty: GoFishCpuDifficultyHard, CpuMetaAI: true}
+	cfg := GoFishConfig{CpuDifficulty: GoFishCpuDifficultyHard}
 	data, err := json.Marshal(cfg)
 	require.NoError(t, err)
 
