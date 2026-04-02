@@ -45,6 +45,7 @@
   - [3.21 Pineapple フェーズ遷移](#321-pineapple-フェーズ遷移)
   - [3.22 Speed フェーズ遷移](#322-speed-フェーズ遷移)
   - [3.23 GoFish フェーズ遷移](#323-gofish-フェーズ遷移)
+  - [3.24 Canasta フェーズ遷移](#324-canasta-フェーズ遷移)
 
 ---
 
@@ -712,6 +713,39 @@ classDiagram
 
     GoFish --> "4" GoFishPlayer
     GoFish --> "1" GoFishConfig
+
+    class Canasta {
+        -trumpCards *TrumpCards
+        -players []*CanastaPlayer
+        -config CanastaConfig
+        -phase CanastaPhase
+        -discardPile []*Card
+        -isFrozen bool
+        +Reset()
+        +DrawFromStock() error
+        +DrawFromDiscard(pairIndices []int) error
+        +Meld(groups [][]int) error
+        +SkipMeld() error
+        +Discard(index int) error
+        +GoOut() error
+        +NextRound()
+        +Phase() CanastaPhase
+    }
+
+    class CanastaPlayer {
+        -melds []*CanastaMeld
+        -red3s []*Card
+        -hasInitMeld bool
+    }
+
+    class CanastaMeld {
+        +Cards []*Card
+        +IsNatural bool
+    }
+
+    Canasta --> "2" CanastaPlayer
+    CanastaPlayer --> "*" CanastaMeld
+    CanastaPlayer --|> GamePlayer
     OldMaidPlayer --|> GamePlayer
     DaifugoPlayer --|> RankedGamePlayer
     SevensPlayer --|> RankedGamePlayer
@@ -1777,6 +1811,28 @@ stateDiagram-v2
 
     note right of Play : GoFishPhasePlay = 0
     note right of GameEnd : GoFishPhaseGameEnd = 1
+```
+
+### 3.24 Canasta フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draw : Reset()
+    Draw --> Meld : 山札から引く or 捨て札の山を取る
+    Meld --> Discard : メルド実行 or スキップ
+    Meld --> RoundEnd : メルド後手札0枚 + カナスタあり → 上がり
+    Discard --> Draw : カードを捨てる → 次プレイヤー
+    Discard --> RoundEnd : 上がり (カナスタ必須)
+    Draw --> RoundEnd : 山札枯渇 → 引き分け
+    RoundEnd --> Draw : NextRound()
+    RoundEnd --> GameEnd : 目標点到達
+    GameEnd --> [*]
+
+    note right of Draw : CanastaPhaseDraw = 0
+    note right of Meld : CanastaPhaseMeld = 1
+    note right of Discard : CanastaPhaseDiscard = 2
+    note right of RoundEnd : CanastaPhaseRoundEnd = 3
+    note right of GameEnd : CanastaPhaseGameEnd = 4
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

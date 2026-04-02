@@ -51,6 +51,7 @@ GAMES:
   spades       Spades (スペード)
   crazyeights  Crazy Eights (クレイジーエイト)
   ginrummy     Gin Rummy (ジンラミー)
+  canasta      Canasta (カナスタ)
   spider       Spider Solitaire (スパイダーソリティア)
   napoleon     Napoleon (ナポレオン)
   indianpoker  Indian Poker (インディアンポーカー)
@@ -156,6 +157,7 @@ ENVIRONMENT VARIABLES:
 		"spades":      func() int { ui.NewSpadesCui().Exec(); return 0 },
 		"crazyeights": func() int { ui.NewCrazyEightsCui().Exec(); return 0 },
 		"ginrummy":    func() int { ui.NewGinRummyCui().Exec(); return 0 },
+		"canasta":     func() int { ui.NewCanastaCui().Exec(); return 0 },
 		"spider":      func() int { ui.NewSpiderCui().Exec(); return 0 },
 		"napoleon":    func() int { ui.NewNapoleonCui().Exec(); return 0 },
 		"indianpoker": func() int { ui.NewIndianPokerCui().Exec(); return 0 },

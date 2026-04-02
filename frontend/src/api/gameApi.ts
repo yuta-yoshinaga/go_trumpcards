@@ -3,6 +3,7 @@ import type {
   BaccaratResponse,
   BlackJackResponse,
   BridgeResponse,
+  CanastaResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoConfigInput,
@@ -78,6 +79,7 @@ const workerUrl: Record<string, string> = {
   tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
+  canasta: WORKER_SOLO,
   cribbage: WORKER_SOLO,
 };
 
@@ -605,6 +607,30 @@ export const ginrummyApi = {
     }),
 };
 
+/** Configuration options for Canasta game settings. */
+export interface CanastaConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Canasta /canasta/exec endpoint. */
+export const canastaApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'skipmeld' | 'discard' | 'goout' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: CanastaConfigInput,
+    naturalPairIndices?: number[],
+    meldGroups?: number[][],
+  ) =>
+    gameExec<CanastaResponse>('canasta', {
+      command,
+      cardIndex,
+      config,
+      naturalPairIndices,
+      meldGroups,
+    }),
+};
+
 /** Configuration options for Cribbage game settings. */
 export interface CribbageConfigInput {
   cpuDifficulty?: number;
@@ -871,6 +897,7 @@ const games = [
   'baccarat',
   'crazyeights',
   'ginrummy',
+  'canasta',
   'spider',
   'indianpoker',
   'videopoker',

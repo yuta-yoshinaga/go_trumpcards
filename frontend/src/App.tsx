@@ -10,6 +10,7 @@ import { useGameSound } from './hooks/useGameSound';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
+import { CanastaPage } from './pages/CanastaPage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { CribbagePage } from './pages/CribbagePage';
 import { DaifugoPage } from './pages/DaifugoPage';
@@ -65,6 +66,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/baccarat': <BaccaratPage />,
   '/crazyeights': <CrazyEightsPage />,
   '/ginrummy': <GinRummyPage />,
+  '/canasta': <CanastaPage />,
   '/cribbage': <CribbagePage />,
   '/spider': <SpiderPage />,
   '/pyramid': <PyramidPage />,

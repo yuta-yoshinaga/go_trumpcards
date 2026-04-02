@@ -5,6 +5,7 @@ import { initReactI18next } from 'react-i18next';
 import enBaccarat from './locales/en/baccarat.json';
 import enBlackjack from './locales/en/blackjack.json';
 import enBridge from './locales/en/bridge.json';
+import enCanasta from './locales/en/canasta.json';
 import enCommon from './locales/en/common.json';
 import enCrazyeights from './locales/en/crazyeights.json';
 import enCribbage from './locales/en/cribbage.json';
@@ -40,6 +41,7 @@ import enVideopoker from './locales/en/videopoker.json';
 import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaBridge from './locales/ja/bridge.json';
+import jaCanasta from './locales/ja/canasta.json';
 import jaCommon from './locales/ja/common.json';
 import jaCrazyeights from './locales/ja/crazyeights.json';
 import jaCribbage from './locales/ja/cribbage.json';
@@ -102,6 +104,7 @@ i18n
         baccarat: jaBaccarat,
         crazyeights: jaCrazyeights,
         ginrummy: jaGinrummy,
+        canasta: jaCanasta,
         cribbage: jaCribbage,
         spider: jaSpider,
         indianpoker: jaIndianpoker,
@@ -139,6 +142,7 @@ i18n
         baccarat: enBaccarat,
         crazyeights: enCrazyeights,
         ginrummy: enGinrummy,
+        canasta: enCanasta,
         cribbage: enCribbage,
         spider: enSpider,
         indianpoker: enIndianpoker,
@@ -179,6 +183,7 @@ i18n
       'baccarat',
       'crazyeights',
       'ginrummy',
+      'canasta',
       'cribbage',
       'spider',
       'indianpoker',

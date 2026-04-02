@@ -48,6 +48,8 @@ tags:
     description: Crazy Eights (クレイジーエイト) game
   - name: ginrummy
     description: Gin Rummy (ジンラミー) game
+  - name: canasta
+    description: Canasta (カナスタ) game
   - name: spider
     description: Spider Solitaire (スパイダーソリティア) game
   - name: napoleon
@@ -1673,6 +1675,89 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GinRummyResponse'
+
+  /canasta/exec:
+    post:
+      tags:
+        - canasta
+      summary: Execute a Canasta game command
+      description: |
+        Send a command to advance the Canasta (カナスタ) game session
+        identified by `sessionId`.  Canasta is a 2-player rummy card game
+        using 2 decks + 4 jokers (108 cards).  15 cards are dealt to each
+        player.  Wild cards (2s and Jokers) can substitute in melds.
+        Canasta = 7+ card meld.  First to reach point limit wins.
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw from stock or pick up discard pile |
+        | Meld         | `1`   | Meld cards or skip |
+        | Discard      | `2`   | Discard a card or go out |
+        | RoundEnd     | `3`   | Round scored; advance with `nextround` |
+        | GameEnd      | `4`   | A player reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Pick up the discard pile (requires `naturalPairIndices`) |
+        | `meld`         | `m`     | Meld cards (requires `meldGroups`) |
+        | `skipmeld`     | `sm`    | Skip meld phase |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `goout`        | `go`    | Go out (requires at least 1 canasta) |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `log`          | `l`     | View action log |
+      operationId: canastaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CanastaRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              drawdiscard:
+                summary: Pick up discard pile with natural pair at indices 0 and 1
+                value:
+                  command: drawdiscard
+                  naturalPairIndices: [0, 1]
+                  sessionId: my-session-001
+              meld:
+                summary: Meld cards at indices 0, 1, 2
+                value:
+                  command: meld
+                  meldGroups: [[0, 1, 2]]
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 2
+                value:
+                  command: discard
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CanastaResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CanastaResponse'
 
   /spider/exec:
     post:
@@ -6822,6 +6907,156 @@ components:
         isGin:
           type: boolean
           description: Whether the knock was a gin (0 deadwood)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Canasta types
+    # -------------------------------------------------------------------------
+    CanastaRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `meld` (`m`), `skipmeld` (`sm`),
+            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard.  Required for `discard` command.
+          example: 2
+        naturalPairIndices:
+          type: array
+          description: Indices of two natural cards matching the discard top.  Required for `drawdiscard` command.
+          items:
+            type: integer
+          example: [0, 1]
+        meldGroups:
+          type: array
+          description: Groups of card indices to meld.  Required for `meld` command.
+          items:
+            type: array
+            items:
+              type: integer
+          example: [[0, 1, 2]]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 100000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CanastaResponse:
+      type: object
+      description: Current state of the Canasta game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              melds:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                    isNatural:
+                      type: boolean
+                    isCanasta:
+                      type: boolean
+                    rank:
+                      type: integer
+              red3Count:
+                type: integer
+              red3s:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              hasCanasta:
+                type: boolean
+              hasInitMeld:
+                type: boolean
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Meld, 2 = Discard, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+        discardPileCount:
+          type: integer
+          description: Number of cards in the discard pile
+        isFrozen:
+          type: boolean
+          description: Whether the discard pile is frozen
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended)
         config:
           type: object
           properties:

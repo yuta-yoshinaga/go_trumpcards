@@ -292,3 +292,12 @@ export const GoFishPhase = {
   PLAY: 0,
   GAME_END: 1,
 } as const;
+
+/** Canasta phase constants (sync: internal/domain/Canasta.go). */
+export const CanastaPhase = {
+  DRAW: 0,
+  MELD: 1,
+  DISCARD: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
