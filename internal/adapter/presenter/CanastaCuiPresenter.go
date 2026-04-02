@@ -59,7 +59,7 @@ type CanastaCuiPresenter struct{}
 // Output ゲーム状態を文字列出力
 func (p *CanastaCuiPresenter) Output(g interfaces.CanastaGame, lastErr error) string {
 	return buildCuiOutput("Canasta (カナスタ)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  山札: %d枚  捨て札: %d枚", g.GetRoundNumber(), g.GetDrawPileCount(), g.GetDiscardPileCount())
+		fmt.Fprintf(b, "ラウンド: %d  山札: %d枚  廃棄山: %d枚", g.GetRoundNumber(), g.GetDrawPileCount(), g.GetDiscardPileCount())
 		if g.GetIsFrozen() {
 			b.WriteString(" [フリーズ]")
 		}

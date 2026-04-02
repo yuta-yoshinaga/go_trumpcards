@@ -224,21 +224,13 @@ func (g *Canasta) PlayerDrawFromStock() error {
 
 	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
 
-	// 赤3を引いた場合は自動的に場に出す
+	// 赤3を引いた場合は自動的に場に出す (autoLayRed3s が補充まで処理する)
 	if CanastaIsRed3(card) {
 		g.autoLayRed3s(g.currentPlayerIdx)
-		// 赤3を出しただけなのでもう一枚引く → ドローフェーズのまま
-		if len(g.drawPile) == 0 {
+		// autoLayRed3s で補充した結果、山札が空になった場合
+		if len(g.drawPile) == 0 && g.players[g.currentPlayerIdx].GetCardsSize() == 0 {
 			g.endRoundDraw()
 			return nil
-		}
-		nextCard := g.drawPile[len(g.drawPile)-1]
-		g.drawPile = g.drawPile[:len(g.drawPile)-1]
-		g.players[g.currentPlayerIdx].AddCard(nextCard)
-		g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws replacement from stock", g.playerName(g.currentPlayerIdx)), nil)
-		// 赤3がまた出たら再帰的に処理
-		if CanastaIsRed3(nextCard) {
-			g.autoLayRed3s(g.currentPlayerIdx)
 		}
 	}
 
@@ -464,10 +456,7 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 	}
 
 	// メルド実行 (インデックスを降順にソートして削除)
-	allIdx := make([]int, 0)
-	for _, idx := range allIndices {
-		_ = idx
-	}
+	allIdx := make([]int, 0, len(allIndices))
 	for k := range allIndices {
 		allIdx = append(allIdx, k)
 	}
@@ -712,19 +701,12 @@ func (g *Canasta) cpuDraw() {
 	player.AddCard(card)
 	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", g.playerName(g.currentPlayerIdx)), nil)
 
-	// 赤3の処理
+	// 赤3の処理 (autoLayRed3s が補充まで処理する)
 	if CanastaIsRed3(card) {
 		g.autoLayRed3s(g.currentPlayerIdx)
-		if len(g.drawPile) == 0 {
+		if len(g.drawPile) == 0 && player.GetCardsSize() == 0 {
 			g.endRoundDraw()
 			return
-		}
-		nextCard := g.drawPile[len(g.drawPile)-1]
-		g.drawPile = g.drawPile[:len(g.drawPile)-1]
-		player.AddCard(nextCard)
-		g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws replacement from stock", g.playerName(g.currentPlayerIdx)), nil)
-		if CanastaIsRed3(nextCard) {
-			g.autoLayRed3s(g.currentPlayerIdx)
 		}
 	}
 

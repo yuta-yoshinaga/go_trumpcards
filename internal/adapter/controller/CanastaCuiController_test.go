@@ -307,13 +307,13 @@ func TestCanastaCuiController_Exec(t *testing.T) {
 	t.Run("unknown command returns unsupported", func(t *testing.T) {
 		c := controller.NewCanastaCuiController(newMock())
 		result := c.Exec("unknown")
-		assert.Contains(t, result, "Unsupported command")
+		assert.Contains(t, result, "コマンドが不明です")
 	})
 
 	// empty command
 	t.Run("empty command", func(t *testing.T) {
 		c := controller.NewCanastaCuiController(newMock())
 		result := c.Exec("")
-		assert.Contains(t, result, "param error")
+		assert.Contains(t, result, "'help' でコマンド一覧を表示します。")
 	})
 }
