@@ -319,13 +319,14 @@ func (g *Canasta) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	g.drewFromDiscard = true
 
 	// 捨て札の山のすべてのカードを手札に追加
+	pileSize := len(g.discardPile)
 	for _, c := range g.discardPile {
 		player.AddCard(c)
 	}
 	g.discardPile = nil
 	g.isFrozen = false
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up the discard pile (%d cards)", g.playerName(g.currentPlayerIdx), len(g.discardPile)+1), []*Card{topCard})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up the discard pile (%d cards)", g.playerName(g.currentPlayerIdx), pileSize), []*Card{topCard})
 
 	// 手札に赤3があれば自動的に場に出す
 	g.autoLayRed3s(g.currentPlayerIdx)

@@ -13,7 +13,10 @@
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
-    "pointLimit": "Point Limit"
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
   },
   "round": "Round {{n}}",
   "drawPile": "Stock: {{count}} cards",

@@ -13,7 +13,10 @@
   "settings": {
     "title": "設定",
     "cpuDifficulty": "CPU難易度",
-    "pointLimit": "目標スコア"
+    "pointLimit": "目標スコア",
+    "easy": "簡単",
+    "normal": "普通",
+    "hard": "難しい"
   },
   "round": "ラウンド {{n}}",
   "drawPile": "山札: {{count}}枚",
