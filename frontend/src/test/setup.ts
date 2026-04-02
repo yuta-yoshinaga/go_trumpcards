@@ -67,6 +67,7 @@ import jaDaifugo from '../i18n/locales/ja/daifugo.json';
 import jaDoubt from '../i18n/locales/ja/doubt.json';
 import jaFreecell from '../i18n/locales/ja/freecell.json';
 import jaGinrummy from '../i18n/locales/ja/ginrummy.json';
+import jaGofish from '../i18n/locales/ja/gofish.json';
 import jaHearts from '../i18n/locales/ja/hearts.json';
 import jaHoldem from '../i18n/locales/ja/holdem.json';
 import jaIndianpoker from '../i18n/locales/ja/indianpoker.json';
@@ -110,6 +111,7 @@ i18n.use(initReactI18next).init({
     'indianpoker',
     'threecard',
     'speed',
+    'gofish',
     'tutorial',
   ],
   resources: {
@@ -136,6 +138,7 @@ i18n.use(initReactI18next).init({
       indianpoker: jaIndianpoker,
       threecard: jaThreecard,
       speed: jaSpeed,
+      gofish: jaGofish,
       tutorial: jaTutorial,
     },
     en: {
