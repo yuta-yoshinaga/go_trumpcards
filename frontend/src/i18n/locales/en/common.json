@@ -49,7 +49,8 @@
     "threecard": "Three Card Poker",
     "pineapple": "Pineapple Poker",
     "ohhell": "Oh Hell",
-    "speed": "Speed"
+    "speed": "Speed",
+    "gofish": "Go Fish"
   },
   "sound": {
     "mute": "Mute sound",
@@ -234,7 +235,9 @@
     "tripeaks.gameOver": "Game Over",
     "tripeaks.hintAvailable": "Hint available",
     "tripeaks.noHint": "No hint available",
-    "tripeaks.stalemate": "No moves can lead to a win. Please undo or give up."
+    "tripeaks.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "gofish.result.humanWin": "Game over! You win!",
+    "gofish.result.cpuWin": "Game over! CPU {{cpuId}} wins!"
   },
   "manual": {
     "ariaLabel": "Game Manual",

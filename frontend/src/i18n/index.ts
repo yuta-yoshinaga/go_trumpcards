@@ -14,6 +14,7 @@ import enDoubt from './locales/en/doubt.json';
 import enEuchre from './locales/en/euchre.json';
 import enFreecell from './locales/en/freecell.json';
 import enGinrummy from './locales/en/ginrummy.json';
+import enGofish from './locales/en/gofish.json';
 import enHearts from './locales/en/hearts.json';
 import enHoldem from './locales/en/holdem.json';
 import enIndianpoker from './locales/en/indianpoker.json';
@@ -48,6 +49,7 @@ import jaDoubt from './locales/ja/doubt.json';
 import jaEuchre from './locales/ja/euchre.json';
 import jaFreecell from './locales/ja/freecell.json';
 import jaGinrummy from './locales/ja/ginrummy.json';
+import jaGofish from './locales/ja/gofish.json';
 import jaHearts from './locales/ja/hearts.json';
 import jaHoldem from './locales/ja/holdem.json';
 import jaIndianpoker from './locales/ja/indianpoker.json';
@@ -110,6 +112,7 @@ i18n
         deuceswild: jaDeuceswild,
         jokerpoker: jaJokerpoker,
         speed: jaSpeed,
+        gofish: jaGofish,
         tutorial: jaTutorial,
       },
       en: {
@@ -146,6 +149,7 @@ i18n
         deuceswild: enDeuceswild,
         jokerpoker: enJokerpoker,
         speed: enSpeed,
+        gofish: enGofish,
         tutorial: enTutorial,
       },
     },
@@ -185,6 +189,7 @@ i18n
       'deuceswild',
       'jokerpoker',
       'speed',
+      'gofish',
       'tutorial',
     ],
     detection: {

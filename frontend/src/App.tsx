@@ -18,6 +18,7 @@ import { DoubtPage } from './pages/DoubtPage';
 import { EuchrePage } from './pages/EuchrePage';
 import { FreeCellPage } from './pages/FreeCellPage';
 import { GinRummyPage } from './pages/GinRummyPage';
+import { GoFishPage } from './pages/GoFishPage';
 import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
 import { IndianPokerPage } from './pages/IndianPokerPage';
@@ -74,6 +75,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/jokerpoker': <JokerPokerPage />,
   '/threecard': <ThreeCardPage />,
   '/speed': <SpeedPage />,
+  '/gofish': <GoFishPage />,
 };
 
 /** Root application component with router and game page routes. */

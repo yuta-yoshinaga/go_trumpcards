@@ -62,6 +62,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/sevens', labelKey: 'nav.sevens', icon: '7️⃣' },
       { path: '/crazyeights', labelKey: 'nav.crazyeights', icon: '8️⃣' },
       { path: '/speed', labelKey: 'nav.speed', icon: '⚡' },
+      { path: '/gofish', labelKey: 'nav.gofish', icon: '🐟' },
     ],
   },
   {
