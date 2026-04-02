@@ -15,6 +15,9 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/bun.lock ./
 RUN bun install --frozen-lockfile
 
+# Copy game manual Markdown files referenced by manualTexts.ts via ?raw imports
+COPY docs/manual/web/ /app/docs/manual/web/
+
 # Copy remaining frontend source and build
 # Output goes to ../public (i.e. /app/public) per vite.config.ts
 COPY frontend/ ./
