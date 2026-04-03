@@ -5,17 +5,12 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
-import { GameResetDialog } from '../components/GameResetDialog';
+import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
-import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
+import { PlayerHandSection } from '../components/PlayerHandSection';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { SpadesSkeleton } from '../components/skeleton/SpadesSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameHint } from '../hooks/useGameHint';
@@ -24,12 +19,10 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { SpadesPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 
 /** Spades tutorial step definitions. */
@@ -163,14 +156,18 @@ function SpadesPageContent() {
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.spades.bg}`} aria-busy={loading} aria-live="polite">
-      <GamePageHeading title={tc('nav.spades')} />
-      {/* Phase indicator */}
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanBidTurn || isHumanTurn}>
-        <TutorialButton />
-        <ManualButton gamePath="/spades" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.spades')}
+      gameThemeBg={gameTheme.spades.bg}
+      phaseName={phaseNames[state.phase]}
+      isHumanTurn={isHumanBidTurn || isHumanTurn}
+      gamePath="/spades"
+      gameEndFlag={!!state?.gameEndFlag}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+    >
       {/* Settings */}
       <SettingsPanel
         title={t('settings.title')}
@@ -316,38 +313,16 @@ function SpadesPageContent() {
       {/* Footer */}
       <GameFooter className={`${gameTheme.spades.footer} px-4 py-2.5`}>
         {/* Human cards */}
-        {humanPlayer &&
-          (isMobile ? (
-            <MobileHandGrid
-              cards={humanPlayer.cards}
-              selectedIndices={selectedCardIndices}
-              onToggle={toggleCard}
-              cardWidth={cardWidth}
-              dataTutorial="sp-player-hand"
-            />
-          ) : (
-            <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sp-player-hand">
-              {humanPlayer.cards.map((card, idx) => (
-                <button
-                  type="button"
-                  key={`${card.design}-${card.value}-${idx}`}
-                  onClick={() => toggleCard(idx)}
-                  aria-label={cardAlt(card)}
-                  aria-pressed={selectedCardIndices.includes(idx)}
-                  className={`transition-transform ${focusRingCard}`}
-                  style={{
-                    background: 'none',
-                    padding: 0,
-                    borderRadius: 8,
-                    ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                    boxSizing: 'border-box',
-                  }}
-                >
-                  <AnimatedCard card={card} width={cardWidth} />
-                </button>
-              ))}
-            </div>
-          ))}
+        {humanPlayer && (
+          <PlayerHandSection
+            humanPlayer={humanPlayer}
+            selectedCardIndices={selectedCardIndices}
+            toggleCard={toggleCard}
+            cardWidth={cardWidth}
+            isMobile={isMobile}
+            dataTutorialPrefix="sp"
+          />
+        )}
 
         <ErrorAlert message={error ?? hintError} />
 
@@ -425,8 +400,6 @@ function SpadesPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }

@@ -5,16 +5,11 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
-import { GameResetDialog } from '../components/GameResetDialog';
+import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
-import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
+import { PlayerHandSection } from '../components/PlayerHandSection';
 import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameHint } from '../hooks/useGameHint';
@@ -23,12 +18,10 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../h
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { HeartsPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 
 /** Hearts tutorial step definitions. */
@@ -168,14 +161,18 @@ function HeartsPageContent() {
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.hearts.bg}`} aria-busy={loading} aria-live="polite">
-      <GamePageHeading title={tc('nav.hearts')} />
-      {/* Phase indicator */}
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isPassPhase || isHumanTurn}>
-        <TutorialButton />
-        <ManualButton gamePath="/hearts" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.hearts')}
+      gameThemeBg={gameTheme.hearts.bg}
+      phaseName={phaseNames[state.phase]}
+      isHumanTurn={isPassPhase || isHumanTurn}
+      gamePath="/hearts"
+      gameEndFlag={!!state?.gameEndFlag}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+    >
       {/* Settings */}
       <SettingsPanel
         title={t('settings.title')}
@@ -320,38 +317,16 @@ function HeartsPageContent() {
       {/* Footer */}
       <GameFooter className={`${gameTheme.hearts.footer} px-4 py-2.5`}>
         {/* Human cards */}
-        {humanPlayer &&
-          (isMobile ? (
-            <MobileHandGrid
-              cards={humanPlayer.cards}
-              selectedIndices={selectedCardIndices}
-              onToggle={toggleCard}
-              cardWidth={cardWidth}
-              dataTutorial="ht-player-hand"
-            />
-          ) : (
-            <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ht-player-hand">
-              {humanPlayer.cards.map((card, idx) => (
-                <button
-                  type="button"
-                  key={`${card.design}-${card.value}-${idx}`}
-                  onClick={() => toggleCard(idx)}
-                  aria-label={cardAlt(card)}
-                  aria-pressed={selectedCardIndices.includes(idx)}
-                  className={`transition-transform ${focusRingCard}`}
-                  style={{
-                    background: 'none',
-                    padding: 0,
-                    borderRadius: 8,
-                    ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                    boxSizing: 'border-box',
-                  }}
-                >
-                  <AnimatedCard card={card} width={cardWidth} />
-                </button>
-              ))}
-            </div>
-          ))}
+        {humanPlayer && (
+          <PlayerHandSection
+            humanPlayer={humanPlayer}
+            selectedCardIndices={selectedCardIndices}
+            toggleCard={toggleCard}
+            cardWidth={cardWidth}
+            isMobile={isMobile}
+            dataTutorialPrefix="ht"
+          />
+        )}
 
         <ErrorAlert message={error ?? hintError} />
 
@@ -420,8 +395,6 @@ function HeartsPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
