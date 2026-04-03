@@ -92,19 +92,13 @@ func (p *BridgeCuiPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 
 		// 現在のトリック
 		trick := b.GetCurrentTrick()
-		if len(trick) > 0 {
-			parts := make([]string, len(trick))
-			for i, tc := range trick {
-				player := b.GetPlayer(tc.PlayerIdx)
-				parts[i] = fmt.Sprintf("%s=%s", cuiPlayerName(player, tc.PlayerIdx), cuiCardStr(tc.Card))
-			}
-			fmt.Fprintf(sb, "トリック: %s\n", strings.Join(parts, ", "))
-		}
+		cuiTrickBlock(sb, trick,
+			func(tc *domain.BridgeTrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.BridgeTrickCard) string { return cuiCardStr(tc.Card) },
+			func(idx int) string { return cuiPlayerName(b.GetPlayer(idx), idx) },
+		)
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(sb, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(sb, lastErr)
 
 		// ゲーム状態
 		if b.GetGameEndFlag() {
@@ -171,28 +165,15 @@ func bridgeBidTypeStr(bidType int) string {
 	}
 }
 
+// bridgeHintReasons はBridge固有のヒント理由翻訳
+var bridgeHintReasons = map[string]string{
+	"support_partner": "パートナーをサポート",
+	"competitive_bid": "競り合い",
+}
+
 // bridgeHintReasonStr ヒント理由を日本語に変換する
 func bridgeHintReasonStr(reason string) string {
-	switch reason {
-	case "strong_hand":
-		return "強い手札"
-	case "weak_hand":
-		return "弱い手札"
-	case "follow_suit":
-		return "リードスートに追随"
-	case "trump_cut":
-		return "切り札でカット"
-	case "lead_strong":
-		return "強いカードでリード"
-	case "lead_low":
-		return "低いカードでリード"
-	case "support_partner":
-		return "パートナーをサポート"
-	case "competitive_bid":
-		return "競り合い"
-	default:
-		return reason
-	}
+	return lookupHintReason(reason, bridgeHintReasons)
 }
 
 // ActionLogOutput 棋譜をテキスト出力

@@ -64,19 +64,13 @@ func (p *EuchreCuiPresenter) Output(e interfaces.EuchreGame, lastErr error) stri
 
 		// 現在のトリック
 		trick := e.GetCurrentTrick()
-		if len(trick) > 0 {
-			parts := make([]string, len(trick))
-			for i, tc := range trick {
-				player := e.GetPlayer(tc.PlayerIdx)
-				parts[i] = fmt.Sprintf("%s=%s", cuiPlayerName(player, tc.PlayerIdx), cuiCardStr(tc.Card))
-			}
-			fmt.Fprintf(b, "トリック: %s\n", strings.Join(parts, ", "))
-		}
+		cuiTrickBlock(b, trick,
+			func(tc *domain.EuchreTrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.EuchreTrickCard) string { return cuiCardStr(tc.Card) },
+			func(idx int) string { return cuiPlayerName(e.GetPlayer(idx), idx) },
+		)
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		// ゲーム状態
 		if e.GetGameEndFlag() {
@@ -145,26 +139,14 @@ func (p *EuchreCuiPresenter) HintOutput(e interfaces.EuchreGame) string {
 	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), euchreHintReasonStr(hint.Reason))))
 }
 
+// euchreHintReasons はEuchre固有のヒント理由翻訳
+var euchreHintReasons = map[string]string{
+	"discard_weakest": "最弱カードを捨てる",
+}
+
 // euchreHintReasonStr ヒント理由を日本語に変換する
 func euchreHintReasonStr(reason string) string {
-	switch reason {
-	case "strong_hand":
-		return "強い手札"
-	case "weak_hand":
-		return "弱い手札"
-	case "follow_suit":
-		return "リードスートに追随"
-	case "trump_cut":
-		return "切り札でカット"
-	case "discard_weakest":
-		return "最弱カードを捨てる"
-	case "lead_strong":
-		return "強いカードでリード"
-	case "lead_low":
-		return "低いカードでリード"
-	default:
-		return reason
-	}
+	return lookupHintReason(reason, euchreHintReasons)
 }
 
 // ActionLogOutput 棋譜をテキスト出力

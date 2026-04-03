@@ -152,6 +152,32 @@ func TestOhHellCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "ヒントはありません")
 	})
+
+	t.Run("hint with nil bid and nil cardIndex", func(t *testing.T) {
+		m := setupOhHellCuiMock()
+		m.On("GetHint").Return(&domain.OhHellHint{Reason: "unknown"})
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+
+	t.Run("card hint with no human player", func(t *testing.T) {
+		m := setupOhHellCuiMock()
+		cpuPlayers := []*domain.OhHellPlayer{
+			domain.NewOhHellPlayer(false),
+			domain.NewOhHellPlayer(false),
+			domain.NewOhHellPlayer(false),
+			domain.NewOhHellPlayer(false),
+		}
+		m.On("GetPlayerCnt").Return(4)
+		m.On("GetPlayer", 0).Return(cpuPlayers[0])
+		m.On("GetPlayer", 1).Return(cpuPlayers[1])
+		m.On("GetPlayer", 2).Return(cpuPlayers[2])
+		m.On("GetPlayer", 3).Return(cpuPlayers[3])
+		cardIdx := 0
+		m.On("GetHint").Return(&domain.OhHellHint{CardIndex: &cardIdx, Reason: "follow_suit"})
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "ヒントはありません")
+	})
 }
 
 func TestOhHellCuiPresenter_ActionLogOutput(t *testing.T) {
