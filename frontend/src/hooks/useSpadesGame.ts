@@ -1,10 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { spadesApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
-import type { SpadesConfig, SpadesHint } from '../types/card';
-import { useCardSelection } from './useCardSelection';
-import { useGameApi } from './useGameApi';
-import { useGameConfig } from './useGameConfig';
+import { useTrickGameBase } from './useTrickGameBase';
 
 /** Default Spades game configuration. */
 export const DEFAULT_SPADES_CONFIG: SpadesConfig = {
@@ -26,23 +22,13 @@ export const POINT_LIMIT_OPTIONS = [200, 300, 500, 750, 1000] as const;
 
 /** Hook that manages Spades game state, bidding, and player actions. */
 export function useSpadesGame() {
-  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
-  const { config: spadesConfig, handleConfigChange } = useGameConfig<SpadesConfig>(DEFAULT_SPADES_CONFIG);
-  const [hint, setHint] = useState<SpadesHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const [hintLoading, setHintLoading] = useState(false);
+  const base = useTrickGameBase({
+    apiFn: spadesApi.exec,
+    defaultConfig: DEFAULT_SPADES_CONFIG,
+    getHint: (state) => state.hint ?? null,
+  });
 
-  const onSuccess = useCallback(() => {
-    clearSelection();
-    setHint(null);
-  }, [clearSelection]);
-  const { state, loading, error, exec: rawExec } = useGameApi(spadesApi.exec, { onSuccess });
-
-  const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    exec('reset', undefined, undefined, DEFAULT_SPADES_CONFIG);
-  }, [exec]);
+  const { exec } = base;
 
   const handleBid = useCallback(
     (bid: number) => {
@@ -51,49 +37,23 @@ export function useSpadesGame() {
     [exec],
   );
 
-  const handlePlay = useCallback(() => {
-    if (selectedCardIndices.length !== 1) return;
-    exec('play', undefined, selectedCardIndices[0]);
-  }, [exec, selectedCardIndices]);
-
-  const handleNextTrick = useCallback(() => {
-    exec('next');
-  }, [exec]);
-
-  const handleNextRound = useCallback(() => {
-    exec('nextround');
-  }, [exec]);
-
-  const handleHint = useCallback(async () => {
-    setHintLoading(true);
-    try {
-      const res = await spadesApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    } finally {
-      setHintLoading(false);
-    }
-  }, []);
-
   return {
-    state,
-    loading,
-    error,
-    hint,
-    hintError,
-    hintLoading,
-    exec,
-    spadesConfig,
-    selectedCardIndices,
-    toggleCard,
-    clearSelection,
-    handleConfigChange,
+    state: base.state,
+    loading: base.loading,
+    error: base.error,
+    hint: base.hint,
+    hintError: base.hintError,
+    hintLoading: base.hintLoading,
+    exec: base.exec,
+    spadesConfig: base.config,
+    selectedCardIndices: base.selectedCardIndices,
+    toggleCard: base.toggleCard,
+    clearSelection: base.clearSelection,
+    handleConfigChange: base.handleConfigChange,
     handleBid,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-    handleHint,
+    handlePlay: base.handlePlay,
+    handleNextTrick: base.handleNextTrick,
+    handleNextRound: base.handleNextRound,
+    handleHint: base.handleHint,
   };
 }

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, heartsApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { makeHeartsState } from '../test/stateFactories';
 import type { HeartsResponse } from '../types/card';
 import { HeartsPage } from './HeartsPage';
 
@@ -13,83 +14,37 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(heartsApi.exec);
 
-const playPhaseState: HeartsResponse = {
-  players: [
-    {
-      id: 0,
-      isHuman: true,
-      cardCount: 13,
-      cards: [
-        { design: 'SPADE', value: 1 },
-        { design: 'HEART', value: 11 },
-      ],
-      roundScore: 0,
-      cumulativeScore: 0,
-      trickCount: 0,
-    },
-    { id: 1, isHuman: false, cardCount: 13, cards: [], roundScore: 3, cumulativeScore: 10, trickCount: 1 },
-    { id: 2, isHuman: false, cardCount: 13, cards: [], roundScore: 5, cumulativeScore: 20, trickCount: 2 },
-    { id: 3, isHuman: false, cardCount: 13, cards: [], roundScore: 0, cumulativeScore: 5, trickCount: 0 },
-  ],
-  phase: 1,
-  roundNumber: 1,
-  trickNumber: 1,
-  currentPlayerIdx: 0,
-  currentTrick: [],
-  heartsBroken: false,
-  passDirection: 0,
-  gameEndFlag: false,
-  winnerIdx: -1,
-  leadPlayerIdx: 0,
-  message: '',
-  config: { cpuDifficulty: 1, pointLimit: 100, omnibusJD: false },
-};
+const playPhaseState = makeHeartsState();
 
-const passPhaseState: HeartsResponse = {
-  ...playPhaseState,
-  phase: 0,
-  passDirection: 0,
-};
+const passPhaseState = makeHeartsState({ phase: 0, passDirection: 0 });
 
-const trickEndState: HeartsResponse = {
-  ...playPhaseState,
+const trickEndState = makeHeartsState({
   phase: 2,
   currentTrick: [
     { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
     { playerIdx: 1, card: { design: 'HEART', value: 5 } },
   ],
-};
+});
 
-const roundEndState: HeartsResponse = {
-  ...playPhaseState,
-  phase: 3,
-};
+const roundEndState = makeHeartsState({ phase: 3 });
 
-const gameEndState: HeartsResponse = {
-  ...playPhaseState,
+const gameEndState = makeHeartsState({
   phase: 4,
   gameEndFlag: true,
   winnerIdx: 0,
   message: 'ゲーム終了！',
-};
+});
 
-const gameEndByFlagState: HeartsResponse = {
-  ...playPhaseState,
+const gameEndByFlagState = makeHeartsState({
   phase: 1,
   gameEndFlag: true,
   winnerIdx: 0,
   message: 'ゲーム終了！',
-};
+});
 
-const heartsBrokenState: HeartsResponse = {
-  ...playPhaseState,
-  heartsBroken: true,
-};
+const heartsBrokenState = makeHeartsState({ heartsBroken: true });
 
-const cpuTurnState: HeartsResponse = {
-  ...playPhaseState,
-  currentPlayerIdx: 1,
-};
+const cpuTurnState = makeHeartsState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
