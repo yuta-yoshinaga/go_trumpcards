@@ -27,7 +27,7 @@ function makeTestLayout(): GolfCard[][] {
       if (row === 4) {
         column.push(makeGolfCard(card('SPADE', (col % 13) + 1), false, true));
       } else {
-        column.push(makeGolfCard(card('HEART', (col * 5 + row) % 13 + 1), false, false));
+        column.push(makeGolfCard(card('HEART', ((col * 5 + row) % 13) + 1), false, false));
       }
     }
     layout.push(column);
