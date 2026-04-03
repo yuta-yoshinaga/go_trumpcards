@@ -89,7 +89,8 @@ input[type="text"] {
 }
 
 input[type="number"]:focus-visible,
-input[type="text"]:focus-visible {
+input[type="text"]:focus-visible,
+input[type="search"]:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px black,
