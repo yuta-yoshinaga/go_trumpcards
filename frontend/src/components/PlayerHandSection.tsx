@@ -55,25 +55,28 @@ export function PlayerHandSection({
 
   return (
     <div className="flex flex-wrap gap-1 mb-2" data-tutorial={dataTutorial}>
-      {humanPlayer.cards.map((card, idx) => (
-        <button
-          type="button"
-          key={`${card.design}-${card.value}-${idx}`}
-          onClick={() => toggleCard(idx)}
-          aria-label={cardAlt(card)}
-          aria-pressed={selectedCardIndices.includes(idx)}
-          className={`transition-transform ${focusRingCard}`}
-          style={{
-            background: 'none',
-            padding: 0,
-            borderRadius: 8,
-            ...selectedCardStyle(selectedCardIndices.includes(idx)),
-            boxSizing: 'border-box',
-          }}
-        >
-          <AnimatedCard card={card} width={cardWidth} />
-        </button>
-      ))}
+      {humanPlayer.cards.map((card, idx) => {
+        const isSelected = selectedCardIndices.includes(idx);
+        return (
+          <button
+            type="button"
+            key={`${card.design}-${card.value}-${idx}`}
+            onClick={() => toggleCard(idx)}
+            aria-label={cardAlt(card)}
+            aria-pressed={isSelected}
+            className={`transition-transform ${focusRingCard}`}
+            style={{
+              background: 'none',
+              padding: 0,
+              borderRadius: 8,
+              ...selectedCardStyle(isSelected),
+              boxSizing: 'border-box',
+            }}
+          >
+            <AnimatedCard card={card} width={cardWidth} />
+          </button>
+        );
+      })}
     </div>
   );
 }

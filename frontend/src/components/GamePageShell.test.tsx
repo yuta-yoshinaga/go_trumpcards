@@ -18,6 +18,28 @@ vi.mock('./motion/WinCelebration', () => ({
   WinCelebration: ({ show }: { show: boolean }) => (show ? <div data-testid="win-celebration">Win!</div> : null),
 }));
 
+vi.mock('./GameResetDialog', () => ({
+  GameResetDialog: ({
+    confirmOpen,
+    confirmReset,
+    cancelReset,
+  }: {
+    confirmOpen: boolean;
+    confirmReset: () => void;
+    cancelReset: () => void;
+  }) =>
+    confirmOpen ? (
+      <div role="alertdialog">
+        <button type="button" onClick={confirmReset}>
+          確認
+        </button>
+        <button type="button" onClick={cancelReset}>
+          キャンセル
+        </button>
+      </div>
+    ) : null,
+}));
+
 const baseProps = {
   title: 'Hearts',
   gameThemeBg: 'bg-game-bg-blue',
