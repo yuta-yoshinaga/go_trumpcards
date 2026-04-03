@@ -137,6 +137,19 @@ classDiagram
         +object messageParams
     }
 
+    class GolfResponse {
+        +object[][] layout
+        +Card[] waste
+        +number stockCount
+        +number phase
+        +number moveCount
+        +boolean canUndo
+        +boolean isStalemate
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
     class CribbageResponse {
         +object[] players
         +number phase
@@ -379,6 +392,13 @@ classDiagram
         GAME_OVER = 2
     }
 
+    class GolfPhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
     class CribbagePhase {
         <<enumeration>>
         DISCARD = 0
@@ -484,6 +504,10 @@ classDiagram
         +run(cmd, row?, col?) Promise~TriPeaksResponse~
     }
 
+    class GolfApi {
+        +run(cmd, col?) Promise~GolfResponse~
+    }
+
     class CribbageApi {
         +run(cmd, args?, config?) Promise~CribbageResponse~
     }
@@ -522,7 +546,7 @@ classDiagram
     CanastaApi --> gameApi : uses postJson/gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全34ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, canasta, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage,\nthreecard, ohhell, bridge, speed, gofish)"
+    note for BlackJackApi "全36ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, canasta, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage,\nthreecard, ohhell, bridge, speed, gofish,\npinochle, golf)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -762,6 +786,15 @@ classDiagram
         +Function handleReset
     }
 
+    class useGolfGame {
+        +GolfResponse state
+        +Function handleDraw
+        +Function handleSelectCard
+        +Function handleHint
+        +Function handleUndo
+        +Function handleReset
+    }
+
     class useCribbageGame {
         +CribbageResponse state
         +Function handleDiscard
@@ -775,6 +808,7 @@ classDiagram
     useKlondikeGame --> useGameApi : uses
     usePyramidGame --> useGameApi : uses
     useTriPeaksGame --> useGameApi : uses
+    useGolfGame --> useGameApi : uses
     useCribbageGame --> useGameApi : uses
     useMemoryGame --> useGameApi : uses
     useDoubtGame --> useGameApi : uses

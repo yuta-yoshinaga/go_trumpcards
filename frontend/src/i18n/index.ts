@@ -16,6 +16,7 @@ import enEuchre from './locales/en/euchre.json';
 import enFreecell from './locales/en/freecell.json';
 import enGinrummy from './locales/en/ginrummy.json';
 import enGofish from './locales/en/gofish.json';
+import enGolf from './locales/en/golf.json';
 import enHearts from './locales/en/hearts.json';
 import enHoldem from './locales/en/holdem.json';
 import enIndianpoker from './locales/en/indianpoker.json';
@@ -53,6 +54,7 @@ import jaEuchre from './locales/ja/euchre.json';
 import jaFreecell from './locales/ja/freecell.json';
 import jaGinrummy from './locales/ja/ginrummy.json';
 import jaGofish from './locales/ja/gofish.json';
+import jaGolf from './locales/ja/golf.json';
 import jaHearts from './locales/ja/hearts.json';
 import jaHoldem from './locales/ja/holdem.json';
 import jaIndianpoker from './locales/ja/indianpoker.json';
@@ -119,6 +121,7 @@ i18n
         jokerpoker: jaJokerpoker,
         speed: jaSpeed,
         gofish: jaGofish,
+        golf: jaGolf,
         tutorial: jaTutorial,
       },
       en: {
@@ -158,6 +161,7 @@ i18n
         jokerpoker: enJokerpoker,
         speed: enSpeed,
         gofish: enGofish,
+        golf: enGolf,
         tutorial: enTutorial,
       },
     },
@@ -200,6 +204,7 @@ i18n
       'jokerpoker',
       'speed',
       'gofish',
+      'golf',
       'tutorial',
     ],
     detection: {

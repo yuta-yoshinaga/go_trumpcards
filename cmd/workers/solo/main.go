@@ -222,6 +222,23 @@ func main() {
 		},
 	)
 
+	// Golf
+	registerKV(mux, "/golf/exec", "golf:",
+		func() usecase.GolfInteractorIF {
+			golf := domain.NewGolf(domain.NewTrumpCards(0))
+			return usecase.NewGolfInteractor(golf, new(presenter.GolfWebPresenter))
+		},
+		func(data []byte) (usecase.GolfInteractorIF, error) {
+			return usecase.RestoreGolfInteractor(data, new(presenter.GolfWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.GolfInteractorIF], f func() usecase.GolfInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewGolfWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

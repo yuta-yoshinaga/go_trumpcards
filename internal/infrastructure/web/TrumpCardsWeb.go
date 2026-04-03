@@ -56,6 +56,7 @@ type TrumpCardsWeb struct {
 	gfc  *controller.GoFishWebController
 	cnc  *controller.CanastaWebController
 	pinc *controller.PinochleWebController
+	glfc *controller.GolfWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -338,6 +339,10 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			pinochle := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, config)
 			return usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleWebPresenter))
 		}),
+		glfc: controller.NewGolfWebController(func() usecase.GolfInteractorIF {
+			golf := domain.NewGolf(domain.NewTrumpCards(0))
+			return usecase.NewGolfInteractor(golf, new(presenter.GolfWebPresenter))
+		}),
 	}
 }
 
@@ -385,6 +390,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/gofish/exec", web.gfc.Exec},
 		{"/canasta/exec", web.cnc.Exec},
 		{"/pinochle/exec", web.pinc.Exec},
+		{"/golf/exec", web.glfc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)

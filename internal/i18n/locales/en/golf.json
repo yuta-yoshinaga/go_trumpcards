@@ -1,0 +1,7 @@
+{
+  "helpTitle": "Golf Solitaire",
+  "helpDraw": "  d                        draw from stock",
+  "helpRemove": "  rm <col>                  remove card",
+  "helpGiveUp": "  g                        give up",
+  "helpHint": "  h                        hint"
+}
