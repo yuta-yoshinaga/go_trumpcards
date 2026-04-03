@@ -11,6 +11,13 @@ type SpadesWebPresenter struct{}
 
 // Output ゲーム状態をJSON出力
 func (p *SpadesWebPresenter) Output(s interfaces.SpadesGame, lastErr error) string {
+	resObj := p.buildBase(s)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, s.GetCurrentTrick(), lastErr)
+	return marshalOrError(resObj)
+}
+
+// buildBase 共通フィールドを構築
+func (p *SpadesWebPresenter) buildBase(s interfaces.SpadesGame) *controller.SpadesWebOutput {
 	resObj := new(controller.SpadesWebOutput)
 	resObj.Phase = int(s.GetPhase())
 	resObj.RoundNumber = s.GetRoundNumber()
@@ -31,24 +38,16 @@ func (p *SpadesWebPresenter) Output(s interfaces.SpadesGame, lastErr error) stri
 		BagPenaltyThreshold: cfg.BagPenaltyThreshold,
 	}
 
-	trick := s.GetCurrentTrick()
-	resObj.CurrentTrick = p.buildTrickOutput(trick)
+	resObj.CurrentTrick = p.buildTrickOutput(s.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(s)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, trick, lastErr)
-
-	return marshalOrError(resObj)
+	return resObj
 }
 
 // buildTrickOutput 現在のトリック情報を構築
 func (p *SpadesWebPresenter) buildTrickOutput(trick []*domain.SpadesTrickCard) []*controller.SpadesWebOutputTrickCard {
-	out := make([]*controller.SpadesWebOutputTrickCard, 0)
-	for _, tc := range trick {
-		out = append(out, &controller.SpadesWebOutputTrickCard{
-			PlayerIdx: tc.PlayerIdx,
-			Card:      cardToOutput(tc.Card),
-		})
-	}
-	return out
+	return buildTrickCards(trick, func(tc *domain.SpadesTrickCard) *controller.SpadesWebOutputTrickCard {
+		return &controller.SpadesWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -102,27 +101,7 @@ func (p *SpadesWebPresenter) buildMessage(s interfaces.SpadesGame, trick []*doma
 // HintOutput ヒント情報をJSON出力する
 func (p *SpadesWebPresenter) HintOutput(s interfaces.SpadesGame) string {
 	hint := s.GetHint()
-	resObj := new(controller.SpadesWebOutput)
-	resObj.Phase = int(s.GetPhase())
-	resObj.RoundNumber = s.GetRoundNumber()
-	resObj.TrickNumber = s.GetTrickNumber()
-	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()
-	resObj.BidPlayerIdx = s.GetBidPlayerIdx()
-	resObj.SpadesBroken = s.GetSpadesBroken()
-	resObj.GameEndFlag = s.GetGameEndFlag()
-	resObj.WinnerIdx = s.GetWinnerIdx()
-	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
-	cfg := s.GetConfig()
-	resObj.Config = controller.SpadesWebOutputConfig{
-		CpuDifficulty:       int(cfg.CpuDifficulty),
-		PointLimit:          cfg.PointLimit,
-		NilBonus:            cfg.NilBonus,
-		BagPenaltyThreshold: cfg.BagPenaltyThreshold,
-	}
-	trick := s.GetCurrentTrick()
-	resObj.CurrentTrick = p.buildTrickOutput(trick)
-	resObj.Players = p.buildPlayersOutput(s)
-
+	resObj := p.buildBase(s)
 	if hint != nil {
 		resObj.Hint = &controller.SpadesWebOutputHint{
 			CardIndex: hint.CardIndex,

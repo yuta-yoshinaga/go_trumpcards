@@ -13,6 +13,13 @@ type BridgeWebPresenter struct{}
 
 // Output ゲーム状態をJSON出力
 func (p *BridgeWebPresenter) Output(b interfaces.BridgeGame, lastErr error) string {
+	resObj := p.buildBase(b)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(b, b.GetCurrentTrick(), lastErr)
+	return marshalOrError(resObj)
+}
+
+// buildBase 共通フィールドを構築
+func (p *BridgeWebPresenter) buildBase(b interfaces.BridgeGame) *controller.BridgeWebOutput {
 	resObj := new(controller.BridgeWebOutput)
 	resObj.Phase = int(b.GetPhase())
 	resObj.RoundNumber = b.GetRoundNumber()
@@ -45,12 +52,9 @@ func (p *BridgeWebPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 	}
 
 	resObj.BidHistory = p.buildBidHistoryOutput(b.GetBidHistory())
-	trick := b.GetCurrentTrick()
-	resObj.CurrentTrick = p.buildTrickOutput(trick)
+	resObj.CurrentTrick = p.buildTrickOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(b, trick, lastErr)
-
-	return marshalOrError(resObj)
+	return resObj
 }
 
 // buildBidHistoryOutput ビッド履歴を構築
@@ -69,14 +73,9 @@ func (p *BridgeWebPresenter) buildBidHistoryOutput(history []*domain.BridgeBidEn
 
 // buildTrickOutput 現在のトリック情報を構築
 func (p *BridgeWebPresenter) buildTrickOutput(trick []*domain.BridgeTrickCard) []*controller.BridgeWebOutputTrickCard {
-	out := make([]*controller.BridgeWebOutputTrickCard, 0)
-	for _, tc := range trick {
-		out = append(out, &controller.BridgeWebOutputTrickCard{
-			PlayerIdx: tc.PlayerIdx,
-			Card:      cardToOutput(tc.Card),
-		})
-	}
-	return out
+	return buildTrickCards(trick, func(tc *domain.BridgeTrickCard) *controller.BridgeWebOutputTrickCard {
+		return &controller.BridgeWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -128,37 +127,7 @@ func (p *BridgeWebPresenter) buildMessage(b interfaces.BridgeGame, trick []*doma
 // HintOutput ヒント情報をJSON出力する
 func (p *BridgeWebPresenter) HintOutput(b interfaces.BridgeGame) string {
 	hint := b.GetHint()
-	resObj := new(controller.BridgeWebOutput)
-	resObj.Phase = int(b.GetPhase())
-	resObj.RoundNumber = b.GetRoundNumber()
-	resObj.TrickNumber = b.GetTrickNumber()
-	resObj.CurrentPlayerIdx = b.GetCurrentPlayerIdx()
-	resObj.BidPlayerIdx = b.GetBidPlayerIdx()
-	resObj.DealerIdx = b.GetDealerIdx()
-	resObj.TrumpSuit = trumpSuitForAPI(b.GetTrumpSuit(), b.GetContractSuit())
-	resObj.ContractLevel = b.GetContractLevel()
-	resObj.ContractSuit = b.GetContractSuit()
-	resObj.Doubled = b.GetDoubled()
-	resObj.DeclarerIdx = b.GetDeclarerIdx()
-	resObj.DummyIdx = b.GetDummyIdx()
-	resObj.Vulnerability = [2]bool{b.GetVulnerability(0), b.GetVulnerability(1)}
-	resObj.TeamScores = [2]int{b.GetTeamScore(0), b.GetTeamScore(1)}
-	resObj.GamesWon = [2]int{b.GetGamesWon(0), b.GetGamesWon(1)}
-	resObj.BelowLine = [2]int{b.GetBelowLine(0), b.GetBelowLine(1)}
-	resObj.GameEndFlag = b.GetGameEndFlag()
-	resObj.WinnerTeam = b.GetWinnerTeam()
-	resObj.LeadPlayerIdx = b.GetLeadPlayerIdx()
-	resObj.OpeningLeadDone = b.IsOpeningLeadDone()
-	resObj.DummyHand = cardsToOutputOrEmpty(b.GetDummyHand())
-	cfg := b.GetConfig()
-	resObj.Config = controller.BridgeWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-	}
-	resObj.BidHistory = p.buildBidHistoryOutput(b.GetBidHistory())
-	trick := b.GetCurrentTrick()
-	resObj.CurrentTrick = p.buildTrickOutput(trick)
-	resObj.Players = p.buildPlayersOutput(b)
-
+	resObj := p.buildBase(b)
 	if hint != nil {
 		resObj.Hint = &controller.BridgeWebOutputHint{
 			CardIndex: hint.CardIndex,
