@@ -1,0 +1,296 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { pinochleApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { PinochleResponse } from '../types/card';
+import { PinochlePage } from './PinochlePage';
+
+vi.mock('../api/gameApi', () => ({
+  pinochleApi: { exec: vi.fn() },
+  actionLogApi: { pinochle: vi.fn() },
+}));
+
+const mockExec = vi.mocked(pinochleApi.exec);
+
+const makePlayers = (overrides?: Partial<PinochleResponse['players'][number]>[]) =>
+  [0, 1, 2, 3].map((id) => ({
+    id,
+    isHuman: id === 0,
+    cardCount: 12,
+    cards: [],
+    team: id % 2,
+    trickCount: 0,
+    bid: 0,
+    hasPassed: false,
+    meldScore: 0,
+    trickPoints: 0,
+    ...(overrides?.[id] ?? {}),
+  }));
+
+const bidPhaseState: PinochleResponse = {
+  players: makePlayers(),
+  phase: 0, // BID
+  roundNumber: 1,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  dealerIdx: 3,
+  trumpSuit: 0,
+  highestBid: 0,
+  highestBidder: -1,
+  currentTrick: [],
+  teamScores: [0, 0],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  leadPlayerIdx: -1,
+  playerMelds: [[], [], [], []],
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 1500 },
+};
+
+const playPhaseState: PinochleResponse = {
+  ...bidPhaseState,
+  phase: 3, // PLAY
+  trumpSuit: 1,
+  highestBid: 25,
+  highestBidder: 0,
+  players: makePlayers([
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 12,
+      cards: [
+        { design: 'SPADE', value: 1 },
+        { design: 'HEART', value: 11 },
+      ],
+      team: 0,
+      trickCount: 0,
+      bid: 25,
+      hasPassed: false,
+      meldScore: 40,
+      trickPoints: 0,
+    },
+  ]),
+  validPlayIndices: [0, 1],
+};
+
+const trumpPhaseState: PinochleResponse = {
+  ...bidPhaseState,
+  phase: 1, // TRUMP
+  currentPlayerIdx: 0,
+};
+
+const meldPhaseState: PinochleResponse = {
+  ...bidPhaseState,
+  phase: 2, // MELD
+  trumpSuit: 2,
+};
+
+const trickEndState: PinochleResponse = {
+  ...playPhaseState,
+  phase: 4, // TRICK_END
+  currentTrick: [
+    { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+    { playerIdx: 1, card: { design: 'HEART', value: 10 } },
+  ],
+};
+
+const roundEndState: PinochleResponse = {
+  ...playPhaseState,
+  phase: 5, // ROUND_END
+};
+
+const gameEndState: PinochleResponse = {
+  ...playPhaseState,
+  phase: 6, // GAME_END
+  gameEndFlag: true,
+  winnerTeam: 0,
+};
+
+beforeEach(() => {
+  mockExec.mockResolvedValue(bidPhaseState);
+});
+
+describe('PinochlePage', () => {
+  it('renders loading message when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<PinochlePage />);
+    expect(screen.getByText('考え中...')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 1500 }),
+    );
+  });
+
+  it('renders bid phase with bid and pass buttons', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+    });
+  });
+
+  it('calls bid command when bid button is clicked', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ビッド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, undefined, expect.any(Number)));
+  });
+
+  it('calls pass command when pass button is clicked', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(bidPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
+  });
+
+  it('renders trump phase with suit buttons', async () => {
+    mockExec.mockResolvedValue(trumpPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '♠' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♣' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♥' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♦' })).toBeInTheDocument();
+    });
+  });
+
+  it('calls trump command when suit button is clicked', async () => {
+    mockExec.mockResolvedValue(trumpPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(meldPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '♠' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', undefined, undefined, undefined, 1));
+  });
+
+  it('renders meld phase with confirm melds button', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'メルド確認' })).toBeInTheDocument();
+    });
+  });
+
+  it('calls meld command when confirm melds button is clicked', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'メルド確認' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'メルド確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld'));
+  });
+
+  it('renders play phase with human cards', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
+    });
+  });
+
+  it('plays card when card button is clicked in play phase', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+  });
+
+  it('renders trick end phase with next trick button', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument();
+    });
+  });
+
+  it('calls next command when next trick button is clicked', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('renders round end phase with next round button', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument();
+    });
+  });
+
+  it('calls nextround command when next round button is clicked', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(bidPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('renders trick cards on table', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByText('P0')).toBeInTheDocument();
+    });
+  });
+
+  it('renders game end state', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    });
+  });
+
+  it('shows reset dialog and can cancel', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(screen.getByRole('alertdialog')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+  });
+
+  it('shows trump suit info when set', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByText(/切り札/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows team scores', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByText(/チーム 0/)).toBeInTheDocument();
+    });
+  });
+});
