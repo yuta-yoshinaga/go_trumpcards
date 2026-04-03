@@ -19,7 +19,7 @@ describe('TutorialProgressPanel', () => {
   it('renders progress summary with 0 completed', () => {
     renderPanel();
     expect(screen.getByText(/0/)).toBeInTheDocument();
-    expect(screen.getByText(/34/)).toBeInTheDocument();
+    expect(screen.getByText(/35/)).toBeInTheDocument();
   });
 
   it('shows correct completed count', () => {
