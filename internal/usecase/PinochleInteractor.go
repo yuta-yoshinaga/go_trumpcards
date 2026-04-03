@@ -100,6 +100,9 @@ func (pi *PinochleInteractor) CallTrump(suit int) string {
 
 // ConfirmMelds メルドを確認してプレイフェーズに進む
 func (pi *PinochleInteractor) ConfirmMelds() string {
+	if out, blocked := guardGameEnd(pi.p, pi.pp); blocked {
+		return out
+	}
 	pi.p.ConfirmMelds()
 	pi.runCpuTurns()
 	return pi.pp.Output(pi.p, nil)

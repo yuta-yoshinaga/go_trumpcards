@@ -156,7 +156,7 @@ function PinochlePageContent() {
         {/* Current Trick */}
         {state.currentTrick?.length > 0 && (
           <div className="mb-3 p-2 rounded bg-black/40">
-            <div className="text-white/70 text-sm mb-1">Table:</div>
+            <div className="text-white/70 text-sm mb-1">{tc('common:table', { defaultValue: 'Table' })}:</div>
             <div className="flex gap-2 justify-center">
               {state.currentTrick.map((tc, i) => (
                 <div key={i} className="text-center">
@@ -171,7 +171,7 @@ function PinochlePageContent() {
         {/* Melds */}
         {(phase === PinochlePhase.MELD || phase === PinochlePhase.ROUND_END) && state.playerMelds && (
           <div className="mb-3 p-2 rounded bg-purple-900/30">
-            <div className="text-white font-bold mb-1">Melds:</div>
+            <div className="text-white font-bold mb-1">{t('meldScore')}:</div>
             {state.playerMelds.map((melds: PinochleMeldData[], pIdx: number) =>
               melds.length > 0 ? (
                 <div key={pIdx} className="text-white/70 text-sm mb-1">

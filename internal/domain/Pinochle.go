@@ -372,7 +372,7 @@ func evaluateMelds(hand []*Card, trumpSuit int) []*PinochleMeld {
 
 	// ── Double Run (1500) / Run (150) ──
 	runValues := []int{1, 10, 13, 12, 11} // A,10,K,Q,J
-	minRunCount := 3                      // impossible high init
+	minRunCount := 3                      // each {suit,value} pair has at most 2 copies, so 3 is unreachable
 	for _, v := range runValues {
 		c := counts[sv{trumpSuit, v}]
 		if c < minRunCount {
@@ -1133,22 +1133,14 @@ func (p *Pinochle) ResolveTrick() {
 }
 
 // NextTrick 次のトリックを開始する
+// 注: ResolveTrick() は呼び出し元 (Interactor) が先に実行する。
 func (p *Pinochle) NextTrick() {
 	if p.phase != PinochlePhaseTrickEnd {
 		return
 	}
-
-	winner := p.trickWinner()
-	p.ResolveTrick()
-
-	if p.phase == PinochlePhaseRoundEnd {
-		return
-	}
-
-	p.trickNumber++
 	p.currentTrick = nil
-	p.leadPlayerIdx = winner
-	p.currentPlayerIdx = winner
+	p.currentPlayerIdx = p.leadPlayerIdx
+	p.trickNumber++
 	p.phase = PinochlePhasePlay
 }
 

@@ -1241,6 +1241,8 @@ func TestPinochle_NextTrick(t *testing.T) {
 		t.Fatalf("expected TrickEnd, got %d", g.GetPhase())
 	}
 
+	// ResolveTrick must be called before NextTrick (interactor pattern)
+	g.ResolveTrick()
 	g.NextTrick()
 
 	if g.GetPhase() != PinochlePhasePlay {
