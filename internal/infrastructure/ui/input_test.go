@@ -5,7 +5,6 @@ package ui
 import (
 	"bufio"
 	"bytes"
-	"os"
 	"strings"
 	"testing"
 
@@ -41,7 +40,7 @@ func TestReadInput_WithGameName(t *testing.T) {
 			name:       "EOF returns exit true",
 			gameName:   "poker",
 			input:      "",
-			wantPrompt: "[poker] > Goodbye.\n",
+			wantPrompt: "[poker] > ",
 			wantText:   "",
 			wantExit:   true,
 		},
@@ -49,22 +48,12 @@ func TestReadInput_WithGameName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Capture stdout to verify prompt
-			origStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
-
+			t.Parallel()
+			var promptBuf bytes.Buffer
 			scanner := bufio.NewScanner(strings.NewReader(tt.input))
-			text, exit := readInput(scanner, tt.gameName)
+			text, exit := readInput(scanner, tt.gameName, &promptBuf)
 
-			_ = w.Close()
-			os.Stdout = origStdout
-
-			var buf bytes.Buffer
-			_, _ = buf.ReadFrom(r)
-			_ = r.Close()
-
-			assert.Equal(t, tt.wantPrompt, buf.String())
+			assert.Equal(t, tt.wantPrompt, promptBuf.String())
 			assert.Equal(t, tt.wantText, text)
 			assert.Equal(t, tt.wantExit, exit)
 		})

@@ -3,6 +3,7 @@ package ui
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -11,11 +12,12 @@ import (
 // readInput はスキャナから1行を読み込み、EOFとエラーを処理します。
 // 入力テキストと、プログラムを終了すべきかを示すブール値を返します。
 // gameName が空でない場合、プロンプトに "[gameName] > " と表示します。
-func readInput(scanner *bufio.Scanner, gameName string) (text string, exit bool) {
+// w はプロンプト出力先の io.Writer です（通常は os.Stdout）。
+func readInput(scanner *bufio.Scanner, gameName string, w io.Writer) (text string, exit bool) {
 	if gameName != "" {
-		_, _ = fmt.Fprintf(os.Stdout, "[%s] > ", gameName)
+		_, _ = fmt.Fprintf(w, "[%s] > ", gameName)
 	} else {
-		_, _ = fmt.Fprint(os.Stdout, "> ")
+		_, _ = fmt.Fprint(w, "> ")
 	}
 	if !scanner.Scan() {
 		if err := scanner.Err(); err != nil {

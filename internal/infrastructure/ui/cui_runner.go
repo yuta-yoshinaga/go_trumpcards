@@ -51,7 +51,7 @@ func RunInteractiveCuiLoop(manager *GameManager) {
 	fmt.Println(i18n.T("typeHelp"))
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		input, exit := readInput(scanner, manager.CurrentGame())
+		input, exit := readInput(scanner, manager.CurrentGame(), os.Stdout)
 		if exit {
 			break
 		}
@@ -72,7 +72,7 @@ func RunCuiLoop(controller CuiExecer, helpLines []string) {
 	fmt.Println(i18n.T("typeHelp"))
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		input, exit := readInput(scanner, "")
+		input, exit := readInput(scanner, "", os.Stdout)
 		if exit {
 			break
 		}
