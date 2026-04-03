@@ -49,6 +49,10 @@ func TestGolfWebController_Commands(t *testing.T) {
 		{"hint", "hint"},
 		{"log", "log"},
 		{"undo", "undo"},
+		{"short-r", "r"},
+		{"short-d", "d"},
+		{"short-g", "g"},
+		{"short-u", "u"},
 	}
 
 	for _, tt := range tests {
@@ -60,6 +64,23 @@ func TestGolfWebController_Commands(t *testing.T) {
 			rec.CodeIs(http.StatusOK)
 		})
 	}
+}
+
+func TestGolfWebController_Remove_ShortAlias(t *testing.T) {
+	giMock, ctrl, mockOutput := setupGolfWebTest(t)
+	giMock.On("Reset").Return(mockOutput)
+	giMock.On("Remove", 2).Return(mockOutput)
+
+	golfPost(t, ctrl.Exec, &controller.GolfWebInput{
+		BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "s5"},
+	})
+
+	input := &controller.GolfWebInput{
+		BaseWebInput: controller.BaseWebInput{Command: "rm", SessionID: "s5"},
+		Col:          golfIntPtr(2),
+	}
+	rec := golfPost(t, ctrl.Exec, input)
+	rec.CodeIs(http.StatusOK)
 }
 
 func TestGolfWebController_Remove(t *testing.T) {
