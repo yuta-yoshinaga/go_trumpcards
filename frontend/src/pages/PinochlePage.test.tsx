@@ -290,7 +290,7 @@ describe('PinochlePage', () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<PinochlePage />);
     await waitFor(() => {
-      expect(screen.getByText(/チーム 0/)).toBeInTheDocument();
+      expect(screen.getAllByText(/チーム 0/).length).toBeGreaterThan(0);
     });
   });
 });

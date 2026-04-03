@@ -21,10 +21,54 @@ function createWrapper() {
 
 const basePinochleState: PinochleResponse = {
   players: [
-    { id: 0, isHuman: true, cardCount: 12, cards: [], team: 0, trickCount: 0, bid: 0, hasPassed: false, meldScore: 0, trickPoints: 0 },
-    { id: 1, isHuman: false, cardCount: 12, cards: [], team: 1, trickCount: 0, bid: 0, hasPassed: false, meldScore: 0, trickPoints: 0 },
-    { id: 2, isHuman: false, cardCount: 12, cards: [], team: 0, trickCount: 0, bid: 0, hasPassed: false, meldScore: 0, trickPoints: 0 },
-    { id: 3, isHuman: false, cardCount: 12, cards: [], team: 1, trickCount: 0, bid: 0, hasPassed: false, meldScore: 0, trickPoints: 0 },
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 12,
+      cards: [],
+      team: 0,
+      trickCount: 0,
+      bid: 0,
+      hasPassed: false,
+      meldScore: 0,
+      trickPoints: 0,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 12,
+      cards: [],
+      team: 1,
+      trickCount: 0,
+      bid: 0,
+      hasPassed: false,
+      meldScore: 0,
+      trickPoints: 0,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 12,
+      cards: [],
+      team: 0,
+      trickCount: 0,
+      bid: 0,
+      hasPassed: false,
+      meldScore: 0,
+      trickPoints: 0,
+    },
+    {
+      id: 3,
+      isHuman: false,
+      cardCount: 12,
+      cards: [],
+      team: 1,
+      trickCount: 0,
+      bid: 0,
+      hasPassed: false,
+      meldScore: 0,
+      trickPoints: 0,
+    },
   ],
   phase: 0,
   roundNumber: 1,
@@ -49,9 +93,7 @@ describe('usePinochleGame', () => {
   it('calls reset with default config on mount', async () => {
     mockExec.mockResolvedValue(basePinochleState);
     renderHook(() => usePinochleGame(), { wrapper: createWrapper() });
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, DEFAULT_PINOCHLE_CONFIG),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, DEFAULT_PINOCHLE_CONFIG));
   });
 
   it('handleBid calls exec with bid command', async () => {
@@ -150,8 +192,6 @@ describe('usePinochleGame', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(basePinochleState);
     act(() => result.current.handleReset());
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, DEFAULT_PINOCHLE_CONFIG),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, DEFAULT_PINOCHLE_CONFIG));
   });
 });

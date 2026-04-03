@@ -57,8 +57,10 @@ func (p *PinochleCuiPresenter) Output(g interfaces.PinochleGame, lastErr error) 
 		fmt.Fprintf(b, "ディーラー: %s\n", cuiPlayerName(g.GetPlayer(g.GetDealerIdx()), g.GetDealerIdx()))
 
 		trumpSuit := g.GetTrumpSuit()
-		if trumpSuit > 0 {
+		if trumpSuit > 0 && g.GetHighestBidder() >= 0 {
 			fmt.Fprintf(b, "切り札: %s (ビッドチーム: チーム%d)\n", cuiSuitName(trumpSuit), g.GetPlayer(g.GetHighestBidder()).GetTeam())
+		} else if trumpSuit > 0 {
+			fmt.Fprintf(b, "切り札: %s\n", cuiSuitName(trumpSuit))
 		} else {
 			b.WriteString("切り札: 未決定\n")
 		}
