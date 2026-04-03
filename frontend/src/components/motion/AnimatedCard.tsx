@@ -9,10 +9,18 @@ interface AnimatedCardProps extends React.ComponentProps<typeof CardImage> {
   isSelected?: boolean;
   /** Shared layout animation ID. */
   layoutId?: string;
+  /** Additional class name for the motion wrapper div. */
+  wrapperClassName?: string;
 }
 
 /** Renders an animated face-up playing card with deal and select animations. */
-export function AnimatedCard({ dealDelay = 0, isSelected = false, layoutId, ...rest }: AnimatedCardProps) {
+export function AnimatedCard({
+  dealDelay = 0,
+  isSelected = false,
+  layoutId,
+  wrapperClassName,
+  ...rest
+}: AnimatedCardProps) {
   const reduced = useReducedMotion();
 
   if (reduced) {
@@ -22,6 +30,7 @@ export function AnimatedCard({ dealDelay = 0, isSelected = false, layoutId, ...r
   return (
     <motion.div
       layoutId={layoutId}
+      className={wrapperClassName}
       initial={{ opacity: 0, y: 30 }}
       animate={{
         opacity: 1,
@@ -35,7 +44,7 @@ export function AnimatedCard({ dealDelay = 0, isSelected = false, layoutId, ...r
         damping: 25,
         delay: dealDelay,
       }}
-      style={{ display: 'inline-block' }}
+      style={wrapperClassName ? undefined : { display: 'inline-block' }}
       data-testid="animated-card"
     >
       <CardImage {...rest} />
