@@ -122,16 +122,7 @@ func (bi *BridgeInteractor) ActionLog() string {
 
 // runCpuBids ビッドフェーズでCPUを自動実行する
 func (bi *BridgeInteractor) runCpuBids() {
-	for !bi.b.GetGameEndFlag() {
-		phase := bi.b.GetPhase()
-		if phase != domain.BridgePhaseBid {
-			break
-		}
-		if bi.b.IsHumanBidTurn() {
-			break
-		}
-		bi.b.CpuBid()
-	}
+	runCpuBidsLoop(bi.b, domain.BridgePhaseBid)
 }
 
 // runCpuTurns プレイフェーズでCPUターンを自動実行する

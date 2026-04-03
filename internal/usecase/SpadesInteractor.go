@@ -121,15 +121,7 @@ func (si *SpadesInteractor) ActionLog() string {
 
 // runCpuBids ゲームが終わるかヒューマンのビッド番またはビッドフェーズが終了するまでCPUビッドを実行
 func (si *SpadesInteractor) runCpuBids() {
-	for !si.s.GetGameEndFlag() {
-		if si.s.GetPhase() != domain.SpadesPhaseBid {
-			break
-		}
-		if si.s.IsHumanBidTurn() {
-			break
-		}
-		si.s.CpuBid()
-	}
+	runCpuBidsLoop(si.s, domain.SpadesPhaseBid)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番またはトリック/ラウンド終了になるまでCPUターンを実行

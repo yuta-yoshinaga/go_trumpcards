@@ -18,6 +18,28 @@ type trickPhases[P comparable] struct {
 	gameEnd  P
 }
 
+// bidGame ビッドフェーズを持つゲーム共通インタフェース
+type bidGame[P comparable] interface {
+	GetGameEndFlag() bool
+	GetPhase() P
+	IsHumanBidTurn() bool
+	CpuBid()
+}
+
+// runCpuBidsLoop ビッドフェーズでCPUのビッドを自動実行するループ。
+// bidPhase に該当するフェーズの間、人間の手番になるまでCPUにビッドさせる。
+func runCpuBidsLoop[P comparable](g bidGame[P], bidPhase P) {
+	for !g.GetGameEndFlag() {
+		if g.GetPhase() != bidPhase {
+			break
+		}
+		if g.IsHumanBidTurn() {
+			break
+		}
+		g.CpuBid()
+	}
+}
+
 // runCpuTurnsLoop トリックテイキングゲーム共通のCPUターン実行ループ
 func runCpuTurnsLoop[P comparable](g trickGame[P], p trickPhases[P]) {
 	for !g.GetGameEndFlag() {
