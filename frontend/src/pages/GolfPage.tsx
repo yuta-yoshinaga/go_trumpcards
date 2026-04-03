@@ -127,7 +127,7 @@ function GolfPageContent() {
   const effectiveCardWidth = isMobile ? Math.max(cardWidth, solitaireMinColWidth) : cardWidth;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.tripeaks.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.golf.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.golf')} />
       <PhaseIndicator
         phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
@@ -172,10 +172,7 @@ function GolfPageContent() {
                   <div key={`gc-${colIdx.toString()}-${rowIdx.toString()}`} className="absolute" style={{ top }}>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (!exposed || !gc.card) return;
-                        handleSelectCard(colIdx);
-                      }}
+                      onClick={() => handleSelectCard(colIdx)}
                       disabled={!isPlaying || loading || !exposed}
                       aria-label={cardAlt(gc.card)}
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
@@ -250,7 +247,7 @@ function GolfPageContent() {
       {/* Settings */}
       <SettingsPanel title={tc('settings.title')} groups={[]} />
 
-      <GameFooter className={`${gameTheme.tripeaks.footer} px-4 py-2.5`}>
+      <GameFooter className={`${gameTheme.golf.footer} px-4 py-2.5`}>
         <ErrorAlert message={error ?? hintError} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (

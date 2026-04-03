@@ -164,6 +164,48 @@ describe('GolfPage', () => {
     expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled();
   });
 
+  it('clicking exposed card dispatches remove', async () => {
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    // Find an exposed card button (col 0 bottom card is ♠A)
+    const cardButtons = screen.getAllByRole('button', { name: /♠/ });
+    fireEvent.click(cardButtons[0]);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', expect.any(Number)));
+  });
+
+  it('clicking hint button dispatches hint', async () => {
+    const hintState: GolfResponse = {
+      ...playingState,
+      hint: { type: 'remove', col: 0 },
+      messageCode: 'golf.hintAvailable',
+    };
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(hintState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+  });
+
+  it('renders stalemate message', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      isStalemate: true,
+      messageCode: 'golf.stalemate',
+      message: '手詰まりです。元に戻すかギブアップしてください。',
+    });
+    renderWithProviders(<GolfPage />);
+    await waitFor(() =>
+      expect(screen.getByText('手詰まりです。元に戻すかギブアップしてください。')).toBeInTheDocument(),
+    );
+  });
+
   it('suppresses unused import warning', () => {
     expect(actionLogApi).toBeDefined();
   });
