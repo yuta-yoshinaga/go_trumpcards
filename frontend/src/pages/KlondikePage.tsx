@@ -124,7 +124,7 @@ function KlondikePageContent() {
     const gapPx = 4; // gap-1
     const cols = 7;
     const colW = Math.floor((windowWidth - padX - (cols - 1) * gapPx) / cols);
-    const cw = Math.max(colW, 28);
+    const cw = Math.min(Math.max(colW, 28), cardWidth);
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.48);
     const wasteFan = Math.round(cw * 0.3);
@@ -351,7 +351,12 @@ function KlondikePageContent() {
                           aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                           className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
                         >
-                          <AnimatedCard card={tc.card} width={kl.cw} style={{ width: '100%' }} />
+                          <AnimatedCard
+                            card={tc.card}
+                            width={kl.cw}
+                            style={{ width: '100%' }}
+                            wrapperClassName="block w-full"
+                          />
                         </button>
                       ) : (
                         <AnimatedCardBack width={kl.cw} className="w-full" />
