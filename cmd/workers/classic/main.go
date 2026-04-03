@@ -354,6 +354,29 @@ func main() {
 		},
 	)
 
+	registerKV(mux, "/pinochle/exec", "pinochle:",
+		func() usecase.PinochleInteractorIF {
+			config := domain.DefaultPinochleConfig()
+			players := []*domain.PinochlePlayer{
+				domain.NewPinochlePlayer(true, 0),
+				domain.NewPinochlePlayer(false, 1),
+				domain.NewPinochlePlayer(false, 0),
+				domain.NewPinochlePlayer(false, 1),
+			}
+			pinochle := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, config)
+			return usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleWebPresenter))
+		},
+		func(data []byte) (usecase.PinochleInteractorIF, error) {
+			return usecase.RestorePinochleInteractor(data, new(presenter.PinochleWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.PinochleInteractorIF], f func() usecase.PinochleInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewPinochleWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

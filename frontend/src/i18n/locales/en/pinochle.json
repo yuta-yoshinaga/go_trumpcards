@@ -1,0 +1,61 @@
+{
+  "title": "Pinochle",
+  "phase": {
+    "bid": "Bid",
+    "trump": "Declare Trump",
+    "meld": "Meld",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit"
+  },
+  "bid": "Bid",
+  "pass": "Pass",
+  "declareTrump": "Declare Trump",
+  "confirmMelds": "Confirm Melds",
+  "play": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "team": "Team",
+  "highestBid": "Highest Bid",
+  "trumpSuit": "Trump Suit",
+  "meldScore": "Meld Score",
+  "trickPoints": "Trick Points",
+  "round": "Round",
+  "trick": "Trick",
+  "dealer": "Dealer",
+  "bidder": "Bidder",
+  "suits": {
+    "1": "Spades",
+    "2": "Clubs",
+    "3": "Hearts",
+    "4": "Diamonds"
+  },
+  "meldTypes": {
+    "0": "Dix",
+    "1": "Common Marriage",
+    "2": "Royal Marriage",
+    "3": "Pinochle",
+    "4": "Jacks Around",
+    "5": "Queens Around",
+    "6": "Kings Around",
+    "7": "Aces Around",
+    "8": "Run",
+    "9": "Double Pinochle",
+    "10": "Double Jacks Around",
+    "11": "Double Queens Around",
+    "12": "Double Kings Around",
+    "13": "Double Aces Around",
+    "14": "Double Run"
+  },
+  "hintReason": {
+    "hint_bid": "This bid is reasonable for your hand",
+    "hint_pass": "Your hand is weak, pass is recommended",
+    "hint_trump": "This suit is optimal for trump",
+    "hint_play": "This card is the best play"
+  }
+}

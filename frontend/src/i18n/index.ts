@@ -27,6 +27,7 @@ import enOhhell from './locales/en/ohhell.json';
 import enOldmaid from './locales/en/oldmaid.json';
 import enOmaha from './locales/en/omaha.json';
 import enPineapple from './locales/en/pineapple.json';
+import enPinochle from './locales/en/pinochle.json';
 import enPoker from './locales/en/poker.json';
 import enPyramid from './locales/en/pyramid.json';
 import enSevens from './locales/en/sevens.json';
@@ -63,6 +64,7 @@ import jaOhhell from './locales/ja/ohhell.json';
 import jaOldmaid from './locales/ja/oldmaid.json';
 import jaOmaha from './locales/ja/omaha.json';
 import jaPineapple from './locales/ja/pineapple.json';
+import jaPinochle from './locales/ja/pinochle.json';
 import jaPoker from './locales/ja/poker.json';
 import jaPyramid from './locales/ja/pyramid.json';
 import jaSevens from './locales/ja/sevens.json';
@@ -93,6 +95,7 @@ i18n
         holdem: jaHoldem,
         omaha: jaOmaha,
         pineapple: jaPineapple,
+        pinochle: jaPinochle,
         shortdeck: jaShortdeck,
         hearts: jaHearts,
         spades: jaSpades,
@@ -131,6 +134,7 @@ i18n
         holdem: enHoldem,
         omaha: enOmaha,
         pineapple: enPineapple,
+        pinochle: enPinochle,
         shortdeck: enShortdeck,
         hearts: enHearts,
         spades: enSpades,
@@ -172,6 +176,7 @@ i18n
       'holdem',
       'omaha',
       'pineapple',
+      'pinochle',
       'shortdeck',
       'hearts',
       'spades',

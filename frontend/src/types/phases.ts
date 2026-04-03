@@ -27,6 +27,7 @@
  *   - ThreeCard:   internal/domain/ThreeCard.go   (ThreeCardPhaseBet, ThreeCardPhaseAction, ThreeCardPhaseEnd)
  *   - TriPeaks:    internal/domain/TriPeaks.go    (TriPeaksPhasePlaying, TriPeaksPhaseGameClear, TriPeaksPhaseGameOver)
  *   - VideoPoker:  internal/domain/VideoPoker.go  (VideoPokerPhaseBet, VideoPokerPhaseDraw, VideoPokerPhaseResult)
+ *   - Pinochle:    internal/domain/Pinochle.go    (PinochlePhaseBid, PinochlePhaseTrump, PinochlePhaseMeld, PinochlePhasePlay, PinochlePhaseTrickEnd, PinochlePhaseRoundEnd, PinochlePhaseGameEnd)
  */
 
 /** BlackJack phase constants (sync: internal/domain/BlackJack.go). */
@@ -300,4 +301,15 @@ export const CanastaPhase = {
   DISCARD: 2,
   ROUND_END: 3,
   GAME_END: 4,
+} as const;
+
+/** Pinochle phase constants (sync: internal/domain/Pinochle.go). */
+export const PinochlePhase = {
+  BID: 0,
+  TRUMP: 1,
+  MELD: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
 } as const;

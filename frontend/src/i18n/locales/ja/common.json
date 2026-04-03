@@ -51,7 +51,8 @@
     "pineapple": "パイナップルポーカー",
     "ohhell": "オー・ヘル",
     "speed": "スピード",
-    "gofish": "Go Fish"
+    "gofish": "Go Fish",
+    "pinochle": "ピノクル"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -190,6 +191,14 @@
     "canasta.roundEnd": "ラウンド終了",
     "canasta.result.humanWin": "ゲーム終了！あなたの勝利です！",
     "canasta.result.cpuWin": "ゲーム終了！CPU {{cpuId}} の勝利です！",
+    "pinochle.bidPhase": "ビッドしてください (bid <n> / pass)",
+    "pinochle.trumpPhase": "トランプスートを宣言してください",
+    "pinochle.meldPhase": "メルドを確認してください",
+    "pinochle.playPhase": "カードをプレイしてください",
+    "pinochle.trickEndPhase": "トリック終了",
+    "pinochle.roundEndPhase": "ラウンド終了",
+    "pinochle.result.team0Win": "ゲーム終了！チーム0の勝利！",
+    "pinochle.result.team1Win": "ゲーム終了！チーム1の勝利！",
     "napoleon.result.napoleonWins": "ナポレオン軍の勝利！",
     "napoleon.result.alliedWins": "連合軍の勝利！",
     "napoleon.bidPhase": "ビッドしてください",

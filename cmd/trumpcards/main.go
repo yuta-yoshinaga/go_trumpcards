@@ -174,6 +174,7 @@ ENVIRONMENT VARIABLES:
 		"pineapple":   func() int { ui.NewPineappleCui().Exec(); return 0 },
 		"speed":       func() int { ui.NewSpeedCui().Exec(); return 0 },
 		"gofish":      func() int { ui.NewGoFishCui().Exec(); return 0 },
+		"pinochle":    func() int { ui.NewPinochleCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 			if err := updater.Exec(); err != nil {
