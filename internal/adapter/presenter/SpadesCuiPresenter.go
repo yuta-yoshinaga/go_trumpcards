@@ -56,19 +56,13 @@ func (p *SpadesCuiPresenter) Output(s interfaces.SpadesGame, lastErr error) stri
 
 		// 現在のトリック
 		trick := s.GetCurrentTrick()
-		if len(trick) > 0 {
-			parts := make([]string, len(trick))
-			for i, tc := range trick {
-				player := s.GetPlayer(tc.PlayerIdx)
-				parts[i] = fmt.Sprintf("%s=%s", cuiPlayerName(player, tc.PlayerIdx), cuiCardStr(tc.Card))
-			}
-			fmt.Fprintf(b, "トリック: %s\n", strings.Join(parts, ", "))
-		}
+		cuiTrickBlock(b, trick,
+			func(tc *domain.SpadesTrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.SpadesTrickCard) string { return cuiCardStr(tc.Card) },
+			func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) },
+		)
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		// ゲーム状態
 		if s.GetGameEndFlag() {
@@ -116,24 +110,14 @@ func (p *SpadesCuiPresenter) HintOutput(s interfaces.SpadesGame) string {
 	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), spadesHintReasonStr(hint.Reason))))
 }
 
+// spadesHintReasons はSpades固有のヒント理由翻訳
+var spadesHintReasons = map[string]string{
+	"trump_cut": "スペードでカット",
+}
+
 // spadesHintReasonStr ヒント理由を日本語に変換する
 func spadesHintReasonStr(reason string) string {
-	switch reason {
-	case "strategic_bid":
-		return "戦略的なビッド"
-	case "lead_strong":
-		return "強いカードでリード"
-	case "lead_low":
-		return "低いカードでリード"
-	case "follow_suit":
-		return "リードスートに追随"
-	case "trump_cut":
-		return "スペードでカット"
-	case "discard_high":
-		return "高いカードを捨てる"
-	default:
-		return reason
-	}
+	return lookupHintReason(reason, spadesHintReasons)
 }
 
 // ActionLogOutput 棋譜をテキスト出力

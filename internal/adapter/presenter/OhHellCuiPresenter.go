@@ -63,19 +63,13 @@ func (p *OhHellCuiPresenter) Output(o interfaces.OhHellGame, lastErr error) stri
 
 		// 現在のトリック
 		trick := o.GetCurrentTrick()
-		if len(trick) > 0 {
-			parts := make([]string, len(trick))
-			for i, tc := range trick {
-				player := o.GetPlayer(tc.PlayerIdx)
-				parts[i] = fmt.Sprintf("%s=%s", cuiPlayerName(player, tc.PlayerIdx), cuiCardStr(tc.Card))
-			}
-			fmt.Fprintf(b, "トリック: %s\n", strings.Join(parts, ", "))
-		}
+		cuiTrickBlock(b, trick,
+			func(tc *domain.OhHellTrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.OhHellTrickCard) string { return cuiCardStr(tc.Card) },
+			func(idx int) string { return cuiPlayerName(o.GetPlayer(idx), idx) },
+		)
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		// ゲーム状態
 		if o.GetGameEndFlag() {
@@ -140,22 +134,7 @@ func (p *OhHellCuiPresenter) HintOutput(o interfaces.OhHellGame) string {
 
 // ohHellHintReasonStr ヒント理由を日本語に変換する
 func ohHellHintReasonStr(reason string) string {
-	switch reason {
-	case "strategic_bid":
-		return "戦略的なビッド"
-	case "lead_strong":
-		return "強いカードでリード"
-	case "lead_low":
-		return "低いカードでリード"
-	case "follow_suit":
-		return "リードスートに追随"
-	case "trump_cut":
-		return "切り札でカット"
-	case "discard_high":
-		return "高いカードを捨てる"
-	default:
-		return reason
-	}
+	return lookupHintReason(reason, nil)
 }
 
 // ActionLogOutput 棋譜をテキスト出力

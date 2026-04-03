@@ -81,19 +81,13 @@ func (p *NapoleonCuiPresenter) Output(n interfaces.NapoleonGame, lastErr error) 
 
 		// 現在のトリック
 		trick := n.GetCurrentTrick()
-		if len(trick) > 0 {
-			parts := make([]string, len(trick))
-			for i, tc := range trick {
-				player := n.GetPlayer(tc.PlayerIdx)
-				parts[i] = fmt.Sprintf("%s=%s", cuiPlayerName(player, tc.PlayerIdx), napoleonCuiCardStr(tc.Card))
-			}
-			fmt.Fprintf(b, "トリック: %s\n", strings.Join(parts, ", "))
-		}
+		cuiTrickBlock(b, trick,
+			func(tc *domain.NapoleonTrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.NapoleonTrickCard) string { return napoleonCuiCardStr(tc.Card) },
+			func(idx int) string { return cuiPlayerName(n.GetPlayer(idx), idx) },
+		)
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		// ゲーム状態
 		if n.GetGameEndFlag() {
@@ -168,30 +162,17 @@ func napoleonCuiCardStr(card *domain.Card) string {
 	return cuiCardStr(card)
 }
 
+// napoleonHintReasons はNapoleon固有のヒント理由翻訳
+var napoleonHintReasons = map[string]string{
+	"strategic_declare": "戦略的な宣言",
+	"strategic_discard": "戦略的な捨て",
+	"play_joker":        "ジョーカーをプレイ",
+	"discard_low":       "低いカードを捨てる",
+}
+
 // napoleonHintReasonStr ヒント理由を日本語に変換する
 func napoleonHintReasonStr(reason string) string {
-	switch reason {
-	case "strategic_bid":
-		return "戦略的なビッド"
-	case "strategic_declare":
-		return "戦略的な宣言"
-	case "strategic_discard":
-		return "戦略的な捨て"
-	case "lead_strong":
-		return "強いカードでリード"
-	case "lead_low":
-		return "低いカードでリード"
-	case "follow_suit":
-		return "リードスートに追随"
-	case "trump_cut":
-		return "切り札でカット"
-	case "play_joker":
-		return "ジョーカーをプレイ"
-	case "discard_low":
-		return "低いカードを捨てる"
-	default:
-		return reason
-	}
+	return lookupHintReason(reason, napoleonHintReasons)
 }
 
 // ActionLogOutput 棋譜をテキスト出力
