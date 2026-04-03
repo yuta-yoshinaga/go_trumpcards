@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
 import { useFavoriteGames } from '../hooks/useFavoriteGames';
+import { focusRingWhite } from '../styles/buttonStyles';
 import { SoundToggle } from './SoundToggle';
 import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
 
@@ -94,7 +95,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
               type="button"
               aria-label={t('nav.searchClear')}
               onClick={() => setSearchTerm('')}
-              className="text-gray-400 hover:text-white flex items-center justify-center text-xs shrink-0"
+              className={`text-gray-400 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center text-xs shrink-0 ${focusRingWhite}`}
             >
               ✕
             </button>
@@ -152,7 +153,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                       type="button"
                       aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
                       onClick={() => toggleFavorite(path)}
-                      className="text-yellow-400 w-6 h-6 flex items-center justify-center text-xs shrink-0 hover:scale-110 transition-transform"
+                      className={`text-yellow-400 min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
                     >
                       {isFavorite(path) ? '★' : '☆'}
                     </button>
@@ -186,7 +187,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                         type="button"
                         aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
                         onClick={() => toggleFavorite(path)}
-                        className="text-yellow-400 w-6 h-6 flex items-center justify-center text-xs shrink-0 hover:scale-110 transition-transform"
+                        className={`text-yellow-400 min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
                       >
                         {isFavorite(path) ? '★' : '☆'}
                       </button>

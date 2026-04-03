@@ -31,4 +31,10 @@ describe('ErrorAlert', () => {
     fireEvent.click(btn);
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
+
+  it('applies min-h-[44px] touch target to retry button', () => {
+    render(<ErrorAlert message="error" onRetry={() => {}} />);
+    const btn = screen.getByRole('button', { name: retryLabel });
+    expect(btn.className).toContain('min-h-[44px]');
+  });
 });
