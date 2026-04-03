@@ -13,6 +13,13 @@ type EuchreWebPresenter struct{}
 
 // Output ゲーム状態をJSON出力
 func (p *EuchreWebPresenter) Output(e interfaces.EuchreGame, lastErr error) string {
+	resObj := p.buildBase(e)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(e, e.GetCurrentTrick(), lastErr)
+	return marshalOrError(resObj)
+}
+
+// buildBase 共通フィールドを構築
+func (p *EuchreWebPresenter) buildBase(e interfaces.EuchreGame) *controller.EuchreWebOutput {
 	resObj := new(controller.EuchreWebOutput)
 	resObj.Phase = int(e.GetPhase())
 	resObj.RoundNumber = e.GetRoundNumber()
@@ -37,24 +44,16 @@ func (p *EuchreWebPresenter) Output(e interfaces.EuchreGame, lastErr error) stri
 		PointLimit:    cfg.PointLimit,
 	}
 
-	trick := e.GetCurrentTrick()
-	resObj.CurrentTrick = p.buildTrickOutput(trick)
+	resObj.CurrentTrick = p.buildTrickOutput(e.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(e)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(e, trick, lastErr)
-
-	return marshalOrError(resObj)
+	return resObj
 }
 
 // buildTrickOutput 現在のトリック情報を構築
 func (p *EuchreWebPresenter) buildTrickOutput(trick []*domain.EuchreTrickCard) []*controller.EuchreWebOutputTrickCard {
-	out := make([]*controller.EuchreWebOutputTrickCard, 0)
-	for _, tc := range trick {
-		out = append(out, &controller.EuchreWebOutputTrickCard{
-			PlayerIdx: tc.PlayerIdx,
-			Card:      cardToOutput(tc.Card),
-		})
-	}
-	return out
+	return buildTrickCards(trick, func(tc *domain.EuchreTrickCard) *controller.EuchreWebOutputTrickCard {
+		return &controller.EuchreWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -110,31 +109,7 @@ func (p *EuchreWebPresenter) buildMessage(e interfaces.EuchreGame, trick []*doma
 // HintOutput ヒント情報をJSON出力する
 func (p *EuchreWebPresenter) HintOutput(e interfaces.EuchreGame) string {
 	hint := e.GetHint()
-	resObj := new(controller.EuchreWebOutput)
-	resObj.Phase = int(e.GetPhase())
-	resObj.RoundNumber = e.GetRoundNumber()
-	resObj.TrickNumber = e.GetTrickNumber()
-	resObj.CurrentPlayerIdx = e.GetCurrentPlayerIdx()
-	resObj.BidPlayerIdx = e.GetBidPlayerIdx()
-	resObj.DealerIdx = e.GetDealerIdx()
-	resObj.TrumpSuit = e.GetTrumpSuit()
-	resObj.FaceUpCard = cardToOutput(e.GetFaceUpCard())
-	resObj.MakerTeam = e.GetMakerTeam()
-	resObj.GoingAlone = e.GetGoingAlone()
-	resObj.GoingAlonePlayerIdx = e.GetGoingAlonePlayerIdx()
-	resObj.TeamScores = [2]int{e.GetTeamScore(0), e.GetTeamScore(1)}
-	resObj.GameEndFlag = e.GetGameEndFlag()
-	resObj.WinnerTeam = e.GetWinnerTeam()
-	resObj.LeadPlayerIdx = e.GetLeadPlayerIdx()
-	cfg := e.GetConfig()
-	resObj.Config = controller.EuchreWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		PointLimit:    cfg.PointLimit,
-	}
-	trick := e.GetCurrentTrick()
-	resObj.CurrentTrick = p.buildTrickOutput(trick)
-	resObj.Players = p.buildPlayersOutput(e)
-
+	resObj := p.buildBase(e)
 	if hint != nil {
 		resObj.Hint = &controller.EuchreWebOutputHint{
 			CardIndex: hint.CardIndex,

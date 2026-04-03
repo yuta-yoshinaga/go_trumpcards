@@ -68,14 +68,9 @@ func (p *NapoleonWebPresenter) buildBaseOutput(n interfaces.NapoleonGame) *contr
 
 // buildTrickOutput 現在のトリック情報を構築
 func (p *NapoleonWebPresenter) buildTrickOutput(trick []*domain.NapoleonTrickCard) []*controller.NapoleonWebOutputTrickCard {
-	out := make([]*controller.NapoleonWebOutputTrickCard, 0)
-	for _, tc := range trick {
-		out = append(out, &controller.NapoleonWebOutputTrickCard{
-			PlayerIdx: tc.PlayerIdx,
-			Card:      cardToOutput(tc.Card),
-		})
-	}
-	return out
+	return buildTrickCards(trick, func(tc *domain.NapoleonTrickCard) *controller.NapoleonWebOutputTrickCard {
+		return &controller.NapoleonWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
