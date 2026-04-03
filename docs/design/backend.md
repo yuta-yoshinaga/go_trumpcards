@@ -29,7 +29,7 @@
   - [3.5 Spades フェーズ遷移](#35-spades-フェーズ遷移)
   - [3.6 Doubt フェーズ遷移](#36-doubt-フェーズ遷移)
   - [3.7 Memory フェーズ遷移](#37-memory-フェーズ遷移)
-  - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks-フェーズ遷移)
+  - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks--golf-フェーズ遷移)
   - [3.9 CrazyEights フェーズ遷移](#39-crazyeights-フェーズ遷移)
   - [3.10 GinRummy フェーズ遷移](#310-ginrummy-フェーズ遷移)
   - [3.11 Baccarat フェーズ遷移](#311-baccarat-フェーズ遷移)
@@ -1583,7 +1583,7 @@ stateDiagram-v2
 
 ### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf フェーズ遷移
 
-5つのソリティア系ゲームは共通のフェーズ構造を持ちます。
+6つのソリティア系ゲームは共通のフェーズ構造を持ちます。
 
 ```mermaid
 stateDiagram-v2
@@ -1595,7 +1595,7 @@ stateDiagram-v2
     GameClear --> [*]
     GameOver --> [*]
 
-    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks 共通 Phase = 0
+    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks/Golf 共通 Phase = 0
     note right of GameClear : Phase = 1
     note right of GameOver : Phase = 2
 ```
@@ -1604,7 +1604,9 @@ Pyramid 固有のアクション: `Draw` / `RemovePair` / `RemoveKing` / `Remove
 
 TriPeaks 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件はウェイストトップ±1ランク（K-Aラップ）。クリア条件はタブローの28枚全除去。
 
-各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
+Golf 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件はウェイストトップ±1ランク（K-Aラップ）。7列×5段の35枚全除去でクリア。
+
+各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` / `GolfPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
 
 ### 3.9 CrazyEights フェーズ遷移
 
