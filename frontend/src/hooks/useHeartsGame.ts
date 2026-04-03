@@ -1,7 +1,5 @@
 import { useCallback } from 'react';
 import { heartsApi } from '../api/gameApi';
-import type { HeartsConfig, HeartsHint } from '../types/card';
-import type { useGameConfig } from './useGameConfig';
 import { useTrickGameBase } from './useTrickGameBase';
 
 /** Default Hearts game configuration. */
@@ -39,7 +37,7 @@ export function useHeartsGame() {
     state: base.state,
     loading: base.loading,
     error: base.error,
-    hint: base.hint as HeartsHint | null,
+    hint: base.hint,
     hintError: base.hintError,
     hintLoading: base.hintLoading,
     exec: base.exec,
@@ -47,8 +45,8 @@ export function useHeartsGame() {
     selectedCardIndices: base.selectedCardIndices,
     toggleCard: base.toggleCard,
     clearSelection: base.clearSelection,
-    handleConfigChange: base.handleConfigChange as ReturnType<typeof useGameConfig<HeartsConfig>>['handleConfigChange'],
-    handleToggle: base.handleToggle as ReturnType<typeof useGameConfig<HeartsConfig>>['handleToggle'],
+    handleConfigChange: base.handleConfigChange,
+    handleToggle: base.handleToggle,
     handlePass,
     handlePlay: base.handlePlay,
     handleNextTrick: base.handleNextTrick,

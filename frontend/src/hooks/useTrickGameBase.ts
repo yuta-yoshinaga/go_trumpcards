@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
@@ -95,42 +95,33 @@ export function useTrickGameBase<TState, TArgs extends unknown[], TConfig extend
     setHint(null);
   }, [clearSelection]);
 
-  const { state, loading, error, exec: rawExec } = useGameApi(apiFn, { onSuccess });
+  const { state, loading, error, exec } = useGameApi(apiFn, { onSuccess });
 
-  const exec = useCallback((...args: TArgs) => rawExec(...args), [rawExec]);
+  const defaultConfigRef = useRef(defaultConfig);
+
+  type ExecAny = (...args: unknown[]) => Promise<void>;
 
   useEffect(() => {
-    // TArgs always starts with a command string; cast is safe for the reset call
-    (exec as unknown as (cmd: string, a?: undefined, b?: undefined, cfg?: TConfig) => Promise<void>)(
-      'reset',
-      undefined,
-      undefined,
-      defaultConfig,
-    );
-  }, [exec, defaultConfig]);
+    (exec as unknown as ExecAny)('reset', undefined, undefined, defaultConfigRef.current);
+  }, [exec]);
 
   const handlePlay = useCallback(() => {
     if (selectedCardIndices.length !== 1) return;
-    // TArgs always includes command, optional second arg, and optional cardIndex
-    (exec as unknown as (cmd: string, a?: undefined, idx?: number) => Promise<void>)(
-      'play',
-      undefined,
-      selectedCardIndices[0],
-    );
+    (exec as unknown as ExecAny)('play', undefined, selectedCardIndices[0]);
   }, [exec, selectedCardIndices]);
 
   const handleNextTrick = useCallback(() => {
-    (exec as unknown as (cmd: string) => Promise<void>)('next');
+    (exec as unknown as ExecAny)('next');
   }, [exec]);
 
   const handleNextRound = useCallback(() => {
-    (exec as unknown as (cmd: string) => Promise<void>)('nextround');
+    (exec as unknown as ExecAny)('nextround');
   }, [exec]);
 
   const handleHint = useCallback(async () => {
     setHintLoading(true);
     try {
-      const res = await (apiFn as unknown as (cmd: string) => Promise<TState>)('hint');
+      const res = await (apiFn as unknown as (...args: unknown[]) => Promise<TState>)('hint');
       setHint(getHint(res) ?? null);
       setHintError(null);
     } catch {

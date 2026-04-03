@@ -170,7 +170,6 @@ describe('useTrickGameBase', () => {
     const { result } = renderBase();
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
-    mockExec.mockResolvedValue(stateWithHint);
     await act(async () => {
       await result.current.handleHint();
     });

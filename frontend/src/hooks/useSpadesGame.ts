@@ -1,7 +1,5 @@
 import { useCallback } from 'react';
 import { spadesApi } from '../api/gameApi';
-import type { SpadesConfig, SpadesHint } from '../types/card';
-import type { useGameConfig } from './useGameConfig';
 import { useTrickGameBase } from './useTrickGameBase';
 
 /** Default Spades game configuration. */
@@ -43,7 +41,7 @@ export function useSpadesGame() {
     state: base.state,
     loading: base.loading,
     error: base.error,
-    hint: base.hint as SpadesHint | null,
+    hint: base.hint,
     hintError: base.hintError,
     hintLoading: base.hintLoading,
     exec: base.exec,
@@ -51,7 +49,7 @@ export function useSpadesGame() {
     selectedCardIndices: base.selectedCardIndices,
     toggleCard: base.toggleCard,
     clearSelection: base.clearSelection,
-    handleConfigChange: base.handleConfigChange as ReturnType<typeof useGameConfig<SpadesConfig>>['handleConfigChange'],
+    handleConfigChange: base.handleConfigChange,
     handleBid,
     handlePlay: base.handlePlay,
     handleNextTrick: base.handleNextTrick,
