@@ -58,3 +58,43 @@ func TestBoolPtrOr(t *testing.T) {
 		assert.Equal(t, false, BoolPtrOr(&v, true))
 	})
 }
+
+func TestApplyBoundedInt(t *testing.T) {
+	t.Run("nil pointer keeps field unchanged", func(t *testing.T) {
+		field := 5
+		ApplyBoundedInt(&field, nil, 1, 10)
+		assert.Equal(t, 5, field)
+	})
+	t.Run("in-range value updates field", func(t *testing.T) {
+		field := 5
+		v := 3
+		ApplyBoundedInt(&field, &v, 1, 10)
+		assert.Equal(t, 3, field)
+	})
+	t.Run("out-of-range value keeps field unchanged", func(t *testing.T) {
+		field := 5
+		v := 99
+		ApplyBoundedInt(&field, &v, 1, 10)
+		assert.Equal(t, 5, field)
+	})
+}
+
+func TestApplyBool(t *testing.T) {
+	t.Run("nil pointer keeps field unchanged", func(t *testing.T) {
+		field := true
+		ApplyBool(&field, nil)
+		assert.Equal(t, true, field)
+	})
+	t.Run("non-nil false updates field", func(t *testing.T) {
+		field := true
+		v := false
+		ApplyBool(&field, &v)
+		assert.Equal(t, false, field)
+	})
+	t.Run("non-nil true updates field", func(t *testing.T) {
+		field := false
+		v := true
+		ApplyBool(&field, &v)
+		assert.Equal(t, true, field)
+	})
+}

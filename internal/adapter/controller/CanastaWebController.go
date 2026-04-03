@@ -72,7 +72,7 @@ type CanastaWebOutputConfig struct {
 func (c *CanastaWebConfig) ToConfig() domain.CanastaConfig {
 	cfg := domain.DefaultCanastaConfig()
 	cfg.CpuDifficulty = domain.CanastaCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.CanastaCpuDifficultyEasy), int(domain.CanastaCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 100000, cfg.PointLimit)
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.PointLimit, 1, 100000)
 	return cfg
 }
 

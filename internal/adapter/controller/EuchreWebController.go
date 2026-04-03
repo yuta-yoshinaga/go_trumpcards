@@ -83,7 +83,7 @@ type EuchreWebOutputConfig struct {
 func (c *EuchreWebConfig) ToConfig() domain.EuchreConfig {
 	cfg := domain.DefaultEuchreConfig()
 	cfg.CpuDifficulty = domain.EuchreCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.EuchreCpuDifficultyEasy), int(domain.EuchreCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.PointLimit, 1, 1000)
 	return cfg
 }
 
