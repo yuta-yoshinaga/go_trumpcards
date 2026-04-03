@@ -51,6 +51,7 @@ GAMES:
   spades       Spades (スペード)
   crazyeights  Crazy Eights (クレイジーエイト)
   ginrummy     Gin Rummy (ジンラミー)
+  canasta      Canasta (カナスタ)
   spider       Spider Solitaire (スパイダーソリティア)
   napoleon     Napoleon (ナポレオン)
   indianpoker  Indian Poker (インディアンポーカー)
@@ -66,6 +67,9 @@ GAMES:
   bridge       Contract Bridge (コントラクトブリッジ)
   pineapple    Pineapple Poker (パイナップルポーカー)
   speed        Speed (スピード)
+  gofish       Go Fish (ゴーフィッシュ)
+  pinochle     Pinochle (ピノクル)
+  golf         Golf Solitaire (ゴルフ)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -155,6 +159,7 @@ ENVIRONMENT VARIABLES:
 		"spades":      func() int { ui.NewSpadesCui().Exec(); return 0 },
 		"crazyeights": func() int { ui.NewCrazyEightsCui().Exec(); return 0 },
 		"ginrummy":    func() int { ui.NewGinRummyCui().Exec(); return 0 },
+		"canasta":     func() int { ui.NewCanastaCui().Exec(); return 0 },
 		"spider":      func() int { ui.NewSpiderCui().Exec(); return 0 },
 		"napoleon":    func() int { ui.NewNapoleonCui().Exec(); return 0 },
 		"indianpoker": func() int { ui.NewIndianPokerCui().Exec(); return 0 },
@@ -170,6 +175,9 @@ ENVIRONMENT VARIABLES:
 		"bridge":      func() int { ui.NewBridgeCui().Exec(); return 0 },
 		"pineapple":   func() int { ui.NewPineappleCui().Exec(); return 0 },
 		"speed":       func() int { ui.NewSpeedCui().Exec(); return 0 },
+		"gofish":      func() int { ui.NewGoFishCui().Exec(); return 0 },
+		"pinochle":    func() int { ui.NewPinochleCui().Exec(); return 0 },
+		"golf":        func() int { ui.NewGolfCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 			if err := updater.Exec(); err != nil {

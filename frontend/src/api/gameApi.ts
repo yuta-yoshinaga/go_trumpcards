@@ -3,6 +3,7 @@ import type {
   BaccaratResponse,
   BlackJackResponse,
   BridgeResponse,
+  CanastaResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoConfigInput,
@@ -12,6 +13,8 @@ import type {
   EuchreResponse,
   FreeCellResponse,
   GinRummyResponse,
+  GoFishResponse,
+  GolfResponse,
   HeartsResponse,
   HoldemResponse,
   IndianPokerResponse,
@@ -22,6 +25,7 @@ import type {
   OldMaidResponse,
   OmahaResponse,
   PineappleResponse,
+  PinochleResponse,
   PokerResponse,
   PyramidResponse,
   SevensResponse,
@@ -69,6 +73,8 @@ const workerUrl: Record<string, string> = {
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
+  gofish: WORKER_CLASSIC,
+  pinochle: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
@@ -76,7 +82,9 @@ const workerUrl: Record<string, string> = {
   tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
+  canasta: WORKER_SOLO,
   cribbage: WORKER_SOLO,
+  golf: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -603,6 +611,54 @@ export const ginrummyApi = {
     }),
 };
 
+/** Configuration options for Canasta game settings. */
+export interface CanastaConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Canasta /canasta/exec endpoint. */
+export const canastaApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'meld' | 'skipmeld' | 'discard' | 'goout' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: CanastaConfigInput,
+    naturalPairIndices?: number[],
+    meldGroups?: number[][],
+  ) =>
+    gameExec<CanastaResponse>('canasta', {
+      command,
+      cardIndex,
+      config,
+      naturalPairIndices,
+      meldGroups,
+    }),
+};
+
+/** Configuration options for Pinochle game settings. */
+export interface PinochleConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Pinochle /pinochle/exec endpoint. */
+export const pinochleApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'pass' | 'trump' | 'meld' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    cardIndex?: number,
+    config?: PinochleConfigInput,
+    bidAmount?: number,
+    suit?: number,
+  ) =>
+    gameExec<PinochleResponse>('pinochle', {
+      command,
+      cardIndex,
+      config,
+      bidAmount,
+      suit,
+    }),
+};
+
 /** Configuration options for Cribbage game settings. */
 export interface CribbageConfigInput {
   cpuDifficulty?: number;
@@ -837,6 +893,23 @@ export const speedApi = {
   ) => gameExec<SpeedResponse>('speed', { command, cardIndex, pileIndex, ...config }),
 };
 
+/** Configuration options for Go Fish game settings. */
+export interface GoFishConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Go Fish /gofish/exec endpoint. */
+export const goFishApi = {
+  exec: (command: 'reset' | 'ask' | 'log', targetIdx?: number, rank?: number, config?: GoFishConfigInput) =>
+    gameExec<GoFishResponse>('gofish', { command, targetIdx, rank, config }),
+};
+
+/** API client for the Golf Solitaire /golf/exec endpoint. */
+export const golfApi = {
+  exec: (command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo', col?: number) =>
+    gameExec<GolfResponse>('golf', { command, col }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -858,6 +931,7 @@ const games = [
   'baccarat',
   'crazyeights',
   'ginrummy',
+  'canasta',
   'spider',
   'indianpoker',
   'videopoker',
@@ -870,6 +944,9 @@ const games = [
   'cribbage',
   'threecard',
   'speed',
+  'gofish',
+  'pinochle',
+  'golf',
 ] as const;
 type Game = (typeof games)[number];
 

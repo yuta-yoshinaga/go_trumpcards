@@ -200,6 +200,45 @@ func main() {
 		},
 	)
 
+	// Canasta
+	registerKV(mux, "/canasta/exec", "canasta:",
+		func() usecase.CanastaInteractorIF {
+			config := domain.DefaultCanastaConfig()
+			players := []*domain.CanastaPlayer{
+				domain.NewCanastaPlayer(true),
+				domain.NewCanastaPlayer(false),
+			}
+			canasta := domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, config)
+			return usecase.NewCanastaInteractor(canasta, new(presenter.CanastaWebPresenter))
+		},
+		func(data []byte) (usecase.CanastaInteractorIF, error) {
+			return usecase.RestoreCanastaInteractor(data, new(presenter.CanastaWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.CanastaInteractorIF], f func() usecase.CanastaInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewCanastaWebControllerWithProvider(p, f)
+		},
+	)
+
+	// Golf
+	registerKV(mux, "/golf/exec", "golf:",
+		func() usecase.GolfInteractorIF {
+			golf := domain.NewGolf(domain.NewTrumpCards(0))
+			return usecase.NewGolfInteractor(golf, new(presenter.GolfWebPresenter))
+		},
+		func(data []byte) (usecase.GolfInteractorIF, error) {
+			return usecase.RestoreGolfInteractor(data, new(presenter.GolfWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.GolfInteractorIF], f func() usecase.GolfInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewGolfWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

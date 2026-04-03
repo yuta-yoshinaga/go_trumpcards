@@ -10,6 +10,7 @@ import { useGameSound } from './hooks/useGameSound';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
+import { CanastaPage } from './pages/CanastaPage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { CribbagePage } from './pages/CribbagePage';
 import { DaifugoPage } from './pages/DaifugoPage';
@@ -18,6 +19,8 @@ import { DoubtPage } from './pages/DoubtPage';
 import { EuchrePage } from './pages/EuchrePage';
 import { FreeCellPage } from './pages/FreeCellPage';
 import { GinRummyPage } from './pages/GinRummyPage';
+import { GoFishPage } from './pages/GoFishPage';
+import { GolfPage } from './pages/GolfPage';
 import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
 import { IndianPokerPage } from './pages/IndianPokerPage';
@@ -29,6 +32,7 @@ import { OhHellPage } from './pages/OhHellPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
 import { PineapplePage } from './pages/PineapplePage';
+import { PinochlePage } from './pages/PinochlePage';
 import { PokerPage } from './pages/PokerPage';
 import { PyramidPage } from './pages/PyramidPage';
 import { SevensPage } from './pages/SevensPage';
@@ -64,6 +68,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/baccarat': <BaccaratPage />,
   '/crazyeights': <CrazyEightsPage />,
   '/ginrummy': <GinRummyPage />,
+  '/canasta': <CanastaPage />,
   '/cribbage': <CribbagePage />,
   '/spider': <SpiderPage />,
   '/pyramid': <PyramidPage />,
@@ -74,6 +79,9 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/jokerpoker': <JokerPokerPage />,
   '/threecard': <ThreeCardPage />,
   '/speed': <SpeedPage />,
+  '/gofish': <GoFishPage />,
+  '/pinochle': <PinochlePage />,
+  '/golf': <GolfPage />,
 };
 
 /** Root application component with router and game page routes. */

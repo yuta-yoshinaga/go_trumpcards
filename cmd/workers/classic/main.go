@@ -331,6 +331,52 @@ func main() {
 		},
 	)
 
+	// Go Fish
+	registerKV(mux, "/gofish/exec", "gofish:",
+		func() usecase.GoFishInteractorIF {
+			players := []*domain.GoFishPlayer{
+				domain.NewGoFishPlayer(true),
+				domain.NewGoFishPlayer(false),
+				domain.NewGoFishPlayer(false),
+				domain.NewGoFishPlayer(false),
+			}
+			goFish := domain.NewGoFish(domain.NewTrumpCards(0), players)
+			return usecase.NewGoFishInteractor(goFish, new(presenter.GoFishWebPresenter))
+		},
+		func(data []byte) (usecase.GoFishInteractorIF, error) {
+			return usecase.RestoreGoFishInteractor(data, new(presenter.GoFishWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.GoFishInteractorIF], f func() usecase.GoFishInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewGoFishWebControllerWithProvider(p, f)
+		},
+	)
+
+	registerKV(mux, "/pinochle/exec", "pinochle:",
+		func() usecase.PinochleInteractorIF {
+			config := domain.DefaultPinochleConfig()
+			players := []*domain.PinochlePlayer{
+				domain.NewPinochlePlayer(true, 0),
+				domain.NewPinochlePlayer(false, 1),
+				domain.NewPinochlePlayer(false, 0),
+				domain.NewPinochlePlayer(false, 1),
+			}
+			pinochle := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, config)
+			return usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleWebPresenter))
+		},
+		func(data []byte) (usecase.PinochleInteractorIF, error) {
+			return usecase.RestorePinochleInteractor(data, new(presenter.PinochleWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.PinochleInteractorIF], f func() usecase.PinochleInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewPinochleWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

@@ -20,20 +20,24 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   euchre: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   bridge: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   napoleon: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  pinochle: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   // Matching/Pass — unified to green
   oldmaid: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   doubt: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   daifugo: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   sevens: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   crazyeights: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  gofish: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   // Solitaire — unified to casino
   klondike: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   freecell: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   spider: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   pyramid: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   tripeaks: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  golf: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   memory: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   // Counting/Rummy — unified to blue
   ginrummy: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  canasta: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   cribbage: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
 };

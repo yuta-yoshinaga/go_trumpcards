@@ -1,0 +1,52 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "meld": "Meld",
+    "discard": "Discard",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "drawPhase": "Draw a card from the stock or pick up the discard pile.",
+  "meldPhase": "Meld cards or skip.",
+  "discardPhase": "Discard a card or go out.",
+  "roundEnd": "Round over. Proceed to the next round.",
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "drawPile": "Stock: {{count}} cards",
+  "discardPile": "Discard: {{count}} cards",
+  "frozen": "Frozen",
+  "melds": "Melds",
+  "red3s": "Red 3s",
+  "naturalCanasta": "Natural Canasta",
+  "mixedCanasta": "Mixed Canasta",
+  "drawStockButton": "Draw from stock",
+  "drawDiscardButton": "Pick up discard",
+  "meldButton": "Meld",
+  "skipMeldButton": "Skip",
+  "discardButton": "Discard",
+  "goOutButton": "Go out",
+  "nextRound": "Next round",
+  "selectPair": "Select a pair (2 natural cards matching the top discard)",
+  "selectMeld": "Select cards to meld",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "score": {
+    "cumulative": "Total",
+    "round": "Round"
+  },
+  "tutorial": {
+    "drawArea": "The stock and discard area. Draw cards from here.",
+    "playerHand": "Your hand. Select cards to meld or discard.",
+    "meldArea": "The meld area. Your completed melds are shown here.",
+    "actionButtons": "Action buttons. Perform actions based on the current phase."
+  }
+}

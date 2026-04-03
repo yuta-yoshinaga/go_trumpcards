@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した32種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した36種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -37,6 +37,7 @@ Go + Clean Architecture で実装した32種類のトランプゲーム。CLI �
 | スペード (Spades) | `spades` | [CUI](docs/manual/cui/spades.md) / [Web](docs/manual/web/spades.md) |
 | クレイジーエイト (Crazy Eights) | `crazyeights` | [CUI](docs/manual/cui/crazyeights.md) / [Web](docs/manual/web/crazyeights.md) |
 | ジンラミー (Gin Rummy) | `ginrummy` | [CUI](docs/manual/cui/ginrummy.md) / [Web](docs/manual/web/ginrummy.md) |
+| カナスタ (Canasta) | `canasta` | [CUI](docs/manual/cui/canasta.md) / [Web](docs/manual/web/canasta.md) |
 | スパイダーソリティア (Spider Solitaire) | `spider` | [CUI](docs/manual/cui/spider.md) / [Web](docs/manual/web/spider.md) |
 | ナポレオン (Napoleon) | `napoleon` | [CUI](docs/manual/cui/napoleon.md) / [Web](docs/manual/web/napoleon.md) |
 | インディアンポーカー (Indian Poker) | `indianpoker` | [CUI](docs/manual/cui/indianpoker.md) / [Web](docs/manual/web/indianpoker.md) |
@@ -51,6 +52,9 @@ Go + Clean Architecture で実装した32種類のトランプゲーム。CLI �
 | オー・ヘル (Oh Hell) | `ohhell` | [CUI](docs/manual/cui/ohhell.md) / [Web](docs/manual/web/ohhell.md) |
 | コントラクトブリッジ (Contract Bridge) | `bridge` | [CUI](docs/manual/cui/bridge.md) / [Web](docs/manual/web/bridge.md) |
 | スピード (Speed) | `speed` | [CUI](docs/manual/cui/speed.md) / [Web](docs/manual/web/speed.md) |
+| ゴーフィッシュ (Go Fish) | `gofish` | [CUI](docs/manual/cui/gofish.md) / [Web](docs/manual/web/gofish.md) |
+| ピノクル (Pinochle) | `pinochle` | [CUI](docs/manual/cui/pinochle.md) / [Web](docs/manual/web/pinochle.md) |
+| ゴルフ (Golf Solitaire) | `golf` | [CUI](docs/manual/cui/golf.md) / [Web](docs/manual/web/golf.md) |
 
 ## Demo
 

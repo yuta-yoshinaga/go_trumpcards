@@ -48,6 +48,10 @@ tags:
     description: Crazy Eights (クレイジーエイト) game
   - name: ginrummy
     description: Gin Rummy (ジンラミー) game
+  - name: canasta
+    description: Canasta (カナスタ) game
+  - name: pinochle
+    description: Pinochle (ピノクル) game
   - name: spider
     description: Spider Solitaire (スパイダーソリティア) game
   - name: napoleon
@@ -66,6 +70,8 @@ tags:
     description: Pyramid (ピラミッド) game
   - name: tripeaks
     description: TriPeaks (トリピークス) game
+  - name: golf
+    description: Golf Solitaire (ゴルフ) game
   - name: cribbage
     description: Cribbage (クリベッジ) game
   - name: threecard
@@ -78,6 +84,8 @@ tags:
     description: Pineapple Poker (パイナップルポーカー) game
   - name: speed
     description: Speed (スピード) game
+  - name: gofish
+    description: Go Fish (ゴーフィッシュ) game
 
 paths:
   /blackjack/exec:
@@ -1672,6 +1680,143 @@ paths:
               schema:
                 $ref: '#/components/schemas/GinRummyResponse'
 
+  /canasta/exec:
+    post:
+      tags:
+        - canasta
+      summary: Execute a Canasta game command
+      description: |
+        Send a command to advance the Canasta (カナスタ) game session
+        identified by `sessionId`.  Canasta is a 2-player rummy card game
+        using 2 decks + 4 jokers (108 cards).  15 cards are dealt to each
+        player.  Wild cards (2s and Jokers) can substitute in melds.
+        Canasta = 7+ card meld.  First to reach point limit wins.
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw from stock or pick up discard pile |
+        | Meld         | `1`   | Meld cards or skip |
+        | Discard      | `2`   | Discard a card or go out |
+        | RoundEnd     | `3`   | Round scored; advance with `nextround` |
+        | GameEnd      | `4`   | A player reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Pick up the discard pile (requires `naturalPairIndices`) |
+        | `meld`         | `m`     | Meld cards (requires `meldGroups`) |
+        | `skipmeld`     | `sm`    | Skip meld phase |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `goout`        | `go`    | Go out (requires at least 1 canasta) |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `log`          | `l`     | View action log |
+      operationId: canastaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CanastaRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              drawdiscard:
+                summary: Pick up discard pile with natural pair at indices 0 and 1
+                value:
+                  command: drawdiscard
+                  naturalPairIndices: [0, 1]
+                  sessionId: my-session-001
+              meld:
+                summary: Meld cards at indices 0, 1, 2
+                value:
+                  command: meld
+                  meldGroups: [[0, 1, 2]]
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 2
+                value:
+                  command: discard
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CanastaResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CanastaResponse'
+
+  /pinochle/exec:
+    post:
+      tags:
+        - pinochle
+      summary: Execute a Pinochle game command
+      description: |
+        Send a command to advance the Pinochle (ピノクル) game session
+        identified by `sessionId`.  Pinochle is a 4-player 2-team trick-taking
+        card game with bidding and melding using a 48-card double deck
+        (9,10,J,Q,K,A × 2 per suit).  12 cards dealt to each player.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Players bid expected total points |
+        | Trump     | `1`   | Highest bidder declares trump suit |
+        | Meld      | `2`   | All players display melds |
+        | Play      | `3`   | 12 tricks with must-follow/trump/win rules |
+        | TrickEnd  | `4`   | Trick resolved |
+        | RoundEnd  | `5`   | Round scored |
+        | GameEnd   | `6`   | A team reached the point limit |
+
+        **Commands:**
+        | Command     | Parameters              | Description |
+        |-------------|-------------------------|-------------|
+        | `reset`     | `config` (opt)          | Start a new game |
+        | `bid`       | `bidAmount`             | Place a bid |
+        | `pass`      |                         | Pass on bidding |
+        | `trump`     | `suit`                  | Declare trump suit (1-4) |
+        | `meld`      |                         | Confirm melds and proceed to play |
+        | `play`      | `cardIndex`             | Play a card from hand |
+        | `next`      |                         | Proceed to next trick |
+        | `nextround` |                         | Proceed to next round |
+        | `hint`      |                         | Get AI hint |
+        | `log`       |                         | Get action log |
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PinochleRequest'
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinochleResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinochleResponse'
+
   /spider/exec:
     post:
       tags:
@@ -2906,6 +3051,203 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SpeedResponse'
+
+  /gofish/exec:
+    post:
+      tags:
+        - gofish
+      summary: Execute a Go Fish (ゴーフィッシュ) game command
+      description: |
+        Send a command to advance the Go Fish game session identified by
+        `sessionId`.  Go Fish is a 4-player (1 human vs 3 CPU) card game.
+        Players ask opponents for a specific rank; if the opponent holds it
+        they surrender all matching cards, otherwise the asker draws from
+        the stock pile ("Go Fish").  Collect all 4 cards of one rank to
+        form a "book".  Most books wins.
+
+        The game proceeds through two phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Players take turns asking for ranks |
+        | GameEnd  | `1`   | All 13 books formed or stock exhausted |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `ask`   | `a`     | Ask an opponent for a rank (requires `target` and `rank`) |
+        | `sd`    | —       | Set CPU difficulty (requires `amount`: 0=Easy/1=Normal/2=Hard) |
+        | `log`   | `l`     | View action log |
+      operationId: gofishExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoFishRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              ask:
+                summary: Ask player 1 for rank 7
+                value:
+                  command: ask
+                  target: 1
+                  rank: 7
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoFishResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoFishResponse'
+
+  /golf/exec:
+    post:
+      tags:
+        - golf
+      summary: Execute a Golf Solitaire game command
+      description: |
+        Send a command to advance the Golf Solitaire (ゴルフ) game session identified by
+        `sessionId`.  Golf is a single-player solitaire card game using a
+        standard 52-card deck.  Seven columns of five face-up cards (35 total) form
+        the tableau.  Remove exposed cards (bottom-most per column) that are ±1 rank
+        from the waste pile top card (K-A wrap).  Win by removing all 35 tableau cards.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All tableau cards removed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `draw`         | `d`  | Draw a card from stock to waste |
+        | `remove`       | `rm` | Remove an exposed card ±1 rank from waste top |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `undo`         | `u`  | Undo the last action |
+        | `log`          | `l`  | View action log |
+      operationId: golfExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+                col:
+                  type: integer
+                  description: Column index (0-6) for remove command
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw from stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              remove:
+                summary: Remove a tableau card
+                value:
+                  command: remove
+                  col: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layout:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          card:
+                            $ref: '#/components/schemas/Card'
+                          removed:
+                            type: boolean
+                          exposed:
+                            type: boolean
+                  stockCount:
+                    type: integer
+                  waste:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                  hint:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      col:
+                        type: integer
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layout:
+                    type: array
+                    items:
+                      type: array
+                  stockCount:
+                    type: integer
+                  waste:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  message:
+                    type: string
 
 components:
   schemas:
@@ -6781,6 +7123,310 @@ components:
           description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
+    # Canasta types
+    # -------------------------------------------------------------------------
+    CanastaRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `meld` (`m`), `skipmeld` (`sm`),
+            `discard` (`d`), `goout` (`go`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard.  Required for `discard` command.
+          example: 2
+        naturalPairIndices:
+          type: array
+          description: Indices of two natural cards matching the discard top.  Required for `drawdiscard` command.
+          items:
+            type: integer
+          example: [0, 1]
+        meldGroups:
+          type: array
+          description: Groups of card indices to meld.  Required for `meld` command.
+          items:
+            type: array
+            items:
+              type: integer
+          example: [[0, 1, 2]]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 100000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CanastaResponse:
+      type: object
+      description: Current state of the Canasta game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              melds:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                    isNatural:
+                      type: boolean
+                    isCanasta:
+                      type: boolean
+                    rank:
+                      type: integer
+              red3Count:
+                type: integer
+              red3s:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              hasCanasta:
+                type: boolean
+              hasInitMeld:
+                type: boolean
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Meld, 2 = Discard, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+        discardPileCount:
+          type: integer
+          description: Number of cards in the discard pile
+        isFrozen:
+          type: boolean
+          description: Whether the discard pile is frozen
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Pinochle types
+    # -------------------------------------------------------------------------
+    PinochleRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bid` (`b`),
+            `pass` (`pa`), `trump` (`t`), `meld` (`m`), `play` (`p`),
+            `next` (`n`), `nextround` (`nr`), `hint` (`h`), `log` (`l`).
+          enum: [reset, r, bid, b, pass, pa, trump, t, meld, m, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        bidAmount:
+          type: integer
+          description: Bid amount.  Required for `bid` command.  Minimum 20.
+          example: 25
+        suit:
+          type: integer
+          description: Trump suit (1=Spade, 2=Club, 3=Heart, 4=Diamond).  Required for `trump` command.
+          minimum: 1
+          maximum: 4
+          example: 3
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 0
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 10000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PinochleResponse:
+      type: object
+      description: Current state of the Pinochle game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              team:
+                type: integer
+              trickCount:
+                type: integer
+              bid:
+                type: integer
+              hasPassed:
+                type: boolean
+              meldScore:
+                type: integer
+              trickPoints:
+                type: integer
+        phase:
+          type: integer
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+        highestBid:
+          type: integer
+        highestBidder:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          items:
+            type: integer
+          minItems: 2
+          maxItems: 2
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        playerMelds:
+          type: array
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: integer
+                points:
+                  type: integer
+                cards:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          items:
+            type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+
+    # -------------------------------------------------------------------------
     # Spider Solitaire types
     # -------------------------------------------------------------------------
     SpiderRequest:
@@ -8829,6 +9475,173 @@ components:
             cpuDifficulty:
               type: integer
               description: "CPU difficulty: 0 = Easy, 1 = Normal, 2 = Hard"
+        message:
+          type: string
+          description: Game status or result message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Go Fish
+    # -------------------------------------------------------------------------
+    GoFishRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Game command
+          enum: [reset, r, ask, log, l]
+          example: ask
+        targetIdx:
+          type: integer
+          description: Target player index to ask (required for `ask` command)
+          minimum: 0
+          maximum: 3
+          example: 1
+        rank:
+          type: integer
+          description: Card rank to ask for (1=Ace, 2-10, 11=J, 12=Q, 13=K; required for `ask` command)
+          minimum: 1
+          maximum: 13
+          example: 7
+        config:
+          type: object
+          description: Game configuration (for `reset` command)
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: CPU difficulty (0=Easy, 1=Normal, 2=Hard)
+              minimum: 0
+              maximum: 2
+              example: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    GoFishResponse:
+      type: object
+      description: Current state of the Go Fish game
+      required:
+        - players
+        - phase
+        - gameEndFlag
+        - winnerIdx
+        - stockCount
+        - config
+        - message
+      properties:
+        players:
+          type: array
+          description: All 4 players (index 0 = human, 1-3 = CPU)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Player index
+              isHuman:
+                type: boolean
+                description: Whether this player is human
+              cardCount:
+                type: integer
+                description: Number of cards in hand
+              cards:
+                type: array
+                description: Cards in hand (only populated for human player)
+                items:
+                  $ref: '#/components/schemas/Card'
+              bookCount:
+                type: integer
+                description: Number of completed books
+              books:
+                type: array
+                description: Completed books (array of 4-card groups)
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Card'
+              isFinished:
+                type: boolean
+                description: Whether this player has finished (no cards and no more draws)
+        phase:
+          type: integer
+          description: "Game phase: 0 = Play, 1 = GameEnd"
+          enum: [0, 1]
+          example: 0
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        winnerIdx:
+          type: integer
+          description: Index of the winning player (-1 if game is not over)
+          example: -1
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        stockCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+          example: 32
+        humanAction:
+          type: object
+          description: The result of the human player's last ask action
+          properties:
+            askPlayerIdx:
+              type: integer
+            askTargetIdx:
+              type: integer
+            askRank:
+              type: integer
+            success:
+              type: boolean
+            cardsReceived:
+              type: integer
+            bookFormed:
+              type: boolean
+            bookRank:
+              type: integer
+        cpuActions:
+          type: array
+          description: CPU actions that occurred since the last human action
+          items:
+            type: object
+            properties:
+              askPlayerIdx:
+                type: integer
+              askTargetIdx:
+                type: integer
+              askRank:
+                type: integer
+              success:
+                type: boolean
+              cardsReceived:
+                type: integer
+              bookFormed:
+                type: boolean
+              bookRank:
+                type: integer
+        config:
+          type: object
+          description: Current game configuration
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: "CPU difficulty: 0 = Easy, 1 = Normal, 2 = Hard"
+            cpuMetaAI:
+              type: boolean
+              description: Whether Meta-AI is enabled
         message:
           type: string
           description: Game status or result message

@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全32ゲーム)](#12-ゲームドメイン-全32ゲーム)
+  - [1.2 ゲームドメイン (全34ゲーム)](#12-ゲームドメイン-全34ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -20,6 +20,7 @@
   - [2.7 Bridge オークション・トリックフロー](#27-bridge-オークショントリックフロー)
   - [2.8 Pineapple ディスカードフロー](#28-pineapple-ディスカードフロー)
   - [2.9 Speed プレイフロー](#29-speed-プレイフロー)
+  - [2.10 GoFish 要求フロー](#210-gofish-要求フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -28,7 +29,7 @@
   - [3.5 Spades フェーズ遷移](#35-spades-フェーズ遷移)
   - [3.6 Doubt フェーズ遷移](#36-doubt-フェーズ遷移)
   - [3.7 Memory フェーズ遷移](#37-memory-フェーズ遷移)
-  - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks-フェーズ遷移)
+  - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks--golf-フェーズ遷移)
   - [3.9 CrazyEights フェーズ遷移](#39-crazyeights-フェーズ遷移)
   - [3.10 GinRummy フェーズ遷移](#310-ginrummy-フェーズ遷移)
   - [3.11 Baccarat フェーズ遷移](#311-baccarat-フェーズ遷移)
@@ -43,6 +44,9 @@
   - [3.20 Bridge フェーズ遷移](#320-bridge-フェーズ遷移)
   - [3.21 Pineapple フェーズ遷移](#321-pineapple-フェーズ遷移)
   - [3.22 Speed フェーズ遷移](#322-speed-フェーズ遷移)
+  - [3.23 GoFish フェーズ遷移](#323-gofish-フェーズ遷移)
+  - [3.24 Canasta フェーズ遷移](#324-canasta-フェーズ遷移)
+  - [3.25 Pinochle フェーズ遷移](#325-pinochle-フェーズ遷移)
 
 ---
 
@@ -110,7 +114,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全32ゲーム)
+### 1.2 ゲームドメイン (全34ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -683,6 +687,101 @@ classDiagram
     GinRummy --> "2" GinRummyPlayer
     Speed --> "2" SpeedPlayer
     Speed --> "1" SpeedConfig
+
+    class GoFish {
+        -trumpCards *TrumpCards
+        -players []*GoFishPlayer
+        -config GoFishConfig
+        -phase GoFishPhase
+        -currentTurn int
+        +Reset()
+        +Ask(targetIdx int, rank int) error
+        +Phase() GoFishPhase
+        +ActionLog() []*ActionLogEntry
+    }
+
+    class GoFishPlayer {
+        -books [][]*Card
+        +GetBooks() [][]*Card
+        +GetBookCount() int
+        +HasRank(rank int) bool
+    }
+
+    class GoFishConfig {
+        +GoFishCpuDifficulty CpuDifficulty
+        +bool CpuMetaAI
+    }
+
+    GoFish --> "4" GoFishPlayer
+    GoFish --> "1" GoFishConfig
+
+    class Canasta {
+        -trumpCards *TrumpCards
+        -players []*CanastaPlayer
+        -config CanastaConfig
+        -phase CanastaPhase
+        -discardPile []*Card
+        -isFrozen bool
+        +Reset()
+        +DrawFromStock() error
+        +DrawFromDiscard(pairIndices []int) error
+        +Meld(groups [][]int) error
+        +SkipMeld() error
+        +Discard(index int) error
+        +GoOut() error
+        +NextRound()
+        +Phase() CanastaPhase
+    }
+
+    class CanastaPlayer {
+        -melds []*CanastaMeld
+        -red3s []*Card
+        -hasInitMeld bool
+    }
+
+    class CanastaMeld {
+        +Cards []*Card
+        +IsNatural bool
+    }
+
+    Canasta --> "2" CanastaPlayer
+    CanastaPlayer --> "*" CanastaMeld
+    CanastaPlayer --|> GamePlayer
+
+    class Pinochle {
+        -trumpCards *TrumpCards
+        -players []*PinochlePlayer
+        -config PinochleConfig
+        -phase PinochlePhase
+        -trumpSuit int
+        -highestBid int
+        -highestBidder int
+        -playerMelds [4][]*PinochleMeld
+        +Reset()
+        +PlayerBid(amount int) error
+        +PlayerPass() error
+        +CpuBid()
+        +PlayerCallTrump(suit int) error
+        +CpuCallTrump()
+        +ConfirmMelds()
+        +PlayerPlay(cardIndex int) error
+        +CpuPlay()
+        +ResolveTrick()
+        +NextTrick()
+        +NextRound()
+    }
+
+    class PinochlePlayer {
+        -team int
+        -bid int
+        -hasPassed bool
+        -meldScore int
+        -trickPoints int
+    }
+
+    Pinochle --> "4" PinochlePlayer
+    PinochlePlayer --|> GamePlayer
+
     OldMaidPlayer --|> GamePlayer
     DaifugoPlayer --|> RankedGamePlayer
     SevensPlayer --|> RankedGamePlayer
@@ -690,6 +789,7 @@ classDiagram
     CrazyEightsPlayer --|> GamePlayer
     GinRummyPlayer --|> GamePlayer
     SpeedPlayer --|> Player
+    GoFishPlayer --|> GamePlayer
 ```
 
 #### ソリティア系ゲーム
@@ -782,6 +882,22 @@ classDiagram
         +Undo() error
         +GiveUp()
         +Phase() TriPeaksPhase
+    }
+
+    class Golf {
+        -trumpCards *TrumpCards
+        -layout [7][5]*GolfCard
+        -stock []*Card
+        -waste []*Card
+        -phase GolfPhase
+        -history []*golfSnapshot
+        +Reset()
+        +Draw() error
+        +Remove(col int) error
+        +GetHint() *GolfHint
+        +Undo() error
+        +GiveUp()
+        +Phase() GolfPhase
     }
 
     class Cribbage {
@@ -1014,6 +1130,7 @@ classDiagram
         -ohhell *OhHellWebController
         -bridge *BridgeWebController
         -speed *SpeedWebController
+        -gofish *GoFishWebController
         +Exec()
     }
 
@@ -1321,6 +1438,35 @@ sequenceDiagram
     Pres-->>User: 新しい場札表示
 ```
 
+### 2.10 GoFish 要求フロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as GoFishInteractor
+    participant Domain as GoFish
+    participant Pres as Presenter
+
+    Note over User,Pres: 要求フロー
+    User->>Ctrl: ask 1 7
+    Ctrl->>Interactor: Ask(1, 7)
+    Interactor->>Domain: Ask(1, 7)
+    Domain->>Domain: 相手が持っていればカード移動 → ブックチェック → CPU自動プレイ
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 要求結果・手札更新表示
+
+    Note over User,Pres: Go Fish (相手が持っていない場合)
+    User->>Ctrl: ask 2 13
+    Ctrl->>Interactor: Ask(2, 13)
+    Interactor->>Domain: Ask(2, 13)
+    Domain->>Domain: 相手が持っていない → 山札から1枚引く → ブックチェック → CPU自動プレイ
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: Go Fish結果・手札更新表示
+```
+
 ---
 
 ## 3. ステートマシン図
@@ -1435,9 +1581,9 @@ stateDiagram-v2
     note right of Result : MemoryPhaseResult = 2
 ```
 
-### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks フェーズ遷移
+### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf フェーズ遷移
 
-5つのソリティア系ゲームは共通のフェーズ構造を持ちます。
+6つのソリティア系ゲームは共通のフェーズ構造を持ちます。
 
 ```mermaid
 stateDiagram-v2
@@ -1449,7 +1595,7 @@ stateDiagram-v2
     GameClear --> [*]
     GameOver --> [*]
 
-    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks 共通 Phase = 0
+    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks/Golf 共通 Phase = 0
     note right of GameClear : Phase = 1
     note right of GameOver : Phase = 2
 ```
@@ -1458,7 +1604,9 @@ Pyramid 固有のアクション: `Draw` / `RemovePair` / `RemoveKing` / `Remove
 
 TriPeaks 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件はウェイストトップ±1ランク（K-Aラップ）。クリア条件はタブローの28枚全除去。
 
-各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
+Golf 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件はウェイストトップ±1ランク（K-Aラップ）。7列×5段の35枚全除去でクリア。
+
+各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` / `GolfPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
 
 ### 3.9 CrazyEights フェーズ遷移
 
@@ -1703,6 +1851,67 @@ stateDiagram-v2
     note right of Play : SpeedPhasePlay = 0
     note right of Stuck : SpeedPhaseStuck = 1
     note right of GameEnd : SpeedPhaseGameEnd = 2
+```
+
+### 3.23 GoFish フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : Ask成功 → もう一度要求 + CPU自動プレイ
+    Play --> Play : Go Fish → 山札から引く + CPU自動プレイ
+    Play --> GameEnd : 全13ブック完成 or 山札枯渇
+    GameEnd --> [*]
+
+    note right of Play : GoFishPhasePlay = 0
+    note right of GameEnd : GoFishPhaseGameEnd = 1
+```
+
+### 3.24 Canasta フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draw : Reset()
+    Draw --> Meld : 山札から引く or 捨て札の山を取る
+    Meld --> Discard : メルド実行 or スキップ
+    Meld --> RoundEnd : メルド後手札0枚 + カナスタあり → 上がり
+    Discard --> Draw : カードを捨てる → 次プレイヤー
+    Discard --> RoundEnd : 上がり (カナスタ必須)
+    Draw --> RoundEnd : 山札枯渇 → 引き分け
+    RoundEnd --> Draw : NextRound()
+    RoundEnd --> GameEnd : 目標点到達
+    GameEnd --> [*]
+
+    note right of Draw : CanastaPhaseDraw = 0
+    note right of Meld : CanastaPhaseMeld = 1
+    note right of Discard : CanastaPhaseDiscard = 2
+    note right of RoundEnd : CanastaPhaseRoundEnd = 3
+    note right of GameEnd : CanastaPhaseGameEnd = 4
+```
+
+### 3.25 Pinochle フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : Reset()
+    Bid --> Trump : ビッド勝者決定
+    Bid --> Trump : 全員パス → ディーラー強制ビッド
+    Trump --> Meld : トランプスート宣言
+    Meld --> Play : メルド確認 (ConfirmMelds)
+    Play --> TrickEnd : 4人プレイ完了
+    TrickEnd --> Play : NextTrick() → 次トリック
+    TrickEnd --> RoundEnd : 12トリック完了 → 得点計算
+    RoundEnd --> Bid : NextRound()
+    RoundEnd --> GameEnd : ポイント上限到達
+    GameEnd --> [*]
+
+    note right of Bid : PinochlePhaseBid = 0
+    note right of Trump : PinochlePhaseTrump = 1
+    note right of Meld : PinochlePhaseMeld = 2
+    note right of Play : PinochlePhasePlay = 3
+    note right of TrickEnd : PinochlePhaseTrickEnd = 4
+    note right of RoundEnd : PinochlePhaseRoundEnd = 5
+    note right of GameEnd : PinochlePhaseGameEnd = 6
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

@@ -22,6 +22,9 @@
   - [2.7 BridgePage フェーズ別レンダリングフロー](#27-bridgepage-フェーズ別レンダリングフロー)
   - [2.8 PineapplePage フェーズ別レンダリングフロー](#28-pineapplepage-フェーズ別レンダリングフロー)
   - [2.9 SpeedPage フェーズ別レンダリングフロー](#29-speedpage-フェーズ別レンダリングフロー)
+  - [2.10 GoFishPage フェーズ別レンダリングフロー](#210-gofishpage-フェーズ別レンダリングフロー)
+  - [2.11 CanastaPage フェーズ別レンダリングフロー](#211-canastapage-フェーズ別レンダリングフロー)
+  - [2.12 PinochlePage フェーズ別レンダリングフロー](#212-pinochlepage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -134,6 +137,19 @@ classDiagram
         +object messageParams
     }
 
+    class GolfResponse {
+        +object[][] layout
+        +Card[] waste
+        +number stockCount
+        +number phase
+        +number moveCount
+        +boolean canUndo
+        +boolean isStalemate
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
     class CribbageResponse {
         +object[] players
         +number phase
@@ -166,7 +182,57 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全31ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    class GoFishResponse {
+        +object[] players
+        +number phase
+        +number currentTurn
+        +number winnerIdx
+        +number stockCount
+        +object humanAction
+        +object[] cpuActions
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    class CanastaResponse {
+        +CanastaPlayerData[] players
+        +number phase
+        +number roundNumber
+        +number currentPlayerIdx
+        +Card discardTop
+        +number drawPileCount
+        +number discardPileCount
+        +boolean isFrozen
+        +boolean gameEndFlag
+        +number winnerIdx
+        +CanastaConfig config
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    class PinochleResponse {
+        +PinochlePlayerData[] players
+        +number phase
+        +number roundNumber
+        +number trickNumber
+        +number currentPlayerIdx
+        +number bidPlayerIdx
+        +number trumpSuit
+        +number highestBid
+        +number highestBidder
+        +PinochleTrickCard[] currentTrick
+        +number[] teamScores
+        +boolean gameEndFlag
+        +number winnerTeam
+        +PinochleMeldData[][] playerMelds
+        +number[] validPlayIndices
+        +PinochleConfig config
+        +string message
+    }
+
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全35ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -326,6 +392,13 @@ classDiagram
         GAME_OVER = 2
     }
 
+    class GolfPhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
     class CribbagePhase {
         <<enumeration>>
         DISCARD = 0
@@ -368,6 +441,32 @@ classDiagram
         GAME_END = 2
     }
 
+    class GoFishPhase {
+        <<enumeration>>
+        PLAY = 0
+        GAME_END = 1
+    }
+
+    class CanastaPhase {
+        <<enumeration>>
+        DRAW = 0
+        MELD = 1
+        DISCARD = 2
+        ROUND_END = 3
+        GAME_END = 4
+    }
+
+    class PinochlePhase {
+        <<enumeration>>
+        BID = 0
+        TRUMP = 1
+        MELD = 2
+        PLAY = 3
+        TRICK_END = 4
+        ROUND_END = 5
+        GAME_END = 6
+    }
+
     note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase は、\nそれぞれ同一の値を持つ別定数です"
 ```
 
@@ -405,6 +504,10 @@ classDiagram
         +run(cmd, row?, col?) Promise~TriPeaksResponse~
     }
 
+    class GolfApi {
+        +run(cmd, col?) Promise~GolfResponse~
+    }
+
     class CribbageApi {
         +run(cmd, args?, config?) Promise~CribbageResponse~
     }
@@ -430,8 +533,20 @@ classDiagram
 
     SpeedApi --> gameApi : uses postJson/gameExec
 
+    class GoFishApi {
+        +run(cmd, args?) Promise~GoFishResponse~
+    }
+
+    GoFishApi --> gameApi : uses postJson/gameExec
+
+    class CanastaApi {
+        +run(cmd, args?) Promise~CanastaResponse~
+    }
+
+    CanastaApi --> gameApi : uses postJson/gameExec
+
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全31ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage,\nthreecard, ohhell, bridge, speed)"
+    note for BlackJackApi "全36ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, canasta, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage,\nthreecard, ohhell, bridge, speed, gofish,\npinochle, golf)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -671,6 +786,15 @@ classDiagram
         +Function handleReset
     }
 
+    class useGolfGame {
+        +GolfResponse state
+        +Function handleDraw
+        +Function handleSelectCard
+        +Function handleHint
+        +Function handleUndo
+        +Function handleReset
+    }
+
     class useCribbageGame {
         +CribbageResponse state
         +Function handleDiscard
@@ -684,6 +808,7 @@ classDiagram
     useKlondikeGame --> useGameApi : uses
     usePyramidGame --> useGameApi : uses
     useTriPeaksGame --> useGameApi : uses
+    useGolfGame --> useGameApi : uses
     useCribbageGame --> useGameApi : uses
     useMemoryGame --> useGameApi : uses
     useDoubtGame --> useGameApi : uses
@@ -713,7 +838,29 @@ classDiagram
 
     useSpeedGame --> useGameApi : uses
 
-    note for useBlackJackGame "全31ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    class useGoFishGame {
+        +GoFishResponse state
+        +Function handleAsk
+        +Function handleReset
+    }
+
+    useGoFishGame --> useGameApi : uses
+
+    class useCanastaGame {
+        +CanastaResponse state
+        +Function handleDrawStock
+        +Function handleDrawDiscard
+        +Function handleMeldSelected
+        +Function handleSkipMeld
+        +Function handleDiscard
+        +Function handleGoOut
+        +Function handleNextRound
+        +Function handleReset
+    }
+
+    useCanastaGame --> useGameApi : uses
+
+    note for useBlackJackGame "全34ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1093,6 +1240,28 @@ classDiagram
 
     SpeedPage --|> GamePage : follows pattern
 
+    class GoFishPage {
+        +CPUプレイヤーエリア (要求先選択)
+        +ランク選択ボタン
+        +ブック表示
+        +山札残り枚数
+        +CPU行動アニメーション
+    }
+
+    GoFishPage --|> GamePage : follows pattern
+
+    class CanastaPage {
+        +スコアテーブル表示
+        +メルド表示 (ナチュラル/ミックス/カナスタ)
+        +赤3表示
+        +フリーズ状態表示
+        +捨て札の山ピックアップ (ペア選択)
+        +メルドグループ選択
+        +チュートリアル (TutorialProvider)
+    }
+
+    CanastaPage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -1106,7 +1275,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全32ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全34ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1129,16 +1298,16 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (32ゲーム)
+        +Routes (33ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Baccarat, ThreeCard]
         +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, OhHell, Euchre, Napoleon, Bridge]
-        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed]
+        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish]
         +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Memory]
-        +rummy: [GinRummy, Cribbage]
+        +rummy: [GinRummy, Canasta, Cribbage]
     }
 
     class TutorialProvider {
@@ -1467,6 +1636,125 @@ sequenceDiagram
     Hook->>API: gameExec("reset")
     API-->>Hook: SpeedResponse (phase=0)
     Hook-->>Page: 再レンダリング → プレイフェーズUI
+```
+
+### 2.10 GoFishPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as GoFishPage
+    participant Hook as useGoFishGame
+    participant API as gameApi
+
+    Note over User,API: プレイフェーズ (phase=0) - 要求
+    User->>Page: CPUプレイヤーをクリック (相手選択)
+    User->>Page: ランクボタンをクリック (ランク選択)
+    Page->>Hook: handleAsk(targetIdx, rank)
+    Hook->>API: gameExec("ask", {target, rank})
+    API-->>Hook: GoFishResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → 要求結果UI
+
+    Note over User,API: CPU行動アニメーション
+    Page-->>User: CPU要求をアニメーション再生
+
+    Note over User,API: ゲーム終了 (phase=1)
+    Page-->>User: 勝者・ブック数表示
+    User->>Page: リセットボタンクリック
+    Page->>Hook: handleReset()
+    Hook->>API: gameExec("reset")
+    API-->>Hook: GoFishResponse (phase=0)
+    Hook-->>Page: 再レンダリング → プレイフェーズUI
+```
+
+### 2.11 CanastaPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as CanastaPage
+    participant Hook as useCanastaGame
+    participant API as gameApi
+
+    Note over User,API: ドローフェーズ (phase=0)
+    User->>Page: 山札から引くボタンクリック
+    Page->>Hook: handleDrawStock()
+    Hook->>API: gameExec("drawstock")
+    API-->>Hook: CanastaResponse (phase=1)
+    Hook-->>Page: 再レンダリング → メルドフェーズUI
+
+    Note over User,API: メルドフェーズ (phase=1)
+    User->>Page: カード3枚以上選択 → メルドボタン
+    Page->>Hook: handleMeldSelected()
+    Hook->>API: gameExec("meld", {meldGroups})
+    API-->>Hook: CanastaResponse (phase=2)
+    Hook-->>Page: 再レンダリング → ディスカードフェーズUI
+
+    Note over User,API: ディスカードフェーズ (phase=2)
+    User->>Page: カード1枚選択 → 捨てるボタン
+    Page->>Hook: handleDiscard()
+    Hook->>API: gameExec("discard", {cardIndex})
+    API-->>Hook: CanastaResponse (phase=0 or 3)
+    Hook-->>Page: 再レンダリング → CPUターン後ドローフェーズUI
+
+    Note over User,API: ラウンド終了 (phase=3)
+    User->>Page: 次のラウンドボタンクリック
+    Page->>Hook: handleNextRound()
+    Hook->>API: gameExec("nextround")
+    API-->>Hook: CanastaResponse (phase=0)
+    Hook-->>Page: 再レンダリング → ドローフェーズUI
+```
+
+### 2.12 PinochlePage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as PinochlePage
+    participant Hook as usePinochleGame
+    participant API as gameApi
+
+    Note over User,API: ビッドフェーズ (phase=0)
+    User->>Page: ビッド額入力 → ビッドボタン
+    Page->>Hook: handleBid(amount)
+    Hook->>API: gameExec("bid", {bidAmount})
+    API-->>Hook: PinochleResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → CPUビッド後
+
+    Note over User,API: トランプ宣言フェーズ (phase=1)
+    User->>Page: スートボタンクリック
+    Page->>Hook: handleCallTrump(suit)
+    Hook->>API: gameExec("trump", {suit})
+    API-->>Hook: PinochleResponse (phase=2)
+    Hook-->>Page: 再レンダリング → メルドフェーズUI
+
+    Note over User,API: メルドフェーズ (phase=2)
+    User->>Page: メルド確認ボタン
+    Page->>Hook: handleConfirmMelds()
+    Hook->>API: gameExec("meld")
+    API-->>Hook: PinochleResponse (phase=3)
+    Hook-->>Page: 再レンダリング → プレイフェーズUI
+
+    Note over User,API: プレイフェーズ (phase=3)
+    User->>Page: カードクリック
+    Page->>Hook: handlePlay(cardIndex)
+    Hook->>API: gameExec("play", {cardIndex})
+    API-->>Hook: PinochleResponse (phase=3 or 4)
+    Hook-->>Page: 再レンダリング → CPUプレイ後
+
+    Note over User,API: トリック終了 (phase=4)
+    User->>Page: 次のトリックボタン
+    Page->>Hook: handleNextTrick()
+    Hook->>API: gameExec("next")
+    API-->>Hook: PinochleResponse (phase=3 or 5)
+    Hook-->>Page: 再レンダリング
+
+    Note over User,API: ラウンド終了 (phase=5)
+    User->>Page: 次のラウンドボタン
+    Page->>Hook: handleNextRound()
+    Hook->>API: gameExec("nextround")
+    API-->>Hook: PinochleResponse (phase=0)
+    Hook-->>Page: 再レンダリング → ビッドフェーズUI
 ```
 
 ---

@@ -1523,3 +1523,210 @@ export interface SpeedResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+/** Go Fish player data with hand, book count, and completed books. */
+export interface GoFishPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bookCount: number;
+  books: GoFishBook[];
+}
+
+/** A completed 4-of-a-kind book in Go Fish. */
+export interface GoFishBook {
+  rank: number;
+  cards: Card[];
+}
+
+/** CPU action record in Go Fish. */
+export interface GoFishCpuAction {
+  askPlayerIdx: number;
+  askTargetIdx: number;
+  askRank: number;
+  success: boolean;
+  cardsReceived: number;
+  drawnCard: Card | null;
+  bookFormed: boolean;
+  bookRank: number;
+}
+
+/** Information about the last ask action in Go Fish. */
+export interface GoFishLastAsk {
+  playerIdx: number;
+  targetIdx: number;
+  rank: number;
+  success: boolean;
+  cardsReceived: Card[];
+  drawnCard: Card | null;
+  bookFormed: boolean;
+  bookRank: number;
+}
+
+/** Go Fish game configuration. */
+export interface GoFishConfig {
+  cpuDifficulty: number;
+}
+
+/** Full Go Fish game state returned from the API. */
+export interface GoFishResponse {
+  players: GoFishPlayerData[];
+  phase: number;
+  currentTurn: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  turnNumber: number;
+  deckRemaining: number;
+  lastAsk: GoFishLastAsk | null;
+  cpuActions: GoFishCpuAction[];
+  humanAction: GoFishCpuAction | null;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: GoFishConfig;
+}
+
+// --- Canasta (カナスタ) ---
+
+/** Canasta game configuration. */
+export interface CanastaConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A single meld on the table in Canasta. */
+export interface CanastaMeldData {
+  cards: Card[];
+  isNatural: boolean;
+  isCanasta: boolean;
+  rank: number;
+}
+
+/** Canasta player data with melds and red 3s. */
+export interface CanastaPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  melds: CanastaMeldData[];
+  red3Count: number;
+  red3s: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  hasCanasta: boolean;
+  hasInitMeld: boolean;
+}
+
+/** Full Canasta game state returned from the API. */
+export interface CanastaResponse {
+  players: CanastaPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  discardPileCount: number;
+  isFrozen: boolean;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: CanastaConfig;
+}
+
+/** Pinochle game configuration. */
+export interface PinochleConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** Pinochle meld data. */
+export interface PinochleMeldData {
+  type: number;
+  points: number;
+  cards: Card[];
+}
+
+/** Pinochle trick card data. */
+export interface PinochleTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Pinochle player data. */
+export interface PinochlePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  team: number;
+  trickCount: number;
+  bid: number;
+  hasPassed: boolean;
+  meldScore: number;
+  trickPoints: number;
+}
+
+/** Full Pinochle game state returned from the API. */
+export interface PinochleResponse {
+  players: PinochlePlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  dealerIdx: number;
+  trumpSuit: number;
+  highestBid: number;
+  highestBidder: number;
+  currentTrick: PinochleTrickCard[];
+  teamScores: [number, number];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  leadPlayerIdx: number;
+  playerMelds: PinochleMeldData[][];
+  validPlayIndices?: number[];
+  hint?: {
+    cardIndex?: number;
+    bidAmount?: number;
+    pass?: boolean;
+    suit?: number;
+    reason: string;
+  };
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: PinochleConfig;
+}
+
+// --- Golf Solitaire (ゴルフ) ---
+
+/** A card in the Golf tableau with removal and exposure status. */
+export interface GolfCard {
+  card: Card | null;
+  removed: boolean;
+  exposed: boolean;
+}
+
+/** A suggested hint in Golf Solitaire. */
+export interface GolfHint {
+  type: string;
+  col: number;
+}
+
+/** Full Golf Solitaire game state returned from the API. */
+export interface GolfResponse {
+  layout: GolfCard[][];
+  stockCount: number;
+  waste: Card[];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: GolfHint;
+}

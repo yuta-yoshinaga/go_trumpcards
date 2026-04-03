@@ -53,6 +53,10 @@ type TrumpCardsWeb struct {
 	brc  *controller.BridgeWebController
 	pnc  *controller.PineappleWebController
 	spdc *controller.SpeedWebController
+	gfc  *controller.GoFishWebController
+	cnc  *controller.CanastaWebController
+	pinc *controller.PinochleWebController
+	glfc *controller.GolfWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -305,6 +309,40 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			speed := domain.NewSpeed(domain.NewTrumpCards(0), players, config)
 			return usecase.NewSpeedInteractor(speed, new(presenter.SpeedWebPresenter))
 		}),
+		gfc: controller.NewGoFishWebController(func() usecase.GoFishInteractorIF {
+			players := []*domain.GoFishPlayer{
+				domain.NewGoFishPlayer(true),
+				domain.NewGoFishPlayer(false),
+				domain.NewGoFishPlayer(false),
+				domain.NewGoFishPlayer(false),
+			}
+			goFish := domain.NewGoFish(domain.NewTrumpCards(0), players)
+			return usecase.NewGoFishInteractor(goFish, new(presenter.GoFishWebPresenter))
+		}),
+		cnc: controller.NewCanastaWebController(func() usecase.CanastaInteractorIF {
+			config := domain.DefaultCanastaConfig()
+			players := []*domain.CanastaPlayer{
+				domain.NewCanastaPlayer(true),
+				domain.NewCanastaPlayer(false),
+			}
+			canasta := domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, config)
+			return usecase.NewCanastaInteractor(canasta, new(presenter.CanastaWebPresenter))
+		}),
+		pinc: controller.NewPinochleWebController(func() usecase.PinochleInteractorIF {
+			config := domain.DefaultPinochleConfig()
+			players := []*domain.PinochlePlayer{
+				domain.NewPinochlePlayer(true, 0),
+				domain.NewPinochlePlayer(false, 1),
+				domain.NewPinochlePlayer(false, 0),
+				domain.NewPinochlePlayer(false, 1),
+			}
+			pinochle := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, config)
+			return usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleWebPresenter))
+		}),
+		glfc: controller.NewGolfWebController(func() usecase.GolfInteractorIF {
+			golf := domain.NewGolf(domain.NewTrumpCards(0))
+			return usecase.NewGolfInteractor(golf, new(presenter.GolfWebPresenter))
+		}),
 	}
 }
 
@@ -349,6 +387,10 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/bridge/exec", web.brc.Exec},
 		{"/pineapple/exec", web.pnc.Exec},
 		{"/speed/exec", web.spdc.Exec},
+		{"/gofish/exec", web.gfc.Exec},
+		{"/canasta/exec", web.cnc.Exec},
+		{"/pinochle/exec", web.pinc.Exec},
+		{"/golf/exec", web.glfc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -441,6 +483,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.tcc.Stop()
 	web.ohlc.Stop()
 	web.brc.Stop()
+	web.cnc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

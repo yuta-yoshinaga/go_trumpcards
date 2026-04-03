@@ -27,6 +27,8 @@
  *   - ThreeCard:   internal/domain/ThreeCard.go   (ThreeCardPhaseBet, ThreeCardPhaseAction, ThreeCardPhaseEnd)
  *   - TriPeaks:    internal/domain/TriPeaks.go    (TriPeaksPhasePlaying, TriPeaksPhaseGameClear, TriPeaksPhaseGameOver)
  *   - VideoPoker:  internal/domain/VideoPoker.go  (VideoPokerPhaseBet, VideoPokerPhaseDraw, VideoPokerPhaseResult)
+ *   - Pinochle:    internal/domain/Pinochle.go    (PinochlePhaseBid, PinochlePhaseTrump, PinochlePhaseMeld, PinochlePhasePlay, PinochlePhaseTrickEnd, PinochlePhaseRoundEnd, PinochlePhaseGameEnd)
+ *   - Golf:        internal/domain/Golf.go        (GolfPhasePlaying, GolfPhaseGameClear, GolfPhaseGameOver)
  */
 
 /** BlackJack phase constants (sync: internal/domain/BlackJack.go). */
@@ -285,4 +287,37 @@ export const SpeedPhase = {
   PLAY: 0,
   STUCK: 1,
   GAME_END: 2,
+} as const;
+
+/** Go Fish phase constants (sync: internal/domain/GoFish.go). */
+export const GoFishPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Canasta phase constants (sync: internal/domain/Canasta.go). */
+export const CanastaPhase = {
+  DRAW: 0,
+  MELD: 1,
+  DISCARD: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Pinochle phase constants (sync: internal/domain/Pinochle.go). */
+export const PinochlePhase = {
+  BID: 0,
+  TRUMP: 1,
+  MELD: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
+} as const;
+
+/** Golf Solitaire phase constants (sync: internal/domain/Golf.go). */
+export const GolfPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
 } as const;

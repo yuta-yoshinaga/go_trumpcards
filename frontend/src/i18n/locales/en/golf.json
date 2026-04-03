@@ -1,0 +1,39 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Golf Solitaire",
+  "stock": "Stock",
+  "waste": "Waste",
+  "moveCount": "Moves",
+  "draw": "Draw",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "empty": "Empty",
+  "playing": "Playing",
+  "stalemate": "No more moves",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "noHint": "No hints available",
+  "hintAvailable": "Hint available",
+  "hintType": {
+    "remove": "A card can be removed",
+    "draw": "Draw a card from the stock"
+  },
+  "tutorial": {
+    "columns": "Seven columns of cards. Click the bottom card to remove it.",
+    "stockWaste": "Click the stock to draw a card.",
+    "controls": "Control buttons.",
+    "hintDisplay": "Press the hint button for suggestions.",
+    "resetButton": "Press reset to start a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for easier play",
+  "frontendHint": {
+    "canRemove": "An exposed card can be removed — it is adjacent to the waste top",
+    "multipleRemovable": "Multiple cards can be removed — look for chain opportunities",
+    "drawFromStock": "No removable cards — try drawing from the stock"
+  }
+}

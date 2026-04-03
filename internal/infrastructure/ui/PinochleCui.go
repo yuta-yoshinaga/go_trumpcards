@@ -1,0 +1,63 @@
+package ui
+
+import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// PinochleCui ピノクルCUIクラス
+type PinochleCui struct {
+	pc *controller.PinochleCuiController
+}
+
+// NewPinochleCui コンストラクタ
+func NewPinochleCui() *PinochleCui {
+	config := domain.DefaultPinochleConfig()
+	players := []*domain.PinochlePlayer{
+		domain.NewPinochlePlayer(true, 0),
+		domain.NewPinochlePlayer(false, 1),
+		domain.NewPinochlePlayer(false, 0),
+		domain.NewPinochlePlayer(false, 1),
+	}
+	pinochle := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, config)
+	return &PinochleCui{
+		pc: controller.NewPinochleCuiController(usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleCuiPresenter))),
+	}
+}
+
+// Controller returns the game controller.
+func (cui *PinochleCui) Controller() CuiExecer { return cui.pc }
+
+// HelpLines returns the game's help lines.
+func (cui *PinochleCui) HelpLines() []string {
+	return []string{
+		i18n.T("pinochle.helpTitle"),
+		"",
+		i18n.T("gameCommands"),
+		i18n.T("pinochle.helpBid"),
+		i18n.T("pinochle.helpPass"),
+		i18n.T("pinochle.helpTrump"),
+		i18n.T("pinochle.helpMeld"),
+		i18n.T("pinochle.helpPlay"),
+		i18n.T("pinochle.helpNext"),
+		i18n.T("pinochle.helpNextRound"),
+		"  l                    action log",
+		"",
+		i18n.T("settings"),
+		i18n.T("pinochle.helpSetDifficulty"),
+		i18n.T("pinochle.helpSetLimit"),
+		"",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
+	}
+}
+
+// Exec ゲーム実行
+func (cui *PinochleCui) Exec() {
+	RunCuiLoop(cui.pc, cui.HelpLines())
+}

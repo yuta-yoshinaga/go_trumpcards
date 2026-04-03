@@ -1,0 +1,7 @@
+{
+  "helpTitle": "Golf Solitaire (ゴルフ)",
+  "helpDraw": "  d                        ストックからカードを引く",
+  "helpRemove": "  rm <col>                  カードを除去",
+  "helpGiveUp": "  g                        ギブアップ",
+  "helpHint": "  h                        ヒント"
+}
