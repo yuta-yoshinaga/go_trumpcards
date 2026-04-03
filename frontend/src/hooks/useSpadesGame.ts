@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { spadesApi } from '../api/gameApi';
+import type { SpadesConfig } from '../types/card';
 import { useTrickGameBase } from './useTrickGameBase';
 
 /** Default Spades game configuration. */
