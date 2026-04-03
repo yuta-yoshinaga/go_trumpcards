@@ -68,6 +68,7 @@ GAMES:
   pineapple    Pineapple Poker (パイナップルポーカー)
   speed        Speed (スピード)
   gofish       Go Fish (ゴーフィッシュ)
+  pinochle     Pinochle (ピノクル)
   golf         Golf Solitaire (ゴルフ)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
