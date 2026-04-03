@@ -4,7 +4,6 @@ package controller_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -13,20 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
-
-func mustPinochleOutputJSON(msg string) string {
-	out := &controller.PinochleWebOutput{
-		Players:       []*controller.PinochleWebOutputPlayer{},
-		CurrentTrick:  []*controller.PinochleWebOutputTrickCard{},
-		WinnerTeam:    -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
-	}
-	b, err := json.Marshal(out)
-	if err != nil {
-		panic(fmt.Sprintf("mustPinochleOutputJSON: %v", err))
-	}
-	return string(b)
-}
 
 func TestPinochleWebController_Commands(t *testing.T) {
 	mockOutput := `{"players":[],"phase":0}`
