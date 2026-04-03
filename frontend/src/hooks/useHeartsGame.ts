@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { heartsApi } from '../api/gameApi';
+import type { HeartsConfig } from '../types/card';
 import { useTrickGameBase } from './useTrickGameBase';
 
 /** Default Hearts game configuration. */
