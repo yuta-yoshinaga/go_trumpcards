@@ -166,15 +166,7 @@ func (ni *NapoleonInteractor) ActionLog() string {
 
 // runCpuBids CPUビッドを実行
 func (ni *NapoleonInteractor) runCpuBids() {
-	for !ni.n.GetGameEndFlag() {
-		if ni.n.GetPhase() != domain.NapoleonPhaseBid {
-			break
-		}
-		if ni.n.IsHumanBidTurn() {
-			break
-		}
-		ni.n.CpuBid()
-	}
+	runCpuBidsLoop(ni.n, domain.NapoleonPhaseBid)
 }
 
 // runCpuDeclareAndExchange CPUの切り札宣言と場札交換を自動処理
