@@ -14,11 +14,10 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
@@ -115,7 +114,22 @@ function KlondikePageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('klondike', state);
-  const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const windowWidth = useWindowWidth();
+
+  // Responsive card dimensions for Klondike's 7-column layout on mobile
+  const kl = useMemo(() => {
+    if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap, wasteFan: 15 };
+    const padX = 16; // px-2 each side on mobile
+    const gapPx = 4; // gap-1
+    const cols = 7;
+    const colW = Math.floor((windowWidth - padX - (cols - 1) * gapPx) / cols);
+    const cw = Math.max(colW, 28);
+    const ch = Math.round(cw * 1.5);
+    const co = Math.round(cw * 0.48);
+    const wasteFan = Math.round(cw * 0.3);
+    return { cw, ch, co, wasteFan };
+  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
 
   const isPlayingForKbd = state?.phase === KlondikePhase.PLAYING;
   const { elapsedSeconds, resetTimer, timeBonus } = useKlondikeTimer(isPlayingForKbd);
@@ -192,27 +206,23 @@ function KlondikePageContent() {
       <LandscapeBanner message={t('landscapeBanner')} />
 
       {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+      <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
         {/* Foundation + Stock/Waste row */}
-        <div className="flex gap-2 mb-3 items-start flex-wrap">
+        <div className="flex gap-1 sm:gap-2 mb-3 items-start">
           {/* Stock + Waste */}
-          <div className="flex gap-2" data-tutorial="kl-stock-waste">
+          <div className="flex gap-1 sm:gap-2" data-tutorial="kl-stock-waste">
             <div className="text-center">
               <div className="text-game-text-muted text-xs mb-1">
                 {t('stock')} ({state.stockCount})
               </div>
               {state.stockCount > 0 ? (
-                <AnimatedCardBack
-                  width={cardWidth}
-                  onClick={isPlaying ? handleDraw : undefined}
-                  ariaLabel={t('draw')}
-                />
+                <AnimatedCardBack width={kl.cw} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
               ) : (
                 <button
                   type="button"
                   onClick={handleDraw}
                   disabled={!isPlaying || loading}
-                  style={{ width: cardWidth, height: cardHeight }}
+                  style={{ width: kl.cw, height: kl.ch }}
                   className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                 >
                   {t('draw')}
@@ -224,11 +234,15 @@ function KlondikePageContent() {
             <div className="text-center">
               <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
               {wasteDisplay.length > 0 ? (
-                <div className="relative" style={{ width: cardWidth + (wasteDisplay.length - 1) * 15 }}>
+                <div className="relative" style={{ width: kl.cw + (wasteDisplay.length - 1) * kl.wasteFan }}>
                   {wasteDisplay.map((card, idx) => {
                     const isTop = idx === wasteDisplay.length - 1;
                     return (
-                      <div key={`waste-${idx.toString()}`} className="absolute top-0" style={{ left: idx * 15 }}>
+                      <div
+                        key={`waste-${idx.toString()}`}
+                        className="absolute top-0"
+                        style={{ left: idx * kl.wasteFan }}
+                      >
                         {isTop ? (
                           <button
                             type="button"
@@ -241,19 +255,19 @@ function KlondikePageContent() {
                             aria-pressed={isSourceSelected('waste')}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
                           >
-                            <AnimatedCard card={card} width={cardWidth} />
+                            <AnimatedCard card={card} width={kl.cw} />
                           </button>
                         ) : (
-                          <AnimatedCard card={card} width={cardWidth} />
+                          <AnimatedCard card={card} width={kl.cw} />
                         )}
                       </div>
                     );
                   })}
-                  <div style={{ height: cardHeight, width: cardWidth + (wasteDisplay.length - 1) * 15 }} />
+                  <div style={{ height: kl.ch, width: kl.cw + (wasteDisplay.length - 1) * kl.wasteFan }} />
                 </div>
               ) : (
                 <div
-                  style={{ width: cardWidth, height: cardHeight }}
+                  style={{ width: kl.cw, height: kl.ch }}
                   className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
                 >
                   {t('empty')}
@@ -262,10 +276,10 @@ function KlondikePageContent() {
             </div>
           </div>
 
-          <div className="w-4" />
+          <div className="w-2 sm:w-4" />
 
           {/* Foundation piles */}
-          <div className="flex gap-2" data-tutorial="kl-foundation">
+          <div className="flex gap-1 sm:gap-2" data-tutorial="kl-foundation">
             {state.foundation.map((pile, idx) => (
               <div key={`f-${idx.toString()}`} className="text-center">
                 <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
@@ -279,7 +293,7 @@ function KlondikePageContent() {
                   >
                     <AnimatedCard
                       card={pile[pile.length - 1]}
-                      width={cardWidth}
+                      width={kl.cw}
                       dealDelay={isAutoCompleting ? idx * 0.15 : 0}
                     />
                   </button>
@@ -289,7 +303,7 @@ function KlondikePageContent() {
                     onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                     disabled={!isPlaying || loading || !selectedSource}
                     aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                    style={{ width: cardWidth, height: cardHeight }}
+                    style={{ width: kl.cw, height: kl.ch }}
                     className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                   >
                     A
@@ -301,61 +315,54 @@ function KlondikePageContent() {
         </div>
 
         {/* Tableau */}
-        <div className="relative">
-          <div className="flex gap-2 mb-3 overflow-x-auto" data-tutorial="kl-tableau">
-            {state.tableau.map((col, colIdx) => (
-              <div
-                key={`col-${colIdx.toString()}`}
-                className="flex-shrink-0 sm:flex-1"
-                style={isMobile ? { width: solitaireMinColWidth } : undefined}
-              >
-                <div className="relative" style={{ minHeight: cardHeight }}>
-                  {col.length === 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
-                      disabled={!isPlaying || loading || !selectedSource}
-                      style={{ height: cardHeight }}
-                      className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+        <div className="flex gap-1 sm:gap-2 mb-3" data-tutorial="kl-tableau">
+          {state.tableau.map((col, colIdx) => (
+            <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+              <div className="relative" style={{ minHeight: kl.ch }}>
+                {col.length === 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
+                    disabled={!isPlaying || loading || !selectedSource}
+                    style={{ height: kl.ch }}
+                    className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                  >
+                    K
+                  </button>
+                ) : (
+                  col.map((tc, cardIdx) => (
+                    <div
+                      key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                      className="absolute left-0 right-0"
+                      style={{ top: cardIdx * kl.co }}
                     >
-                      K
-                    </button>
-                  ) : (
-                    col.map((tc, cardIdx) => (
-                      <div
-                        key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                        className="absolute left-0 right-0"
-                        style={{ top: cardIdx * cardOverlap }}
-                      >
-                        {tc.faceUp && tc.card ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (selectedSource) {
-                                handleSelectTarget({ zone: 'tableau', col: colIdx });
-                              } else {
-                                handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
-                              }
-                            }}
-                            disabled={!isPlaying || loading}
-                            aria-label={cardAlt(tc.card)}
-                            aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
-                            className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
-                          >
-                            <AnimatedCard card={tc.card} width={cardWidth} style={{ width: '100%' }} />
-                          </button>
-                        ) : (
-                          <AnimatedCardBack width={cardWidth} className="w-full" />
-                        )}
-                      </div>
-                    ))
-                  )}
-                  {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
-                </div>
+                      {tc.faceUp && tc.card ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (selectedSource) {
+                              handleSelectTarget({ zone: 'tableau', col: colIdx });
+                            } else {
+                              handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
+                            }
+                          }}
+                          disabled={!isPlaying || loading}
+                          aria-label={cardAlt(tc.card)}
+                          aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
+                          className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
+                        >
+                          <AnimatedCard card={tc.card} width={kl.cw} style={{ width: '100%' }} />
+                        </button>
+                      ) : (
+                        <AnimatedCardBack width={kl.cw} className="w-full" />
+                      )}
+                    </div>
+                  ))
+                )}
+                {col.length > 0 && <div style={{ height: (col.length - 1) * kl.co + kl.ch }} />}
               </div>
-            ))}
-          </div>
-          {isMobile && <ScrollFadeHint />}
+            </div>
+          ))}
         </div>
 
         {/* Hint display */}
