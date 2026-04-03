@@ -91,4 +91,10 @@ func TestApplyBool(t *testing.T) {
 		ApplyBool(&field, &v)
 		assert.Equal(t, false, field)
 	})
+	t.Run("non-nil true updates field", func(t *testing.T) {
+		field := false
+		v := true
+		ApplyBool(&field, &v)
+		assert.Equal(t, true, field)
+	})
 }

@@ -20,7 +20,19 @@ func NewDaifugoCuiController(dgi usecase.DaifugoInteractorIF) *DaifugoCuiControl
 }
 
 // setDaifugoRule sets a boolean rule flag on the config by key. Returns false if the key is unknown.
+// cfg may be nil for key-only validation.
 func setDaifugoRule(cfg *domain.DaifugoConfig, key string, value bool) bool {
+	switch key {
+	case "8cut", "11back", "seq", "exchange", "5skip", "7pass", "10discard",
+		"spade3", "capital", "9reverse", "coupdetat", "numberlock", "sandstorm",
+		"emperor", "seqrev", "seqlock", "illegal", "12bomber", "blindexchange":
+		// valid key
+	default:
+		return false
+	}
+	if cfg == nil {
+		return true
+	}
 	switch key {
 	case "8cut":
 		cfg.EightCutEnabled = value
@@ -60,8 +72,6 @@ func setDaifugoRule(cfg *domain.DaifugoConfig, key string, value bool) bool {
 		cfg.QueenBomberEnabled = value
 	case "blindexchange":
 		cfg.BlindExchangeEnabled = value
-	default:
-		return false
 	}
 	return true
 }
@@ -108,11 +118,9 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				})
 			case "sr", "setrule":
 				if len(args) < 2 {
-					return "Usage: sr <rule> <0|1>. Rules: 8cut, 11back, seq, exchange, 5skip, 7pass, 10discard, spade3, capital, 9reverse, coupdetat, numberlock, sandstorm, emperor, seqrev, illegal, 12bomber. Use 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.", true
+					return "Usage: sr <rule> <0|1>. Rules: 8cut, 11back, seq, exchange, 5skip, 7pass, 10discard, spade3, capital, 9reverse, coupdetat, numberlock, sandstorm, emperor, seqrev, seqlock, illegal, 12bomber, blindexchange. Use 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.", true
 				}
-				// Validate rule key before parsing value (avoid unnecessary GetConfig call)
-				var probe domain.DaifugoConfig
-				if !setDaifugoRule(&probe, args[0], false) {
+				if !setDaifugoRule(nil, args[0], false) {
 					return fmt.Sprintf("Unknown rule: %s.", args[0]), true
 				}
 				v, err := strconv.Atoi(args[1])
