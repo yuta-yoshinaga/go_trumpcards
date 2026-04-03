@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"golang.org/x/term"
@@ -70,6 +71,7 @@ GAMES:
   gofish       Go Fish (ゴーフィッシュ)
   pinochle     Pinochle (ピノクル)
   golf         Golf Solitaire (ゴルフ)
+  completion   Generate shell completion script (bash, zsh, fish)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -88,6 +90,8 @@ EXAMPLES:
   trumpcards update              Self-update to the latest version
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
   trumpcards web                 Start the web GUI server
+  trumpcards web --port 3000     Start the web GUI on port 3000
+  source <(trumpcards completion bash)   Enable bash completion
 
 ENVIRONMENT VARIABLES:
   NO_COLOR          Disable color output when set (see https://no-color.org/)
@@ -178,6 +182,9 @@ ENVIRONMENT VARIABLES:
 		"gofish":      func() int { ui.NewGoFishCui().Exec(); return 0 },
 		"pinochle":    func() int { ui.NewPinochleCui().Exec(); return 0 },
 		"golf":        func() int { ui.NewGolfCui().Exec(); return 0 },
+		"completion": func() int {
+			return runCompletion(flag.Args()[1:])
+		},
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 			if err := updater.Exec(); err != nil {
@@ -186,6 +193,15 @@ ENVIRONMENT VARIABLES:
 			return 0
 		},
 		"web": func() int {
+			webFlags := flag.NewFlagSet("web", flag.ContinueOnError)
+			port := webFlags.Int("port", 0, "Port number for the web server (default: 8080)")
+			webFlags.IntVar(port, "p", 0, "Port number for the web server (shorthand)")
+			if err := webFlags.Parse(flag.Args()[1:]); err != nil {
+				return 1
+			}
+			if *port > 0 {
+				_ = os.Setenv("PORT", strconv.Itoa(*port))
+			}
 			infrastructure.InitLogger()
 			w := web.NewTrumpCardsWeb()
 			if err := w.Exec(); err != nil {
@@ -196,9 +212,12 @@ ENVIRONMENT VARIABLES:
 		},
 	}
 
+	// Commands that parse their own sub-flags; skip the extra-args warning for these.
+	subFlagCommands := map[string]bool{"web": true, "completion": true}
+
 	arg := strings.ToLower(flag.Arg(0))
 	if handler, ok := commands[arg]; ok {
-		if flag.NArg() > 1 {
+		if flag.NArg() > 1 && !subFlagCommands[arg] {
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(flag.Args()[1:], " ")))
 		}
 		return handler()
