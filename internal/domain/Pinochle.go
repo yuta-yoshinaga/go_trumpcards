@@ -1168,6 +1168,9 @@ func (p *Pinochle) scoreRound() {
 		teamTrickCount[team] += p.players[i].GetTrickCount()
 	}
 
+	if p.highestBidder < 0 || p.highestBidder >= PinochlePlayerCnt {
+		return
+	}
 	bidderTeam := p.players[p.highestBidder].GetTeam()
 	defenderTeam := 1 - bidderTeam
 
@@ -1361,22 +1364,28 @@ func (p *Pinochle) UnmarshalJSON(data []byte) error {
 // ─── Sort ───────────────────────────────────────────────
 
 // SortHand 手札をソートする (スート順 → ランク順)
+// ReorderCards を使用してインプレースで並び替えることで Reset+AddCard の副作用を回避する
 func (p *Pinochle) SortHand(playerIdx int) {
 	player := p.players[playerIdx]
-	cards := make([]*Card, 0, player.GetCardsSize())
-	for i := 0; i < player.GetCardsSize(); i++ {
-		cards = append(cards, player.GetCard(i))
+	n := player.GetCardsSize()
+	if n <= 1 {
+		return
 	}
-	sort.Slice(cards, func(i, j int) bool {
-		if cards[i].GetDesign() != cards[j].GetDesign() {
-			return cards[i].GetDesign() < cards[j].GetDesign()
+
+	// ソート順のインデックスを生成
+	indices := make([]int, n)
+	for i := range indices {
+		indices[i] = i
+	}
+	sort.Slice(indices, func(a, b int) bool {
+		ca := player.GetCard(indices[a])
+		cb := player.GetCard(indices[b])
+		if ca.GetDesign() != cb.GetDesign() {
+			return ca.GetDesign() < cb.GetDesign()
 		}
-		return pinochleRankValue(cards[i].GetValue()) > pinochleRankValue(cards[j].GetValue())
+		return pinochleRankValue(ca.GetValue()) > pinochleRankValue(cb.GetValue())
 	})
-	player.Reset()
-	for _, c := range cards {
-		player.AddCard(c)
-	}
+	_ = player.ReorderCards(indices)
 }
 
 // GetValidPlayIndices プレイ可能なカードのインデックスを返す (外部公開用)

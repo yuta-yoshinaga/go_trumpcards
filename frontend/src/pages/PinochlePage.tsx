@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -63,6 +63,15 @@ function PinochlePageContent() {
   const phaseNames = usePhaseNames('pinochle', PINOCHLE_PHASE_KEYS);
 
   const [bidAmount, setBidAmount] = useState(20);
+
+  // Auto-update bid amount when highest bid changes
+  useEffect(() => {
+    if (state?.highestBid && state.highestBid > 0) {
+      setBidAmount(state.highestBid + 1);
+    } else {
+      setBidAmount(20);
+    }
+  }, [state?.highestBid]);
 
   if (!state) {
     return (
