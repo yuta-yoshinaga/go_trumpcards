@@ -29,6 +29,8 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # gofish, canasta, pinochle, golf
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
+go run ./cmd/trumpcards web --port 3000  # Start web server on custom port
+go run ./cmd/trumpcards completion bash  # Generate shell completion script (bash/zsh/fish)
 go run ./cmd/server                # Start REST API + web GUI server (direct)
 
 # Test
