@@ -52,7 +52,8 @@
     "ohhell": "オー・ヘル",
     "speed": "スピード",
     "gofish": "Go Fish",
-    "pinochle": "ピノクル"
+    "pinochle": "ピノクル",
+    "golf": "ゴルフ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -253,7 +254,13 @@
     "tripeaks.noHint": "ヒントはありません",
     "tripeaks.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "gofish.result.humanWin": "ゲーム終了！ あなたの勝ち！",
-    "gofish.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+    "gofish.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "golf.playing": "プレイ中",
+    "golf.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "golf.gameOver": "ゲームオーバー",
+    "golf.hintAvailable": "ヒントがあります",
+    "golf.noHint": "ヒントはありません",
+    "golf.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

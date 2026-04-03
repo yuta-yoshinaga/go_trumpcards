@@ -14,6 +14,7 @@ import type {
   FreeCellResponse,
   GinRummyResponse,
   GoFishResponse,
+  GolfResponse,
   HeartsResponse,
   HoldemResponse,
   IndianPokerResponse,
@@ -83,6 +84,7 @@ const workerUrl: Record<string, string> = {
   ginrummy: WORKER_SOLO,
   canasta: WORKER_SOLO,
   cribbage: WORKER_SOLO,
+  golf: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -902,6 +904,12 @@ export const goFishApi = {
     gameExec<GoFishResponse>('gofish', { command, targetIdx, rank, config }),
 };
 
+/** API client for the Golf Solitaire /golf/exec endpoint. */
+export const golfApi = {
+  exec: (command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo', col?: number) =>
+    gameExec<GolfResponse>('golf', { command, col }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -938,6 +946,7 @@ const games = [
   'speed',
   'gofish',
   'pinochle',
+  'golf',
 ] as const;
 type Game = (typeof games)[number];
 

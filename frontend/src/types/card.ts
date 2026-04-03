@@ -1700,3 +1700,33 @@ export interface PinochleResponse {
   messageParams?: Record<string, string>;
   config: PinochleConfig;
 }
+
+// --- Golf Solitaire (ゴルフ) ---
+
+/** A card in the Golf tableau with removal and exposure status. */
+export interface GolfCard {
+  card: Card | null;
+  removed: boolean;
+  exposed: boolean;
+}
+
+/** A suggested hint in Golf Solitaire. */
+export interface GolfHint {
+  type: string;
+  col: number;
+}
+
+/** Full Golf Solitaire game state returned from the API. */
+export interface GolfResponse {
+  layout: GolfCard[][];
+  stockCount: number;
+  waste: Card[];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: GolfHint;
+}

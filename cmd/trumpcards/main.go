@@ -68,6 +68,7 @@ GAMES:
   pineapple    Pineapple Poker (パイナップルポーカー)
   speed        Speed (スピード)
   gofish       Go Fish (ゴーフィッシュ)
+  golf         Golf Solitaire (ゴルフ)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -175,6 +176,7 @@ ENVIRONMENT VARIABLES:
 		"speed":       func() int { ui.NewSpeedCui().Exec(); return 0 },
 		"gofish":      func() int { ui.NewGoFishCui().Exec(); return 0 },
 		"pinochle":    func() int { ui.NewPinochleCui().Exec(); return 0 },
+		"golf":        func() int { ui.NewGolfCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 			if err := updater.Exec(); err != nil {

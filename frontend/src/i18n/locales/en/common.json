@@ -52,7 +52,8 @@
     "ohhell": "Oh Hell",
     "speed": "Speed",
     "gofish": "Go Fish",
-    "pinochle": "Pinochle"
+    "pinochle": "Pinochle",
+    "golf": "Golf"
   },
   "sound": {
     "mute": "Mute sound",
@@ -253,7 +254,13 @@
     "tripeaks.noHint": "No hint available",
     "tripeaks.stalemate": "No moves can lead to a win. Please undo or give up.",
     "gofish.result.humanWin": "Game over! You win!",
-    "gofish.result.cpuWin": "Game over! CPU {{cpuId}} wins!"
+    "gofish.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "golf.playing": "Playing",
+    "golf.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "golf.gameOver": "Game Over",
+    "golf.hintAvailable": "Hint available",
+    "golf.noHint": "No hint available",
+    "golf.stalemate": "No moves can lead to a win. Please undo or give up."
   },
   "manual": {
     "ariaLabel": "Game Manual",

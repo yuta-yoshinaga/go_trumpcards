@@ -29,7 +29,7 @@
   - [3.5 Spades フェーズ遷移](#35-spades-フェーズ遷移)
   - [3.6 Doubt フェーズ遷移](#36-doubt-フェーズ遷移)
   - [3.7 Memory フェーズ遷移](#37-memory-フェーズ遷移)
-  - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks-フェーズ遷移)
+  - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks-フェーズ遷移)
   - [3.9 CrazyEights フェーズ遷移](#39-crazyeights-フェーズ遷移)
   - [3.10 GinRummy フェーズ遷移](#310-ginrummy-フェーズ遷移)
   - [3.11 Baccarat フェーズ遷移](#311-baccarat-フェーズ遷移)
@@ -884,6 +884,22 @@ classDiagram
         +Phase() TriPeaksPhase
     }
 
+    class Golf {
+        -trumpCards *TrumpCards
+        -layout [7][5]*GolfCard
+        -stock []*Card
+        -waste []*Card
+        -phase GolfPhase
+        -history []*golfSnapshot
+        +Reset()
+        +Draw() error
+        +Remove(col int) error
+        +GetHint() *GolfHint
+        +Undo() error
+        +GiveUp()
+        +Phase() GolfPhase
+    }
+
     class Cribbage {
         -trumpCards *TrumpCards
         -players []*CribbagePlayer
@@ -1565,7 +1581,7 @@ stateDiagram-v2
     note right of Result : MemoryPhaseResult = 2
 ```
 
-### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks フェーズ遷移
+### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf フェーズ遷移
 
 5つのソリティア系ゲームは共通のフェーズ構造を持ちます。
 

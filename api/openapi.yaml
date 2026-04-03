@@ -70,6 +70,8 @@ tags:
     description: Pyramid (ピラミッド) game
   - name: tripeaks
     description: TriPeaks (トリピークス) game
+  - name: golf
+    description: Golf Solitaire (ゴルフ) game
   - name: cribbage
     description: Cribbage (クリベッジ) game
   - name: threecard
@@ -3109,6 +3111,143 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GoFishResponse'
+
+  /golf/exec:
+    post:
+      tags:
+        - golf
+      summary: Execute a Golf Solitaire game command
+      description: |
+        Send a command to advance the Golf Solitaire (ゴルフ) game session identified by
+        `sessionId`.  Golf is a single-player solitaire card game using a
+        standard 52-card deck.  Seven columns of five face-up cards (35 total) form
+        the tableau.  Remove exposed cards (bottom-most per column) that are ±1 rank
+        from the waste pile top card (K-A wrap).  Win by removing all 35 tableau cards.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All tableau cards removed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `draw`         | `d`  | Draw a card from stock to waste |
+        | `remove`       | `rm` | Remove an exposed card ±1 rank from waste top |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `undo`         | `u`  | Undo the last action |
+        | `log`          | `l`  | View action log |
+      operationId: golfExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+                col:
+                  type: integer
+                  description: Column index (0-6) for remove command
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw from stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              remove:
+                summary: Remove a tableau card
+                value:
+                  command: remove
+                  col: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layout:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          card:
+                            $ref: '#/components/schemas/Card'
+                          removed:
+                            type: boolean
+                          exposed:
+                            type: boolean
+                  stockCount:
+                    type: integer
+                  waste:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                  hint:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      col:
+                        type: integer
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  layout:
+                    type: array
+                    items:
+                      type: array
+                  stockCount:
+                    type: integer
+                  waste:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  message:
+                    type: string
 
 components:
   schemas:

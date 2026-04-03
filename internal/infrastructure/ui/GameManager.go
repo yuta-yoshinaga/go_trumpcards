@@ -11,7 +11,7 @@ import (
 // gameNames is the canonical ordered list of available game names.
 var gameNames = []string{
 	"blackjack", "poker", "oldmaid", "daifugo", "sevens",
-	"doubt", "holdem", "omaha", "shortdeck", "hearts", "memory", "klondike", "freecell", "baccarat", "spades", "crazyeights", "ginrummy", "spider", "napoleon", "indianpoker", "videopoker", "deuceswild", "jokerpoker", "euchre", "pyramid", "tripeaks", "cribbage", "threecard", "ohhell", "speed",
+	"doubt", "holdem", "omaha", "shortdeck", "hearts", "memory", "klondike", "freecell", "baccarat", "spades", "crazyeights", "ginrummy", "spider", "napoleon", "indianpoker", "videopoker", "deuceswild", "jokerpoker", "euchre", "pyramid", "tripeaks", "cribbage", "threecard", "ohhell", "speed", "golf",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.
@@ -167,6 +167,7 @@ func buildGameEntries() (map[string]CuiExecer, map[string][]string) {
 		"threecard":   NewThreeCardCui(),
 		"ohhell":      NewOhHellCui(),
 		"speed":       NewSpeedCui(),
+		"golf":        NewGolfCui(),
 	}
 	controllers := make(map[string]CuiExecer, len(entries))
 	helpLines := make(map[string][]string, len(entries))

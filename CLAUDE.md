@@ -26,7 +26,7 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # shortdeck, pineapple, hearts, memory, klondike, freecell, baccarat, spades,
 # crazyeights, ginrummy, spider, napoleon, indianpoker, videopoker, deuceswild,
 # jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, ohhell, bridge, speed,
-# gofish, canasta, pinochle
+# gofish, canasta, pinochle, golf
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server                # Start REST API + web GUI server (direct)
@@ -125,7 +125,7 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 |--------|-------------|-------|
 | **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard) |
 | **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle) |
-| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage) |
+| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf) |
 
 **When adding/modifying a game, always update both:**
 1. The worker entry point (`cmd/workers/<worker>/main.go`) — register with `registerKV`
