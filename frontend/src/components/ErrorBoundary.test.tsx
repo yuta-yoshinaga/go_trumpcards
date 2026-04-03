@@ -33,6 +33,30 @@ describe('ErrorBoundary', () => {
     vi.restoreAllMocks();
   });
 
+  it('renders error container with role="alert"', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <ErrorBoundary>
+        <ThrowingChild />
+      </ErrorBoundary>,
+    );
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
+
+  it('applies btnPrimary style to retry button', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <ErrorBoundary>
+        <ThrowingChild />
+      </ErrorBoundary>,
+    );
+    const btn = screen.getByRole('button', { name: retryLabel });
+    expect(btn.className).toContain('min-h-[44px]');
+    expect(btn.className).toContain('focus-visible:ring-2');
+    vi.restoreAllMocks();
+  });
+
   it('resets and re-renders children when retry button is clicked', () => {
     let shouldThrow = true;
 
