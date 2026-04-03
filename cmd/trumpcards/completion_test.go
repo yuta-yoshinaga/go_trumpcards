@@ -15,9 +15,12 @@ func TestWriteBashCompletion(t *testing.T) {
 	require.NoError(t, err)
 	script := buf.String()
 	assert.Contains(t, script, "complete -F _trumpcards trumpcards")
-	assert.Contains(t, script, "blackjack")
 	assert.Contains(t, script, "--lang")
 	assert.Contains(t, script, "--port")
+	// Every subcommand in the canonical list must appear in the bash script.
+	for _, cmd := range completionSubcommands {
+		assert.Contains(t, script, cmd, "bash completion missing subcommand %q", cmd)
+	}
 }
 
 func TestWriteZshCompletion(t *testing.T) {
@@ -26,9 +29,11 @@ func TestWriteZshCompletion(t *testing.T) {
 	require.NoError(t, err)
 	script := buf.String()
 	assert.Contains(t, script, "#compdef trumpcards")
-	assert.Contains(t, script, "'blackjack:BlackJack'")
-	assert.Contains(t, script, "'completion:Generate shell completion script'")
 	assert.Contains(t, script, "--port")
+	// Every subcommand in the canonical list must appear in the zsh script.
+	for _, cmd := range completionSubcommands {
+		assert.Contains(t, script, "'"+cmd+":", "zsh completion missing subcommand %q", cmd)
+	}
 }
 
 func TestWriteFishCompletion(t *testing.T) {
@@ -37,13 +42,21 @@ func TestWriteFishCompletion(t *testing.T) {
 	require.NoError(t, err)
 	script := buf.String()
 	assert.Contains(t, script, "complete -c trumpcards")
-	assert.Contains(t, script, "blackjack")
 	assert.Contains(t, script, "__fish_seen_subcommand_from completion")
 	assert.Contains(t, script, "-l port")
+	// Every subcommand in the canonical list must appear in the fish script.
+	for _, cmd := range completionSubcommands {
+		assert.Contains(t, script, "-a "+cmd, "fish completion missing subcommand %q", cmd)
+	}
 }
 
 func TestRunCompletion_NoArgs(t *testing.T) {
 	code := runCompletion(nil)
+	assert.Equal(t, 1, code)
+}
+
+func TestRunCompletion_ExtraArgs(t *testing.T) {
+	code := runCompletion([]string{"bash", "extra"})
 	assert.Equal(t, 1, code)
 }
 

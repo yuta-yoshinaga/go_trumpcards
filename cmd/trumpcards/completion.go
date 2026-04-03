@@ -20,7 +20,7 @@ var completionSubcommands = []string{
 // runCompletion outputs a shell completion script for the given shell name.
 // Returns 0 on success, 1 on error.
 func runCompletion(args []string) int {
-	if len(args) == 0 {
+	if len(args) != 1 {
 		fmt.Fprintln(os.Stderr, "Usage: trumpcards completion <bash|zsh|fish>")
 		return 1
 	}

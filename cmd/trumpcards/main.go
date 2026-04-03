@@ -199,6 +199,9 @@ ENVIRONMENT VARIABLES:
 			if err := webFlags.Parse(flag.Args()[1:]); err != nil {
 				return 1
 			}
+			if webFlags.NArg() > 0 {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(webFlags.Args(), " ")))
+			}
 			if *port > 0 {
 				_ = os.Setenv("PORT", strconv.Itoa(*port))
 			}
