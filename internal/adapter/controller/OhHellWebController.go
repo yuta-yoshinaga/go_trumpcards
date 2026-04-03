@@ -84,7 +84,7 @@ type OhHellWebOutputConfig struct {
 func (c *OhHellWebConfig) ToConfig() domain.OhHellConfig {
 	cfg := domain.DefaultOhHellConfig()
 	cfg.CpuDifficulty = domain.OhHellCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.OhHellCpuDifficultyEasy), int(domain.OhHellCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.MaxHandSize = webutil.BoundedIntPtr(c.MaxHandSize, 1, 13, cfg.MaxHandSize)
+	webutil.ApplyBoundedInt(&cfg.MaxHandSize, c.MaxHandSize, 1, 13)
 	cfg.ScoringVariant = domain.OhHellScoringVariant(webutil.BoundedIntPtr(c.ScoringVariant, int(domain.OhHellScoringStandard), int(domain.OhHellScoringPenalty), int(cfg.ScoringVariant)))
 	cfg.RoundDirection = domain.OhHellRoundDirection(webutil.BoundedIntPtr(c.RoundDirection, int(domain.OhHellRoundDownOnly), int(domain.OhHellRoundDownAndUp), int(cfg.RoundDirection)))
 	return cfg

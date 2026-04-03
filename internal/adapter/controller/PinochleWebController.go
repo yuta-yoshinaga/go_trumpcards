@@ -93,7 +93,7 @@ type PinochleWebOutputConfig struct {
 func (c *PinochleWebConfig) ToConfig() domain.PinochleConfig {
 	cfg := domain.DefaultPinochleConfig()
 	cfg.CpuDifficulty = domain.PinochleCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.PinochleCpuDifficultyEasy), int(domain.PinochleCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 10000, cfg.PointLimit)
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.PointLimit, 1, 10000)
 	return cfg
 }
 

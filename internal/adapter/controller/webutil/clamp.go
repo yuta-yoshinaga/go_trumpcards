@@ -19,3 +19,13 @@ func BoolPtrOr(ptr *bool, defaultVal bool) bool {
 	}
 	return *ptr
 }
+
+// ApplyBoundedInt applies a bounded int pointer to a field in-place.
+func ApplyBoundedInt(field *int, ptr *int, lo, hi int) {
+	*field = BoundedIntPtr(ptr, lo, hi, *field)
+}
+
+// ApplyBool applies a bool pointer to a field in-place.
+func ApplyBool(field *bool, ptr *bool) {
+	*field = BoolPtrOr(ptr, *field)
+}

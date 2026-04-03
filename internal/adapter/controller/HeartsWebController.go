@@ -75,8 +75,8 @@ type HeartsWebOutputConfig struct {
 func (c *HeartsWebConfig) ToConfig() domain.HeartsConfig {
 	cfg := domain.DefaultHeartsConfig()
 	cfg.CpuDifficulty = domain.HeartsCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.HeartsCpuDifficultyEasy), int(domain.HeartsCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
-	cfg.OmnibusJD = webutil.BoolPtrOr(c.OmnibusJD, cfg.OmnibusJD)
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.PointLimit, 1, 1000)
+	webutil.ApplyBool(&cfg.OmnibusJD, c.OmnibusJD)
 	return cfg
 }
 

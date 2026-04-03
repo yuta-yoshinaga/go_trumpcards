@@ -65,7 +65,7 @@ type GinRummyWebOutputConfig struct {
 func (c *GinRummyWebConfig) ToConfig() domain.GinRummyConfig {
 	cfg := domain.DefaultGinRummyConfig()
 	cfg.CpuDifficulty = domain.GinRummyCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.GinRummyCpuDifficultyEasy), int(domain.GinRummyCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.PointLimit, 1, 1000)
 	return cfg
 }
 

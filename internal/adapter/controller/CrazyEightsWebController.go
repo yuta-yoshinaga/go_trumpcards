@@ -57,7 +57,7 @@ type CrazyEightsWebOutputConfig struct {
 func (c *CrazyEightsWebConfig) ToConfig() domain.CrazyEightsConfig {
 	cfg := domain.DefaultCrazyEightsConfig()
 	cfg.CpuDifficulty = domain.CrazyEightsCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.CrazyEightsCpuDifficultyEasy), int(domain.CrazyEightsCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.PointLimit, 1, 1000)
 	return cfg
 }
 

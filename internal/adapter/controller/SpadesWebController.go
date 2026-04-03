@@ -80,9 +80,9 @@ type SpadesWebOutputConfig struct {
 func (c *SpadesWebConfig) ToConfig() domain.SpadesConfig {
 	cfg := domain.DefaultSpadesConfig()
 	cfg.CpuDifficulty = domain.SpadesCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.SpadesCpuDifficultyEasy), int(domain.SpadesCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
-	cfg.NilBonus = webutil.BoundedIntPtr(c.NilBonus, 0, 500, cfg.NilBonus)
-	cfg.BagPenaltyThreshold = webutil.BoundedIntPtr(c.BagPenaltyThreshold, 1, 100, cfg.BagPenaltyThreshold)
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.PointLimit, 1, 1000)
+	webutil.ApplyBoundedInt(&cfg.NilBonus, c.NilBonus, 0, 500)
+	webutil.ApplyBoundedInt(&cfg.BagPenaltyThreshold, c.BagPenaltyThreshold, 1, 100)
 	return cfg
 }
 
