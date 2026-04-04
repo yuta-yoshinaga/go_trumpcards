@@ -85,7 +85,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       id={item.id}
                       value={item.value}
                       onChange={(e) => item.onSelect?.(e.target.value)}
-                      className="bg-black/50 text-white disabled:text-ds-text-muted disabled:opacity-70 rounded px-1 py-0.5"
+                      className="bg-ds-surface-elevated text-ds-text-primary disabled:text-ds-text-muted disabled:opacity-70 rounded px-1 py-0.5"
                       disabled={item.disabled}
                       aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
                     >

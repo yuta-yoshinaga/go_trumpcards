@@ -120,7 +120,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                     key={`fav-${gamePath}`}
                     to={gamePath}
                     aria-current={pathname === gamePath ? 'page' : undefined}
-                    className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors ${pathname === gamePath ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-white/10'}`}
+                    className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors ${pathname === gamePath ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
                   >
                     <span aria-hidden="true">{route.icon}</span>
                     {t(route.labelKey)}
@@ -144,7 +144,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                     <Link
                       to={path}
                       aria-current={pathname === path ? 'page' : undefined}
-                      className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-white/10'}`}
+                      className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
                     >
                       <span aria-hidden="true">{icon}</span>
                       {t(routeLabel)}
@@ -178,7 +178,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                       <Link
                         to={path}
                         aria-current={pathname === path ? 'page' : undefined}
-                        className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-white/10'}`}
+                        className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
                       >
                         <span aria-hidden="true">{icon}</span>
                         {t(routeLabel)}
