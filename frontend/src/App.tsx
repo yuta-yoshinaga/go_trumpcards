@@ -6,7 +6,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
 import { gameRoutes } from './constants/gameRoutes';
-import { useGameSound } from './hooks/useGameSound';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
@@ -87,15 +86,14 @@ const pageByPath: Record<GamePath, ReactNode> = {
 /** Root application component with router and game page routes. */
 export default function App() {
   const { t } = useTranslation();
-  const { muted, toggleMute } = useGameSound();
   return (
     <HashRouter>
       <ErrorBoundary>
         <div className="flex flex-col h-full lg:flex-row">
           <SkipNavLink targetId="main-content" label={t('nav.skipToContent')} />
-          <DesktopSidebar soundMuted={muted} onSoundToggle={toggleMute} />
+          <DesktopSidebar />
           <div className="flex flex-col flex-1 min-w-0">
-            <NavBar soundMuted={muted} onSoundToggle={toggleMute} />
+            <NavBar />
             <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col min-h-0">
               <Routes>
                 {gameRoutes.map(({ path }) => (

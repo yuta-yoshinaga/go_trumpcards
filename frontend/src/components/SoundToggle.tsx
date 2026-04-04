@@ -1,10 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { useSound } from '../providers/SoundProvider';
 import { focusRingWhite } from '../styles/buttonStyles';
-
-interface SoundToggleProps {
-  muted: boolean;
-  onToggle: () => void;
-}
 
 /** SVG icon for volume on state. */
 function VolumeOnIcon() {
@@ -46,14 +42,15 @@ function VolumeMutedIcon() {
   );
 }
 
-/** Renders a mute/unmute toggle button for the navigation bar. */
-export function SoundToggle({ muted, onToggle }: SoundToggleProps) {
+/** Renders a mute/unmute toggle button that reads state from SoundProvider context. */
+export function SoundToggle() {
   const { t } = useTranslation('common');
+  const { muted, toggleMute } = useSound();
 
   return (
     <button
       type="button"
-      onClick={onToggle}
+      onClick={toggleMute}
       aria-label={muted ? t('sound.unmute') : t('sound.mute')}
       className={`px-3 py-2 text-xs font-bold rounded min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover ${focusRingWhite}`}
     >
