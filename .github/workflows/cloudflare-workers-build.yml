@@ -17,6 +17,9 @@ on:
       - 'Makefile'
       - 'internal/**'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   tinygo-build:
     runs-on: ubuntu-latest
