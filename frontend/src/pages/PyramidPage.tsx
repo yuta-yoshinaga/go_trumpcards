@@ -137,9 +137,11 @@ function PyramidPageContent() {
   /** Fraction of card height used for vertical overlap between rows (less on mobile for bigger tap targets) */
   const ROW_OVERLAP_RATIO = isMobile ? 0.3 : 0.35;
   const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
-  /** On mobile, calculate card width to fit all columns within viewport (px-4 = 32px padding) */
-  const availableWidth = isMobile ? windowWidth - 32 : 0;
-  const effectiveCardWidth = isMobile ? Math.floor((availableWidth - cardGap * (maxCols - 1)) / maxCols) : cardWidth;
+  // px-4 on the scrollable container = 16px * 2 = 32px total horizontal padding
+  const CONTAINER_PADDING = 32;
+  const effectiveCardWidth = isMobile
+    ? Math.floor((windowWidth - CONTAINER_PADDING - cardGap * (maxCols - 1)) / maxCols)
+    : cardWidth;
   const pyramidWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
 
   return (

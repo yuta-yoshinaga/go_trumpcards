@@ -125,9 +125,10 @@ function GolfPageContent() {
   const cardGap = 4;
   const ROW_OVERLAP_RATIO = isMobile ? 0.55 : 0.5;
   const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
-  const availableWidth = isMobile ? windowWidth - 32 : 0;
+  // px-4 on the scrollable container = 16px * 2 = 32px total horizontal padding
+  const CONTAINER_PADDING = 32;
   const effectiveCardWidth = isMobile
-    ? Math.floor((availableWidth - cardGap * (COL_COUNT - 1)) / COL_COUNT)
+    ? Math.floor((windowWidth - CONTAINER_PADDING - cardGap * (COL_COUNT - 1)) / COL_COUNT)
     : cardWidth;
 
   return (
@@ -147,7 +148,7 @@ function GolfPageContent() {
 
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Tableau: 7 columns */}
-        <div data-tutorial="golf-columns" className="flex gap-1 justify-center mb-3">
+        <div data-tutorial="golf-columns" className="flex justify-center mb-3">
           {Array.from({ length: COL_COUNT }, (_, colIdx) => (
             <div
               key={`col-${colIdx.toString()}`}
