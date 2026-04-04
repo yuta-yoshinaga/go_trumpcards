@@ -198,6 +198,10 @@ Where to document design decisions that don't warrant an ADR:
 - **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
 - **Dead Code Cleanup**: When modifying code, always remove any dead code or dead files you encounter. Use `golang.org/x/tools/cmd/deadcode` for Go and `knip` for TypeScript to identify unused code. Verify findings manually before deleting -- static analysis tools can produce false positives (e.g., interface implementations called via reflection, mock methods). Delete confirmed dead code in the same commit as your feature or fix.
 
+## Design System
+
+Always read [`DESIGN.md`](DESIGN.md) before making any visual or UI decisions. All font choices, colors, spacing, and aesthetic direction are defined there. Do not deviate without explicit user approval. In QA mode, flag any code that doesn't match DESIGN.md.
+
 ## Detailed Context
 
 | Topic | File |
@@ -207,5 +211,6 @@ Where to document design decisions that don't warrant an ADR:
 | Game descriptions & entities | [`docs/games.md`](docs/games.md) |
 | Backend UML design (class, sequence, state machine) | [`docs/design/backend.md`](docs/design/backend.md) |
 | Frontend UML design (class, sequence, state machine) | [`docs/design/frontend.md`](docs/design/frontend.md) |
+| Design system (fonts, colors, spacing, motion) | [`DESIGN.md`](DESIGN.md) |
 | Go backend rules | [`internal/CLAUDE.md`](internal/CLAUDE.md) |
 | Frontend rules | [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |

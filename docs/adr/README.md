@@ -46,3 +46,4 @@ ADR番号は連番ではない — 欠番はリトマステスト導入時に非
 | [ADR-0026](0026-relax-coverage-target.md) | ブランチカバレッジ基準を100%から80%に緩和 | Accepted | 2026-03-23 |
 | [ADR-0027](0027-cloudflare-workers-wasm.md) | Cloudflare Workers (TinyGo/Wasm) によるエッジデプロイ | Accepted | 2026-03-28 |
 | [ADR-0028](0028-kv-session-persistence.md) | Cloudflare KV によるセッション永続化 | Accepted | 2026-03-28 |
+| [ADR-0029](0029-design-system.md) | デザインシステム (DESIGN.md) の導入 | Accepted | 2026-04-04 |
