@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { CliGameConfig } from '../utils/cli/types';
 
 /** Log callbacks provided by useCliMode. */
@@ -16,14 +16,21 @@ export function useCliGame<TState, TArgs extends unknown[]>(
   state: TState | null,
   callbacks: CliLogCallbacks,
 ) {
-  const stateRef = useRef(state);
-  stateRef.current = state;
   const configRef = useRef(config);
   configRef.current = config;
   const callbacksRef = useRef(callbacks);
   callbacksRef.current = callbacks;
   const execRef = useRef(exec);
   execRef.current = exec;
+  const pendingCommandRef = useRef(false);
+
+  // Format and output state when it changes after a CLI command
+  useEffect(() => {
+    if (pendingCommandRef.current && state !== null) {
+      pendingCommandRef.current = false;
+      callbacksRef.current.addOutput(configRef.current.formatResponse(state));
+    }
+  }, [state]);
 
   const handleCommand = useCallback(async (input: string) => {
     const { addInput, addOutput, addError, clearLog } = callbacksRef.current;
@@ -50,16 +57,13 @@ export function useCliGame<TState, TArgs extends unknown[]>(
       return;
     }
 
-    // Execute API call
+    // Execute API call — state will be formatted in useEffect after re-render
     try {
+      pendingCommandRef.current = true;
       await execRef.current(...parsed.args);
-      // Format response from updated state
-      const currentState = stateRef.current;
-      if (currentState !== null) {
-        addOutput(cfg.formatResponse(currentState));
-      }
-    } catch {
-      addError('Error executing command');
+    } catch (e) {
+      pendingCommandRef.current = false;
+      addError(e instanceof Error ? e.message : 'Error executing command');
     }
   }, []);
 

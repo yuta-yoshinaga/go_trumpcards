@@ -41,7 +41,7 @@ describe('useCliMode', () => {
     const { result } = renderHook(() => useCliMode('blackjack'));
     act(() => result.current.addInput('hit'));
     expect(result.current.logEntries).toHaveLength(1);
-    expect(result.current.logEntries[0].type).toBe('input');
+    expect(result.current.logEntries[0]?.type).toBe('input');
     expect(result.current.logEntries[0].text).toBe('hit');
   });
 
@@ -49,14 +49,14 @@ describe('useCliMode', () => {
     const { result } = renderHook(() => useCliMode('blackjack'));
     act(() => result.current.addOutput('score: 21'));
     expect(result.current.logEntries).toHaveLength(1);
-    expect(result.current.logEntries[0].type).toBe('output');
+    expect(result.current.logEntries[0]?.type).toBe('output');
   });
 
   it('adds error entry', () => {
     const { result } = renderHook(() => useCliMode('blackjack'));
     act(() => result.current.addError('Unknown command'));
     expect(result.current.logEntries).toHaveLength(1);
-    expect(result.current.logEntries[0].type).toBe('error');
+    expect(result.current.logEntries[0]?.type).toBe('error');
   });
 
   it('clears log', () => {

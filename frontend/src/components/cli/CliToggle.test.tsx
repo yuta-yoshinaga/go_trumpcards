@@ -3,14 +3,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { CliToggle } from './CliToggle';
 
 describe('CliToggle', () => {
-  it('renders GUI label when CLI is disabled', () => {
+  it('shows CLI label (destination) when in GUI mode', () => {
     render(<CliToggle cliEnabled={false} onToggle={vi.fn()} />);
-    expect(screen.getByText('GUI')).toBeInTheDocument();
+    expect(screen.getByText('CLI')).toBeInTheDocument();
   });
 
-  it('renders CLI label when CLI is enabled', () => {
+  it('shows GUI label (destination) when in CLI mode', () => {
     render(<CliToggle cliEnabled={true} onToggle={vi.fn()} />);
-    expect(screen.getByText('CLI')).toBeInTheDocument();
+    expect(screen.getByText('GUI')).toBeInTheDocument();
   });
 
   it('calls onToggle when clicked', () => {
@@ -22,11 +22,17 @@ describe('CliToggle', () => {
 
   it('has accessible aria-label when CLI disabled', () => {
     render(<CliToggle cliEnabled={false} onToggle={vi.fn()} />);
-    expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'CLIモードに切り替え');
+    expect(screen.getByRole('button')).toHaveAttribute(
+      'aria-label',
+      'CLI\u30e2\u30fc\u30c9\u306b\u5207\u308a\u66ff\u3048',
+    );
   });
 
   it('has accessible aria-label when CLI enabled', () => {
     render(<CliToggle cliEnabled={true} onToggle={vi.fn()} />);
-    expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'GUIモードに切り替え');
+    expect(screen.getByRole('button')).toHaveAttribute(
+      'aria-label',
+      'GUI\u30e2\u30fc\u30c9\u306b\u5207\u308a\u66ff\u3048',
+    );
   });
 });

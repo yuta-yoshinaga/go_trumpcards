@@ -40,17 +40,20 @@ export function CliTerminal({ logEntries, onCommand, disabled }: CliTerminalProp
     inputRef.current?.focus();
   }, []);
 
+  const onCommandRef = useRef(onCommand);
+  onCommandRef.current = onCommand;
+
   const handleSubmit = useCallback(() => {
-    const trimmed = inputValue.trim();
+    const trimmed = inputRef.current?.value.trim() ?? '';
     if (!trimmed) return;
-    onCommand(trimmed);
+    onCommandRef.current(trimmed);
     // Add to history
     const history = historyRef.current;
     if (history.length >= MAX_HISTORY) history.shift();
     history.push(trimmed);
     historyIdxRef.current = -1;
     setInputValue('');
-  }, [inputValue, onCommand]);
+  }, []);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -90,7 +93,7 @@ export function CliTerminal({ logEntries, onCommand, disabled }: CliTerminalProp
       {/* Log display area */}
       <div className="flex-1 overflow-y-auto p-3 space-y-1" role="log" aria-live="polite">
         {logEntries.map((entry) => (
-          <div key={entry.timestamp} className={ENTRY_STYLES[entry.type]}>
+          <div key={entry.id} className={ENTRY_STYLES[entry.type]}>
             {entry.type === 'input' ? `> ${entry.text}` : entry.text}
           </div>
         ))}

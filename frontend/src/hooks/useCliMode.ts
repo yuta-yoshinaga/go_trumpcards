@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { CliLogEntry } from '../utils/cli/types';
 
 const MAX_LOG_ENTRIES = 500;
@@ -6,6 +6,7 @@ const MAX_LOG_ENTRIES = 500;
 /** Hook that manages CLI mode state and terminal log entries. */
 export function useCliMode(gameName: string) {
   const storageKey = `cli-mode-${gameName}`;
+  const entryIdRef = useRef(0);
 
   const [cliEnabled, setCliEnabled] = useState(() => {
     try {
@@ -31,7 +32,8 @@ export function useCliMode(gameName: string) {
 
   const addEntry = useCallback((type: CliLogEntry['type'], text: string) => {
     setLogEntries((prev) => {
-      const entry: CliLogEntry = { type, text, timestamp: Date.now() };
+      entryIdRef.current += 1;
+      const entry: CliLogEntry = { type, text, id: entryIdRef.current };
       const next = [...prev, entry];
       return next.length > MAX_LOG_ENTRIES ? next.slice(next.length - MAX_LOG_ENTRIES) : next;
     });

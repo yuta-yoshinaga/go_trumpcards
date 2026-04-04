@@ -21,14 +21,15 @@ function makeConfig(overrides?: Partial<CliGameConfig<MockState, MockArgs>>): Cl
 }
 
 describe('useCliGame', () => {
-  it('handles a successful command', async () => {
+  it('calls exec with parsed args on valid command', async () => {
     const exec = vi.fn().mockResolvedValue(undefined);
     const addInput = vi.fn();
     const addOutput = vi.fn();
     const addError = vi.fn();
-    const state: MockState = { score: 21 };
 
-    const { result } = renderHook(() => useCliGame(exec, makeConfig(), state, { addInput, addOutput, addError }));
+    const { result } = renderHook(() =>
+      useCliGame(exec, makeConfig(), { score: 21 }, { addInput, addOutput, addError }),
+    );
 
     await act(async () => {
       await result.current.handleCommand('hit');
@@ -36,8 +37,32 @@ describe('useCliGame', () => {
 
     expect(addInput).toHaveBeenCalledWith('hit');
     expect(exec).toHaveBeenCalledWith('hit');
+  });
+
+  it('formats output via useEffect when state changes after command', async () => {
+    const exec = vi.fn().mockResolvedValue(undefined);
+    const addInput = vi.fn();
+    const addOutput = vi.fn();
+    const addError = vi.fn();
+    let state: MockState | null = null;
+
+    const { result, rerender } = renderHook(
+      ({ s }) => useCliGame(exec, makeConfig(), s, { addInput, addOutput, addError }),
+      { initialProps: { s: state } },
+    );
+
+    await act(async () => {
+      await result.current.handleCommand('hit');
+    });
+
+    // State hasn't changed yet — no output
+    expect(addOutput).not.toHaveBeenCalled();
+
+    // Simulate state update (as would happen after exec updates useGameApi state)
+    state = { score: 21 };
+    rerender({ s: state });
+
     expect(addOutput).toHaveBeenCalledWith('score: 21');
-    expect(addError).not.toHaveBeenCalled();
   });
 
   it('handles a command with arguments', async () => {
@@ -45,9 +70,10 @@ describe('useCliGame', () => {
     const addInput = vi.fn();
     const addOutput = vi.fn();
     const addError = vi.fn();
-    const state: MockState = { score: 10 };
 
-    const { result } = renderHook(() => useCliGame(exec, makeConfig(), state, { addInput, addOutput, addError }));
+    const { result } = renderHook(() =>
+      useCliGame(exec, makeConfig(), { score: 10 }, { addInput, addOutput, addError }),
+    );
 
     await act(async () => {
       await result.current.handleCommand('bet 100');
@@ -73,7 +99,7 @@ describe('useCliGame', () => {
     expect(addError).toHaveBeenCalledWith('Unknown: xyz');
   });
 
-  it('handles exec error', async () => {
+  it('handles exec error with message', async () => {
     const exec = vi.fn().mockRejectedValue(new Error('Network error'));
     const addInput = vi.fn();
     const addOutput = vi.fn();
@@ -85,7 +111,22 @@ describe('useCliGame', () => {
       await result.current.handleCommand('hit');
     });
 
-    expect(addError).toHaveBeenCalled();
+    expect(addError).toHaveBeenCalledWith('Network error');
+  });
+
+  it('handles exec error without message', async () => {
+    const exec = vi.fn().mockRejectedValue('unknown');
+    const addInput = vi.fn();
+    const addOutput = vi.fn();
+    const addError = vi.fn();
+
+    const { result } = renderHook(() => useCliGame(exec, makeConfig(), null, { addInput, addOutput, addError }));
+
+    await act(async () => {
+      await result.current.handleCommand('hit');
+    });
+
+    expect(addError).toHaveBeenCalledWith('Error executing command');
   });
 
   it('shows help text', async () => {
@@ -138,21 +179,5 @@ describe('useCliGame', () => {
 
     expect(clearLog).toHaveBeenCalled();
     expect(exec).not.toHaveBeenCalled();
-  });
-
-  it('does not format output when state is null after exec', async () => {
-    const exec = vi.fn().mockResolvedValue(undefined);
-    const addInput = vi.fn();
-    const addOutput = vi.fn();
-    const addError = vi.fn();
-
-    const { result } = renderHook(() => useCliGame(exec, makeConfig(), null, { addInput, addOutput, addError }));
-
-    await act(async () => {
-      await result.current.handleCommand('hit');
-    });
-
-    // state is null, so formatResponse shouldn't produce output
-    expect(addOutput).not.toHaveBeenCalled();
   });
 });

@@ -4,8 +4,8 @@ export interface CliLogEntry {
   type: 'input' | 'output' | 'error';
   /** Text content to display. */
   text: string;
-  /** Timestamp for ordering. */
-  timestamp: number;
+  /** Unique identifier for React key. */
+  id: number;
 }
 
 /** Result of parsing a CLI command — either exec args or an error message. */

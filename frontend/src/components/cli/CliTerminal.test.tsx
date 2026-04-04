@@ -3,8 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 import type { CliLogEntry } from '../../utils/cli/types';
 import { CliTerminal } from './CliTerminal';
 
-function makeEntry(type: CliLogEntry['type'], text: string, ts = Date.now()): CliLogEntry {
-  return { type, text, timestamp: ts };
+let nextId = 0;
+function makeEntry(type: CliLogEntry['type'], text: string): CliLogEntry {
+  return { type, text, id: ++nextId };
 }
 
 describe('CliTerminal', () => {

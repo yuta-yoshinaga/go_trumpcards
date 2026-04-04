@@ -65,13 +65,13 @@ export function CliToggle({ cliEnabled, onToggle }: CliToggleProps) {
     >
       {cliEnabled ? (
         <>
-          <TerminalIcon />
-          <span>CLI</span>
+          <GuiIcon />
+          <span>GUI</span>
         </>
       ) : (
         <>
-          <GuiIcon />
-          <span>GUI</span>
+          <TerminalIcon />
+          <span>CLI</span>
         </>
       )}
     </button>
