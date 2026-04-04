@@ -29,7 +29,7 @@ import {
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess, focusRingBlue } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoubtCpuAction } from '../types/card';
@@ -448,7 +448,7 @@ function DoubtPageContent() {
                       warningTimeoutRef.current = setTimeout(() => setValWarning(false), 2000);
                     }
                   }}
-                  className={`bg-black/50 text-white rounded px-2 py-1 w-16 text-sm border border-white/30 ${focusRingBlue}`}
+                  className={`bg-ds-surface-elevated text-ds-text-primary rounded px-2 py-1 w-16 text-sm border border-ds-border-subtle ${focusRingAccent}`}
                 />
                 <span className="text-game-text-muted text-xs">({valueName(claimedValue)})</span>
                 <span id="claim-range-hint" className={`text-xs ${valWarning ? 'text-yellow-400' : 'text-gray-400'}`}>

@@ -34,7 +34,10 @@ class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryStat
     if (this.state.hasError) {
       const { t } = this.props;
       return (
-        <div role="alert" className="flex flex-col items-center justify-center h-full bg-gray-900 text-white gap-4">
+        <div
+          role="alert"
+          className="flex flex-col items-center justify-center h-full bg-ds-surface text-ds-text-primary gap-4"
+        >
           <h1 className="text-2xl font-bold">{t('label.errorBoundaryTitle')}</h1>
           <button type="button" onClick={this.handleRetry} className={btnPrimary}>
             {t('label.errorBoundaryRetry')}

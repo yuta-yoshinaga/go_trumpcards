@@ -837,8 +837,8 @@ describe('DaifugoPage', () => {
     expect(screen.getByRole('button', { name: 'スート順' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '数字順' })).toBeInTheDocument();
     // Default sortMode=0 → 強さ順 should have primary style
-    expect(screen.getByRole('button', { name: '強さ順' }).className).toContain('bg-blue-600');
-    expect(screen.getByRole('button', { name: 'スート順' }).className).toContain('bg-gray-600');
+    expect(screen.getByRole('button', { name: '強さ順' }).className).toContain('ds-accent');
+    expect(screen.getByRole('button', { name: 'スート順' }).className).toContain('ds-surface-elevated');
   });
 
   it('calls sort command when sort button is clicked', async () => {

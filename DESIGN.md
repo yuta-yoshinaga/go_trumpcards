@@ -19,11 +19,11 @@
 - **Data/Tables:** DM Sans (font-feature-settings: "tnum") — tabular numerals for scores, chip counts, statistics
 - **Code:** JetBrains Mono (if needed for debug/dev UI)
 - **CJK Fallback:** Noto Sans JP for Japanese text. Load order: primary font → Noto Sans JP → system-ui → sans-serif
-- **Loading:** Google Fonts CDN (include preconnect hints for faster font loading)
+- **Loading:** Google Fonts CDN with preconnect hints for fast loading
   ```html
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=DM+Sans:wght@100..1000&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   ```
 - **Scale:**
   | Level | Size | Usage |
@@ -70,7 +70,16 @@
 | `--felt-casino` | `#0D5016` | Casino games |
 | `--felt-blue` | `#1A2C5C` | Blue variant (hearts, spades) |
 
-### Light mode
+### Additional tokens
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--text-on-accent` | `#1A1A1A` | Dark text on accent backgrounds (7.2:1 contrast on #D4A853, WCAG AA) |
+| `--success-hover` | `#3D9A6B` | Success button hover |
+| `--warning-hover` | `#D4832E` | Warning button hover |
+| `--error-hover` | `#B54949` | Error button hover |
+| `--surface-elevated-hover` | `#2A3A4F` | Elevated surface hover |
+
+### Light mode (planned, not yet implemented)
 | Token | Hex |
 |-------|-----|
 | `--bg` | `#F5F0E8` |
