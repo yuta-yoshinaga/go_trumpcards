@@ -34,7 +34,7 @@ export function TutorialProgressPanel() {
             <Link
               key={game.gameName}
               to={game.path}
-              className={`flex items-center justify-center px-1.5 py-1 rounded hover:bg-white/10 ${game.completed ? 'text-green-400' : 'text-ds-text-muted'}`}
+              className={`flex items-center justify-center px-1.5 py-1 rounded hover:bg-ds-surface-elevated-hover ${game.completed ? 'text-green-400' : 'text-ds-text-muted'}`}
               title={tc(game.labelKey)}
             >
               {game.completed ? '✓' : '○'}
