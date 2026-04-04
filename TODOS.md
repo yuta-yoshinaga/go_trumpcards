@@ -16,10 +16,9 @@
 **Depends on:** Game feel toolkit (Phases 1-4) shipped and validated with real users.
 **Reference:** Design doc at `~/.gstack/projects/yuta-yoshinaga-go_trumpcards/yuta-develop-design-20260404-151402.md`, "Future Directions" section.
 
+## Completed
+
 ### Replace placeholder sound files with real recordings
 **Priority:** P1
-**What:** The 10 sound files in `frontend/public/sounds/` are empty placeholders. Source or record real card game sounds (card slide, flip, select, shuffle, win fanfare, loss thud, error buzz, turn tick, chip click, card place).
-**Why:** Without real sounds, the game feel toolkit is silent. Sound is half the experience.
-**Suggestion:** Record a real deck of cards on a phone for card-deal, card-flip, card-select (Apple does this for iOS Solitaire). Use freesound.org (CC0) for win-fanfare and other event sounds.
-
-## Completed
+**Completed:** 2026-04-04
+**What:** Sourced 10 CC0 sound files from Kenney.nl casino audio pack and OpenGameArt.org. Card sounds (deal, flip, select, place, shuffle) from Kenney, UI sounds (chip-click, error-buzz, turn-tick) from Kenney, win fanfare from OpenGameArt (winfretless), loss trumpet from OpenGameArt (losetrumpet). Total ~144KB OGG.
