@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -54,14 +56,27 @@ func (c *SpiderCuiController) Exec(command string) string {
 // handleMove 移動コマンドを処理
 // Format: m t <fromCol> <cardIdx> t <toCol>
 func (c *SpiderCuiController) handleMove(args []string) string {
-	if len(args) < 2 || args[0] != "t" {
+	// Wizard-style prompts for missing arguments
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
+	}
+	if args[0] != "t" {
 		return "Usage: m t <fromCol> <cardIdx> t <toCol>"
+	}
+	if len(args) < 2 {
+		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
 	}
 	fromCol, err := strconv.Atoi(args[1])
 	if err != nil {
 		return fmt.Sprintf("Invalid from column: %s.", args[1])
 	}
-	if len(args) != 5 || args[3] != "t" {
+	if len(args) < 3 {
+		return cuiutil.PromptRequest(i18n.T("promptCardIndex"), fmt.Sprintf("m t %d {0} t", fromCol))
+	}
+	if len(args) < 5 || args[3] != "t" {
+		if len(args) == 3 {
+			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %d %s t {0}", fromCol, args[2]))
+		}
 		return "Usage: m t <fromCol> <cardIdx> t <toCol>"
 	}
 	cardIdx, err := strconv.Atoi(args[2])

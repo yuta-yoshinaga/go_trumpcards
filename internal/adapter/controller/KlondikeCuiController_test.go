@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -101,14 +102,14 @@ func TestKlondikeCuiControllerMoveErrors(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move one arg", func(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m w")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move invalid from", func(t *testing.T) {
@@ -129,7 +130,7 @@ func TestKlondikeCuiControllerMoveErrors(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m w t")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move waste to tableau invalid col", func(t *testing.T) {
@@ -143,14 +144,14 @@ func TestKlondikeCuiControllerMoveErrors(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m t")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move tableau one arg - too few for handleMoveFromTableau", func(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m t 5")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move tableau invalid from col", func(t *testing.T) {

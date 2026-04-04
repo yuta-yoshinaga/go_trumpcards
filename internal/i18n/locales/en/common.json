@@ -36,5 +36,14 @@
   "cliStartupBanner": "trumpcards {{version}} - Interactive Mode",
   "cliExtraArgsWarning": "Warning: extra arguments ignored: {{args}}",
   "metaAIRequired": "Meta-AI setting is required (0=off, 1=on).",
-  "invalidMetaAI": "Invalid value: {{val}}. Please enter 0 or 1."
+  "invalidMetaAI": "Invalid value: {{val}}. Please enter 0 or 1.",
+  "cancelled": "Cancelled.",
+  "promptBetAmount": "Enter bet amount:",
+  "promptRaiseAmount": "Enter raise amount:",
+  "promptSourceZone": "Enter source zone (t=tableau, c=freecell, w=waste):",
+  "promptFromColumn": "Enter source column number:",
+  "promptCardIndex": "Enter card index:",
+  "promptToZone": "Enter destination (t=tableau, f=foundation, c=freecell):",
+  "promptToColumn": "Enter destination column number:",
+  "promptCell": "Enter cell number:"
 }

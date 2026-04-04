@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -44,23 +46,35 @@ func (c *FreeCellCuiController) Exec(command string) string {
 
 // handleMove 移動コマンドを処理
 func (c *FreeCellCuiController) handleMove(args []string) string {
-	if len(args) < 2 {
-		return "Usage: m t <col> t <col> | m t <col> f | m t <col> c <cell> | m c <cell> t <col> | m c <cell> f"
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("promptSourceZone"), "m {0}")
 	}
 	from := args[0]
+	if from != "t" && from != "c" {
+		return fmt.Sprintf("Invalid from zone: %s. Use 't' (tableau) or 'c' (freecell).", from)
+	}
+	if len(args) < 2 {
+		switch from {
+		case "t":
+			return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
+		case "c":
+			return cuiutil.PromptRequest(i18n.T("promptCell"), "m c {0}")
+		}
+	}
 	switch from {
 	case "t":
 		return c.handleMoveFromTableau(args[1:])
-	case "c":
+	default: // "c"
 		return c.handleMoveFromFreeCell(args[1:])
-	default:
-		return fmt.Sprintf("Invalid from zone: %s. Use 't' (tableau) or 'c' (freecell).", from)
 	}
 }
 
 func (c *FreeCellCuiController) handleMoveFromTableau(args []string) string {
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
+	}
 	if len(args) < 2 {
-		return "Usage: m t <fromCol> f | m t <fromCol> <cardIdx> t <toCol> | m t <fromCol> c <cell>"
+		return cuiutil.PromptRequest(i18n.T("promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
@@ -73,7 +87,7 @@ func (c *FreeCellCuiController) handleMoveFromTableau(args []string) string {
 	case "t":
 		// m t <fromCol> t <toCol> (top card move, cardIndex = last)
 		if len(args) < 3 {
-			return "Usage: m t <fromCol> t <toCol>"
+			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %d t {0}", fromCol))
 		}
 		toCol, err := strconv.Atoi(args[2])
 		if err != nil {
@@ -87,7 +101,7 @@ func (c *FreeCellCuiController) handleMoveFromTableau(args []string) string {
 		return c.fi.MoveTableauToTableau(fromCol, -1, toCol)
 	case "c":
 		if len(args) < 3 {
-			return "Usage: m t <fromCol> c <cell>"
+			return cuiutil.PromptRequest(i18n.T("promptCell"), fmt.Sprintf("m t %d c {0}", fromCol))
 		}
 		cell, err := strconv.Atoi(args[2])
 		if err != nil {
@@ -112,8 +126,11 @@ func (c *FreeCellCuiController) handleMoveFromTableau(args []string) string {
 }
 
 func (c *FreeCellCuiController) handleMoveFromFreeCell(args []string) string {
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("promptCell"), "m c {0}")
+	}
 	if len(args) < 2 {
-		return "Usage: m c <cell> t <col> | m c <cell> f"
+		return cuiutil.PromptRequest(i18n.T("promptToZone"), fmt.Sprintf("m c %s {0}", args[0]))
 	}
 	cell, err := strconv.Atoi(args[0])
 	if err != nil {
@@ -123,7 +140,7 @@ func (c *FreeCellCuiController) handleMoveFromFreeCell(args []string) string {
 	switch args[1] {
 	case "t":
 		if len(args) < 3 {
-			return "Usage: m c <cell> t <col>"
+			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m c %d t {0}", cell))
 		}
 		col, err := strconv.Atoi(args[2])
 		if err != nil {

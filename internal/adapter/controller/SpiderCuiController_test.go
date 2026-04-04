@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -85,7 +86,7 @@ func TestSpiderCuiControllerMoveErrors(t *testing.T) {
 		si := newMockSpiderInteractor()
 		c := NewSpiderCuiController(si)
 		result := c.Exec("m")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move one arg not t", func(t *testing.T) {
@@ -106,7 +107,7 @@ func TestSpiderCuiControllerMoveErrors(t *testing.T) {
 		si := newMockSpiderInteractor()
 		c := NewSpiderCuiController(si)
 		result := c.Exec("m t 0 3")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move missing t marker", func(t *testing.T) {
