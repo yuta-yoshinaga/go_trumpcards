@@ -12,3 +12,9 @@ export const hoverLift = { y: -4, scale: 1.05 };
 
 /** Parent variant for staggered children animations (120ms between cards). */
 export const staggerTiming = { staggerChildren: 0.12 };
+
+/** Spring transition for neighbor expansion animation on mobile card tap. */
+export const expansionSpring = { type: 'spring' as const, stiffness: 350, damping: 28 };
+
+/** Extra gap (px) added to each neighbor of a selected card on mobile. */
+export const EXPANSION_GAP_PX = 12;

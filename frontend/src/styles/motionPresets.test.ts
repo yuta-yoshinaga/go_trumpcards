@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { dealSpring, flipSpring, hoverLift, selectLift, staggerTiming } from './motionPresets';
+import {
+  dealSpring,
+  EXPANSION_GAP_PX,
+  expansionSpring,
+  flipSpring,
+  hoverLift,
+  selectLift,
+  staggerTiming,
+} from './motionPresets';
 
 describe('motionPresets', () => {
   it('dealSpring has correct shape', () => {
@@ -20,5 +28,13 @@ describe('motionPresets', () => {
 
   it('staggerTiming has correct value', () => {
     expect(staggerTiming).toEqual({ staggerChildren: 0.12 });
+  });
+
+  it('expansionSpring has correct shape', () => {
+    expect(expansionSpring).toEqual({ type: 'spring', stiffness: 350, damping: 28 });
+  });
+
+  it('EXPANSION_GAP_PX is 12', () => {
+    expect(EXPANSION_GAP_PX).toBe(12);
   });
 });
