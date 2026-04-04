@@ -19,8 +19,10 @@
 - **Data/Tables:** DM Sans (font-feature-settings: "tnum") — tabular numerals for scores, chip counts, statistics
 - **Code:** JetBrains Mono (if needed for debug/dev UI)
 - **CJK Fallback:** Noto Sans JP for Japanese text. Load order: primary font → Noto Sans JP → system-ui → sans-serif
-- **Loading:** Google Fonts CDN
+- **Loading:** Google Fonts CDN (include preconnect hints for faster font loading)
   ```html
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   ```
 - **Scale:**
@@ -50,7 +52,7 @@
 | `--accent` | `#D4A853` | Primary accent (antique gold) |
 | `--accent-hover` | `#E0B86A` | Accent hover state |
 | `--success` | `#4CAF7D` | Active status, win states |
-| `--warning` | `#E0A64E` | Waiting status, insurance |
+| `--warning` | `#E8923A` | Waiting status, insurance (shifted orange to distinguish from gold accent) |
 | `--error` | `#C95555` | Bust, fold, out states |
 | `--info` | `#5B8FB9` | Tips, informational |
 | `--border` | `rgba(212, 168, 83, 0.15)` | Accent-tinted borders |
@@ -83,9 +85,19 @@
 | Combination | Ratio | WCAG |
 |-------------|-------|------|
 | Primary text on background | 12.8:1 | AAA |
-| Muted text on background | 6.2:1 | AA |
+| Muted text on background | 6.2:1 | AA (intentional — secondary/decorative text) |
 | Accent on background | 7.4:1 | AA |
 | Primary text on surface | 10.1:1 | AAA |
+
+### Contrast ratios (light mode)
+| Combination | Ratio | WCAG |
+|-------------|-------|------|
+| Primary text on background | 15.4:1 | AAA |
+| Muted text on background | 4.9:1 | AA |
+| Accent on background | 4.6:1 | AA |
+| Primary text on surface | 17.4:1 | AAA |
+
+> **Accessibility note:** Primary text meets AAA in both modes. Muted text and accent intentionally target AA (WCAG 2.1 Level AA) — these are used for secondary/decorative content where AAA is not required.
 
 ## Spacing
 - **Base unit:** 4px
