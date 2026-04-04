@@ -1,4 +1,5 @@
 import type React from 'react';
+import { EXPANSION_GAP_PX } from './motionPresets';
 
 /** Tailwind classes for focus-visible ring on card selection buttons. */
 export const focusRingCard =
@@ -33,7 +34,7 @@ export function playableCardStyle(isPlayable: boolean): React.CSSProperties {
 export function expansionMargin(isNeighborOfSelected: boolean, baseOverlap: number): number {
   if (!isNeighborOfSelected) return baseOverlap;
   // Reduce the negative overlap (make it less negative = more visible area)
-  return baseOverlap + 12; // EXPANSION_GAP_PX inlined to avoid circular dependency
+  return baseOverlap + EXPANSION_GAP_PX;
 }
 
 /** Return inline styles combining playable border + enhanced glow for thumb-zone visibility. */

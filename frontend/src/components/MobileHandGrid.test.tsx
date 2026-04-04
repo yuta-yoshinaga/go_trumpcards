@@ -175,9 +175,9 @@ describe('MobileHandGrid', () => {
       );
       const rows = container.querySelectorAll('[data-testid="hand-row"]');
       const firstRowButtons = rows[0].querySelectorAll('button');
-      // Card at index 4 is neighbor of selected card 3 — should have wider margin
+      // Card at index 3 (selected) and 4 (right of selected) both expand — should have wider margin
       const neighborMargin = Number.parseFloat(firstRowButtons[4].style.marginLeft);
-      // Card at index 1 is not a neighbor — should have base margin
+      // Card at index 1 is not selected or adjacent-to-selected — should have base margin
       const baseMargin = Number.parseFloat(firstRowButtons[1].style.marginLeft);
       expect(neighborMargin).toBeGreaterThan(baseMargin);
     } finally {

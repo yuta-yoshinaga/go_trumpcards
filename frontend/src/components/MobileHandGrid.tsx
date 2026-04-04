@@ -60,9 +60,9 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
             {rowCards.map((card, i) => {
               const globalIdx = startIdx + i;
               const isSelected = selectedIndices.includes(globalIdx);
-              const isNeighbor =
-                i > 0 && (selectedIndices.includes(globalIdx - 1) || selectedIndices.includes(globalIdx + 1));
-              const ml = i === 0 ? 0 : isNeighbor ? expansionMargin(true, overlap) : overlap;
+              const isExpanded =
+                selectedIndices.includes(globalIdx) || (i > 0 && selectedIndices.includes(globalIdx - 1));
+              const ml = i === 0 ? 0 : isExpanded ? expansionMargin(true, overlap) : overlap;
               return (
                 <button
                   type="button"
@@ -70,12 +70,13 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
                   onClick={() => onToggle(globalIdx)}
                   aria-label={cardAlt(card)}
                   aria-pressed={isSelected}
-                  className={`transition-[margin] duration-150 ${focusRingCard}`}
+                  className={focusRingCard}
                   style={{
                     background: 'none',
                     padding: 0,
                     borderRadius: 8,
                     ...selectedCardStyle(isSelected),
+                    transition: 'transform 0.15s, border 0.15s, box-shadow 0.15s, margin-left 0.15s',
                     boxSizing: 'border-box',
                     marginLeft: ml,
                     ...(useScroll ? { flexShrink: 0 } : {}),
