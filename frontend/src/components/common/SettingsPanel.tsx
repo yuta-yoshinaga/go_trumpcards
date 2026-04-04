@@ -72,7 +72,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       <span
                         id={`${item.id}-tooltip`}
                         role="tooltip"
-                        className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10"
+                        className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-ds-surface-elevated text-ds-text-primary text-xs rounded px-2 py-1 whitespace-nowrap z-10"
                       >
                         {item.tooltip}
                       </span>
@@ -85,7 +85,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       id={item.id}
                       value={item.value}
                       onChange={(e) => item.onSelect?.(e.target.value)}
-                      className="bg-black/50 text-white disabled:text-gray-300 disabled:opacity-70 rounded px-1 py-0.5"
+                      className="bg-black/50 text-white disabled:text-ds-text-muted disabled:opacity-70 rounded px-1 py-0.5"
                       disabled={item.disabled}
                       aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
                     >
@@ -99,7 +99,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       <span
                         id={`${item.id}-tooltip`}
                         role="tooltip"
-                        className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10"
+                        className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-ds-surface-elevated text-ds-text-primary text-xs rounded px-2 py-1 whitespace-nowrap z-10"
                       >
                         {item.tooltip}
                       </span>

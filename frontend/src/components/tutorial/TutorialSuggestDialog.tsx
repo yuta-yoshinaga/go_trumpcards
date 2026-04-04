@@ -99,10 +99,10 @@ export function TutorialSuggestDialog({
         <h2 id="suggest-dialog-title" className="text-lg font-bold text-white mb-2">
           {t('firstVisit.title')}
         </h2>
-        <p id="suggest-dialog-desc" className="text-gray-200 mb-4">
+        <p id="suggest-dialog-desc" className="text-ds-text-primary mb-4">
           {t('firstVisit.message')}
         </p>
-        <label className="flex items-center gap-2 text-sm text-gray-300 mb-4 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-ds-text-muted mb-4 cursor-pointer">
           <input
             type="checkbox"
             checked={dontShowAgain}

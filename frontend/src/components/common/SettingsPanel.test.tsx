@@ -137,7 +137,7 @@ describe('SettingsPanel', () => {
     );
     const select = screen.getByLabelText('Disabled');
     expect(select.className).toContain('disabled:opacity-70');
-    expect(select.className).toContain('disabled:text-gray-300');
+    expect(select.className).toContain('disabled:text-ds-text-muted');
   });
 
   it('renders enabled select when disabled is false', () => {

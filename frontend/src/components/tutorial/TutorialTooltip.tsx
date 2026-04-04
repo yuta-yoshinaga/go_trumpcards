@@ -27,7 +27,7 @@ export function TutorialTooltip({ message, stepIndex, totalSteps, onNext, onSkip
     <div role="status" aria-live="polite" className="glass-panel rounded-lg shadow-xl p-4 max-w-xs">
       <p className="text-white text-sm mb-3">{message}</p>
       <div className="flex items-center justify-between">
-        <span className="text-gray-300 text-xs">
+        <span className="text-ds-text-muted text-xs">
           {stepIndex + 1} / {totalSteps}
         </span>
         <div className="flex gap-2">

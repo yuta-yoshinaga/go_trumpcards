@@ -57,7 +57,7 @@ describe('ManualModal', () => {
   it('has opaque background instead of glass-panel', () => {
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
     const dialog = screen.getByRole('dialog');
-    expect(dialog.className).toContain('bg-gray-900');
+    expect(dialog.className).toContain('bg-ds-surface');
     expect(dialog.className).not.toContain('glass-panel');
   });
 

@@ -18,7 +18,7 @@ export function TutorialProgressPanel() {
       <div className="mt-2">
         {/* Progress bar */}
         <div
-          className="w-full bg-gray-700 rounded-full h-2 mb-2"
+          className="w-full bg-ds-surface rounded-full h-2 mb-2"
           role="progressbar"
           aria-label={t('progress.title', { defaultValue: 'Tutorial Progress' })}
           aria-valuenow={percentage}
@@ -34,7 +34,7 @@ export function TutorialProgressPanel() {
             <Link
               key={game.gameName}
               to={game.path}
-              className={`flex items-center justify-center px-1.5 py-1 rounded hover:bg-white/10 ${game.completed ? 'text-green-400' : 'text-gray-400'}`}
+              className={`flex items-center justify-center px-1.5 py-1 rounded hover:bg-white/10 ${game.completed ? 'text-green-400' : 'text-ds-text-muted'}`}
               title={tc(game.labelKey)}
             >
               {game.completed ? '✓' : '○'}

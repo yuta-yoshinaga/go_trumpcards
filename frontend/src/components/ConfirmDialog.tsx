@@ -80,10 +80,10 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         className="glass-panel rounded-lg shadow-xl p-6 max-w-sm mx-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="confirm-dialog-title" className="text-lg font-bold text-white mb-2">
+        <h2 id="confirm-dialog-title" className="text-lg font-bold text-ds-text-primary mb-2">
           {props.title}
         </h2>
-        <p className="text-gray-200 mb-4">{props.message}</p>
+        <p className="text-ds-text-primary mb-4">{props.message}</p>
         <div className="flex justify-end gap-2">
           <button type="button" className={btnSecondary} onClick={props.onCancel}>
             {props.cancelLabel}
