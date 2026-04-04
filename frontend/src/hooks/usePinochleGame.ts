@@ -81,6 +81,7 @@ export function usePinochleGame() {
     state,
     loading,
     error,
+    exec: rawExec,
     pinochleConfig,
     handleConfigChange,
     handleReset,

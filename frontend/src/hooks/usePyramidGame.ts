@@ -94,6 +94,7 @@ export function usePyramidGame() {
     state,
     loading,
     error,
+    exec,
     hintError,
     selectedCard,
     hint,

@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { deuceswildApi } from '../api/gameApi';
 import { VideoPokerGameContent } from '../components/VideoPokerGameContent';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import { DEUCESWILD_HELP, parseDeuceswildCommand } from '../utils/cli/commands/deuceswildCommands';
+import { formatDeuceswildState } from '../utils/cli/formatters/deuceswildFormatter';
 
 /** Deuces Wild payout table rows. */
 const DW_PAYOUT_ROWS = [
@@ -56,6 +59,14 @@ const DW_TUTORIAL_CONFIG: TutorialConfig = {
 /** Renders the Deuces Wild game page. */
 export function DeucesWildPage() {
   const { t: tDw } = useTranslation('deuceswild');
+  const cliGameConfig = useMemo(
+    () => ({
+      parseCommand: parseDeuceswildCommand,
+      formatResponse: formatDeuceswildState,
+      helpText: DEUCESWILD_HELP,
+    }),
+    [],
+  );
   return (
     <TutorialProvider config={DW_TUTORIAL_CONFIG} translateMessage={tDw}>
       <VideoPokerGameContent
@@ -64,6 +75,7 @@ export function DeucesWildPage() {
         apiExec={deuceswildApi.exec}
         payoutTableRows={DW_PAYOUT_ROWS}
         gamePath="/deuceswild"
+        cliGameConfig={cliGameConfig}
       />
     </TutorialProvider>
   );

@@ -21,6 +21,8 @@ import {
   BJ_SUGGEST_SURRENDER,
 } from '../components/blackjack/bjConstants';
 import { HandStatusBadges } from '../components/blackjack/HandStatusBadges';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -37,6 +39,8 @@ import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -47,6 +51,9 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import { BLACKJACK_HELP, parseBlackjackCommand } from '../utils/cli/commands/blackjackCommands';
+import { formatBlackjackState } from '../utils/cli/formatters/blackjackFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 
 const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -162,6 +169,19 @@ function BlackJackPageContent() {
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
 
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('blackjack');
+  const bjCliConfig: CliGameConfig<BlackJackResponse, Parameters<typeof blackjackApi.exec>> = useMemo(
+    () => ({
+      gameName: 'blackjack',
+      parseCommand: parseBlackjackCommand,
+      formatResponse: formatBlackjackState,
+      helpText: BLACKJACK_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(exec, bjCliConfig, state, { addInput, addOutput, addError, clearLog });
+
   useEffect(() => {
     exec('reset');
   }, [exec]);
@@ -246,6 +266,7 @@ function BlackJackPageContent() {
         <span>
           {t('player')} {state.player.chips} chips
         </span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/" />
         <span>
@@ -263,295 +284,301 @@ function BlackJackPageContent() {
         </span>
       </PhaseIndicator>
 
-      {/* Scrollable: dealer area + CPU players */}
-      <div
-        data-testid="card-area"
-        className={[`overflow-y-auto p-4 lg:px-8 ${lgCardAreaConstraint}`, phase !== BjPhase.BET && 'flex-1']
-          .filter(Boolean)
-          .join(' ')}
-      >
-        {phase === BjPhase.BET && (
-          <div className="flex flex-col items-center justify-center py-6 gap-4">
-            <p className="text-white/50 text-lg">{t('betGuide')}</p>
-            <details className="bg-black/30 rounded-lg w-full max-w-sm">
-              <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
-                {t('payoutRef.title')}
-              </summary>
-              <ul className="text-white/70 text-sm space-y-1 px-4 pb-3">
-                {(['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const).map((key) => (
-                  <li key={key}>{t(`payoutRef.${key}`)}</li>
-                ))}
-              </ul>
-            </details>
-          </div>
-        )}
-        {phase !== BjPhase.BET && (
-          <div data-tutorial="bj-dealer-hand">
-            <h2 className="text-white">
-              {t('dealerHand')}
-              {dealerHitsSoft17 ? ' (H17)' : ' (S17)'}
-            </h2>
-            <p className="text-white">
-              {t('score')} {state.dealer.score ? state.dealer.score : ''}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {state.dealer.cards?.map((card, idx) => (
-                <AnimatedCard
-                  key={`dealer-${idx}-${card.design}-${card.value}`}
-                  card={card}
-                  width={cardWidth}
-                  dealDelay={idx * 0.2}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
-              ))}
-              {!state.dealer.score && (
-                <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* CPU players */}
-        {phase !== BjPhase.BET && cpuPlayers.length > 0 && (
-          <div className="mt-4">
-            {cpuPlayers.map((cpu, cpuIdx) => (
-              <div key={cpuIdx} className="mb-3">
-                <h2 className="text-yellow-200 mt-0 mb-1">
-                  {tc('player.cpu', { id: cpuIdx + 1 })} ({cpu.chips} chips)
-                  {cpu.insuranceBet > 0 && (
-                    <span className="text-yellow-400 text-sm ml-2">
-                      [{t('insurance')} {cpu.insuranceBet}]
-                    </span>
-                  )}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          {/* Scrollable: dealer area + CPU players */}
+          <div
+            data-testid="card-area"
+            className={[`overflow-y-auto p-4 lg:px-8 ${lgCardAreaConstraint}`, phase !== BjPhase.BET && 'flex-1']
+              .filter(Boolean)
+              .join(' ')}
+          >
+            {phase === BjPhase.BET && (
+              <div className="flex flex-col items-center justify-center py-6 gap-4">
+                <p className="text-white/50 text-lg">{t('betGuide')}</p>
+                <details className="bg-black/30 rounded-lg w-full max-w-sm">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
+                    {t('payoutRef.title')}
+                  </summary>
+                  <ul className="text-white/70 text-sm space-y-1 px-4 pb-3">
+                    {(['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const).map((key) => (
+                      <li key={key}>{t(`payoutRef.${key}`)}</li>
+                    ))}
+                  </ul>
+                </details>
+              </div>
+            )}
+            {phase !== BjPhase.BET && (
+              <div data-tutorial="bj-dealer-hand">
+                <h2 className="text-white">
+                  {t('dealerHand')}
+                  {dealerHitsSoft17 ? ' (H17)' : ' (S17)'}
                 </h2>
-                {cpu.hands.map((hand, handIdx) => (
-                  <div key={handIdx} className="mb-1">
-                    <div className="text-yellow-100 text-sm">
-                      {cpu.hands.length > 1 ? `${t('hand', { idx: handIdx + 1 })} ` : ''}
-                      {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
+                <p className="text-white">
+                  {t('score')} {state.dealer.score ? state.dealer.score : ''}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {state.dealer.cards?.map((card, idx) => (
+                    <AnimatedCard
+                      key={`dealer-${idx}-${card.design}-${card.value}`}
+                      card={card}
+                      width={cardWidth}
+                      dealDelay={idx * 0.2}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                  ))}
+                  {!state.dealer.score && (
+                    <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* CPU players */}
+            {phase !== BjPhase.BET && cpuPlayers.length > 0 && (
+              <div className="mt-4">
+                {cpuPlayers.map((cpu, cpuIdx) => (
+                  <div key={cpuIdx} className="mb-3">
+                    <h2 className="text-yellow-200 mt-0 mb-1">
+                      {tc('player.cpu', { id: cpuIdx + 1 })} ({cpu.chips} chips)
+                      {cpu.insuranceBet > 0 && (
+                        <span className="text-yellow-400 text-sm ml-2">
+                          [{t('insurance')} {cpu.insuranceBet}]
+                        </span>
+                      )}
+                    </h2>
+                    {cpu.hands.map((hand, handIdx) => (
+                      <div key={handIdx} className="mb-1">
+                        <div className="text-yellow-100 text-sm">
+                          {cpu.hands.length > 1 ? `${t('hand', { idx: handIdx + 1 })} ` : ''}
+                          {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
+                          <HandStatusBadges
+                            busted={hand.busted}
+                            doubled={hand.doubled}
+                            isBlackJack={hand.isBlackJack}
+                            surrendered={hand.surrendered}
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {hand.cards.map((card, cardIdx) => (
+                            <AnimatedCard
+                              key={`cpu${cpuIdx}-hand${handIdx}-${cardIdx}-${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sticky footer: player hand + result + buttons */}
+          <GameFooter className={`${gameTheme.blackjack.footer} px-4 py-3`}>
+            {/* Player hands */}
+            {phase !== BjPhase.BET && hands.length > 0 && (
+              <div className="mb-2" data-tutorial="bj-player-hand">
+                {hands.map((hand, handIndex) => (
+                  <div key={`hand-${handIndex}`} className="mb-2">
+                    <h2 className="text-white mt-0 mb-0.5">
+                      {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
+                      {handIndex === currentHandIdx &&
+                        (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) &&
+                        ' (*)'}
                       <HandStatusBadges
                         busted={hand.busted}
                         doubled={hand.doubled}
                         isBlackJack={hand.isBlackJack}
                         surrendered={hand.surrendered}
                       />
-                    </div>
-                    <div className="flex flex-wrap gap-1">
+                    </h2>
+                    <p className="text-white mt-0 mb-0.5">
+                      {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
                       {hand.cards.map((card, cardIdx) => (
                         <AnimatedCard
-                          key={`cpu${cpuIdx}-hand${handIdx}-${cardIdx}-${card.design}-${card.value}`}
+                          key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
+                          dealDelay={cardIdx * 0.12}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            )}
 
-      {/* Sticky footer: player hand + result + buttons */}
-      <GameFooter className={`${gameTheme.blackjack.footer} px-4 py-3`}>
-        {/* Player hands */}
-        {phase !== BjPhase.BET && hands.length > 0 && (
-          <div className="mb-2" data-tutorial="bj-player-hand">
-            {hands.map((hand, handIndex) => (
-              <div key={`hand-${handIndex}`} className="mb-2">
-                <h2 className="text-white mt-0 mb-0.5">
-                  {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
-                  {handIndex === currentHandIdx &&
-                    (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) &&
-                    ' (*)'}
-                  <HandStatusBadges
-                    busted={hand.busted}
-                    doubled={hand.doubled}
-                    isBlackJack={hand.isBlackJack}
-                    surrendered={hand.surrendered}
-                  />
-                </h2>
-                <p className="text-white mt-0 mb-0.5">
-                  {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {hand.cards.map((card, cardIdx) => (
-                    <AnimatedCard
-                      key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
-                      card={card}
-                      width={cardWidth}
-                      dealDelay={cardIdx * 0.12}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
-                  ))}
+            {/* Insurance info */}
+            {state.insuranceBet > 0 && (
+              <div className="text-yellow-300 text-sm mb-1">
+                {t('insurance')} {state.insuranceBet}
+              </div>
+            )}
+
+            {/* Side bet results */}
+            {sideBetResults.length > 0 && (
+              <div className="mb-2">
+                {sideBetResults.map((r) => (
+                  <div
+                    key={r.betType}
+                    className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-yellow-400/90 text-gray-900 font-bold' : 'bg-gray-500/70 text-white'}`}
+                  >
+                    {r.betType === BJ_SIDE_BET_PERFECT_PAIRS ? t('sideBet.perfectPairs') : t('sideBet.twentyOnePlus3')}:{' '}
+                    {r.payout > 0
+                      ? t('sideBet.win', { name: r.resultName, payout: r.payout })
+                      : t('sideBet.lose', { name: r.resultName, amount: r.betAmount })}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Hint banner */}
+            {hintEnabled && suggestedAction !== BJ_SUGGEST_NONE && (
+              <div className="mb-2">
+                <div className="bg-yellow-300/90 text-gray-900 text-center text-sm font-bold px-3 py-1 rounded">
+                  {t('suggestion')} {suggestionLabels[suggestedAction]}
                 </div>
+                {bjHintResult && <HintTooltip reason={t(bjHintResult.reason)} confidence={bjHintResult.confidence} />}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {/* Insurance info */}
-        {state.insuranceBet > 0 && (
-          <div className="text-yellow-300 text-sm mb-1">
-            {t('insurance')} {state.insuranceBet}
-          </div>
-        )}
-
-        {/* Side bet results */}
-        {sideBetResults.length > 0 && (
-          <div className="mb-2">
-            {sideBetResults.map((r) => (
-              <div
-                key={r.betType}
-                className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-yellow-400/90 text-gray-900 font-bold' : 'bg-gray-500/70 text-white'}`}
-              >
-                {r.betType === BJ_SIDE_BET_PERFECT_PAIRS ? t('sideBet.perfectPairs') : t('sideBet.twentyOnePlus3')}:{' '}
-                {r.payout > 0
-                  ? t('sideBet.win', { name: r.resultName, payout: r.payout })
-                  : t('sideBet.lose', { name: r.resultName, amount: r.betAmount })}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Hint banner */}
-        {hintEnabled && suggestedAction !== BJ_SUGGEST_NONE && (
-          <div className="mb-2">
-            <div className="bg-yellow-300/90 text-gray-900 text-center text-sm font-bold px-3 py-1 rounded">
-              {t('suggestion')} {suggestionLabels[suggestedAction]}
+            {/* Result message */}
+            <div data-tutorial="bj-result-message">
+              <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
             </div>
-            {bjHintResult && <HintTooltip reason={t(bjHintResult.reason)} confidence={bjHintResult.confidence} />}
-          </div>
-        )}
 
-        {/* Result message */}
-        <div data-tutorial="bj-result-message">
-          <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
-        </div>
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={phase === BjPhase.END}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
 
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={phase === BjPhase.END}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
+            <ErrorAlert message={error} />
 
-        <ErrorAlert message={error} />
+            {/* Phase-based buttons */}
+            <div className="text-center">
+              {phase === BjPhase.BET && (
+                <>
+                  <div data-tutorial="bj-bet-controls">
+                    <BjBetPhaseControls
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      deckCount={state?.deckCount ?? 1}
+                      onDeckCountChange={(v) => exec('setdeckcount', v)}
+                      cpuPlayerCount={cpuPlayerCount}
+                      onCpuPlayerCountChange={(v) => exec('setcpucount', v)}
+                      hintEnabled={hintEnabled}
+                      onToggleHint={() => exec('togglehint')}
+                      dealerHitsSoft17={dealerHitsSoft17}
+                      onToggleSoft17={() => exec('togglesoft17')}
+                      countingEnabled={countingEnabled}
+                      onToggleCounting={() => exec('togglecounting')}
+                      doubleAfterSplit={doubleAfterSplit}
+                      onToggleDAS={() => exec('toggledas')}
+                      countingSystem={countingSystem}
+                      onCountingSystemChange={(v) => exec('setcountingsystem', v)}
+                      deckPenetration={deckPenetration}
+                      onDeckPenetrationChange={(v) => exec('setpenetration', v)}
+                      surrenderRule={surrenderRule}
+                      onSurrenderRuleChange={(v) => exec('setsurrenderrule', v)}
+                      handCount={handCount}
+                      onHandCountChange={setHandCount}
+                      loading={loading}
+                      onBet={() => {
+                        const betOptions: BlackJackBetOptions = {};
+                        if (perfectPairsBet > 0) betOptions.perfectPairsBet = perfectPairsBet;
+                        if (twentyOnePlus3Bet > 0) betOptions.twentyOnePlus3Bet = twentyOnePlus3Bet;
+                        if (handCount > 1) betOptions.handCount = handCount;
+                        exec('bet', betAmount, undefined, betOptions);
+                      }}
+                      perfectPairsBet={perfectPairsBet}
+                      onPerfectPairsBetChange={setPerfectPairsBet}
+                      twentyOnePlus3Bet={twentyOnePlus3Bet}
+                      onTwentyOnePlus3BetChange={setTwentyOnePlus3Bet}
+                      autoExpandAdvanced={!isMobile}
+                    />
+                  </div>
+                  <div className="flex items-center justify-center gap-2 mt-2">
+                    <label htmlFor="bj-auto-advance" className="text-white text-sm">
+                      {t('autoAdvance')}
+                    </label>
+                    <select
+                      id="bj-auto-advance"
+                      value={autoAdvance}
+                      onChange={(e) => setAutoAdvance(Number(e.target.value))}
+                      className="px-2 py-1 rounded text-sm"
+                    >
+                      <option value={0}>OFF</option>
+                      <option value={3}>{t('autoAdvanceSec', { sec: 3 })}</option>
+                      <option value={5}>{t('autoAdvanceSec', { sec: 5 })}</option>
+                      <option value={10}>{t('autoAdvanceSec', { sec: 10 })}</option>
+                    </select>
+                  </div>
+                </>
+              )}
 
-        {/* Phase-based buttons */}
-        <div className="text-center">
-          {phase === BjPhase.BET && (
-            <>
-              <div data-tutorial="bj-bet-controls">
-                <BjBetPhaseControls
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  deckCount={state?.deckCount ?? 1}
-                  onDeckCountChange={(v) => exec('setdeckcount', v)}
-                  cpuPlayerCount={cpuPlayerCount}
-                  onCpuPlayerCountChange={(v) => exec('setcpucount', v)}
-                  hintEnabled={hintEnabled}
-                  onToggleHint={() => exec('togglehint')}
-                  dealerHitsSoft17={dealerHitsSoft17}
-                  onToggleSoft17={() => exec('togglesoft17')}
-                  countingEnabled={countingEnabled}
-                  onToggleCounting={() => exec('togglecounting')}
-                  doubleAfterSplit={doubleAfterSplit}
-                  onToggleDAS={() => exec('toggledas')}
-                  countingSystem={countingSystem}
-                  onCountingSystemChange={(v) => exec('setcountingsystem', v)}
-                  deckPenetration={deckPenetration}
-                  onDeckPenetrationChange={(v) => exec('setpenetration', v)}
-                  surrenderRule={surrenderRule}
-                  onSurrenderRuleChange={(v) => exec('setsurrenderrule', v)}
-                  handCount={handCount}
-                  onHandCountChange={setHandCount}
+              {phase === BjPhase.INSURANCE && (
+                <BjInsurancePhaseControls
                   loading={loading}
-                  onBet={() => {
-                    const betOptions: BlackJackBetOptions = {};
-                    if (perfectPairsBet > 0) betOptions.perfectPairsBet = perfectPairsBet;
-                    if (twentyOnePlus3Bet > 0) betOptions.twentyOnePlus3Bet = twentyOnePlus3Bet;
-                    if (handCount > 1) betOptions.handCount = handCount;
-                    exec('bet', betAmount, undefined, betOptions);
-                  }}
-                  perfectPairsBet={perfectPairsBet}
-                  onPerfectPairsBetChange={setPerfectPairsBet}
-                  twentyOnePlus3Bet={twentyOnePlus3Bet}
-                  onTwentyOnePlus3BetChange={setTwentyOnePlus3Bet}
-                  autoExpandAdvanced={!isMobile}
+                  hintEnabled={hintEnabled}
+                  suggestedAction={suggestedAction}
+                  onInsurance={() => exec('insurance')}
+                  onDecline={() => exec('declineinsurance')}
                 />
-              </div>
-              <div className="flex items-center justify-center gap-2 mt-2">
-                <label htmlFor="bj-auto-advance" className="text-white text-sm">
-                  {t('autoAdvance')}
-                </label>
-                <select
-                  id="bj-auto-advance"
-                  value={autoAdvance}
-                  onChange={(e) => setAutoAdvance(Number(e.target.value))}
-                  className="px-2 py-1 rounded text-sm"
-                >
-                  <option value={0}>OFF</option>
-                  <option value={3}>{t('autoAdvanceSec', { sec: 3 })}</option>
-                  <option value={5}>{t('autoAdvanceSec', { sec: 5 })}</option>
-                  <option value={10}>{t('autoAdvanceSec', { sec: 10 })}</option>
-                </select>
-              </div>
-            </>
-          )}
+              )}
 
-          {phase === BjPhase.INSURANCE && (
-            <BjInsurancePhaseControls
-              loading={loading}
-              hintEnabled={hintEnabled}
-              suggestedAction={suggestedAction}
-              onInsurance={() => exec('insurance')}
-              onDecline={() => exec('declineinsurance')}
-            />
-          )}
+              {phase === BjPhase.ACTION && (
+                <div data-tutorial="bj-action-buttons">
+                  <BjActionPhaseControls
+                    loading={loading}
+                    hintEnabled={hintEnabled}
+                    suggestedAction={suggestedAction}
+                    showDoubleDown={showDoubleDown}
+                    showSplit={showSplit}
+                    showSurrender={showSurrender}
+                    onHit={() => exec('hit')}
+                    onStand={() => exec('stand')}
+                    onDoubleDown={() => exec('doubledown')}
+                    onSplit={() => exec('split')}
+                    onSurrender={() => exec('surrender')}
+                  />
+                </div>
+              )}
 
-          {phase === BjPhase.ACTION && (
-            <div data-tutorial="bj-action-buttons">
-              <BjActionPhaseControls
-                loading={loading}
-                hintEnabled={hintEnabled}
-                suggestedAction={suggestedAction}
-                showDoubleDown={showDoubleDown}
-                showSplit={showSplit}
-                showSurrender={showSurrender}
-                onHit={() => exec('hit')}
-                onStand={() => exec('stand')}
-                onDoubleDown={() => exec('doubledown')}
-                onSplit={() => exec('split')}
-                onSurrender={() => exec('surrender')}
-              />
+              {phase === BjPhase.EARLY_SURRENDER && (
+                <BjEarlySurrenderPhaseControls
+                  loading={loading}
+                  hintEnabled={hintEnabled}
+                  suggestedAction={suggestedAction}
+                  onSurrender={() => exec('earlysurrender')}
+                  onContinue={() => exec('declineearlysurrender')}
+                />
+              )}
+
+              {phase === BjPhase.END && (
+                <div data-tutorial="bj-reset-button">
+                  <BjEndPhaseControls
+                    loading={loading}
+                    onReset={handleReset}
+                    onManualReset={() => requestConfirm(handleReset)}
+                    autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
+                  />
+                </div>
+              )}
             </div>
-          )}
-
-          {phase === BjPhase.EARLY_SURRENDER && (
-            <BjEarlySurrenderPhaseControls
-              loading={loading}
-              hintEnabled={hintEnabled}
-              suggestedAction={suggestedAction}
-              onSurrender={() => exec('earlysurrender')}
-              onContinue={() => exec('declineearlysurrender')}
-            />
-          )}
-
-          {phase === BjPhase.END && (
-            <div data-tutorial="bj-reset-button">
-              <BjEndPhaseControls
-                loading={loading}
-                onReset={handleReset}
-                onManualReset={() => requestConfirm(handleReset)}
-                autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
-              />
-            </div>
-          )}
-        </div>
-      </GameFooter>
+          </GameFooter>
+        </>
+      )}
       <WinCelebration show={phase === BjPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <LossFeedback show={hands.some((h) => h.busted)} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />

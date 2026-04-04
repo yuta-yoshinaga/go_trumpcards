@@ -5,6 +5,8 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuActionToast } from '../components/CpuActionToast';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -22,6 +24,8 @@ import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -31,8 +35,12 @@ import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { IndianPokerResponse } from '../types/card';
 import { IndianPokerPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import { INDIANPOKER_HELP, parseIndianpokerCommand } from '../utils/cli/commands/indianpokerCommands';
+import { formatIndianpokerState } from '../utils/cli/formatters/indianpokerFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Indian Poker tutorial step definitions. */
 const IP_TUTORIAL_STEPS: TutorialStep[] = [
@@ -101,6 +109,18 @@ function IndianPokerPageContent() {
   const [cpuMetaAI, setCpuMetaAI] = useState(true);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('indianpoker', state);
   const turnStartRef = useRef(0);
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('indianpoker');
+  const cliConfig: CliGameConfig<IndianPokerResponse, Parameters<typeof indianpokerApi.exec>> = useMemo(
+    () => ({
+      gameName: 'indianpoker',
+      parseCommand: parseIndianpokerCommand,
+      formatResponse: formatIndianpokerState,
+      helpText: INDIANPOKER_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useEffect(() => {
     execApi('reset');
@@ -179,6 +199,7 @@ function IndianPokerPageContent() {
         <span>
           {t('ante')} <strong>{state.ante ?? 0}</strong>
         </span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/indianpoker" />
         <span>
@@ -186,180 +207,186 @@ function IndianPokerPageContent() {
         </span>
       </PhaseIndicator>
 
-      {/* Scrollable: opponent cards + CPU players */}
-      <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* CPU players - show cards face-up (opponents can see each other's cards) */}
-        <div data-tutorial="ip-cpu-cards" className={isMobile ? 'grid grid-cols-3 gap-2 mb-3' : ''}>
-          {state.players
-            ?.filter((p) => !p.isHuman)
-            .map((p) => (
-              <div key={p.id} className={isMobile ? 'text-center' : 'mb-3'}>
-                <div className={`text-white text-sm mb-1 ${isMobile ? 'truncate' : ''}`}>
-                  {tc('player.cpu', { id: p.id })}
-                  {!isMobile && <span className="text-gray-300 text-xs"> ({p.playStyleName})</span>}
-                  <span className={`text-xs ${isMobile ? 'block' : 'ml-2'}`}>
-                    {tc('betting.chips')} {p.chips}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          {/* Scrollable: opponent cards + CPU players */}
+          <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* CPU players - show cards face-up (opponents can see each other's cards) */}
+            <div data-tutorial="ip-cpu-cards" className={isMobile ? 'grid grid-cols-3 gap-2 mb-3' : ''}>
+              {state.players
+                ?.filter((p) => !p.isHuman)
+                .map((p) => (
+                  <div key={p.id} className={isMobile ? 'text-center' : 'mb-3'}>
+                    <div className={`text-white text-sm mb-1 ${isMobile ? 'truncate' : ''}`}>
+                      {tc('player.cpu', { id: p.id })}
+                      {!isMobile && <span className="text-gray-300 text-xs"> ({p.playStyleName})</span>}
+                      <span className={`text-xs ${isMobile ? 'block' : 'ml-2'}`}>
+                        {tc('betting.chips')} {p.chips}
+                      </span>
+                      {p.currentBet > 0 && (
+                        <span className={`text-xs ${isMobile ? 'block' : 'ml-2'}`}>
+                          {tc('betting.currentBet')} {p.currentBet}
+                        </span>
+                      )}
+                      {p.folded && <span className="ml-1 text-red-300 text-xs">[{tc('status.folded')}]</span>}
+                      {p.allIn && <span className="ml-1 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
+                    </div>
+                    <div className={isMobile ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
+                      {p.card ? (
+                        <AnimatedCard
+                          card={p.card}
+                          width={cardWidth}
+                          style={{ border: '3px solid transparent' }}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                        />
+                      ) : (
+                        <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* CPU actions: toast on mobile, inline log on desktop */}
+            {isMobile ? <CpuActionToast actions={state.cpuActions} /> : <CpuActionLog actions={state.cpuActions} />}
+
+            {/* Round results */}
+            {isShowdown && <RoundResults results={roundResultsForDisplay} players={state.players ?? []} />}
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={!!state.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          {/* Sticky footer: player card + buttons */}
+          <GameFooter className={`${gameTheme.indianpoker.footer} px-5 py-3`}>
+            {/* Human player */}
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="ip-player-card">
+                <div className="text-white text-lg mb-1">
+                  {t('yourCard')}
+                  <span className="ml-3 text-xs">
+                    {tc('betting.chips')} {humanPlayer.chips}
                   </span>
-                  {p.currentBet > 0 && (
-                    <span className={`text-xs ${isMobile ? 'block' : 'ml-2'}`}>
-                      {tc('betting.currentBet')} {p.currentBet}
+                  {humanPlayer.currentBet > 0 && (
+                    <span className="ml-2 text-xs">
+                      {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {p.folded && <span className="ml-1 text-red-300 text-xs">[{tc('status.folded')}]</span>}
-                  {p.allIn && <span className="ml-1 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
+                  {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
                 </div>
-                <div className={isMobile ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
-                  {p.card ? (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {isShowdown && humanPlayer.card ? (
                     <AnimatedCard
-                      card={p.card}
+                      card={humanPlayer.card}
                       width={cardWidth}
                       style={{ border: '3px solid transparent' }}
                       onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
-                  ) : (
+                  ) : !humanPlayer.folded ? (
                     <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                  )}
+                  ) : null}
                 </div>
               </div>
-            ))}
-        </div>
+            )}
 
-        {/* CPU actions: toast on mobile, inline log on desktop */}
-        {isMobile ? <CpuActionToast actions={state.cpuActions} /> : <CpuActionLog actions={state.cpuActions} />}
-
-        {/* Round results */}
-        {isShowdown && <RoundResults results={roundResultsForDisplay} players={state.players ?? []} />}
-
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={!!state.gameEndFlag}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      {/* Sticky footer: player card + buttons */}
-      <GameFooter className={`${gameTheme.indianpoker.footer} px-5 py-3`}>
-        {/* Human player */}
-        {humanPlayer && (
-          <div className="mb-2" data-tutorial="ip-player-card">
-            <div className="text-white text-lg mb-1">
-              {t('yourCard')}
-              <span className="ml-3 text-xs">
-                {tc('betting.chips')} {humanPlayer.chips}
-              </span>
-              {humanPlayer.currentBet > 0 && (
-                <span className="ml-2 text-xs">
-                  {tc('betting.currentBet')} {humanPlayer.currentBet}
-                </span>
-              )}
-              {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
-              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
-            </div>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {isShowdown && humanPlayer.card ? (
-                <AnimatedCard
-                  card={humanPlayer.card}
-                  width={cardWidth}
-                  style={{ border: '3px solid transparent' }}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
-              ) : !humanPlayer.folded ? (
-                <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-              ) : null}
-            </div>
-          </div>
-        )}
-
-        {/* Message */}
-        <GameMessageBox
-          message={state.message}
-          messageCode={state.messageCode}
-          messageParams={state.messageParams}
-          alwaysVisible
-        />
-
-        <ErrorAlert message={error} />
-
-        {/* Hint */}
-        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-        {/* Betting controls */}
-        {canAct && (
-          <div data-tutorial="ip-action-buttons">
-            <BettingControls
-              inputId="indianPokerBetAmount"
-              betAmount={betAmount}
-              onBetAmountChange={setBetAmount}
-              minRaise={minRaise}
-              maxBetAmount={state.maxBetAmount}
-              hasOutstandingBet={hasOutstandingBet}
-              loading={loading}
-              onCall={() => execApi('call', undefined, undefined, getElapsed())}
-              onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-              onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-              onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-              onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-              onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+            {/* Message */}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+              alwaysVisible
             />
-          </div>
-        )}
 
-        {/* Settings */}
-        <SettingsPanel
-          title={t('settings.ante')}
-          groups={[
-            {
-              items: [
+            <ErrorAlert message={error} />
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Betting controls */}
+            {canAct && (
+              <div data-tutorial="ip-action-buttons">
+                <BettingControls
+                  inputId="indianPokerBetAmount"
+                  betAmount={betAmount}
+                  onBetAmountChange={setBetAmount}
+                  minRaise={minRaise}
+                  maxBetAmount={state.maxBetAmount}
+                  hasOutstandingBet={hasOutstandingBet}
+                  loading={loading}
+                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                />
+              </div>
+            )}
+
+            {/* Settings */}
+            <SettingsPanel
+              title={t('settings.ante')}
+              groups={[
                 {
-                  type: 'select' as const,
-                  id: 'indianpoker-betting-limit',
-                  label: t('settings.bettingLimit'),
-                  value: bettingLimit,
-                  options: [
-                    { value: 0, label: tc('betting.fixed') },
-                    { value: 1, label: tc('betting.potLimit') },
-                    { value: 2, label: tc('betting.noLimit') },
+                  items: [
+                    {
+                      type: 'select' as const,
+                      id: 'indianpoker-betting-limit',
+                      label: t('settings.bettingLimit'),
+                      value: bettingLimit,
+                      options: [
+                        { value: 0, label: tc('betting.fixed') },
+                        { value: 1, label: tc('betting.potLimit') },
+                        { value: 2, label: tc('betting.noLimit') },
+                      ],
+                      onSelect: (v: string) => setBettingLimit(Number(v)),
+                    },
+                    {
+                      type: 'checkbox' as const,
+                      id: 'indianpoker-hint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
+                    },
+                    {
+                      type: 'checkbox' as const,
+                      id: 'indianpoker-meta-ai',
+                      label: t('settings.metaAI'),
+                      checked: cpuMetaAI,
+                      onToggle: setCpuMetaAI,
+                    },
                   ],
-                  onSelect: (v: string) => setBettingLimit(Number(v)),
                 },
-                {
-                  type: 'checkbox' as const,
-                  id: 'indianpoker-hint',
-                  label: tc('hint.toggle', { ns: 'tutorial' }),
-                  checked: hintEnabled,
-                  onToggle: setHintEnabled,
-                },
-                {
-                  type: 'checkbox' as const,
-                  id: 'indianpoker-meta-ai',
-                  label: t('settings.metaAI'),
-                  checked: cpuMetaAI,
-                  onToggle: setCpuMetaAI,
-                },
-              ],
-            },
-          ]}
-        />
+              ]}
+            />
 
-        {/* Reset */}
-        <div className="text-center flex items-center justify-center gap-3" data-tutorial="ip-reset-button">
-          <button
-            type="button"
-            className={`${btnOutline} min-w-[90px]`}
-            disabled={loading}
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                execApi('reset', undefined, { ante, bettingLimit, cpuMetaAI });
-              })
-            }
-          >
-            {tc('button.reset')}
-          </button>
-        </div>
-      </GameFooter>
+            {/* Reset */}
+            <div className="text-center flex items-center justify-center gap-3" data-tutorial="ip-reset-button">
+              <button
+                type="button"
+                className={`${btnOutline} min-w-[90px]`}
+                disabled={loading}
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    execApi('reset', undefined, { ante, bettingLimit, cpuMetaAI });
+                  })
+                }
+              >
+                {tc('button.reset')}
+              </button>
+            </div>
+          </GameFooter>
+        </>
+      )}
       <WinCelebration show={phase === IndianPokerPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>

@@ -92,6 +92,7 @@ export function useSpiderGame() {
     state,
     loading,
     error,
+    exec: rawExec,
     hintError,
     selectedSource,
     hint,

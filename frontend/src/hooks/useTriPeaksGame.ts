@@ -56,6 +56,7 @@ export function useTriPeaksGame() {
     state,
     loading,
     error,
+    exec,
     hintError,
     hint,
     handleDraw,

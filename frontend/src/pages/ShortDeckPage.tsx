@@ -7,6 +7,8 @@ import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuActionToast } from '../components/CpuActionToast';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { EquityDisplay } from '../components/EquityDisplay';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -25,6 +27,8 @@ import { ShortDeckSkeleton } from '../components/skeleton/ShortDeckSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -35,8 +39,12 @@ import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { ShortDeckResponse } from '../types/card';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import { parseShortdeckCommand, SHORTDECK_HELP } from '../utils/cli/commands/shortdeckCommands';
+import { formatShortdeckState } from '../utils/cli/formatters/shortdeckFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Short Deck Hold'em tutorial step definitions. */
 const SD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -155,6 +163,18 @@ function ShortDeckPageContent() {
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('shortdeck', state);
   const turnStartRef = useRef(0);
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('shortdeck');
+  const cliConfig: CliGameConfig<ShortDeckResponse, Parameters<typeof shortdeckApi.exec>> = useMemo(
+    () => ({
+      gameName: 'shortdeck',
+      parseCommand: parseShortdeckCommand,
+      formatResponse: formatShortdeckState,
+      helpText: SHORTDECK_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useEffect(() => {
     execApi('reset');
@@ -241,293 +261,302 @@ function ShortDeckPageContent() {
         {state?.tournamentMode && (
           <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
         )}
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/shortdeck" />
       </PhaseIndicator>
 
-      {/* Scrollable: community cards + CPU players */}
-      <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
-        {(() => {
-          const communityCardsContent = (
-            <>
-              <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
-              <div className="flex flex-wrap gap-2">
-                {state?.communityCards?.length
-                  ? state.communityCards.map((card) => (
-                      <AnimatedCard
-                        key={`${card.design}-${card.value}`}
-                        card={card}
-                        width={cardWidth}
-                        style={{ border: '3px solid transparent' }}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
-                    ))
-                  : Array.from({ length: 5 }).map((_, i) => (
-                      <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                    ))}
-              </div>
-            </>
-          );
-          const cpuPlayerCards = cpuPlayers.map((p) => (
-            <CpuPlayerCard
-              key={p.id}
-              player={p}
-              showCards={isShowdown}
-              faceDownCount={2}
-              showHandName={isShowdown}
-              extraInfo={
-                p.totalHands > 0 ? <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} /> : undefined
-              }
-            />
-          ));
-
-          if (!isMobile) {
-            return (
-              <PokerTableLayout
-                communityCardsTutorial="sd-community-cards"
-                cpuAreaTutorial="sd-cpu-area"
-                communityCards={communityCardsContent}
-                cpuPlayers={cpuPlayerCards}
-              />
-            );
-          }
-
-          return (
-            <>
-              <div
-                className="sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm"
-                data-tutorial="sd-community-cards"
-              >
-                {communityCardsContent}
-              </div>
-              <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="sd-cpu-area">
-                {cpuPlayerCards}
-              </CpuAccordion>
-            </>
-          );
-        })()}
-
-        {/* CPU actions: toast on mobile, inline log on desktop */}
-        {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
-
-        {/* Round results */}
-        {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
-
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={!!state?.gameEndFlag}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      {/* Sticky footer: player hand + buttons */}
-      <GameFooter className={`${gameTheme.shortdeck.footer} px-5 py-3`}>
-        {/* Learning mode toggle */}
-        <div
-          className="flex items-center gap-2 mb-2"
-          data-testid="learning-mode-toggle"
-          data-tutorial="sd-learning-mode"
-        >
-          <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
-            {t('learning.toggle')}
-          </label>
-          <input
-            id="learningModeCheckbox"
-            type="checkbox"
-            checked={learningMode}
-            onChange={(e) => setLearningMode(e.target.checked)}
-          />
-        </div>
-
-        {/* Equity display */}
-        {learningMode && state?.equity && state.potOdds != null && (
-          <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-        )}
-
-        {/* Human player */}
-        {humanPlayer && (
-          <div className="mb-2" data-tutorial="sd-player-hand">
-            <div className="text-white text-lg mb-1">
-              {t('yourHand')}
-              <span className="ml-3 text-xs">
-                {tc('betting.chips')} {humanPlayer.chips}
-              </span>
-              {humanPlayer.totalHands > 0 && (
-                <HudStats
-                  vpip={humanPlayer.vpip}
-                  pfr={humanPlayer.pfr}
-                  threeBet={humanPlayer.threeBet}
-                  af={humanPlayer.af}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          {/* Scrollable: community cards + CPU players */}
+          <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
+            {(() => {
+              const communityCardsContent = (
+                <>
+                  <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {state?.communityCards?.length
+                      ? state.communityCards.map((card) => (
+                          <AnimatedCard
+                            key={`${card.design}-${card.value}`}
+                            card={card}
+                            width={cardWidth}
+                            style={{ border: '3px solid transparent' }}
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          />
+                        ))
+                      : Array.from({ length: 5 }).map((_, i) => (
+                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                        ))}
+                  </div>
+                </>
+              );
+              const cpuPlayerCards = cpuPlayers.map((p) => (
+                <CpuPlayerCard
+                  key={p.id}
+                  player={p}
+                  showCards={isShowdown}
+                  faceDownCount={2}
+                  showHandName={isShowdown}
+                  extraInfo={
+                    p.totalHands > 0 ? (
+                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
+                    ) : undefined
+                  }
                 />
-              )}
-              {humanPlayer.currentBet > 0 && (
-                <span className="ml-2 text-xs">
-                  {tc('betting.currentBet')} {humanPlayer.currentBet}
-                </span>
-              )}
-              {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
-              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
-              {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                  {humanPlayer.handName}
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {humanPlayer.cards?.length
-                ? humanPlayer.cards.map((card) => (
-                    <AnimatedCard
-                      key={`${card.design}-${card.value}`}
-                      card={card}
-                      width={cardWidth}
-                      style={{ border: '3px solid transparent' }}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
-                  ))
-                : !humanPlayer.folded &&
-                  Array.from({ length: 2 }).map((_, i) => (
-                    <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
-                  ))}
-            </div>
-          </div>
-        )}
+              ));
 
-        {/* Message */}
-        <GameMessageBox
-          message={state?.message}
-          messageCode={state?.messageCode}
-          messageParams={state?.messageParams}
-          alwaysVisible
-        />
+              if (!isMobile) {
+                return (
+                  <PokerTableLayout
+                    communityCardsTutorial="sd-community-cards"
+                    cpuAreaTutorial="sd-cpu-area"
+                    communityCards={communityCardsContent}
+                    cpuPlayers={cpuPlayerCards}
+                  />
+                );
+              }
 
-        <ErrorAlert message={error} />
+              return (
+                <>
+                  <div
+                    className="sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm"
+                    data-tutorial="sd-community-cards"
+                  >
+                    {communityCardsContent}
+                  </div>
+                  <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="sd-cpu-area">
+                    {cpuPlayerCards}
+                  </CpuAccordion>
+                </>
+              );
+            })()}
 
-        {/* Muck/Show controls */}
-        {isMuckPhase && (
-          <div className="mb-2 text-center" data-testid="muck-controls">
-            <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                className={`${btnPrimary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('muck')}
-              >
-                {t('muck.muck')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('show')}
-              >
-                {t('muck.show')}
-              </button>
-            </div>
-          </div>
-        )}
+            {/* CPU actions: toast on mobile, inline log on desktop */}
+            {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
 
-        {/* Rebuy/Addon controls */}
-        {isRebuyPhase && (
-          <div className="mb-2 text-center" data-testid="rebuy-controls">
-            <p className="text-white mb-2">
-              {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
-            </p>
-            <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                className={`${btnPrimary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('rebuy')}
-              >
-                {t('rebuy.accept')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('skiprebuy')}
-              >
-                {t('rebuy.skip')}
-              </button>
-            </div>
-          </div>
-        )}
-        {isAddonPhase && (
-          <div className="mb-2 text-center" data-testid="addon-controls">
-            <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
-            <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                className={`${btnPrimary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('addon')}
-              >
-                {t('addon.accept')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('skipaddon')}
-              >
-                {t('addon.skip')}
-              </button>
-            </div>
-          </div>
-        )}
+            {/* Round results */}
+            {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
 
-        {/* Hint */}
-        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-        {/* Betting controls */}
-        {canAct && (
-          <div data-tutorial="sd-action-buttons">
-            <BettingControls
-              inputId="shortdeckBetAmount"
-              betAmount={betAmount}
-              onBetAmountChange={setBetAmount}
-              minRaise={minRaise}
-              maxBetAmount={state?.maxBetAmount}
-              hasOutstandingBet={hasOutstandingBet}
-              loading={loading}
-              onCall={() => execApi('call', undefined, undefined, getElapsed())}
-              onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-              onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-              onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-              onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-              onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={!!state?.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
             />
           </div>
-        )}
 
-        {/* Settings + Reset */}
-        <div className="text-center flex items-center justify-center gap-3" data-tutorial="sd-reset-button">
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('hint.toggle', { ns: 'tutorial' })}
-          </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-            {t('settings.cpuMetaAI')}
-          </label>
-          <button
-            type="button"
-            className={`${btnOutline} min-w-[90px]`}
-            disabled={loading}
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                execApi('reset', undefined, { cpuMetaAI });
-              })
-            }
-          >
-            {tc('button.reset')}
-          </button>
-        </div>
-      </GameFooter>
+          {/* Sticky footer: player hand + buttons */}
+          <GameFooter className={`${gameTheme.shortdeck.footer} px-5 py-3`}>
+            {/* Learning mode toggle */}
+            <div
+              className="flex items-center gap-2 mb-2"
+              data-testid="learning-mode-toggle"
+              data-tutorial="sd-learning-mode"
+            >
+              <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
+                {t('learning.toggle')}
+              </label>
+              <input
+                id="learningModeCheckbox"
+                type="checkbox"
+                checked={learningMode}
+                onChange={(e) => setLearningMode(e.target.checked)}
+              />
+            </div>
+
+            {/* Equity display */}
+            {learningMode && state?.equity && state.potOdds != null && (
+              <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+            )}
+
+            {/* Human player */}
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="sd-player-hand">
+                <div className="text-white text-lg mb-1">
+                  {t('yourHand')}
+                  <span className="ml-3 text-xs">
+                    {tc('betting.chips')} {humanPlayer.chips}
+                  </span>
+                  {humanPlayer.totalHands > 0 && (
+                    <HudStats
+                      vpip={humanPlayer.vpip}
+                      pfr={humanPlayer.pfr}
+                      threeBet={humanPlayer.threeBet}
+                      af={humanPlayer.af}
+                    />
+                  )}
+                  {humanPlayer.currentBet > 0 && (
+                    <span className="ml-2 text-xs">
+                      {tc('betting.currentBet')} {humanPlayer.currentBet}
+                    </span>
+                  )}
+                  {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
+                  {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
+                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                      {humanPlayer.handName}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {humanPlayer.cards?.length
+                    ? humanPlayer.cards.map((card) => (
+                        <AnimatedCard
+                          key={`${card.design}-${card.value}`}
+                          card={card}
+                          width={cardWidth}
+                          style={{ border: '3px solid transparent' }}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                        />
+                      ))
+                    : !humanPlayer.folded &&
+                      Array.from({ length: 2 }).map((_, i) => (
+                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                      ))}
+                </div>
+              </div>
+            )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state?.message}
+              messageCode={state?.messageCode}
+              messageParams={state?.messageParams}
+              alwaysVisible
+            />
+
+            <ErrorAlert message={error} />
+
+            {/* Muck/Show controls */}
+            {isMuckPhase && (
+              <div className="mb-2 text-center" data-testid="muck-controls">
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('muck')}
+                  >
+                    {t('muck.muck')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('show')}
+                  >
+                    {t('muck.show')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Rebuy/Addon controls */}
+            {isRebuyPhase && (
+              <div className="mb-2 text-center" data-testid="rebuy-controls">
+                <p className="text-white mb-2">
+                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
+                </p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('rebuy')}
+                  >
+                    {t('rebuy.accept')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('skiprebuy')}
+                  >
+                    {t('rebuy.skip')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isAddonPhase && (
+              <div className="mb-2 text-center" data-testid="addon-controls">
+                <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('addon')}
+                  >
+                    {t('addon.accept')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('skipaddon')}
+                  >
+                    {t('addon.skip')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Betting controls */}
+            {canAct && (
+              <div data-tutorial="sd-action-buttons">
+                <BettingControls
+                  inputId="shortdeckBetAmount"
+                  betAmount={betAmount}
+                  onBetAmountChange={setBetAmount}
+                  minRaise={minRaise}
+                  maxBetAmount={state?.maxBetAmount}
+                  hasOutstandingBet={hasOutstandingBet}
+                  loading={loading}
+                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                />
+              </div>
+            )}
+
+            {/* Settings + Reset */}
+            <div className="text-center flex items-center justify-center gap-3" data-tutorial="sd-reset-button">
+              <label className="text-white text-sm flex items-center gap-1">
+                <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
+              <label className="text-white text-sm flex items-center gap-1">
+                <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                {t('settings.cpuMetaAI')}
+              </label>
+              <button
+                type="button"
+                className={`${btnOutline} min-w-[90px]`}
+                disabled={loading}
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    execApi('reset', undefined, { cpuMetaAI });
+                  })
+                }
+              >
+                {tc('button.reset')}
+              </button>
+            </div>
+          </GameFooter>
+        </>
+      )}
       <WinCelebration show={phase === HoldemPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
