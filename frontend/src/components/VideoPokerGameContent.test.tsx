@@ -90,6 +90,11 @@ function renderContent() {
         apiExec={mockExec}
         payoutTableRows={payoutRows}
         gamePath="/videopoker"
+        cliGameConfig={{
+          parseCommand: () => ({ args: ['reset'] }),
+          formatResponse: () => '',
+          helpText: [],
+        }}
       />
     </TutorialProvider>,
   );

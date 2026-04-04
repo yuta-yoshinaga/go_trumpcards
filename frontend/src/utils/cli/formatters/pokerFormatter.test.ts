@@ -79,7 +79,7 @@ describe('formatPokerState', () => {
     const output = formatPokerState(
       makeState({
         gameEndFlag: true,
-        roundResults: [{ playerIdx: 0, handName: 'Full House', chipsWon: 20, handRank: 6, kickers: '' }],
+        roundResults: [{ playerIdx: 0, handName: 'Full House', wonAmount: 20, handRank: 6, kickers: '' }],
       }),
     );
     expect(output).toContain('Full House');

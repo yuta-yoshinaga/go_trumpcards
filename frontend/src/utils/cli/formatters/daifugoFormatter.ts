@@ -58,10 +58,10 @@ export function formatDaifugoState(state: DaifugoResponse): string {
   if (state.cpuActions.length > 0) {
     for (const a of state.cpuActions) {
       const name = formatPlayerName(a.playerIdx, false);
-      if (a.cards.length === 0) {
+      if (!a.playedCards || a.playedCards.length === 0) {
         lines.push(`${name} passed`);
       } else {
-        lines.push(`${name} played ${formatCardList(a.cards)}`);
+        lines.push(`${name} played ${formatCardList(a.playedCards)}`);
       }
     }
   }
@@ -69,10 +69,10 @@ export function formatDaifugoState(state: DaifugoResponse): string {
   // Human action
   if (state.humanAction) {
     const a = state.humanAction;
-    if (a.cards.length === 0) {
+    if (!a.playedCards || a.playedCards.length === 0) {
       lines.push('You passed');
     } else {
-      lines.push(`You played ${formatCardList(a.cards)}`);
+      lines.push(`You played ${formatCardList(a.playedCards)}`);
     }
   }
 

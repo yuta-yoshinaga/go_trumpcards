@@ -5,10 +5,10 @@ import { formatKlondikeState } from './klondikeFormatter';
 function makeState(overrides?: Partial<KlondikeResponse>): KlondikeResponse {
   return {
     tableau: [
-      [{ design: 'SPADE', value: 13, faceUp: true }],
+      [{ card: { design: 'SPADE', value: 13 }, faceUp: true }],
       [
-        { design: 'HEART', value: 5, faceUp: false },
-        { design: 'CLOVER', value: 3, faceUp: true },
+        { card: { design: 'HEART', value: 5 }, faceUp: false },
+        { card: { design: 'CLOVER', value: 3 }, faceUp: true },
       ],
       [],
       [],

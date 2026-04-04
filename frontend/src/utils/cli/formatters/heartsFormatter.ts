@@ -44,8 +44,8 @@ export function formatHeartsState(state: HeartsResponse): string {
 
   // Hint
   if (state.hint) {
-    const hintCards = state.hint.cards?.map(formatCard).join(', ') ?? '';
-    lines.push(`HINT: ${hintCards}`);
+    const indices = state.hint.cardIndices ?? [];
+    lines.push(`HINT: card indices [${indices.join(', ')}] (${state.hint.reason})`);
   }
 
   if (state.message) lines.push(state.message);

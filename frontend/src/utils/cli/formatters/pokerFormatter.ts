@@ -75,7 +75,7 @@ export function formatPokerState(state: PokerResponse): string {
     lines.push('Results:');
     for (const r of state.roundResults) {
       const name = formatPlayerName(r.playerIdx, state.players[r.playerIdx]?.isHuman ?? false);
-      lines.push(`  ${name}: ${r.handName} \u2192 ${r.chipsWon > 0 ? '+' : ''}${r.chipsWon}`);
+      lines.push(`  ${name}: ${r.handName} \u2192 ${r.wonAmount > 0 ? '+' : ''}${r.wonAmount}`);
     }
   }
 

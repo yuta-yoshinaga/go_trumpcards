@@ -22,7 +22,7 @@ export function formatKlondikeState(state: KlondikeResponse): string {
     if (column.length === 0) {
       lines.push(`col${col}: [empty]`);
     } else {
-      const cardStrs = column.map((tc, i) => (tc.faceUp ? `[${i}]${formatCard(tc)}` : '[?]'));
+      const cardStrs = column.map((tc, i) => (tc.faceUp && tc.card ? `[${i}]${formatCard(tc.card)}` : '[?]'));
       lines.push(`col${col}: ${cardStrs.join(' ')}`);
     }
   }
