@@ -44,11 +44,9 @@ describe('useCliGame', () => {
     const addInput = vi.fn();
     const addOutput = vi.fn();
     const addError = vi.fn();
-    let state: MockState | null = null;
-
     const { result, rerender } = renderHook(
-      ({ s }) => useCliGame(exec, makeConfig(), s, { addInput, addOutput, addError }),
-      { initialProps: { s: state } },
+      ({ s }: { s: MockState | null }) => useCliGame(exec, makeConfig(), s, { addInput, addOutput, addError }),
+      { initialProps: { s: null as MockState | null } },
     );
 
     await act(async () => {
@@ -59,8 +57,7 @@ describe('useCliGame', () => {
     expect(addOutput).not.toHaveBeenCalled();
 
     // Simulate state update (as would happen after exec updates useGameApi state)
-    state = { score: 21 };
-    rerender({ s: state });
+    rerender({ s: { score: 21 } });
 
     expect(addOutput).toHaveBeenCalledWith('score: 21');
   });
