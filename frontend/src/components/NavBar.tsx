@@ -67,7 +67,7 @@ function LangToggle({ currentLang, i18n, t }: LangToggleProps) {
         aria-label={t('nav.switchToJa')}
         aria-pressed={currentLang === 'ja'}
         onClick={() => i18n.changeLanguage('ja')}
-        className={`px-3 py-2 text-xs font-bold rounded-l min-h-[44px] transition-colors ${currentLang === 'ja' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
+        className={`px-3 py-2 text-xs font-bold rounded-l min-h-[44px] transition-colors ${currentLang === 'ja' ? 'bg-ds-accent text-ds-text-on-accent' : 'bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
       >
         JA
       </button>
@@ -76,7 +76,7 @@ function LangToggle({ currentLang, i18n, t }: LangToggleProps) {
         aria-label={t('nav.switchToEn')}
         aria-pressed={currentLang === 'en'}
         onClick={() => i18n.changeLanguage('en')}
-        className={`px-3 py-2 text-xs font-bold rounded-r min-h-[44px] transition-colors ${currentLang === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
+        className={`px-3 py-2 text-xs font-bold rounded-r min-h-[44px] transition-colors ${currentLang === 'en' ? 'bg-ds-accent text-ds-text-on-accent' : 'bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
       >
         EN
       </button>
@@ -170,7 +170,11 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
   return (
     <div className="glass-panel--dark lg:hidden">
       <div className="flex items-center justify-between sm:hidden my-2 mx-2.5">
-        <Link to="/" className="text-white font-bold min-h-[44px] inline-flex items-center" onClick={closeMenu}>
+        <Link
+          to="/"
+          className="text-ds-text-primary font-display font-bold min-h-[44px] inline-flex items-center"
+          onClick={closeMenu}
+        >
           {SITE_NAME}
         </Link>
         <div className="flex items-center gap-2">
@@ -183,7 +187,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
             aria-expanded={isOpen}
             aria-controls="main-nav"
             aria-label={isOpen ? t('nav.closeMenu') : t('nav.openMenu')}
-            className={`text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center ${focusRingWhite}`}
+            className={`text-ds-text-primary p-2 min-h-[44px] min-w-[44px] flex items-center justify-center ${focusRingWhite}`}
           >
             {isOpen ? <CloseIcon /> : <MenuIcon />}
           </button>
@@ -210,14 +214,14 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
               }}
               placeholder={t('nav.searchPlaceholder')}
               aria-label={t('nav.searchPlaceholder')}
-              className="flex-1 px-3 py-2 text-sm bg-gray-700 text-white rounded border border-gray-600 placeholder-gray-400 min-h-[44px]"
+              className="flex-1 px-3 py-2 text-sm bg-ds-surface-elevated text-ds-text-primary rounded border border-ds-border-subtle placeholder-ds-text-muted min-h-[44px]"
             />
             {searchTerm && (
               <button
                 type="button"
                 aria-label={t('nav.searchClear')}
                 onClick={() => setSearchTerm('')}
-                className="text-gray-400 hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center text-sm"
+                className="text-ds-text-muted hover:text-ds-text-primary min-h-[44px] min-w-[44px] flex items-center justify-center text-sm"
               >
                 ✕
               </button>
@@ -226,7 +230,9 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         )}
         {isMobile && !filteredRoutes && favorites.length > 0 && (
           <div className="flex flex-col gap-1">
-            <span className="text-gray-300 text-xs uppercase tracking-wider px-1 py-1">{t('nav.favoriteGames')}</span>
+            <span className="text-ds-text-muted text-xs uppercase tracking-wider px-1 py-1">
+              {t('nav.favoriteGames')}
+            </span>
             {favorites.map((gamePath) => {
               const route = routeByPath.get(gamePath);
               if (!route) return null;
@@ -236,7 +242,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
                   to={gamePath}
                   aria-current={pathname === gamePath ? 'page' : undefined}
                   onClick={closeMenu}
-                  className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150${pathname === gamePath ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500 hover:shadow-md'}`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150${pathname === gamePath ? ' bg-ds-accent text-ds-text-on-accent' : ' bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover hover:shadow-md'}`}
                 >
                   <span aria-hidden="true">{route.icon}</span>
                   {t(route.labelKey)}
@@ -247,7 +253,9 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         )}
         {isMobile && !filteredRoutes && recentGames.length > 0 && (
           <div className="flex flex-col gap-1">
-            <span className="text-gray-300 text-xs uppercase tracking-wider px-1 py-1">{t('nav.recentGames')}</span>
+            <span className="text-ds-text-muted text-xs uppercase tracking-wider px-1 py-1">
+              {t('nav.recentGames')}
+            </span>
             {recentGames.map((gamePath) => {
               const route = routeByPath.get(gamePath);
               if (!route) return null;
@@ -257,7 +265,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
                   to={gamePath}
                   aria-current={pathname === gamePath ? 'page' : undefined}
                   onClick={closeMenu}
-                  className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150${pathname === gamePath ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500 hover:shadow-md'}`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150${pathname === gamePath ? ' bg-ds-accent text-ds-text-on-accent' : ' bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover hover:shadow-md'}`}
                 >
                   <span aria-hidden="true">{route.icon}</span>
                   {t(route.labelKey)}
@@ -269,7 +277,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         {filteredRoutes ? (
           <div className="flex flex-col gap-1">
             {filteredRoutes.length === 0 ? (
-              <span className="text-gray-400 text-xs px-3 py-2">{t('nav.noResults')}</span>
+              <span className="text-ds-text-muted text-xs px-3 py-2">{t('nav.noResults')}</span>
             ) : (
               filteredRoutes.map(({ path, labelKey: routeLabel, icon }) => (
                 <Link
@@ -277,7 +285,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
                   to={path}
                   aria-current={pathname === path ? 'page' : undefined}
                   onClick={closeMenu}
-                  className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150${pathname === path ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500 hover:shadow-md'}`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150${pathname === path ? ' bg-ds-accent text-ds-text-on-accent' : ' bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover hover:shadow-md'}`}
                 >
                   <span aria-hidden="true">{icon}</span>
                   {t(routeLabel)}
@@ -301,7 +309,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
                     }
                   }}
                 >
-                  <summary className="text-gray-300 text-xs uppercase tracking-wider px-1 py-2 cursor-pointer select-none min-h-[44px] flex items-center gap-1 sm:cursor-default sm:py-0 sm:min-h-0 shrink-0">
+                  <summary className="text-ds-text-muted text-xs uppercase tracking-wider px-1 py-2 cursor-pointer select-none min-h-[44px] flex items-center gap-1 sm:cursor-default sm:py-0 sm:min-h-0 shrink-0">
                     <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
                   </summary>
                   <div className="nav-dropdown flex flex-col gap-1 pl-2 pb-1 sm:flex-row sm:pl-0 sm:pb-0">
@@ -311,7 +319,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
                           to={path}
                           aria-current={pathname === path ? 'page' : undefined}
                           onClick={closeMenu}
-                          className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150 flex-1${pathname === path ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500 hover:shadow-md'}`}
+                          className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-[colors,box-shadow] duration-150 flex-1${pathname === path ? ' bg-ds-accent text-ds-text-on-accent' : ' bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover hover:shadow-md'}`}
                         >
                           <span aria-hidden="true">{icon}</span>
                           {t(routeLabel)}
