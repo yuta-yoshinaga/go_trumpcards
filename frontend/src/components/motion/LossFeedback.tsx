@@ -43,7 +43,7 @@ export function LossFeedback({ show }: LossFeedbackProps) {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
         style={{
-          background: 'radial-gradient(ellipse at center, transparent 40%, rgba(201, 85, 85, 0.08) 100%)',
+          background: 'radial-gradient(ellipse at center, transparent 40%, color-mix(in srgb, var(--ds-error, #c95555) 8%, transparent) 100%)',
         }}
         data-testid="loss-feedback"
         aria-hidden="true"

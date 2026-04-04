@@ -26,7 +26,7 @@ describe('useDealSequence', () => {
     const { result } = renderHook(() => useDealSequence({ count: 4, stagger: 0.12 }));
     act(() => result.current.startDeal());
     expect(result.current.state).toBe('dealing');
-    // Total: 4 * 0.12 * 1000 + 500 = 980ms
+    // Total: 4 * 0.12 * 1000 + 300 = 780ms
     act(() => vi.advanceTimersByTime(1000));
     expect(result.current.state).toBe('dealt');
   });

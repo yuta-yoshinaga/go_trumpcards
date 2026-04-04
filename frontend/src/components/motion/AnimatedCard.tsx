@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useRef } from 'react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { dealSpring, hoverLift, selectLift } from '../../styles/motionPresets';
 import { CardImage } from '../CardImage';
@@ -26,6 +27,9 @@ export function AnimatedCard({
   ...rest
 }: AnimatedCardProps) {
   const reduced = useReducedMotion();
+  // Guard: onAnimationComplete fires for any animation (hover, selection), not just the initial deal.
+  // Use a ref so the deal callback fires exactly once per component instance.
+  const dealCalledRef = useRef(false);
 
   if (reduced) {
     return <CardImage {...rest} />;
@@ -46,7 +50,12 @@ export function AnimatedCard({
         ...dealSpring,
         delay: dealDelay,
       }}
-      onAnimationComplete={onDealComplete}
+      onAnimationComplete={() => {
+        if (!dealCalledRef.current) {
+          dealCalledRef.current = true;
+          onDealComplete?.();
+        }
+      }}
       style={wrapperClassName ? undefined : { display: 'inline-block' }}
       data-testid="animated-card"
     >

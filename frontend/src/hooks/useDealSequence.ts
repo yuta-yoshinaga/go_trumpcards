@@ -35,7 +35,7 @@ export function useDealSequence({ count, stagger = 0.12 }: DealSequenceOptions):
     if (count <= 0) return;
     setState('dealing');
     if (timerRef.current) clearTimeout(timerRef.current);
-    const totalDuration = count * stagger * 1000 + 500; // stagger + settle time
+    const totalDuration = count * stagger * 1000 + 300; // stagger + settle time (matches dealSpring ~300ms)
     timerRef.current = setTimeout(() => {
       setState('dealt');
       timerRef.current = null;

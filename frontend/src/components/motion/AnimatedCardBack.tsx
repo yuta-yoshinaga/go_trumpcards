@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useRef } from 'react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { flipSpring } from '../../styles/motionPresets';
 import { CardBack } from '../CardImage';
@@ -15,6 +16,9 @@ interface AnimatedCardBackProps extends React.ComponentProps<typeof CardBack> {
 /** Renders an animated face-down card back with deal and optional flip animation. */
 export function AnimatedCardBack({ dealDelay = 0, layoutId, onFlipComplete, ...rest }: AnimatedCardBackProps) {
   const reduced = useReducedMotion();
+  // Guard: onAnimationComplete fires for any animation, not just the initial flip.
+  // Use a ref so the flip callback fires exactly once per component instance.
+  const flipCalledRef = useRef(false);
 
   if (reduced) {
     return <CardBack {...rest} />;
@@ -29,7 +33,12 @@ export function AnimatedCardBack({ dealDelay = 0, layoutId, onFlipComplete, ...r
         ...flipSpring,
         delay: dealDelay,
       }}
-      onAnimationComplete={onFlipComplete}
+      onAnimationComplete={() => {
+        if (!flipCalledRef.current) {
+          flipCalledRef.current = true;
+          onFlipComplete?.();
+        }
+      }}
       style={{ display: 'inline-block', perspective: 1000 }}
       data-testid="animated-card-back"
     >
