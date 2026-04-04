@@ -27,7 +27,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
-import { btnOutline, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { btnOutline, btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -252,7 +252,7 @@ function PokerPageContent() {
                     aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
                     aria-pressed={isSelected}
                     onClick={() => toggleCard(i)}
-                    className={`${focusRingBlue} rounded`}
+                    className={`${focusRingAccent} rounded`}
                     style={{
                       background: 'none',
                       padding: 0,

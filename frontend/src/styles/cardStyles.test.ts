@@ -36,7 +36,7 @@ describe('focusRingCard', () => {
   it('includes focus-visible ring classes', () => {
     expect(focusRingCard).toContain('focus-visible:outline-none');
     expect(focusRingCard).toContain('focus-visible:ring-2');
-    expect(focusRingCard).toContain('focus-visible:ring-blue-400');
+    expect(focusRingCard).toContain('focus-visible:ring-ds-accent');
     expect(focusRingCard).toContain('rounded-lg');
   });
 });
