@@ -13,7 +13,6 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { FreeCellSkeleton } from '../components/skeleton/FreeCellSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -106,7 +105,7 @@ function FreeCellPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('freecell', state);
-  const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === FreeCellPhase.PLAYING;
 
@@ -240,13 +239,9 @@ function FreeCellPageContent() {
 
         {/* Tableau */}
         <div className="relative">
-          <div className="flex gap-2 mb-3 overflow-x-auto" data-tutorial="fc-tableau">
+          <div className="flex gap-0.5 sm:gap-2 mb-3" data-tutorial="fc-tableau">
             {state.tableau.map((col: (Card | null)[], colIdx: number) => (
-              <div
-                key={`col-${colIdx.toString()}`}
-                className="flex-shrink-0 sm:flex-1"
-                style={isMobile ? { width: solitaireMinColWidth } : undefined}
-              >
+              <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
                 <div className="relative" style={{ minHeight: cardHeight }}>
                   {col.length === 0 ? (
                     <button
@@ -293,7 +288,6 @@ function FreeCellPageContent() {
               </div>
             ))}
           </div>
-          {isMobile && <ScrollFadeHint />}
         </div>
 
         {/* Hint display */}

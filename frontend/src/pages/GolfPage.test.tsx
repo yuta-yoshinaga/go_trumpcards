@@ -209,4 +209,29 @@ describe('GolfPage', () => {
   it('suppresses unused import warning', () => {
     expect(actionLogApi).toBeDefined();
   });
+
+  it('renders correctly on mobile viewport (isMobile branch)', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 393 });
+    try {
+      renderWithProviders(<GolfPage />);
+      await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+      // 7 columns should be rendered with effectiveCardWidth derived from viewport
+      const colDivs = document.querySelectorAll('[data-tutorial="golf-columns"] > div');
+      expect(colDivs.length).toBe(7);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('renders correctly on desktop viewport (non-mobile branch)', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    try {
+      renderWithProviders(<GolfPage />);
+      await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
 });

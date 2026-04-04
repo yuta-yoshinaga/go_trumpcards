@@ -14,7 +14,6 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { SpiderSkeleton } from '../components/skeleton/SpiderSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -112,7 +111,7 @@ function SpiderPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('spider', state);
-  const { cardHeight, cardOverlap, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
 
@@ -198,13 +197,9 @@ function SpiderPageContent() {
 
         {/* Tableau (10 columns) */}
         <div className="relative">
-          <div className="flex gap-0.5 sm:gap-1 mb-3 overflow-x-auto" data-tutorial="spd-tableau">
+          <div className="flex gap-0.5 sm:gap-1 mb-3" data-tutorial="spd-tableau">
             {state.tableau.map((col, colIdx) => (
-              <div
-                key={`col-${colIdx.toString()}`}
-                className="flex-shrink-0 sm:flex-1"
-                style={isMobile ? { width: solitaireMinColWidth } : undefined}
-              >
+              <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
                 <div className="relative" style={{ minHeight: cardHeight }}>
                   {col.length === 0 ? (
                     <button
@@ -247,7 +242,7 @@ function SpiderPageContent() {
                             <AnimatedCard card={tc.card} width={cardWidth} style={{ width: '100%' }} />
                           </button>
                         ) : (
-                          <AnimatedCardBack width={cardWidth} className="w-full" />
+                          <AnimatedCardBack width={cardWidth} style={{ width: '100%' }} />
                         )}
                       </div>
                     ))
@@ -257,7 +252,6 @@ function SpiderPageContent() {
               </div>
             ))}
           </div>
-          {isMobile && <ScrollFadeHint />}
         </div>
 
         {/* Hint display */}

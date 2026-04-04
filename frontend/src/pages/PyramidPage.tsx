@@ -17,7 +17,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PyramidSkeleton } from '../components/skeleton/PyramidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePyramidGame } from '../hooks/usePyramidGame';
@@ -101,7 +101,8 @@ function PyramidPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('pyramid', state);
-  const { cardHeight, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  const { cardHeight, cardWidth, isMobile } = useCardDimensions();
+  const windowWidth = useWindowWidth();
 
   const isPlayingForKbd = state?.phase === PyramidPhase.PLAYING;
 
@@ -136,8 +137,11 @@ function PyramidPageContent() {
   /** Fraction of card height used for vertical overlap between rows (less on mobile for bigger tap targets) */
   const ROW_OVERLAP_RATIO = isMobile ? 0.3 : 0.35;
   const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
-  /** Use minimum column width for touch-friendly card sizing on mobile */
-  const effectiveCardWidth = isMobile ? Math.max(cardWidth, solitaireMinColWidth) : cardWidth;
+  // px-4 on the scrollable container = 16px * 2 = 32px total horizontal padding
+  const CONTAINER_PADDING = 32;
+  const effectiveCardWidth = isMobile
+    ? Math.floor((windowWidth - CONTAINER_PADDING - cardGap * (maxCols - 1)) / maxCols)
+    : cardWidth;
   const pyramidWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
 
   return (
@@ -159,7 +163,7 @@ function PyramidPageContent() {
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Pyramid */}
-        <div data-tutorial="py-pyramid" className="flex flex-col items-center mb-3 overflow-x-auto">
+        <div data-tutorial="py-pyramid" className="flex flex-col items-center mb-3">
           {state.pyramid.map((row, rowIdx) => {
             const cols = row.length;
             const rowWidth = cols * (effectiveCardWidth + cardGap) - cardGap;
