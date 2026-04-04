@@ -25,6 +25,9 @@ concurrency:
   group: deploy-cloudflare-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   deploy-workers:
     name: Deploy Workers (${{ matrix.worker }})
@@ -115,4 +118,4 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           PAGES_PROJECT: ${{ github.ref == 'refs/heads/master' && 'go-trumpcards' || 'go-trumpcards-staging' }}
-        run: bunx wrangler pages deploy public --project-name "$PAGES_PROJECT"
+        run: bunx wrangler pages deploy public --project-name "$PAGES_PROJECT" --commit-dirty=true
