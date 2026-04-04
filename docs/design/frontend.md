@@ -25,6 +25,7 @@
   - [2.10 GoFishPage フェーズ別レンダリングフロー](#210-gofishpage-フェーズ別レンダリングフロー)
   - [2.11 CanastaPage フェーズ別レンダリングフロー](#211-canastapage-フェーズ別レンダリングフロー)
   - [2.12 PinochlePage フェーズ別レンダリングフロー](#212-pinochlepage-フェーズ別レンダリングフロー)
+  - [2.13 CLIモード コマンド実行フロー](#213-cliモード-コマンド実行フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -32,6 +33,7 @@
   - [3.4 アクションログ状態 (useActionLog)](#34-アクションログ状態-useactionlog)
   - [3.5 ゲーム設定パネル状態](#35-ゲーム設定パネル状態)
   - [3.6 チュートリアル状態 (useTutorial)](#36-チュートリアル状態-usetutorial)
+  - [3.7 CLIモード状態 (useCliMode + useCliGame)](#37-cliモード状態-useclimode--usecligame)
 
 ---
 
@@ -703,10 +705,28 @@ classDiagram
         +Function addRecent
     }
 
+    class useCliMode {
+        +boolean cliEnabled
+        +Function toggleCli
+        +CliLogEntry[] logEntries
+        +Function addInput
+        +Function addOutput
+        +Function addError
+        +Function clearLog
+    }
+    note for useCliMode "localStorage persistence per game"
+
+    class useCliGame~TState_TArgs~ {
+        +Function handleCommand
+    }
+    note for useCliGame "Orchestrates command parse -> exec -> format -> log"
+
     useGamePageSetup --> useActionLog : composes
     useGamePageSetup --> useConfirmDialog : composes
     useTutorial ..> useReducedMotion : optional
     useGameHint --> useLocalStorageToggle : uses
+    useCliMode --> useLocalStorageToggle : uses
+    useCliGame --> useCliMode : reads logEntries
 ```
 
 ### 1.4 Hook 層 (ゲーム固有Hook)
@@ -995,6 +1015,21 @@ classDiagram
         +Function onNext
         +Function onSkip
         +glass-panel ツールチップ
+    }
+
+    class CliTerminal {
+        +CliLogEntry[] logEntries
+        +Function onCommand
+        +boolean disabled
+        +コマンド履歴 (up/down)
+        +自動スクロール
+        +黒背景 + 等幅フォント
+    }
+
+    class CliToggle {
+        +boolean cliEnabled
+        +Function onToggle
+        +GUI/CLI アイコン切替
     }
 
     TutorialOverlay --> TutorialTooltip : renders
@@ -1757,6 +1792,29 @@ sequenceDiagram
     Hook-->>Page: 再レンダリング → ビッドフェーズUI
 ```
 
+### 2.13 CLIモード コマンド実行フロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー (CliTerminal入力)
+    participant useCliGame as useCliGame
+    participant Parser as parseXxxCommand
+    participant API as useGameApi
+    participant Formatter as formatXxxState
+    participant Log as useCliMode.logEntries
+
+    User->>useCliGame: handleCommand("hit")
+    useCliGame->>Log: addInput("hit")
+    useCliGame->>Parser: parseCommand("hit")
+    Parser-->>useCliGame: { args = ["hit"] }
+    useCliGame->>API: 実行("hit")
+    API-->>useCliGame: state更新
+    useCliGame->>Formatter: formatResponse(state)
+    Formatter-->>useCliGame: テキスト出力
+    useCliGame->>Log: addOutput(テキスト)
+    Log-->>User: CliTerminal再レンダリング (自動スクロール)
+```
+
 ---
 
 ## 3. ステートマシン図
@@ -1865,4 +1923,35 @@ stateDiagram-v2
 
     note right of Completed : localStorage に完了フラグ保存\ntutorial_completed_{gameName} = true
     note right of Active : advanceOn=click → 対象クリックで next()\nadvanceOn=next → 次へボタンで next()
+```
+
+### 3.7 CLIモード状態 (useCliMode + useCliGame)
+
+```mermaid
+stateDiagram-v2
+    [*] --> GUI : 初期化 (localStorage確認)
+
+    GUI --> CLI : toggleCli()
+    CLI --> GUI : toggleCli()
+
+    state CLI {
+        [*] --> Idle : CliTerminal表示
+
+        Idle --> Parsing : コマンド入力 (Enter)
+        Parsing --> Help : help/?
+        Parsing --> Clear : clear
+        Parsing --> Executing : コマンドパース成功
+        Parsing --> Error : パースエラー
+
+        Help --> Idle : ヘルプテキスト表示
+        Clear --> Idle : ログクリア
+        Error --> Idle : エラーメッセージ表示
+        Executing --> Formatting : API成功
+        Executing --> Error : APIエラー
+        Formatting --> Idle : 整形テキスト表示 (自動スクロール)
+    }
+
+    note right of GUI : GUIコンポーネント表示\nGameFooter + カードUI
+    note right of CLI : CliTerminal表示\n黒背景 + 等幅フォント\nコマンド履歴 (up/down)
+    note left of GUI : ゲーム状態はGUI/CLI共有\nuseGameApi.state は同一
 ```
