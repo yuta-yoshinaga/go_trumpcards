@@ -28,6 +28,8 @@ export interface GamePageShellProps {
   confirmReset: () => void;
   /** Callback to cancel the reset action. */
   cancelReset: () => void;
+  /** Extra elements rendered inside the PhaseIndicator alongside TutorialButton/ManualButton. */
+  headerExtra?: ReactNode;
   /**
    * Game-specific content placed between the PhaseIndicator and the win/reset overlays.
    * Typically includes: settings panel, scrollable game area, and GameFooter.
@@ -52,12 +54,14 @@ export function GamePageShell({
   confirmOpen,
   confirmReset,
   cancelReset,
+  headerExtra,
   children,
 }: GamePageShellProps) {
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={title} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
+        {headerExtra}
         <TutorialButton />
         <ManualButton gamePath={gamePath} />
       </PhaseIndicator>

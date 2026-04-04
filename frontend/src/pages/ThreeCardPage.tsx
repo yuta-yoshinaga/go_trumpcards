@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { threecardApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -17,6 +19,8 @@ import { ThreeCardSkeleton } from '../components/skeleton/ThreeCardSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -25,8 +29,12 @@ import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { ThreeCardResponse } from '../types/card';
 import { ThreeCardPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import { parseThreecardCommand, THREECARD_HELP } from '../utils/cli/commands/threecardCommands';
+import { formatThreecardState } from '../utils/cli/formatters/threecardFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Three Card Poker tutorial step definitions. */
 const TC_TUTORIAL_STEPS: TutorialStep[] = [
@@ -88,6 +96,18 @@ function ThreeCardPageContent() {
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi } = useGameApi(threecardApi.exec);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('threecard', state);
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('threecard');
+  const cliConfig: CliGameConfig<ThreeCardResponse, Parameters<typeof threecardApi.exec>> = useMemo(
+    () => ({
+      gameName: 'threecard',
+      parseCommand: parseThreecardCommand,
+      formatResponse: formatThreecardState,
+      helpText: THREECARD_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useEffect(() => {
     execApi('reset');
@@ -144,216 +164,234 @@ function ThreeCardPageContent() {
         <span>
           {t('label.chips')}: {state.chips}
         </span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/threecard" />
       </PhaseIndicator>
 
-      <div
-        data-testid="card-area"
-        className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
-          .filter(Boolean)
-          .join(' ')}
-      >
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div
+            data-testid="card-area"
+            className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
 
-        {/* Payout table during bet phase */}
-        {isBetPhase && (
-          <div className="flex flex-col items-center justify-center py-4 gap-4">
-            <p className="text-white/50 text-lg">{t('betGuide')}</p>
-            <details className="bg-black/30 rounded-lg w-full max-w-sm">
-              <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
-                {t('payoutRef.title')}
-              </summary>
-              <div className="px-4 pb-3 text-white/70 text-sm space-y-2">
-                <div>
-                  <div className="font-bold text-white/90 mb-1">{t('payoutRef.anteBonusHeader')}</div>
-                  <ul className="space-y-0.5">
-                    {(['anteBonusStraight', 'anteBonusThreeOfAKind', 'anteBonusStraightFlush'] as const).map((key) => (
-                      <li key={key}>{t(`payoutRef.${key}`)}</li>
-                    ))}
-                  </ul>
+            {/* Payout table during bet phase */}
+            {isBetPhase && (
+              <div className="flex flex-col items-center justify-center py-4 gap-4">
+                <p className="text-white/50 text-lg">{t('betGuide')}</p>
+                <details className="bg-black/30 rounded-lg w-full max-w-sm">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
+                    {t('payoutRef.title')}
+                  </summary>
+                  <div className="px-4 pb-3 text-white/70 text-sm space-y-2">
+                    <div>
+                      <div className="font-bold text-white/90 mb-1">{t('payoutRef.anteBonusHeader')}</div>
+                      <ul className="space-y-0.5">
+                        {(['anteBonusStraight', 'anteBonusThreeOfAKind', 'anteBonusStraightFlush'] as const).map(
+                          (key) => (
+                            <li key={key}>{t(`payoutRef.${key}`)}</li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+                    <div>
+                      <div className="font-bold text-white/90 mb-1">{t('payoutRef.pairPlusHeader')}</div>
+                      <ul className="space-y-0.5">
+                        {(
+                          [
+                            'pairPlusPair',
+                            'pairPlusFlush',
+                            'pairPlusStraight',
+                            'pairPlusThreeOfAKind',
+                            'pairPlusStraightFlush',
+                          ] as const
+                        ).map((key) => (
+                          <li key={key}>{t(`payoutRef.${key}`)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </details>
+              </div>
+            )}
+
+            {/* Player Hand */}
+            {state.playerHand.length > 0 && (
+              <div className="mb-4" data-tutorial="tc-results">
+                <div className="text-yellow-300 font-bold text-center mb-1">
+                  <span aria-hidden="true">🟡</span> {t('player')}
+                  {isEndPhase && state.playerHandRank > 0 && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank])})</span>
+                  )}
                 </div>
-                <div>
-                  <div className="font-bold text-white/90 mb-1">{t('payoutRef.pairPlusHeader')}</div>
-                  <ul className="space-y-0.5">
-                    {(
-                      [
-                        'pairPlusPair',
-                        'pairPlusFlush',
-                        'pairPlusStraight',
-                        'pairPlusThreeOfAKind',
-                        'pairPlusStraightFlush',
-                      ] as const
-                    ).map((key) => (
-                      <li key={key}>{t(`payoutRef.${key}`)}</li>
-                    ))}
-                  </ul>
+                <div className="flex justify-center gap-2">
+                  {state.playerHand.map((card, i) => (
+                    <AnimatedCard
+                      key={`p-${card.design}-${card.value}-${i}`}
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                  ))}
                 </div>
               </div>
-            </details>
-          </div>
-        )}
+            )}
 
-        {/* Player Hand */}
-        {state.playerHand.length > 0 && (
-          <div className="mb-4" data-tutorial="tc-results">
-            <div className="text-yellow-300 font-bold text-center mb-1">
-              <span aria-hidden="true">🟡</span> {t('player')}
-              {isEndPhase && state.playerHandRank > 0 && (
-                <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank])})</span>
-              )}
-            </div>
-            <div className="flex justify-center gap-2">
-              {state.playerHand.map((card, i) => (
-                <AnimatedCard
-                  key={`p-${card.design}-${card.value}-${i}`}
-                  card={card}
-                  width={cardWidth}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Dealer Hand */}
-        {state.dealerHand.length > 0 && (
-          <div className="mb-4">
-            <div className="text-red-300 font-bold text-center mb-1">
-              <span aria-hidden="true">🔴</span> {t('dealer')}
-              {isEndPhase && state.dealerHandRank > 0 && (
-                <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
-              )}
-              {isEndPhase && (
-                <span className="ml-2 text-xs">
-                  {state.dealerQualified ? t('dealerQualified') : t('dealerNotQualified')}
-                </span>
-              )}
-            </div>
-            <div className="flex justify-center gap-2">
-              {state.dealerHand.map((card, i) => (
-                <AnimatedCard
-                  key={`d-${card.design}-${card.value}-${i}`}
-                  card={card}
-                  width={cardWidth}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Payout breakdown */}
-        {isEndPhase && (
-          <div className="text-white text-center text-sm mb-2" data-testid="payout-breakdown">
-            {state.antePayout !== 0 && (
-              <div>
-                {t('payout.ante')}: {state.antePayout}
+            {/* Dealer Hand */}
+            {state.dealerHand.length > 0 && (
+              <div className="mb-4">
+                <div className="text-red-300 font-bold text-center mb-1">
+                  <span aria-hidden="true">🔴</span> {t('dealer')}
+                  {isEndPhase && state.dealerHandRank > 0 && (
+                    <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>
+                  )}
+                  {isEndPhase && (
+                    <span className="ml-2 text-xs">
+                      {state.dealerQualified ? t('dealerQualified') : t('dealerNotQualified')}
+                    </span>
+                  )}
+                </div>
+                <div className="flex justify-center gap-2">
+                  {state.dealerHand.map((card, i) => (
+                    <AnimatedCard
+                      key={`d-${card.design}-${card.value}-${i}`}
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                  ))}
+                </div>
               </div>
             )}
-            {state.playPayout !== 0 && (
-              <div>
-                {t('payout.play')}: {state.playPayout}
+
+            {/* Payout breakdown */}
+            {isEndPhase && (
+              <div className="text-white text-center text-sm mb-2" data-testid="payout-breakdown">
+                {state.antePayout !== 0 && (
+                  <div>
+                    {t('payout.ante')}: {state.antePayout}
+                  </div>
+                )}
+                {state.playPayout !== 0 && (
+                  <div>
+                    {t('payout.play')}: {state.playPayout}
+                  </div>
+                )}
+                {state.anteBonusPayout !== 0 && (
+                  <div>
+                    {t('payout.anteBonus')}: {state.anteBonusPayout}
+                  </div>
+                )}
+                {state.pairPlusPayout !== 0 && (
+                  <div>
+                    {t('payout.pairPlus')}: {state.pairPlusPayout}
+                  </div>
+                )}
+                <div className="font-bold mt-1">
+                  {t('payout.total')}: {state.totalPayout}
+                </div>
               </div>
             )}
-            {state.anteBonusPayout !== 0 && (
-              <div>
-                {t('payout.anteBonus')}: {state.anteBonusPayout}
-              </div>
-            )}
-            {state.pairPlusPayout !== 0 && (
-              <div>
-                {t('payout.pairPlus')}: {state.pairPlusPayout}
-              </div>
-            )}
-            <div className="font-bold mt-1">
-              {t('payout.total')}: {state.totalPayout}
-            </div>
+
+            {/* Action Log */}
+            {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
-        )}
 
-        {/* Action Log */}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-      </div>
-
-      {/* Footer */}
-      <GameFooter className={`${gameTheme.threecard.footer} px-4 pt-3`}>
-        <ErrorAlert message={error} />
-        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-        <SettingsPanel
-          title={t('settings.title')}
-          groups={[
-            {
-              items: [
+          {/* Footer */}
+          <GameFooter className={`${gameTheme.threecard.footer} px-4 pt-3`}>
+            <ErrorAlert message={error} />
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[
                 {
-                  type: 'checkbox',
-                  id: 'threecard-hint',
-                  label: tc('hint.toggle', { ns: 'tutorial' }),
-                  checked: hintEnabled,
-                  onToggle: setHintEnabled,
+                  items: [
+                    {
+                      type: 'checkbox',
+                      id: 'threecard-hint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
+                    },
+                  ],
                 },
-              ],
-            },
-          ]}
-        />
-        {isBetPhase && (
-          <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="tc-bet-controls">
-            <div className="flex items-center gap-2">
-              <label htmlFor="threecard-ante-amount" className="text-white text-sm">
-                {t('label.ante')}
-              </label>
-              <input
-                id="threecard-ante-amount"
-                type="number"
-                min={10}
-                max={state.chips}
-                step={10}
-                value={anteAmount}
-                onChange={(e) => setAnteAmount(Number(e.target.value))}
-                className="w-24 px-2 py-1 rounded text-sm"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label htmlFor="threecard-pairplus-amount" className="text-white text-sm">
-                {t('label.pairPlus')}
-              </label>
-              <input
-                id="threecard-pairplus-amount"
-                type="number"
-                min={0}
-                max={state.chips}
-                step={10}
-                value={pairPlusAmount}
-                onChange={(e) => setPairPlusAmount(Number(e.target.value))}
-                className="w-24 px-2 py-1 rounded text-sm"
-              />
-            </div>
-            <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
-              {t('button.bet')}
-            </button>
-          </div>
-        )}
-        {isActionPhase && (
-          <div className="flex justify-center gap-2 pb-2" data-tutorial="tc-action-buttons">
-            <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
-              {t('button.play')}
-            </button>
-            <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
-              {t('button.fold')}
-            </button>
-          </div>
-        )}
-        {isEndPhase && (
-          <div className="flex justify-center gap-2 pb-2">
-            <button type="button" className={btnOutline} onClick={() => requestConfirm(handleReset)} disabled={loading}>
-              {t('button.reset')}
-            </button>
-            <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-      </GameFooter>
+              ]}
+            />
+            {isBetPhase && (
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="tc-bet-controls">
+                <div className="flex items-center gap-2">
+                  <label htmlFor="threecard-ante-amount" className="text-white text-sm">
+                    {t('label.ante')}
+                  </label>
+                  <input
+                    id="threecard-ante-amount"
+                    type="number"
+                    min={10}
+                    max={state.chips}
+                    step={10}
+                    value={anteAmount}
+                    onChange={(e) => setAnteAmount(Number(e.target.value))}
+                    className="w-24 px-2 py-1 rounded text-sm"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="threecard-pairplus-amount" className="text-white text-sm">
+                    {t('label.pairPlus')}
+                  </label>
+                  <input
+                    id="threecard-pairplus-amount"
+                    type="number"
+                    min={0}
+                    max={state.chips}
+                    step={10}
+                    value={pairPlusAmount}
+                    onChange={(e) => setPairPlusAmount(Number(e.target.value))}
+                    className="w-24 px-2 py-1 rounded text-sm"
+                  />
+                </div>
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                  {t('button.bet')}
+                </button>
+              </div>
+            )}
+            {isActionPhase && (
+              <div className="flex justify-center gap-2 pb-2" data-tutorial="tc-action-buttons">
+                <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
+                  {t('button.play')}
+                </button>
+                <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
+                  {t('button.fold')}
+                </button>
+              </div>
+            )}
+            {isEndPhase && (
+              <div className="flex justify-center gap-2 pb-2">
+                <button
+                  type="button"
+                  className={btnOutline}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('button.reset')}
+                </button>
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+              </div>
+            )}
+          </GameFooter>
+        </>
+      )}
       <WinCelebration show={isEndPhase && state.result > 0} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>

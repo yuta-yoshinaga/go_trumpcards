@@ -1,6 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { crazyeightsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -16,6 +19,8 @@ import { CrazyEightsSkeleton } from '../components/skeleton/CrazyEightsSkeleton'
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCrazyEightsGame } from '../hooks/useCrazyEightsGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -26,9 +31,13 @@ import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { CrazyEightsResponse } from '../types/card';
 import { CrazyEightsPhase, CrazyEightsSuit } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { CRAZYEIGHTS_HELP, parseCrazyeightsCommand } from '../utils/cli/commands/crazyeightsCommands';
+import { formatCrazyeightsState } from '../utils/cli/formatters/crazyeightsFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
 const CRAZYEIGHTS_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -123,6 +132,18 @@ function CrazyEightsPageContent() {
   } = useGameHint('crazyeights', state);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('crazyeights');
+  const cliConfig: CliGameConfig<CrazyEightsResponse, Parameters<typeof crazyeightsApi.exec>> = useMemo(
+    () => ({
+      gameName: 'crazyeights',
+      parseCommand: parseCrazyeightsCommand,
+      formatResponse: formatCrazyeightsState,
+      helpText: CRAZYEIGHTS_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayPhaseForKbd = state?.phase === CrazyEightsPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
@@ -155,220 +176,228 @@ function CrazyEightsPageContent() {
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.crazyeights.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.crazyeights')} />
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn || isChooseSuit}>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/crazyeights" />
       </PhaseIndicator>
 
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select',
-                id: 'cpuDifficulty',
-                label: t('settings.cpuDifficulty'),
-                value: crazyEightsConfig.cpuDifficulty,
-                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                  value: o.value,
-                  label: t(`settings.${o.label.toLowerCase()}`),
-                })),
-                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: crazyEightsConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'pointLimit',
+                    label: t('settings.pointLimit'),
+                    value: crazyEightsConfig.pointLimit,
+                    options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('pointLimit', v),
+                  },
+                  {
+                    type: 'checkbox',
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
               },
-              {
-                type: 'select',
-                id: 'pointLimit',
-                label: t('settings.pointLimit'),
-                value: crazyEightsConfig.pointLimit,
-                options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                onSelect: (v) => handleConfigChange('pointLimit', v),
-              },
-              {
-                type: 'checkbox',
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
-              },
-            ],
-          },
-        ]}
-      />
+            ]}
+          />
 
-      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        <div className="text-white text-center mb-2">
-          <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-          <span>{t('drawPile', { count: state.drawPileCount })}</span>
-        </div>
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div className="text-white text-center mb-2">
+              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+              <span>{t('drawPile', { count: state.drawPileCount })}</span>
+            </div>
 
-        <div className={lgTwoColGrid}>
-          {/* Left: game play area */}
-          <div>
-            {/* Discard pile top */}
-            {state.discardTop && (
-              <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ce-discard-pile">
-                <AnimatedCard
-                  card={state.discardTop}
-                  width={cardWidth}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
-                <div className="text-white/70 text-sm">
-                  <div>{t('discardTop')}</div>
-                  {state.chosenSuit > 0 && (
-                    <div className="text-yellow-300">
-                      {t('chosenSuit')}: {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+            <div className={lgTwoColGrid}>
+              {/* Left: game play area */}
+              <div>
+                {/* Discard pile top */}
+                {state.discardTop && (
+                  <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ce-discard-pile">
+                    <AnimatedCard
+                      card={state.discardTop}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                    <div className="text-white/70 text-sm">
+                      <div>{t('discardTop')}</div>
+                      {state.chosenSuit > 0 && (
+                        <div className="text-yellow-300">
+                          {t('chosenSuit')}: {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                )}
+
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+
+                <ActionLogSection
+                  isEndPhase={isGameEnd}
+                  actionLog={actionLog}
+                  showActionLog={showActionLog}
+                  hideActionLog={hideActionLog}
+                />
+              </div>
+
+              {/* Right: info sidebar */}
+              <div>
+                {/* CPU players */}
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                      <div className="text-white/70 text-sm">
+                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                        {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                        {t('roundScore', { score: p.roundScore })}
+                      </div>
+                    </div>
+                  ))}
+
+                {/* Score table */}
+                <div className="my-3 p-2 rounded bg-black/30">
+                  <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+                  <table className="w-full text-sm text-white/70">
+                    <thead>
+                      <tr>
+                        <th scope="col" className="text-left">
+                          {t('scoresPlayer')}
+                        </th>
+                        <th scope="col">{t('scoresRound')}</th>
+                        <th scope="col">{t('scoresTotal')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.players.map((p) => (
+                        <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                          <td>{playerName(p.id, p.isHuman)}</td>
+                          <td className="text-center">{p.roundScore}</td>
+                          <td className="text-center">{p.cumulativeScore}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <GameFooter className={`${gameTheme.crazyeights.footer} px-4 py-2.5`}>
+            {humanPlayer && (
+              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
+                {humanPlayer.cards.map((card, idx) => (
+                  <button
+                    type="button"
+                    key={`${card.design}-${card.value}-${idx}`}
+                    onClick={() => toggleCard(idx)}
+                    aria-label={cardAlt(card)}
+                    aria-pressed={selectedCardIndices.includes(idx)}
+                    className={`transition-transform ${focusRingCard}`}
+                    style={{
+                      background: 'none',
+                      padding: 0,
+                      borderRadius: 8,
+                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <AnimatedCard
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                  </button>
+                ))}
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            <ErrorAlert message={error} />
 
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
 
-          {/* Right: info sidebar */}
-          <div>
-            {/* CPU players */}
-            {state.players
-              .filter((p) => !p.isHuman)
-              .map((p) => (
-                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                  <div className="text-white/70 text-sm">
-                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                    {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}
-                  </div>
+            <div className="flex gap-2 items-center flex-wrap">
+              {isHumanTurn && (
+                <div className="flex gap-2" data-tutorial="ce-play-draw">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePlay}
+                    disabled={loading || selectedCardIndices.length !== 1}
+                  >
+                    {t('playButton')}
+                  </button>
+                  <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
+                    {t('drawButton')}
+                  </button>
                 </div>
-              ))}
-
-            {/* Score table */}
-            <div className="my-3 p-2 rounded bg-black/30">
-              <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-              <table className="w-full text-sm text-white/70">
-                <thead>
-                  <tr>
-                    <th scope="col" className="text-left">
-                      {t('scoresPlayer')}
-                    </th>
-                    <th scope="col">{t('scoresRound')}</th>
-                    <th scope="col">{t('scoresTotal')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.players.map((p) => (
-                    <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
-                      <td>{playerName(p.id, p.isHuman)}</td>
-                      <td className="text-center">{p.roundScore}</td>
-                      <td className="text-center">{p.cumulativeScore}</td>
-                    </tr>
+              )}
+              {isChooseSuit && (
+                <div className="flex gap-1" data-tutorial="ce-suit-choice">
+                  {SUIT_BUTTONS.map(({ suit, key }) => (
+                    <button
+                      key={suit}
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleChooseSuit(suit)}
+                      disabled={loading}
+                    >
+                      {t(key)}
+                    </button>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <GameFooter className={`${gameTheme.crazyeights.footer} px-4 py-2.5`}>
-        {humanPlayer && (
-          <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
-            {humanPlayer.cards.map((card, idx) => (
-              <button
-                type="button"
-                key={`${card.design}-${card.value}-${idx}`}
-                onClick={() => toggleCard(idx)}
-                aria-label={cardAlt(card)}
-                aria-pressed={selectedCardIndices.includes(idx)}
-                className={`transition-transform ${focusRingCard}`}
-                style={{
-                  background: 'none',
-                  padding: 0,
-                  borderRadius: 8,
-                  ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                  boxSizing: 'border-box',
-                }}
-              >
-                <AnimatedCard
-                  card={card}
-                  width={cardWidth}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
-              </button>
-            ))}
-          </div>
-        )}
-
-        <ErrorAlert message={error} />
-
-        {frontendHintEnabled && frontendHint && (
-          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-        )}
-
-        <div className="flex gap-2 items-center flex-wrap">
-          {isHumanTurn && (
-            <div className="flex gap-2" data-tutorial="ce-play-draw">
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handlePlay}
-                disabled={loading || selectedCardIndices.length !== 1}
-              >
-                {t('playButton')}
-              </button>
-              <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
-                {t('drawButton')}
-              </button>
-            </div>
-          )}
-          {isChooseSuit && (
-            <div className="flex gap-1" data-tutorial="ce-suit-choice">
-              {SUIT_BUTTONS.map(({ suit, key }) => (
-                <button
-                  key={suit}
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => handleChooseSuit(suit)}
-                  disabled={loading}
-                >
-                  {t(key)}
+                </div>
+              )}
+              {isRoundEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
                 </button>
-              ))}
+              )}
+              <button
+                type="button"
+                className={btnOutline}
+                data-tutorial="ce-reset-button"
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    return gameExec('reset', undefined, undefined, {
+                      cpuDifficulty: crazyEightsConfig.cpuDifficulty,
+                      pointLimit: crazyEightsConfig.pointLimit,
+                    });
+                  })
+                }
+                disabled={loading}
+              >
+                {tc('button.reset')}
+              </button>
             </div>
-          )}
-          {isRoundEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-              {t('nextRound')}
-            </button>
-          )}
-          <button
-            type="button"
-            className={btnOutline}
-            data-tutorial="ce-reset-button"
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                return gameExec('reset', undefined, undefined, {
-                  cpuDifficulty: crazyEightsConfig.cpuDifficulty,
-                  pointLimit: crazyEightsConfig.pointLimit,
-                });
-              })
-            }
-            disabled={loading}
-          >
-            {tc('button.reset')}
-          </button>
-        </div>
-      </GameFooter>
+          </GameFooter>
+        </>
+      )}
       <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>

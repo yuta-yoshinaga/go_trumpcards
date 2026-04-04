@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { klondikeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -18,6 +21,8 @@ import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
@@ -26,9 +31,13 @@ import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { KlondikeResponse } from '../types/card';
 import { KlondikePhase, KlondikeScoringMode } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { KLONDIKE_HELP, parseKlondikeCommand } from '../utils/cli/commands/klondikeCommands';
+import { formatKlondikeState } from '../utils/cli/formatters/klondikeFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -97,6 +106,7 @@ function KlondikePageContent() {
     state,
     loading,
     error,
+    exec,
     hintError,
     selectedSource,
     hint,
@@ -111,6 +121,20 @@ function KlondikePageContent() {
     handleSelectTarget,
     isAutoCompleting,
   } = useKlondikeGame();
+
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('klondike');
+  const klondikeCliConfig: CliGameConfig<KlondikeResponse, Parameters<typeof klondikeApi.exec>> = useMemo(
+    () => ({
+      gameName: 'klondike',
+      parseCommand: parseKlondikeCommand,
+      formatResponse: formatKlondikeState,
+      helpText: KLONDIKE_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(exec, klondikeCliConfig, state, { addInput, addOutput, addError, clearLog });
+
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -193,6 +217,7 @@ function KlondikePageContent() {
             {t('score')}: {state.score}
           </span>
         )}
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/klondike" />
         <span className="ml-3">
@@ -205,336 +230,361 @@ function KlondikePageContent() {
         )}
       </PhaseIndicator>
 
-      <LandscapeBanner message={t('landscapeBanner')} />
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <LandscapeBanner message={t('landscapeBanner')} />
 
-      {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-        {/* Foundation + Stock/Waste row */}
-        <div className="flex gap-1 sm:gap-2 mb-3 items-start">
-          {/* Stock + Waste */}
-          <div className="flex gap-1 sm:gap-2" data-tutorial="kl-stock-waste">
-            <div className="text-center">
-              <div className="text-game-text-muted text-xs mb-1">
-                {t('stock')} ({state.stockCount})
+          {/* Scrollable area */}
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            {/* Foundation + Stock/Waste row */}
+            <div className="flex gap-1 sm:gap-2 mb-3 items-start">
+              {/* Stock + Waste */}
+              <div className="flex gap-1 sm:gap-2" data-tutorial="kl-stock-waste">
+                <div className="text-center">
+                  <div className="text-game-text-muted text-xs mb-1">
+                    {t('stock')} ({state.stockCount})
+                  </div>
+                  {state.stockCount > 0 ? (
+                    <AnimatedCardBack
+                      width={kl.cw}
+                      onClick={isPlaying ? handleDraw : undefined}
+                      ariaLabel={t('draw')}
+                      onFlipComplete={() => playSound('cardFlip')}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleDraw}
+                      disabled={!isPlaying || loading}
+                      style={{ width: kl.cw, height: kl.ch }}
+                      className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                    >
+                      {t('draw')}
+                    </button>
+                  )}
+                </div>
+
+                {/* Waste */}
+                <div className="text-center">
+                  <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                  {wasteDisplay.length > 0 ? (
+                    <div className="relative" style={{ width: kl.cw + (wasteDisplay.length - 1) * kl.wasteFan }}>
+                      {wasteDisplay.map((card, idx) => {
+                        const isTop = idx === wasteDisplay.length - 1;
+                        return (
+                          <div
+                            key={`waste-${idx.toString()}`}
+                            className="absolute top-0"
+                            style={{ left: idx * kl.wasteFan }}
+                          >
+                            {isTop ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (selectedSource) return;
+                                  handleSelectSource({ zone: 'waste' });
+                                }}
+                                disabled={!isPlaying || loading}
+                                aria-label={cardAlt(card)}
+                                aria-pressed={isSourceSelected('waste')}
+                                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
+                              >
+                                <AnimatedCard
+                                  card={card}
+                                  width={kl.cw}
+                                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                                />
+                              </button>
+                            ) : (
+                              <AnimatedCard
+                                card={card}
+                                width={kl.cw}
+                                onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                      <div style={{ height: kl.ch, width: kl.cw + (wasteDisplay.length - 1) * kl.wasteFan }} />
+                    </div>
+                  ) : (
+                    <div
+                      style={{ width: kl.cw, height: kl.ch }}
+                      className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
+                    >
+                      {t('empty')}
+                    </div>
+                  )}
+                </div>
               </div>
-              {state.stockCount > 0 ? (
-                <AnimatedCardBack
-                  width={kl.cw}
-                  onClick={isPlaying ? handleDraw : undefined}
-                  ariaLabel={t('draw')}
-                  onFlipComplete={() => playSound('cardFlip')}
-                />
-              ) : (
+
+              <div className="w-2 sm:w-4" />
+
+              {/* Foundation piles */}
+              <div className="flex gap-1 sm:gap-2" data-tutorial="kl-foundation">
+                {state.foundation.map((pile, idx) => (
+                  <div key={`f-${idx.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                    {pile.length > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
+                        disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                        aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
+                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                      >
+                        <AnimatedCard
+                          card={pile[pile.length - 1]}
+                          width={kl.cw}
+                          dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                        />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
+                        disabled={!isPlaying || loading || !selectedSource}
+                        aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                        style={{ width: kl.cw, height: kl.ch }}
+                        className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                      >
+                        A
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tableau */}
+            <div className="flex gap-1 sm:gap-2 mb-3" data-tutorial="kl-tableau">
+              {state.tableau.map((col, colIdx) => (
+                <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                  <div className="relative" style={{ minHeight: kl.ch }}>
+                    {col.length === 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
+                        disabled={!isPlaying || loading || !selectedSource}
+                        style={{ height: kl.ch }}
+                        className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                      >
+                        K
+                      </button>
+                    ) : (
+                      col.map((tc, cardIdx) => (
+                        <div
+                          key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                          className="absolute left-0 right-0"
+                          style={{ top: cardIdx * kl.co }}
+                        >
+                          {tc.faceUp && tc.card ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (selectedSource) {
+                                  handleSelectTarget({ zone: 'tableau', col: colIdx });
+                                } else {
+                                  handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
+                                }
+                              }}
+                              disabled={!isPlaying || loading}
+                              aria-label={cardAlt(tc.card)}
+                              aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
+                              className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
+                            >
+                              <AnimatedCard
+                                card={tc.card}
+                                width={kl.cw}
+                                style={{ width: '100%' }}
+                                wrapperClassName="block w-full"
+                                onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                              />
+                            </button>
+                          ) : (
+                            <AnimatedCardBack
+                              width={kl.cw}
+                              className="w-full"
+                              onFlipComplete={() => playSound('cardFlip')}
+                            />
+                          )}
+                        </div>
+                      ))
+                    )}
+                    {col.length > 0 && <div style={{ height: (col.length - 1) * kl.co + kl.ch }} />}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Hint display */}
+            <div data-tutorial="kl-hint-display">
+              {hint && (
+                <div className="text-yellow-300 text-sm mb-2">
+                  {t('hintAvailable')}: {hint.fromZone}
+                  {hint.fromCol >= 0 ? ` ${t('tableau')} ${hint.fromCol}` : ` ${t('waste')}`} → {hint.toZone}
+                  {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
+                </div>
+              )}
+            </div>
+            {frontendHintEnabled && frontendHint && (
+              <div className="flex justify-center">
+                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+              </div>
+            )}
+
+            {/* Score display on game clear */}
+            {isGameClear && isVegas && (
+              <div className="text-yellow-300 text-lg mb-2">
+                {t('totalScore')}: {state.score + timeBonus(elapsedSeconds)}
+              </div>
+            )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={isEnded}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          {/* Settings */}
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
+
+          {/* Footer */}
+          <GameFooter className={`${gameTheme.klondike.footer} px-4 py-2.5`}>
+            <ErrorAlert message={error ?? hintError} />
+            <div className="flex gap-2 items-center flex-wrap">
+              {isPlaying && (
+                <div data-tutorial="kl-controls">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleDraw}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('draw')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleUndo}
+                    disabled={loading || isAutoCompleting || !state.canUndo}
+                  >
+                    {t('undo')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleHint}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('hint')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleAutoComplete}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('autoComplete')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={handleGiveUp}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('giveup')}
+                  </button>
+                </div>
+              )}
+              {/* Draw mode toggle */}
+              <label htmlFor="draw-mode-select" className="text-sm text-gray-300">
+                {t('drawMode')}
+              </label>
+              <select
+                id="draw-mode-select"
+                value={drawCountSetting}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  setDrawCountSetting(n);
+                  handleResetWithConfig({ drawCount: n, scoringMode: scoringModeSetting });
+                  resetTimer();
+                }}
+                className="bg-gray-700 text-white text-sm rounded px-2 py-1"
+                aria-label={t('drawMode')}
+              >
+                <option value={1}>{t('drawMode1')}</option>
+                <option value={3}>{t('drawMode3')}</option>
+              </select>
+              {/* Scoring mode toggle */}
+              <label htmlFor="scoring-mode-select" className="text-sm text-gray-300">
+                {t('scoringMode')}
+              </label>
+              <select
+                id="scoring-mode-select"
+                value={scoringModeSetting}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  setScoringModeSetting(n);
+                  handleResetWithConfig({ drawCount: drawCountSetting, scoringMode: n });
+                  resetTimer();
+                }}
+                className="bg-gray-700 text-white text-sm rounded px-2 py-1"
+                aria-label={t('scoringMode')}
+              >
+                <option value={0}>{t('scoringNone')}</option>
+                <option value={1}>{t('scoringVegas')}</option>
+              </select>
+              <div data-tutorial="kl-reset-button">
                 <button
                   type="button"
-                  onClick={handleDraw}
-                  disabled={!isPlaying || loading}
-                  style={{ width: kl.cw, height: kl.ch }}
-                  className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                  className={btnOutline}
+                  onClick={() =>
+                    requestConfirm(() => {
+                      hideActionLog();
+                      resetTimer();
+                      setDrawCountSetting(1);
+                      setScoringModeSetting(0);
+                      return handleReset();
+                    })
+                  }
+                  disabled={loading}
                 >
-                  {t('draw')}
+                  {tc('button.reset')}
                 </button>
-              )}
-            </div>
-
-            {/* Waste */}
-            <div className="text-center">
-              <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
-              {wasteDisplay.length > 0 ? (
-                <div className="relative" style={{ width: kl.cw + (wasteDisplay.length - 1) * kl.wasteFan }}>
-                  {wasteDisplay.map((card, idx) => {
-                    const isTop = idx === wasteDisplay.length - 1;
-                    return (
-                      <div
-                        key={`waste-${idx.toString()}`}
-                        className="absolute top-0"
-                        style={{ left: idx * kl.wasteFan }}
-                      >
-                        {isTop ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (selectedSource) return;
-                              handleSelectSource({ zone: 'waste' });
-                            }}
-                            disabled={!isPlaying || loading}
-                            aria-label={cardAlt(card)}
-                            aria-pressed={isSourceSelected('waste')}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
-                          >
-                            <AnimatedCard
-                              card={card}
-                              width={kl.cw}
-                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                            />
-                          </button>
-                        ) : (
-                          <AnimatedCard
-                            card={card}
-                            width={kl.cw}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
-                  <div style={{ height: kl.ch, width: kl.cw + (wasteDisplay.length - 1) * kl.wasteFan }} />
-                </div>
-              ) : (
-                <div
-                  style={{ width: kl.cw, height: kl.ch }}
-                  className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
-                >
-                  {t('empty')}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="w-2 sm:w-4" />
-
-          {/* Foundation piles */}
-          <div className="flex gap-1 sm:gap-2" data-tutorial="kl-foundation">
-            {state.foundation.map((pile, idx) => (
-              <div key={`f-${idx.toString()}`} className="text-center">
-                <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                {pile.length > 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
-                    disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
-                    aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
-                    className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
-                  >
-                    <AnimatedCard
-                      card={pile[pile.length - 1]}
-                      width={kl.cw}
-                      dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
-                    disabled={!isPlaying || loading || !selectedSource}
-                    aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                    style={{ width: kl.cw, height: kl.ch }}
-                    className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                  >
-                    A
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Tableau */}
-        <div className="flex gap-1 sm:gap-2 mb-3" data-tutorial="kl-tableau">
-          {state.tableau.map((col, colIdx) => (
-            <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
-              <div className="relative" style={{ minHeight: kl.ch }}>
-                {col.length === 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
-                    disabled={!isPlaying || loading || !selectedSource}
-                    style={{ height: kl.ch }}
-                    className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                  >
-                    K
-                  </button>
-                ) : (
-                  col.map((tc, cardIdx) => (
-                    <div
-                      key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                      className="absolute left-0 right-0"
-                      style={{ top: cardIdx * kl.co }}
-                    >
-                      {tc.faceUp && tc.card ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (selectedSource) {
-                              handleSelectTarget({ zone: 'tableau', col: colIdx });
-                            } else {
-                              handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
-                            }
-                          }}
-                          disabled={!isPlaying || loading}
-                          aria-label={cardAlt(tc.card)}
-                          aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
-                          className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
-                        >
-                          <AnimatedCard
-                            card={tc.card}
-                            width={kl.cw}
-                            style={{ width: '100%' }}
-                            wrapperClassName="block w-full"
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
-                        </button>
-                      ) : (
-                        <AnimatedCardBack
-                          width={kl.cw}
-                          className="w-full"
-                          onFlipComplete={() => playSound('cardFlip')}
-                        />
-                      )}
-                    </div>
-                  ))
-                )}
-                {col.length > 0 && <div style={{ height: (col.length - 1) * kl.co + kl.ch }} />}
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Hint display */}
-        <div data-tutorial="kl-hint-display">
-          {hint && (
-            <div className="text-yellow-300 text-sm mb-2">
-              {t('hintAvailable')}: {hint.fromZone}
-              {hint.fromCol >= 0 ? ` ${t('tableau')} ${hint.fromCol}` : ` ${t('waste')}`} → {hint.toZone}
-              {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
-            </div>
-          )}
-        </div>
-        {frontendHintEnabled && frontendHint && (
-          <div className="flex justify-center">
-            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-          </div>
-        )}
-
-        {/* Score display on game clear */}
-        {isGameClear && isVegas && (
-          <div className="text-yellow-300 text-lg mb-2">
-            {t('totalScore')}: {state.score + timeBonus(elapsedSeconds)}
-          </div>
-        )}
-
-        {/* Message */}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={isEnded}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      {/* Settings */}
-      <SettingsPanel
-        title={tc('settings.title')}
-        groups={[
-          {
-            items: [
-              {
-                type: 'checkbox' as const,
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
-              },
-            ],
-          },
-        ]}
-      />
-
-      {/* Footer */}
-      <GameFooter className={`${gameTheme.klondike.footer} px-4 py-2.5`}>
-        <ErrorAlert message={error ?? hintError} />
-        <div className="flex gap-2 items-center flex-wrap">
-          {isPlaying && (
-            <div data-tutorial="kl-controls">
-              <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading || isAutoCompleting}>
-                {t('draw')}
-              </button>
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handleUndo}
-                disabled={loading || isAutoCompleting || !state.canUndo}
-              >
-                {t('undo')}
-              </button>
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || isAutoCompleting}>
-                {t('hint')}
-              </button>
-              <button
-                type="button"
-                className={btnSuccess}
-                onClick={handleAutoComplete}
-                disabled={loading || isAutoCompleting}
-              >
-                {t('autoComplete')}
-              </button>
-              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading || isAutoCompleting}>
-                {t('giveup')}
-              </button>
-            </div>
-          )}
-          {/* Draw mode toggle */}
-          <label htmlFor="draw-mode-select" className="text-sm text-gray-300">
-            {t('drawMode')}
-          </label>
-          <select
-            id="draw-mode-select"
-            value={drawCountSetting}
-            onChange={(e) => {
-              const n = Number(e.target.value);
-              setDrawCountSetting(n);
-              handleResetWithConfig({ drawCount: n, scoringMode: scoringModeSetting });
-              resetTimer();
-            }}
-            className="bg-gray-700 text-white text-sm rounded px-2 py-1"
-            aria-label={t('drawMode')}
-          >
-            <option value={1}>{t('drawMode1')}</option>
-            <option value={3}>{t('drawMode3')}</option>
-          </select>
-          {/* Scoring mode toggle */}
-          <label htmlFor="scoring-mode-select" className="text-sm text-gray-300">
-            {t('scoringMode')}
-          </label>
-          <select
-            id="scoring-mode-select"
-            value={scoringModeSetting}
-            onChange={(e) => {
-              const n = Number(e.target.value);
-              setScoringModeSetting(n);
-              handleResetWithConfig({ drawCount: drawCountSetting, scoringMode: n });
-              resetTimer();
-            }}
-            className="bg-gray-700 text-white text-sm rounded px-2 py-1"
-            aria-label={t('scoringMode')}
-          >
-            <option value={0}>{t('scoringNone')}</option>
-            <option value={1}>{t('scoringVegas')}</option>
-          </select>
-          <div data-tutorial="kl-reset-button">
-            <button
-              type="button"
-              className={btnOutline}
-              onClick={() =>
-                requestConfirm(() => {
-                  hideActionLog();
-                  resetTimer();
-                  setDrawCountSetting(1);
-                  setScoringModeSetting(0);
-                  return handleReset();
-                })
-              }
-              disabled={loading}
-            >
-              {tc('button.reset')}
-            </button>
-          </div>
-        </div>
-      </GameFooter>
+          </GameFooter>
+        </>
+      )}
       <WinCelebration show={state.phase === KlondikePhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>

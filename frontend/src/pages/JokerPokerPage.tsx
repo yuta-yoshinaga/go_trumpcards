@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { jokerpokerApi } from '../api/gameApi';
 import { VideoPokerGameContent } from '../components/VideoPokerGameContent';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import { JOKERPOKER_HELP, parseJokerpokerCommand } from '../utils/cli/commands/jokerpokerCommands';
+import { formatJokerpokerState } from '../utils/cli/formatters/jokerpokerFormatter';
 
 /** Joker Poker payout table rows. */
 const JP_PAYOUT_ROWS = [
@@ -57,6 +60,14 @@ const JP_TUTORIAL_CONFIG: TutorialConfig = {
 /** Renders the Joker Poker (Kings or Better) game page. */
 export function JokerPokerPage() {
   const { t: tJp } = useTranslation('jokerpoker');
+  const cliGameConfig = useMemo(
+    () => ({
+      parseCommand: parseJokerpokerCommand,
+      formatResponse: formatJokerpokerState,
+      helpText: JOKERPOKER_HELP,
+    }),
+    [],
+  );
   return (
     <TutorialProvider config={JP_TUTORIAL_CONFIG} translateMessage={tJp}>
       <VideoPokerGameContent
@@ -65,6 +76,7 @@ export function JokerPokerPage() {
         apiExec={jokerpokerApi.exec}
         payoutTableRows={JP_PAYOUT_ROWS}
         gamePath="/jokerpoker"
+        cliGameConfig={cliGameConfig}
       />
     </TutorialProvider>
   );

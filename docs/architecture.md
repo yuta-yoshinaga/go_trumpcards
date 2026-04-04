@@ -25,11 +25,15 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
   src/
     api/                       # API client functions (fetch wrappers for game endpoints)
     components/                # Shared React components (NavBar, CardImage, CardBack)
+      cli/                     # CLI mode components (CliTerminal, CliToggle)
     hooks/                     # Custom React hooks (useGameApi, backed by TanStack React Query)
     i18n/                      # i18n config and translation files (ja/en)
     pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage)
     providers/                 # React context providers (QueryProvider for TanStack React Query)
     types/                     # TypeScript type definitions for card/game data
+    utils/cli/                 # CLI mode utilities
+      commands/                # Per-game command parsers (text input → API args)
+      formatters/              # Per-game response formatters (JSON → terminal text)
   e2e/                         # Playwright E2E test specs
 public/                        # Built frontend assets served by Go web server
   assets/                      # Vite-compiled JS/CSS bundles

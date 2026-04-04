@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { videopokerApi } from '../api/gameApi';
 import { VideoPokerGameContent } from '../components/VideoPokerGameContent';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import { parseVideopokerCommand, VIDEOPOKER_HELP } from '../utils/cli/commands/videopokerCommands';
+import { formatVideopokerState } from '../utils/cli/formatters/videopokerFormatter';
 
 /** Jacks or Better payout table rows. */
 const JOB_PAYOUT_ROWS = [
@@ -55,6 +58,14 @@ const VP_TUTORIAL_CONFIG: TutorialConfig = {
 /** Renders the Video Poker (Jacks or Better) game page. */
 export function VideoPokerPage() {
   const { t: tVp } = useTranslation('videopoker');
+  const cliGameConfig = useMemo(
+    () => ({
+      parseCommand: parseVideopokerCommand,
+      formatResponse: formatVideopokerState,
+      helpText: VIDEOPOKER_HELP,
+    }),
+    [],
+  );
   return (
     <TutorialProvider config={VP_TUTORIAL_CONFIG} translateMessage={tVp}>
       <VideoPokerGameContent
@@ -63,6 +74,7 @@ export function VideoPokerPage() {
         apiExec={videopokerApi.exec}
         payoutTableRows={JOB_PAYOUT_ROWS}
         gamePath="/videopoker"
+        cliGameConfig={cliGameConfig}
       />
     </TutorialProvider>
   );

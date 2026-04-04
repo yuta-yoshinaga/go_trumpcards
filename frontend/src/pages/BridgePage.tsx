@@ -1,6 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { bridgeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -16,6 +19,8 @@ import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { CPU_DIFFICULTY_OPTIONS, useBridgeGame } from '../hooks/useBridgeGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -24,9 +29,13 @@ import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/butt
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { BridgeResponse } from '../types/card';
 import { BridgePhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { BRIDGE_HELP, parseBridgeCommand } from '../utils/cli/commands/bridgeCommands';
+import { formatBridgeState } from '../utils/cli/formatters/bridgeFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
 /** Denomination names used in bid controls. */
@@ -150,6 +159,18 @@ function BridgePageContent() {
   const { cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
   const [bidLevel, setBidLevel] = useState(1);
   const [bidSuit, setBidSuit] = useState(5);
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bridge');
+  const cliConfig: CliGameConfig<BridgeResponse, Parameters<typeof bridgeApi.exec>> = useMemo(
+    () => ({
+      gameName: 'bridge',
+      parseCommand: parseBridgeCommand,
+      formatResponse: formatBridgeState,
+      helpText: BRIDGE_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayPhaseForKbd = state?.phase === BridgePhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
@@ -197,360 +218,376 @@ function BridgePageContent() {
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanBidTurn || isHumanTurn}>
         <ManualButton gamePath="/bridge" />
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
       </PhaseIndicator>
 
-      {/* Settings */}
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          {/* Settings */}
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select',
-                id: 'cpuDifficulty',
-                label: t('settings.cpuDifficulty'),
-                value: bridgeConfig.cpuDifficulty,
-                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                  value: o.value,
-                  label: t(`settings.${o.label.toLowerCase()}`),
-                })),
-                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: bridgeConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                ],
               },
-            ],
-          },
-        ]}
-      />
+            ]}
+          />
 
-      {/* Scrollable area */}
-      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Round/Trick info */}
-        <div className="text-white text-center mb-2">
-          <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-          {isPlayPhase && <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>}
-          {contractDisplay() && <span className="mr-4">{contractDisplay()}</span>}
-          {state.trumpSuit !== 0 && state.contractLevel > 0 && (
-            <span>{state.trumpSuit === 5 ? t('noTrump') : t('trumpSuit', { suit: suitLabel(state.trumpSuit) })}</span>
-          )}
-        </div>
-
-        {/* Vulnerability */}
-        <div className="text-white/70 text-center text-sm mb-2">
-          <span className="mr-4">
-            {t('team', { n: 0 })}: {state.vulnerability[0] ? t('vulnerable') : t('notVulnerable')}
-          </span>
-          <span>
-            {t('team', { n: 1 })}: {state.vulnerability[1] ? t('vulnerable') : t('notVulnerable')}
-          </span>
-        </div>
-
-        <div className={lgTwoColGrid}>
-          {/* Left: game play area */}
-          <div>
-            {/* Declarer/Dummy info */}
-            {state.declarerIdx >= 0 && (
-              <div className="text-yellow-300 text-center mb-2">
-                <span className="mr-4">
-                  {t('declarer')}:{' '}
-                  {playerName(
-                    state.players[state.declarerIdx]?.id ?? -1,
-                    state.players[state.declarerIdx]?.isHuman ?? false,
-                  )}
+          {/* Scrollable area */}
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Round/Trick info */}
+            <div className="text-white text-center mb-2">
+              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+              {isPlayPhase && <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>}
+              {contractDisplay() && <span className="mr-4">{contractDisplay()}</span>}
+              {state.trumpSuit !== 0 && state.contractLevel > 0 && (
+                <span>
+                  {state.trumpSuit === 5 ? t('noTrump') : t('trumpSuit', { suit: suitLabel(state.trumpSuit) })}
                 </span>
-                {state.dummyIdx >= 0 && (
-                  <span>
-                    {t('dummy')}:{' '}
-                    {playerName(
-                      state.players[state.dummyIdx]?.id ?? -1,
-                      state.players[state.dummyIdx]?.isHuman ?? false,
+              )}
+            </div>
+
+            {/* Vulnerability */}
+            <div className="text-white/70 text-center text-sm mb-2">
+              <span className="mr-4">
+                {t('team', { n: 0 })}: {state.vulnerability[0] ? t('vulnerable') : t('notVulnerable')}
+              </span>
+              <span>
+                {t('team', { n: 1 })}: {state.vulnerability[1] ? t('vulnerable') : t('notVulnerable')}
+              </span>
+            </div>
+
+            <div className={lgTwoColGrid}>
+              {/* Left: game play area */}
+              <div>
+                {/* Declarer/Dummy info */}
+                {state.declarerIdx >= 0 && (
+                  <div className="text-yellow-300 text-center mb-2">
+                    <span className="mr-4">
+                      {t('declarer')}:{' '}
+                      {playerName(
+                        state.players[state.declarerIdx]?.id ?? -1,
+                        state.players[state.declarerIdx]?.isHuman ?? false,
+                      )}
+                    </span>
+                    {state.dummyIdx >= 0 && (
+                      <span>
+                        {t('dummy')}:{' '}
+                        {playerName(
+                          state.players[state.dummyIdx]?.id ?? -1,
+                          state.players[state.dummyIdx]?.isHuman ?? false,
+                        )}
+                      </span>
                     )}
-                  </span>
+                  </div>
+                )}
+
+                {/* Bid phase instruction */}
+                {isHumanBidTurn && <div className="text-yellow-300 text-center mb-2">{t('bidPhase')}</div>}
+
+                {/* Bid History */}
+                {state.bidHistory.length > 0 && (
+                  <div className="my-2 p-2 rounded bg-black/30" data-tutorial="br-bid-history">
+                    <div className="text-white/70 text-sm mb-1">{t('bidHistory')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {state.bidHistory.map((entry, idx) => (
+                        <span key={idx} className="text-white/80 text-xs bg-black/20 px-1 rounded">
+                          {playerName(
+                            state.players[entry.playerIdx]?.id ?? entry.playerIdx,
+                            state.players[entry.playerIdx]?.isHuman ?? false,
+                          )}
+                          :{' '}
+                          {entry.bidType === 0
+                            ? t('passButton')
+                            : entry.bidType === 2
+                              ? t('doubleButton')
+                              : entry.bidType === 3
+                                ? t('redoubleButton')
+                                : `${entry.level}${suitLabel(entry.suit)}`}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Current trick */}
+                {state.currentTrick.length > 0 && (
+                  <div className="my-3 p-3 rounded bg-black/40" data-tutorial="br-trick-display">
+                    <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
+                    <div className="flex gap-2">
+                      {state.currentTrick.map((trickCard) => (
+                        <div key={`trick-${trickCard.playerIdx}`} className="text-center">
+                          <AnimatedCard
+                            card={trickCard.card}
+                            width={cardWidth}
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          />
+                          <div className="text-game-text-muted text-xs mt-1">
+                            {playerName(
+                              state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
+                              state.players[trickCard.playerIdx]?.isHuman ?? false,
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Dummy hand */}
+                {state.openingLeadDone && state.dummyHand && state.dummyHand.length > 0 && (
+                  <div className="my-3 p-3 rounded bg-black/40" data-tutorial="br-dummy-hand">
+                    <div className="text-white/70 text-sm mb-1">{t('dummyHand')}</div>
+                    <div className="flex gap-1 flex-wrap">
+                      {state.dummyHand.map((card, idx) => (
+                        <AnimatedCard
+                          key={`dummy-${card.design}-${card.value}-${idx}`}
+                          card={card}
+                          width={cardWidth}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Partnership info */}
+                {humanPlayer && (
+                  <div className="text-white/70 text-sm text-center mb-2">
+                    {t('partnership', {
+                      partner: playerName(
+                        state.players.find((p) => !p.isHuman && p.team === humanTeam)?.id ?? -1,
+                        false,
+                      ),
+                    })}
+                    {state.dealerIdx === humanPlayer.id ? ` | ${t('dealer')}` : ''}
+                  </div>
                 )}
               </div>
-            )}
 
-            {/* Bid phase instruction */}
-            {isHumanBidTurn && <div className="text-yellow-300 text-center mb-2">{t('bidPhase')}</div>}
-
-            {/* Bid History */}
-            {state.bidHistory.length > 0 && (
-              <div className="my-2 p-2 rounded bg-black/30" data-tutorial="br-bid-history">
-                <div className="text-white/70 text-sm mb-1">{t('bidHistory')}</div>
-                <div className="flex flex-wrap gap-1">
-                  {state.bidHistory.map((entry, idx) => (
-                    <span key={idx} className="text-white/80 text-xs bg-black/20 px-1 rounded">
-                      {playerName(
-                        state.players[entry.playerIdx]?.id ?? entry.playerIdx,
-                        state.players[entry.playerIdx]?.isHuman ?? false,
-                      )}
-                      :{' '}
-                      {entry.bidType === 0
-                        ? t('passButton')
-                        : entry.bidType === 2
-                          ? t('doubleButton')
-                          : entry.bidType === 3
-                            ? t('redoubleButton')
-                            : `${entry.level}${suitLabel(entry.suit)}`}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Current trick */}
-            {state.currentTrick.length > 0 && (
-              <div className="my-3 p-3 rounded bg-black/40" data-tutorial="br-trick-display">
-                <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
-                <div className="flex gap-2">
-                  {state.currentTrick.map((trickCard) => (
-                    <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                      <AnimatedCard
-                        card={trickCard.card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
-                      <div className="text-game-text-muted text-xs mt-1">
-                        {playerName(
-                          state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
-                          state.players[trickCard.playerIdx]?.isHuman ?? false,
-                        )}
+              {/* Right: info sidebar */}
+              <div>
+                {/* CPU players */}
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                      <div className="text-white/70 text-sm">
+                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('team', { n: p.team })}{' '}
+                        | {t('trickCount', { count: p.trickCount })}
+                        {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+                        {state.declarerIdx === p.id ? ` | ${t('declarer')}` : ''}
+                        {state.dummyIdx === p.id ? ` | ${t('dummy')}` : ''}
                       </div>
                     </div>
                   ))}
+
+                {/* Team scores */}
+                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="br-team-scores">
+                  <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
+                  <table className="w-full text-sm text-white/70">
+                    <thead>
+                      <tr>
+                        <th scope="col" className="text-left">
+                          {t('team', { n: '' })}
+                        </th>
+                        <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
+                        <th scope="col">{t('gamesWon')}</th>
+                        <th scope="col">{t('belowLine')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.teamScores.map((score, idx) => (
+                        <tr key={idx} className={idx === humanTeam ? 'text-yellow-300' : ''}>
+                          <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
+                          <td className="text-center">{score}</td>
+                          <td className="text-center">{state.gamesWon[idx]}</td>
+                          <td className="text-center">{state.belowLine[idx]}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* Dummy hand */}
-            {state.openingLeadDone && state.dummyHand && state.dummyHand.length > 0 && (
-              <div className="my-3 p-3 rounded bg-black/40" data-tutorial="br-dummy-hand">
-                <div className="text-white/70 text-sm mb-1">{t('dummyHand')}</div>
-                <div className="flex gap-1 flex-wrap">
-                  {state.dummyHand.map((card, idx) => (
+            {/* Message */}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          {/* Footer */}
+          <GameFooter className={`${gameTheme.bridge.footer} px-4 py-2.5`}>
+            {/* Human cards */}
+            {humanPlayer && (
+              <div
+                className={isMobile ? 'flex gap-1 overflow-x-auto mb-2' : 'flex flex-wrap gap-1 mb-2'}
+                data-tutorial="br-player-hand"
+              >
+                {humanPlayer.cards.map((card, idx) => (
+                  <button
+                    type="button"
+                    key={`${card.design}-${card.value}-${idx}`}
+                    onClick={() => toggleCard(idx)}
+                    aria-label={cardAlt(card)}
+                    aria-pressed={selectedCardIndices.includes(idx)}
+                    className={`transition-transform ${focusRingCard}`}
+                    style={{
+                      background: 'none',
+                      padding: 0,
+                      borderRadius: 8,
+                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                      boxSizing: 'border-box',
+                      ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
+                    }}
+                  >
                     <AnimatedCard
-                      key={`dummy-${card.design}-${card.value}-${idx}`}
                       card={card}
                       width={cardWidth}
                       onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
-                  ))}
-                </div>
+                  </button>
+                ))}
               </div>
             )}
 
-            {/* Partnership info */}
-            {humanPlayer && (
-              <div className="text-white/70 text-sm text-center mb-2">
-                {t('partnership', {
-                  partner: playerName(state.players.find((p) => !p.isHuman && p.team === humanTeam)?.id ?? -1, false),
-                })}
-                {state.dealerIdx === humanPlayer.id ? ` | ${t('dealer')}` : ''}
+            <ErrorAlert message={error ?? hintError} />
+
+            {hint && (
+              <div className="text-yellow-300 text-sm mb-2">
+                {hint.cardIndex != null
+                  ? `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`
+                  : `(${t(`hintReason.${hint.reason}`)})`}
               </div>
             )}
-          </div>
 
-          {/* Right: info sidebar */}
-          <div>
-            {/* CPU players */}
-            {state.players
-              .filter((p) => !p.isHuman)
-              .map((p) => (
-                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                  <div className="text-white/70 text-sm">
-                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('team', { n: p.team })} |{' '}
-                    {t('trickCount', { count: p.trickCount })}
-                    {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
-                    {state.declarerIdx === p.id ? ` | ${t('declarer')}` : ''}
-                    {state.dummyIdx === p.id ? ` | ${t('dummy')}` : ''}
-                  </div>
-                </div>
-              ))}
+            <div className="flex gap-2 items-center flex-wrap" data-tutorial="br-play-button">
+              {(isHumanBidTurn || isHumanTurn) && (
+                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                  {tc('button.hint')}
+                </button>
+              )}
 
-            {/* Team scores */}
-            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="br-team-scores">
-              <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
-              <table className="w-full text-sm text-white/70">
-                <thead>
-                  <tr>
-                    <th scope="col" className="text-left">
-                      {t('team', { n: '' })}
-                    </th>
-                    <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
-                    <th scope="col">{t('gamesWon')}</th>
-                    <th scope="col">{t('belowLine')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.teamScores.map((score, idx) => (
-                    <tr key={idx} className={idx === humanTeam ? 'text-yellow-300' : ''}>
-                      <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
-                      <td className="text-center">{score}</td>
-                      <td className="text-center">{state.gamesWon[idx]}</td>
-                      <td className="text-center">{state.belowLine[idx]}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+              {/* Bid phase controls */}
+              {isHumanBidTurn && (
+                <span data-tutorial="br-bid-controls" className="flex gap-2 items-center flex-wrap">
+                  <select
+                    className="text-sm rounded bg-black/50 text-white px-2 py-1"
+                    value={bidLevel}
+                    onChange={(e) => setBidLevel(Number(e.target.value))}
+                    aria-label={t('bidLevel')}
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7].map((lv) => (
+                      <option key={lv} value={lv}>
+                        {lv}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    className="text-sm rounded bg-black/50 text-white px-2 py-1"
+                    value={bidSuit}
+                    onChange={(e) => setBidSuit(Number(e.target.value))}
+                    aria-label={t('bidSuit')}
+                  >
+                    {DENOMINATIONS.map((d) => (
+                      <option key={d.suit} value={d.suit}>
+                        {t(d.labelKey)}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => handleBid(1, bidLevel, bidSuit)}
+                    disabled={loading}
+                  >
+                    {t('bidButton')}
+                  </button>
+                  <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
+                    {t('passButton')}
+                  </button>
+                  <button type="button" className={btnSecondary} onClick={() => handleBid(2)} disabled={loading}>
+                    {t('doubleButton')}
+                  </button>
+                  <button type="button" className={btnSecondary} onClick={() => handleBid(3)} disabled={loading}>
+                    {t('redoubleButton')}
+                  </button>
+                </span>
+              )}
 
-        {/* Message */}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+              {/* Play phase */}
+              {isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handlePlay}
+                  disabled={loading || selectedCardIndices.length !== 1}
+                >
+                  {t('playButton')}
+                </button>
+              )}
 
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={isGameEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
+              {/* Trick end */}
+              {isTrickEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                  {t('nextTrick')}
+                </button>
+              )}
 
-      {/* Footer */}
-      <GameFooter className={`${gameTheme.bridge.footer} px-4 py-2.5`}>
-        {/* Human cards */}
-        {humanPlayer && (
-          <div
-            className={isMobile ? 'flex gap-1 overflow-x-auto mb-2' : 'flex flex-wrap gap-1 mb-2'}
-            data-tutorial="br-player-hand"
-          >
-            {humanPlayer.cards.map((card, idx) => (
+              {/* Round end */}
+              {isRoundEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
+                </button>
+              )}
+
+              {/* Reset */}
               <button
                 type="button"
-                key={`${card.design}-${card.value}-${idx}`}
-                onClick={() => toggleCard(idx)}
-                aria-label={cardAlt(card)}
-                aria-pressed={selectedCardIndices.includes(idx)}
-                className={`transition-transform ${focusRingCard}`}
-                style={{
-                  background: 'none',
-                  padding: 0,
-                  borderRadius: 8,
-                  ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                  boxSizing: 'border-box',
-                  ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
-                }}
-              >
-                <AnimatedCard
-                  card={card}
-                  width={cardWidth}
-                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                />
-              </button>
-            ))}
-          </div>
-        )}
-
-        <ErrorAlert message={error ?? hintError} />
-
-        {hint && (
-          <div className="text-yellow-300 text-sm mb-2">
-            {hint.cardIndex != null
-              ? `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`
-              : `(${t(`hintReason.${hint.reason}`)})`}
-          </div>
-        )}
-
-        <div className="flex gap-2 items-center flex-wrap" data-tutorial="br-play-button">
-          {(isHumanBidTurn || isHumanTurn) && (
-            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-              {tc('button.hint')}
-            </button>
-          )}
-
-          {/* Bid phase controls */}
-          {isHumanBidTurn && (
-            <span data-tutorial="br-bid-controls" className="flex gap-2 items-center flex-wrap">
-              <select
-                className="text-sm rounded bg-black/50 text-white px-2 py-1"
-                value={bidLevel}
-                onChange={(e) => setBidLevel(Number(e.target.value))}
-                aria-label={t('bidLevel')}
-              >
-                {[1, 2, 3, 4, 5, 6, 7].map((lv) => (
-                  <option key={lv} value={lv}>
-                    {lv}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="text-sm rounded bg-black/50 text-white px-2 py-1"
-                value={bidSuit}
-                onChange={(e) => setBidSuit(Number(e.target.value))}
-                aria-label={t('bidSuit')}
-              >
-                {DENOMINATIONS.map((d) => (
-                  <option key={d.suit} value={d.suit}>
-                    {t(d.labelKey)}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => handleBid(1, bidLevel, bidSuit)}
+                className={btnOutline}
+                data-tutorial="br-reset-button"
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    return apiExec('reset', undefined, undefined, undefined, undefined, {
+                      cpuDifficulty: bridgeConfig.cpuDifficulty,
+                    });
+                  })
+                }
                 disabled={loading}
               >
-                {t('bidButton')}
+                {tc('button.reset')}
               </button>
-              <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
-                {t('passButton')}
-              </button>
-              <button type="button" className={btnSecondary} onClick={() => handleBid(2)} disabled={loading}>
-                {t('doubleButton')}
-              </button>
-              <button type="button" className={btnSecondary} onClick={() => handleBid(3)} disabled={loading}>
-                {t('redoubleButton')}
-              </button>
-            </span>
-          )}
-
-          {/* Play phase */}
-          {isHumanTurn && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handlePlay}
-              disabled={loading || selectedCardIndices.length !== 1}
-            >
-              {t('playButton')}
-            </button>
-          )}
-
-          {/* Trick end */}
-          {isTrickEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-              {t('nextTrick')}
-            </button>
-          )}
-
-          {/* Round end */}
-          {isRoundEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-              {t('nextRound')}
-            </button>
-          )}
-
-          {/* Reset */}
-          <button
-            type="button"
-            className={btnOutline}
-            data-tutorial="br-reset-button"
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                return apiExec('reset', undefined, undefined, undefined, undefined, {
-                  cpuDifficulty: bridgeConfig.cpuDifficulty,
-                });
-              })
-            }
-            disabled={loading}
-          >
-            {tc('button.reset')}
-          </button>
-        </div>
-      </GameFooter>
+            </div>
+          </GameFooter>
+        </>
+      )}
       <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>

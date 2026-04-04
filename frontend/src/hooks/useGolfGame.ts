@@ -56,6 +56,7 @@ export function useGolfGame() {
     state,
     loading,
     error,
+    exec,
     hintError,
     hint,
     handleDraw,
