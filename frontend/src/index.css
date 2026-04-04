@@ -100,6 +100,19 @@ select:disabled {
   cursor: not-allowed;
 }
 
+/* Typography: headings use display font (Fraunces) */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+/* Tabular numerals for score/stat displays */
+.tabular-nums {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
 /* Dark-themed number/text inputs for game UI */
 input[type="number"],
 input[type="text"] {
