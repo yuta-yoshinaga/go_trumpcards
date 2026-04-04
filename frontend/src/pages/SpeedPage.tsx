@@ -17,6 +17,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { SpeedPhase } from '../types/phases';
@@ -73,6 +74,7 @@ function SpeedPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('speed', state);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
 
   const isPlayPhase = state?.phase === SpeedPhase.PLAY;
   const isStuck = state?.phase === SpeedPhase.STUCK;
@@ -110,7 +112,7 @@ function SpeedPageContent() {
             </span>
             <div className="flex gap-1">
               {Array.from({ length: cpuPlayer?.cardCount ?? 0 }).map((_, i) => (
-                <AnimatedCardBack key={i} width={cardWidth * 0.7} />
+                <AnimatedCardBack key={i} width={cardWidth * 0.7} onFlipComplete={() => playSound('cardFlip')} />
               ))}
             </div>
             <span className="text-sm text-gray-500">
@@ -129,7 +131,13 @@ function SpeedPageContent() {
                 className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}`}
                 aria-label={`${t('centerPile')} ${pi}`}
               >
-                {card && <AnimatedCard card={card} width={cardWidth * 1.2} />}
+                {card && (
+                  <AnimatedCard
+                    card={card}
+                    width={cardWidth * 1.2}
+                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                  />
+                )}
               </button>
             ))}
           </div>
@@ -154,7 +162,11 @@ function SpeedPageContent() {
                   className={`transition-transform ${focusRingCard}`}
                   style={selectedCardStyle(selectedCardIndices.includes(idx))}
                 >
-                  <AnimatedCard card={card} width={cardWidth} />
+                  <AnimatedCard
+                    card={card}
+                    width={cardWidth}
+                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                  />
                 </button>
               ))}
             </div>
@@ -243,7 +255,7 @@ function SpeedPageContent() {
       </GameFooter>
 
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      <WinCelebration show={!!isGameEnd && humanWon} />
+      <WinCelebration show={!!isGameEnd && humanWon} onCelebrate={() => playSound('winFanfare')} />
     </div>
   );
 }

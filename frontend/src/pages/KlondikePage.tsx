@@ -22,6 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -91,6 +92,7 @@ export function KlondikePage() {
 function KlondikePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('klondike');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -216,7 +218,12 @@ function KlondikePageContent() {
                 {t('stock')} ({state.stockCount})
               </div>
               {state.stockCount > 0 ? (
-                <AnimatedCardBack width={kl.cw} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
+                <AnimatedCardBack
+                  width={kl.cw}
+                  onClick={isPlaying ? handleDraw : undefined}
+                  ariaLabel={t('draw')}
+                  onFlipComplete={() => playSound('cardFlip')}
+                />
               ) : (
                 <button
                   type="button"
@@ -255,10 +262,18 @@ function KlondikePageContent() {
                             aria-pressed={isSourceSelected('waste')}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
                           >
-                            <AnimatedCard card={card} width={kl.cw} />
+                            <AnimatedCard
+                              card={card}
+                              width={kl.cw}
+                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            />
                           </button>
                         ) : (
-                          <AnimatedCard card={card} width={kl.cw} />
+                          <AnimatedCard
+                            card={card}
+                            width={kl.cw}
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          />
                         )}
                       </div>
                     );
@@ -295,6 +310,7 @@ function KlondikePageContent() {
                       card={pile[pile.length - 1]}
                       width={kl.cw}
                       dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
                   </button>
                 ) : (
@@ -356,10 +372,15 @@ function KlondikePageContent() {
                             width={kl.cw}
                             style={{ width: '100%' }}
                             wrapperClassName="block w-full"
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         </button>
                       ) : (
-                        <AnimatedCardBack width={kl.cw} className="w-full" />
+                        <AnimatedCardBack
+                          width={kl.cw}
+                          className="w-full"
+                          onFlipComplete={() => playSound('cardFlip')}
+                        />
                       )}
                     </div>
                   ))
@@ -514,7 +535,7 @@ function KlondikePageContent() {
           </div>
         </div>
       </GameFooter>
-      <WinCelebration show={state.phase === KlondikePhase.GAME_CLEAR} />
+      <WinCelebration show={state.phase === KlondikePhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

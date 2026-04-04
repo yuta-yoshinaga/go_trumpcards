@@ -20,6 +20,7 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCrazyEightsGame } from 
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -121,6 +122,7 @@ function CrazyEightsPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('crazyeights', state);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
 
   const isPlayPhaseForKbd = state?.phase === CrazyEightsPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
@@ -205,7 +207,11 @@ function CrazyEightsPageContent() {
             {/* Discard pile top */}
             {state.discardTop && (
               <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ce-discard-pile">
-                <AnimatedCard card={state.discardTop} width={cardWidth} />
+                <AnimatedCard
+                  card={state.discardTop}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
                 <div className="text-white/70 text-sm">
                   <div>{t('discardTop')}</div>
                   {state.chosenSuit > 0 && (
@@ -292,7 +298,11 @@ function CrazyEightsPageContent() {
                   boxSizing: 'border-box',
                 }}
               >
-                <AnimatedCard card={card} width={cardWidth} />
+                <AnimatedCard
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </button>
             ))}
           </div>
@@ -359,7 +369,7 @@ function CrazyEightsPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

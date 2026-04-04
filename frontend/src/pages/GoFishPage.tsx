@@ -18,6 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGoFishGame } from '../hooks/useGoFishGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -95,6 +96,7 @@ function GoFishPageContent() {
     handleAsk,
   } = useGoFishGame();
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
 
   const phaseNames = usePhaseNames('gofish', GOFISH_PHASE_KEYS);
 
@@ -201,7 +203,11 @@ function GoFishPageContent() {
                   boxSizing: 'border-box',
                 }}
               >
-                <AnimatedCard card={card} width={cardWidth} />
+                <AnimatedCard
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </button>
             ))}
           </div>
@@ -233,7 +239,7 @@ function GoFishPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

@@ -5,6 +5,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -66,6 +67,7 @@ export function VideoPokerGameContent({
   const { t: tNs } = useTranslation(i18nNamespace);
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup(gameName);
+  const { playSound } = useSound();
 
   const [betAmount, setBetAmount] = useState(1);
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
@@ -167,7 +169,11 @@ export function VideoPokerGameContent({
                     aria-label={displayHeld[i] ? `${tNs('hold')} ${i}` : tNs('card', { index: i })}
                     aria-pressed={displayHeld[i] ?? false}
                   >
-                    <AnimatedCard card={card} width={cardWidth} />
+                    <AnimatedCard
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
                   </button>
                   {displayHeld[i] && <span className="text-yellow-400 text-xs font-bold mt-1">{tNs('hold')}</span>}
                 </div>
@@ -246,7 +252,7 @@ export function VideoPokerGameContent({
           </label>
         </div>
       </GameFooter>
-      <WinCelebration show={isResultPhase && state.result === 1} />
+      <WinCelebration show={isResultPhase && state.result === 1} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

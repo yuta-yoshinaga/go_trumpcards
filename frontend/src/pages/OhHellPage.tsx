@@ -28,6 +28,7 @@ import {
   useOhHellGame,
 } from '../hooks/useOhHellGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -106,6 +107,7 @@ export function OhHellPage() {
 function OhHellPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ohhell');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -265,7 +267,11 @@ function OhHellPageContent() {
             {state.trumpCard && (
               <div className="my-2 flex justify-center">
                 <div className="text-center">
-                  <AnimatedCard card={state.trumpCard} width={cardWidth} />
+                  <AnimatedCard
+                    card={state.trumpCard}
+                    width={cardWidth}
+                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                  />
                 </div>
               </div>
             )}
@@ -277,7 +283,11 @@ function OhHellPageContent() {
                 <div className="flex gap-2">
                   {state.currentTrick.map((trickCard) => (
                     <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                      <AnimatedCard card={trickCard.card} width={cardWidth} />
+                      <AnimatedCard
+                        card={trickCard.card}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
                       <div className="text-game-text-muted text-xs mt-1">
                         {playerName(
                           state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
@@ -384,7 +394,11 @@ function OhHellPageContent() {
                     boxSizing: 'border-box',
                   }}
                 >
-                  <AnimatedCard card={card} width={cardWidth} />
+                  <AnimatedCard
+                    card={card}
+                    width={cardWidth}
+                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                  />
                 </button>
               ))}
             </div>
@@ -465,7 +479,7 @@ function OhHellPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

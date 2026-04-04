@@ -27,6 +27,7 @@ import {
   useNapoleonGame,
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -122,6 +123,7 @@ export function NapoleonPage() {
 function NapoleonPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('napoleon');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -273,7 +275,12 @@ function NapoleonPageContent() {
             {/* Adjutant card info */}
             {state.adjutantCard && (
               <div className="text-white/70 text-center text-sm mb-2" data-tutorial="np-adjutant-info">
-                {t('adjutantCard')}: <AnimatedCard card={state.adjutantCard} width={cardWidth * 0.6} />
+                {t('adjutantCard')}:{' '}
+                <AnimatedCard
+                  card={state.adjutantCard}
+                  width={cardWidth * 0.6}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </div>
             )}
 
@@ -305,7 +312,12 @@ function NapoleonPageContent() {
                 <div className="text-white/70 text-sm mb-1">{t('kittyLabel')}</div>
                 <div className="flex gap-2">
                   {state.kitty.map((card, idx) => (
-                    <AnimatedCard key={`kitty-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth} />
+                    <AnimatedCard
+                      key={`kitty-${card.design}-${card.value}-${idx}`}
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
                   ))}
                 </div>
               </div>
@@ -318,7 +330,11 @@ function NapoleonPageContent() {
                 <div className="flex gap-2">
                   {state.currentTrick.map((trickCard) => (
                     <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                      <AnimatedCard card={trickCard.card} width={cardWidth} />
+                      <AnimatedCard
+                        card={trickCard.card}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
                       <div className="text-game-text-muted text-xs mt-1">
                         {playerName(
                           state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
@@ -435,7 +451,11 @@ function NapoleonPageContent() {
                     boxSizing: 'border-box',
                   }}
                 >
-                  <AnimatedCard card={card} width={cardWidth} />
+                  <AnimatedCard
+                    card={card}
+                    width={cardWidth}
+                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                  />
                 </button>
               ))}
             </div>
@@ -602,7 +622,7 @@ function NapoleonPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

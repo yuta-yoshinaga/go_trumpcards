@@ -19,6 +19,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGolfGame } from '../hooks/useGolfGame';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -80,6 +81,7 @@ export function GolfPage() {
 function GolfPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('golf');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -184,7 +186,11 @@ function GolfPageContent() {
                         isHinted && exposed ? 'ring-2 ring-yellow-400' : ''
                       } ${!exposed ? 'opacity-60' : ''}`}
                     >
-                      <AnimatedCard card={gc.card} width={effectiveCardWidth} />
+                      <AnimatedCard
+                        card={gc.card}
+                        width={effectiveCardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
                     </button>
                   </div>
                 );
@@ -204,6 +210,7 @@ function GolfPageContent() {
                 width={effectiveCardWidth}
                 onClick={isPlaying ? handleDraw : undefined}
                 ariaLabel={t('draw')}
+                onFlipComplete={() => playSound('cardFlip')}
               />
             ) : (
               <div
@@ -218,7 +225,11 @@ function GolfPageContent() {
           <div className="text-center">
             <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
             {state.waste.length > 0 ? (
-              <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
+              <AnimatedCard
+                card={state.waste[state.waste.length - 1]}
+                width={effectiveCardWidth}
+                onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+              />
             ) : (
               <div
                 style={{ width: effectiveCardWidth, height: cardHeight }}
@@ -288,7 +299,7 @@ function GolfPageContent() {
           </div>
         </div>
       </GameFooter>
-      <WinCelebration show={state.phase === GolfPhase.GAME_CLEAR} />
+      <WinCelebration show={state.phase === GolfPhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

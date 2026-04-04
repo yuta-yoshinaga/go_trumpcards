@@ -24,6 +24,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -119,6 +120,7 @@ function DaifugoPageContent() {
   } = useGameHint('daifugo', state);
 
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
 
   const isHumanTurnForKbd = !!state && !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
@@ -218,7 +220,12 @@ function DaifugoPageContent() {
               <span className="text-gray-400">{t('tableEmpty')}</span>
             ) : (
               state.tableCards.map((card) => (
-                <AnimatedCard key={`${card.design}-${card.value}`} card={card} width={cardWidth} />
+                <AnimatedCard
+                  key={`${card.design}-${card.value}`}
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               ))
             )}
           </div>
@@ -368,7 +375,7 @@ function DaifugoPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

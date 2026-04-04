@@ -20,6 +20,7 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCribbageGame } from '..
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -142,6 +143,7 @@ function CribbagePageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('cribbage', state);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
 
   const isDiscardPhaseForKbd = state?.phase === CribbagePhase.DISCARD;
   const isPeggingPhaseForKbd = state?.phase === CribbagePhase.PEGGING;
@@ -247,7 +249,11 @@ function CribbagePageContent() {
             {/* Starter card */}
             {state.starter && (
               <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                <AnimatedCard card={state.starter} width={cardWidth} />
+                <AnimatedCard
+                  card={state.starter}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
                 <div className="text-white/70 text-sm">
                   <div>{t('starter')}</div>
                 </div>
@@ -262,7 +268,12 @@ function CribbagePageContent() {
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {state.pegPlayedCards.map((card, idx) => (
-                    <AnimatedCard key={`peg-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth * 0.8} />
+                    <AnimatedCard
+                      key={`peg-${card.design}-${card.value}-${idx}`}
+                      card={card}
+                      width={cardWidth * 0.8}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
                   ))}
                 </div>
               </div>
@@ -278,6 +289,7 @@ function CribbagePageContent() {
                       key={`crib-${card.design}-${card.value}-${idx}`}
                       card={card}
                       width={cardWidth * 0.8}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
                   ))}
                 </div>
@@ -339,6 +351,7 @@ function CribbagePageContent() {
                           key={`cpu-${card.design}-${card.value}-${idx}`}
                           card={card}
                           width={cardWidth * 0.8}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))}
                     </div>
@@ -413,7 +426,11 @@ function CribbagePageContent() {
                   boxSizing: 'border-box',
                 }}
               >
-                <AnimatedCard card={card} width={cardWidth} />
+                <AnimatedCard
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </button>
             ))}
           </div>
@@ -481,7 +498,7 @@ function CribbagePageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

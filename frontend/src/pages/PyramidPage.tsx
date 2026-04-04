@@ -21,6 +21,7 @@ import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePyramidGame } from '../hooks/usePyramidGame';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -82,6 +83,7 @@ export function PyramidPage() {
 function PyramidPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pyramid');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -205,7 +207,11 @@ function PyramidPageContent() {
                           isSelected('pyramid', rowIdx, colIdx) ? 'ring-2 ring-yellow-400' : ''
                         } ${!exposed ? 'opacity-60' : ''}`}
                       >
-                        <AnimatedCard card={pc.card} width={effectiveCardWidth} />
+                        <AnimatedCard
+                          card={pc.card}
+                          width={effectiveCardWidth}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                        />
                       </button>
                     </div>
                   );
@@ -227,6 +233,7 @@ function PyramidPageContent() {
                 width={effectiveCardWidth}
                 onClick={isPlaying ? handleDraw : undefined}
                 ariaLabel={t('draw')}
+                onFlipComplete={() => playSound('cardFlip')}
               />
             ) : (
               <div
@@ -255,7 +262,11 @@ function PyramidPageContent() {
                   isSelected('waste') ? 'ring-2 ring-yellow-400' : ''
                 }`}
               >
-                <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
+                <AnimatedCard
+                  card={state.waste[state.waste.length - 1]}
+                  width={effectiveCardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </button>
             ) : (
               <div
@@ -349,7 +360,7 @@ function PyramidPageContent() {
           </div>
         </div>
       </GameFooter>
-      <WinCelebration show={state.phase === PyramidPhase.GAME_CLEAR} />
+      <WinCelebration show={state.phase === PyramidPhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

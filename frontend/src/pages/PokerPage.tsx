@@ -26,6 +26,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
@@ -100,6 +101,7 @@ function PokerPageContent() {
     useGamePageSetup('poker');
   const phaseNames = usePhaseNames('poker', POKER_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec, selected, toggleCard, clearSelection, odds, canExchange } = usePokerGame();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('poker', state);
@@ -262,7 +264,11 @@ function PokerPageContent() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <AnimatedCard card={card} width={cardWidth} />
+                    <AnimatedCard
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
                   </button>
                 );
               })}
@@ -411,7 +417,7 @@ function PokerPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={phase === PokerPhase.END} />
+      <WinCelebration show={phase === PokerPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

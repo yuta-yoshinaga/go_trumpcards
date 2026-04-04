@@ -20,6 +20,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -201,6 +202,7 @@ function BaccaratPageContent() {
   const { state, loading, error, exec: execApi } = useGameApi(baccaratApi.exec);
   const hintState = useMemo(() => (state ? { ...state, betType } : null), [state, betType]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('baccarat', hintState);
+  const { playSound } = useSound();
 
   useEffect(() => {
     execApi('reset');
@@ -279,7 +281,12 @@ function BaccaratPageContent() {
             </div>
             <div className="flex justify-center gap-2">
               {state.playerHand.map((card, i) => (
-                <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                <AnimatedCard
+                  key={`p-${card.design}-${card.value}-${i}`}
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               ))}
             </div>
           </div>
@@ -293,7 +300,12 @@ function BaccaratPageContent() {
             </div>
             <div className="flex justify-center gap-2">
               {state.bankerHand.map((card, i) => (
-                <AnimatedCard key={`b-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                <AnimatedCard
+                  key={`b-${card.design}-${card.value}-${i}`}
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               ))}
             </div>
           </div>
@@ -435,7 +447,7 @@ function BaccaratPageContent() {
           </div>
         )}
       </GameFooter>
-      <WinCelebration show={state.phase === BaccaratPhase.END} />
+      <WinCelebration show={state.phase === BaccaratPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

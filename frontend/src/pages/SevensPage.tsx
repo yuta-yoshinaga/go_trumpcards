@@ -21,6 +21,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -68,6 +69,7 @@ export function SevensPage() {
 function SevensPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sevens');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -411,7 +413,7 @@ function SevensPageContent() {
           )}
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

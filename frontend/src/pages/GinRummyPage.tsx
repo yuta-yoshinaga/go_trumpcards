@@ -20,6 +20,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '../hooks/useGinRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -117,6 +118,7 @@ function GinRummyPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('ginrummy', state);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
 
   const isDiscardPhaseForKbd = state?.phase === GinRummyPhase.DISCARD;
   const isLayoffPhaseForKbd = state?.phase === GinRummyPhase.LAYOFF;
@@ -209,7 +211,11 @@ function GinRummyPageContent() {
             {/* Discard pile top */}
             {state.discardTop && (
               <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                <AnimatedCard card={state.discardTop} width={cardWidth} />
+                <AnimatedCard
+                  card={state.discardTop}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
                 <div className="text-white/70 text-sm">
                   <div>{t('discardTop')}</div>
                 </div>
@@ -227,6 +233,7 @@ function GinRummyPageContent() {
                         key={`meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
                         card={card}
                         width={cardWidth * 0.7}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                       />
                     ))}
                   </div>
@@ -254,6 +261,7 @@ function GinRummyPageContent() {
                           key={`cpu-${card.design}-${card.value}-${idx}`}
                           card={card}
                           width={cardWidth * 0.8}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       ))}
                     </div>
@@ -317,7 +325,11 @@ function GinRummyPageContent() {
                   boxSizing: 'border-box',
                 }}
               >
-                <AnimatedCard card={card} width={cardWidth} />
+                <AnimatedCard
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </button>
             ))}
           </div>
@@ -406,7 +418,7 @@ function GinRummyPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

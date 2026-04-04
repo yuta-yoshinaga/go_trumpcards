@@ -17,6 +17,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -88,6 +89,7 @@ function CanastaPageContent() {
   } = useCanastaGame();
 
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const phaseNames = usePhaseNames('canasta', CANASTA_PHASE_KEYS);
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
@@ -174,7 +176,11 @@ function CanastaPageContent() {
             {/* Discard pile top */}
             {state.discardTop && (
               <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ca-draw-area">
-                <AnimatedCard card={state.discardTop} width={cardWidth} />
+                <AnimatedCard
+                  card={state.discardTop}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
                 <div className="text-white/70 text-sm">{tc('common:discardTop', { defaultValue: 'Discard' })}</div>
               </div>
             )}
@@ -198,7 +204,12 @@ function CanastaPageContent() {
                         {m.isCanasta ? (m.isNatural ? t('naturalCanasta') : t('mixedCanasta')) : `(${m.cards.length})`}
                       </span>
                       {m.cards.map((card, ci) => (
-                        <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                        <AnimatedCard
+                          key={`meld-${pi}-${mi}-${ci}`}
+                          card={card}
+                          width={cardWidth * 0.6}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                        />
                       ))}
                     </div>
                   ))}
@@ -206,7 +217,12 @@ function CanastaPageContent() {
                     <div className="flex flex-wrap gap-1 mt-1">
                       <span className="text-xs text-red-300 self-center mr-1">{t('red3s')}</span>
                       {p.red3s.map((card, ri) => (
-                        <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
+                        <AnimatedCard
+                          key={`red3-${pi}-${ri}`}
+                          card={card}
+                          width={cardWidth * 0.6}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                        />
                       ))}
                     </div>
                   )}
@@ -257,6 +273,7 @@ function CanastaPageContent() {
                             key={`cpu-${card.design}-${card.value}-${idx}`}
                             card={card}
                             width={cardWidth * 0.7}
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                           />
                         ))}
                       </div>
@@ -295,7 +312,11 @@ function CanastaPageContent() {
                   boxSizing: 'border-box',
                 }}
               >
-                <AnimatedCard card={card} width={cardWidth} />
+                <AnimatedCard
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </button>
             ))}
           </div>
@@ -373,7 +394,7 @@ function CanastaPageContent() {
       </GameFooter>
 
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      <WinCelebration show={isGameEnd} />
+      <WinCelebration show={isGameEnd} onCelebrate={() => playSound('winFanfare')} />
     </div>
   );
 }

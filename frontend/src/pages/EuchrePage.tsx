@@ -20,6 +20,7 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useEuchreGame } from '../h
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -113,6 +114,7 @@ export function EuchrePage() {
 function EuchrePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('euchre');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -272,7 +274,11 @@ function EuchrePageContent() {
               <div className="my-2 text-center">
                 <div className="text-white/70 text-sm mb-1">{t('faceUpCard')}</div>
                 <div className="inline-block">
-                  <AnimatedCard card={state.faceUpCard} width={cardWidth} />
+                  <AnimatedCard
+                    card={state.faceUpCard}
+                    width={cardWidth}
+                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                  />
                 </div>
               </div>
             )}
@@ -284,7 +290,11 @@ function EuchrePageContent() {
                 <div className="flex gap-2">
                   {state.currentTrick.map((trickCard) => (
                     <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                      <AnimatedCard card={trickCard.card} width={cardWidth} />
+                      <AnimatedCard
+                        card={trickCard.card}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
                       <div className="text-game-text-muted text-xs mt-1">
                         {playerName(
                           state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
@@ -385,7 +395,11 @@ function EuchrePageContent() {
                   ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
                 }}
               >
-                <AnimatedCard card={card} width={cardWidth} />
+                <AnimatedCard
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </button>
             ))}
           </div>
@@ -517,7 +531,7 @@ function EuchrePageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

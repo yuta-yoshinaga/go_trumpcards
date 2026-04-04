@@ -29,6 +29,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -146,6 +147,7 @@ function OmahaPageContent() {
     useGamePageSetup('omaha');
   const phaseNames = usePhaseNames('omaha', OMAHA_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi } = useGameApi(omahaApi.exec);
   const [betAmount, setBetAmount] = useState(20);
@@ -259,9 +261,12 @@ function OmahaPageContent() {
                         card={card}
                         width={cardWidth}
                         style={{ border: '3px solid transparent' }}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                       />
                     ))
-                  : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                  : Array.from({ length: 5 }).map((_, i) => (
+                      <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                    ))}
               </div>
             </>
           );
@@ -378,10 +383,13 @@ function OmahaPageContent() {
                       card={card}
                       width={cardWidth}
                       style={{ border: '3px solid transparent' }}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
                   ))
                 : !humanPlayer.folded &&
-                  Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                  ))}
             </div>
           </div>
         )}
@@ -519,7 +527,7 @@ function OmahaPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={phase === OmahaPhase.END} />
+      <WinCelebration show={phase === OmahaPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );
