@@ -50,14 +50,14 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
       aria-label={t('nav.sidebar', { defaultValue: 'Game navigation' })}
     >
       {/* Site name */}
-      <div className="px-3 py-3 border-b border-white/10">
+      <div className="px-3 py-3 border-b border-ds-border-subtle">
         <Link to="/" className="text-ds-text-primary font-display font-bold text-sm inline-flex items-center gap-1.5">
           {SITE_NAME}
         </Link>
       </div>
 
       {/* Search */}
-      <div className="px-3 py-2 border-b border-white/10">
+      <div className="px-3 py-2 border-b border-ds-border-subtle">
         <div className="flex items-center gap-1">
           <svg
             data-testid="search-icon"
@@ -153,7 +153,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                       type="button"
                       aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
                       onClick={() => toggleFavorite(path)}
-                      className={`text-yellow-400 min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
+                      className={`text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
                     >
                       {isFavorite(path) ? '★' : '☆'}
                     </button>
@@ -187,7 +187,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                         type="button"
                         aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
                         onClick={() => toggleFavorite(path)}
-                        className={`text-yellow-400 min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
+                        className={`text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
                       >
                         {isFavorite(path) ? '★' : '☆'}
                       </button>
@@ -201,12 +201,12 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
       </nav>
 
       {/* Tutorial progress */}
-      <div className="border-t border-white/10 px-2 py-2">
+      <div className="border-t border-ds-border-subtle px-2 py-2">
         <TutorialProgressPanel />
       </div>
 
       {/* Language + Sound controls */}
-      <div className="border-t border-white/10 px-3 py-2 flex items-center justify-between">
+      <div className="border-t border-ds-border-subtle px-3 py-2 flex items-center justify-between">
         <div className="flex gap-0.5">
           <button
             type="button"

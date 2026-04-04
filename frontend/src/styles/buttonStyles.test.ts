@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   btnDanger,
+  btnOutline,
   btnPrimary,
   btnSecondary,
   btnSuccess,
@@ -57,6 +58,13 @@ describe('buttonStyles', () => {
     expect(focusRingAccent).toContain('focus-visible:ring-ds-accent');
     expect(focusRingAccent).toContain('focus-visible:ring-offset-2');
     expect(focusRingAccent).toContain('focus-visible:ring-offset-black');
+  });
+
+  it('btnOutline uses design system border and text tokens', () => {
+    expect(btnOutline).toContain('ds-border-subtle');
+    expect(btnOutline).toContain('ds-text-muted');
+    expect(btnOutline).toContain('bg-transparent');
+    expect(btnOutline).toContain('hover:bg-ds-surface-elevated');
   });
 
   it('each button variant has a distinct background token', () => {

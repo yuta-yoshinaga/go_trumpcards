@@ -329,7 +329,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
                             type="button"
                             aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
                             onClick={() => toggleFavorite(path)}
-                            className="text-yellow-400 min-h-[44px] min-w-[44px] flex items-center justify-center text-sm shrink-0"
+                            className="text-ds-accent min-h-[44px] min-w-[44px] flex items-center justify-center text-sm shrink-0"
                           >
                             {isFavorite(path) ? '★' : '☆'}
                           </button>

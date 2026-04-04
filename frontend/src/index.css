@@ -115,7 +115,8 @@ h3 {
 
 /* Dark-themed number/text inputs for game UI */
 input[type="number"],
-input[type="text"] {
+input[type="text"],
+input[type="search"] {
   background-color: var(--color-ds-surface-elevated);
   color: var(--color-ds-text-primary);
   border: 1px solid var(--color-ds-border-subtle);
