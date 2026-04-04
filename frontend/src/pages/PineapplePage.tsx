@@ -29,6 +29,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -153,6 +154,7 @@ function PineapplePageContent() {
     useGamePageSetup('pineapple');
   const phaseNames = usePhaseNames('pineapple', PINEAPPLE_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec: apiExec } = useGameApi(pineappleApi.exec);
   const [betAmount, setBetAmount] = useState(20);
@@ -276,9 +278,12 @@ function PineapplePageContent() {
                         card={card}
                         width={cardWidth}
                         style={{ border: '3px solid transparent' }}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                       />
                     ))
-                  : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                  : Array.from({ length: 5 }).map((_, i) => (
+                      <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                    ))}
               </div>
             </>
           );
@@ -406,11 +411,14 @@ function PineapplePageContent() {
                         style={{
                           border: canDiscard && selectedDiscard === idx ? '3px solid #f59e0b' : '3px solid transparent',
                         }}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                       />
                     </button>
                   ))
                 : !humanPlayer.folded &&
-                  Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                  ))}
             </div>
           </div>
         )}
@@ -568,7 +576,7 @@ function PineapplePageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={phase === PineapplePhase.END} />
+      <WinCelebration show={phase === PineapplePhase.END} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

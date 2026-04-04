@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -85,6 +86,7 @@ function MemoryPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('memory');
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const { state, loading, error, exec, memoryConfig, handleConfigChange, handleFlip, handleNext } = useMemoryGame();
   const {
     hint: frontendHint,
@@ -202,7 +204,13 @@ function MemoryPageContent() {
                     <img src="/images/z01.png" alt="" className="w-full h-full object-contain rounded" />
                   </div>
                   <div className="memory-card-front">
-                    {bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
+                    {bc.card && (
+                      <AnimatedCard
+                        card={bc.card}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
+                    )}
                   </div>
                 </div>
               </button>
@@ -256,7 +264,7 @@ function MemoryPageContent() {
           </div>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

@@ -28,6 +28,7 @@ import {
 } from '../hooks/useDoubtGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -124,6 +125,7 @@ function DoubtPageContent() {
   } = useGameHint('doubt', state);
 
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
 
   const claimInputRef = useRef<HTMLInputElement>(null);
   const [valWarning, setValWarning] = useState(false);
@@ -324,7 +326,12 @@ function DoubtPageContent() {
                 {state.lastDoubtResult.revealedCards.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {state.lastDoubtResult.revealedCards.map((card, i) => (
-                      <AnimatedCard key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                      <AnimatedCard
+                        key={`${card.design}-${card.value}-${i}`}
+                        card={card}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
                     ))}
                   </div>
                 )}
@@ -494,7 +501,7 @@ function DoubtPageContent() {
           )}
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

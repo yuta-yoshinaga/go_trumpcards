@@ -20,6 +20,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -84,6 +85,7 @@ function ThreeCardPageContent() {
   const [pairPlusAmount, setPairPlusAmount] = useState(0);
 
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const { state, loading, error, exec: execApi } = useGameApi(threecardApi.exec);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('threecard', state);
 
@@ -203,7 +205,12 @@ function ThreeCardPageContent() {
             </div>
             <div className="flex justify-center gap-2">
               {state.playerHand.map((card, i) => (
-                <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                <AnimatedCard
+                  key={`p-${card.design}-${card.value}-${i}`}
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               ))}
             </div>
           </div>
@@ -225,7 +232,12 @@ function ThreeCardPageContent() {
             </div>
             <div className="flex justify-center gap-2">
               {state.dealerHand.map((card, i) => (
-                <AnimatedCard key={`d-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                <AnimatedCard
+                  key={`d-${card.design}-${card.value}-${i}`}
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               ))}
             </div>
           </div>
@@ -342,7 +354,7 @@ function ThreeCardPageContent() {
           </div>
         )}
       </GameFooter>
-      <WinCelebration show={isEndPhase && state.result > 0} />
+      <WinCelebration show={isEndPhase && state.result > 0} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

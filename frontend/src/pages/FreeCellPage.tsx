@@ -20,6 +20,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -84,6 +85,7 @@ export function FreeCellPage() {
 function FreeCellPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('freecell');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -178,7 +180,11 @@ function FreeCellPageContent() {
                     aria-pressed={isSourceSelected('freecell', undefined, idx)}
                     className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-yellow-400' : ''}`}
                   >
-                    <AnimatedCard card={card} width={cardWidth} />
+                    <AnimatedCard
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
                   </button>
                 ) : (
                   <button
@@ -218,6 +224,7 @@ function FreeCellPageContent() {
                       card={pile[pile.length - 1]}
                       width={cardWidth}
                       dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
                   </button>
                 ) : (
@@ -275,7 +282,12 @@ function FreeCellPageContent() {
                             aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                             className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
                           >
-                            <AnimatedCard card={card} width={cardWidth} style={{ width: '100%' }} />
+                            <AnimatedCard
+                              card={card}
+                              width={cardWidth}
+                              style={{ width: '100%' }}
+                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            />
                           </button>
                         ) : (
                           <div style={{ width: cardWidth, height: cardHeight }} />
@@ -378,7 +390,7 @@ function FreeCellPageContent() {
           </div>
         </div>
       </GameFooter>
-      <WinCelebration show={state.phase === FreeCellPhase.GAME_CLEAR} />
+      <WinCelebration show={state.phase === FreeCellPhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

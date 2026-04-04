@@ -13,6 +13,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePinochleGame } from '../hooks/usePinochleGame';
+import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PinochleMeldData } from '../types/card';
@@ -60,6 +61,7 @@ function PinochlePageContent() {
   } = usePinochleGame();
 
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const phaseNames = usePhaseNames('pinochle', PINOCHLE_PHASE_KEYS);
 
   const [bidAmount, setBidAmount] = useState(20);
@@ -160,7 +162,11 @@ function PinochlePageContent() {
             <div className="flex gap-2 justify-center">
               {state.currentTrick.map((tc, i) => (
                 <div key={i} className="text-center">
-                  <AnimatedCard card={tc.card} width={cardWidth * 0.8} />
+                  <AnimatedCard
+                    card={tc.card}
+                    width={cardWidth * 0.8}
+                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                  />
                   <div className="text-xs text-white/50 mt-1">P{tc.playerIdx}</div>
                 </div>
               ))}
@@ -219,7 +225,11 @@ function PinochlePageContent() {
                     boxSizing: 'border-box',
                   }}
                 >
-                  <AnimatedCard card={card} width={cardWidth} />
+                  <AnimatedCard
+                    card={card}
+                    width={cardWidth}
+                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                  />
                 </button>
               );
             })}
@@ -300,7 +310,7 @@ function PinochlePageContent() {
       </GameFooter>
 
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      <WinCelebration show={isGameEnd} />
+      <WinCelebration show={isGameEnd} onCelebrate={() => playSound('winFanfare')} />
     </div>
   );
 }

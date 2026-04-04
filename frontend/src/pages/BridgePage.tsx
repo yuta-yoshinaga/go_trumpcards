@@ -18,6 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -126,6 +127,7 @@ export function BridgePage() {
 function BridgePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('bridge');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -302,7 +304,11 @@ function BridgePageContent() {
                 <div className="flex gap-2">
                   {state.currentTrick.map((trickCard) => (
                     <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                      <AnimatedCard card={trickCard.card} width={cardWidth} />
+                      <AnimatedCard
+                        card={trickCard.card}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
                       <div className="text-game-text-muted text-xs mt-1">
                         {playerName(
                           state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
@@ -321,7 +327,12 @@ function BridgePageContent() {
                 <div className="text-white/70 text-sm mb-1">{t('dummyHand')}</div>
                 <div className="flex gap-1 flex-wrap">
                   {state.dummyHand.map((card, idx) => (
-                    <AnimatedCard key={`dummy-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth} />
+                    <AnimatedCard
+                      key={`dummy-${card.design}-${card.value}-${idx}`}
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
                   ))}
                 </div>
               </div>
@@ -421,7 +432,11 @@ function BridgePageContent() {
                   ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
                 }}
               >
-                <AnimatedCard card={card} width={cardWidth} />
+                <AnimatedCard
+                  card={card}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </button>
             ))}
           </div>
@@ -536,7 +551,7 @@ function BridgePageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

@@ -24,6 +24,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -81,6 +82,7 @@ export function OldMaidPage() {
 function OldMaidPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('oldmaid');
+  const { playSound } = useSound();
   const {
     displayState,
     setupMode,
@@ -238,10 +240,14 @@ function OldMaidPageContent() {
           <div className="flex justify-center my-2" data-testid="card-reveal-area">
             {revealedCard ? (
               <div className="animate-flipIn">
-                <AnimatedCard card={revealedCard} width={cardWidth} />
+                <AnimatedCard
+                  card={revealedCard}
+                  width={cardWidth}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </div>
             ) : (
-              <AnimatedCardBack width={cardWidth} />
+              <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
             )}
           </div>
         )}
@@ -364,7 +370,7 @@ function OldMaidPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
       <OldMaidSettingsDialog
         open={settingsOpen}

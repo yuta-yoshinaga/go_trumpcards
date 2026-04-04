@@ -30,6 +30,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { LossFeedback } from '../components/motion/LossFeedback';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
@@ -39,6 +40,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -131,6 +133,7 @@ function BlackJackPageContent() {
     useGamePageSetup('blackjack');
   const phaseNames = usePhaseNames('blackjack', BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
+  const { playSound } = useSound();
 
   const { cardWidth, isMobile } = useCardDimensions();
   const [message, setMessage] = useState('');
@@ -293,9 +296,17 @@ function BlackJackPageContent() {
             </p>
             <div className="flex flex-wrap gap-2">
               {state.dealer.cards?.map((card, idx) => (
-                <AnimatedCard key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={cardWidth} />
+                <AnimatedCard
+                  key={`dealer-${idx}-${card.design}-${card.value}`}
+                  card={card}
+                  width={cardWidth}
+                  dealDelay={idx * 0.2}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               ))}
-              {!state.dealer.score && <AnimatedCardBack width={cardWidth} />}
+              {!state.dealer.score && (
+                <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+              )}
             </div>
           </div>
         )}
@@ -370,6 +381,8 @@ function BlackJackPageContent() {
                       key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
                       card={card}
                       width={cardWidth}
+                      dealDelay={cardIdx * 0.12}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
                   ))}
                 </div>
@@ -539,7 +552,8 @@ function BlackJackPageContent() {
           )}
         </div>
       </GameFooter>
-      <WinCelebration show={phase === BjPhase.END} />
+      <WinCelebration show={phase === BjPhase.END} onCelebrate={() => playSound('winFanfare')} />
+      <LossFeedback show={hands.some((h) => h.busted)} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

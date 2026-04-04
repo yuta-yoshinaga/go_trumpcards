@@ -26,6 +26,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -91,6 +92,7 @@ function IndianPokerPageContent() {
     useGamePageSetup('indianpoker');
   const phaseNames = usePhaseNames('indianpoker', INDIAN_POKER_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const isMobile = useIsMobile();
   const { state, loading, error, exec: execApi } = useGameApi(indianpokerApi.exec);
   const [betAmount, setBetAmount] = useState(20);
@@ -208,9 +210,14 @@ function IndianPokerPageContent() {
                 </div>
                 <div className={isMobile ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
                   {p.card ? (
-                    <AnimatedCard card={p.card} width={cardWidth} style={{ border: '3px solid transparent' }} />
+                    <AnimatedCard
+                      card={p.card}
+                      width={cardWidth}
+                      style={{ border: '3px solid transparent' }}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
                   ) : (
-                    <AnimatedCardBack width={cardWidth} />
+                    <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
                   )}
                 </div>
               </div>
@@ -252,9 +259,14 @@ function IndianPokerPageContent() {
             </div>
             <div className="flex flex-wrap gap-1.5 mb-2">
               {isShowdown && humanPlayer.card ? (
-                <AnimatedCard card={humanPlayer.card} width={cardWidth} style={{ border: '3px solid transparent' }} />
+                <AnimatedCard
+                  card={humanPlayer.card}
+                  width={cardWidth}
+                  style={{ border: '3px solid transparent' }}
+                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               ) : !humanPlayer.folded ? (
-                <AnimatedCardBack width={cardWidth} />
+                <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
               ) : null}
             </div>
           </div>
@@ -348,7 +360,7 @@ function IndianPokerPageContent() {
           </button>
         </div>
       </GameFooter>
-      <WinCelebration show={phase === IndianPokerPhase.END} />
+      <WinCelebration show={phase === IndianPokerPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

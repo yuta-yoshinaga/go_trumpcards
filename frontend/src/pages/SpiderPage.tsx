@@ -21,6 +21,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSpiderGame } from '../hooks/useSpiderGame';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -88,6 +89,7 @@ export function SpiderPage() {
 function SpiderPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spider');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -180,7 +182,12 @@ function SpiderPageContent() {
               {t('stock')} ({state.stockCount})
             </div>
             {state.stockCount > 0 ? (
-              <AnimatedCardBack width={cardWidth} onClick={isPlaying ? handleDeal : undefined} ariaLabel={t('deal')} />
+              <AnimatedCardBack
+                width={cardWidth}
+                onClick={isPlaying ? handleDeal : undefined}
+                ariaLabel={t('deal')}
+                onFlipComplete={() => playSound('cardFlip')}
+              />
             ) : (
               <div
                 style={{ width: cardWidth, height: cardHeight }}
@@ -239,10 +246,19 @@ function SpiderPageContent() {
                             aria-pressed={isSourceSelected(colIdx, cardIdx)}
                             className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
                           >
-                            <AnimatedCard card={tc.card} width={cardWidth} style={{ width: '100%' }} />
+                            <AnimatedCard
+                              card={tc.card}
+                              width={cardWidth}
+                              style={{ width: '100%' }}
+                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            />
                           </button>
                         ) : (
-                          <AnimatedCardBack width={cardWidth} style={{ width: '100%' }} />
+                          <AnimatedCardBack
+                            width={cardWidth}
+                            style={{ width: '100%' }}
+                            onFlipComplete={() => playSound('cardFlip')}
+                          />
                         )}
                       </div>
                     ))
@@ -361,7 +377,7 @@ function SpiderPageContent() {
           </div>
         </div>
       </GameFooter>
-      <WinCelebration show={state.phase === SpiderPhase.GAME_CLEAR} />
+      <WinCelebration show={state.phase === SpiderPhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

@@ -16,6 +16,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -100,6 +101,7 @@ export function HeartsPage() {
 function HeartsPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('hearts');
+  const { playSound } = useSound();
   const {
     state,
     loading,
@@ -243,7 +245,11 @@ function HeartsPageContent() {
                 <div className="flex gap-2">
                   {state.currentTrick.map((trickCard) => (
                     <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                      <AnimatedCard card={trickCard.card} width={cardWidth} />
+                      <AnimatedCard
+                        card={trickCard.card}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
                       <div className="text-game-text-muted text-xs mt-1">
                         {playerName(
                           state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
