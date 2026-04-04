@@ -17,7 +17,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TriPeaksSkeleton } from '../components/skeleton/TriPeaksSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
@@ -108,7 +108,8 @@ function TriPeaksPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('tripeaks', state);
-  const { cardHeight, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  const { cardHeight, cardWidth, isMobile } = useCardDimensions();
+  const windowWidth = useWindowWidth();
 
   const isPlayingForKbd = state?.phase === TriPeaksPhase.PLAYING;
 
@@ -139,7 +140,11 @@ function TriPeaksPageContent() {
   const cardGap = 4;
   const ROW_OVERLAP_RATIO = isMobile ? 0.3 : 0.35;
   const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
-  const effectiveCardWidth = isMobile ? Math.max(cardWidth, solitaireMinColWidth) : cardWidth;
+  // px-4 on the scrollable container = 16px * 2 = 32px total horizontal padding
+  const CONTAINER_PADDING = 32;
+  const effectiveCardWidth = isMobile
+    ? Math.floor((windowWidth - CONTAINER_PADDING - cardGap * (maxCols - 1)) / maxCols)
+    : cardWidth;
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.tripeaks.bg}`} aria-busy={loading} aria-live="polite">
@@ -158,7 +163,7 @@ function TriPeaksPageContent() {
 
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Tableau */}
-        <div data-tutorial="tp-peaks" className="flex flex-col items-center mb-3 overflow-x-auto">
+        <div data-tutorial="tp-peaks" className="flex flex-col items-center mb-3">
           {VALID_COLS.map((cols, rowIdx) => {
             const rowWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
             return (

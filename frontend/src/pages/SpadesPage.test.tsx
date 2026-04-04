@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, spadesApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { makeSpadesState } from '../test/stateFactories';
 import type { SpadesResponse } from '../types/card';
 import { SpadesPage } from './SpadesPage';
 
@@ -13,121 +14,46 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(spadesApi.exec);
 
-const playPhaseState: SpadesResponse = {
-  players: [
-    {
-      id: 0,
-      isHuman: true,
-      cardCount: 13,
-      cards: [
-        { design: 'SPADE', value: 1 },
-        { design: 'HEART', value: 11 },
-      ],
-      bid: 3,
-      roundScore: 0,
-      cumulativeScore: 0,
-      trickCount: 0,
-      bags: 0,
-    },
-    {
-      id: 1,
-      isHuman: false,
-      cardCount: 13,
-      cards: [],
-      bid: 4,
-      roundScore: 3,
-      cumulativeScore: 10,
-      trickCount: 1,
-      bags: 2,
-    },
-    {
-      id: 2,
-      isHuman: false,
-      cardCount: 13,
-      cards: [],
-      bid: 3,
-      roundScore: 5,
-      cumulativeScore: 20,
-      trickCount: 2,
-      bags: 1,
-    },
-    {
-      id: 3,
-      isHuman: false,
-      cardCount: 13,
-      cards: [],
-      bid: 2,
-      roundScore: 0,
-      cumulativeScore: 5,
-      trickCount: 0,
-      bags: 0,
-    },
-  ],
-  phase: 1,
-  roundNumber: 1,
-  trickNumber: 1,
-  currentPlayerIdx: 0,
-  bidPlayerIdx: 0,
-  currentTrick: [],
-  spadesBroken: false,
-  gameEndFlag: false,
-  winnerIdx: -1,
-  leadPlayerIdx: 0,
-  message: '',
-  config: { cpuDifficulty: 1, pointLimit: 500, nilBonus: 100, bagPenaltyThreshold: 10 },
-};
+const playPhaseState = makeSpadesState();
 
-const bidPhaseState: SpadesResponse = {
-  ...playPhaseState,
+const bidPhaseState = makeSpadesState({
   phase: 0,
   bidPlayerIdx: 0,
-  players: playPhaseState.players.map((p) => ({ ...p, bid: -1 })),
-};
+  players: makeSpadesState().players.map((p) => ({ ...p, bid: -1 })),
+});
 
-const bidPhaseCpuTurnState: SpadesResponse = {
+const bidPhaseCpuTurnState = makeSpadesState({
   ...bidPhaseState,
   bidPlayerIdx: 1,
-};
+});
 
-const trickEndState: SpadesResponse = {
-  ...playPhaseState,
+const trickEndState = makeSpadesState({
   phase: 2,
   currentTrick: [
     { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
     { playerIdx: 1, card: { design: 'HEART', value: 5 } },
   ],
-};
+});
 
-const roundEndState: SpadesResponse = {
-  ...playPhaseState,
-  phase: 3,
-};
+const roundEndState = makeSpadesState({ phase: 3 });
 
-const gameEndState: SpadesResponse = {
-  ...playPhaseState,
+const gameEndState = makeSpadesState({
   phase: 4,
   gameEndFlag: true,
   winnerIdx: 0,
   message: 'Game end!',
-};
+});
 
-const gameEndByFlagState: SpadesResponse = {
-  ...playPhaseState,
+const gameEndByFlagState = makeSpadesState({
   phase: 1,
   gameEndFlag: true,
   winnerIdx: 0,
   message: 'Game end!',
-};
+});
 
-const spadesBrokenState: SpadesResponse = {
-  ...playPhaseState,
-  spadesBroken: true,
-};
+const spadesBrokenState = makeSpadesState({ spadesBroken: true });
 
-const cpuTurnState: SpadesResponse = {
-  ...playPhaseState,
-  currentPlayerIdx: 1,
-};
+const cpuTurnState = makeSpadesState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);

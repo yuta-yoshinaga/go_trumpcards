@@ -93,7 +93,7 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses modal on click
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-4 bg-black/50"
       onClick={onClose}
       role="presentation"
     >
@@ -103,7 +103,7 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
         role="dialog"
         aria-modal="true"
         aria-label={t('manual.ariaLabel')}
-        className="rounded-lg shadow-xl p-6 mx-4 max-w-2xl w-full max-h-[80vh] flex flex-col bg-gray-900 border border-gray-700"
+        className="rounded-lg shadow-xl p-6 mx-4 max-w-2xl w-full max-h-[calc(100vh-2rem)] flex flex-col bg-ds-surface border border-ds-border-subtle"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-end mb-2">

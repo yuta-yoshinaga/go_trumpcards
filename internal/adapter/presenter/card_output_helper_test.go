@@ -108,6 +108,40 @@ func TestCardsToOutput(t *testing.T) {
 	})
 }
 
+func TestBuildTrickCards(t *testing.T) {
+	type fakeTrick struct {
+		idx  int
+		card *domain.Card
+	}
+	mapper := func(tc fakeTrick) struct {
+		PlayerIdx int
+		Design    string
+	} {
+		return struct {
+			PlayerIdx int
+			Design    string
+		}{PlayerIdx: tc.idx, Design: cardDesignToString(tc.card.GetDesign())}
+	}
+
+	t.Run("empty slice", func(t *testing.T) {
+		result := buildTrickCards([]fakeTrick{}, mapper)
+		assert.NotNil(t, result)
+		assert.Equal(t, 0, len(result))
+	})
+	t.Run("multiple elements", func(t *testing.T) {
+		tricks := []fakeTrick{
+			{idx: 0, card: domain.NewCard(domain.CardDesignSpade, 1, false)},
+			{idx: 2, card: domain.NewCard(domain.CardDesignHeart, 5, false)},
+		}
+		result := buildTrickCards(tricks, mapper)
+		assert.Equal(t, 2, len(result))
+		assert.Equal(t, 0, result[0].PlayerIdx)
+		assert.Equal(t, "SPADE", result[0].Design)
+		assert.Equal(t, 2, result[1].PlayerIdx)
+		assert.Equal(t, "HEART", result[1].Design)
+	})
+}
+
 func TestCardsToOutputOrEmpty(t *testing.T) {
 	t.Run("nil slice returns empty", func(t *testing.T) {
 		result := cardsToOutputOrEmpty(nil)

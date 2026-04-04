@@ -71,7 +71,7 @@ type CribbageWebOutputConfig struct {
 func (c *CribbageWebConfig) ToConfig() domain.CribbageConfig {
 	cfg := domain.DefaultCribbageConfig()
 	cfg.CpuDifficulty = domain.CribbageCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.CribbageCpuDifficultyEasy), int(domain.CribbageCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.PointLimit, 1, 1000)
 	return cfg
 }
 

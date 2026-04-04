@@ -2,6 +2,7 @@ import type { ErrorInfo, ReactNode } from 'react';
 import { Component } from 'react';
 import type { WithTranslation } from 'react-i18next';
 import { withTranslation } from 'react-i18next';
+import { btnPrimary } from '../styles/buttonStyles';
 
 interface ErrorBoundaryProps extends WithTranslation {
   children: ReactNode;
@@ -33,13 +34,12 @@ class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryStat
     if (this.state.hasError) {
       const { t } = this.props;
       return (
-        <div className="flex flex-col items-center justify-center h-full bg-gray-900 text-white gap-4">
+        <div
+          role="alert"
+          className="flex flex-col items-center justify-center h-full bg-ds-surface text-ds-text-primary gap-4"
+        >
           <h1 className="text-2xl font-bold">{t('label.errorBoundaryTitle')}</h1>
-          <button
-            type="button"
-            onClick={this.handleRetry}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
-          >
+          <button type="button" onClick={this.handleRetry} className={btnPrimary}>
             {t('label.errorBoundaryRetry')}
           </button>
         </div>

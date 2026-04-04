@@ -29,6 +29,8 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # gofish, canasta, pinochle, golf
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
+go run ./cmd/trumpcards web --port 3000  # Start web server on custom port
+go run ./cmd/trumpcards completion bash  # Generate shell completion script (bash/zsh/fish)
 go run ./cmd/server                # Start REST API + web GUI server (direct)
 
 # Test
@@ -196,6 +198,10 @@ Where to document design decisions that don't warrant an ADR:
 - **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
 - **Dead Code Cleanup**: When modifying code, always remove any dead code or dead files you encounter. Use `golang.org/x/tools/cmd/deadcode` for Go and `knip` for TypeScript to identify unused code. Verify findings manually before deleting -- static analysis tools can produce false positives (e.g., interface implementations called via reflection, mock methods). Delete confirmed dead code in the same commit as your feature or fix.
 
+## Design System
+
+Always read [`DESIGN.md`](DESIGN.md) before making any visual or UI decisions. All font choices, colors, spacing, and aesthetic direction are defined there. Do not deviate without explicit user approval. In QA mode, flag any code that doesn't match DESIGN.md.
+
 ## Detailed Context
 
 | Topic | File |
@@ -205,5 +211,26 @@ Where to document design decisions that don't warrant an ADR:
 | Game descriptions & entities | [`docs/games.md`](docs/games.md) |
 | Backend UML design (class, sequence, state machine) | [`docs/design/backend.md`](docs/design/backend.md) |
 | Frontend UML design (class, sequence, state machine) | [`docs/design/frontend.md`](docs/design/frontend.md) |
+| Design system (fonts, colors, spacing, motion) | [`DESIGN.md`](DESIGN.md) |
 | Go backend rules | [`internal/CLAUDE.md`](internal/CLAUDE.md) |
 | Frontend rules | [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |
+
+## Skill routing
+
+When the user's request matches an available skill, ALWAYS invoke it using the Skill
+tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
+The skill has specialized workflows that produce better results than ad-hoc answers.
+
+Key routing rules:
+- Product ideas, "is this worth building", brainstorming → invoke office-hours
+- Bugs, errors, "why is this broken", 500 errors → invoke investigate
+- Ship, deploy, push, create PR → invoke ship
+- QA, test the site, find bugs → invoke qa
+- Code review, check my diff → invoke review
+- Update docs after shipping → invoke document-release
+- Weekly retro → invoke retro
+- Design system, brand → invoke design-consultation
+- Visual audit, design polish → invoke design-review
+- Architecture review → invoke plan-eng-review
+- Save progress, checkpoint, resume → invoke checkpoint
+- Code quality, health check → invoke health

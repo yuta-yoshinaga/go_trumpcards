@@ -145,8 +145,10 @@ trumpcards --lang en             # インタラクティブモード (英語)
 trumpcards blackjack             # ブラックジャック CLI
 trumpcards --lang en blackjack   # ブラックジャック CLI (英語)
 trumpcards web                   # REST API + Web GUI サーバー起動
+trumpcards web --port 3000       # カスタムポートで起動 (--port フラグ)
 trumpcards update                # 最新版にセルフアップデート
-PORT=3000 trumpcards web         # カスタムポートで起動 (デフォルト: 8080)
+PORT=3000 trumpcards web         # カスタムポートで起動 (環境変数)
+source <(trumpcards completion bash)  # Bash 補完を有効化
 ```
 
 ### Docker

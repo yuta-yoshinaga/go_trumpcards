@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
 import { useFavoriteGames } from '../hooks/useFavoriteGames';
+import { focusRingWhite } from '../styles/buttonStyles';
 import { SoundToggle } from './SoundToggle';
 import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
 
@@ -49,14 +50,14 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
       aria-label={t('nav.sidebar', { defaultValue: 'Game navigation' })}
     >
       {/* Site name */}
-      <div className="px-3 py-3 border-b border-white/10">
-        <Link to="/" className="text-white font-bold text-sm inline-flex items-center gap-1.5">
+      <div className="px-3 py-3 border-b border-ds-border-subtle">
+        <Link to="/" className="text-ds-text-primary font-display font-bold text-sm inline-flex items-center gap-1.5">
           {SITE_NAME}
         </Link>
       </div>
 
       {/* Search */}
-      <div className="px-3 py-2 border-b border-white/10">
+      <div className="px-3 py-2 border-b border-ds-border-subtle">
         <div className="flex items-center gap-1">
           <svg
             data-testid="search-icon"
@@ -69,7 +70,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-gray-400 shrink-0"
+            className="text-ds-text-muted shrink-0"
             aria-hidden="true"
           >
             <circle cx="11" cy="11" r="8" />
@@ -87,14 +88,14 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
             }}
             placeholder={t('nav.searchPlaceholder')}
             aria-label={t('nav.searchPlaceholder')}
-            className="flex-1 px-2 py-1.5 text-xs bg-gray-700 text-white rounded border border-gray-600 placeholder-gray-400 min-w-0"
+            className="flex-1 px-2 py-1.5 text-xs bg-ds-surface-elevated text-ds-text-primary rounded border border-ds-border-subtle placeholder-ds-text-muted min-w-0"
           />
           {searchTerm && (
             <button
               type="button"
               aria-label={t('nav.searchClear')}
               onClick={() => setSearchTerm('')}
-              className="text-gray-400 hover:text-white flex items-center justify-center text-xs shrink-0"
+              className={`text-ds-text-muted hover:text-ds-text-primary min-w-[44px] min-h-[44px] flex items-center justify-center text-xs shrink-0 ${focusRingWhite}`}
             >
               ✕
             </button>
@@ -107,7 +108,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
         {/* Favorites */}
         {!filteredPaths && favorites.length > 0 && (
           <div className="mb-2">
-            <span className="text-gray-400 text-[10px] uppercase tracking-wider px-1 font-semibold">
+            <span className="text-ds-text-muted text-[10px] uppercase tracking-wider px-1 font-semibold">
               {t('nav.favoriteGames')}
             </span>
             <div className="mt-1 flex flex-col gap-0.5">
@@ -119,7 +120,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                     key={`fav-${gamePath}`}
                     to={gamePath}
                     aria-current={pathname === gamePath ? 'page' : undefined}
-                    className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors ${pathname === gamePath ? 'bg-blue-600 text-white' : 'text-gray-200 hover:bg-white/10'}`}
+                    className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors ${pathname === gamePath ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
                   >
                     <span aria-hidden="true">{route.icon}</span>
                     {t(route.labelKey)}
@@ -134,7 +135,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
         {filteredPaths ? (
           <div className="flex flex-col gap-0.5">
             {filteredPaths.size === 0 ? (
-              <span className="text-gray-400 text-xs px-2 py-1">{t('nav.noResults')}</span>
+              <span className="text-ds-text-muted text-xs px-2 py-1">{t('nav.noResults')}</span>
             ) : (
               gameRoutes
                 .filter((r) => filteredPaths.has(r.path))
@@ -143,7 +144,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                     <Link
                       to={path}
                       aria-current={pathname === path ? 'page' : undefined}
-                      className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-blue-600 text-white' : 'text-gray-200 hover:bg-white/10'}`}
+                      className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
                     >
                       <span aria-hidden="true">{icon}</span>
                       {t(routeLabel)}
@@ -152,7 +153,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                       type="button"
                       aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
                       onClick={() => toggleFavorite(path)}
-                      className="text-yellow-400 w-6 h-6 flex items-center justify-center text-xs shrink-0 hover:scale-110 transition-transform"
+                      className={`text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
                     >
                       {isFavorite(path) ? '★' : '☆'}
                     </button>
@@ -165,9 +166,9 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
             const hasActivePage = routes.some(({ path }) => path === pathname);
             return (
               <details key={labelKey} className="sidebar-category mb-1" open={hasActivePage}>
-                <summary className="text-gray-400 text-[10px] uppercase tracking-wider px-1 py-1 font-semibold flex items-center gap-1 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+                <summary className="text-ds-text-muted text-[10px] uppercase tracking-wider px-1 py-1 font-semibold flex items-center gap-1 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
                   <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
-                  <span className="ml-auto text-[8px] text-gray-500 sidebar-category-chevron" aria-hidden="true">
+                  <span className="ml-auto text-[8px] text-ds-text-muted sidebar-category-chevron" aria-hidden="true">
                     ▶
                   </span>
                 </summary>
@@ -177,7 +178,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                       <Link
                         to={path}
                         aria-current={pathname === path ? 'page' : undefined}
-                        className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-blue-600 text-white' : 'text-gray-200 hover:bg-white/10'}`}
+                        className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
                       >
                         <span aria-hidden="true">{icon}</span>
                         {t(routeLabel)}
@@ -186,7 +187,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
                         type="button"
                         aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
                         onClick={() => toggleFavorite(path)}
-                        className="text-yellow-400 w-6 h-6 flex items-center justify-center text-xs shrink-0 hover:scale-110 transition-transform"
+                        className={`text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
                       >
                         {isFavorite(path) ? '★' : '☆'}
                       </button>
@@ -200,19 +201,19 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
       </nav>
 
       {/* Tutorial progress */}
-      <div className="border-t border-white/10 px-2 py-2">
+      <div className="border-t border-ds-border-subtle px-2 py-2">
         <TutorialProgressPanel />
       </div>
 
       {/* Language + Sound controls */}
-      <div className="border-t border-white/10 px-3 py-2 flex items-center justify-between">
+      <div className="border-t border-ds-border-subtle px-3 py-2 flex items-center justify-between">
         <div className="flex gap-0.5">
           <button
             type="button"
             aria-label={t('nav.switchToJa')}
             aria-pressed={currentLang === 'ja'}
             onClick={() => i18n.changeLanguage('ja')}
-            className={`px-2 py-1 text-xs font-bold rounded-l transition-colors ${currentLang === 'ja' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
+            className={`px-2 py-1 text-xs font-bold rounded-l transition-colors ${currentLang === 'ja' ? 'bg-ds-accent text-ds-text-on-accent' : 'bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
           >
             JA
           </button>
@@ -221,7 +222,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
             aria-label={t('nav.switchToEn')}
             aria-pressed={currentLang === 'en'}
             onClick={() => i18n.changeLanguage('en')}
-            className={`px-2 py-1 text-xs font-bold rounded-r transition-colors ${currentLang === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
+            className={`px-2 py-1 text-xs font-bold rounded-r transition-colors ${currentLang === 'en' ? 'bg-ds-accent text-ds-text-on-accent' : 'bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
           >
             EN
           </button>

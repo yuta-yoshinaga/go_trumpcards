@@ -96,8 +96,8 @@ type NapoleonWebOutputConfig struct {
 func (c *NapoleonWebConfig) ToConfig() domain.NapoleonConfig {
 	cfg := domain.DefaultNapoleonConfig()
 	cfg.CpuDifficulty = domain.NapoleonCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.NapoleonCpuDifficultyEasy), int(domain.NapoleonCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.MinBid = webutil.BoundedIntPtr(c.MinBid, 1, domain.NapoleonMaxPictureCards, cfg.MinBid)
-	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
+	webutil.ApplyBoundedInt(&cfg.MinBid, c.MinBid, 1, domain.NapoleonMaxPictureCards)
+	webutil.ApplyBoundedInt(&cfg.PointLimit, c.PointLimit, 1, 1000)
 	return cfg
 }
 

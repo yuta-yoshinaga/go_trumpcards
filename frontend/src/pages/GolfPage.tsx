@@ -16,7 +16,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GolfSkeleton } from '../components/skeleton/GolfSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGolfGame } from '../hooks/useGolfGame';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -93,7 +93,8 @@ function GolfPageContent() {
     handleUndo,
     handleSelectCard,
   } = useGolfGame();
-  const { cardHeight, cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
+  const { cardHeight, cardWidth, isMobile } = useCardDimensions();
+  const windowWidth = useWindowWidth();
 
   const isPlayingForKbd = state?.phase === GolfPhase.PLAYING;
 
@@ -124,7 +125,11 @@ function GolfPageContent() {
   const cardGap = 4;
   const ROW_OVERLAP_RATIO = isMobile ? 0.55 : 0.5;
   const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
-  const effectiveCardWidth = isMobile ? Math.max(cardWidth, solitaireMinColWidth) : cardWidth;
+  // px-4 on the scrollable container = 16px * 2 = 32px total horizontal padding
+  const CONTAINER_PADDING = 32;
+  const effectiveCardWidth = isMobile
+    ? Math.floor((windowWidth - CONTAINER_PADDING - cardGap * (COL_COUNT - 1)) / COL_COUNT)
+    : cardWidth;
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.golf.bg}`} aria-busy={loading} aria-live="polite">
@@ -143,7 +148,7 @@ function GolfPageContent() {
 
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
         {/* Tableau: 7 columns */}
-        <div data-tutorial="golf-columns" className="flex gap-1 justify-center mb-3 overflow-x-auto">
+        <div data-tutorial="golf-columns" className="flex justify-center mb-3">
           {Array.from({ length: COL_COUNT }, (_, colIdx) => (
             <div
               key={`col-${colIdx.toString()}`}

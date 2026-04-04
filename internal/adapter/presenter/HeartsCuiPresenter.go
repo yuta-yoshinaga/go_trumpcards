@@ -50,19 +50,13 @@ func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 
 		// 現在のトリック
 		trick := h.GetCurrentTrick()
-		if len(trick) > 0 {
-			parts := make([]string, len(trick))
-			for i, tc := range trick {
-				player := h.GetPlayer(tc.PlayerIdx)
-				parts[i] = fmt.Sprintf("%s=%s", cuiPlayerName(player, tc.PlayerIdx), cuiCardStr(tc.Card))
-			}
-			fmt.Fprintf(b, "トリック: %s\n", strings.Join(parts, ", "))
-		}
+		cuiTrickBlock(b, trick,
+			func(tc *domain.HeartsTrickCard) int { return tc.PlayerIdx },
+			func(tc *domain.HeartsTrickCard) string { return cuiCardStr(tc.Card) },
+			func(idx int) string { return cuiPlayerName(h.GetPlayer(idx), idx) },
+		)
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		// ゲーム状態
 		if h.GetGameEndFlag() {
@@ -106,24 +100,16 @@ func (p *HeartsCuiPresenter) HintOutput(h interfaces.HeartsGame) string {
 	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: %s (%s)]", strings.Join(cards, ", "), heartsHintReasonStr(hint.Reason))))
 }
 
+// heartsHintReasons はHearts固有のヒント理由翻訳
+var heartsHintReasons = map[string]string{
+	"pass_high_risk_cards": "リスクの高いカードを渡す",
+	"discard_queen_spades": "Q♠を捨てるチャンス",
+	"discard_hearts":       "ハートを捨てる",
+}
+
 // heartsHintReasonStr ヒント理由を日本語に変換する
 func heartsHintReasonStr(reason string) string {
-	switch reason {
-	case "pass_high_risk_cards":
-		return "リスクの高いカードを渡す"
-	case "lead_low":
-		return "低いカードでリード"
-	case "follow_suit":
-		return "リードスートに追随"
-	case "discard_queen_spades":
-		return "Q♠を捨てるチャンス"
-	case "discard_hearts":
-		return "ハートを捨てる"
-	case "discard_high":
-		return "高いカードを捨てる"
-	default:
-		return reason
-	}
+	return lookupHintReason(reason, heartsHintReasons)
 }
 
 // ActionLogOutput 棋譜をテキスト出力

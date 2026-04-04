@@ -69,14 +69,9 @@ func (p *OhHellWebPresenter) buildBase(o interfaces.OhHellGame) *controller.OhHe
 
 // buildTrickOutput 現在のトリック情報を構築
 func (p *OhHellWebPresenter) buildTrickOutput(trick []*domain.OhHellTrickCard) []*controller.OhHellWebOutputTrickCard {
-	out := make([]*controller.OhHellWebOutputTrickCard, 0)
-	for _, tc := range trick {
-		out = append(out, &controller.OhHellWebOutputTrickCard{
-			PlayerIdx: tc.PlayerIdx,
-			Card:      cardToOutput(tc.Card),
-		})
-	}
-	return out
+	return buildTrickCards(trick, func(tc *domain.OhHellTrickCard) *controller.OhHellWebOutputTrickCard {
+		return &controller.OhHellWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築

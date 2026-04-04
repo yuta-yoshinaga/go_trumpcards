@@ -11,6 +11,13 @@ type HeartsWebPresenter struct{}
 
 // Output ゲーム状態をJSON出力
 func (p *HeartsWebPresenter) Output(h interfaces.HeartsGame, lastErr error) string {
+	resObj := p.buildBase(h)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(h, h.GetCurrentTrick(), lastErr)
+	return marshalOrError(resObj)
+}
+
+// buildBase 共通フィールドを構築
+func (p *HeartsWebPresenter) buildBase(h interfaces.HeartsGame) *controller.HeartsWebOutput {
 	resObj := new(controller.HeartsWebOutput)
 	resObj.Phase = int(h.GetPhase())
 	resObj.RoundNumber = h.GetRoundNumber()
@@ -30,24 +37,16 @@ func (p *HeartsWebPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 		OmnibusJD:     cfg.OmnibusJD,
 	}
 
-	trick := h.GetCurrentTrick()
-	resObj.CurrentTrick = p.buildTrickOutput(trick)
+	resObj.CurrentTrick = p.buildTrickOutput(h.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(h)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(h, trick, lastErr)
-
-	return marshalOrError(resObj)
+	return resObj
 }
 
 // buildTrickOutput 現在のトリック情報を構築
 func (p *HeartsWebPresenter) buildTrickOutput(trick []*domain.HeartsTrickCard) []*controller.HeartsWebOutputTrickCard {
-	out := make([]*controller.HeartsWebOutputTrickCard, 0)
-	for _, tc := range trick {
-		out = append(out, &controller.HeartsWebOutputTrickCard{
-			PlayerIdx: tc.PlayerIdx,
-			Card:      cardToOutput(tc.Card),
-		})
-	}
-	return out
+	return buildTrickCards(trick, func(tc *domain.HeartsTrickCard) *controller.HeartsWebOutputTrickCard {
+		return &controller.HeartsWebOutputTrickCard{PlayerIdx: tc.PlayerIdx, Card: cardToOutput(tc.Card)}
+	})
 }
 
 // buildPlayersOutput プレイヤー情報を構築
@@ -99,26 +98,7 @@ func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*doma
 // HintOutput ヒント情報をJSON出力する
 func (p *HeartsWebPresenter) HintOutput(h interfaces.HeartsGame) string {
 	hint := h.GetHint()
-	resObj := new(controller.HeartsWebOutput)
-	resObj.Phase = int(h.GetPhase())
-	resObj.RoundNumber = h.GetRoundNumber()
-	resObj.TrickNumber = h.GetTrickNumber()
-	resObj.CurrentPlayerIdx = h.GetCurrentPlayerIdx()
-	resObj.HeartsBroken = h.GetHeartsBroken()
-	resObj.PassDirection = int(h.GetPassDirection())
-	resObj.GameEndFlag = h.GetGameEndFlag()
-	resObj.WinnerIdx = h.GetWinnerIdx()
-	resObj.LeadPlayerIdx = h.GetLeadPlayerIdx()
-	cfg := h.GetConfig()
-	resObj.Config = controller.HeartsWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		PointLimit:    cfg.PointLimit,
-		OmnibusJD:     cfg.OmnibusJD,
-	}
-	trick := h.GetCurrentTrick()
-	resObj.CurrentTrick = p.buildTrickOutput(trick)
-	resObj.Players = p.buildPlayersOutput(h)
-
+	resObj := p.buildBase(h)
 	if hint != nil {
 		resObj.Hint = &controller.HeartsWebOutputHint{
 			CardIndices: hint.CardIndices,

@@ -128,15 +128,7 @@ func (oi *OhHellInteractor) ActionLog() string {
 
 // runCpuBids ゲームが終わるかヒューマンのビッド番またはビッドフェーズが終了するまでCPUビッドを実行
 func (oi *OhHellInteractor) runCpuBids() {
-	for !oi.o.GetGameEndFlag() {
-		if oi.o.GetPhase() != domain.OhHellPhaseBid {
-			break
-		}
-		if oi.o.IsHumanBidTurn() {
-			break
-		}
-		oi.o.CpuBid()
-	}
+	runCpuBidsLoop(oi.o, domain.OhHellPhaseBid)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番またはトリック/ラウンド終了になるまでCPUターンを実行

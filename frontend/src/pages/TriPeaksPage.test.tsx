@@ -192,4 +192,29 @@ describe('TriPeaksPage', () => {
     renderWithProviders(<TriPeaksPage />);
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
+
+  it('renders correctly on mobile viewport (isMobile branch)', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 393 });
+    try {
+      renderWithProviders(<TriPeaksPage />);
+      await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+      // 10-column tableau should render with effectiveCardWidth derived from viewport
+      const tableauRows = document.querySelectorAll('[data-tutorial="tp-peaks"] > div');
+      expect(tableauRows.length).toBe(4);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('renders correctly on desktop viewport (non-mobile branch)', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    try {
+      renderWithProviders(<TriPeaksPage />);
+      await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
 });

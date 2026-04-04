@@ -99,6 +99,23 @@ describe('DesktopSidebar', () => {
       expect(screen.getByText(labelFor('nav.category.poker'))).toBeInTheDocument();
     });
 
+    it('applies min-w-[44px] and min-h-[44px] touch target to clear button', () => {
+      renderSidebar();
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: 'test' } });
+      const clearBtn = screen.getByRole('button', { name: i18n.t('nav.searchClear') });
+      expect(clearBtn.className).toContain('min-w-[44px]');
+      expect(clearBtn.className).toContain('min-h-[44px]');
+    });
+
+    it('applies focus ring to clear button', () => {
+      renderSidebar();
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: 'test' } });
+      const clearBtn = screen.getByRole('button', { name: i18n.t('nav.searchClear') });
+      expect(clearBtn.className).toContain('focus-visible:ring-2');
+    });
+
     it('shows clear button and clears on click', () => {
       renderSidebar();
       const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
@@ -131,6 +148,19 @@ describe('DesktopSidebar', () => {
       renderSidebar();
       const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.addFavorite') });
       expect(starButtons.length).toBe(gameRoutes.length);
+    });
+
+    it('applies min-w-[44px] and min-h-[44px] touch target to favorite buttons', () => {
+      renderSidebar();
+      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.addFavorite') });
+      expect(starButtons[0].className).toContain('min-w-[44px]');
+      expect(starButtons[0].className).toContain('min-h-[44px]');
+    });
+
+    it('applies focus ring to favorite buttons', () => {
+      renderSidebar();
+      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.addFavorite') });
+      expect(starButtons[0].className).toContain('focus-visible:ring-2');
     });
 
     it('toggling star adds game to favorites section', () => {

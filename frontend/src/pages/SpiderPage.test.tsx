@@ -449,7 +449,7 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 
-  it('renders mobile viewport with flex-shrink-0 and fixed-width tableau columns', async () => {
+  it('renders mobile viewport with flex-1 min-w-0 tableau columns', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     try {
@@ -458,8 +458,8 @@ describe('SpiderPage', () => {
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       const tableau = document.querySelector('[data-tutorial="spd-tableau"]');
       const firstCol = tableau?.firstElementChild;
-      expect(firstCol?.className).toContain('flex-shrink-0');
-      expect(firstCol?.className).toContain('sm:flex-1');
+      expect(firstCol?.className).toContain('flex-1');
+      expect(firstCol?.className).toContain('min-w-0');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
@@ -474,8 +474,8 @@ describe('SpiderPage', () => {
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       const tableau = document.querySelector('[data-tutorial="spd-tableau"]');
       const firstCol = tableau?.firstElementChild;
-      expect(firstCol?.className).toContain('flex-shrink-0');
-      expect(firstCol?.className).toContain('sm:flex-1');
+      expect(firstCol?.className).toContain('flex-1');
+      expect(firstCol?.className).toContain('min-w-0');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
