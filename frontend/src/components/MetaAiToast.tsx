@@ -4,8 +4,8 @@ import type { StrategyStyle } from '../utils/metaAiAdaptation';
 
 /** Props for the MetaAiToast component. */
 export interface MetaAiToastProps {
-  /** Current strategy style of the CPU meta-AI. */
-  strategyStyle: StrategyStyle;
+  /** Current strategy style of the CPU meta-AI. Undefined when meta-AI is disabled. */
+  strategyStyle: StrategyStyle | undefined;
 }
 
 const DISMISS_MS = 3000;
@@ -19,6 +19,7 @@ export function MetaAiToast({ strategyStyle }: MetaAiToastProps) {
   const isFirstRender = useRef(true);
 
   useEffect(() => {
+    if (!strategyStyle) return;
     if (isFirstRender.current) {
       isFirstRender.current = false;
       prevRef.current = strategyStyle;

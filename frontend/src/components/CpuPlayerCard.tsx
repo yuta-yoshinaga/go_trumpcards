@@ -5,6 +5,7 @@ import type { Card } from '../types/card';
 import { deriveAdaptationLevel, deriveStrategyStyle } from '../utils/metaAiAdaptation';
 import { CardBack, CardImage } from './CardImage';
 import { MetaAiIndicator } from './MetaAiIndicator';
+import { MetaAiToast } from './MetaAiToast';
 
 /** Meta-AI data for a CPU player. */
 export interface CpuMetaAiProp {
@@ -54,15 +55,14 @@ export function CpuPlayerCard({
   const { t } = useTranslation('common');
   const { cpuCardWidth } = useCardDimensions();
   const showFaceUp = showCards && !player.folded && player.cards.length > 0;
+  const strategyStyle = metaAi?.enabled ? deriveStrategyStyle(metaAi) : undefined;
   return (
     <div className="mb-3 rounded-lg p-2 bg-black/20 border border-white/10">
+      {metaAi?.enabled && <MetaAiToast strategyStyle={strategyStyle} />}
       <div className="text-white text-sm mb-1">
         {t('player.cpu', { id: player.id })} <span className="text-gray-300 text-xs">({player.playStyleName})</span>
-        {metaAi?.enabled && (
-          <MetaAiIndicator
-            adaptationLevel={deriveAdaptationLevel(metaAi.gamesPlayed)}
-            strategyStyle={deriveStrategyStyle(metaAi)}
-          />
+        {metaAi?.enabled && strategyStyle && (
+          <MetaAiIndicator adaptationLevel={deriveAdaptationLevel(metaAi.gamesPlayed)} strategyStyle={strategyStyle} />
         )}
         <span className="ml-2 text-xs">
           {t('betting.chips')} {player.chips}
