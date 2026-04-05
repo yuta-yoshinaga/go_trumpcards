@@ -28,10 +28,13 @@ func runCompletion(args []string) int {
 	var err error
 	switch shell {
 	case "bash":
+		writeInstallHint(os.Stderr, shell)
 		err = writeBashCompletion(os.Stdout)
 	case "zsh":
+		writeInstallHint(os.Stderr, shell)
 		err = writeZshCompletion(os.Stdout)
 	case "fish":
+		writeInstallHint(os.Stderr, shell)
 		err = writeFishCompletion(os.Stdout)
 	default:
 		fmt.Fprintf(os.Stderr, "Error: unsupported shell %q (supported: bash, zsh, fish)\n", shell)
@@ -42,6 +45,38 @@ func runCompletion(args []string) int {
 		return 1
 	}
 	return 0
+}
+
+// writeInstallHint writes shell-specific installation instructions to w (typically stderr).
+func writeInstallHint(w io.Writer, shell string) {
+	var hint string
+	switch shell {
+	case "bash":
+		hint = `# To load completions for the current session:
+#   source <(trumpcards completion bash)
+#
+# To persist across sessions, add to your ~/.bashrc:
+#   echo 'source <(trumpcards completion bash)' >> ~/.bashrc
+`
+	case "zsh":
+		hint = `# To load completions for the current session:
+#   source <(trumpcards completion zsh)
+#
+# To persist across sessions (add to fpath):
+#   trumpcards completion zsh > "${fpath[1]}/_trumpcards"
+#   # Then restart your shell or run: compinit
+`
+	case "fish":
+		hint = `# To load completions for the current session:
+#   trumpcards completion fish | source
+#
+# To persist across sessions:
+#   trumpcards completion fish > ~/.config/fish/completions/trumpcards.fish
+`
+	}
+	if hint != "" {
+		_, _ = fmt.Fprint(w, hint)
+	}
 }
 
 func writeBashCompletion(w io.Writer) error {

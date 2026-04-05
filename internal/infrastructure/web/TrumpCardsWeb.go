@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	corsmw "github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/cors"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -430,8 +432,8 @@ func (web *TrumpCardsWeb) Exec() error {
 		return fmt.Errorf("failed to listen on %s: %w", srv.Addr, err)
 	}
 	port := ln.Addr().(*net.TCPAddr).Port
-	fmt.Printf("Server is running at http://localhost:%d\n", port)
-	fmt.Println("Press Ctrl+C to stop")
+	fmt.Println(i18n.Tf("webServerRunning", "port", strconv.Itoa(port)))
+	fmt.Println(i18n.T("webServerStop"))
 
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.Serve(ln) }()
@@ -444,7 +446,7 @@ func (web *TrumpCardsWeb) Exec() error {
 			runErr = fmt.Errorf("server error: %w", err)
 		}
 	case <-ctx.Done():
-		fmt.Println("\nShutting down server...")
+		fmt.Println("\n" + i18n.T("webServerShutdown"))
 		slog.Info("shutting down server")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
