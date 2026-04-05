@@ -24,6 +24,8 @@ type GolfInteractorIF interface {
 	ActionLog() string
 	// Undo アンドゥ
 	Undo() string
+	// UndoN n回連続アンドゥ
+	UndoN(n int) string
 }
 
 // GolfInteractor ゴルフソリティアインタラクタークラス
@@ -71,6 +73,11 @@ func (gi *GolfInteractor) ActionLog() string {
 // Undo アンドゥ
 func (gi *GolfInteractor) Undo() string {
 	return execAndPresent(gi.g, gi.gp, gi.g.Undo)
+}
+
+// UndoN n回連続アンドゥ
+func (gi *GolfInteractor) UndoN(n int) string {
+	return execAndPresent(gi.g, gi.gp, func() error { return gi.g.UndoN(n) })
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.

@@ -23,6 +23,7 @@ func setupKlondikeWebMockDefaults(kg *interfaces.MockKlondikeGame) {
 	kg.On("GetScore").Return(-52).Maybe()
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone).Maybe()
 	kg.On("IsStalemate").Return(false).Maybe()
+	kg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
 	for i := 0; i < domain.KlondikeTableauCnt; i++ {
@@ -144,7 +145,9 @@ func TestKlondikeWebPresenter_Output_Stalemate(t *testing.T) {
 	kg := new(interfaces.MockKlondikeGame)
 	setupKlondikeWebMockDefaults(kg)
 	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
+	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "UndoToEscape")
 	kg.On("IsStalemate").Return(true)
+	kg.On("UndoToEscape").Return(-1)
 
 	p := new(KlondikeWebPresenter)
 	result := parseKlondikeOutput(t, p.Output(kg, nil))
@@ -169,6 +172,7 @@ func TestKlondikeWebPresenter_HintOutput(t *testing.T) {
 		kg.On("CanUndo").Return(false)
 		kg.On("GetScore").Return(-52)
 		kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
+		kg.On("UndoToEscape").Return(0)
 
 		p := new(KlondikeWebPresenter)
 		result := parseKlondikeOutput(t, p.HintOutput(kg))
@@ -190,6 +194,7 @@ func TestKlondikeWebPresenter_HintOutput(t *testing.T) {
 		kg.On("CanUndo").Return(false)
 		kg.On("GetScore").Return(-52)
 		kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
+		kg.On("UndoToEscape").Return(0)
 
 		p := new(KlondikeWebPresenter)
 		result := parseKlondikeOutput(t, p.HintOutput(kg))
@@ -252,6 +257,7 @@ func TestKlondikeWebPresenter_HintOutput_DrawCount(t *testing.T) {
 	kg.On("CanUndo").Return(false)
 	kg.On("GetScore").Return(-52)
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
+	kg.On("UndoToEscape").Return(0)
 
 	p := new(KlondikeWebPresenter)
 	result := parseKlondikeOutput(t, p.HintOutput(kg))
@@ -268,6 +274,7 @@ func TestKlondikeWebPresenter_HintOutput_CanUndo(t *testing.T) {
 	kg.On("CanUndo").Return(true)
 	kg.On("GetScore").Return(-52)
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
+	kg.On("UndoToEscape").Return(0)
 
 	p := new(KlondikeWebPresenter)
 	result := parseKlondikeOutput(t, p.HintOutput(kg))
@@ -284,6 +291,7 @@ func TestKlondikeWebPresenter_HintOutput_Score(t *testing.T) {
 	kg.On("CanUndo").Return(false)
 	kg.On("GetScore").Return(200)
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
+	kg.On("UndoToEscape").Return(0)
 
 	p := new(KlondikeWebPresenter)
 	result := parseKlondikeOutput(t, p.HintOutput(kg))
@@ -300,6 +308,7 @@ func TestKlondikeWebPresenter_HintOutput_ScoringMode(t *testing.T) {
 	kg.On("CanUndo").Return(false)
 	kg.On("GetScore").Return(-52)
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringVegas)
+	kg.On("UndoToEscape").Return(0)
 
 	p := new(KlondikeWebPresenter)
 	result := parseKlondikeOutput(t, p.HintOutput(kg))

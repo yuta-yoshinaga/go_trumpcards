@@ -29,14 +29,15 @@ type TriPeaksWebOutputHint struct {
 
 // TriPeaksWebOutput トリピークスWebアウトプット
 type TriPeaksWebOutput struct {
-	Layout      [][]*TriPeaksWebOutputCard `json:"layout"`
-	StockCount  int                        `json:"stockCount"`
-	Waste       []*WebOutputCard           `json:"waste"`
-	Phase       int                        `json:"phase"`
-	MoveCount   int                        `json:"moveCount"`
-	CanUndo     bool                       `json:"canUndo"`
-	IsStalemate bool                       `json:"isStalemate"`
-	Hint        *TriPeaksWebOutputHint     `json:"hint,omitempty"`
+	Layout       [][]*TriPeaksWebOutputCard `json:"layout"`
+	StockCount   int                        `json:"stockCount"`
+	Waste        []*WebOutputCard           `json:"waste"`
+	Phase        int                        `json:"phase"`
+	MoveCount    int                        `json:"moveCount"`
+	CanUndo      bool                       `json:"canUndo"`
+	IsStalemate  bool                       `json:"isStalemate"`
+	UndoToEscape int                        `json:"undoToEscape"`
+	Hint         *TriPeaksWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -81,6 +82,12 @@ func triPeaksDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TriP
 		bc.writePresenterResponse(w, ti.GiveUp())
 	case "u", "undo":
 		bc.writePresenterResponse(w, ti.Undo())
+	case "undo_n":
+		if param.N == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+			return true
+		}
+		bc.writePresenterResponse(w, ti.UndoN(*param.N))
 	default:
 		return dispatchHintAndLog(param.Command, bc, w, ti.Hint, ti.ActionLog)
 	}

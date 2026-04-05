@@ -551,3 +551,52 @@ func TestGolf_FindExposedRow(t *testing.T) {
 	g.layout[0][4].Removed = true
 	assert.Equal(t, 3, g.findExposedRow(0))
 }
+
+// --- UndoToEscape / UndoN tests ---
+
+func TestGolf_UndoToEscape_NotInStalemate(t *testing.T) {
+	g := newTestGolf()
+	g.Reset()
+	assert.Equal(t, 0, g.UndoToEscape())
+}
+
+func TestGolf_UndoToEscape_StalemateNoHistory(t *testing.T) {
+	g := newTestGolf()
+	g.Reset()
+	g.SetIsStalemate(true)
+	assert.Equal(t, -1, g.UndoToEscape())
+}
+
+func TestGolf_UndoToEscape_StalemateWithEscape(t *testing.T) {
+	g := newTestGolf()
+	g.Reset()
+	_ = g.Draw()
+	g.SetIsStalemate(true)
+	n := g.UndoToEscape()
+	assert.Equal(t, 1, n)
+}
+
+func TestGolf_UndoN_Zero(t *testing.T) {
+	g := newTestGolf()
+	g.Reset()
+	err := g.UndoN(0)
+	assert.NoError(t, err)
+}
+
+func TestGolf_UndoN_Valid(t *testing.T) {
+	g := newTestGolf()
+	g.Reset()
+	_ = g.Draw()
+	_ = g.Draw()
+	err := g.UndoN(2)
+	assert.NoError(t, err)
+}
+
+func TestGolf_UndoN_Excessive(t *testing.T) {
+	g := newTestGolf()
+	g.Reset()
+	_ = g.Draw()
+	err := g.UndoN(5)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "undo step")
+}

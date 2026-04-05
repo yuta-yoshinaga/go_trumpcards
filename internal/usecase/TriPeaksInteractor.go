@@ -24,6 +24,8 @@ type TriPeaksInteractorIF interface {
 	ActionLog() string
 	// Undo アンドゥ
 	Undo() string
+	// UndoN n回連続アンドゥ
+	UndoN(n int) string
 }
 
 // TriPeaksInteractor トリピークスインタラクタークラス
@@ -71,6 +73,11 @@ func (ti *TriPeaksInteractor) ActionLog() string {
 // Undo アンドゥ
 func (ti *TriPeaksInteractor) Undo() string {
 	return execAndPresent(ti.t, ti.tp, ti.t.Undo)
+}
+
+// UndoN n回連続アンドゥ
+func (ti *TriPeaksInteractor) UndoN(n int) string {
+	return execAndPresent(ti.t, ti.tp, func() error { return ti.t.UndoN(n) })
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.

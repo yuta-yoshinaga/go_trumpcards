@@ -74,6 +74,16 @@ func (_m *MockKlondikeGame) CanUndo() bool {
 	return ret.Bool(0)
 }
 
+func (_m *MockKlondikeGame) UndoToEscape() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+func (_m *MockKlondikeGame) UndoN(n int) error {
+	ret := _m.Called(n)
+	return ret.Error(0)
+}
+
 func (_m *MockKlondikeGame) GetPhase() domain.KlondikePhase {
 	ret := _m.Called()
 	return ret.Get(0).(domain.KlondikePhase)

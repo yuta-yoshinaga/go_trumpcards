@@ -18,6 +18,7 @@ func (p *FreeCellWebPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 	resObj.MoveCount = f.GetMoveCount()
 	resObj.CanUndo = f.CanUndo()
 	resObj.IsStalemate = f.IsStalemate()
+	resObj.UndoToEscape = f.UndoToEscape()
 
 	// タブロー
 	tableau := f.GetTableau()

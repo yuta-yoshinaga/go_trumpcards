@@ -32,14 +32,15 @@ type FreeCellWebOutputHint struct {
 
 // FreeCellWebOutput フリーセルWebアウトプット
 type FreeCellWebOutput struct {
-	Tableau     [][]*WebOutputCard     `json:"tableau"`
-	FreeCells   []*WebOutputCard       `json:"freeCells"`
-	Foundation  [][]*WebOutputCard     `json:"foundation"`
-	Phase       int                    `json:"phase"`
-	MoveCount   int                    `json:"moveCount"`
-	CanUndo     bool                   `json:"canUndo"`
-	IsStalemate bool                   `json:"isStalemate"`
-	Hint        *FreeCellWebOutputHint `json:"hint,omitempty"`
+	Tableau      [][]*WebOutputCard     `json:"tableau"`
+	FreeCells    []*WebOutputCard       `json:"freeCells"`
+	Foundation   [][]*WebOutputCard     `json:"foundation"`
+	Phase        int                    `json:"phase"`
+	MoveCount    int                    `json:"moveCount"`
+	CanUndo      bool                   `json:"canUndo"`
+	IsStalemate  bool                   `json:"isStalemate"`
+	UndoToEscape int                    `json:"undoToEscape"`
+	Hint         *FreeCellWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -81,6 +82,12 @@ func freeCellDispatch(bc *baseController, w http.ResponseWriter, fi usecase.Free
 		bc.writePresenterResponse(w, fi.AutoComplete())
 	case "u", "undo":
 		bc.writePresenterResponse(w, fi.Undo())
+	case "undo_n":
+		if param.N == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+			return true
+		}
+		bc.writePresenterResponse(w, fi.UndoN(*param.N))
 	default:
 		return dispatchHintAndLog(param.Command, bc, w, fi.Hint, fi.ActionLog)
 	}

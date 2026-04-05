@@ -19,6 +19,7 @@ func (pr *TriPeaksWebPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 	resObj.StockCount = t.GetStockCount()
 	resObj.CanUndo = t.CanUndo()
 	resObj.IsStalemate = t.IsStalemate()
+	resObj.UndoToEscape = t.UndoToEscape()
 
 	// ウェイスト
 	waste := t.GetWaste()
@@ -85,6 +86,7 @@ func (pr *TriPeaksWebPresenter) HintOutput(t interfaces.TriPeaksGame) string {
 	resObj.MoveCount = t.GetMoveCount()
 	resObj.StockCount = t.GetStockCount()
 	resObj.CanUndo = t.CanUndo()
+	resObj.UndoToEscape = t.UndoToEscape()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Layout = make([][]*controller.TriPeaksWebOutputCard, 0)
 

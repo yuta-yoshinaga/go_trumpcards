@@ -38,14 +38,15 @@ type PyramidWebOutputHint struct {
 
 // PyramidWebOutput ピラミッドWebアウトプット
 type PyramidWebOutput struct {
-	Pyramid     [][]*PyramidWebOutputCard `json:"pyramid"`
-	StockCount  int                       `json:"stockCount"`
-	Waste       []*WebOutputCard          `json:"waste"`
-	Phase       int                       `json:"phase"`
-	MoveCount   int                       `json:"moveCount"`
-	CanUndo     bool                      `json:"canUndo"`
-	IsStalemate bool                      `json:"isStalemate"`
-	Hint        *PyramidWebOutputHint     `json:"hint,omitempty"`
+	Pyramid      [][]*PyramidWebOutputCard `json:"pyramid"`
+	StockCount   int                       `json:"stockCount"`
+	Waste        []*WebOutputCard          `json:"waste"`
+	Phase        int                       `json:"phase"`
+	MoveCount    int                       `json:"moveCount"`
+	CanUndo      bool                      `json:"canUndo"`
+	IsStalemate  bool                      `json:"isStalemate"`
+	UndoToEscape int                       `json:"undoToEscape"`
+	Hint         *PyramidWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -86,6 +87,12 @@ func pyramidDispatch(bc *baseController, w http.ResponseWriter, pi usecase.Pyram
 		bc.writePresenterResponse(w, pi.GiveUp())
 	case "u", "undo":
 		bc.writePresenterResponse(w, pi.Undo())
+	case "undo_n":
+		if param.N == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+			return true
+		}
+		bc.writePresenterResponse(w, pi.UndoN(*param.N))
 	default:
 		return dispatchHintAndLog(param.Command, bc, w, pi.Hint, pi.ActionLog)
 	}

@@ -275,5 +275,9 @@
     "unknownCommandWithSuggestion": "Unknown command: {{cmd}}. Did you mean: {{suggestion}}",
     "emptyInput": "Please enter a command. Type 'help' for help.",
     "helpCommon": "Common commands: r/reset (reset), help/? (help), clear (clear log)"
+  },
+  "solitaire": {
+    "undoToEscape": "Undo {{n}} steps to escape",
+    "noEscape": "No escapable state found. Please reset."
   }
 }

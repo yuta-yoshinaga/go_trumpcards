@@ -22,6 +22,7 @@ func (p *KlondikeWebPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 	resObj.Score = k.GetScore()
 	resObj.ScoringMode = int(k.GetScoringMode())
 	resObj.IsStalemate = k.IsStalemate()
+	resObj.UndoToEscape = k.UndoToEscape()
 
 	// ウェイスト
 	waste := k.GetWaste()
@@ -96,6 +97,7 @@ func (p *KlondikeWebPresenter) HintOutput(k interfaces.KlondikeGame) string {
 	resObj.CanUndo = k.CanUndo()
 	resObj.Score = k.GetScore()
 	resObj.ScoringMode = int(k.GetScoringMode())
+	resObj.UndoToEscape = k.UndoToEscape()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.KlondikeWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)

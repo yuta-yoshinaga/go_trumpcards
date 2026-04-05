@@ -58,3 +58,8 @@ func (_m *MockPyramidInteractor) Undo() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+func (_m *MockPyramidInteractor) UndoN(n int) string {
+	ret := _m.Called(n)
+	return ret.Get(0).(string)
+}

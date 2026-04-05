@@ -909,6 +909,7 @@ export interface KlondikeResponse {
   drawCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   score: number;
   scoringMode: number;
   message: string;
@@ -937,6 +938,7 @@ export interface FreeCellResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
@@ -1065,6 +1067,7 @@ export interface SpiderResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   score: number;
   difficulty: number;
   message: string;
@@ -1294,6 +1297,7 @@ export interface PyramidResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
@@ -1325,6 +1329,7 @@ export interface TriPeaksResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
@@ -1725,6 +1730,7 @@ export interface GolfResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;

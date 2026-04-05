@@ -43,3 +43,8 @@ func (_m *MockGolfInteractor) Undo() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+func (_m *MockGolfInteractor) UndoN(n int) string {
+	ret := _m.Called(n)
+	return ret.Get(0).(string)
+}

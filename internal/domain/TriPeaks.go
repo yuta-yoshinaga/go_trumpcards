@@ -281,6 +281,29 @@ func (t *TriPeaks) CanUndo() bool {
 	return len(t.history) > 0 && t.phase == TriPeaksPhasePlaying
 }
 
+// UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
+func (t *TriPeaks) UndoToEscape() int {
+	if !t.isStalemate {
+		return 0
+	}
+	for i := len(t.history) - 1; i >= 0; i-- {
+		if !t.history[i].isStalemate {
+			return len(t.history) - i
+		}
+	}
+	return -1
+}
+
+// UndoN n回連続でアンドゥを実行する。
+func (t *TriPeaks) UndoN(n int) error {
+	for i := 0; i < n; i++ {
+		if err := t.Undo(); err != nil {
+			return fmt.Errorf("undo step %d failed: %w", i+1, err)
+		}
+	}
+	return nil
+}
+
 // --- State getters/setters ---
 
 // GetPhase フェーズ取得

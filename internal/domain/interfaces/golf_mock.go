@@ -50,6 +50,16 @@ func (_m *MockGolfGame) CanUndo() bool {
 	return ret.Get(0).(bool)
 }
 
+func (_m *MockGolfGame) UndoToEscape() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+func (_m *MockGolfGame) UndoN(n int) error {
+	ret := _m.Called(n)
+	return ret.Error(0)
+}
+
 func (_m *MockGolfGame) GetPhase() domain.GolfPhase {
 	ret := _m.Called()
 	return ret.Get(0).(domain.GolfPhase)

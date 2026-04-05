@@ -70,6 +70,16 @@ func (_m *MockFreeCellGame) CanUndo() bool {
 	return ret.Bool(0)
 }
 
+func (_m *MockFreeCellGame) UndoToEscape() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+func (_m *MockFreeCellGame) UndoN(n int) error {
+	ret := _m.Called(n)
+	return ret.Error(0)
+}
+
 func (_m *MockFreeCellGame) GetPhase() domain.FreeCellPhase {
 	ret := _m.Called()
 	return ret.Get(0).(domain.FreeCellPhase)
