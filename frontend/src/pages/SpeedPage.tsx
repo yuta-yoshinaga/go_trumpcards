@@ -15,6 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { SpeedSkeleton } from '../components/skeleton/SpeedSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -94,140 +95,131 @@ function SpeedPageContent() {
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const isPlayPhase = state?.phase === SpeedPhase.PLAY;
-  const isStuck = state?.phase === SpeedPhase.STUCK;
-  const isGameEnd = state?.phase === SpeedPhase.GAME_END || state?.gameEndFlag;
-  const humanPlayer = state?.players?.[0];
-  const cpuPlayer = state?.players?.[1];
-  const humanWon = state?.winnerIdx === 0;
+  if (!state || state.players.length < 2) return <SpeedSkeleton />;
 
-  const phaseName = state?.gameEndFlag
+  const isPlayPhase = state.phase === SpeedPhase.PLAY;
+  const isStuck = state.phase === SpeedPhase.STUCK;
+  const isGameEnd = state.phase === SpeedPhase.GAME_END || state.gameEndFlag;
+  const humanPlayer = state.players[0];
+  const cpuPlayer = state.players[1];
+  const humanWon = state.winnerIdx === 0;
+
+  const phaseName = state.gameEndFlag
     ? t('phase.gameEnd')
-    : state?.phase === SpeedPhase.STUCK
+    : state.phase === SpeedPhase.STUCK
       ? t('phase.stuck')
       : t('phase.play');
 
   return (
     <div className="flex flex-col h-full gap-2 p-2" aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.speed')} />
-      {state && (
-        <PhaseIndicator phaseName={phaseName} isHumanTurn={isPlayPhase}>
-          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-          <TutorialButton />
-          <ManualButton gamePath="/speed" />
-        </PhaseIndicator>
-      )}
+      <PhaseIndicator phaseName={phaseName} isHumanTurn={isPlayPhase}>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        <TutorialButton />
+        <ManualButton gamePath="/speed" />
+      </PhaseIndicator>
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
           {error && <ErrorAlert message={error} onRetry={retry} />}
-          {state && (
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-          )}
+          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+          <div className="flex-1 flex flex-col gap-3 min-h-0">
+            {/* CPU area */}
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-sm text-gray-500">
+                {t('cpuHand')}: {cpuPlayer.cardCount}
+              </span>
+              <div className="flex gap-1">
+                {Array.from({ length: cpuPlayer.cardCount }).map((_, i) => (
+                  <AnimatedCardBack key={i} width={cardWidth * 0.7} onFlipComplete={() => playSound('cardFlip')} />
+                ))}
+              </div>
+              <span className="text-sm text-gray-500">
+                {t('drawPile')}: {cpuPlayer.drawPileSize}
+              </span>
+            </div>
 
-          {state && (
-            <div className="flex-1 flex flex-col gap-3 min-h-0">
-              {/* CPU area */}
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-sm text-gray-500">
-                  {t('cpuHand')}: {cpuPlayer?.cardCount ?? 0}
-                </span>
-                <div className="flex gap-1">
-                  {Array.from({ length: cpuPlayer?.cardCount ?? 0 }).map((_, i) => (
-                    <AnimatedCardBack key={i} width={cardWidth * 0.7} onFlipComplete={() => playSound('cardFlip')} />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-500">
-                  {t('drawPile')}: {cpuPlayer?.drawPileSize ?? 0}
+            {/* Center piles */}
+            <div className="flex items-center justify-center gap-6" data-tutorial="sp-center-piles">
+              {state.centerPiles.map((card, pi) => (
+                <button
+                  type="button"
+                  key={pi}
+                  onClick={() => handlePlay(pi)}
+                  disabled={!isPlayPhase || selectedCardIndices.length !== 1 || loading}
+                  className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}`}
+                  aria-label={`${t('centerPile')} ${pi}`}
+                >
+                  {card && (
+                    <AnimatedCard
+                      card={card}
+                      width={cardWidth * 1.2}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Human hand */}
+            <div className="flex flex-col items-center gap-1" data-tutorial="sp-player-hand">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{t('yourHand')}</span>
+                <span className="text-sm text-gray-500" data-tutorial="sp-draw-pile">
+                  {t('drawPile')}: {humanPlayer.drawPileSize}
                 </span>
               </div>
-
-              {/* Center piles */}
-              <div className="flex items-center justify-center gap-6" data-tutorial="sp-center-piles">
-                {state.centerPiles.map((card, pi) => (
+              <div className="flex gap-1 flex-wrap justify-center">
+                {humanPlayer.cards.map((card, idx) => (
                   <button
                     type="button"
-                    key={pi}
-                    onClick={() => handlePlay(pi)}
-                    disabled={!isPlayPhase || selectedCardIndices.length !== 1 || loading}
-                    className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}`}
-                    aria-label={`${t('centerPile')} ${pi}`}
+                    key={`${card.design}-${card.value}-${idx}`}
+                    onClick={() => toggleCard(idx)}
+                    disabled={!isPlayPhase || loading}
+                    aria-label={`${card.design} ${card.value}`}
+                    aria-pressed={selectedCardIndices.includes(idx)}
+                    className={`transition-transform ${focusRingCard}`}
+                    style={selectedCardStyle(selectedCardIndices.includes(idx))}
                   >
-                    {card && (
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth * 1.2}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
-                    )}
+                    <AnimatedCard
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
                   </button>
                 ))}
               </div>
-
-              {/* Human hand */}
-              <div className="flex flex-col items-center gap-1" data-tutorial="sp-player-hand">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">{t('yourHand')}</span>
-                  <span className="text-sm text-gray-500" data-tutorial="sp-draw-pile">
-                    {t('drawPile')}: {humanPlayer?.drawPileSize ?? 0}
-                  </span>
-                </div>
-                <div className="flex gap-1 flex-wrap justify-center">
-                  {humanPlayer?.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      disabled={!isPlayPhase || loading}
-                      aria-label={`${card.design} ${card.value}`}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={selectedCardStyle(selectedCardIndices.includes(idx))}
-                    >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Stuck message & flip button */}
-              {isStuck && (
-                <div className="flex flex-col items-center gap-2">
-                  <p className="text-amber-600 font-bold">{t('stuckMessage')}</p>
-                  <button
-                    type="button"
-                    onClick={handleFlip}
-                    disabled={loading}
-                    className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50"
-                  >
-                    {t('flipButton')}
-                  </button>
-                </div>
-              )}
-
-              {/* Hint */}
-              {state.hint?.found && isPlayPhase && (
-                <p className="text-center text-sm text-blue-600">
-                  {t('hint.play', { cardIndex: state.hint.cardIndex, pileIndex: state.hint.pileIndex })}
-                </p>
-              )}
-              {frontendHintEnabled && frontendHint && (
-                <div className="flex justify-center">
-                  <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-                </div>
-              )}
             </div>
-          )}
+
+            {/* Stuck message & flip button */}
+            {isStuck && (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-amber-600 font-bold">{t('stuckMessage')}</p>
+                <button
+                  type="button"
+                  onClick={handleFlip}
+                  disabled={loading}
+                  className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50"
+                >
+                  {t('flipButton')}
+                </button>
+              </div>
+            )}
+
+            {/* Hint */}
+            {state.hint?.found && isPlayPhase && (
+              <p className="text-center text-sm text-blue-600">
+                {t('hint.play', { cardIndex: state.hint.cardIndex, pileIndex: state.hint.pileIndex })}
+              </p>
+            )}
+            {frontendHintEnabled && frontendHint && (
+              <div className="flex justify-center">
+                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+              </div>
+            )}
+          </div>
 
           {/* Settings */}
           <SettingsPanel
@@ -257,7 +249,6 @@ function SpeedPageContent() {
               },
             ]}
           />
-
           <GameFooter>
             <button
               type="button"

@@ -262,7 +262,7 @@ function CanastaPageContent() {
                     <thead>
                       <tr>
                         <th scope="col" className="text-left">
-                          {tc('common:player', { defaultValue: 'Player' })}
+                          {tc('label.player')}
                         </th>
                         <th scope="col">{t('score.round')}</th>
                         <th scope="col">{t('score.cumulative')}</th>
