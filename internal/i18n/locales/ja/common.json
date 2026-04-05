@@ -8,7 +8,7 @@
   "session": "セッション:",
   "helpEntry": "  help, ?              このヘルプを表示",
   "resetEntry": "  r                    ゲームをリセット",
-  "quitEntry": "  q                    終了",
+  "quitEntry": "  q, exit              終了",
   "switchUsage": "使い方: switch <game>。ゲーム一覧は 'games' で確認できます。",
   "unknownGame": "不明なゲーム: \"{{name}}\"。ゲーム一覧は 'games' で確認できます。",
   "alreadyPlaying": "すでに {{name}} をプレイ中です。",
@@ -61,5 +61,6 @@
   "spider.moveUsage": "使い方: m t <移動元列> <カードIdx> t <移動先列>",
   "webServerRunning": "サーバーが http://localhost:{{port}} で起動しました",
   "webServerStop": "Ctrl+C で停止できます",
-  "webServerShutdown": "サーバーをシャットダウン中..."
+  "webServerShutdown": "サーバーをシャットダウン中...",
+  "webServerStopped": "サーバーを停止しました。"
 }

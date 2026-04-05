@@ -491,7 +491,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.gfc.Stop()
 	web.pinc.Stop()
 	web.glfc.Stop()
-	fmt.Println("Server stopped.")
+	fmt.Println(i18n.T("webServerStopped"))
 	slog.Info("server stopped")
 	return runErr
 }

@@ -28,13 +28,13 @@ func runCompletion(args []string) int {
 	var err error
 	switch shell {
 	case "bash":
-		writeInstallHint(os.Stderr, shell)
+		writeInstallHint(os.Stdout, shell)
 		err = writeBashCompletion(os.Stdout)
 	case "zsh":
-		writeInstallHint(os.Stderr, shell)
+		writeInstallHint(os.Stdout, shell)
 		err = writeZshCompletion(os.Stdout)
 	case "fish":
-		writeInstallHint(os.Stderr, shell)
+		writeInstallHint(os.Stdout, shell)
 		err = writeFishCompletion(os.Stdout)
 	default:
 		fmt.Fprintf(os.Stderr, "Error: unsupported shell %q (supported: bash, zsh, fish)\n", shell)
@@ -47,7 +47,7 @@ func runCompletion(args []string) int {
 	return 0
 }
 
-// writeInstallHint writes shell-specific installation instructions to w (typically stderr).
+// writeInstallHint writes shell-specific installation instructions to w as #-prefixed comments.
 func writeInstallHint(w io.Writer, shell string) {
 	var hint string
 	switch shell {
