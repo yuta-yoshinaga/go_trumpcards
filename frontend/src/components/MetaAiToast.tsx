@@ -15,7 +15,7 @@ export function MetaAiToast({ strategyStyle }: MetaAiToastProps) {
   const { t } = useTranslation('common');
   const [visible, setVisible] = useState(false);
   const prevRef = useRef<StrategyStyle | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const isFirstRender = useRef(true);
 
   useEffect(() => {

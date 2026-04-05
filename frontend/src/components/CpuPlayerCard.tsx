@@ -57,7 +57,7 @@ export function CpuPlayerCard({
   const showFaceUp = showCards && !player.folded && player.cards.length > 0;
   const strategyStyle = metaAi?.enabled ? deriveStrategyStyle(metaAi) : undefined;
   return (
-    <div className="mb-3 rounded-lg p-2 bg-black/20 border border-white/10">
+    <div className="relative mb-3 rounded-lg p-2 bg-black/20 border border-white/10">
       {metaAi?.enabled && <MetaAiToast strategyStyle={strategyStyle} />}
       <div className="text-white text-sm mb-1">
         {t('player.cpu', { id: player.id })} <span className="text-gray-300 text-xs">({player.playStyleName})</span>
