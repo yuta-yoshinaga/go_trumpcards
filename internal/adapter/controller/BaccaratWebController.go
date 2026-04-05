@@ -48,7 +48,7 @@ type BaccaratWebController = GameWebController[usecase.BaccaratInteractorIF, Bac
 
 // NewBaccaratWebController and NewBaccaratWebControllerWithProvider are
 // the standard and provider-backed constructors for BaccaratWebController.
-var NewBaccaratWebController, NewBaccaratWebControllerWithProvider = WebControllerPair[usecase.BaccaratInteractorIF, BaccaratWebInput, *BaccaratWebOutput](
+var NewBaccaratWebController, NewBaccaratWebControllerWithProvider = webControllerPair[usecase.BaccaratInteractorIF, BaccaratWebInput, *BaccaratWebOutput](
 	newBaccaratDefaultOutput, baccaratDispatch,
 )
 

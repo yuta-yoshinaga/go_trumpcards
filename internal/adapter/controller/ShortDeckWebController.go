@@ -18,7 +18,7 @@ type ShortDeckWebController = GameWebController[usecase.ShortDeckInteractorIF, S
 
 // NewShortDeckWebController and NewShortDeckWebControllerWithProvider are
 // the standard and provider-backed constructors for ShortDeckWebController.
-var NewShortDeckWebController, NewShortDeckWebControllerWithProvider = WebControllerPair[usecase.ShortDeckInteractorIF, ShortDeckWebInput, *ShortDeckWebOutput](
+var NewShortDeckWebController, NewShortDeckWebControllerWithProvider = webControllerPair[usecase.ShortDeckInteractorIF, ShortDeckWebInput, *ShortDeckWebOutput](
 	newShortDeckDefaultOutput, shortDeckDispatch,
 )
 

@@ -85,7 +85,7 @@ type CribbageWebController = GameWebController[usecase.CribbageInteractorIF, Cri
 
 // NewCribbageWebController and NewCribbageWebControllerWithProvider are
 // the standard and provider-backed constructors for CribbageWebController.
-var NewCribbageWebController, NewCribbageWebControllerWithProvider = WebControllerPair[usecase.CribbageInteractorIF, CribbageWebInput, *CribbageWebOutput](
+var NewCribbageWebController, NewCribbageWebControllerWithProvider = webControllerPair[usecase.CribbageInteractorIF, CribbageWebInput, *CribbageWebOutput](
 	newCribbageDefaultOutput, cribbageDispatch,
 )
 

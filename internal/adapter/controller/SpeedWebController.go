@@ -70,7 +70,7 @@ type SpeedWebController = GameWebController[usecase.SpeedInteractorIF, SpeedWebI
 
 // NewSpeedWebController and NewSpeedWebControllerWithProvider are
 // the standard and provider-backed constructors for SpeedWebController.
-var NewSpeedWebController, NewSpeedWebControllerWithProvider = WebControllerPair[usecase.SpeedInteractorIF, SpeedWebInput, *SpeedWebOutput](
+var NewSpeedWebController, NewSpeedWebControllerWithProvider = webControllerPair[usecase.SpeedInteractorIF, SpeedWebInput, *SpeedWebOutput](
 	newSpeedDefaultOutput, speedDispatch,
 )
 

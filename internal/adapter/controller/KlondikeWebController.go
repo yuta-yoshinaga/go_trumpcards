@@ -66,7 +66,7 @@ type KlondikeWebController = GameWebController[usecase.KlondikeInteractorIF, Klo
 
 // NewKlondikeWebController and NewKlondikeWebControllerWithProvider are
 // the standard and provider-backed constructors for KlondikeWebController.
-var NewKlondikeWebController, NewKlondikeWebControllerWithProvider = WebControllerPair[usecase.KlondikeInteractorIF, KlondikeWebInput, *KlondikeWebOutput](
+var NewKlondikeWebController, NewKlondikeWebControllerWithProvider = webControllerPair[usecase.KlondikeInteractorIF, KlondikeWebInput, *KlondikeWebOutput](
 	newKlondikeDefaultOutput, klondikeDispatch,
 )
 

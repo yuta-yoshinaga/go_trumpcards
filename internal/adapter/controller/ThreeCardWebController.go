@@ -39,7 +39,7 @@ type ThreeCardWebController = GameWebController[usecase.ThreeCardInteractorIF, T
 
 // NewThreeCardWebController and NewThreeCardWebControllerWithProvider are
 // the standard and provider-backed constructors for ThreeCardWebController.
-var NewThreeCardWebController, NewThreeCardWebControllerWithProvider = WebControllerPair[usecase.ThreeCardInteractorIF, ThreeCardWebInput, *ThreeCardWebOutput](
+var NewThreeCardWebController, NewThreeCardWebControllerWithProvider = webControllerPair[usecase.ThreeCardInteractorIF, ThreeCardWebInput, *ThreeCardWebOutput](
 	newThreeCardDefaultOutput, threeCardDispatch,
 )
 

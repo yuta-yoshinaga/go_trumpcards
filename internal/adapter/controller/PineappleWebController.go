@@ -174,7 +174,7 @@ type PineappleWebController = GameWebController[usecase.PineappleInteractorIF, P
 
 // NewPineappleWebController and NewPineappleWebControllerWithProvider are
 // the standard and provider-backed constructors for PineappleWebController.
-var NewPineappleWebController, NewPineappleWebControllerWithProvider = WebControllerPair[usecase.PineappleInteractorIF, PineappleWebInput, *PineappleWebOutput](
+var NewPineappleWebController, NewPineappleWebControllerWithProvider = webControllerPair[usecase.PineappleInteractorIF, PineappleWebInput, *PineappleWebOutput](
 	newPineappleDefaultOutput, pineappleDispatch,
 )
 

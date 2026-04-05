@@ -55,9 +55,9 @@ func (gwc *GameWebController[I, P, O]) Stop() {
 	gwc.provider.Stop()
 }
 
-// WebControllerPair returns a (New, NewWithProvider) constructor pair for a
+// webControllerPair returns a (New, NewWithProvider) constructor pair for a
 // game web controller, eliminating two boilerplate functions per game file.
-func WebControllerPair[I any, P WebInput, O any](
+func webControllerPair[I any, P WebInput, O any](
 	newDefault func(string) O,
 	dispatch func(*baseController, http.ResponseWriter, I, P, func(string) O) bool,
 ) (

@@ -44,7 +44,7 @@ type GolfWebController = GameWebController[usecase.GolfInteractorIF, GolfWebInpu
 
 // NewGolfWebController and NewGolfWebControllerWithProvider are
 // the standard and provider-backed constructors for GolfWebController.
-var NewGolfWebController, NewGolfWebControllerWithProvider = WebControllerPair[usecase.GolfInteractorIF, GolfWebInput, *GolfWebOutput](
+var NewGolfWebController, NewGolfWebControllerWithProvider = webControllerPair[usecase.GolfInteractorIF, GolfWebInput, *GolfWebOutput](
 	newGolfDefaultOutput, golfDispatch,
 )
 

@@ -96,7 +96,7 @@ type SpadesWebController = GameWebController[usecase.SpadesInteractorIF, SpadesW
 
 // NewSpadesWebController and NewSpadesWebControllerWithProvider are
 // the standard and provider-backed constructors for SpadesWebController.
-var NewSpadesWebController, NewSpadesWebControllerWithProvider = WebControllerPair[usecase.SpadesInteractorIF, SpadesWebInput, *SpadesWebOutput](
+var NewSpadesWebController, NewSpadesWebControllerWithProvider = webControllerPair[usecase.SpadesInteractorIF, SpadesWebInput, *SpadesWebOutput](
 	newSpadesDefaultOutput, spadesDispatch,
 )
 

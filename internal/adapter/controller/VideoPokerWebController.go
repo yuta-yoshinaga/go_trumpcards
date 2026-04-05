@@ -33,7 +33,7 @@ type VideoPokerWebController = GameWebController[usecase.VideoPokerInteractorIF,
 
 // NewVideoPokerWebController and NewVideoPokerWebControllerWithProvider are
 // the standard and provider-backed constructors for VideoPokerWebController.
-var NewVideoPokerWebController, NewVideoPokerWebControllerWithProvider = WebControllerPair[usecase.VideoPokerInteractorIF, VideoPokerWebInput, *VideoPokerWebOutput](
+var NewVideoPokerWebController, NewVideoPokerWebControllerWithProvider = webControllerPair[usecase.VideoPokerInteractorIF, VideoPokerWebInput, *VideoPokerWebOutput](
 	newVideoPokerDefaultOutput, videoPokerDispatch,
 )
 

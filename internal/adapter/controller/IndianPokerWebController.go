@@ -111,7 +111,7 @@ type IndianPokerWebController = GameWebController[usecase.IndianPokerInteractorI
 
 // NewIndianPokerWebController and NewIndianPokerWebControllerWithProvider are
 // the standard and provider-backed constructors for IndianPokerWebController.
-var NewIndianPokerWebController, NewIndianPokerWebControllerWithProvider = WebControllerPair[usecase.IndianPokerInteractorIF, IndianPokerWebInput, *IndianPokerWebOutput](
+var NewIndianPokerWebController, NewIndianPokerWebControllerWithProvider = webControllerPair[usecase.IndianPokerInteractorIF, IndianPokerWebInput, *IndianPokerWebOutput](
 	newIndianPokerDefaultOutput, indianPokerDispatch,
 )
 

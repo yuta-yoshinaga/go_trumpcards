@@ -100,7 +100,7 @@ type OhHellWebController = GameWebController[usecase.OhHellInteractorIF, OhHellW
 
 // NewOhHellWebController and NewOhHellWebControllerWithProvider are
 // the standard and provider-backed constructors for OhHellWebController.
-var NewOhHellWebController, NewOhHellWebControllerWithProvider = WebControllerPair[usecase.OhHellInteractorIF, OhHellWebInput, *OhHellWebOutput](
+var NewOhHellWebController, NewOhHellWebControllerWithProvider = webControllerPair[usecase.OhHellInteractorIF, OhHellWebInput, *OhHellWebOutput](
 	newOhHellDefaultOutput, ohHellDispatch,
 )
 

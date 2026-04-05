@@ -100,7 +100,7 @@ type SevensWebController = GameWebController[usecase.SevensInteractorIF, SevensW
 
 // NewSevensWebController and NewSevensWebControllerWithProvider are
 // the standard and provider-backed constructors for SevensWebController.
-var NewSevensWebController, NewSevensWebControllerWithProvider = WebControllerPair[usecase.SevensInteractorIF, SevensWebInput, *SevensWebOutput](
+var NewSevensWebController, NewSevensWebControllerWithProvider = webControllerPair[usecase.SevensInteractorIF, SevensWebInput, *SevensWebOutput](
 	newSevensDefaultOutput, sevensDispatch,
 )
 

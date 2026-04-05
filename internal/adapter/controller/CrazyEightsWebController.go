@@ -71,7 +71,7 @@ type CrazyEightsWebController = GameWebController[usecase.CrazyEightsInteractorI
 
 // NewCrazyEightsWebController and NewCrazyEightsWebControllerWithProvider are
 // the standard and provider-backed constructors for CrazyEightsWebController.
-var NewCrazyEightsWebController, NewCrazyEightsWebControllerWithProvider = WebControllerPair[usecase.CrazyEightsInteractorIF, CrazyEightsWebInput, *CrazyEightsWebOutput](
+var NewCrazyEightsWebController, NewCrazyEightsWebControllerWithProvider = webControllerPair[usecase.CrazyEightsInteractorIF, CrazyEightsWebInput, *CrazyEightsWebOutput](
 	newCrazyEightsDefaultOutput, crazyEightsDispatch,
 )
 

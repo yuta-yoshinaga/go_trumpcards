@@ -55,7 +55,7 @@ type PyramidWebController = GameWebController[usecase.PyramidInteractorIF, Pyram
 
 // NewPyramidWebController and NewPyramidWebControllerWithProvider are
 // the standard and provider-backed constructors for PyramidWebController.
-var NewPyramidWebController, NewPyramidWebControllerWithProvider = WebControllerPair[usecase.PyramidInteractorIF, PyramidWebInput, *PyramidWebOutput](
+var NewPyramidWebController, NewPyramidWebControllerWithProvider = webControllerPair[usecase.PyramidInteractorIF, PyramidWebInput, *PyramidWebOutput](
 	newPyramidDefaultOutput, pyramidDispatch,
 )
 

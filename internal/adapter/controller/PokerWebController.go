@@ -129,7 +129,7 @@ type PokerWebController = GameWebController[usecase.PokerInteractorIF, PokerWebI
 
 // NewPokerWebController and NewPokerWebControllerWithProvider are
 // the standard and provider-backed constructors for PokerWebController.
-var NewPokerWebController, NewPokerWebControllerWithProvider = WebControllerPair[usecase.PokerInteractorIF, PokerWebInput, *PokerWebOutput](
+var NewPokerWebController, NewPokerWebControllerWithProvider = webControllerPair[usecase.PokerInteractorIF, PokerWebInput, *PokerWebOutput](
 	newPokerDefaultOutput, pokerDispatch,
 )
 

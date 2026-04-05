@@ -86,7 +86,7 @@ type GoFishWebController = GameWebController[usecase.GoFishInteractorIF, GoFishW
 
 // NewGoFishWebController and NewGoFishWebControllerWithProvider are
 // the standard and provider-backed constructors for GoFishWebController.
-var NewGoFishWebController, NewGoFishWebControllerWithProvider = WebControllerPair[usecase.GoFishInteractorIF, GoFishWebInput, *GoFishWebOutput](
+var NewGoFishWebController, NewGoFishWebControllerWithProvider = webControllerPair[usecase.GoFishInteractorIF, GoFishWebInput, *GoFishWebOutput](
 	newGoFishDefaultOutput, goFishDispatch,
 )
 

@@ -79,7 +79,7 @@ type GinRummyWebController = GameWebController[usecase.GinRummyInteractorIF, Gin
 
 // NewGinRummyWebController and NewGinRummyWebControllerWithProvider are
 // the standard and provider-backed constructors for GinRummyWebController.
-var NewGinRummyWebController, NewGinRummyWebControllerWithProvider = WebControllerPair[usecase.GinRummyInteractorIF, GinRummyWebInput, *GinRummyWebOutput](
+var NewGinRummyWebController, NewGinRummyWebControllerWithProvider = webControllerPair[usecase.GinRummyInteractorIF, GinRummyWebInput, *GinRummyWebOutput](
 	newGinRummyDefaultOutput, ginRummyDispatch,
 )
 

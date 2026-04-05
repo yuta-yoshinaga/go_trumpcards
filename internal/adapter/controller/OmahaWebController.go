@@ -18,7 +18,7 @@ type OmahaWebController = GameWebController[usecase.OmahaInteractorIF, OmahaWebI
 
 // NewOmahaWebController and NewOmahaWebControllerWithProvider are
 // the standard and provider-backed constructors for OmahaWebController.
-var NewOmahaWebController, NewOmahaWebControllerWithProvider = WebControllerPair[usecase.OmahaInteractorIF, OmahaWebInput, *OmahaWebOutput](
+var NewOmahaWebController, NewOmahaWebControllerWithProvider = webControllerPair[usecase.OmahaInteractorIF, OmahaWebInput, *OmahaWebOutput](
 	newOmahaDefaultOutput, omahaDispatch,
 )
 

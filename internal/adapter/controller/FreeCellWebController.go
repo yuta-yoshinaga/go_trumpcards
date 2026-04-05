@@ -49,7 +49,7 @@ type FreeCellWebController = GameWebController[usecase.FreeCellInteractorIF, Fre
 
 // NewFreeCellWebController and NewFreeCellWebControllerWithProvider are
 // the standard and provider-backed constructors for FreeCellWebController.
-var NewFreeCellWebController, NewFreeCellWebControllerWithProvider = WebControllerPair[usecase.FreeCellInteractorIF, FreeCellWebInput, *FreeCellWebOutput](
+var NewFreeCellWebController, NewFreeCellWebControllerWithProvider = webControllerPair[usecase.FreeCellInteractorIF, FreeCellWebInput, *FreeCellWebOutput](
 	newFreeCellDefaultOutput, freeCellDispatch,
 )
 

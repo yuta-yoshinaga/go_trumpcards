@@ -113,7 +113,7 @@ type BlackJackWebController = GameWebController[usecase.BlackJackInteractorIF, B
 
 // NewBlackJackWebController and NewBlackJackWebControllerWithProvider are
 // the standard and provider-backed constructors for BlackJackWebController.
-var NewBlackJackWebController, NewBlackJackWebControllerWithProvider = WebControllerPair[usecase.BlackJackInteractorIF, BlackJackWebInput, *BlackJackWebOutput](
+var NewBlackJackWebController, NewBlackJackWebControllerWithProvider = webControllerPair[usecase.BlackJackInteractorIF, BlackJackWebInput, *BlackJackWebOutput](
 	newBlackJackDefaultOutput, blackJackDispatch,
 )
 

@@ -97,7 +97,7 @@ type EuchreWebController = GameWebController[usecase.EuchreInteractorIF, EuchreW
 
 // NewEuchreWebController and NewEuchreWebControllerWithProvider are
 // the standard and provider-backed constructors for EuchreWebController.
-var NewEuchreWebController, NewEuchreWebControllerWithProvider = WebControllerPair[usecase.EuchreInteractorIF, EuchreWebInput, *EuchreWebOutput](
+var NewEuchreWebController, NewEuchreWebControllerWithProvider = webControllerPair[usecase.EuchreInteractorIF, EuchreWebInput, *EuchreWebOutput](
 	newEuchreDefaultOutput, euchreDispatch,
 )
 

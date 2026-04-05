@@ -101,7 +101,7 @@ type OldMaidWebController = GameWebController[usecase.OldMaidInteractorIF, OldMa
 
 // NewOldMaidWebController and NewOldMaidWebControllerWithProvider are
 // the standard and provider-backed constructors for OldMaidWebController.
-var NewOldMaidWebController, NewOldMaidWebControllerWithProvider = WebControllerPair[usecase.OldMaidInteractorIF, OldMaidWebInput, *OldMaidWebOutput](
+var NewOldMaidWebController, NewOldMaidWebControllerWithProvider = webControllerPair[usecase.OldMaidInteractorIF, OldMaidWebInput, *OldMaidWebOutput](
 	newOldMaidDefaultOutput, oldMaidDispatch,
 )
 

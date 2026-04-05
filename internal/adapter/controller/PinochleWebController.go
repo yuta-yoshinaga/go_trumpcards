@@ -107,7 +107,7 @@ type PinochleWebController = GameWebController[usecase.PinochleInteractorIF, Pin
 
 // NewPinochleWebController and NewPinochleWebControllerWithProvider are
 // the standard and provider-backed constructors for PinochleWebController.
-var NewPinochleWebController, NewPinochleWebControllerWithProvider = WebControllerPair[usecase.PinochleInteractorIF, PinochleWebInput, *PinochleWebOutput](
+var NewPinochleWebController, NewPinochleWebControllerWithProvider = webControllerPair[usecase.PinochleInteractorIF, PinochleWebInput, *PinochleWebOutput](
 	newPinochleDefaultOutput, pinochleDispatch,
 )
 

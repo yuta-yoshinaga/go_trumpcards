@@ -86,7 +86,7 @@ type CanastaWebController = GameWebController[usecase.CanastaInteractorIF, Canas
 
 // NewCanastaWebController and NewCanastaWebControllerWithProvider are
 // the standard and provider-backed constructors for CanastaWebController.
-var NewCanastaWebController, NewCanastaWebControllerWithProvider = WebControllerPair[usecase.CanastaInteractorIF, CanastaWebInput, *CanastaWebOutput](
+var NewCanastaWebController, NewCanastaWebControllerWithProvider = webControllerPair[usecase.CanastaInteractorIF, CanastaWebInput, *CanastaWebOutput](
 	newCanastaDefaultOutput, canastaDispatch,
 )
 

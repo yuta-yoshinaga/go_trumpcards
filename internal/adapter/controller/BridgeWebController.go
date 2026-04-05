@@ -109,7 +109,7 @@ type BridgeWebController = GameWebController[usecase.BridgeInteractorIF, BridgeW
 
 // NewBridgeWebController and NewBridgeWebControllerWithProvider are
 // the standard and provider-backed constructors for BridgeWebController.
-var NewBridgeWebController, NewBridgeWebControllerWithProvider = WebControllerPair[usecase.BridgeInteractorIF, BridgeWebInput, *BridgeWebOutput](
+var NewBridgeWebController, NewBridgeWebControllerWithProvider = webControllerPair[usecase.BridgeInteractorIF, BridgeWebInput, *BridgeWebOutput](
 	newBridgeDefaultOutput, bridgeDispatch,
 )
 

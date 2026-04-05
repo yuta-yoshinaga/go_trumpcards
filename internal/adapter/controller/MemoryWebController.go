@@ -72,7 +72,7 @@ type MemoryWebController = GameWebController[usecase.MemoryInteractorIF, MemoryW
 
 // NewMemoryWebController and NewMemoryWebControllerWithProvider are
 // the standard and provider-backed constructors for MemoryWebController.
-var NewMemoryWebController, NewMemoryWebControllerWithProvider = WebControllerPair[usecase.MemoryInteractorIF, MemoryWebInput, *MemoryWebOutput](
+var NewMemoryWebController, NewMemoryWebControllerWithProvider = webControllerPair[usecase.MemoryInteractorIF, MemoryWebInput, *MemoryWebOutput](
 	newMemoryDefaultOutput, memoryDispatch,
 )
 

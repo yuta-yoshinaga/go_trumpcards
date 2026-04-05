@@ -90,7 +90,7 @@ type HeartsWebController = GameWebController[usecase.HeartsInteractorIF, HeartsW
 
 // NewHeartsWebController and NewHeartsWebControllerWithProvider are
 // the standard and provider-backed constructors for HeartsWebController.
-var NewHeartsWebController, NewHeartsWebControllerWithProvider = WebControllerPair[usecase.HeartsInteractorIF, HeartsWebInput, *HeartsWebOutput](
+var NewHeartsWebController, NewHeartsWebControllerWithProvider = webControllerPair[usecase.HeartsInteractorIF, HeartsWebInput, *HeartsWebOutput](
 	newHeartsDefaultOutput, heartsDispatch,
 )
 

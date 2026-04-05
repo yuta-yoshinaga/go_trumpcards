@@ -111,7 +111,7 @@ type NapoleonWebController = GameWebController[usecase.NapoleonInteractorIF, Nap
 
 // NewNapoleonWebController and NewNapoleonWebControllerWithProvider are
 // the standard and provider-backed constructors for NapoleonWebController.
-var NewNapoleonWebController, NewNapoleonWebControllerWithProvider = WebControllerPair[usecase.NapoleonInteractorIF, NapoleonWebInput, *NapoleonWebOutput](
+var NewNapoleonWebController, NewNapoleonWebControllerWithProvider = webControllerPair[usecase.NapoleonInteractorIF, NapoleonWebInput, *NapoleonWebOutput](
 	newNapoleonDefaultOutput, napoleonDispatch,
 )
 

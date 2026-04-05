@@ -104,7 +104,7 @@ const MaxCardIndices = 52
 
 // NewDoubtWebController and NewDoubtWebControllerWithProvider are
 // the standard and provider-backed constructors for DoubtWebController.
-var NewDoubtWebController, NewDoubtWebControllerWithProvider = WebControllerPair[usecase.DoubtInteractorIF, DoubtWebInput, *DoubtWebOutput](
+var NewDoubtWebController, NewDoubtWebControllerWithProvider = webControllerPair[usecase.DoubtInteractorIF, DoubtWebInput, *DoubtWebOutput](
 	newDoubtDefaultOutput, doubtDispatch,
 )
 

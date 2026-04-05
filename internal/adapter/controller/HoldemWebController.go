@@ -221,7 +221,7 @@ type HoldemWebController = GameWebController[usecase.HoldemInteractorIF, HoldemW
 
 // NewHoldemWebController and NewHoldemWebControllerWithProvider are
 // the standard and provider-backed constructors for HoldemWebController.
-var NewHoldemWebController, NewHoldemWebControllerWithProvider = WebControllerPair[usecase.HoldemInteractorIF, HoldemWebInput, *HoldemWebOutput](
+var NewHoldemWebController, NewHoldemWebControllerWithProvider = webControllerPair[usecase.HoldemInteractorIF, HoldemWebInput, *HoldemWebOutput](
 	newHoldemDefaultOutput, holdemDispatch,
 )
 

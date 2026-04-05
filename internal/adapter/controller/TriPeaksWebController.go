@@ -46,7 +46,7 @@ type TriPeaksWebController = GameWebController[usecase.TriPeaksInteractorIF, Tri
 
 // NewTriPeaksWebController and NewTriPeaksWebControllerWithProvider are
 // the standard and provider-backed constructors for TriPeaksWebController.
-var NewTriPeaksWebController, NewTriPeaksWebControllerWithProvider = WebControllerPair[usecase.TriPeaksInteractorIF, TriPeaksWebInput, *TriPeaksWebOutput](
+var NewTriPeaksWebController, NewTriPeaksWebControllerWithProvider = webControllerPair[usecase.TriPeaksInteractorIF, TriPeaksWebInput, *TriPeaksWebOutput](
 	newTriPeaksDefaultOutput, triPeaksDispatch,
 )
 

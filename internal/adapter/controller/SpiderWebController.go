@@ -61,7 +61,7 @@ type SpiderWebController = GameWebController[usecase.SpiderInteractorIF, SpiderW
 
 // NewSpiderWebController and NewSpiderWebControllerWithProvider are
 // the standard and provider-backed constructors for SpiderWebController.
-var NewSpiderWebController, NewSpiderWebControllerWithProvider = WebControllerPair[usecase.SpiderInteractorIF, SpiderWebInput, *SpiderWebOutput](
+var NewSpiderWebController, NewSpiderWebControllerWithProvider = webControllerPair[usecase.SpiderInteractorIF, SpiderWebInput, *SpiderWebOutput](
 	newSpiderDefaultOutput, spiderDispatch,
 )
 

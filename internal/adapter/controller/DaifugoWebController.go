@@ -125,7 +125,7 @@ type DaifugoWebController = GameWebController[usecase.DaifugoInteractorIF, Daifu
 
 // NewDaifugoWebController and NewDaifugoWebControllerWithProvider are
 // the standard and provider-backed constructors for DaifugoWebController.
-var NewDaifugoWebController, NewDaifugoWebControllerWithProvider = WebControllerPair[usecase.DaifugoInteractorIF, DaifugoWebInput, *DaifugoWebOutput](
+var NewDaifugoWebController, NewDaifugoWebControllerWithProvider = webControllerPair[usecase.DaifugoInteractorIF, DaifugoWebInput, *DaifugoWebOutput](
 	newDaifugoDefaultOutput, daifugoDispatch,
 )
 
