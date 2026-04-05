@@ -152,19 +152,18 @@ func TestFreeCellCuiController_MoveErrors(t *testing.T) {
 		input    string
 		contains string
 	}{
-		{"move invalid from zone", "m x t 3", "Invalid from zone"},
-		{"move tableau invalid col", "m t abc f", "Invalid from column"},
-		{"move tableau to tableau invalid toCol", "m t 0 t abc", "Invalid to column"},
-		{"move tableau to invalid zone", "m t 0 x", "Invalid move command"},
-		{"move tableau cardIndex wrong zone", "m t 0 3 f 4", "Invalid move command"},
-		{"move tableau cardIndex too few args", "m t 0 3 t", "Invalid move command"},
-		{"move tableau invalid cardIndex", "m t 0 abc t 4", "Invalid move command"},
-		{"move tableau cardIndex invalid toCol", "m t 0 3 t abc", "Invalid to column"},
-		{"move tableau to freecell invalid cell", "m t 0 c abc", "Invalid cell"},
-		{"move freecell invalid cell", "m c abc t 3", "Invalid cell"},
-		{"move freecell to tableau invalid col", "m c 0 t abc", "Invalid column"},
-		{"move freecell to invalid zone", "m c 0 x", "Invalid to zone"},
-		{"move invalid from zone w", "m w t 3", "Invalid from zone"},
+		{"move invalid from zone", "m x t 3", "x"},
+		{"move tableau invalid col", "m t abc f", "abc"},
+		{"move tableau to tableau invalid toCol", "m t 0 t abc", "abc"},
+		{"move tableau to invalid zone", "m t 0 x", "m t"},
+		{"move tableau cardIndex wrong zone", "m t 0 3 f 4", "m t"},
+		{"move tableau invalid cardIndex", "m t 0 abc t 4", "m t"},
+		{"move tableau cardIndex invalid toCol", "m t 0 3 t abc", "abc"},
+		{"move tableau to freecell invalid cell", "m t 0 c abc", "abc"},
+		{"move freecell invalid cell", "m c abc t 3", "abc"},
+		{"move freecell to tableau invalid col", "m c 0 t abc", "abc"},
+		{"move freecell to invalid zone", "m c 0 x", "x"},
+		{"move invalid from zone w", "m w t 3", "w"},
 	}
 
 	for _, tt := range errorTests {

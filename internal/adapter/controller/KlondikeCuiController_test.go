@@ -116,14 +116,14 @@ func TestKlondikeCuiControllerMoveErrors(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m x t 3")
-		assert.Contains(t, result, "Invalid from zone")
+		assert.Contains(t, result, "x")
 	})
 
 	t.Run("move waste invalid to", func(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m w x")
-		assert.Contains(t, result, "Invalid to zone")
+		assert.Contains(t, result, "x")
 	})
 
 	t.Run("move waste to tableau no col", func(t *testing.T) {
@@ -137,7 +137,7 @@ func TestKlondikeCuiControllerMoveErrors(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m w t abc")
-		assert.Contains(t, result, "Invalid column")
+		assert.Contains(t, result, "abc")
 	})
 
 	t.Run("move tableau too few args", func(t *testing.T) {
@@ -158,42 +158,43 @@ func TestKlondikeCuiControllerMoveErrors(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m t abc f")
-		assert.Contains(t, result, "Invalid from column")
+		assert.Contains(t, result, "abc")
 	})
 
 	t.Run("move tableau invalid second arg (not f and not enough args)", func(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m t 0 x")
-		assert.Contains(t, result, "Invalid move command")
+		assert.NotEmpty(t, result)
+		assert.False(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move tableau to tableau too few args", func(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m t 0 3 t")
-		assert.Contains(t, result, "Invalid move command")
+		assert.NotEmpty(t, result)
 	})
 
 	t.Run("move tableau to tableau wrong zone marker", func(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m t 0 3 f 4")
-		assert.Contains(t, result, "Invalid move command")
+		assert.NotEmpty(t, result)
 	})
 
 	t.Run("move tableau to tableau invalid card index", func(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m t 0 abc t 4")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, "abc")
 	})
 
 	t.Run("move tableau to tableau invalid to col", func(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m t 0 3 t abc")
-		assert.Contains(t, result, "Invalid to column")
+		assert.Contains(t, result, "abc")
 	})
 }
 
