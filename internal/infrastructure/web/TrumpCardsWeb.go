@@ -59,6 +59,7 @@ type TrumpCardsWeb struct {
 	cnc  *controller.CanastaWebController
 	pinc *controller.PinochleWebController
 	glfc *controller.GolfWebController
+	ptc  *controller.PigsTailWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -345,6 +346,16 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			golf := domain.NewGolf(domain.NewTrumpCards(0))
 			return usecase.NewGolfInteractor(golf, new(presenter.GolfWebPresenter))
 		}),
+		ptc: controller.NewPigsTailWebController(func() usecase.PigsTailInteractorIF {
+			players := []*domain.PigsTailPlayer{
+				domain.NewPigsTailPlayer(true),
+				domain.NewPigsTailPlayer(false),
+				domain.NewPigsTailPlayer(false),
+				domain.NewPigsTailPlayer(false),
+			}
+			pigsTail := domain.NewPigsTail(domain.NewTrumpCards(0), players)
+			return usecase.NewPigsTailInteractor(pigsTail, new(presenter.PigsTailWebPresenter))
+		}),
 	}
 }
 
@@ -393,6 +404,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/canasta/exec", web.cnc.Exec},
 		{"/pinochle/exec", web.pinc.Exec},
 		{"/golf/exec", web.glfc.Exec},
+		{"/pigtail/exec", web.ptc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -491,6 +503,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.gfc.Stop()
 	web.pinc.Stop()
 	web.glfc.Stop()
+	web.ptc.Stop()
 	fmt.Println(i18n.T("webServerStopped"))
 	slog.Info("server stopped")
 	return runErr

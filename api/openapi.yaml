@@ -86,6 +86,8 @@ tags:
     description: Speed (スピード) game
   - name: gofish
     description: Go Fish (ゴーフィッシュ) game
+  - name: pigtail
+    description: Pig's Tail (ぶたのしっぽ) game
 
 paths:
   /blackjack/exec:
@@ -3259,6 +3261,125 @@ paths:
                   phase:
                     type: integer
                   moveCount:
+                    type: integer
+                  message:
+                    type: string
+
+  /pigtail/exec:
+    post:
+      tags:
+        - pigtail
+      summary: Execute a Pig's Tail game command
+      description: |
+        Send a command to advance the Pig's Tail (ぶたのしっぽ) game session
+        identified by `sessionId`.  Pig's Tail is a matching card game for 4
+        players (1 human + 3 CPU) using a standard 52-card deck.  Cards are
+        placed face-down in a circle pile.  Players take turns drawing 1 card
+        and placing it face-up on the center pile.  If the drawn card's suit
+        matches the center top card's suit, the player takes all center cards
+        as a penalty.  When the circle pile is empty, the player with the most
+        cards loses.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Game in progress |
+        | GameEnd  | `1`   | Circle pile empty; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `draw`  | `d`     | Draw a card from the circle pile |
+        | `log`   | `l`     | View action log |
+      operationId: pigtailExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, log, l]
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw a card from circle pile
+                value:
+                  command: draw
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        cards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        isHuman:
+                          type: boolean
+                        penaltyCount:
+                          type: integer
+                  centerPile:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  circlePileCount:
+                    type: integer
+                  phase:
+                    type: integer
+                  currentTurn:
+                    type: integer
+                  winnerIdx:
+                    type: integer
+                  cpuActions:
+                    type: array
+                    items:
+                      type: object
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                  centerPile:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  circlePileCount:
+                    type: integer
+                  phase:
                     type: integer
                   message:
                     type: string

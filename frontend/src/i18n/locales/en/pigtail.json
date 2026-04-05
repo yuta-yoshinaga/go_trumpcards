@@ -1,0 +1,26 @@
+{
+  "setup": {
+    "title": "Pig's Tail Settings",
+    "start": "Start Game"
+  },
+  "button": {
+    "draw": "Draw from Circle",
+    "settings": "Settings"
+  },
+  "phase": {
+    "play": "Playing",
+    "end": "End"
+  },
+  "label": {
+    "circle": "Circle",
+    "center": "Center",
+    "cards": "cards"
+  },
+  "tutorial": {
+    "circleArea": "This is the circle pile. Cards are placed face down in a circle.",
+    "centerArea": "This is the center pile. Drawn cards are placed here.",
+    "drawButton": "Press this button to draw a card. If it matches the suit of the top center card, you get a penalty!",
+    "playerArea": "Each player's hand count is shown here.",
+    "resetButton": "Press reset to start a new game."
+  }
+}

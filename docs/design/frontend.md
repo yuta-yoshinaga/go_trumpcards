@@ -25,7 +25,8 @@
   - [2.10 GoFishPage フェーズ別レンダリングフロー](#210-gofishpage-フェーズ別レンダリングフロー)
   - [2.11 CanastaPage フェーズ別レンダリングフロー](#211-canastapage-フェーズ別レンダリングフロー)
   - [2.12 PinochlePage フェーズ別レンダリングフロー](#212-pinochlepage-フェーズ別レンダリングフロー)
-  - [2.13 CLIモード コマンド実行フロー](#213-cliモード-コマンド実行フロー)
+  - [2.13 PigsTailPage フェーズ別レンダリングフロー](#213-pigstailpage-フェーズ別レンダリングフロー)
+  - [2.14 CLIモード コマンド実行フロー](#214-cliモード-コマンド実行フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -234,7 +235,20 @@ classDiagram
         +string message
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全35ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    class PigsTailResponse {
+        +object[] players
+        +Card[] centerPile
+        +number circlePileCount
+        +number phase
+        +number currentTurn
+        +number winnerIdx
+        +object[] cpuActions
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全36ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -401,6 +415,12 @@ classDiagram
         GAME_OVER = 2
     }
 
+    class PigsTailPhase {
+        <<enumeration>>
+        PLAY = 0
+        GAME_END = 1
+    }
+
     class CribbagePhase {
         <<enumeration>>
         DISCARD = 0
@@ -547,8 +567,14 @@ classDiagram
 
     CanastaApi --> gameApi : uses postJson/gameExec
 
+    class PigsTailApi {
+        +run(cmd) Promise~PigsTailResponse~
+    }
+
+    PigsTailApi --> gameApi : uses postJson/gameExec
+
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全36ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf)"
+    note for BlackJackApi "全37ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -815,6 +841,12 @@ classDiagram
         +Function handleReset
     }
 
+    class usePigsTailGame {
+        +PigsTailResponse state
+        +Function handleDraw
+        +Function handleReset
+    }
+
     class useCribbageGame {
         +CribbageResponse state
         +Function handleDiscard
@@ -829,6 +861,7 @@ classDiagram
     usePyramidGame --> useGameApi : uses
     useTriPeaksGame --> useGameApi : uses
     useGolfGame --> useGameApi : uses
+    usePigsTailGame --> useGameApi : uses
     useCribbageGame --> useGameApi : uses
     useMemoryGame --> useGameApi : uses
     useDoubtGame --> useGameApi : uses
@@ -1297,6 +1330,16 @@ classDiagram
 
     CanastaPage --|> GamePage : follows pattern
 
+    class PigsTailPage {
+        +CPUプレイヤーエリア (手札枚数表示)
+        +山札残り枚数
+        +場札トップカード表示
+        +引くボタン
+        +CPU行動アニメーション
+    }
+
+    PigsTailPage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -1310,7 +1353,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全34ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全35ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1792,7 +1835,35 @@ sequenceDiagram
     Hook-->>Page: 再レンダリング → ビッドフェーズUI
 ```
 
-### 2.13 CLIモード コマンド実行フロー
+### 2.13 PigsTailPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as PigsTailPage
+    participant Hook as usePigsTailGame
+    participant API as gameApi
+
+    Note over User,API: プレイフェーズ (phase=0) - ドロー
+    User->>Page: 引くボタンクリック
+    Page->>Hook: handleDraw()
+    Hook->>API: gameExec("draw")
+    API-->>Hook: PigsTailResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → ドロー結果UI
+
+    Note over User,API: CPU行動アニメーション
+    Page-->>User: CPUドローをアニメーション再生
+
+    Note over User,API: ゲーム終了 (phase=1)
+    Page-->>User: 勝者・手札枚数表示
+    User->>Page: リセットボタンクリック
+    Page->>Hook: handleReset()
+    Hook->>API: gameExec("reset")
+    API-->>Hook: PigsTailResponse (phase=0)
+    Hook-->>Page: 再レンダリング → プレイフェーズUI
+```
+
+### 2.14 CLIモード コマンド実行フロー
 
 ```mermaid
 sequenceDiagram

@@ -63,6 +63,8 @@
 
 - **Golf Solitaire (ゴルフ)**: Entity in `internal/domain/Golf.go`; interactor in `internal/usecase/GolfInteractor.go`. CLI and Web GUI, single-player solitaire card game using a standard 52-card deck. 7 columns of 5 face-up cards (35 total) form the tableau. Only the bottom-most non-removed card per column is exposed. Remove exposed cards that are ±1 rank from the waste pile top card (K-A wrap). Win by removing all 35 tableau cards. Undo and hint support. Commands: reset, draw, remove, giveup, hint, undo, log. Phases: Playing (0), GameClear (1), GameOver (2)
 
+- **Pig's Tail (ぶたのしっぽ)**: Entity in `internal/domain/PigsTail.go`, `internal/domain/PigsTailPlayer.go`; interactor in `internal/usecase/PigsTailInteractor.go`. CLI and Web GUI (1 human vs 3 CPU), matching card game using a standard 52-card deck. Cards are placed face-down in a circle pile. Players take turns drawing 1 card and placing it face-up on the center pile. If the drawn card's suit matches the center top card's suit, the player takes all center cards as a penalty. When the circle pile is empty, the player with the most cards in hand loses. Commands: reset, draw, log. Phases: Play (0), GameEnd (1)
+
 ## Action Log (棋譜)
 
 All games support a `log` command that returns a cumulative action log of every action taken during the current game session. The log reveals all hidden cards (e.g., face-down cards, opponent hands) so players can review the full history of the game after the fact. Each log entry contains the turn number, player index, action type, a human-readable detail string, and optionally the cards involved in the action.
