@@ -103,15 +103,15 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
         role="dialog"
         aria-modal="true"
         aria-label={t('manual.ariaLabel')}
-        className="rounded-lg shadow-xl p-6 mx-4 max-w-4xl w-full max-h-[calc(100vh-4rem)] flex flex-col bg-ds-surface border border-ds-border-subtle"
+        className="rounded-lg shadow-xl p-6 mx-4 max-w-4xl w-full h-[calc(100vh-4rem)] overflow-hidden flex flex-col bg-ds-surface border border-ds-border-subtle"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end mb-2 flex-shrink-0">
           <button type="button" className={btnSecondary} onClick={onClose} aria-label={t('manual.close')}>
             &times;
           </button>
         </div>
-        <div className="overflow-y-auto flex-1 prose prose-invert max-w-none">
+        <div className="overflow-y-auto flex-1 min-h-0 prose prose-invert max-w-none">
           <Markdown remarkPlugins={remarkPlugins} components={markdownComponents}>
             {markdown}
           </Markdown>
