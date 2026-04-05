@@ -105,19 +105,11 @@ func (p PinochleWebInput) ToConfig() domain.PinochleConfig {
 // PinochleWebController ピノクルWebコントローラークラス
 type PinochleWebController = GameWebController[usecase.PinochleInteractorIF, PinochleWebInput, *PinochleWebOutput]
 
-// NewPinochleWebController コンストラクタ
-func NewPinochleWebController(factory func() usecase.PinochleInteractorIF) *PinochleWebController {
-	return NewGameWebController(factory, newPinochleDefaultOutput, pinochleDispatch)
-}
-
-// NewPinochleWebControllerWithProvider creates a PinochleWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewPinochleWebControllerWithProvider(
-	provider SessionProvider[usecase.PinochleInteractorIF],
-	factory func() usecase.PinochleInteractorIF,
-) *PinochleWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newPinochleDefaultOutput, pinochleDispatch)
-}
+// NewPinochleWebController and NewPinochleWebControllerWithProvider are
+// the standard and provider-backed constructors for PinochleWebController.
+var NewPinochleWebController, NewPinochleWebControllerWithProvider = webControllerPair[usecase.PinochleInteractorIF, PinochleWebInput, *PinochleWebOutput](
+	newPinochleDefaultOutput, pinochleDispatch,
+)
 
 func newPinochleDefaultOutput(msg string) *PinochleWebOutput {
 	return &PinochleWebOutput{

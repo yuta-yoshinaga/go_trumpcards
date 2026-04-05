@@ -84,19 +84,11 @@ type GoFishWebOutputConfig struct {
 // GoFishWebController Go FishWebコントローラークラス
 type GoFishWebController = GameWebController[usecase.GoFishInteractorIF, GoFishWebInput, *GoFishWebOutput]
 
-// NewGoFishWebController コンストラクタ
-func NewGoFishWebController(factory func() usecase.GoFishInteractorIF) *GoFishWebController {
-	return NewGameWebController(factory, newGoFishDefaultOutput, goFishDispatch)
-}
-
-// NewGoFishWebControllerWithProvider creates a GoFishWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewGoFishWebControllerWithProvider(
-	provider SessionProvider[usecase.GoFishInteractorIF],
-	factory func() usecase.GoFishInteractorIF,
-) *GoFishWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newGoFishDefaultOutput, goFishDispatch)
-}
+// NewGoFishWebController and NewGoFishWebControllerWithProvider are
+// the standard and provider-backed constructors for GoFishWebController.
+var NewGoFishWebController, NewGoFishWebControllerWithProvider = webControllerPair[usecase.GoFishInteractorIF, GoFishWebInput, *GoFishWebOutput](
+	newGoFishDefaultOutput, goFishDispatch,
+)
 
 func newGoFishDefaultOutput(msg string) *GoFishWebOutput {
 	return &GoFishWebOutput{

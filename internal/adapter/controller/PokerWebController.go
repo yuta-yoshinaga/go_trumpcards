@@ -127,19 +127,11 @@ func (p PokerWebInput) ToConfig() domain.PokerConfig {
 // PokerWebController ポーカーWebコントローラークラス
 type PokerWebController = GameWebController[usecase.PokerInteractorIF, PokerWebInput, *PokerWebOutput]
 
-// NewPokerWebController コンストラクタ
-func NewPokerWebController(factory func() usecase.PokerInteractorIF) *PokerWebController {
-	return NewGameWebController(factory, newPokerDefaultOutput, pokerDispatch)
-}
-
-// NewPokerWebControllerWithProvider creates a PokerWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewPokerWebControllerWithProvider(
-	provider SessionProvider[usecase.PokerInteractorIF],
-	factory func() usecase.PokerInteractorIF,
-) *PokerWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newPokerDefaultOutput, pokerDispatch)
-}
+// NewPokerWebController and NewPokerWebControllerWithProvider are
+// the standard and provider-backed constructors for PokerWebController.
+var NewPokerWebController, NewPokerWebControllerWithProvider = webControllerPair[usecase.PokerInteractorIF, PokerWebInput, *PokerWebOutput](
+	newPokerDefaultOutput, pokerDispatch,
+)
 
 func newPokerDefaultOutput(msg string) *PokerWebOutput {
 	return &PokerWebOutput{

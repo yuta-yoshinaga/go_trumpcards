@@ -111,19 +111,11 @@ func (p BlackJackWebInput) ToConfig() domain.BlackJackConfig {
 // BlackJackWebController ブラックジャックWebコントローラークラス
 type BlackJackWebController = GameWebController[usecase.BlackJackInteractorIF, BlackJackWebInput, *BlackJackWebOutput]
 
-// NewBlackJackWebController コンストラクタ
-func NewBlackJackWebController(factory func() usecase.BlackJackInteractorIF) *BlackJackWebController {
-	return NewGameWebController(factory, newBlackJackDefaultOutput, blackJackDispatch)
-}
-
-// NewBlackJackWebControllerWithProvider creates a BlackJackWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewBlackJackWebControllerWithProvider(
-	provider SessionProvider[usecase.BlackJackInteractorIF],
-	factory func() usecase.BlackJackInteractorIF,
-) *BlackJackWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newBlackJackDefaultOutput, blackJackDispatch)
-}
+// NewBlackJackWebController and NewBlackJackWebControllerWithProvider are
+// the standard and provider-backed constructors for BlackJackWebController.
+var NewBlackJackWebController, NewBlackJackWebControllerWithProvider = webControllerPair[usecase.BlackJackInteractorIF, BlackJackWebInput, *BlackJackWebOutput](
+	newBlackJackDefaultOutput, blackJackDispatch,
+)
 
 func newBlackJackDefaultOutput(msg string) *BlackJackWebOutput {
 	return &BlackJackWebOutput{

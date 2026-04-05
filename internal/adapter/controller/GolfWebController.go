@@ -42,19 +42,11 @@ type GolfWebOutput struct {
 // GolfWebController ゴルフソリティアWebコントローラークラス
 type GolfWebController = GameWebController[usecase.GolfInteractorIF, GolfWebInput, *GolfWebOutput]
 
-// NewGolfWebController コンストラクタ
-func NewGolfWebController(factory func() usecase.GolfInteractorIF) *GolfWebController {
-	return NewGameWebController(factory, newGolfDefaultOutput, golfDispatch)
-}
-
-// NewGolfWebControllerWithProvider creates a GolfWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewGolfWebControllerWithProvider(
-	provider SessionProvider[usecase.GolfInteractorIF],
-	factory func() usecase.GolfInteractorIF,
-) *GolfWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newGolfDefaultOutput, golfDispatch)
-}
+// NewGolfWebController and NewGolfWebControllerWithProvider are
+// the standard and provider-backed constructors for GolfWebController.
+var NewGolfWebController, NewGolfWebControllerWithProvider = webControllerPair[usecase.GolfInteractorIF, GolfWebInput, *GolfWebOutput](
+	newGolfDefaultOutput, golfDispatch,
+)
 
 func newGolfDefaultOutput(msg string) *GolfWebOutput {
 	return &GolfWebOutput{

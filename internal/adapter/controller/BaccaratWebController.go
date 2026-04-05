@@ -46,19 +46,11 @@ type BaccaratWebOutput struct {
 // BaccaratWebController バカラWebコントローラークラス
 type BaccaratWebController = GameWebController[usecase.BaccaratInteractorIF, BaccaratWebInput, *BaccaratWebOutput]
 
-// NewBaccaratWebController コンストラクタ
-func NewBaccaratWebController(factory func() usecase.BaccaratInteractorIF) *BaccaratWebController {
-	return NewGameWebController(factory, newBaccaratDefaultOutput, baccaratDispatch)
-}
-
-// NewBaccaratWebControllerWithProvider creates a BaccaratWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewBaccaratWebControllerWithProvider(
-	provider SessionProvider[usecase.BaccaratInteractorIF],
-	factory func() usecase.BaccaratInteractorIF,
-) *BaccaratWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newBaccaratDefaultOutput, baccaratDispatch)
-}
+// NewBaccaratWebController and NewBaccaratWebControllerWithProvider are
+// the standard and provider-backed constructors for BaccaratWebController.
+var NewBaccaratWebController, NewBaccaratWebControllerWithProvider = webControllerPair[usecase.BaccaratInteractorIF, BaccaratWebInput, *BaccaratWebOutput](
+	newBaccaratDefaultOutput, baccaratDispatch,
+)
 
 func newBaccaratDefaultOutput(msg string) *BaccaratWebOutput {
 	return &BaccaratWebOutput{

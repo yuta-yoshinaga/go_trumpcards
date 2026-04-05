@@ -53,19 +53,11 @@ type PyramidWebOutput struct {
 // PyramidWebController ピラミッドWebコントローラークラス
 type PyramidWebController = GameWebController[usecase.PyramidInteractorIF, PyramidWebInput, *PyramidWebOutput]
 
-// NewPyramidWebController コンストラクタ
-func NewPyramidWebController(factory func() usecase.PyramidInteractorIF) *PyramidWebController {
-	return NewGameWebController(factory, newPyramidDefaultOutput, pyramidDispatch)
-}
-
-// NewPyramidWebControllerWithProvider creates a PyramidWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewPyramidWebControllerWithProvider(
-	provider SessionProvider[usecase.PyramidInteractorIF],
-	factory func() usecase.PyramidInteractorIF,
-) *PyramidWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newPyramidDefaultOutput, pyramidDispatch)
-}
+// NewPyramidWebController and NewPyramidWebControllerWithProvider are
+// the standard and provider-backed constructors for PyramidWebController.
+var NewPyramidWebController, NewPyramidWebControllerWithProvider = webControllerPair[usecase.PyramidInteractorIF, PyramidWebInput, *PyramidWebOutput](
+	newPyramidDefaultOutput, pyramidDispatch,
+)
 
 func newPyramidDefaultOutput(msg string) *PyramidWebOutput {
 	return &PyramidWebOutput{

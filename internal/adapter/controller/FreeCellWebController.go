@@ -47,19 +47,11 @@ type FreeCellWebOutput struct {
 // FreeCellWebController フリーセルWebコントローラークラス
 type FreeCellWebController = GameWebController[usecase.FreeCellInteractorIF, FreeCellWebInput, *FreeCellWebOutput]
 
-// NewFreeCellWebController コンストラクタ
-func NewFreeCellWebController(factory func() usecase.FreeCellInteractorIF) *FreeCellWebController {
-	return NewGameWebController(factory, newFreeCellDefaultOutput, freeCellDispatch)
-}
-
-// NewFreeCellWebControllerWithProvider creates a FreeCellWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewFreeCellWebControllerWithProvider(
-	provider SessionProvider[usecase.FreeCellInteractorIF],
-	factory func() usecase.FreeCellInteractorIF,
-) *FreeCellWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newFreeCellDefaultOutput, freeCellDispatch)
-}
+// NewFreeCellWebController and NewFreeCellWebControllerWithProvider are
+// the standard and provider-backed constructors for FreeCellWebController.
+var NewFreeCellWebController, NewFreeCellWebControllerWithProvider = webControllerPair[usecase.FreeCellInteractorIF, FreeCellWebInput, *FreeCellWebOutput](
+	newFreeCellDefaultOutput, freeCellDispatch,
+)
 
 func newFreeCellDefaultOutput(msg string) *FreeCellWebOutput {
 	return &FreeCellWebOutput{

@@ -16,19 +16,11 @@ type OmahaWebOutput = HoldemWebOutput
 // OmahaWebController オマハホールデムWebコントローラークラス
 type OmahaWebController = GameWebController[usecase.OmahaInteractorIF, OmahaWebInput, *OmahaWebOutput]
 
-// NewOmahaWebController コンストラクタ
-func NewOmahaWebController(factory func() usecase.OmahaInteractorIF) *OmahaWebController {
-	return NewGameWebController(factory, newOmahaDefaultOutput, omahaDispatch)
-}
-
-// NewOmahaWebControllerWithProvider creates an OmahaWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewOmahaWebControllerWithProvider(
-	provider SessionProvider[usecase.OmahaInteractorIF],
-	factory func() usecase.OmahaInteractorIF,
-) *OmahaWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newOmahaDefaultOutput, omahaDispatch)
-}
+// NewOmahaWebController and NewOmahaWebControllerWithProvider are
+// the standard and provider-backed constructors for OmahaWebController.
+var NewOmahaWebController, NewOmahaWebControllerWithProvider = webControllerPair[usecase.OmahaInteractorIF, OmahaWebInput, *OmahaWebOutput](
+	newOmahaDefaultOutput, omahaDispatch,
+)
 
 func newOmahaDefaultOutput(msg string) *OmahaWebOutput {
 	return &OmahaWebOutput{

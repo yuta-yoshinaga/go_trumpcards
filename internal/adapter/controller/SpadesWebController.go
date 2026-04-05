@@ -94,19 +94,11 @@ func (p SpadesWebInput) ToConfig() domain.SpadesConfig {
 // SpadesWebController スペードWebコントローラークラス
 type SpadesWebController = GameWebController[usecase.SpadesInteractorIF, SpadesWebInput, *SpadesWebOutput]
 
-// NewSpadesWebController コンストラクタ
-func NewSpadesWebController(factory func() usecase.SpadesInteractorIF) *SpadesWebController {
-	return NewGameWebController(factory, newSpadesDefaultOutput, spadesDispatch)
-}
-
-// NewSpadesWebControllerWithProvider creates a SpadesWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewSpadesWebControllerWithProvider(
-	provider SessionProvider[usecase.SpadesInteractorIF],
-	factory func() usecase.SpadesInteractorIF,
-) *SpadesWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newSpadesDefaultOutput, spadesDispatch)
-}
+// NewSpadesWebController and NewSpadesWebControllerWithProvider are
+// the standard and provider-backed constructors for SpadesWebController.
+var NewSpadesWebController, NewSpadesWebControllerWithProvider = webControllerPair[usecase.SpadesInteractorIF, SpadesWebInput, *SpadesWebOutput](
+	newSpadesDefaultOutput, spadesDispatch,
+)
 
 func newSpadesDefaultOutput(msg string) *SpadesWebOutput {
 	return &SpadesWebOutput{

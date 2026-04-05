@@ -107,19 +107,11 @@ func (p BridgeWebInput) ToConfig() domain.BridgeConfig {
 // BridgeWebController ブリッジWebコントローラークラス
 type BridgeWebController = GameWebController[usecase.BridgeInteractorIF, BridgeWebInput, *BridgeWebOutput]
 
-// NewBridgeWebController コンストラクタ
-func NewBridgeWebController(factory func() usecase.BridgeInteractorIF) *BridgeWebController {
-	return NewGameWebController(factory, newBridgeDefaultOutput, bridgeDispatch)
-}
-
-// NewBridgeWebControllerWithProvider creates a BridgeWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewBridgeWebControllerWithProvider(
-	provider SessionProvider[usecase.BridgeInteractorIF],
-	factory func() usecase.BridgeInteractorIF,
-) *BridgeWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newBridgeDefaultOutput, bridgeDispatch)
-}
+// NewBridgeWebController and NewBridgeWebControllerWithProvider are
+// the standard and provider-backed constructors for BridgeWebController.
+var NewBridgeWebController, NewBridgeWebControllerWithProvider = webControllerPair[usecase.BridgeInteractorIF, BridgeWebInput, *BridgeWebOutput](
+	newBridgeDefaultOutput, bridgeDispatch,
+)
 
 func newBridgeDefaultOutput(msg string) *BridgeWebOutput {
 	return &BridgeWebOutput{

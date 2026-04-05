@@ -31,19 +31,11 @@ type VideoPokerWebOutput struct {
 // VideoPokerWebController ビデオポーカーWebコントローラークラス
 type VideoPokerWebController = GameWebController[usecase.VideoPokerInteractorIF, VideoPokerWebInput, *VideoPokerWebOutput]
 
-// NewVideoPokerWebController コンストラクタ
-func NewVideoPokerWebController(factory func() usecase.VideoPokerInteractorIF) *VideoPokerWebController {
-	return NewGameWebController(factory, newVideoPokerDefaultOutput, videoPokerDispatch)
-}
-
-// NewVideoPokerWebControllerWithProvider creates a VideoPokerWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewVideoPokerWebControllerWithProvider(
-	provider SessionProvider[usecase.VideoPokerInteractorIF],
-	factory func() usecase.VideoPokerInteractorIF,
-) *VideoPokerWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newVideoPokerDefaultOutput, videoPokerDispatch)
-}
+// NewVideoPokerWebController and NewVideoPokerWebControllerWithProvider are
+// the standard and provider-backed constructors for VideoPokerWebController.
+var NewVideoPokerWebController, NewVideoPokerWebControllerWithProvider = webControllerPair[usecase.VideoPokerInteractorIF, VideoPokerWebInput, *VideoPokerWebOutput](
+	newVideoPokerDefaultOutput, videoPokerDispatch,
+)
 
 func newVideoPokerDefaultOutput(msg string) *VideoPokerWebOutput {
 	return &VideoPokerWebOutput{

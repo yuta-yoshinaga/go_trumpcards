@@ -83,19 +83,11 @@ func (p CribbageWebInput) ToConfig() domain.CribbageConfig {
 // CribbageWebController クリベッジWebコントローラークラス
 type CribbageWebController = GameWebController[usecase.CribbageInteractorIF, CribbageWebInput, *CribbageWebOutput]
 
-// NewCribbageWebController コンストラクタ
-func NewCribbageWebController(factory func() usecase.CribbageInteractorIF) *CribbageWebController {
-	return NewGameWebController(factory, newCribbageDefaultOutput, cribbageDispatch)
-}
-
-// NewCribbageWebControllerWithProvider creates a CribbageWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewCribbageWebControllerWithProvider(
-	provider SessionProvider[usecase.CribbageInteractorIF],
-	factory func() usecase.CribbageInteractorIF,
-) *CribbageWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newCribbageDefaultOutput, cribbageDispatch)
-}
+// NewCribbageWebController and NewCribbageWebControllerWithProvider are
+// the standard and provider-backed constructors for CribbageWebController.
+var NewCribbageWebController, NewCribbageWebControllerWithProvider = webControllerPair[usecase.CribbageInteractorIF, CribbageWebInput, *CribbageWebOutput](
+	newCribbageDefaultOutput, cribbageDispatch,
+)
 
 func newCribbageDefaultOutput(msg string) *CribbageWebOutput {
 	return &CribbageWebOutput{
