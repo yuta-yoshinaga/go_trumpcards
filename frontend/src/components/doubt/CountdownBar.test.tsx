@@ -64,6 +64,12 @@ describe('CountdownBar', () => {
     expect(liveRegion).toHaveAttribute('aria-atomic', 'true');
   });
 
+  it('applies ds-warning color to label text', () => {
+    render(<CountdownBar remaining={3} total={10} label="残り 3 秒" />);
+    const liveRegion = screen.getByText('残り 3 秒');
+    expect(liveRegion.className).toContain('text-ds-warning');
+  });
+
   it('does not render label region when label is omitted', () => {
     const { container } = render(<CountdownBar remaining={7} total={10} />);
     expect(container.querySelector('[aria-live="assertive"]')).toBeNull();

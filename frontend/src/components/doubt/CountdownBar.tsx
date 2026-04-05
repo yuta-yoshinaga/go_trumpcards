@@ -45,7 +45,7 @@ export function CountdownBar({ remaining, total, label }: CountdownBarProps) {
         />
       </div>
       {label && (
-        <div className="text-yellow-300 text-lg font-bold mt-1" aria-live="assertive" aria-atomic="true">
+        <div className="text-ds-warning text-lg font-bold mt-1" aria-live="assertive" aria-atomic="true">
           {label}
         </div>
       )}
