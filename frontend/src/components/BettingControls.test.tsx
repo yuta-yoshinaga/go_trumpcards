@@ -185,6 +185,12 @@ describe('BettingControls', () => {
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeDisabled();
   });
 
+  it('treats NaN betAmount as out of range', () => {
+    render(<BettingControls {...makeProps({ betAmount: NaN })} />);
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+    expect(screen.getByLabelText('ベット額:')).toHaveAttribute('aria-invalid', 'true');
+  });
+
   it('does not disable check/call/fold/all-in when out of range', () => {
     render(<BettingControls {...makeProps({ betAmount: 5, hasOutstandingBet: true })} />);
     expect(screen.getByRole('button', { name: 'コール' })).not.toBeDisabled();

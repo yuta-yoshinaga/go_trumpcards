@@ -36,7 +36,7 @@ export function BettingControls({
   const { t } = useTranslation('common');
   const max = maxBetAmount ?? 0;
   const hasMax = max > 0;
-  const isOutOfRange = betAmount < minRaise || (hasMax && betAmount > max);
+  const isOutOfRange = Number.isNaN(betAmount) || betAmount < minRaise || (hasMax && betAmount > max);
   const canBet = !loading && !isOutOfRange;
 
   return (
@@ -50,7 +50,7 @@ export function BettingControls({
             id={inputId}
             type="number"
             min={minRaise}
-            max={hasMax ? maxBetAmount : undefined}
+            max={hasMax ? max : undefined}
             step={10}
             value={betAmount}
             aria-invalid={isOutOfRange || undefined}
