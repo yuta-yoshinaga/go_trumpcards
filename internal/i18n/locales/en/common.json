@@ -8,7 +8,7 @@
   "session": "Session:",
   "helpEntry": "  help, ?              show this help",
   "resetEntry": "  r                    reset game",
-  "quitEntry": "  q                    quit",
+  "quitEntry": "  q, quit, exit        quit",
   "switchUsage": "Usage: switch <game>. Type 'games' for the list.",
   "unknownGame": "Unknown game: \"{{name}}\". Type 'games' for the list.",
   "alreadyPlaying": "Already playing {{name}}.",
@@ -58,5 +58,9 @@
   "klondike.invalidFromZone": "Invalid from zone: {{val}}. Use 'w' (waste) or 't' (tableau).",
   "klondike.invalidToZone": "Invalid to zone: {{val}}. Use 't' (tableau) or 'f' (foundation).",
   "klondike.moveUsage": "Usage: m t <col> <idx> t <col>",
-  "spider.moveUsage": "Usage: m t <fromCol> <cardIdx> t <toCol>"
+  "spider.moveUsage": "Usage: m t <fromCol> <cardIdx> t <toCol>",
+  "webServerRunning": "Server is running at http://localhost:{{port}}",
+  "webServerStop": "Press Ctrl+C to stop",
+  "webServerShutdown": "Shutting down server...",
+  "webServerStopped": "Server stopped."
 }

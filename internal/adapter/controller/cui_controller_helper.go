@@ -20,7 +20,7 @@ func unknownCommandMessage(command string, validCommands []string) string {
 }
 
 // commonCommands は全CUIコントローラーで共通のコマンド。
-var commonCommands = []string{"q", "quit", "r", "reset", "help", "?"}
+var commonCommands = []string{"q", "quit", "exit", "r", "reset", "help", "?"}
 
 // handleCuiLog は "log"/"l" コマンドを処理する。処理した場合 true を返す。
 func handleCuiLog(cmd string, actionLogFn func() string) (string, bool) {
@@ -57,7 +57,7 @@ func execCuiCommand(
 		return i18n.T("emptyInputHint")
 	}
 	switch fields[0] {
-	case "q", "quit":
+	case "q", "quit", "exit":
 		return i18n.QuitSentinel
 	case "r", "reset":
 		return resetFn(fields[1:])
