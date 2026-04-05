@@ -109,19 +109,11 @@ func (p IndianPokerWebInput) ToConfig() domain.IndianPokerConfig {
 // IndianPokerWebController インディアンポーカーWebコントローラークラス
 type IndianPokerWebController = GameWebController[usecase.IndianPokerInteractorIF, IndianPokerWebInput, *IndianPokerWebOutput]
 
-// NewIndianPokerWebController コンストラクタ
-func NewIndianPokerWebController(factory func() usecase.IndianPokerInteractorIF) *IndianPokerWebController {
-	return NewGameWebController(factory, newIndianPokerDefaultOutput, indianPokerDispatch)
-}
-
-// NewIndianPokerWebControllerWithProvider creates an IndianPokerWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewIndianPokerWebControllerWithProvider(
-	provider SessionProvider[usecase.IndianPokerInteractorIF],
-	factory func() usecase.IndianPokerInteractorIF,
-) *IndianPokerWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newIndianPokerDefaultOutput, indianPokerDispatch)
-}
+// NewIndianPokerWebController and NewIndianPokerWebControllerWithProvider are
+// the standard and provider-backed constructors for IndianPokerWebController.
+var NewIndianPokerWebController, NewIndianPokerWebControllerWithProvider = WebControllerPair[usecase.IndianPokerInteractorIF, IndianPokerWebInput, *IndianPokerWebOutput](
+	newIndianPokerDefaultOutput, indianPokerDispatch,
+)
 
 func newIndianPokerDefaultOutput(msg string) *IndianPokerWebOutput {
 	return &IndianPokerWebOutput{

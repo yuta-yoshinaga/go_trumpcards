@@ -77,19 +77,11 @@ func (p GinRummyWebInput) ToConfig() domain.GinRummyConfig {
 // GinRummyWebController ジンラミーWebコントローラークラス
 type GinRummyWebController = GameWebController[usecase.GinRummyInteractorIF, GinRummyWebInput, *GinRummyWebOutput]
 
-// NewGinRummyWebController コンストラクタ
-func NewGinRummyWebController(factory func() usecase.GinRummyInteractorIF) *GinRummyWebController {
-	return NewGameWebController(factory, newGinRummyDefaultOutput, ginRummyDispatch)
-}
-
-// NewGinRummyWebControllerWithProvider creates a GinRummyWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewGinRummyWebControllerWithProvider(
-	provider SessionProvider[usecase.GinRummyInteractorIF],
-	factory func() usecase.GinRummyInteractorIF,
-) *GinRummyWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newGinRummyDefaultOutput, ginRummyDispatch)
-}
+// NewGinRummyWebController and NewGinRummyWebControllerWithProvider are
+// the standard and provider-backed constructors for GinRummyWebController.
+var NewGinRummyWebController, NewGinRummyWebControllerWithProvider = WebControllerPair[usecase.GinRummyInteractorIF, GinRummyWebInput, *GinRummyWebOutput](
+	newGinRummyDefaultOutput, ginRummyDispatch,
+)
 
 func newGinRummyDefaultOutput(msg string) *GinRummyWebOutput {
 	return &GinRummyWebOutput{

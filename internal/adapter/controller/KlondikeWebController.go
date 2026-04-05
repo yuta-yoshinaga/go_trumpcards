@@ -64,19 +64,11 @@ type KlondikeWebOutput struct {
 // KlondikeWebController クロンダイクWebコントローラークラス
 type KlondikeWebController = GameWebController[usecase.KlondikeInteractorIF, KlondikeWebInput, *KlondikeWebOutput]
 
-// NewKlondikeWebController コンストラクタ
-func NewKlondikeWebController(factory func() usecase.KlondikeInteractorIF) *KlondikeWebController {
-	return NewGameWebController(factory, newKlondikeDefaultOutput, klondikeDispatch)
-}
-
-// NewKlondikeWebControllerWithProvider creates a KlondikeWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewKlondikeWebControllerWithProvider(
-	provider SessionProvider[usecase.KlondikeInteractorIF],
-	factory func() usecase.KlondikeInteractorIF,
-) *KlondikeWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newKlondikeDefaultOutput, klondikeDispatch)
-}
+// NewKlondikeWebController and NewKlondikeWebControllerWithProvider are
+// the standard and provider-backed constructors for KlondikeWebController.
+var NewKlondikeWebController, NewKlondikeWebControllerWithProvider = WebControllerPair[usecase.KlondikeInteractorIF, KlondikeWebInput, *KlondikeWebOutput](
+	newKlondikeDefaultOutput, klondikeDispatch,
+)
 
 func newKlondikeDefaultOutput(msg string) *KlondikeWebOutput {
 	return &KlondikeWebOutput{

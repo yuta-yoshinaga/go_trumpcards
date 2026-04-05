@@ -219,19 +219,11 @@ func (p HoldemWebInput) ToConfig() (domain.HoldemConfig, error) {
 // HoldemWebController テキサスホールデムWebコントローラークラス
 type HoldemWebController = GameWebController[usecase.HoldemInteractorIF, HoldemWebInput, *HoldemWebOutput]
 
-// NewHoldemWebController コンストラクタ
-func NewHoldemWebController(factory func() usecase.HoldemInteractorIF) *HoldemWebController {
-	return NewGameWebController(factory, newHoldemDefaultOutput, holdemDispatch)
-}
-
-// NewHoldemWebControllerWithProvider creates a HoldemWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewHoldemWebControllerWithProvider(
-	provider SessionProvider[usecase.HoldemInteractorIF],
-	factory func() usecase.HoldemInteractorIF,
-) *HoldemWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newHoldemDefaultOutput, holdemDispatch)
-}
+// NewHoldemWebController and NewHoldemWebControllerWithProvider are
+// the standard and provider-backed constructors for HoldemWebController.
+var NewHoldemWebController, NewHoldemWebControllerWithProvider = WebControllerPair[usecase.HoldemInteractorIF, HoldemWebInput, *HoldemWebOutput](
+	newHoldemDefaultOutput, holdemDispatch,
+)
 
 func newHoldemDefaultOutput(msg string) *HoldemWebOutput {
 	return &HoldemWebOutput{

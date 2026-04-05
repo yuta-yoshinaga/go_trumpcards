@@ -59,19 +59,11 @@ type SpiderWebOutput struct {
 // SpiderWebController スパイダーソリティアWebコントローラークラス
 type SpiderWebController = GameWebController[usecase.SpiderInteractorIF, SpiderWebInput, *SpiderWebOutput]
 
-// NewSpiderWebController コンストラクタ
-func NewSpiderWebController(factory func() usecase.SpiderInteractorIF) *SpiderWebController {
-	return NewGameWebController(factory, newSpiderDefaultOutput, spiderDispatch)
-}
-
-// NewSpiderWebControllerWithProvider creates a SpiderWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewSpiderWebControllerWithProvider(
-	provider SessionProvider[usecase.SpiderInteractorIF],
-	factory func() usecase.SpiderInteractorIF,
-) *SpiderWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newSpiderDefaultOutput, spiderDispatch)
-}
+// NewSpiderWebController and NewSpiderWebControllerWithProvider are
+// the standard and provider-backed constructors for SpiderWebController.
+var NewSpiderWebController, NewSpiderWebControllerWithProvider = WebControllerPair[usecase.SpiderInteractorIF, SpiderWebInput, *SpiderWebOutput](
+	newSpiderDefaultOutput, spiderDispatch,
+)
 
 func newSpiderDefaultOutput(msg string) *SpiderWebOutput {
 	return &SpiderWebOutput{

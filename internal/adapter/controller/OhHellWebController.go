@@ -98,19 +98,11 @@ func (p OhHellWebInput) ToConfig() domain.OhHellConfig {
 // OhHellWebController オー・ヘルWebコントローラークラス
 type OhHellWebController = GameWebController[usecase.OhHellInteractorIF, OhHellWebInput, *OhHellWebOutput]
 
-// NewOhHellWebController コンストラクタ
-func NewOhHellWebController(factory func() usecase.OhHellInteractorIF) *OhHellWebController {
-	return NewGameWebController(factory, newOhHellDefaultOutput, ohHellDispatch)
-}
-
-// NewOhHellWebControllerWithProvider creates an OhHellWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewOhHellWebControllerWithProvider(
-	provider SessionProvider[usecase.OhHellInteractorIF],
-	factory func() usecase.OhHellInteractorIF,
-) *OhHellWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newOhHellDefaultOutput, ohHellDispatch)
-}
+// NewOhHellWebController and NewOhHellWebControllerWithProvider are
+// the standard and provider-backed constructors for OhHellWebController.
+var NewOhHellWebController, NewOhHellWebControllerWithProvider = WebControllerPair[usecase.OhHellInteractorIF, OhHellWebInput, *OhHellWebOutput](
+	newOhHellDefaultOutput, ohHellDispatch,
+)
 
 func newOhHellDefaultOutput(msg string) *OhHellWebOutput {
 	return &OhHellWebOutput{

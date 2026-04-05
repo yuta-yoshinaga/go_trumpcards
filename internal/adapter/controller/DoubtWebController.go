@@ -102,19 +102,11 @@ type DoubtWebController = GameWebController[usecase.DoubtInteractorIF, DoubtWebI
 // MaxCardIndices カードインデックスの最大数 (52枚デッキ)
 const MaxCardIndices = 52
 
-// NewDoubtWebController コンストラクタ
-func NewDoubtWebController(factory func() usecase.DoubtInteractorIF) *DoubtWebController {
-	return NewGameWebController(factory, newDoubtDefaultOutput, doubtDispatch)
-}
-
-// NewDoubtWebControllerWithProvider creates a DoubtWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewDoubtWebControllerWithProvider(
-	provider SessionProvider[usecase.DoubtInteractorIF],
-	factory func() usecase.DoubtInteractorIF,
-) *DoubtWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newDoubtDefaultOutput, doubtDispatch)
-}
+// NewDoubtWebController and NewDoubtWebControllerWithProvider are
+// the standard and provider-backed constructors for DoubtWebController.
+var NewDoubtWebController, NewDoubtWebControllerWithProvider = WebControllerPair[usecase.DoubtInteractorIF, DoubtWebInput, *DoubtWebOutput](
+	newDoubtDefaultOutput, doubtDispatch,
+)
 
 func newDoubtDefaultOutput(msg string) *DoubtWebOutput {
 	return &DoubtWebOutput{

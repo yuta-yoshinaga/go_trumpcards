@@ -37,19 +37,11 @@ type ThreeCardWebOutput struct {
 // ThreeCardWebController スリーカードポーカーWebコントローラークラス
 type ThreeCardWebController = GameWebController[usecase.ThreeCardInteractorIF, ThreeCardWebInput, *ThreeCardWebOutput]
 
-// NewThreeCardWebController コンストラクタ
-func NewThreeCardWebController(factory func() usecase.ThreeCardInteractorIF) *ThreeCardWebController {
-	return NewGameWebController(factory, newThreeCardDefaultOutput, threeCardDispatch)
-}
-
-// NewThreeCardWebControllerWithProvider creates a ThreeCardWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewThreeCardWebControllerWithProvider(
-	provider SessionProvider[usecase.ThreeCardInteractorIF],
-	factory func() usecase.ThreeCardInteractorIF,
-) *ThreeCardWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newThreeCardDefaultOutput, threeCardDispatch)
-}
+// NewThreeCardWebController and NewThreeCardWebControllerWithProvider are
+// the standard and provider-backed constructors for ThreeCardWebController.
+var NewThreeCardWebController, NewThreeCardWebControllerWithProvider = WebControllerPair[usecase.ThreeCardInteractorIF, ThreeCardWebInput, *ThreeCardWebOutput](
+	newThreeCardDefaultOutput, threeCardDispatch,
+)
 
 func newThreeCardDefaultOutput(msg string) *ThreeCardWebOutput {
 	return &ThreeCardWebOutput{

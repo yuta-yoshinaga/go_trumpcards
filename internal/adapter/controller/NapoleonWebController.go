@@ -109,19 +109,11 @@ func (p NapoleonWebInput) ToConfig() domain.NapoleonConfig {
 // NapoleonWebController ナポレオンWebコントローラークラス
 type NapoleonWebController = GameWebController[usecase.NapoleonInteractorIF, NapoleonWebInput, *NapoleonWebOutput]
 
-// NewNapoleonWebController コンストラクタ
-func NewNapoleonWebController(factory func() usecase.NapoleonInteractorIF) *NapoleonWebController {
-	return NewGameWebController(factory, newNapoleonDefaultOutput, napoleonDispatch)
-}
-
-// NewNapoleonWebControllerWithProvider creates a NapoleonWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewNapoleonWebControllerWithProvider(
-	provider SessionProvider[usecase.NapoleonInteractorIF],
-	factory func() usecase.NapoleonInteractorIF,
-) *NapoleonWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newNapoleonDefaultOutput, napoleonDispatch)
-}
+// NewNapoleonWebController and NewNapoleonWebControllerWithProvider are
+// the standard and provider-backed constructors for NapoleonWebController.
+var NewNapoleonWebController, NewNapoleonWebControllerWithProvider = WebControllerPair[usecase.NapoleonInteractorIF, NapoleonWebInput, *NapoleonWebOutput](
+	newNapoleonDefaultOutput, napoleonDispatch,
+)
 
 func newNapoleonDefaultOutput(msg string) *NapoleonWebOutput {
 	return &NapoleonWebOutput{

@@ -95,19 +95,11 @@ func (p EuchreWebInput) ToConfig() domain.EuchreConfig {
 // EuchreWebController ユーカーWebコントローラークラス
 type EuchreWebController = GameWebController[usecase.EuchreInteractorIF, EuchreWebInput, *EuchreWebOutput]
 
-// NewEuchreWebController コンストラクタ
-func NewEuchreWebController(factory func() usecase.EuchreInteractorIF) *EuchreWebController {
-	return NewGameWebController(factory, newEuchreDefaultOutput, euchreDispatch)
-}
-
-// NewEuchreWebControllerWithProvider creates an EuchreWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewEuchreWebControllerWithProvider(
-	provider SessionProvider[usecase.EuchreInteractorIF],
-	factory func() usecase.EuchreInteractorIF,
-) *EuchreWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newEuchreDefaultOutput, euchreDispatch)
-}
+// NewEuchreWebController and NewEuchreWebControllerWithProvider are
+// the standard and provider-backed constructors for EuchreWebController.
+var NewEuchreWebController, NewEuchreWebControllerWithProvider = WebControllerPair[usecase.EuchreInteractorIF, EuchreWebInput, *EuchreWebOutput](
+	newEuchreDefaultOutput, euchreDispatch,
+)
 
 func newEuchreDefaultOutput(msg string) *EuchreWebOutput {
 	return &EuchreWebOutput{

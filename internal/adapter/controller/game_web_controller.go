@@ -54,3 +54,20 @@ func (gwc *GameWebController[I, P, O]) Exec(w http.ResponseWriter, r *http.Reque
 func (gwc *GameWebController[I, P, O]) Stop() {
 	gwc.provider.Stop()
 }
+
+// WebControllerPair returns a (New, NewWithProvider) constructor pair for a
+// game web controller, eliminating two boilerplate functions per game file.
+func WebControllerPair[I any, P WebInput, O any](
+	newDefault func(string) O,
+	dispatch func(*baseController, http.ResponseWriter, I, P, func(string) O) bool,
+) (
+	func(func() I) *GameWebController[I, P, O],
+	func(SessionProvider[I], func() I) *GameWebController[I, P, O],
+) {
+	return func(factory func() I) *GameWebController[I, P, O] {
+			return NewGameWebController(factory, newDefault, dispatch)
+		},
+		func(provider SessionProvider[I], factory func() I) *GameWebController[I, P, O] {
+			return NewGameWebControllerWithProvider(provider, factory, newDefault, dispatch)
+		}
+}

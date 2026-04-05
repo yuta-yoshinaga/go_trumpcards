@@ -88,19 +88,11 @@ func (p HeartsWebInput) ToConfig() domain.HeartsConfig {
 // HeartsWebController ハーツWebコントローラークラス
 type HeartsWebController = GameWebController[usecase.HeartsInteractorIF, HeartsWebInput, *HeartsWebOutput]
 
-// NewHeartsWebController コンストラクタ
-func NewHeartsWebController(factory func() usecase.HeartsInteractorIF) *HeartsWebController {
-	return NewGameWebController(factory, newHeartsDefaultOutput, heartsDispatch)
-}
-
-// NewHeartsWebControllerWithProvider creates a HeartsWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewHeartsWebControllerWithProvider(
-	provider SessionProvider[usecase.HeartsInteractorIF],
-	factory func() usecase.HeartsInteractorIF,
-) *HeartsWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newHeartsDefaultOutput, heartsDispatch)
-}
+// NewHeartsWebController and NewHeartsWebControllerWithProvider are
+// the standard and provider-backed constructors for HeartsWebController.
+var NewHeartsWebController, NewHeartsWebControllerWithProvider = WebControllerPair[usecase.HeartsInteractorIF, HeartsWebInput, *HeartsWebOutput](
+	newHeartsDefaultOutput, heartsDispatch,
+)
 
 func newHeartsDefaultOutput(msg string) *HeartsWebOutput {
 	return &HeartsWebOutput{

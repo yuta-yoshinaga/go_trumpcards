@@ -68,18 +68,11 @@ type SpeedWebOutput struct {
 // SpeedWebController スピードWebコントローラー型
 type SpeedWebController = GameWebController[usecase.SpeedInteractorIF, SpeedWebInput, *SpeedWebOutput]
 
-// NewSpeedWebController コンストラクタ
-func NewSpeedWebController(factory func() usecase.SpeedInteractorIF) *SpeedWebController {
-	return NewGameWebController(factory, newSpeedDefaultOutput, speedDispatch)
-}
-
-// NewSpeedWebControllerWithProvider KVプロバイダ付きコンストラクタ
-func NewSpeedWebControllerWithProvider(
-	provider SessionProvider[usecase.SpeedInteractorIF],
-	factory func() usecase.SpeedInteractorIF,
-) *SpeedWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newSpeedDefaultOutput, speedDispatch)
-}
+// NewSpeedWebController and NewSpeedWebControllerWithProvider are
+// the standard and provider-backed constructors for SpeedWebController.
+var NewSpeedWebController, NewSpeedWebControllerWithProvider = WebControllerPair[usecase.SpeedInteractorIF, SpeedWebInput, *SpeedWebOutput](
+	newSpeedDefaultOutput, speedDispatch,
+)
 
 func newSpeedDefaultOutput(msg string) *SpeedWebOutput {
 	o := new(SpeedWebOutput)

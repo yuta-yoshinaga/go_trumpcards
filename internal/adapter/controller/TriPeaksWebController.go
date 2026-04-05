@@ -44,19 +44,11 @@ type TriPeaksWebOutput struct {
 // TriPeaksWebController トリピークスWebコントローラークラス
 type TriPeaksWebController = GameWebController[usecase.TriPeaksInteractorIF, TriPeaksWebInput, *TriPeaksWebOutput]
 
-// NewTriPeaksWebController コンストラクタ
-func NewTriPeaksWebController(factory func() usecase.TriPeaksInteractorIF) *TriPeaksWebController {
-	return NewGameWebController(factory, newTriPeaksDefaultOutput, triPeaksDispatch)
-}
-
-// NewTriPeaksWebControllerWithProvider creates a TriPeaksWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewTriPeaksWebControllerWithProvider(
-	provider SessionProvider[usecase.TriPeaksInteractorIF],
-	factory func() usecase.TriPeaksInteractorIF,
-) *TriPeaksWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newTriPeaksDefaultOutput, triPeaksDispatch)
-}
+// NewTriPeaksWebController and NewTriPeaksWebControllerWithProvider are
+// the standard and provider-backed constructors for TriPeaksWebController.
+var NewTriPeaksWebController, NewTriPeaksWebControllerWithProvider = WebControllerPair[usecase.TriPeaksInteractorIF, TriPeaksWebInput, *TriPeaksWebOutput](
+	newTriPeaksDefaultOutput, triPeaksDispatch,
+)
 
 func newTriPeaksDefaultOutput(msg string) *TriPeaksWebOutput {
 	return &TriPeaksWebOutput{
