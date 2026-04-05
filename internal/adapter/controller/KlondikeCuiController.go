@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -53,17 +55,26 @@ func (c *KlondikeCuiController) Exec(command string) string {
 
 // handleMove 移動コマンドを処理
 func (c *KlondikeCuiController) handleMove(args []string) string {
-	if len(args) < 2 {
-		return "Usage: m w t <col> | m w f | m t <col> <idx> t <col> | m t <col> f"
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("klondike.promptSourceZone"), "m {0}")
 	}
 	from := args[0]
+	if from != "w" && from != "t" {
+		return i18n.Tf("klondike.invalidFromZone", "val", from)
+	}
+	if len(args) < 2 {
+		switch from {
+		case "w":
+			return cuiutil.PromptRequest(i18n.T("klondike.promptToZone"), "m w {0}")
+		case "t":
+			return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
+		}
+	}
 	switch from {
 	case "w":
 		return c.handleMoveFromWaste(args[1:])
-	case "t":
+	default: // "t"
 		return c.handleMoveFromTableau(args[1:])
-	default:
-		return fmt.Sprintf("Invalid from zone: %s. Use 'w' (waste) or 't' (tableau).", from)
 	}
 }
 
@@ -72,27 +83,30 @@ func (c *KlondikeCuiController) handleMoveFromWaste(args []string) string {
 	switch to {
 	case "t":
 		if len(args) < 2 {
-			return "Usage: m w t <col>"
+			return cuiutil.PromptRequest(i18n.T("promptToColumn"), "m w t {0}")
 		}
 		col, err := strconv.Atoi(args[1])
 		if err != nil {
-			return fmt.Sprintf("Invalid column: %s.", args[1])
+			return i18n.Tf("invalidColumn", "val", args[1])
 		}
 		return c.ki.MoveWasteToTableau(col)
 	case "f":
 		return c.ki.MoveWasteToFoundation()
 	default:
-		return fmt.Sprintf("Invalid to zone: %s. Use 't' (tableau) or 'f' (foundation).", to)
+		return i18n.Tf("klondike.invalidToZone", "val", to)
 	}
 }
 
 func (c *KlondikeCuiController) handleMoveFromTableau(args []string) string {
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
+	}
 	if len(args) < 2 {
-		return "Usage: m t <fromCol> f | m t <fromCol> <cardIdx> t <toCol>"
+		return cuiutil.PromptRequest(i18n.T("klondike.promptToZone"), fmt.Sprintf("m t %s {0}", args[0]))
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
-		return fmt.Sprintf("Invalid from column: %s.", args[0])
+		return i18n.Tf("invalidColumn", "val", args[0])
 	}
 
 	if args[1] == "f" {
@@ -100,18 +114,22 @@ func (c *KlondikeCuiController) handleMoveFromTableau(args []string) string {
 	}
 
 	// The only other valid format is "m t <fromCol> <cardIdx> t <toCol>"
-	if len(args) != 4 || args[2] != "t" {
-		return "Invalid move command. Usage: m t <fromCol> <cardIdx> t <toCol>"
+	if len(args) < 4 || args[2] != "t" {
+		if len(args) == 3 && args[2] == "t" {
+			// Wizard state: m t <fromCol> <cardIdx> t — prompt for destination column
+			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s %s t {0}", args[0], args[1]))
+		}
+		return i18n.T("klondike.moveUsage")
 	}
 
 	cardIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return fmt.Sprintf("Invalid card index: %s.", args[1])
+		return i18n.Tf("invalidCardIndex", "val", args[1])
 	}
 
 	toCol, err := strconv.Atoi(args[3])
 	if err != nil {
-		return fmt.Sprintf("Invalid to column: %s.", args[3])
+		return i18n.Tf("invalidColumn", "val", args[3])
 	}
 
 	return c.ki.MoveTableauToTableau(fromCol, cardIdx, toCol)

@@ -3,12 +3,14 @@ package ui
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"strings"
 	"sync"
 	"syscall"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -56,6 +58,7 @@ func RunInteractiveCuiLoop(manager *GameManager) {
 			break
 		}
 		res := manager.Exec(input)
+		res = handlePromptLoop(scanner, manager, res, manager.CurrentGame(), os.Stdout)
 		if res == i18n.QuitSentinel {
 			fmt.Println(i18n.T("bye"))
 			break
@@ -84,10 +87,35 @@ func RunCuiLoop(controller CuiExecer, helpLines []string) {
 			continue
 		}
 		res := controller.Exec(input)
+		res = handlePromptLoop(scanner, controller, res, "", os.Stdout)
 		if res == i18n.QuitSentinel {
 			fmt.Println(i18n.T("bye"))
 			break
 		}
 		fmt.Println(res)
 	}
+}
+
+// handlePromptLoop handles interactive prompting when a controller returns a prompt request.
+// It loops until the controller returns a non-prompt result (allowing chained wizard-style prompts).
+func handlePromptLoop(scanner *bufio.Scanner, execer CuiExecer, result, gameName string, w io.Writer) string {
+	for cuiutil.IsPromptRequest(result) {
+		promptMsg, tmpl := cuiutil.ParsePromptRequest(result)
+		if tmpl == "" {
+			// Malformed prompt; treat as regular message.
+			return promptMsg
+		}
+		_, _ = fmt.Fprintln(w, promptMsg)
+		input, exit := readInput(scanner, gameName, w)
+		if exit {
+			return i18n.QuitSentinel
+		}
+		input = strings.TrimSpace(input)
+		if input == "" {
+			return i18n.T("cancelled")
+		}
+		fullCmd := cuiutil.FillTemplate(tmpl, input)
+		result = execer.Exec(fullCmd)
+	}
+	return result
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -60,7 +61,10 @@ func TestHoldemCuiController_Bet(t *testing.T) {
 func TestHoldemCuiController_Bet_NoAmount(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("b"), "金額の指定が必要です")
+	result := c.Exec("b")
+	assert.True(t, cuiutil.IsPromptRequest(result))
+	_, tmpl := cuiutil.ParsePromptRequest(result)
+	assert.Equal(t, "b {0}", tmpl)
 }
 
 func TestHoldemCuiController_Bet_InvalidAmount(t *testing.T) {
@@ -81,7 +85,10 @@ func TestHoldemCuiController_Raise(t *testing.T) {
 func TestHoldemCuiController_Raise_NoAmount(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("ra"), "金額の指定が必要です")
+	result := c.Exec("ra")
+	assert.True(t, cuiutil.IsPromptRequest(result))
+	_, tmpl := cuiutil.ParsePromptRequest(result)
+	assert.Equal(t, "ra {0}", tmpl)
 }
 
 func TestHoldemCuiController_Raise_InvalidAmount(t *testing.T) {

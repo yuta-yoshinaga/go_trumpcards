@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 )
 
@@ -123,33 +124,50 @@ func TestFreeCellCuiController_MoveFreeCellToFoundation(t *testing.T) {
 }
 
 func TestFreeCellCuiController_MoveErrors(t *testing.T) {
-	tests := []struct {
+	// Cases where args are completely missing now return prompt requests
+	promptTests := []struct {
+		name  string
+		input string
+	}{
+		{"move no args", "m"},
+		{"move tableau no col args", "m t"},
+		{"move tableau to tableau no toCol", "m t 0 t"},
+		{"move tableau to freecell no cell", "m t 0 c"},
+		{"move freecell no args", "m c"},
+		{"move freecell to tableau no col", "m c 0 t"},
+		{"move tableau cardIdx t chained wizard toCol", "m t 0 3 t"},
+	}
+
+	for _, tt := range promptTests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := newMockFreeCellInteractor()
+			c := NewFreeCellCuiController(m)
+			result := c.Exec(tt.input)
+			assert.True(t, cuiutil.IsPromptRequest(result))
+		})
+	}
+
+	// Cases where args are present but invalid still return error strings
+	errorTests := []struct {
 		name     string
 		input    string
 		contains string
 	}{
-		{"move no args", "m", "Usage"},
-		{"move invalid from zone", "m x t 3", "Invalid from zone"},
-		{"move tableau no col args", "m t", "Usage"},
-		{"move tableau invalid col", "m t abc f", "Invalid from column"},
-		{"move tableau to tableau no toCol", "m t 0 t", "Usage"},
-		{"move tableau to tableau invalid toCol", "m t 0 t abc", "Invalid to column"},
-		{"move tableau to invalid zone", "m t 0 x", "Invalid move command"},
-		{"move tableau cardIndex wrong zone", "m t 0 3 f 4", "Invalid move command"},
-		{"move tableau cardIndex too few args", "m t 0 3 t", "Invalid move command"},
-		{"move tableau invalid cardIndex", "m t 0 abc t 4", "Invalid move command"},
-		{"move tableau cardIndex invalid toCol", "m t 0 3 t abc", "Invalid to column"},
-		{"move tableau to freecell no cell", "m t 0 c", "Usage"},
-		{"move tableau to freecell invalid cell", "m t 0 c abc", "Invalid cell"},
-		{"move freecell no args", "m c", "Usage"},
-		{"move freecell invalid cell", "m c abc t 3", "Invalid cell"},
-		{"move freecell to tableau no col", "m c 0 t", "Usage"},
-		{"move freecell to tableau invalid col", "m c 0 t abc", "Invalid column"},
-		{"move freecell to invalid zone", "m c 0 x", "Invalid to zone"},
-		{"move invalid from zone w", "m w t 3", "Invalid from zone"},
+		{"move invalid from zone", "m x t 3", "x"},
+		{"move tableau invalid col", "m t abc f", "abc"},
+		{"move tableau to tableau invalid toCol", "m t 0 t abc", "abc"},
+		{"move tableau to invalid zone", "m t 0 x", "m t"},
+		{"move tableau cardIndex wrong zone", "m t 0 3 f 4", "m t"},
+		{"move tableau invalid cardIndex", "m t 0 abc t 4", "m t"},
+		{"move tableau cardIndex invalid toCol", "m t 0 3 t abc", "abc"},
+		{"move tableau to freecell invalid cell", "m t 0 c abc", "abc"},
+		{"move freecell invalid cell", "m c abc t 3", "abc"},
+		{"move freecell to tableau invalid col", "m c 0 t abc", "abc"},
+		{"move freecell to invalid zone", "m c 0 x", "x"},
+		{"move invalid from zone w", "m w t 3", "w"},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range errorTests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := newMockFreeCellInteractor()
 			c := NewFreeCellCuiController(m)
@@ -157,6 +175,15 @@ func TestFreeCellCuiController_MoveErrors(t *testing.T) {
 			assert.Contains(t, result, tt.contains)
 		})
 	}
+}
+
+func TestFreeCellCuiController_MoveTableauCardIdxChainedWizard(t *testing.T) {
+	m := newMockFreeCellInteractor()
+	c := NewFreeCellCuiController(m)
+	result := c.Exec("m t 0 3 t")
+	assert.True(t, cuiutil.IsPromptRequest(result))
+	_, tmpl := cuiutil.ParsePromptRequest(result)
+	assert.Equal(t, "m t 0 3 t {0}", tmpl)
 }
 
 func TestFreeCellCuiController_UnknownCommand(t *testing.T) {
