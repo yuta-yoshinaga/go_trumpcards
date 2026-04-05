@@ -1234,6 +1234,7 @@ paths:
         | `hint`         | `h`  | Get a hint for the next move |
         | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
         | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
         | `log`          | `l`  | View action log |
       operationId: klondikeExec
       requestBody:
@@ -1317,6 +1318,7 @@ paths:
         | `hint`         | `h`  | Get a hint for the next move |
         | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
         | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
         | `log`          | `l`  | View action log |
       operationId: freecellExec
       requestBody:
@@ -1845,6 +1847,7 @@ paths:
         | `hint`         | `h`     | Get a move suggestion |
         | `autocomplete` | `ac`    | Auto-complete (when all face up) |
         | `undo`         | `u`     | Undo last move |
+        | `undo_n`       |         | Undo N moves (requires `n` parameter) |
         | `log`          | `l`     | View action log |
       operationId: spiderExec
       requestBody:
@@ -2394,6 +2397,7 @@ paths:
         | `giveup`       | `g`  | Give up the current game |
         | `hint`         | `h`  | Get a hint for the next move |
         | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
         | `log`          | `l`  | View action log |
       operationId: pyramidExec
       requestBody:
@@ -2497,6 +2501,7 @@ paths:
         | `giveup`       | `g`  | Give up the current game |
         | `hint`         | `h`  | Get a hint for the next move |
         | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
         | `log`          | `l`  | View action log |
       operationId: tripeaksExec
       requestBody:
@@ -3140,6 +3145,7 @@ paths:
         | `giveup`       | `g`  | Give up the current game |
         | `hint`         | `h`  | Get a hint for the next move |
         | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
         | `log`          | `l`  | View action log |
       operationId: golfExec
       requestBody:
@@ -3154,7 +3160,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+                  enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, undo_n, log, l]
                 col:
                   type: integer
                   description: Column index (0-6) for remove command
@@ -3212,6 +3218,10 @@ paths:
                     type: boolean
                   isStalemate:
                     type: boolean
+                  undoToEscape:
+                    type: integer
+                    description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+                    example: 0
                   message:
                     type: string
                   messageCode:
@@ -6300,7 +6310,7 @@ components:
             Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
             `move` (`m`), `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
             `log` (`l`).
-          enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, log, l]
+          enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
           example: move
         from:
           description: Source zone for a move command
@@ -6354,6 +6364,7 @@ components:
         - drawCount
         - canUndo
         - isStalemate
+        - undoToEscape
         - score
         - scoringMode
         - message
@@ -6403,6 +6414,10 @@ components:
           type: boolean
           description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
         score:
           type: integer
           description: "Vegas score: -52 + 5 × foundation cards"
@@ -6471,8 +6486,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `move` (`m`),
             `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
-            `undo` (`u`), `log` (`l`).
-          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, log, l]
+            `undo` (`u`), `undo_n`, `log` (`l`).
+          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
           example: move
         from:
           description: Source zone for a move command
@@ -6496,6 +6511,7 @@ components:
         - moveCount
         - canUndo
         - isStalemate
+        - undoToEscape
         - message
       properties:
         tableau:
@@ -6535,6 +6551,10 @@ components:
           type: boolean
           description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
         hint:
           type: object
           description: Hint for the next available move (only present when hint command is used)
@@ -7437,7 +7457,7 @@ components:
       properties:
         command:
           type: string
-          enum: [reset, deal, move, giveup, hint, autocomplete, undo, log]
+          enum: [reset, deal, move, giveup, hint, autocomplete, undo, undo_n, log]
         sessionId:
           type: string
         from:
@@ -7495,6 +7515,7 @@ components:
         - moveCount
         - canUndo
         - isStalemate
+        - undoToEscape
         - score
         - difficulty
         - message
@@ -7519,6 +7540,10 @@ components:
           type: boolean
         isStalemate:
           type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
         score:
           type: integer
         difficulty:
@@ -8154,8 +8179,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
             `remove` (`rm`), `giveup` (`g`), `hint` (`h`), `undo` (`u`),
-            `log` (`l`).
-          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+            `undo_n`, `log` (`l`).
+          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, undo_n, log, l]
           example: remove
         card1:
           description: First card for a remove command
@@ -8195,6 +8220,7 @@ components:
         - moveCount
         - canUndo
         - isStalemate
+        - undoToEscape
         - message
       properties:
         pyramid:
@@ -8230,6 +8256,10 @@ components:
           type: boolean
           description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
         message:
           type: string
           description: Game result or status message. Empty while the game is in progress.
@@ -8274,8 +8304,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
             `remove` (`rm`), `giveup` (`g`), `hint` (`h`), `undo` (`u`),
-            `log` (`l`).
-          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+            `undo_n`, `log` (`l`).
+          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, undo_n, log, l]
           example: remove
         row:
           type: integer
@@ -8317,6 +8347,7 @@ components:
         - moveCount
         - canUndo
         - isStalemate
+        - undoToEscape
         - message
       properties:
         tableau:
@@ -8352,6 +8383,10 @@ components:
           type: boolean
           description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
         message:
           type: string
           description: Game result or status message. Empty while the game is in progress.

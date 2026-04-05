@@ -274,6 +274,35 @@ func TestSpiderWebController_ResetWithConfig(t *testing.T) {
 	recorded.BodyIs(mockOutput)
 }
 
+func TestSpiderWebController_UndoN(t *testing.T) {
+	mockOutput := `{"tableau":[],"stockCount":0,"completedSuits":0,"phase":0,"moveCount":0,"canUndo":false,"isStalemate":false,"score":0,"difficulty":0,"message":""}`
+
+	siMock := new(usecase.MockSpiderInteractor)
+	siMock.On("UndoN", 3).Return(mockOutput)
+
+	factory := func() uc.SpiderInteractorIF { return siMock }
+	ctrl := controller.NewSpiderWebController(factory)
+	defer ctrl.Stop()
+
+	t.Run("undo_n with valid n", func(t *testing.T) {
+		n := 3
+		input := controller.SpiderWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1", N: &n},
+		}
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(mockOutput)
+	})
+
+	t.Run("undo_n with missing n", func(t *testing.T) {
+		input := controller.SpiderWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1"},
+		}
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusBadRequest)
+	})
+}
+
 func TestSpiderWebController_Stop(t *testing.T) {
 	siMock := new(usecase.MockSpiderInteractor)
 	factory := func() uc.SpiderInteractorIF { return siMock }

@@ -95,6 +95,28 @@ func TestTriPeaksWebController_Remove_MissingParams(t *testing.T) {
 	rec.CodeIs(http.StatusBadRequest)
 }
 
+func TestTriPeaksWebController_UndoN(t *testing.T) {
+	tiMock, ctrl, mockOutput := setupTriPeaksWebTest(t)
+	tiMock.On("UndoN", 3).Return(mockOutput)
+
+	t.Run("undo_n with valid n", func(t *testing.T) {
+		n := 3
+		input := controller.TriPeaksWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1", N: &n},
+		}
+		rec := execRequest(t, ctrl.Exec, &input)
+		rec.CodeIs(http.StatusOK)
+	})
+
+	t.Run("undo_n with missing n", func(t *testing.T) {
+		input := controller.TriPeaksWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1"},
+		}
+		rec := execRequest(t, ctrl.Exec, &input)
+		rec.CodeIs(http.StatusBadRequest)
+	})
+}
+
 func TestTriPeaksWebController_UnknownCommand(t *testing.T) {
 	_, ctrl, _ := setupTriPeaksWebTest(t)
 
