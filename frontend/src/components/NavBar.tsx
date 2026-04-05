@@ -163,7 +163,7 @@ export function NavBar() {
   }, [searchTerm, searchableRoutes]);
 
   return (
-    <div className="glass-panel--dark lg:hidden">
+    <div className="glass-panel--dark lg:hidden relative z-30">
       <div className="flex items-center justify-between sm:hidden my-2 mx-2.5">
         <Link
           to="/"

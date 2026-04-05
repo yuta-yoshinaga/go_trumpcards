@@ -125,7 +125,7 @@ function PinochlePageContent() {
       ) : (
         <>
           <SettingsPanel
-            title={t('settings.title', { defaultValue: 'Settings' })}
+            title={t('settings.title')}
             groups={[
               {
                 items: [

@@ -59,6 +59,9 @@
     "mute": "サウンドをオフにする",
     "unmute": "サウンドをオンにする"
   },
+  "settings": {
+    "title": "設定"
+  },
   "player": {
     "you": "あなた",
     "cpu": "CPU {{id}}",
@@ -129,6 +132,7 @@
     "chipsWon": "+{{amount}}チップ",
     "kicker": "キッカー: {{kickers}}",
     "mucked": "マック",
+    "player": "プレイヤー",
     "errorBoundaryTitle": "エラーが発生しました",
     "errorBoundaryRetry": "再試行"
   },

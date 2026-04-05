@@ -59,6 +59,9 @@
     "mute": "Mute sound",
     "unmute": "Unmute sound"
   },
+  "settings": {
+    "title": "Settings"
+  },
   "player": {
     "you": "You",
     "cpu": "CPU {{id}}",
@@ -129,6 +132,7 @@
     "chipsWon": "+{{amount}} chips",
     "kicker": "Kicker: {{kickers}}",
     "mucked": "Mucked",
+    "player": "Player",
     "errorBoundaryTitle": "An error occurred",
     "errorBoundaryRetry": "Retry"
   },
