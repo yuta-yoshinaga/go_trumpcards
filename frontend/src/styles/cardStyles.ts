@@ -1,4 +1,5 @@
 import type React from 'react';
+import { EXPANSION_GAP_PX } from './motionPresets';
 
 /** Tailwind classes for focus-visible ring on card selection buttons. */
 export const focusRingCard =
@@ -23,6 +24,17 @@ export function playableCardStyle(isPlayable: boolean): React.CSSProperties {
     border: isPlayable ? '3px solid var(--color-game-status-active)' : '3px solid transparent',
     boxShadow: isPlayable ? '0 0 8px rgba(92, 184, 92, 0.3)' : 'none',
   };
+}
+
+/**
+ * Return adjusted overlap margin for a card that is adjacent to a selected card on mobile.
+ * Reduces the negative overlap by EXPANSION_GAP_PX, effectively widening the visible area.
+ * Returns the original overlap when the card is not adjacent to a selection.
+ */
+export function expansionMargin(isNeighborOfSelected: boolean, baseOverlap: number): number {
+  if (!isNeighborOfSelected) return baseOverlap;
+  // Reduce the negative overlap (make it less negative = more visible area)
+  return baseOverlap + EXPANSION_GAP_PX;
 }
 
 /** Return inline styles combining playable border + enhanced glow for thumb-zone visibility. */

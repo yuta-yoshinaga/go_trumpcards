@@ -12,3 +12,6 @@ export const hoverLift = { y: -4, scale: 1.05 };
 
 /** Parent variant for staggered children animations (120ms between cards). */
 export const staggerTiming = { staggerChildren: 0.12 };
+
+/** Extra gap (px) added to each neighbor of a selected card on mobile. */
+export const EXPANSION_GAP_PX = 12;

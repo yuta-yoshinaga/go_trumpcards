@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { focusRingCard, playableCardStyle, selectedCardStyle, smartHighlightStyle } from './cardStyles';
+import {
+  expansionMargin,
+  focusRingCard,
+  playableCardStyle,
+  selectedCardStyle,
+  smartHighlightStyle,
+} from './cardStyles';
+import { EXPANSION_GAP_PX } from './motionPresets';
 
 describe('selectedCardStyle', () => {
   it('returns selected styles when true', () => {
@@ -38,6 +45,27 @@ describe('focusRingCard', () => {
     expect(focusRingCard).toContain('focus-visible:ring-2');
     expect(focusRingCard).toContain('focus-visible:ring-ds-accent');
     expect(focusRingCard).toContain('rounded-lg');
+  });
+});
+
+describe('expansionMargin', () => {
+  it('adds expansion gap for neighbor of selected card', () => {
+    const baseOverlap = -10;
+    expect(expansionMargin(true, baseOverlap)).toBe(baseOverlap + EXPANSION_GAP_PX);
+  });
+
+  it('returns base overlap for non-neighbor', () => {
+    expect(expansionMargin(false, -10)).toBe(-10);
+  });
+
+  it('works with positive gap values', () => {
+    expect(expansionMargin(true, 2)).toBe(2 + EXPANSION_GAP_PX);
+    expect(expansionMargin(false, 2)).toBe(2);
+  });
+
+  it('works with zero overlap', () => {
+    expect(expansionMargin(true, 0)).toBe(EXPANSION_GAP_PX);
+    expect(expansionMargin(false, 0)).toBe(0);
   });
 });
 
