@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
@@ -90,7 +91,7 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
 
   const markdown = manualTexts[gamePath] ?? '';
 
-  return (
+  return createPortal(
     // biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses modal on click
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
@@ -117,6 +118,7 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
           </Markdown>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
