@@ -135,6 +135,7 @@ func TestFreeCellCuiController_MoveErrors(t *testing.T) {
 		{"move tableau to freecell no cell", "m t 0 c"},
 		{"move freecell no args", "m c"},
 		{"move freecell to tableau no col", "m c 0 t"},
+		{"move tableau cardIdx t chained wizard toCol", "m t 0 3 t"},
 	}
 
 	for _, tt := range promptTests {
@@ -174,6 +175,15 @@ func TestFreeCellCuiController_MoveErrors(t *testing.T) {
 			assert.Contains(t, result, tt.contains)
 		})
 	}
+}
+
+func TestFreeCellCuiController_MoveTableauCardIdxChainedWizard(t *testing.T) {
+	m := newMockFreeCellInteractor()
+	c := NewFreeCellCuiController(m)
+	result := c.Exec("m t 0 3 t")
+	assert.True(t, cuiutil.IsPromptRequest(result))
+	_, tmpl := cuiutil.ParsePromptRequest(result)
+	assert.Equal(t, "m t 0 3 t {0}", tmpl)
 }
 
 func TestFreeCellCuiController_UnknownCommand(t *testing.T) {

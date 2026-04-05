@@ -169,11 +169,13 @@ func TestKlondikeCuiControllerMoveErrors(t *testing.T) {
 		assert.False(t, cuiutil.IsPromptRequest(result))
 	})
 
-	t.Run("move tableau to tableau too few args", func(t *testing.T) {
+	t.Run("move tableau to tableau chained wizard toCol prompt", func(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
 		result := c.Exec("m t 0 3 t")
-		assert.NotEmpty(t, result)
+		assert.True(t, cuiutil.IsPromptRequest(result))
+		_, tmpl := cuiutil.ParsePromptRequest(result)
+		assert.Equal(t, "m t 0 3 t {0}", tmpl)
 	})
 
 	t.Run("move tableau to tableau wrong zone marker", func(t *testing.T) {
