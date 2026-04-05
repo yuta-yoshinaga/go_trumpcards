@@ -95,7 +95,7 @@ function SpeedPageContent() {
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  if (!state) return <SpeedSkeleton />;
+  if (!state || state.players.length < 2) return <SpeedSkeleton />;
 
   const isPlayPhase = state.phase === SpeedPhase.PLAY;
   const isStuck = state.phase === SpeedPhase.STUCK;
