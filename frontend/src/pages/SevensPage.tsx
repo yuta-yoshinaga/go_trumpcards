@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { sevensApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -20,6 +19,7 @@ import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { SevensSkeleton } from '../components/skeleton/SevensSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -27,12 +27,11 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SevensResponse } from '../types/card';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { parseSevensCommand, SEVENS_HELP } from '../utils/cli/commands/sevensCommands';
 import { formatSevensState } from '../utils/cli/formatters/sevensFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -58,19 +57,12 @@ const SV_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Sevens tutorial configuration. */
-const SV_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'sevens',
-  steps: SV_TUTORIAL_STEPS,
-};
-
 /** Renders the Sevens game page with board, player areas, and joker placement. */
 export function SevensPage() {
-  const { t: tSv } = useTranslation('sevens');
   return (
-    <TutorialProvider config={SV_TUTORIAL_CONFIG} translateMessage={tSv}>
+    <TutorialWrapper gameName="sevens" steps={SV_TUTORIAL_STEPS}>
       <SevensPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

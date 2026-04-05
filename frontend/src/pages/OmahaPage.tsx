@@ -25,6 +25,7 @@ import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { OmahaSkeleton } from '../components/skeleton/OmahaSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -34,14 +35,13 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { OmahaResponse } from '../types/card';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -92,12 +92,6 @@ const OH_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Omaha Hold'em tutorial configuration. */
-const OH_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'omaha',
-  steps: OH_TUTORIAL_STEPS,
-};
-
 const OMAHA_PHASE_KEYS: Readonly<Record<number, string>> = {
   [OmahaPhase.PRE_FLOP]: 'preFlop',
   [OmahaPhase.FLOP]: 'flop',
@@ -141,11 +135,10 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
 
 /** Renders the Omaha Hold'em game page with community cards, betting, and showdown. */
 export function OmahaPage() {
-  const { t: tOmaha } = useTranslation('omaha');
   return (
-    <TutorialProvider config={OH_TUTORIAL_CONFIG} translateMessage={tOmaha}>
+    <TutorialWrapper gameName="omaha" steps={OH_TUTORIAL_STEPS}>
       <OmahaPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

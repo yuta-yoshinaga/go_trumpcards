@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { videopokerApi } from '../api/gameApi';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { VideoPokerGameContent } from '../components/VideoPokerGameContent';
-import { TutorialProvider } from '../providers/TutorialProvider';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { parseVideopokerCommand, VIDEOPOKER_HELP } from '../utils/cli/commands/videopokerCommands';
 import { formatVideopokerState } from '../utils/cli/formatters/videopokerFormatter';
 
@@ -49,15 +48,8 @@ const VP_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Video Poker tutorial configuration. */
-const VP_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'videopoker',
-  steps: VP_TUTORIAL_STEPS,
-};
-
 /** Renders the Video Poker (Jacks or Better) game page. */
 export function VideoPokerPage() {
-  const { t: tVp } = useTranslation('videopoker');
   const cliGameConfig = useMemo(
     () => ({
       parseCommand: parseVideopokerCommand,
@@ -67,7 +59,7 @@ export function VideoPokerPage() {
     [],
   );
   return (
-    <TutorialProvider config={VP_TUTORIAL_CONFIG} translateMessage={tVp}>
+    <TutorialWrapper gameName="videopoker" steps={VP_TUTORIAL_STEPS}>
       <VideoPokerGameContent
         gameName="videopoker"
         i18nNamespace="videopoker"
@@ -76,6 +68,6 @@ export function VideoPokerPage() {
         gamePath="/videopoker"
         cliGameConfig={cliGameConfig}
       />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }

@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { heartsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -13,6 +12,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -22,13 +22,12 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { HeartsResponse } from '../types/card';
 import { HeartsPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { HEARTS_HELP, parseHeartsCommand } from '../utils/cli/commands/heartsCommands';
 import { formatHeartsState } from '../utils/cli/formatters/heartsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -80,12 +79,6 @@ const HT_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Hearts tutorial configuration. */
-const HT_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'hearts',
-  steps: HT_TUTORIAL_STEPS,
-};
-
 const HEARTS_PHASE_KEYS: Readonly<Record<number, string>> = {
   [HeartsPhase.PASS]: 'pass',
   [HeartsPhase.PLAY]: 'play',
@@ -98,11 +91,10 @@ const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 
 /** Renders the Hearts game page with card passing, trick play, and scoring. */
 export function HeartsPage() {
-  const { t: tHearts } = useTranslation('hearts');
   return (
-    <TutorialProvider config={HT_TUTORIAL_CONFIG} translateMessage={tHearts}>
+    <TutorialWrapper gameName="hearts" steps={HT_TUTORIAL_STEPS}>
       <HeartsPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { klondikeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,6 +18,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -28,12 +28,11 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { KlondikeResponse } from '../types/card';
 import { KlondikePhase, KlondikeScoringMode } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { KLONDIKE_HELP, parseKlondikeCommand } from '../utils/cli/commands/klondikeCommands';
 import { formatKlondikeState } from '../utils/cli/formatters/klondikeFormatter';
@@ -81,19 +80,12 @@ const KL_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Klondike tutorial configuration. */
-const KL_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'klondike',
-  steps: KL_TUTORIAL_STEPS,
-};
-
 /** Renders the Klondike solitaire game page with tableau, stock/waste, and foundation. */
 export function KlondikePage() {
-  const { t: tKl } = useTranslation('klondike');
   return (
-    <TutorialProvider config={KL_TUTORIAL_CONFIG} translateMessage={tKl}>
+    <TutorialWrapper gameName="klondike" steps={KL_TUTORIAL_STEPS}>
       <KlondikePageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

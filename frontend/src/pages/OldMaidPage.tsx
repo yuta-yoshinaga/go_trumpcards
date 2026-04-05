@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { oldmaidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -22,6 +21,7 @@ import { OldMaidSettingsDialog } from '../components/oldmaid/OldMaidSettingsDial
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -30,12 +30,11 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CpuAction, OldMaidResponse } from '../types/card';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardLabel } from '../utils/cardUtils';
 import { OLDMAID_HELP, parseOldmaidCommand } from '../utils/cli/commands/oldmaidCommands';
 import { formatOldmaidState } from '../utils/cli/formatters/oldmaidFormatter';
@@ -70,19 +69,12 @@ const OM_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Old Maid tutorial configuration. */
-const OM_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'oldmaid',
-  steps: OM_TUTORIAL_STEPS,
-};
-
 /** Renders the Old Maid game page with settings dialog, player areas, and draw history. */
 export function OldMaidPage() {
-  const { t: tOm } = useTranslation('oldmaid');
   return (
-    <TutorialProvider config={OM_TUTORIAL_CONFIG} translateMessage={tOm}>
+    <TutorialWrapper gameName="oldmaid" steps={OM_TUTORIAL_STEPS}>
       <OldMaidPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

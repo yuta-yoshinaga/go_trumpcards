@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { cribbageApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,6 +16,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { CribbageSkeleton } from '../components/skeleton/CribbageSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,14 +26,13 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CribbageResponse } from '../types/card';
 import { CribbagePhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CRIBBAGE_HELP, parseCribbageCommand } from '../utils/cli/commands/cribbageCommands';
 import { formatCribbageState } from '../utils/cli/formatters/cribbageFormatter';
@@ -83,19 +82,12 @@ const CB_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Cribbage tutorial configuration. */
-const CB_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'cribbage',
-  steps: CB_TUTORIAL_STEPS,
-};
-
 /** Renders the Cribbage game page with discard, pegging, show, and round phases. */
 export function CribbagePage() {
-  const { t: tCb } = useTranslation('cribbage');
   return (
-    <TutorialProvider config={CB_TUTORIAL_CONFIG} translateMessage={tCb}>
+    <TutorialWrapper gameName="cribbage" steps={CB_TUTORIAL_STEPS}>
       <CribbagePageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

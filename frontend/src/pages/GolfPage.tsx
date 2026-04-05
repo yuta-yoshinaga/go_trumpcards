@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { golfApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -18,6 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GolfSkeleton } from '../components/skeleton/GolfSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -25,12 +25,11 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGolfGame } from '../hooks/useGolfGame';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { GolfResponse } from '../types/card';
 import { GolfPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { GOLF_HELP, parseGolfCommand } from '../utils/cli/commands/golfCommands';
 import { formatGolfState } from '../utils/cli/formatters/golfFormatter';
@@ -70,19 +69,12 @@ const GOLF_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Golf Solitaire tutorial configuration. */
-const GOLF_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'golf',
-  steps: GOLF_TUTORIAL_STEPS,
-};
-
 /** Renders the Golf Solitaire game page with 7 columns, stock/waste, and controls. */
 export function GolfPage() {
-  const { t: tGolf } = useTranslation('golf');
   return (
-    <TutorialProvider config={GOLF_TUTORIAL_CONFIG} translateMessage={tGolf}>
+    <TutorialWrapper gameName="golf" steps={GOLF_TUTORIAL_STEPS}>
       <GolfPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

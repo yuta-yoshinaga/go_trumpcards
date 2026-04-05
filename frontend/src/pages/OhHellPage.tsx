@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { ohHellApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,6 +18,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { OhHellSkeleton } from '../components/skeleton/OhHellSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -34,14 +34,13 @@ import {
 } from '../hooks/useOhHellGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { OhHellResponse } from '../types/card';
 import { OhHellPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { OHHELL_HELP, parseOhhellCommand } from '../utils/cli/commands/ohhellCommands';
 import { formatOhhellState } from '../utils/cli/formatters/ohhellFormatter';
@@ -88,12 +87,6 @@ const OH_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Oh Hell tutorial configuration. */
-const OH_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'ohhell',
-  steps: OH_TUTORIAL_STEPS,
-};
-
 const OH_HELL_PHASE_KEYS: Readonly<Record<number, string>> = {
   [OhHellPhase.BID]: 'bid',
   [OhHellPhase.PLAY]: 'play',
@@ -104,11 +97,10 @@ const OH_HELL_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Oh Hell game page with bidding, trick play, and scoring. */
 export function OhHellPage() {
-  const { t: tOhHell } = useTranslation('ohhell');
   return (
-    <TutorialProvider config={OH_TUTORIAL_CONFIG} translateMessage={tOhHell}>
+    <TutorialWrapper gameName="ohhell" steps={OH_TUTORIAL_STEPS}>
       <OhHellPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

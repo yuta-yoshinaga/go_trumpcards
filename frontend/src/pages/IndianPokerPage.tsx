@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { indianpokerApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
@@ -22,6 +21,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -31,13 +31,12 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { IndianPokerResponse } from '../types/card';
 import { IndianPokerPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { INDIANPOKER_HELP, parseIndianpokerCommand } from '../utils/cli/commands/indianpokerCommands';
 import { formatIndianpokerState } from '../utils/cli/formatters/indianpokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -70,12 +69,6 @@ const IP_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Indian Poker tutorial configuration. */
-const IP_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'indianpoker',
-  steps: IP_TUTORIAL_STEPS,
-};
-
 const INDIAN_POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
   [IndianPokerPhase.INIT]: 'init',
   [IndianPokerPhase.ANTE]: 'ante',
@@ -86,11 +79,10 @@ const INDIAN_POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Indian Poker game page with opponent cards visible and human card hidden. */
 export function IndianPokerPage() {
-  const { t: tIp } = useTranslation('indianpoker');
   return (
-    <TutorialProvider config={IP_TUTORIAL_CONFIG} translateMessage={tIp}>
+    <TutorialWrapper gameName="indianpoker" steps={IP_TUTORIAL_STEPS}>
       <IndianPokerPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

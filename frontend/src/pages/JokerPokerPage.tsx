@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { jokerpokerApi } from '../api/gameApi';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { VideoPokerGameContent } from '../components/VideoPokerGameContent';
-import { TutorialProvider } from '../providers/TutorialProvider';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { JOKERPOKER_HELP, parseJokerpokerCommand } from '../utils/cli/commands/jokerpokerCommands';
 import { formatJokerpokerState } from '../utils/cli/formatters/jokerpokerFormatter';
 
@@ -51,15 +50,8 @@ const JP_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Joker Poker tutorial configuration. */
-const JP_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'jokerpoker',
-  steps: JP_TUTORIAL_STEPS,
-};
-
 /** Renders the Joker Poker (Kings or Better) game page. */
 export function JokerPokerPage() {
-  const { t: tJp } = useTranslation('jokerpoker');
   const cliGameConfig = useMemo(
     () => ({
       parseCommand: parseJokerpokerCommand,
@@ -69,7 +61,7 @@ export function JokerPokerPage() {
     [],
   );
   return (
-    <TutorialProvider config={JP_TUTORIAL_CONFIG} translateMessage={tJp}>
+    <TutorialWrapper gameName="jokerpoker" steps={JP_TUTORIAL_STEPS}>
       <VideoPokerGameContent
         gameName="jokerpoker"
         i18nNamespace="jokerpoker"
@@ -78,6 +70,6 @@ export function JokerPokerPage() {
         gamePath="/jokerpoker"
         cliGameConfig={cliGameConfig}
       />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { pokerApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
@@ -23,6 +22,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -32,7 +32,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -40,7 +39,7 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PokerResponse } from '../types/card';
 import { PokerPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { POKER_HELP, parsePokerCommand } from '../utils/cli/commands/pokerCommands';
 import { formatPokerState } from '../utils/cli/formatters/pokerFormatter';
@@ -88,19 +87,12 @@ const PK_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Poker tutorial configuration. */
-const PK_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'poker',
-  steps: PK_TUTORIAL_STEPS,
-};
-
 /** Renders the 5-card Draw Poker game page with betting and card exchange. */
 export function PokerPage() {
-  const { t: tPk } = useTranslation('poker');
   return (
-    <TutorialProvider config={PK_TUTORIAL_CONFIG} translateMessage={tPk}>
+    <TutorialWrapper gameName="poker" steps={PK_TUTORIAL_STEPS}>
       <PokerPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

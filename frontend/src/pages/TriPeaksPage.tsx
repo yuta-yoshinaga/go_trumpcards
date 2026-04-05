@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { tripeaksApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,6 +18,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TriPeaksSkeleton } from '../components/skeleton/TriPeaksSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -27,12 +27,11 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TriPeaksResponse } from '../types/card';
 import { TriPeaksPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseTripeaksCommand, TRIPEAKS_HELP } from '../utils/cli/commands/tripeaksCommands';
 import { formatTripeaksState } from '../utils/cli/formatters/tripeaksFormatter';
@@ -80,19 +79,12 @@ const TP_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** TriPeaks tutorial configuration. */
-const TP_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'tripeaks',
-  steps: TP_TUTORIAL_STEPS,
-};
-
 /** Renders the TriPeaks Solitaire game page with three peaks, stock/waste, and controls. */
 export function TriPeaksPage() {
-  const { t: tTp } = useTranslation('tripeaks');
   return (
-    <TutorialProvider config={TP_TUTORIAL_CONFIG} translateMessage={tTp}>
+    <TutorialWrapper gameName="tripeaks" steps={TP_TUTORIAL_STEPS}>
       <TriPeaksPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 
