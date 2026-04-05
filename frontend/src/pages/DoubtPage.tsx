@@ -112,6 +112,7 @@ function DoubtPageContent() {
     loading,
     error,
     exec,
+    retry,
     countdown,
     doubtConfig,
     selectedCardIndices,
@@ -497,7 +498,7 @@ function DoubtPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />

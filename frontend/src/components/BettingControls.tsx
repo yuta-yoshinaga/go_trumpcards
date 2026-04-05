@@ -34,40 +34,53 @@ export function BettingControls({
   onAllIn,
 }: BettingControlsProps) {
   const { t } = useTranslation('common');
+  const max = maxBetAmount ?? 0;
+  const hasMax = max > 0;
+  const isOutOfRange = betAmount < minRaise || (hasMax && betAmount > max);
+  const canBet = !loading && !isOutOfRange;
+
   return (
     <div className="text-center mb-2">
-      <div className="flex items-center justify-center gap-2 mb-2">
-        <label htmlFor={inputId} className="text-white text-sm">
-          {t('betting.betAmount')}
-        </label>
-        <input
-          id={inputId}
-          type="number"
-          min={minRaise}
-          max={(maxBetAmount ?? 0) > 0 ? maxBetAmount : undefined}
-          step={10}
-          value={betAmount}
-          onChange={(e) => {
-            let v = Number(e.target.value);
-            const max = maxBetAmount ?? 0;
-            if (max > 0 && v > max) v = max;
-            onBetAmountChange(v);
-          }}
-          className="w-20 px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
-        />
+      <div className="flex flex-col items-center justify-center gap-1 mb-2">
+        <div className="flex items-center justify-center gap-2">
+          <label htmlFor={inputId} className="text-white text-sm">
+            {t('betting.betAmount')}
+          </label>
+          <input
+            id={inputId}
+            type="number"
+            min={minRaise}
+            max={hasMax ? maxBetAmount : undefined}
+            step={10}
+            value={betAmount}
+            aria-invalid={isOutOfRange || undefined}
+            aria-describedby={isOutOfRange ? `${inputId}-range` : undefined}
+            onChange={(e) => {
+              onBetAmountChange(Number(e.target.value));
+            }}
+            className={`w-20 px-2 py-1 text-sm rounded ${
+              isOutOfRange ? 'bg-red-100 border-red-400 border' : 'bg-white/90'
+            } text-gray-900`}
+          />
+        </div>
+        {isOutOfRange && (
+          <p id={`${inputId}-range`} className="text-red-300 text-xs" role="alert">
+            {t('betting.rangeHint', { min: minRaise, max: hasMax ? max : '∞' })}
+          </p>
+        )}
       </div>
       {hasOutstandingBet ? (
         <>
           <button type="button" className={`${btnPokerPrimary} min-w-[80px]`} disabled={loading} onClick={onCall}>
             {t('action.call')}
           </button>
-          <button type="button" className={`${btnPokerAccent} min-w-[80px]`} disabled={loading} onClick={onRaise}>
+          <button type="button" className={`${btnPokerAccent} min-w-[80px]`} disabled={!canBet} onClick={onRaise}>
             {t('action.raise')}
           </button>
         </>
       ) : (
         <>
-          <button type="button" className={`${btnPokerAccent} min-w-[80px]`} disabled={loading} onClick={onBet}>
+          <button type="button" className={`${btnPokerAccent} min-w-[80px]`} disabled={!canBet} onClick={onBet}>
             {t('action.bet')}
           </button>
           <button type="button" className={`${btnPokerPrimary} min-w-[80px]`} disabled={loading} onClick={onCheck}>

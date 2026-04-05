@@ -53,5 +53,6 @@ export function useHeartsGame() {
     handleNextTrick: base.handleNextTrick,
     handleNextRound: base.handleNextRound,
     handleHint: base.handleHint,
+    retry: base.retry,
   };
 }

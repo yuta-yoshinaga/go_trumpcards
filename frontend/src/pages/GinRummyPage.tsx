@@ -108,6 +108,7 @@ function GinRummyPageContent() {
     loading,
     error,
     exec: gameExec,
+    retry,
     ginRummyConfig,
     selectedCardIndices,
     toggleCard,
@@ -366,7 +367,7 @@ function GinRummyPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />

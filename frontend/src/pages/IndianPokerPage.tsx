@@ -102,7 +102,7 @@ function IndianPokerPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec: execApi } = useGameApi(indianpokerApi.exec);
+  const { state, loading, error, exec: execApi, retry } = useGameApi(indianpokerApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [ante] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(2);
@@ -305,7 +305,7 @@ function IndianPokerPageContent() {
               alwaysVisible
             />
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {/* Hint */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}

@@ -115,6 +115,7 @@ function SpadesPageContent() {
     loading,
     error,
     exec,
+    retry,
     spadesConfig,
     selectedCardIndices,
     toggleCard,
@@ -361,7 +362,7 @@ function SpadesPageContent() {
               />
             )}
 
-            <ErrorAlert message={error ?? hintError} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
               <div className="text-yellow-300 text-sm mb-2">

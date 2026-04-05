@@ -84,6 +84,7 @@ function SevensPageContent() {
     loading,
     error,
     exec,
+    retry,
     jokerCardIdx,
     setJokerCardIdx,
     cfgTunnel,
@@ -393,7 +394,7 @@ function SevensPageContent() {
               <SettingsPanel title={t('config.title')} groups={settingsGroups} />
             </div>
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />

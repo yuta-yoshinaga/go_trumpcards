@@ -151,7 +151,7 @@ export function useOldMaidGame() {
     });
   }, []);
 
-  const { loading, error, exec: gameExec } = useGameApi(oldmaidApi.exec, { onSuccess });
+  const { loading, error, exec: gameExec, retry } = useGameApi(oldmaidApi.exec, { onSuccess });
 
   const handleStart = useCallback(() => {
     const settings = {
@@ -230,5 +230,6 @@ export function useOldMaidGame() {
     setSetupMemoryAI,
     setSetupHesitation,
     setSetupMetaAI,
+    retry,
   };
 }

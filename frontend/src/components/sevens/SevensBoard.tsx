@@ -37,8 +37,8 @@ function Board({
     <div className="bg-black/30 rounded-[10px] py-2 px-2 sm:px-3.5 my-2">
       <div className="text-white font-bold mb-1.5 text-sm">
         {t('board')}
-        {tunnelEnabled && <span className="text-yellow-400 text-xs ml-2">{t('tunnelTag')}</span>}
-        {jokerSelecting && <span className="text-green-400 text-xs ml-2">{t('jokerSelectHint')}</span>}
+        {tunnelEnabled && <span className="text-ds-warning text-xs ml-2">{t('tunnelTag')}</span>}
+        {jokerSelecting && <span className="text-ds-success text-xs ml-2">{t('jokerSelectHint')}</span>}
       </div>
       <div className="relative">
         <div className="overflow-x-auto">
@@ -56,7 +56,7 @@ function Board({
                 >
                   {label}
                   {tunnelEnabled && (
-                    <span role="img" className="text-yellow-400 text-[8px] ml-0.5" aria-label={t('tunnelConnection')}>
+                    <span role="img" className="text-ds-warning text-[8px] ml-0.5" aria-label={t('tunnelConnection')}>
                       ↔
                     </span>
                   )}

@@ -217,5 +217,11 @@ i18n
     },
   });
 
+// Sync <html lang> with the active i18n language (WCAG 2.1 SC 3.1.1)
+document.documentElement.lang = i18n.language;
+i18n.on('languageChanged', (lng: string) => {
+  document.documentElement.lang = lng;
+});
+
 /** Configured i18next instance with ja/en translations and language detection. */
 export default i18n;

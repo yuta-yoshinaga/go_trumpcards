@@ -210,6 +210,33 @@ describe('useGameApi', () => {
     expect(result.current.loading).toBe(false);
   });
 
+  it('retries the last command on retry()', async () => {
+    const apiFn = vi.fn().mockRejectedValueOnce(new Error('fail')).mockResolvedValueOnce({ ok: true });
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.exec('cmd1', 'arg2');
+    });
+    expect(result.current.error).not.toBeNull();
+
+    await act(async () => {
+      await result.current.retry();
+    });
+    expect(apiFn).toHaveBeenLastCalledWith('cmd1', 'arg2');
+    expect(result.current.error).toBeNull();
+    expect(result.current.state).toEqual({ ok: true });
+  });
+
+  it('retry is a no-op when no previous call', async () => {
+    const apiFn = vi.fn();
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.retry();
+    });
+    expect(apiFn).not.toHaveBeenCalled();
+  });
+
   it('uses latest onSuccess via ref', async () => {
     const apiFn = vi.fn().mockResolvedValue({ v: 1 });
     const onSuccess1 = vi.fn();

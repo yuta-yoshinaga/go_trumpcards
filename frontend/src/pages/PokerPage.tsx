@@ -112,7 +112,8 @@ function PokerPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec, selected, toggleCard, clearSelection, odds, canExchange } = usePokerGame();
+  const { state, loading, error, exec, retry, selected, toggleCard, clearSelection, odds, canExchange } =
+    usePokerGame();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('poker', state);
 
   // CLI mode
@@ -321,7 +322,7 @@ function PokerPageContent() {
               hideActionLog={hideActionLog}
             />
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {/* Hint display */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}

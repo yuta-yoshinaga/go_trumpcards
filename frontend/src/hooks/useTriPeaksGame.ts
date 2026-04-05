@@ -6,7 +6,7 @@ import { useGameApi } from './useGameApi';
 
 /** Hook that manages TriPeaks game state, hints, and card removal actions. */
 export function useTriPeaksGame() {
-  const { state, loading, error, exec } = useGameApi(tripeaksApi.exec);
+  const { state, loading, error, exec, retry } = useGameApi(tripeaksApi.exec);
   const [hint, setHint] = useState<TriPeaksHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
 
@@ -65,5 +65,6 @@ export function useTriPeaksGame() {
     handleHint,
     handleUndo,
     handleSelectCard,
+    retry,
   };
 }

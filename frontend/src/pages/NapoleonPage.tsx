@@ -137,6 +137,7 @@ function NapoleonPageContent() {
     state,
     loading,
     error,
+    retry,
     apiExec,
     napoleonConfig,
     selectedCardIndices,
@@ -494,7 +495,7 @@ function NapoleonPageContent() {
                 </div>
               ))}
 
-            <ErrorAlert message={error ?? hintError} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
               <div className="text-yellow-300 text-sm mb-2">

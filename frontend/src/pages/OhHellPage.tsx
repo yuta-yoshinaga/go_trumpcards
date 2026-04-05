@@ -122,6 +122,7 @@ function OhHellPageContent() {
     loading,
     error,
     exec,
+    retry,
     ohHellConfig,
     selectedCardIndices,
     toggleCard,
@@ -435,7 +436,7 @@ function OhHellPageContent() {
                 </div>
               ))}
 
-            <ErrorAlert message={error ?? hintError} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
               <div className="text-yellow-300 text-sm mb-2">

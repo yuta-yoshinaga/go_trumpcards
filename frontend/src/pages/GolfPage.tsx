@@ -96,6 +96,7 @@ function GolfPageContent() {
     loading,
     error,
     exec,
+    retry,
     hintError,
     hint,
     handleDraw,
@@ -295,7 +296,7 @@ function GolfPageContent() {
           <SettingsPanel title={tc('settings.title')} groups={[]} />
 
           <GameFooter className={`${gameTheme.golf.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
                 <div data-tutorial="golf-controls">

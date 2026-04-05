@@ -80,7 +80,8 @@
     "bettingLimit": "Limit:",
     "fixed": "Fixed",
     "potLimit": "Pot Limit",
-    "noLimit": "No Limit"
+    "noLimit": "No Limit",
+    "rangeHint": "Enter a value between {{min}} and {{max}}"
   },
   "button": {
     "reset": "Reset",

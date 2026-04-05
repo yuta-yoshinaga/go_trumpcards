@@ -20,7 +20,7 @@ export function usePokerGame() {
     oddsGenRef.current++;
   }, [clearSelection]);
 
-  const { state, loading, error, exec } = useGameApi(pokerApi.exec, { onSuccess });
+  const { state, loading, error, exec, retry } = useGameApi(pokerApi.exec, { onSuccess });
 
   useEffect(() => {
     exec('reset');
@@ -77,5 +77,6 @@ export function usePokerGame() {
     clearSelection,
     odds,
     canExchange,
+    retry,
   };
 }

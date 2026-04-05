@@ -113,6 +113,7 @@ function DaifugoPageContent() {
     loading,
     error,
     exec,
+    retry,
     selectedIndices,
     toggleCardSelection,
     clearSelection,
@@ -354,7 +355,7 @@ function DaifugoPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />

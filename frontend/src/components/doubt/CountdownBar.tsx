@@ -10,11 +10,11 @@ interface CountdownBarProps {
   label?: string;
 }
 
-/** Returns the Tailwind background class for the countdown bar based on remaining seconds. */
+/** Returns the design-system background class for the countdown bar based on remaining seconds. */
 function barColorClass(remaining: number): string {
-  if (remaining > 6) return 'bg-green-500';
-  if (remaining > 3) return 'bg-yellow-500';
-  return 'bg-red-500';
+  if (remaining > 6) return 'bg-ds-success';
+  if (remaining > 3) return 'bg-ds-warning';
+  return 'bg-ds-error';
 }
 
 /**

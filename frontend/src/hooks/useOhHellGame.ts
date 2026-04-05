@@ -48,7 +48,7 @@ export function useOhHellGame() {
     clearSelection();
     setHint(null);
   }, [clearSelection]);
-  const { state, loading, error, exec: rawExec } = useGameApi(ohHellApi.exec, { onSuccess });
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(ohHellApi.exec, { onSuccess });
 
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -107,5 +107,6 @@ export function useOhHellGame() {
     handleNextTrick,
     handleNextRound,
     handleHint,
+    retry,
   };
 }

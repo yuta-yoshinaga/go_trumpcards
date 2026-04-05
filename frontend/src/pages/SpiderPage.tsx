@@ -104,6 +104,7 @@ function SpiderPageContent() {
     loading,
     error,
     exec,
+    retry,
     hintError,
     selectedSource,
     hint,
@@ -347,7 +348,7 @@ function SpiderPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.spider.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
                 <div data-tutorial="spd-controls">

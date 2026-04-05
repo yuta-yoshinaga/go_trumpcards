@@ -29,7 +29,7 @@ export function useCanastaGame() {
   const onSuccess = useCallback(() => {
     clearSelection();
   }, [clearSelection]);
-  const { state, loading, error, exec: rawExec } = useGameApi(canastaApi.exec, { onSuccess });
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(canastaApi.exec, { onSuccess });
 
   const gameExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -85,5 +85,6 @@ export function useCanastaGame() {
     handleDiscard,
     handleGoOut,
     handleNextRound,
+    retry,
   };
 }

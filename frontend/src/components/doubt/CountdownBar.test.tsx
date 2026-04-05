@@ -25,22 +25,22 @@ describe('CountdownBar', () => {
     expect(inner.style.width).toBe('50%');
   });
 
-  it('applies green color when remaining > 6', () => {
+  it('applies success color when remaining > 6', () => {
     const { container } = render(<CountdownBar remaining={8} total={10} />);
     const inner = container.querySelector('[data-testid="countdown-bar-fill"]') as HTMLElement;
-    expect(inner.className).toContain('bg-green-500');
+    expect(inner.className).toContain('bg-ds-success');
   });
 
-  it('applies yellow color when remaining is 4-6', () => {
+  it('applies warning color when remaining is 4-6', () => {
     const { container } = render(<CountdownBar remaining={5} total={10} />);
     const inner = container.querySelector('[data-testid="countdown-bar-fill"]') as HTMLElement;
-    expect(inner.className).toContain('bg-yellow-500');
+    expect(inner.className).toContain('bg-ds-warning');
   });
 
-  it('applies red color when remaining <= 3', () => {
+  it('applies error color when remaining <= 3', () => {
     const { container } = render(<CountdownBar remaining={2} total={10} />);
     const inner = container.querySelector('[data-testid="countdown-bar-fill"]') as HTMLElement;
-    expect(inner.className).toContain('bg-red-500');
+    expect(inner.className).toContain('bg-ds-error');
   });
 
   it('includes transition style when reduced motion is off', () => {

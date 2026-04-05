@@ -26,7 +26,7 @@ export function useGoFishGame() {
     setSelectedTarget(null);
     setSelectedRank(null);
   }, []);
-  const { state, loading, error, exec: rawExec } = useGameApi(goFishApi.exec, { onSuccess });
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(goFishApi.exec, { onSuccess });
 
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -59,5 +59,6 @@ export function useGoFishGame() {
     handleSelectTarget,
     handleSelectRank,
     handleAsk,
+    retry,
   };
 }

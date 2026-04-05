@@ -157,7 +157,7 @@ function HoldemPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec } = useGameApi(holdemApi.exec);
+  const { state, loading, error, exec, retry } = useGameApi(holdemApi.exec);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('holdem');
@@ -432,7 +432,7 @@ function HoldemPageContent() {
               alwaysVisible
             />
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {/* Muck/Show controls */}
             {isMuckPhase && (

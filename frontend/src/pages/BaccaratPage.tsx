@@ -206,7 +206,7 @@ function BaccaratPageContent() {
   const [bankerPairBet, setBankerPairBet] = useState(0);
 
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi } = useGameApi(baccaratApi.exec);
+  const { state, loading, error, exec: execApi, retry } = useGameApi(baccaratApi.exec);
   const hintState = useMemo(() => (state ? { ...state, betType } : null), [state, betType]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('baccarat', hintState);
   const { playSound } = useSound();
@@ -371,7 +371,7 @@ function BaccaratPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.baccarat.footer} px-4 pt-3`}>
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
             <SettingsPanel
               title={t('settings.title')}

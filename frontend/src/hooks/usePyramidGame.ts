@@ -13,7 +13,7 @@ export interface PyramidSelection {
 
 /** Hook that manages Pyramid game state, card selection, hints, and removal actions. */
 export function usePyramidGame() {
-  const { state, loading, error, exec } = useGameApi(pyramidApi.exec);
+  const { state, loading, error, exec, retry } = useGameApi(pyramidApi.exec);
   const [selectedCard, setSelectedCard] = useState<PyramidSelection | null>(null);
   const [hint, setHint] = useState<PyramidHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
@@ -104,5 +104,6 @@ export function usePyramidGame() {
     handleHint,
     handleUndo,
     handleSelectCard,
+    retry,
   };
 }

@@ -57,6 +57,7 @@ function PinochlePageContent() {
     loading,
     error,
     exec,
+    retry,
     pinochleConfig,
     handleConfigChange,
     handleReset,
@@ -268,7 +269,7 @@ function PinochlePageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             <div className="flex gap-2 items-center flex-wrap">
               {/* Bid */}
