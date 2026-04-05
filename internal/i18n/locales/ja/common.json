@@ -8,7 +8,7 @@
   "session": "セッション:",
   "helpEntry": "  help, ?              このヘルプを表示",
   "resetEntry": "  r                    ゲームをリセット",
-  "quitEntry": "  q, exit              終了",
+  "quitEntry": "  q, quit, exit        終了",
   "switchUsage": "使い方: switch <game>。ゲーム一覧は 'games' で確認できます。",
   "unknownGame": "不明なゲーム: \"{{name}}\"。ゲーム一覧は 'games' で確認できます。",
   "alreadyPlaying": "すでに {{name}} をプレイ中です。",
