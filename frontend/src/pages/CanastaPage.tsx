@@ -82,6 +82,7 @@ function CanastaPageContent() {
     state,
     loading,
     error,
+    retry,
     gameExec,
     canastaConfig,
     handleConfigChange,
@@ -356,7 +357,7 @@ function CanastaPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
               {isDrawPhase && isHumanTurn && (

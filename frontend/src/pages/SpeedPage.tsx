@@ -70,6 +70,7 @@ function SpeedPageContent() {
     loading,
     error,
     exec: gameExec,
+    retry,
     speedConfig,
     selectedCardIndices,
     toggleCard,
@@ -126,7 +127,7 @@ function SpeedPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          {error && <ErrorAlert message={error} />}
+          {error && <ErrorAlert message={error} onRetry={retry} />}
           {state && (
             <GameMessageBox
               message={state.message}

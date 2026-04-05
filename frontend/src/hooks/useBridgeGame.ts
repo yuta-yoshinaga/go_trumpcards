@@ -30,7 +30,7 @@ export function useBridgeGame() {
     clearSelection();
     setHint(null);
   }, [clearSelection]);
-  const { state, loading, error, exec: rawExec } = useGameApi(bridgeApi.exec, { onSuccess });
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(bridgeApi.exec, { onSuccess });
 
   const apiExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -89,5 +89,6 @@ export function useBridgeGame() {
     handleNextTrick,
     handleNextRound,
     handleHint,
+    retry,
   };
 }

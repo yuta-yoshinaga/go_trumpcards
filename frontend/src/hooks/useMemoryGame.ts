@@ -20,7 +20,7 @@ export const CPU_DIFFICULTY_OPTIONS = [
 export function useMemoryGame() {
   const { config: memoryConfig, handleConfigChange } = useGameConfig<MemoryConfig>(DEFAULT_MEMORY_CONFIG);
 
-  const { state, loading, error, exec: rawExec } = useGameApi(memoryApi.exec);
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(memoryApi.exec);
 
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -48,5 +48,6 @@ export function useMemoryGame() {
     handleConfigChange,
     handleFlip,
     handleNext,
+    retry,
   };
 }

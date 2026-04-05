@@ -164,7 +164,7 @@ function PineapplePageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec: apiExec } = useGameApi(pineappleApi.exec);
+  const { state, loading, error, exec: apiExec, retry } = useGameApi(pineappleApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
@@ -459,7 +459,7 @@ function PineapplePageContent() {
               alwaysVisible
             />
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {/* Discard controls */}
             {canDiscard && (

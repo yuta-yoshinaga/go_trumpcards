@@ -167,7 +167,7 @@ function BlackJackPageContent() {
     setDeckPenetration(res.deckPenetration);
     setSurrenderRule(res.surrenderRule);
   }, []);
-  const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
+  const { state, loading, error, exec, retry } = useGameApi(blackjackApi.exec, { onSuccess });
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('blackjack');
@@ -463,7 +463,7 @@ function BlackJackPageContent() {
               hideActionLog={hideActionLog}
             />
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {/* Phase-based buttons */}
             <div className="text-center">

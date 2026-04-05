@@ -107,6 +107,7 @@ function KlondikePageContent() {
     loading,
     error,
     exec,
+    retry,
     hintError,
     selectedSource,
     hint,
@@ -479,7 +480,7 @@ function KlondikePageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.klondike.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
                 <div data-tutorial="kl-controls">

@@ -13,7 +13,7 @@ describe('PhaseIndicator', () => {
     expect(screen.getByText('あなたのターン')).toBeInTheDocument();
     const turnSpan = screen.getByText('あなたのターン');
     expect(turnSpan).toHaveClass(
-      'text-green-400',
+      'text-ds-success',
       'animate-pulse',
       'font-bold',
       'text-base',

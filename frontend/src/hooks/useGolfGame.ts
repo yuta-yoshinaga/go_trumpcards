@@ -6,7 +6,7 @@ import { useGameApi } from './useGameApi';
 
 /** Hook that manages Golf Solitaire game state, hints, and card removal actions. */
 export function useGolfGame() {
-  const { state, loading, error, exec } = useGameApi(golfApi.exec);
+  const { state, loading, error, exec, retry } = useGameApi(golfApi.exec);
   const [hint, setHint] = useState<GolfHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
 
@@ -65,5 +65,6 @@ export function useGolfGame() {
     handleHint,
     handleUndo,
     handleSelectCard,
+    retry,
   };
 }

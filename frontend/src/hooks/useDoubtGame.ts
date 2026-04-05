@@ -59,7 +59,7 @@ export function useDoubtGame() {
     clearSelection();
     setClaimedValue(1);
   }, [clearSelection]);
-  const { state, loading, error, exec: rawExec } = useGameApi(doubtApi.exec, { onSuccess });
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(doubtApi.exec, { onSuccess });
 
   useEffect(() => {
     if (state) cpuDoubtersRef.current = state.cpuDoubters;
@@ -175,5 +175,6 @@ export function useDoubtGame() {
     handleDoubt,
     handleSkip,
     handleCpuDoubtConfirm,
+    retry,
   };
 }

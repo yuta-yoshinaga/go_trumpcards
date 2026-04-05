@@ -38,7 +38,7 @@ export function useNapoleonGame() {
     clearSelection();
     setHint(null);
   }, [clearSelection]);
-  const { state, loading, error, exec: rawExec } = useGameApi(napoleonApi.exec, { onSuccess });
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(napoleonApi.exec, { onSuccess });
 
   const apiExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -118,5 +118,6 @@ export function useNapoleonGame() {
     handleNextTrick,
     handleNextRound,
     handleHint,
+    retry,
   };
 }

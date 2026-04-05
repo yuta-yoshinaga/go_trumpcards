@@ -141,6 +141,7 @@ function BridgePageContent() {
     state,
     loading,
     error,
+    retry,
     apiExec,
     bridgeConfig,
     selectedCardIndices,
@@ -477,7 +478,7 @@ function BridgePageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error ?? hintError} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
               <div className="text-yellow-300 text-sm mb-2">

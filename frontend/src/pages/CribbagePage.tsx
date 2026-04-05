@@ -135,6 +135,7 @@ function CribbagePageContent() {
     loading,
     error,
     exec: gameExec,
+    retry,
     cribbageConfig,
     selectedCardIndices,
     toggleCard,
@@ -467,7 +468,7 @@ function CribbagePageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />

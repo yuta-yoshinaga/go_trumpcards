@@ -116,6 +116,7 @@ function HeartsPageContent() {
     loading,
     error,
     exec,
+    retry,
     heartsConfig,
     selectedCardIndices,
     toggleCard,
@@ -367,7 +368,7 @@ function HeartsPageContent() {
               />
             )}
 
-            <ErrorAlert message={error ?? hintError} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
               <div className="text-yellow-300 text-sm mb-2">

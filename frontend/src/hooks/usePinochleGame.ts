@@ -24,7 +24,7 @@ export const POINT_LIMIT_OPTIONS = [500, 1000, 1500, 2000, 3000] as const;
 export function usePinochleGame() {
   const { config: pinochleConfig, handleConfigChange } = useGameConfig<PinochleConfig>(DEFAULT_PINOCHLE_CONFIG);
 
-  const { state, loading, error, exec: rawExec } = useGameApi(pinochleApi.exec);
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(pinochleApi.exec);
 
   const gameExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -93,5 +93,6 @@ export function usePinochleGame() {
     handleNextTrick,
     handleNextRound,
     handleHint,
+    retry,
   };
 }

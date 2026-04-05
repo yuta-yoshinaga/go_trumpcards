@@ -34,7 +34,7 @@ describe('EquityDisplay', () => {
     render(<EquityDisplay equity={mockEquity} potOdds={33.3} />);
     const indicator = screen.getByTestId('ev-indicator');
     expect(indicator).toHaveTextContent('+EV');
-    expect(indicator).toHaveClass('text-green-400');
+    expect(indicator).toHaveClass('text-ds-success');
   });
 
   it('shows -EV when equity <= potOdds', () => {
@@ -42,7 +42,7 @@ describe('EquityDisplay', () => {
     render(<EquityDisplay equity={lowEquity} potOdds={50.0} />);
     const indicator = screen.getByTestId('ev-indicator');
     expect(indicator).toHaveTextContent('-EV');
-    expect(indicator).toHaveClass('text-red-400');
+    expect(indicator).toHaveClass('text-ds-error');
   });
 
   it('shows hand odds breakdown after toggle', () => {

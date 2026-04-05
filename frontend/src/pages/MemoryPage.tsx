@@ -96,7 +96,8 @@ function MemoryPageContent() {
     useGamePageSetup('memory');
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
-  const { state, loading, error, exec, memoryConfig, handleConfigChange, handleFlip, handleNext } = useMemoryGame();
+  const { state, loading, error, exec, retry, memoryConfig, handleConfigChange, handleFlip, handleNext } =
+    useMemoryGame();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -268,7 +269,7 @@ function MemoryPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.memory.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
             <div className="flex gap-2 items-center">
               {isResult && (
                 <div data-tutorial="mem-next-button">

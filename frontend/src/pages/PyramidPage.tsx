@@ -98,6 +98,7 @@ function PyramidPageContent() {
     loading,
     error,
     exec,
+    retry,
     hintError,
     selectedCard,
     hint,
@@ -356,7 +357,7 @@ function PyramidPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.pyramid.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error ?? hintError} />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
                 <div data-tutorial="py-controls">

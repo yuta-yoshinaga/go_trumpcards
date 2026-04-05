@@ -23,7 +23,11 @@ export function EquityDisplay({ equity, potOdds }: EquityDisplayProps) {
             {t('learning.equity')}: <strong>{winPct}%</strong>
           </div>
           <div className="w-full bg-ds-surface rounded-full h-2.5">
-            <div className="bg-green-500 h-2.5 rounded-full" style={{ width: `${winPct}%` }} data-testid="equity-bar" />
+            <div
+              className="bg-ds-success h-2.5 rounded-full"
+              style={{ width: `${winPct}%` }}
+              data-testid="equity-bar"
+            />
           </div>
         </div>
         <div className="text-white text-sm">
@@ -33,7 +37,7 @@ export function EquityDisplay({ equity, potOdds }: EquityDisplayProps) {
 
       <div className="flex items-center gap-2 mb-1">
         <span
-          className={`text-sm font-bold ${isPositiveEV ? 'text-green-400' : 'text-red-400'}`}
+          className={`text-sm font-bold ${isPositiveEV ? 'text-ds-success' : 'text-ds-error'}`}
           data-testid="ev-indicator"
         >
           {isPositiveEV ? t('learning.plusEV') : t('learning.minusEV')}

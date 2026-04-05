@@ -157,7 +157,7 @@ function OmahaPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec: execApi } = useGameApi(omahaApi.exec);
+  const { state, loading, error, exec: execApi, retry } = useGameApi(omahaApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
@@ -427,7 +427,7 @@ function OmahaPageContent() {
               alwaysVisible
             />
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {/* Muck/Show controls */}
             {isMuckPhase && (

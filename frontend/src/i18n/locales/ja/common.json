@@ -80,7 +80,8 @@
     "bettingLimit": "リミット:",
     "fixed": "Fixed",
     "potLimit": "Pot Limit",
-    "noLimit": "No Limit"
+    "noLimit": "No Limit",
+    "rangeHint": "{{min}} 〜 {{max}} の範囲で入力してください"
   },
   "button": {
     "reset": "リセット",

@@ -115,6 +115,7 @@ function CrazyEightsPageContent() {
     loading,
     error,
     exec: gameExec,
+    retry,
     crazyEightsConfig,
     selectedCardIndices,
     toggleCard,
@@ -335,7 +336,7 @@ function CrazyEightsPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {frontendHintEnabled && frontendHint && (
               <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />

@@ -97,6 +97,7 @@ function GoFishPageContent() {
     loading,
     error,
     exec,
+    retry,
     goFishConfig,
     handleConfigChange,
     selectedTarget,
@@ -246,7 +247,7 @@ function GoFishPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             <div className="flex gap-2 items-center" data-tutorial="gf-ask-button">
               {isHumanTurn && (

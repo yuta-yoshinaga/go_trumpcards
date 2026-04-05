@@ -7,7 +7,7 @@ import { useGameApi } from './useGameApi';
 
 /** Hook that manages Spider Solitaire game state, source selection, hints, and moves. */
 export function useSpiderGame() {
-  const { state, loading, error, exec: rawExec } = useGameApi(spiderApi.exec);
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(spiderApi.exec);
   const [selectedSource, setSelectedSource] = useState<SpiderMoveZone | null>(null);
   const [hint, setHint] = useState<SpiderHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
@@ -106,5 +106,6 @@ export function useSpiderGame() {
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,
+    retry,
   };
 }

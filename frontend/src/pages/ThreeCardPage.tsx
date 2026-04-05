@@ -94,7 +94,7 @@ function ThreeCardPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
-  const { state, loading, error, exec: execApi } = useGameApi(threecardApi.exec);
+  const { state, loading, error, exec: execApi, retry } = useGameApi(threecardApi.exec);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('threecard', state);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('threecard');
@@ -309,7 +309,7 @@ function ThreeCardPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.threecard.footer} px-4 pt-3`}>
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
             <SettingsPanel
               title={t('settings.title')}

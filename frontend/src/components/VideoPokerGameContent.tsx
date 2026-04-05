@@ -81,7 +81,7 @@ export function VideoPokerGameContent({
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
 
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi } = useGameApi(apiExec);
+  const { state, loading, error, exec: execApi, retry } = useGameApi(apiExec);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(gameName);
@@ -214,7 +214,7 @@ export function VideoPokerGameContent({
 
             {isBetPhase && (
               <div className="flex-1 flex flex-col items-center justify-center" data-tutorial="vp-bet-controls">
-                <ErrorAlert message={error} />
+                <ErrorAlert message={error} onRetry={retry} />
                 <div className="flex items-center gap-2">
                   <label htmlFor="vp-bet-amount" className="text-white text-sm">
                     {t('label.betAmount')}
@@ -245,7 +245,7 @@ export function VideoPokerGameContent({
           </div>
 
           <GameFooter className={`${gameTheme[gameName].footer} px-4 pt-3`}>
-            {!isBetPhase && <ErrorAlert message={error} />}
+            {!isBetPhase && <ErrorAlert message={error} onRetry={retry} />}
             {hintEnabled && hint && <HintTooltip reason={tNs(hint.reason)} confidence={hint.confidence} />}
             {isDrawPhase && (
               <div className="flex justify-center gap-2 pb-2" data-tutorial="vp-draw-button">

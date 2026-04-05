@@ -157,7 +157,7 @@ function ShortDeckPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec: execApi } = useGameApi(shortdeckApi.exec);
+  const { state, loading, error, exec: execApi, retry } = useGameApi(shortdeckApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
@@ -430,7 +430,7 @@ function ShortDeckPageContent() {
               alwaysVisible
             />
 
-            <ErrorAlert message={error} />
+            <ErrorAlert message={error} onRetry={retry} />
 
             {/* Muck/Show controls */}
             {isMuckPhase && (
