@@ -13,7 +13,7 @@ export function usePigsTailGame() {
   }, [gameExec]);
 
   const handleDraw = useCallback(() => {
-    gameExec('action');
+    gameExec('draw');
   }, [gameExec]);
 
   const handleReset = useCallback(() => {

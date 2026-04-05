@@ -35,12 +35,12 @@ func TestPigsTailCuiController_Method(t *testing.T) {
 		assert.Equal(t, mockOutput, tptc.Exec("reset"))
 		ptiMock.AssertCalled(t, "GetConfig")
 	})
-	t.Run("success Exec a", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tptc.Exec("a"))
+	t.Run("success Exec d", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tptc.Exec("d"))
 		ptiMock.AssertCalled(t, "Action", 0)
 	})
-	t.Run("success Exec action", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tptc.Exec("action"))
+	t.Run("success Exec draw", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tptc.Exec("draw"))
 		ptiMock.AssertCalled(t, "Action", 0)
 	})
 	t.Run("success Exec log", func(t *testing.T) {

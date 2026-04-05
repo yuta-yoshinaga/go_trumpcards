@@ -71,7 +71,7 @@ func pigsTailDispatch(bc *baseController, w http.ResponseWriter, pti usecase.Pig
 			CpuHesitationEnabled: param.CpuHesitationEnabled,
 		}
 		bc.writePresenterResponse(w, pti.Reset(cfg))
-	case "a", "action":
+	case "d", "draw":
 		bc.writePresenterResponse(w, pti.Action(0))
 	default:
 		return dispatchLog(param.Command, bc, w, pti.ActionLog)

@@ -914,7 +914,7 @@ export const golfApi = {
 
 /** Pig's Tail game API client. */
 export const pigtailApi = {
-  exec: (command: 'reset' | 'action', cpuHesitationEnabled?: boolean) =>
+  exec: (command: 'reset' | 'draw', cpuHesitationEnabled?: boolean) =>
     gameExec<PigsTailResponse>('pigtail', { command, cpuHesitationEnabled }),
 };
 

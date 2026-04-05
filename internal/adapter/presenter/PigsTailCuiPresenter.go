@@ -61,7 +61,7 @@ func (p *PigsTailCuiPresenter) Output(pt interfaces.PigsTailGame, lastErr error)
 		} else {
 			currentTurn := pt.GetCurrentTurn()
 			currentName := cuiPlayerName(pt.GetPlayer(currentTurn), currentTurn)
-			fmt.Fprintf(b, "手番: %s (action で山札から1枚引く)\n", currentName)
+			fmt.Fprintf(b, "手番: %s (draw で山札から1枚引く)\n", currentName)
 		}
 	})
 }

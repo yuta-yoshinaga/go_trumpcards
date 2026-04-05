@@ -19,10 +19,10 @@ func (c *PigsTailCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.pti.Reset(c.pti.GetConfig()) },
-		[]string{"a", "action", "log", "l"},
+		[]string{"d", "draw", "log", "l"},
 		func(cmd string, _ []string) (string, bool) {
 			switch cmd {
-			case "a", "action":
+			case "d", "draw":
 				return c.pti.Action(0), true
 			default:
 				return handleCuiLog(cmd, c.pti.ActionLog)

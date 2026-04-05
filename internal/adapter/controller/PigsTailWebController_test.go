@@ -48,15 +48,15 @@ func TestPigsTailWebController_Method(t *testing.T) {
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
 	})
-	t.Run("success Exec action", func(t *testing.T) {
-		_ = json.Unmarshal([]byte(`{"command":"action","sessionId":"test-session-1"}`), &jsonInput)
+	t.Run("success Exec draw", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command":"draw","sessionId":"test-session-1"}`), &jsonInput)
 		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
 	})
-	t.Run("success Exec a", func(t *testing.T) {
-		_ = json.Unmarshal([]byte(`{"command":"a","sessionId":"test-session-1"}`), &jsonInput)
+	t.Run("success Exec d", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command":"d","sessionId":"test-session-1"}`), &jsonInput)
 		recorded := execRequest(t, towc.Exec, &jsonInput)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
