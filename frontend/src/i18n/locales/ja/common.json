@@ -267,6 +267,19 @@
     "close": "閉じる",
     "button": "マニュアル"
   },
+  "metaAi": {
+    "learning": "AI: 学習中...",
+    "adapting": "AI: 適応中",
+    "adapted": "AI: 適応済",
+    "strategyShift": "CPU戦略変更: {{strategy}}",
+    "strategy": {
+      "aggressive": "攻撃的",
+      "defensive": "守備的",
+      "balanced": "バランス型",
+      "cautious": "慎重",
+      "observing": "観察中"
+    }
+  },
   "cli": {
     "switchToCli": "CLIモードに切り替え",
     "switchToGui": "GUIモードに切り替え",

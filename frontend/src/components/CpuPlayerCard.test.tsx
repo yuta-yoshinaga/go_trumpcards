@@ -161,4 +161,35 @@ describe('CpuPlayerCard', () => {
     expect(screen.queryByTestId('compact-card-count')).not.toBeInTheDocument();
     expect(screen.getByAltText('♠ A')).toBeInTheDocument();
   });
+
+  it('renders MetaAiIndicator when metaAi is enabled', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={false}
+        faceDownCount={2}
+        showHandName={false}
+        metaAi={{ enabled: true, gamesPlayed: 10, bluffRate: 0.2, foldRate: 0.4 }}
+      />,
+    );
+    expect(screen.getByTestId('meta-ai-indicator')).toBeInTheDocument();
+  });
+
+  it('does not render MetaAiIndicator when metaAi is absent', () => {
+    render(<CpuPlayerCard player={makePlayer()} showCards={false} faceDownCount={2} showHandName={false} />);
+    expect(screen.queryByTestId('meta-ai-indicator')).not.toBeInTheDocument();
+  });
+
+  it('does not render MetaAiIndicator when metaAi is disabled', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={false}
+        faceDownCount={2}
+        showHandName={false}
+        metaAi={{ enabled: false, gamesPlayed: 10, bluffRate: 0.2, foldRate: 0.4 }}
+      />,
+    );
+    expect(screen.queryByTestId('meta-ai-indicator')).not.toBeInTheDocument();
+  });
 });

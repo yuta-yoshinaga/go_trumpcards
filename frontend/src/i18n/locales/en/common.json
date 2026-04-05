@@ -267,6 +267,19 @@
     "close": "Close",
     "button": "Manual"
   },
+  "metaAi": {
+    "learning": "AI: Learning...",
+    "adapting": "AI: Adapting",
+    "adapted": "AI: Adapted",
+    "strategyShift": "CPU strategy shift: {{strategy}}",
+    "strategy": {
+      "aggressive": "Aggressive",
+      "defensive": "Defensive",
+      "balanced": "Balanced",
+      "cautious": "Cautious",
+      "observing": "Observing"
+    }
+  },
   "cli": {
     "switchToCli": "Switch to CLI mode",
     "switchToGui": "Switch to GUI mode",
