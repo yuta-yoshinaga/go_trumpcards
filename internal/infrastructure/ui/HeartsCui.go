@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// HeartsCui ハーツCUIクラス
-type HeartsCui struct {
-	hc *controller.HeartsCuiController
-}
-
 // NewHeartsCui コンストラクタ
-func NewHeartsCui() *HeartsCui {
+func NewHeartsCui() *genericCuiGame {
 	config := domain.DefaultHeartsConfig()
 	players := []*domain.HeartsPlayer{
 		domain.NewHeartsPlayer(true),
@@ -23,17 +18,8 @@ func NewHeartsCui() *HeartsCui {
 		domain.NewHeartsPlayer(false),
 	}
 	hearts := domain.NewHearts(domain.NewTrumpCards(0), players, config)
-	return &HeartsCui{
-		hc: controller.NewHeartsCuiController(usecase.NewHeartsInteractor(hearts, new(presenter.HeartsCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *HeartsCui) Controller() CuiExecer { return cui.hc }
-
-// HelpLines returns the game's help lines.
-func (cui *HeartsCui) HelpLines() []string {
-	return []string{
+	hc := controller.NewHeartsCuiController(usecase.NewHeartsInteractor(hearts, new(presenter.HeartsCuiPresenter)))
+	return newCuiGame(hc, []string{
 		i18n.T("hearts.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -51,10 +37,5 @@ func (cui *HeartsCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *HeartsCui) Exec() {
-	RunCuiLoop(cui.hc, cui.HelpLines())
+	})
 }

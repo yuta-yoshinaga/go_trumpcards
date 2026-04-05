@@ -8,27 +8,13 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// DeucesWildCui Deuces Wild CUIクラス
-type DeucesWildCui struct {
-	vc *controller.VideoPokerCuiController
-}
-
 // NewDeucesWildCui コンストラクタ
-func NewDeucesWildCui() *DeucesWildCui {
-	return &DeucesWildCui{
-		vc: controller.NewVideoPokerCuiController(usecase.NewVideoPokerInteractor(
-			domain.NewDeucesWildVideoPoker(),
-			new(presenter.VideoPokerCuiPresenter),
-		)),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *DeucesWildCui) Controller() CuiExecer { return cui.vc }
-
-// HelpLines returns the game's help lines.
-func (cui *DeucesWildCui) HelpLines() []string {
-	return []string{
+func NewDeucesWildCui() *genericCuiGame {
+	vc := controller.NewVideoPokerCuiController(usecase.NewVideoPokerInteractor(
+		domain.NewDeucesWildVideoPoker(),
+		new(presenter.VideoPokerCuiPresenter),
+	))
+	return newCuiGame(vc, []string{
 		i18n.T("deuceswild.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -40,10 +26,5 @@ func (cui *DeucesWildCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *DeucesWildCui) Exec() {
-	RunCuiLoop(cui.vc, cui.HelpLines())
+	})
 }

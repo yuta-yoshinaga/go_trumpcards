@@ -7,13 +7,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// BridgeCui ブリッジCUIクラス
-type BridgeCui struct {
-	bc *controller.BridgeCuiController
-}
-
 // NewBridgeCui コンストラクタ
-func NewBridgeCui() *BridgeCui {
+func NewBridgeCui() *genericCuiGame {
 	config := domain.DefaultBridgeConfig()
 	players := []*domain.BridgePlayer{
 		domain.NewBridgePlayer(true, 0),  // North (human, team 0)
@@ -22,17 +17,8 @@ func NewBridgeCui() *BridgeCui {
 		domain.NewBridgePlayer(false, 1), // West (CPU, team 1)
 	}
 	bridge := domain.NewBridge(domain.NewTrumpCards(0), players, config)
-	return &BridgeCui{
-		bc: controller.NewBridgeCuiController(usecase.NewBridgeInteractor(bridge, new(presenter.BridgeCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *BridgeCui) Controller() CuiExecer { return cui.bc }
-
-// HelpLines returns the game's help lines.
-func (cui *BridgeCui) HelpLines() []string {
-	return []string{
+	bc := controller.NewBridgeCuiController(usecase.NewBridgeInteractor(bridge, new(presenter.BridgeCuiPresenter)))
+	return newCuiGame(bc, []string{
 		"=== Contract Bridge ===",
 		"",
 		"Game Commands:",
@@ -50,10 +36,5 @@ func (cui *BridgeCui) HelpLines() []string {
 		"  r                        reset game",
 		"  q                        quit",
 		"  help                     show this help",
-	}
-}
-
-// Exec ゲーム実行
-func (cui *BridgeCui) Exec() {
-	RunCuiLoop(cui.bc, cui.HelpLines())
+	})
 }

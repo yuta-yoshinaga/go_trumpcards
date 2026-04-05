@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// PinochleCui ピノクルCUIクラス
-type PinochleCui struct {
-	pc *controller.PinochleCuiController
-}
-
 // NewPinochleCui コンストラクタ
-func NewPinochleCui() *PinochleCui {
+func NewPinochleCui() *genericCuiGame {
 	config := domain.DefaultPinochleConfig()
 	players := []*domain.PinochlePlayer{
 		domain.NewPinochlePlayer(true, 0),
@@ -23,17 +18,8 @@ func NewPinochleCui() *PinochleCui {
 		domain.NewPinochlePlayer(false, 1),
 	}
 	pinochle := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, config)
-	return &PinochleCui{
-		pc: controller.NewPinochleCuiController(usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *PinochleCui) Controller() CuiExecer { return cui.pc }
-
-// HelpLines returns the game's help lines.
-func (cui *PinochleCui) HelpLines() []string {
-	return []string{
+	pc := controller.NewPinochleCuiController(usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleCuiPresenter)))
+	return newCuiGame(pc, []string{
 		i18n.T("pinochle.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -54,10 +40,5 @@ func (cui *PinochleCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *PinochleCui) Exec() {
-	RunCuiLoop(cui.pc, cui.HelpLines())
+	})
 }

@@ -7,30 +7,16 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// CanastaCui カナスタCUIクラス
-type CanastaCui struct {
-	cc *controller.CanastaCuiController
-}
-
 // NewCanastaCui コンストラクタ
-func NewCanastaCui() *CanastaCui {
+func NewCanastaCui() *genericCuiGame {
 	config := domain.DefaultCanastaConfig()
 	players := []*domain.CanastaPlayer{
 		domain.NewCanastaPlayer(true),
 		domain.NewCanastaPlayer(false),
 	}
 	canasta := domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, config)
-	return &CanastaCui{
-		cc: controller.NewCanastaCuiController(usecase.NewCanastaInteractor(canasta, new(presenter.CanastaCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *CanastaCui) Controller() CuiExecer { return cui.cc }
-
-// HelpLines returns the game's help lines.
-func (cui *CanastaCui) HelpLines() []string {
-	return []string{
+	cc := controller.NewCanastaCuiController(usecase.NewCanastaInteractor(canasta, new(presenter.CanastaCuiPresenter)))
+	return newCuiGame(cc, []string{
 		"Canasta (カナスタ) Help",
 		"",
 		"Game Commands:",
@@ -51,10 +37,5 @@ func (cui *CanastaCui) HelpLines() []string {
 		"  r / reset            reset game",
 		"  q / quit             quit",
 		"  ? / help             show help",
-	}
-}
-
-// Exec ゲーム実行
-func (cui *CanastaCui) Exec() {
-	RunCuiLoop(cui.cc, cui.HelpLines())
+	})
 }

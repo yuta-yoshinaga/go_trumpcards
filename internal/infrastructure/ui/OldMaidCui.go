@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// OldMaidCui ババ抜きCUIクラス
-type OldMaidCui struct {
-	omc *controller.OldMaidCuiController
-}
-
 // NewOldMaidCui コンストラクタ
-func NewOldMaidCui() *OldMaidCui {
+func NewOldMaidCui() *genericCuiGame {
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),
 		domain.NewOldMaidPlayer(false),
@@ -22,19 +17,10 @@ func NewOldMaidCui() *OldMaidCui {
 		domain.NewOldMaidPlayer(false),
 	}
 	oldMaid := domain.NewOldMaid(domain.NewTrumpCards(1), players)
-	return &OldMaidCui{
-		omc: controller.NewOldMaidCuiController(
-			usecase.NewOldMaidInteractor(oldMaid, new(presenter.OldMaidCuiPresenter)),
-		),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *OldMaidCui) Controller() CuiExecer { return cui.omc }
-
-// HelpLines returns the game's help lines.
-func (cui *OldMaidCui) HelpLines() []string {
-	return []string{
+	omc := controller.NewOldMaidCuiController(
+		usecase.NewOldMaidInteractor(oldMaid, new(presenter.OldMaidCuiPresenter)),
+	)
+	return newCuiGame(omc, []string{
 		i18n.T("oldmaid.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -51,10 +37,5 @@ func (cui *OldMaidCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *OldMaidCui) Exec() {
-	RunCuiLoop(cui.omc, cui.HelpLines())
+	})
 }

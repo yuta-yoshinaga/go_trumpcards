@@ -8,25 +8,11 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// PyramidCui ピラミッドCUIクラス
-type PyramidCui struct {
-	pc *controller.PyramidCuiController
-}
-
 // NewPyramidCui コンストラクタ
-func NewPyramidCui() *PyramidCui {
+func NewPyramidCui() *genericCuiGame {
 	pyramid := domain.NewPyramid(domain.NewTrumpCards(0))
-	return &PyramidCui{
-		pc: controller.NewPyramidCuiController(usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *PyramidCui) Controller() CuiExecer { return cui.pc }
-
-// HelpLines returns the game's help lines.
-func (cui *PyramidCui) HelpLines() []string {
-	return []string{
+	pc := controller.NewPyramidCuiController(usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidCuiPresenter)))
+	return newCuiGame(pc, []string{
 		i18n.T("pyramid.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -43,10 +29,5 @@ func (cui *PyramidCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *PyramidCui) Exec() {
-	RunCuiLoop(cui.pc, cui.HelpLines())
+	})
 }

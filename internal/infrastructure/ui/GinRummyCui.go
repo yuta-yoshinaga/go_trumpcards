@@ -8,30 +8,16 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// GinRummyCui ジンラミーCUIクラス
-type GinRummyCui struct {
-	cc *controller.GinRummyCuiController
-}
-
 // NewGinRummyCui コンストラクタ
-func NewGinRummyCui() *GinRummyCui {
+func NewGinRummyCui() *genericCuiGame {
 	config := domain.DefaultGinRummyConfig()
 	players := []*domain.GinRummyPlayer{
 		domain.NewGinRummyPlayer(true),
 		domain.NewGinRummyPlayer(false),
 	}
 	gr := domain.NewGinRummy(domain.NewTrumpCards(0), players, config)
-	return &GinRummyCui{
-		cc: controller.NewGinRummyCuiController(usecase.NewGinRummyInteractor(gr, new(presenter.GinRummyCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *GinRummyCui) Controller() CuiExecer { return cui.cc }
-
-// HelpLines returns the game's help lines.
-func (cui *GinRummyCui) HelpLines() []string {
-	return []string{
+	cc := controller.NewGinRummyCuiController(usecase.NewGinRummyInteractor(gr, new(presenter.GinRummyCuiPresenter)))
+	return newCuiGame(cc, []string{
 		i18n.T("ginrummy.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -51,10 +37,5 @@ func (cui *GinRummyCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *GinRummyCui) Exec() {
-	RunCuiLoop(cui.cc, cui.HelpLines())
+	})
 }

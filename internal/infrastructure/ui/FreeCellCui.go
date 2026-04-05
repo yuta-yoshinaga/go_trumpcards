@@ -8,25 +8,11 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// FreeCellCui フリーセルCUIクラス
-type FreeCellCui struct {
-	fc *controller.FreeCellCuiController
-}
-
 // NewFreeCellCui コンストラクタ
-func NewFreeCellCui() *FreeCellCui {
+func NewFreeCellCui() *genericCuiGame {
 	freeCell := domain.NewFreeCell(domain.NewTrumpCards(0))
-	return &FreeCellCui{
-		fc: controller.NewFreeCellCuiController(usecase.NewFreeCellInteractor(freeCell, new(presenter.FreeCellCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *FreeCellCui) Controller() CuiExecer { return cui.fc }
-
-// HelpLines returns the game's help lines.
-func (cui *FreeCellCui) HelpLines() []string {
-	return []string{
+	fc := controller.NewFreeCellCuiController(usecase.NewFreeCellInteractor(freeCell, new(presenter.FreeCellCuiPresenter)))
+	return newCuiGame(fc, []string{
 		i18n.T("freecell.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -45,10 +31,5 @@ func (cui *FreeCellCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *FreeCellCui) Exec() {
-	RunCuiLoop(cui.fc, cui.HelpLines())
+	})
 }

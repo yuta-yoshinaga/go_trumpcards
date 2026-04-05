@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// EuchreCui ユーカーCUIクラス
-type EuchreCui struct {
-	ec *controller.EuchreCuiController
-}
-
 // NewEuchreCui コンストラクタ
-func NewEuchreCui() *EuchreCui {
+func NewEuchreCui() *genericCuiGame {
 	config := domain.DefaultEuchreConfig()
 	players := []*domain.EuchrePlayer{
 		domain.NewEuchrePlayer(true, 0),
@@ -23,17 +18,8 @@ func NewEuchreCui() *EuchreCui {
 		domain.NewEuchrePlayer(false, 1),
 	}
 	euchre := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, config)
-	return &EuchreCui{
-		ec: controller.NewEuchreCuiController(usecase.NewEuchreInteractor(euchre, new(presenter.EuchreCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *EuchreCui) Controller() CuiExecer { return cui.ec }
-
-// HelpLines returns the game's help lines.
-func (cui *EuchreCui) HelpLines() []string {
-	return []string{
+	ec := controller.NewEuchreCuiController(usecase.NewEuchreInteractor(euchre, new(presenter.EuchreCuiPresenter)))
+	return newCuiGame(ec, []string{
 		i18n.T("euchre.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -56,10 +42,5 @@ func (cui *EuchreCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *EuchreCui) Exec() {
-	RunCuiLoop(cui.ec, cui.HelpLines())
+	})
 }
