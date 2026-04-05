@@ -103,7 +103,7 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
         role="dialog"
         aria-modal="true"
         aria-label={t('manual.ariaLabel')}
-        className="rounded-lg shadow-xl p-6 mx-4 max-w-4xl w-full max-h-[calc(100vh-4rem)] h-[calc(100dvh-4rem)] overflow-hidden flex flex-col bg-ds-surface border border-ds-border-subtle"
+        className="rounded-lg shadow-xl p-6 mx-4 max-w-4xl w-full h-[calc(100vh-4rem)] supports-[height:100dvh]:h-[calc(100dvh-4rem)] overflow-hidden flex flex-col bg-ds-surface border border-ds-border-subtle"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-end mb-2 flex-shrink-0">
