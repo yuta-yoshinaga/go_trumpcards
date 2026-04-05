@@ -1164,8 +1164,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 30 controllers
-    GameManager --> "*" CuiExecer : holds 29 games
+    TrumpCardsWeb --> "*" GameWebController : holds 36 controllers
+    GameManager --> "*" CuiExecer : holds 36 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
