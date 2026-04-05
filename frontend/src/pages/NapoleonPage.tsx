@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { napoleonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,6 +18,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { NapoleonSkeleton } from '../components/skeleton/NapoleonSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -33,14 +33,13 @@ import {
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { NapoleonResponse } from '../types/card';
 import { NapoleonPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { NAPOLEON_HELP, parseNapoleonCommand } from '../utils/cli/commands/napoleonCommands';
@@ -100,12 +99,6 @@ const NP_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Napoleon tutorial configuration. */
-const NP_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'napoleon',
-  steps: NP_TUTORIAL_STEPS,
-};
-
 const NAPOLEON_PHASE_KEYS: Readonly<Record<number, string>> = {
   [NapoleonPhase.BID]: 'bid',
   [NapoleonPhase.TRUMP_DECLARATION]: 'trumpDeclaration',
@@ -120,11 +113,10 @@ const SUIT_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4
 
 /** Renders the Napoleon game page with bidding, trump declaration, kitty exchange, trick play, and scoring. */
 export function NapoleonPage() {
-  const { t: tNapoleon } = useTranslation('napoleon');
   return (
-    <TutorialProvider config={NP_TUTORIAL_CONFIG} translateMessage={tNapoleon}>
+    <TutorialWrapper gameName="napoleon" steps={NP_TUTORIAL_STEPS}>
       <NapoleonPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

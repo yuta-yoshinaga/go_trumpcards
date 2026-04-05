@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { goFishApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -18,6 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GoFishSkeleton } from '../components/skeleton/GoFishSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -25,14 +25,13 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGoFishGame } from '../hooks/useGoFishGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { GoFishResponse } from '../types/card';
 import { GoFishPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { GOFISH_HELP, parseGofishCommand } from '../utils/cli/commands/gofishCommands';
@@ -67,12 +66,6 @@ const GF_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Go Fish tutorial configuration. */
-const GF_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'gofish',
-  steps: GF_TUTORIAL_STEPS,
-};
-
 const GOFISH_PHASE_KEYS: Readonly<Record<number, string>> = {
   [GoFishPhase.PLAY]: 'play',
   [GoFishPhase.GAME_END]: 'end',
@@ -80,11 +73,10 @@ const GOFISH_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Go Fish game page. */
 export function GoFishPage() {
-  const { t: tGofish } = useTranslation('gofish');
   return (
-    <TutorialProvider config={GF_TUTORIAL_CONFIG} translateMessage={tGofish}>
+    <TutorialWrapper gameName="gofish" steps={GF_TUTORIAL_STEPS}>
       <GoFishPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

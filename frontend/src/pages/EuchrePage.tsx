@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { euchreApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,6 +16,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { EuchreSkeleton } from '../components/skeleton/EuchreSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,14 +26,13 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { EuchreResponse } from '../types/card';
 import { EuchrePhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { EUCHRE_HELP, parseEuchreCommand } from '../utils/cli/commands/euchreCommands';
 import { formatEuchreState } from '../utils/cli/formatters/euchreFormatter';
@@ -93,12 +92,6 @@ const EU_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Euchre tutorial configuration. */
-const EU_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'euchre',
-  steps: EU_TUTORIAL_STEPS,
-};
-
 const EUCHRE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [EuchrePhase.PICK_UP]: 'pickUp',
   [EuchrePhase.CALL_TRUMP]: 'callTrump',
@@ -111,11 +104,10 @@ const EUCHRE_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Euchre game page with pick-up, trump calling, trick play, and team scoring. */
 export function EuchrePage() {
-  const { t: tEuchre } = useTranslation('euchre');
   return (
-    <TutorialProvider config={EU_TUTORIAL_CONFIG} translateMessage={tEuchre}>
+    <TutorialWrapper gameName="euchre" steps={EU_TUTORIAL_STEPS}>
       <EuchrePageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { spadesApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -14,6 +13,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { SpadesSkeleton } from '../components/skeleton/SpadesSkeleton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -23,13 +23,12 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SpadesResponse } from '../types/card';
 import { SpadesPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { parseSpadesCommand, SPADES_HELP } from '../utils/cli/commands/spadesCommands';
 import { formatSpadesState } from '../utils/cli/formatters/spadesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -81,12 +80,6 @@ const SP_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Spades tutorial configuration. */
-const SP_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'spades',
-  steps: SP_TUTORIAL_STEPS,
-};
-
 const SPADES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [SpadesPhase.BID]: 'bid',
   [SpadesPhase.PLAY]: 'play',
@@ -97,11 +90,10 @@ const SPADES_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Spades game page with bidding, trick play, and scoring. */
 export function SpadesPage() {
-  const { t: tSpades } = useTranslation('spades');
   return (
-    <TutorialProvider config={SP_TUTORIAL_CONFIG} translateMessage={tSpades}>
+    <TutorialWrapper gameName="spades" steps={SP_TUTORIAL_STEPS}>
       <SpadesPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

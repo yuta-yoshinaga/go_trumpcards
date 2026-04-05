@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { threecardApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,6 +16,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { ThreeCardSkeleton } from '../components/skeleton/ThreeCardSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -25,13 +25,12 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ThreeCardResponse } from '../types/card';
 import { ThreeCardPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { parseThreecardCommand, THREECARD_HELP } from '../utils/cli/commands/threecardCommands';
 import { formatThreecardState } from '../utils/cli/formatters/threecardFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -58,12 +57,6 @@ const TC_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Three Card Poker tutorial configuration. */
-const TC_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'threecard',
-  steps: TC_TUTORIAL_STEPS,
-};
-
 /** Hand rank display name lookup. */
 const HAND_RANK_KEYS: Record<number, string> = {
   1: 'handRank.1',
@@ -76,11 +69,10 @@ const HAND_RANK_KEYS: Record<number, string> = {
 
 /** Renders the Three Card Poker game page with betting, action, and result display. */
 export function ThreeCardPage() {
-  const { t: tTc } = useTranslation('threecard');
   return (
-    <TutorialProvider config={TC_TUTORIAL_CONFIG} translateMessage={tTc}>
+    <TutorialWrapper gameName="threecard" steps={TC_TUTORIAL_STEPS}>
       <ThreeCardPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

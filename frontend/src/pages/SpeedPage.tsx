@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { speedApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,6 +16,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -24,11 +24,10 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import type { SpeedResponse } from '../types/card';
 import { SpeedPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { parseSpeedCommand, SPEED_HELP } from '../utils/cli/commands/speedCommands';
 import { formatSpeedState } from '../utils/cli/formatters/speedFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -48,16 +47,12 @@ const SPEED_TUTORIAL_STEPS: TutorialStep[] = [
   },
   { target: '[data-tutorial="sp-draw-pile"]', messageKey: 'tutorial.drawPile', placement: 'left', advanceOn: 'next' },
 ];
-
-const SPEED_TUTORIAL_CONFIG: TutorialConfig = { gameName: 'speed', steps: SPEED_TUTORIAL_STEPS };
-
 /** Renders the Speed game page. */
 export function SpeedPage() {
-  const { t: tSpeed } = useTranslation('speed');
   return (
-    <TutorialProvider config={SPEED_TUTORIAL_CONFIG} translateMessage={tSpeed}>
+    <TutorialWrapper gameName="speed" steps={SPEED_TUTORIAL_STEPS}>
       <SpeedPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { crazyeightsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,6 +16,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { CrazyEightsSkeleton } from '../components/skeleton/CrazyEightsSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,14 +26,13 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CrazyEightsResponse } from '../types/card';
 import { CrazyEightsPhase, CrazyEightsSuit } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { CRAZYEIGHTS_HELP, parseCrazyeightsCommand } from '../utils/cli/commands/crazyeightsCommands';
 import { formatCrazyeightsState } from '../utils/cli/formatters/crazyeightsFormatter';
@@ -90,19 +89,12 @@ const CE_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Crazy Eights tutorial configuration. */
-const CE_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'crazyeights',
-  steps: CE_TUTORIAL_STEPS,
-};
-
 /** Renders the Crazy Eights game page with card play and suit selection. */
 export function CrazyEightsPage() {
-  const { t: tCe } = useTranslation('crazyeights');
   return (
-    <TutorialProvider config={CE_TUTORIAL_CONFIG} translateMessage={tCe}>
+    <TutorialWrapper gameName="crazyeights" steps={CE_TUTORIAL_STEPS}>
       <CrazyEightsPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { spiderApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,6 +18,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SpiderSkeleton } from '../components/skeleton/SpiderSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -27,12 +27,11 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SpiderResponse } from '../types/card';
 import { SpiderPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseSpiderCommand, SPIDER_HELP } from '../utils/cli/commands/spiderCommands';
 import { formatSpiderState } from '../utils/cli/formatters/spiderFormatter';
@@ -78,19 +77,12 @@ const SPD_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Spider Solitaire tutorial configuration. */
-const SPD_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'spider',
-  steps: SPD_TUTORIAL_STEPS,
-};
-
 /** Renders the Spider Solitaire game page with 10 tableau columns and stock. */
 export function SpiderPage() {
-  const { t: tSpd } = useTranslation('spider');
   return (
-    <TutorialProvider config={SPD_TUTORIAL_CONFIG} translateMessage={tSpd}>
+    <TutorialWrapper gameName="spider" steps={SPD_TUTORIAL_STEPS}>
       <SpiderPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

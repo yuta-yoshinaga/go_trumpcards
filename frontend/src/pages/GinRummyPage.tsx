@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { ginrummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,6 +16,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GinRummySkeleton } from '../components/skeleton/GinRummySkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,14 +26,13 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '../hooks/useGinRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { GinRummyResponse } from '../types/card';
 import { GinRummyPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { GINRUMMY_HELP, parseGinrummyCommand } from '../utils/cli/commands/ginrummyCommands';
 import { formatGinrummyState } from '../utils/cli/formatters/ginrummyFormatter';
@@ -83,19 +82,12 @@ const GR_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Gin Rummy tutorial configuration. */
-const GR_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'ginrummy',
-  steps: GR_TUTORIAL_STEPS,
-};
-
 /** Renders the Gin Rummy game page with draw, discard, knock, and layoff phases. */
 export function GinRummyPage() {
-  const { t: tGr } = useTranslation('ginrummy');
   return (
-    <TutorialProvider config={GR_TUTORIAL_CONFIG} translateMessage={tGr}>
+    <TutorialWrapper gameName="ginrummy" steps={GR_TUTORIAL_STEPS}>
       <GinRummyPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

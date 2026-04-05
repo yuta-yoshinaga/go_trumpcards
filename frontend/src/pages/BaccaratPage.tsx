@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,6 +16,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BaccaratSkeleton } from '../components/skeleton/BaccaratSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -25,13 +25,12 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BaccaratResponse, BaccaratSideBetResult } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { BACCARAT_HELP, parseBaccaratCommand } from '../utils/cli/commands/baccaratCommands';
 import { formatBaccaratState } from '../utils/cli/formatters/baccaratFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -69,12 +68,6 @@ const BAC_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
-
-/** Baccarat tutorial configuration. */
-const BAC_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'baccarat',
-  steps: BAC_TUTORIAL_STEPS,
-};
 
 const ROAD_PLAYER = 0;
 const ROAD_BANKER = 1;
@@ -187,11 +180,10 @@ function SideBetResultsDisplay({
 
 /** Renders the Baccarat game page with betting and result display. */
 export function BaccaratPage() {
-  const { t: tBac } = useTranslation('baccarat');
   return (
-    <TutorialProvider config={BAC_TUTORIAL_CONFIG} translateMessage={tBac}>
+    <TutorialWrapper gameName="baccarat" steps={BAC_TUTORIAL_STEPS}>
       <BaccaratPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

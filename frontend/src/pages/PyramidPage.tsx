@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { pyramidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,6 +18,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PyramidSkeleton } from '../components/skeleton/PyramidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -27,12 +27,11 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePyramidGame } from '../hooks/usePyramidGame';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PyramidResponse } from '../types/card';
 import { PyramidPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PYRAMID_HELP, parsePyramidCommand } from '../utils/cli/commands/pyramidCommands';
 import { formatPyramidState } from '../utils/cli/formatters/pyramidFormatter';
@@ -72,19 +71,12 @@ const PY_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Pyramid tutorial configuration. */
-const PY_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'pyramid',
-  steps: PY_TUTORIAL_STEPS,
-};
-
 /** Renders the Pyramid Solitaire game page with pyramid, stock/waste, and controls. */
 export function PyramidPage() {
-  const { t: tPy } = useTranslation('pyramid');
   return (
-    <TutorialProvider config={PY_TUTORIAL_CONFIG} translateMessage={tPy}>
+    <TutorialWrapper gameName="pyramid" steps={PY_TUTORIAL_STEPS}>
       <PyramidPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

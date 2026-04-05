@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { doubtApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -20,6 +19,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { DoubtSkeleton } from '../components/skeleton/DoubtSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -34,13 +34,12 @@ import {
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoubtCpuAction, DoubtResponse } from '../types/card';
 import { DoubtPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { DOUBT_HELP, parseDoubtCommand } from '../utils/cli/commands/doubtCommands';
 import { formatDoubtState } from '../utils/cli/formatters/doubtFormatter';
@@ -87,19 +86,12 @@ const DT_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Doubt tutorial configuration. */
-const DT_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'doubt',
-  steps: DT_TUTORIAL_STEPS,
-};
-
 /** Renders the Doubt game page with card play, doubt window countdown, and config. */
 export function DoubtPage() {
-  const { t: tDt } = useTranslation('doubt');
   return (
-    <TutorialProvider config={DT_TUTORIAL_CONFIG} translateMessage={tDt}>
+    <TutorialWrapper gameName="doubt" steps={DT_TUTORIAL_STEPS}>
       <DoubtPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

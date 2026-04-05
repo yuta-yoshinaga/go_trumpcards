@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { freecellApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -18,6 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { FreeCellSkeleton } from '../components/skeleton/FreeCellSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,12 +26,11 @@ import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, FreeCellResponse } from '../types/card';
 import { FreeCellPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { FREECELL_HELP, parseFreecellCommand } from '../utils/cli/commands/freecellCommands';
 import { formatFreecellState } from '../utils/cli/formatters/freecellFormatter';
@@ -73,19 +72,12 @@ const FC_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** FreeCell tutorial configuration. */
-const FC_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'freecell',
-  steps: FC_TUTORIAL_STEPS,
-};
-
 /** Renders the FreeCell solitaire game page with tableau, free cells, and foundation. */
 export function FreeCellPage() {
-  const { t: tFc } = useTranslation('freecell');
   return (
-    <TutorialProvider config={FC_TUTORIAL_CONFIG} translateMessage={tFc}>
+    <TutorialWrapper gameName="freecell" steps={FC_TUTORIAL_STEPS}>
       <FreeCellPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

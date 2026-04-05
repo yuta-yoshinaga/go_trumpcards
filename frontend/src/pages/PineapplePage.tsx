@@ -25,6 +25,7 @@ import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -34,14 +35,13 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PineappleResponse } from '../types/card';
 import { HoldemRebuyPhaseType, PineapplePhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pineappleCommands';
 import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -98,12 +98,6 @@ const PN_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Pineapple Poker tutorial configuration. */
-const PN_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'pineapple',
-  steps: PN_TUTORIAL_STEPS,
-};
-
 const PINEAPPLE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PineapplePhase.PRE_FLOP]: 'preFlop',
   [PineapplePhase.FLOP]: 'flop',
@@ -148,11 +142,10 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
 
 /** Renders the Pineapple Poker game page with community cards, discard phase, betting, and showdown. */
 export function PineapplePage() {
-  const { t: tPineapple } = useTranslation('pineapple');
   return (
-    <TutorialProvider config={PN_TUTORIAL_CONFIG} translateMessage={tPineapple}>
+    <TutorialWrapper gameName="pineapple" steps={PN_TUTORIAL_STEPS}>
       <PineapplePageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

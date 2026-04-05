@@ -25,6 +25,7 @@ import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { ShortDeckSkeleton } from '../components/skeleton/ShortDeckSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -34,14 +35,13 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ShortDeckResponse } from '../types/card';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { parseShortdeckCommand, SHORTDECK_HELP } from '../utils/cli/commands/shortdeckCommands';
 import { formatShortdeckState } from '../utils/cli/formatters/shortdeckFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -92,12 +92,6 @@ const SD_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Short Deck Hold'em tutorial configuration. */
-const SD_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'shortdeck',
-  steps: SD_TUTORIAL_STEPS,
-};
-
 const SHORTDECK_PHASE_KEYS: Readonly<Record<number, string>> = {
   [HoldemPhase.PRE_FLOP]: 'preFlop',
   [HoldemPhase.FLOP]: 'flop',
@@ -141,11 +135,10 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
 
 /** Renders the Short Deck Hold'em game page with community cards, betting, and showdown. */
 export function ShortDeckPage() {
-  const { t: tShortDeck } = useTranslation('shortdeck');
   return (
-    <TutorialProvider config={SD_TUTORIAL_CONFIG} translateMessage={tShortDeck}>
+    <TutorialWrapper gameName="shortdeck" steps={SD_TUTORIAL_STEPS}>
       <ShortDeckPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

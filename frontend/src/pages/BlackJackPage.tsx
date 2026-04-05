@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -37,6 +36,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -45,12 +45,11 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { BLACKJACK_HELP, parseBlackjackCommand } from '../utils/cli/commands/blackjackCommands';
 import { formatBlackjackState } from '../utils/cli/formatters/blackjackFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -118,19 +117,12 @@ const BJ_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** BlackJack tutorial configuration. */
-const BJ_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'blackjack',
-  steps: BJ_TUTORIAL_STEPS,
-};
-
 /** Renders the BlackJack game page with betting, action, and end phases. */
 export function BlackJackPage() {
-  const { t: tBj } = useTranslation('blackjack');
   return (
-    <TutorialProvider config={BJ_TUTORIAL_CONFIG} translateMessage={tBj}>
+    <TutorialWrapper gameName="blackjack" steps={BJ_TUTORIAL_STEPS}>
       <BlackJackPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

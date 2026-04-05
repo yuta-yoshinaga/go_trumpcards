@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { memoryApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -18,6 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { MemorySkeleton } from '../components/skeleton/MemorySkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -27,12 +27,11 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { MemoryResponse } from '../types/card';
 import { MemoryPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { MEMORY_HELP, parseMemoryCommand } from '../utils/cli/commands/memoryCommands';
 import { formatMemoryState } from '../utils/cli/formatters/memoryFormatter';
@@ -67,12 +66,6 @@ const MEM_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Memory tutorial configuration. */
-const MEM_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'memory',
-  steps: MEM_TUTORIAL_STEPS,
-};
-
 const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
   [MemoryPhase.FLIP1]: 'flip1',
   [MemoryPhase.FLIP2]: 'flip2',
@@ -82,11 +75,10 @@ const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Memory card matching game page with board grid and scores. */
 export function MemoryPage() {
-  const { t: tMem } = useTranslation('memory');
   return (
-    <TutorialProvider config={MEM_TUTORIAL_CONFIG} translateMessage={tMem}>
+    <TutorialWrapper gameName="memory" steps={MEM_TUTORIAL_STEPS}>
       <MemoryPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 

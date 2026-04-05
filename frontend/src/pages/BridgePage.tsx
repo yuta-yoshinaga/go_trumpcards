@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { bridgeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -16,6 +15,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BridgeSkeleton } from '../components/skeleton/BridgeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { CPU_DIFFICULTY_OPTIONS, useBridgeGame } from '../hooks/useBridgeGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -24,14 +24,13 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { TutorialProvider } from '../providers/TutorialProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BridgeResponse } from '../types/card';
 import { BridgePhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { BRIDGE_HELP, parseBridgeCommand } from '../utils/cli/commands/bridgeCommands';
 import { formatBridgeState } from '../utils/cli/formatters/bridgeFormatter';
@@ -108,12 +107,6 @@ const BR_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Bridge tutorial configuration. */
-const BR_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'bridge',
-  steps: BR_TUTORIAL_STEPS,
-};
-
 const BRIDGE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [BridgePhase.BID]: 'bid',
   [BridgePhase.PLAY]: 'play',
@@ -124,11 +117,10 @@ const BRIDGE_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Bridge game page with auction, trick play, and team scoring. */
 export function BridgePage() {
-  const { t: tBridge } = useTranslation('bridge');
   return (
-    <TutorialProvider config={BR_TUTORIAL_CONFIG} translateMessage={tBridge}>
+    <TutorialWrapper gameName="bridge" steps={BR_TUTORIAL_STEPS}>
       <BridgePageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 
