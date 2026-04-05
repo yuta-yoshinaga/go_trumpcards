@@ -3164,6 +3164,10 @@ paths:
                 col:
                   type: integer
                   description: Column index (0-6) for remove command
+                n:
+                  type: integer
+                  description: Number of undos to perform (required when command is undo_n)
+                  example: 3
                 sessionId:
                   type: string
             examples:
@@ -6332,6 +6336,10 @@ components:
               description: "Scoring mode: 0 = None, 1 = Vegas"
               enum: [0, 1]
               example: 0
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -6495,6 +6503,10 @@ components:
         to:
           description: Destination zone for a move command
           $ref: '#/components/schemas/FreeCellZone'
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -7458,6 +7470,10 @@ components:
         command:
           type: string
           enum: [reset, deal, move, giveup, hint, autocomplete, undo, undo_n, log]
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
         sessionId:
           type: string
         from:
@@ -8188,6 +8204,10 @@ components:
         card2:
           description: Second card for a remove command (pair removal)
           $ref: '#/components/schemas/PyramidCard'
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -8315,6 +8335,10 @@ components:
           type: integer
           description: Column index of the tableau card to remove (0-based)
           example: 0
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
