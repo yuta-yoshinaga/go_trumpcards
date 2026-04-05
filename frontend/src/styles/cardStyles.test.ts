@@ -6,6 +6,7 @@ import {
   selectedCardStyle,
   smartHighlightStyle,
 } from './cardStyles';
+import { EXPANSION_GAP_PX } from './motionPresets';
 
 describe('selectedCardStyle', () => {
   it('returns selected styles when true', () => {
@@ -50,7 +51,7 @@ describe('focusRingCard', () => {
 describe('expansionMargin', () => {
   it('adds expansion gap for neighbor of selected card', () => {
     const baseOverlap = -10;
-    expect(expansionMargin(true, baseOverlap)).toBe(-10 + 12);
+    expect(expansionMargin(true, baseOverlap)).toBe(baseOverlap + EXPANSION_GAP_PX);
   });
 
   it('returns base overlap for non-neighbor', () => {
@@ -58,12 +59,12 @@ describe('expansionMargin', () => {
   });
 
   it('works with positive gap values', () => {
-    expect(expansionMargin(true, 2)).toBe(14);
+    expect(expansionMargin(true, 2)).toBe(2 + EXPANSION_GAP_PX);
     expect(expansionMargin(false, 2)).toBe(2);
   });
 
   it('works with zero overlap', () => {
-    expect(expansionMargin(true, 0)).toBe(12);
+    expect(expansionMargin(true, 0)).toBe(EXPANSION_GAP_PX);
     expect(expansionMargin(false, 0)).toBe(0);
   });
 });
