@@ -95,8 +95,9 @@ bun run build && bun run check && bun run test
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
+| `TutorialWrapper` | `src/components/tutorial/TutorialWrapper.tsx` | Combines TutorialProvider + i18n; wraps game page with `gameName` and `steps` props |
 | `TutorialButton` | `src/components/tutorial/TutorialButton.tsx` | Shared tutorial start button |
-| `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; wraps game page, renders overlay |
+| `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; renders overlay (used internally by TutorialWrapper) |
 | `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight |
 | `useTutorial` | `src/hooks/useTutorial.ts` | State management (step progression, localStorage, resume/restart) |
 | `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints for BlackJack, Poker, Hearts, Spades |
@@ -108,4 +109,4 @@ bun run build && bun run check && bun run test
 1. Define `TutorialStep[]` array with `target` (CSS selector using `data-tutorial` attributes), `messageKey`, `placement`, and `advanceOn`
 2. Add `data-tutorial="<step-name>"` attributes to the game page's key UI elements
 3. Add tutorial step text to `src/i18n/locales/{ja,en}/<game>.json` under a `tutorial` key
-4. Wrap the page content with `<TutorialProvider config={config} translateMessage={t}>` and import `TutorialButton` from `../components/tutorial/TutorialButton`
+4. Wrap the page content with `<TutorialWrapper gameName="<game>" steps={steps}>` and import `TutorialButton` from `../components/tutorial/TutorialButton`
