@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// OhHellCui オー・ヘルCUIクラス
-type OhHellCui struct {
-	oc *controller.OhHellCuiController
-}
-
 // NewOhHellCui コンストラクタ
-func NewOhHellCui() *OhHellCui {
+func NewOhHellCui() *genericCuiGame {
 	config := domain.DefaultOhHellConfig()
 	players := []*domain.OhHellPlayer{
 		domain.NewOhHellPlayer(true),
@@ -23,17 +18,8 @@ func NewOhHellCui() *OhHellCui {
 		domain.NewOhHellPlayer(false),
 	}
 	ohHell := domain.NewOhHell(domain.NewTrumpCards(0), players, config)
-	return &OhHellCui{
-		oc: controller.NewOhHellCuiController(usecase.NewOhHellInteractor(ohHell, new(presenter.OhHellCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *OhHellCui) Controller() CuiExecer { return cui.oc }
-
-// HelpLines returns the game's help lines.
-func (cui *OhHellCui) HelpLines() []string {
-	return []string{
+	oc := controller.NewOhHellCuiController(usecase.NewOhHellInteractor(ohHell, new(presenter.OhHellCuiPresenter)))
+	return newCuiGame(oc, []string{
 		i18n.T("ohhell.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -51,10 +37,5 @@ func (cui *OhHellCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *OhHellCui) Exec() {
-	RunCuiLoop(cui.oc, cui.HelpLines())
+	})
 }

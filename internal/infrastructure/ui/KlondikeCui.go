@@ -8,25 +8,11 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// KlondikeCui クロンダイクCUIクラス
-type KlondikeCui struct {
-	kc *controller.KlondikeCuiController
-}
-
 // NewKlondikeCui コンストラクタ
-func NewKlondikeCui() *KlondikeCui {
+func NewKlondikeCui() *genericCuiGame {
 	klondike := domain.NewKlondike(domain.NewTrumpCards(0))
-	return &KlondikeCui{
-		kc: controller.NewKlondikeCuiController(usecase.NewKlondikeInteractor(klondike, new(presenter.KlondikeCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *KlondikeCui) Controller() CuiExecer { return cui.kc }
-
-// HelpLines returns the game's help lines.
-func (cui *KlondikeCui) HelpLines() []string {
-	return []string{
+	kc := controller.NewKlondikeCuiController(usecase.NewKlondikeInteractor(klondike, new(presenter.KlondikeCuiPresenter)))
+	return newCuiGame(kc, []string{
 		i18n.T("klondike.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -44,10 +30,5 @@ func (cui *KlondikeCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *KlondikeCui) Exec() {
-	RunCuiLoop(cui.kc, cui.HelpLines())
+	})
 }

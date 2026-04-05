@@ -8,26 +8,12 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// IndianPokerCui インディアンポーカーCUIクラス
-type IndianPokerCui struct {
-	ipc *controller.IndianPokerCuiController
-}
-
 // NewIndianPokerCui コンストラクタ
-func NewIndianPokerCui() *IndianPokerCui {
+func NewIndianPokerCui() *genericCuiGame {
 	cfg := domain.DefaultIndianPokerConfig()
 	ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
-	return &IndianPokerCui{
-		ipc: controller.NewIndianPokerCuiController(usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *IndianPokerCui) Controller() CuiExecer { return cui.ipc }
-
-// HelpLines returns the game's help lines.
-func (cui *IndianPokerCui) HelpLines() []string {
-	return []string{
+	ipc := controller.NewIndianPokerCuiController(usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerCuiPresenter)))
+	return newCuiGame(ipc, []string{
 		i18n.T("indianpoker.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -47,10 +33,5 @@ func (cui *IndianPokerCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *IndianPokerCui) Exec() {
-	RunCuiLoop(cui.ipc, cui.HelpLines())
+	})
 }

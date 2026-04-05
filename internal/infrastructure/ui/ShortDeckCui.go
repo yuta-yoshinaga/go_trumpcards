@@ -8,26 +8,12 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// ShortDeckCui ショートデックCUIクラス
-type ShortDeckCui struct {
-	sc *controller.ShortDeckCuiController
-}
-
 // NewShortDeckCui コンストラクタ
-func NewShortDeckCui() *ShortDeckCui {
+func NewShortDeckCui() *genericCuiGame {
 	cfg := domain.DefaultShortDeckConfig()
 	sd := domain.NewShortDeck(domain.NewTrumpCardsShortDeck(), domain.NewShortDeckPlayersForTable(cfg.TableSize), cfg)
-	return &ShortDeckCui{
-		sc: controller.NewShortDeckCuiController(usecase.NewShortDeckInteractor(sd, new(presenter.ShortDeckCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *ShortDeckCui) Controller() CuiExecer { return cui.sc }
-
-// HelpLines returns the game's help lines.
-func (cui *ShortDeckCui) HelpLines() []string {
-	return []string{
+	sc := controller.NewShortDeckCuiController(usecase.NewShortDeckInteractor(sd, new(presenter.ShortDeckCuiPresenter)))
+	return newCuiGame(sc, []string{
 		i18n.T("shortdeck.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -54,10 +40,5 @@ func (cui *ShortDeckCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *ShortDeckCui) Exec() {
-	RunCuiLoop(cui.sc, cui.HelpLines())
+	})
 }

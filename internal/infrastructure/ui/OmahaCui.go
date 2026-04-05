@@ -8,26 +8,12 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// OmahaCui オマハホールデムCUIクラス
-type OmahaCui struct {
-	oc *controller.OmahaCuiController
-}
-
 // NewOmahaCui コンストラクタ
-func NewOmahaCui() *OmahaCui {
+func NewOmahaCui() *genericCuiGame {
 	cfg := domain.DefaultOmahaConfig()
 	omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
-	return &OmahaCui{
-		oc: controller.NewOmahaCuiController(usecase.NewOmahaInteractor(omaha, new(presenter.OmahaCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *OmahaCui) Controller() CuiExecer { return cui.oc }
-
-// HelpLines returns the game's help lines.
-func (cui *OmahaCui) HelpLines() []string {
-	return []string{
+	oc := controller.NewOmahaCuiController(usecase.NewOmahaInteractor(omaha, new(presenter.OmahaCuiPresenter)))
+	return newCuiGame(oc, []string{
 		i18n.T("omaha.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -54,10 +40,5 @@ func (cui *OmahaCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *OmahaCui) Exec() {
-	RunCuiLoop(cui.oc, cui.HelpLines())
+	})
 }

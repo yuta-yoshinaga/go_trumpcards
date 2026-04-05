@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// DaifugoCui 大富豪CUIクラス
-type DaifugoCui struct {
-	dgc *controller.DaifugoCuiController
-}
-
 // NewDaifugoCui コンストラクタ
-func NewDaifugoCui() *DaifugoCui {
+func NewDaifugoCui() *genericCuiGame {
 	config := domain.DefaultDaifugoConfig()
 	players := []*domain.DaifugoPlayer{
 		domain.NewDaifugoPlayer(true),
@@ -23,19 +18,10 @@ func NewDaifugoCui() *DaifugoCui {
 		domain.NewDaifugoPlayer(false),
 	}
 	daifugo := domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config)
-	return &DaifugoCui{
-		dgc: controller.NewDaifugoCuiController(
-			usecase.NewDaifugoInteractor(daifugo, new(presenter.DaifugoCuiPresenter)),
-		),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *DaifugoCui) Controller() CuiExecer { return cui.dgc }
-
-// HelpLines returns the game's help lines.
-func (cui *DaifugoCui) HelpLines() []string {
-	return []string{
+	dgc := controller.NewDaifugoCuiController(
+		usecase.NewDaifugoInteractor(daifugo, new(presenter.DaifugoCuiPresenter)),
+	)
+	return newCuiGame(dgc, []string{
 		i18n.T("daifugo.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -51,10 +37,5 @@ func (cui *DaifugoCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *DaifugoCui) Exec() {
-	RunCuiLoop(cui.dgc, cui.HelpLines())
+	})
 }

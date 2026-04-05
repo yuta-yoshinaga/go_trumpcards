@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// MemoryCui 神経衰弱CUIクラス
-type MemoryCui struct {
-	mc *controller.MemoryCuiController
-}
-
 // NewMemoryCui コンストラクタ
-func NewMemoryCui() *MemoryCui {
+func NewMemoryCui() *genericCuiGame {
 	config := domain.DefaultMemoryConfig()
 	players := []*domain.MemoryPlayer{
 		domain.NewMemoryPlayer(true),
@@ -23,17 +18,8 @@ func NewMemoryCui() *MemoryCui {
 		domain.NewMemoryPlayer(false),
 	}
 	memory := domain.NewMemory(domain.NewTrumpCards(0), players, config)
-	return &MemoryCui{
-		mc: controller.NewMemoryCuiController(usecase.NewMemoryInteractor(memory, new(presenter.MemoryCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *MemoryCui) Controller() CuiExecer { return cui.mc }
-
-// HelpLines returns the game's help lines.
-func (cui *MemoryCui) HelpLines() []string {
-	return []string{
+	mc := controller.NewMemoryCuiController(usecase.NewMemoryInteractor(memory, new(presenter.MemoryCuiPresenter)))
+	return newCuiGame(mc, []string{
 		i18n.T("memory.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -48,10 +34,5 @@ func (cui *MemoryCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *MemoryCui) Exec() {
-	RunCuiLoop(cui.mc, cui.HelpLines())
+	})
 }

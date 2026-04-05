@@ -8,26 +8,12 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// PineappleCui パイナップルポーカーCUIクラス
-type PineappleCui struct {
-	pc *controller.PineappleCuiController
-}
-
 // NewPineappleCui コンストラクタ
-func NewPineappleCui() *PineappleCui {
+func NewPineappleCui() *genericCuiGame {
 	cfg := domain.DefaultPineappleConfig()
 	pineapple := domain.NewPineapple(domain.NewTrumpCards(0), domain.NewPineapplePlayersForTable(cfg.TableSize), cfg)
-	return &PineappleCui{
-		pc: controller.NewPineappleCuiController(usecase.NewPineappleInteractor(pineapple, new(presenter.PineappleCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *PineappleCui) Controller() CuiExecer { return cui.pc }
-
-// HelpLines returns the game's help lines.
-func (cui *PineappleCui) HelpLines() []string {
-	return []string{
+	pc := controller.NewPineappleCuiController(usecase.NewPineappleInteractor(pineapple, new(presenter.PineappleCuiPresenter)))
+	return newCuiGame(pc, []string{
 		i18n.T("pineapple.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -55,10 +41,5 @@ func (cui *PineappleCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *PineappleCui) Exec() {
-	RunCuiLoop(cui.pc, cui.HelpLines())
+	})
 }

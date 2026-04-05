@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// PokerCui ポーカーCUIクラス
-type PokerCui struct {
-	pc *controller.PokerCuiController
-}
-
 // NewPokerCui コンストラクタ
-func NewPokerCui() *PokerCui {
+func NewPokerCui() *genericCuiGame {
 	config := domain.DefaultPokerConfig()
 	players := []*domain.PokerPlayer{
 		domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
@@ -23,17 +18,8 @@ func NewPokerCui() *PokerCui {
 		domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
 	}
 	poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
-	return &PokerCui{
-		pc: controller.NewPokerCuiController(usecase.NewPokerInteractor(poker, new(presenter.PokerCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *PokerCui) Controller() CuiExecer { return cui.pc }
-
-// HelpLines returns the game's help lines.
-func (cui *PokerCui) HelpLines() []string {
-	return []string{
+	pc := controller.NewPokerCuiController(usecase.NewPokerInteractor(poker, new(presenter.PokerCuiPresenter)))
+	return newCuiGame(pc, []string{
 		i18n.T("poker.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -54,10 +40,5 @@ func (cui *PokerCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *PokerCui) Exec() {
-	RunCuiLoop(cui.pc, cui.HelpLines())
+	})
 }
