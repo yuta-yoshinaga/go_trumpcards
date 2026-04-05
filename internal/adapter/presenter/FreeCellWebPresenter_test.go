@@ -74,6 +74,7 @@ func TestFreeCellWebPresenterOutputStalemate(t *testing.T) {
 	err := json.Unmarshal([]byte(result), &out)
 	assert.NoError(t, err)
 	assert.True(t, out.IsStalemate)
+	assert.Equal(t, -1, out.UndoToEscape)
 	assert.Equal(t, "freecell.stalemate", out.MessageCode)
 }
 

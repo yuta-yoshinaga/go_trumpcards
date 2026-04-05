@@ -59,6 +59,16 @@ func (_m *MockSpiderGame) CanUndo() bool {
 	return ret.Bool(0)
 }
 
+func (_m *MockSpiderGame) UndoToEscape() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+func (_m *MockSpiderGame) UndoN(n int) error {
+	ret := _m.Called(n)
+	return ret.Error(0)
+}
+
 func (_m *MockSpiderGame) GetPhase() domain.SpiderPhase {
 	ret := _m.Called()
 	return ret.Get(0).(domain.SpiderPhase)

@@ -119,6 +119,26 @@ func TestGolfWebController_Remove_MissingParams(t *testing.T) {
 	rec.CodeIs(http.StatusBadRequest)
 }
 
+func TestGolfWebController_UndoN(t *testing.T) {
+	giMock, ctrl, mockOutput := setupGolfWebTest(t)
+	giMock.On("UndoN", 3).Return(mockOutput)
+
+	t.Run("undo_n with valid n", func(t *testing.T) {
+		n := 3
+		rec := golfPost(t, ctrl.Exec, &controller.GolfWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1", N: &n},
+		})
+		rec.CodeIs(http.StatusOK)
+	})
+
+	t.Run("undo_n with missing n", func(t *testing.T) {
+		rec := golfPost(t, ctrl.Exec, &controller.GolfWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1"},
+		})
+		rec.CodeIs(http.StatusBadRequest)
+	})
+}
+
 func TestGolfWebController_UnknownCommand(t *testing.T) {
 	_, ctrl, _ := setupGolfWebTest(t)
 

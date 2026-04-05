@@ -142,6 +142,26 @@ func TestPyramidWebController_RemoveNoCard1(t *testing.T) {
 	rec.CodeIs(http.StatusBadRequest)
 }
 
+func TestPyramidWebController_UndoN(t *testing.T) {
+	piMock, ctrl, mockOutput := setupPyramidWebTest(t)
+	piMock.On("UndoN", 3).Return(mockOutput)
+
+	t.Run("undo_n with valid n", func(t *testing.T) {
+		n := 3
+		rec := pyramidPostInput(t, ctrl.Exec, controller.PyramidWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1", N: &n},
+		})
+		rec.CodeIs(http.StatusOK)
+	})
+
+	t.Run("undo_n with missing n", func(t *testing.T) {
+		rec := pyramidPostInput(t, ctrl.Exec, controller.PyramidWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1"},
+		})
+		rec.CodeIs(http.StatusBadRequest)
+	})
+}
+
 func TestPyramidWebController_UnknownCommand(t *testing.T) {
 	_, ctrl, _ := setupPyramidWebTest(t)
 	rec := pyramidPost(t, ctrl.Exec, `{"command":"xyz","sessionId":"s1"}`)

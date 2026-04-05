@@ -18,6 +18,7 @@ func (p *FreeCellWebPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 	resObj.MoveCount = f.GetMoveCount()
 	resObj.CanUndo = f.CanUndo()
 	resObj.IsStalemate = f.IsStalemate()
+	resObj.UndoToEscape = f.UndoToEscape()
 
 	// タブロー
 	tableau := f.GetTableau()
@@ -78,6 +79,7 @@ func (p *FreeCellWebPresenter) HintOutput(f interfaces.FreeCellGame) string {
 	resObj.Phase = int(f.GetPhase())
 	resObj.MoveCount = f.GetMoveCount()
 	resObj.CanUndo = f.CanUndo()
+	resObj.UndoToEscape = f.UndoToEscape()
 	resObj.FreeCells = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)

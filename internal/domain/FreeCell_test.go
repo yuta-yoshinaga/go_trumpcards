@@ -1033,3 +1033,80 @@ func TestFreeCellCanPlaceOnFoundation(t *testing.T) {
 		assert.False(t, f.canPlaceOnFoundation(makeCard(CardDesignHeart, 3), 2))
 	})
 }
+
+// --- UndoToEscape / UndoN tests ---
+
+func TestFreeCellUndoToEscape_NotInStalemate(t *testing.T) {
+	f := setupPlayingFreeCell()
+	assert.Equal(t, 0, f.UndoToEscape())
+}
+
+func TestFreeCellUndoToEscape_StalemateNoHistory(t *testing.T) {
+	f := setupPlayingFreeCell()
+	f.SetIsStalemate(true)
+	assert.Equal(t, -1, f.UndoToEscape())
+}
+
+func TestFreeCellUndoToEscape_StalemateWithEscape(t *testing.T) {
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+
+	// Make a move to create a non-stalemate history entry
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 1)}
+	err := f.MoveTableauToFoundation(0)
+	assert.NoError(t, err)
+
+	// Now set stalemate
+	f.SetIsStalemate(true)
+	n := f.UndoToEscape()
+	assert.Equal(t, 1, n)
+}
+
+func TestFreeCellUndoToEscape_AllHistoryStalemate(t *testing.T) {
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+
+	// Make a move, then set stalemate on the game, make another move
+	f.SetIsStalemate(true)
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 1)}
+	err := f.MoveTableauToFoundation(0)
+	assert.NoError(t, err)
+	// History snapshot was taken while isStalemate was true
+
+	f.SetIsStalemate(true)
+	assert.Equal(t, -1, f.UndoToEscape())
+}
+
+func TestFreeCellUndoN_Zero(t *testing.T) {
+	f := setupPlayingFreeCell()
+	err := f.UndoN(0)
+	assert.NoError(t, err)
+}
+
+func TestFreeCellUndoN_Valid(t *testing.T) {
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+
+	// Make two moves
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 1)}
+	_ = f.MoveTableauToFoundation(0)
+	f.tableau[1] = []*Card{makeCard(CardDesignHeart, 1)}
+	_ = f.MoveTableauToFoundation(1)
+
+	err := f.UndoN(2)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(f.foundation[0]))
+	assert.Equal(t, 0, len(f.foundation[1]))
+}
+
+func TestFreeCellUndoN_Excessive(t *testing.T) {
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 1)}
+	_ = f.MoveTableauToFoundation(0)
+
+	err := f.UndoN(5)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "undo step")
+}

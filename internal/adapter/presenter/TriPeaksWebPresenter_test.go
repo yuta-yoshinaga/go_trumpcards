@@ -21,6 +21,7 @@ func setupTriPeaksWebMockDefaults(tg *interfaces.MockTriPeaksGame) {
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
+	tg.On("UndoToEscape").Return(0).Maybe()
 	tg.On("AllRemoved").Return(false).Maybe()
 
 	var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
@@ -89,6 +90,7 @@ func TestTriPeaksWebPresenterOutput_Stalemate(t *testing.T) {
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("IsStalemate").Return(true).Maybe()
+	tg.On("UndoToEscape").Return(-1).Maybe()
 	var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
 	tg.On("GetLayout").Return(layout).Maybe()
 	for r := range domain.TriPeaksRowCnt {
@@ -114,6 +116,7 @@ func TestTriPeaksWebPresenterOutput_GameClear(t *testing.T) {
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
+	tg.On("UndoToEscape").Return(0).Maybe()
 	var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
 	tg.On("GetLayout").Return(layout).Maybe()
 	for r := range domain.TriPeaksRowCnt {
@@ -140,6 +143,7 @@ func TestTriPeaksWebPresenterOutput_GameOver(t *testing.T) {
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
+	tg.On("UndoToEscape").Return(0).Maybe()
 	var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
 	tg.On("GetLayout").Return(layout).Maybe()
 	for r := range domain.TriPeaksRowCnt {
@@ -163,6 +167,7 @@ func TestTriPeaksWebPresenterHintOutput(t *testing.T) {
 		tg.On("GetMoveCount").Return(0)
 		tg.On("GetStockCount").Return(23)
 		tg.On("CanUndo").Return(false)
+		tg.On("UndoToEscape").Return(0)
 
 		p := &TriPeaksWebPresenter{}
 		result := p.HintOutput(tg)
@@ -180,6 +185,7 @@ func TestTriPeaksWebPresenterHintOutput(t *testing.T) {
 		tg.On("GetMoveCount").Return(0)
 		tg.On("GetStockCount").Return(0)
 		tg.On("CanUndo").Return(false)
+		tg.On("UndoToEscape").Return(0)
 
 		p := &TriPeaksWebPresenter{}
 		result := p.HintOutput(tg)

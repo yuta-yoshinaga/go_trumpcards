@@ -1227,3 +1227,49 @@ func TestKlondike_Score(t *testing.T) {
 		assert.Equal(t, domain.KlondikeScoringVegas, k.GetScoringMode())
 	})
 }
+
+// --- UndoToEscape / UndoN tests ---
+
+func TestKlondike_UndoToEscape_NotInStalemate(t *testing.T) {
+	k := setupPlayingKlondike()
+	assert.Equal(t, 0, k.UndoToEscape())
+}
+
+func TestKlondike_UndoToEscape_StalemateNoHistory(t *testing.T) {
+	k := setupPlayingKlondike()
+	k.SetIsStalemate(true)
+	assert.Equal(t, -1, k.UndoToEscape())
+}
+
+func TestKlondike_UndoToEscape_StalemateWithEscape(t *testing.T) {
+	k := setupPlayingKlondike()
+	// Make a move to create history
+	err := k.Draw()
+	assert.NoError(t, err)
+	// Set stalemate after the move
+	k.SetIsStalemate(true)
+	n := k.UndoToEscape()
+	assert.Equal(t, 1, n)
+}
+
+func TestKlondike_UndoN_Zero(t *testing.T) {
+	k := setupPlayingKlondike()
+	err := k.UndoN(0)
+	assert.NoError(t, err)
+}
+
+func TestKlondike_UndoN_Valid(t *testing.T) {
+	k := setupPlayingKlondike()
+	_ = k.Draw()
+	_ = k.Draw()
+	err := k.UndoN(2)
+	assert.NoError(t, err)
+}
+
+func TestKlondike_UndoN_Excessive(t *testing.T) {
+	k := setupPlayingKlondike()
+	_ = k.Draw()
+	err := k.UndoN(5)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "undo step")
+}

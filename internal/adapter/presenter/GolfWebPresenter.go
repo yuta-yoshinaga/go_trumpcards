@@ -19,6 +19,7 @@ func (pr *GolfWebPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 	resObj.StockCount = g.GetStockCount()
 	resObj.CanUndo = g.CanUndo()
 	resObj.IsStalemate = g.IsStalemate()
+	resObj.UndoToEscape = g.UndoToEscape()
 
 	// ウェイスト
 	waste := g.GetWaste()
@@ -85,6 +86,7 @@ func (pr *GolfWebPresenter) HintOutput(g interfaces.GolfGame) string {
 	resObj.MoveCount = g.GetMoveCount()
 	resObj.StockCount = g.GetStockCount()
 	resObj.CanUndo = g.CanUndo()
+	resObj.UndoToEscape = g.UndoToEscape()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Layout = make([][]*controller.GolfWebOutputCard, 0)
 

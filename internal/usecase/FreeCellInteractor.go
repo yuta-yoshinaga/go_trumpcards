@@ -32,6 +32,8 @@ type FreeCellInteractorIF interface {
 	ActionLog() string
 	// Undo アンドゥ
 	Undo() string
+	// UndoN n回連続アンドゥ
+	UndoN(n int) string
 }
 
 // FreeCellInteractor フリーセルインタラクタークラス
@@ -99,6 +101,11 @@ func (fi *FreeCellInteractor) ActionLog() string {
 // Undo アンドゥ
 func (fi *FreeCellInteractor) Undo() string {
 	return execAndPresent(fi.f, fi.fp, fi.f.Undo)
+}
+
+// UndoN n回連続アンドゥ
+func (fi *FreeCellInteractor) UndoN(n int) string {
+	return execAndPresent(fi.f, fi.fp, func() error { return fi.f.UndoN(n) })
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.

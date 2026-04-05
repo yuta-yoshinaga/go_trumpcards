@@ -34,6 +34,8 @@ type KlondikeInteractorIF interface {
 	ActionLog() string
 	// Undo アンドゥ
 	Undo() string
+	// UndoN n回連続アンドゥ
+	UndoN(n int) string
 }
 
 // KlondikeInteractor クロンダイクインタラクタークラス
@@ -106,6 +108,11 @@ func (ki *KlondikeInteractor) ActionLog() string {
 // Undo アンドゥ
 func (ki *KlondikeInteractor) Undo() string {
 	return execAndPresent(ki.k, ki.kp, ki.k.Undo)
+}
+
+// UndoN n回連続アンドゥ
+func (ki *KlondikeInteractor) UndoN(n int) string {
+	return execAndPresent(ki.k, ki.kp, func() error { return ki.k.UndoN(n) })
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.

@@ -45,18 +45,19 @@ type KlondikeWebOutputHint struct {
 
 // KlondikeWebOutput クロンダイクWebアウトプット
 type KlondikeWebOutput struct {
-	Tableau     [][]*KlondikeWebOutputTableauCard `json:"tableau"`
-	StockCount  int                               `json:"stockCount"`
-	Waste       []*WebOutputCard                  `json:"waste"`
-	Foundation  [][]*WebOutputCard                `json:"foundation"`
-	Phase       int                               `json:"phase"`
-	MoveCount   int                               `json:"moveCount"`
-	DrawCount   int                               `json:"drawCount"`
-	CanUndo     bool                              `json:"canUndo"`
-	IsStalemate bool                              `json:"isStalemate"`
-	Score       int                               `json:"score"`
-	ScoringMode int                               `json:"scoringMode"`
-	Hint        *KlondikeWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*KlondikeWebOutputTableauCard `json:"tableau"`
+	StockCount   int                               `json:"stockCount"`
+	Waste        []*WebOutputCard                  `json:"waste"`
+	Foundation   [][]*WebOutputCard                `json:"foundation"`
+	Phase        int                               `json:"phase"`
+	MoveCount    int                               `json:"moveCount"`
+	DrawCount    int                               `json:"drawCount"`
+	CanUndo      bool                              `json:"canUndo"`
+	IsStalemate  bool                              `json:"isStalemate"`
+	UndoToEscape int                               `json:"undoToEscape"`
+	Score        int                               `json:"score"`
+	ScoringMode  int                               `json:"scoringMode"`
+	Hint         *KlondikeWebOutputHint            `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -111,6 +112,12 @@ func klondikeDispatch(bc *baseController, w http.ResponseWriter, ki usecase.Klon
 		bc.writePresenterResponse(w, ki.AutoComplete())
 	case "u", "undo":
 		bc.writePresenterResponse(w, ki.Undo())
+	case "undo_n":
+		if param.N == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+			return true
+		}
+		bc.writePresenterResponse(w, ki.UndoN(*param.N))
 	default:
 		return dispatchHintAndLog(param.Command, bc, w, ki.Hint, ki.ActionLog)
 	}

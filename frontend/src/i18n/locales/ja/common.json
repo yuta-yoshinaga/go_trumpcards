@@ -288,5 +288,9 @@
     "unknownCommandWithSuggestion": "不明なコマンド: {{cmd}}。もしかして: {{suggestion}}",
     "emptyInput": "コマンドを入力してください。'help' でヘルプを表示",
     "helpCommon": "共通コマンド: r/reset (リセット), help/? (ヘルプ), clear (ログクリア)"
+  },
+  "solitaire": {
+    "undoToEscape": "{{n}}手前に戻る",
+    "noEscape": "戻れる手がありません。リセットしてください。"
   }
 }

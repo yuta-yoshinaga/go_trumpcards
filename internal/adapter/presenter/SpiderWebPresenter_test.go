@@ -22,6 +22,7 @@ func setupSpiderWebMockDefaults(sg *interfaces.MockSpiderGame) {
 	sg.On("GetScore").Return(500).Maybe()
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit).Maybe()
 	sg.On("IsStalemate").Return(false).Maybe()
+	sg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.SpiderTableauCnt][]*domain.SpiderTableauCard
 	for i := 0; i < domain.SpiderTableauCnt; i++ {
@@ -114,7 +115,9 @@ func TestSpiderWebPresenter_Output_Stalemate(t *testing.T) {
 	sg := new(interfaces.MockSpiderGame)
 	setupSpiderWebMockDefaults(sg)
 	sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
+	sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "UndoToEscape")
 	sg.On("IsStalemate").Return(true)
+	sg.On("UndoToEscape").Return(-1)
 
 	p := new(SpiderWebPresenter)
 	result := parseSpiderOutput(t, p.Output(sg, nil))
@@ -160,6 +163,7 @@ func TestSpiderWebPresenter_HintOutput(t *testing.T) {
 		sg.On("GetScore").Return(450)
 		sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
 		sg.On("IsStalemate").Return(false)
+		sg.On("UndoToEscape").Return(0)
 
 		p := new(SpiderWebPresenter)
 		result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -181,6 +185,7 @@ func TestSpiderWebPresenter_HintOutput(t *testing.T) {
 		sg.On("GetScore").Return(500)
 		sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
 		sg.On("IsStalemate").Return(false)
+		sg.On("UndoToEscape").Return(0)
 
 		p := new(SpiderWebPresenter)
 		result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -200,6 +205,7 @@ func TestSpiderWebPresenter_HintOutput_CanUndo(t *testing.T) {
 	sg.On("GetScore").Return(500)
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
 	sg.On("IsStalemate").Return(false)
+	sg.On("UndoToEscape").Return(0)
 
 	p := new(SpiderWebPresenter)
 	result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -217,6 +223,7 @@ func TestSpiderWebPresenter_HintOutput_Score(t *testing.T) {
 	sg.On("GetScore").Return(200)
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
 	sg.On("IsStalemate").Return(false)
+	sg.On("UndoToEscape").Return(0)
 
 	p := new(SpiderWebPresenter)
 	result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -234,6 +241,7 @@ func TestSpiderWebPresenter_HintOutput_Difficulty(t *testing.T) {
 	sg.On("GetScore").Return(500)
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty4Suit)
 	sg.On("IsStalemate").Return(false)
+	sg.On("UndoToEscape").Return(0)
 
 	p := new(SpiderWebPresenter)
 	result := parseSpiderOutput(t, p.HintOutput(sg))

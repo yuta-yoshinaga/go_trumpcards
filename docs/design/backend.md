@@ -810,6 +810,8 @@ classDiagram
         +Move(from string, fromCol int, fromIdx int, to string, toCol int) error
         +Hint() *KlondikeHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +Autocomplete() error
         +GiveUp()
         +Phase() KlondikePhase
@@ -826,6 +828,8 @@ classDiagram
         +Move(from string, fromCol int, fromIdx int, to string, toCol int) error
         +Hint() *FreeCellHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +Autocomplete() error
         +GiveUp()
         +Phase() FreeCellPhase
@@ -844,6 +848,8 @@ classDiagram
         +Move(fromCol int, fromIdx int, toCol int) error
         +Hint() *SpiderHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +Autocomplete() error
         +GiveUp()
         +Phase() SpiderPhase
@@ -864,6 +870,8 @@ classDiagram
         +RemoveWasteKing() error
         +GetHint() *PyramidHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +GiveUp()
         +Phase() PyramidPhase
     }
@@ -880,6 +888,8 @@ classDiagram
         +Remove(row int, col int) error
         +GetHint() *TriPeaksHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +GiveUp()
         +Phase() TriPeaksPhase
     }
@@ -896,6 +906,8 @@ classDiagram
         +Remove(col int) error
         +GetHint() *GolfHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +GiveUp()
         +Phase() GolfPhase
     }

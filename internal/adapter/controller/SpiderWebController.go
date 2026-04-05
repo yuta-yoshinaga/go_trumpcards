@@ -49,6 +49,7 @@ type SpiderWebOutput struct {
 	MoveCount      int                             `json:"moveCount"`
 	CanUndo        bool                            `json:"canUndo"`
 	IsStalemate    bool                            `json:"isStalemate"`
+	UndoToEscape   int                             `json:"undoToEscape"`
 	Score          int                             `json:"score"`
 	Difficulty     int                             `json:"difficulty"`
 	Hint           *SpiderWebOutputHint            `json:"hint,omitempty"`
@@ -101,6 +102,12 @@ func spiderDispatch(bc *baseController, w http.ResponseWriter, si usecase.Spider
 		bc.writePresenterResponse(w, si.AutoComplete())
 	case "u", "undo":
 		bc.writePresenterResponse(w, si.Undo())
+	case "undo_n":
+		if param.N == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+			return true
+		}
+		bc.writePresenterResponse(w, si.UndoN(*param.N))
 	default:
 		return dispatchHintAndLog(param.Command, bc, w, si.Hint, si.ActionLog)
 	}

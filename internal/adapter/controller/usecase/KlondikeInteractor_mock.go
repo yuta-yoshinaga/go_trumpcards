@@ -72,3 +72,8 @@ func (_m *MockKlondikeInteractor) Undo() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+func (_m *MockKlondikeInteractor) UndoN(n int) string {
+	ret := _m.Called(n)
+	return ret.Get(0).(string)
+}

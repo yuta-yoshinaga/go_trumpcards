@@ -27,14 +27,15 @@ type GolfWebOutputHint struct {
 
 // GolfWebOutput ゴルフソリティアWebアウトプット
 type GolfWebOutput struct {
-	Layout      [][]*GolfWebOutputCard `json:"layout"`
-	StockCount  int                    `json:"stockCount"`
-	Waste       []*WebOutputCard       `json:"waste"`
-	Phase       int                    `json:"phase"`
-	MoveCount   int                    `json:"moveCount"`
-	CanUndo     bool                   `json:"canUndo"`
-	IsStalemate bool                   `json:"isStalemate"`
-	Hint        *GolfWebOutputHint     `json:"hint,omitempty"`
+	Layout       [][]*GolfWebOutputCard `json:"layout"`
+	StockCount   int                    `json:"stockCount"`
+	Waste        []*WebOutputCard       `json:"waste"`
+	Phase        int                    `json:"phase"`
+	MoveCount    int                    `json:"moveCount"`
+	CanUndo      bool                   `json:"canUndo"`
+	IsStalemate  bool                   `json:"isStalemate"`
+	UndoToEscape int                    `json:"undoToEscape"`
+	Hint         *GolfWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -79,6 +80,12 @@ func golfDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GolfInte
 		bc.writePresenterResponse(w, gi.GiveUp())
 	case "u", "undo":
 		bc.writePresenterResponse(w, gi.Undo())
+	case "undo_n":
+		if param.N == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+			return true
+		}
+		bc.writePresenterResponse(w, gi.UndoN(*param.N))
 	default:
 		return dispatchHintAndLog(param.Command, bc, w, gi.Hint, gi.ActionLog)
 	}

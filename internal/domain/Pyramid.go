@@ -336,6 +336,29 @@ func (p *Pyramid) CanUndo() bool {
 	return len(p.history) > 0 && p.phase == PyramidPhasePlaying
 }
 
+// UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
+func (p *Pyramid) UndoToEscape() int {
+	if !p.isStalemate {
+		return 0
+	}
+	for i := len(p.history) - 1; i >= 0; i-- {
+		if !p.history[i].isStalemate {
+			return len(p.history) - i
+		}
+	}
+	return -1
+}
+
+// UndoN n回連続でアンドゥを実行する。
+func (p *Pyramid) UndoN(n int) error {
+	for i := 0; i < n; i++ {
+		if err := p.Undo(); err != nil {
+			return fmt.Errorf("undo step %d failed: %w", i+1, err)
+		}
+	}
+	return nil
+}
+
 // --- State getters/setters ---
 
 // GetPhase フェーズ取得
