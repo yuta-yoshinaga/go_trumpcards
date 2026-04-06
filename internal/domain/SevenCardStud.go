@@ -658,8 +658,7 @@ func (s *SevenCardStud) resolveShowdown() {
 				p.AddHoleCard(s.communityCard)
 				p.EvalBestHand()
 				// 一時的に追加した共有カードを除去
-				hc := p.GetHoleCards()
-				p.SetHoleCards(hc[:len(hc)-1])
+				p.holeCards = p.holeCards[:len(p.holeCards)-1]
 			} else {
 				p.EvalBestHand()
 			}
