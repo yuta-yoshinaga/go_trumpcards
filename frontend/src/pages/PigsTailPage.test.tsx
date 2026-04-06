@@ -143,8 +143,8 @@ describe('PigsTailPage', () => {
     mockExec.mockResolvedValue(stateWithCpuActions);
     renderWithProviders(<PigsTailPage />);
     await waitFor(() => {
-      expect(screen.getByText(/Penalty/)).toBeInTheDocument();
-      expect(screen.getByText(/Safe/)).toBeInTheDocument();
+      expect(screen.getByText(/ペナルティ/)).toBeInTheDocument();
+      expect(screen.getByText(/セーフ/)).toBeInTheDocument();
     });
   });
 });

@@ -108,7 +108,7 @@ function PigsTailPageContent() {
         {/* Last action indicator */}
         {state.lastDrawCard && (
           <div className={`text-center text-sm font-medium ${state.lastPenalty ? 'text-red-300' : 'text-green-300'}`}>
-            {state.lastPenalty ? 'PENALTY!' : 'SAFE'}
+            {state.lastPenalty ? t('label.penalty') : t('label.safe')}
           </div>
         )}
 
@@ -122,7 +122,7 @@ function PigsTailPageContent() {
               >
                 CPU {action.drawPlayerIdx}:{' '}
                 {action.drawnCard ? (SUIT_SYMBOLS[action.drawnCard.design] ?? '?') + action.drawnCard.value : '?'}
-                {action.penaltyFlag ? ` — Penalty! (+${action.penaltyCount})` : ' — Safe'}
+                {action.penaltyFlag ? ` — ${t('label.penalty')} (+${action.penaltyCount})` : ` — ${t('label.safe')}`}
               </div>
             ))}
           </div>

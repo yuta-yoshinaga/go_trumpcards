@@ -14,7 +14,9 @@
   "label": {
     "circle": "Circle",
     "center": "Center",
-    "cards": "cards"
+    "cards": "cards",
+    "penalty": "PENALTY!",
+    "safe": "SAFE"
   },
   "tutorial": {
     "circleArea": "This is the circle pile. Cards are placed face down in a circle.",

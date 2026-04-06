@@ -4,21 +4,19 @@ import { useGameApi } from './useGameApi';
 
 /** Hook that manages Pig's Tail game state and player actions. */
 export function usePigsTailGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(pigtailApi.exec);
-
-  const gameExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
+  const { state, loading, error, exec, retry } = useGameApi(pigtailApi.exec);
 
   useEffect(() => {
-    gameExec('reset');
-  }, [gameExec]);
+    exec('reset');
+  }, [exec]);
 
   const handleDraw = useCallback(() => {
-    gameExec('draw');
-  }, [gameExec]);
+    exec('draw');
+  }, [exec]);
 
   const handleReset = useCallback(() => {
-    gameExec('reset');
-  }, [gameExec]);
+    exec('reset');
+  }, [exec]);
 
-  return { state, loading, error, gameExec, handleDraw, handleReset, retry };
+  return { state, loading, error, handleDraw, handleReset, retry };
 }

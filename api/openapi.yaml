@@ -3332,30 +3332,72 @@ paths:
                     items:
                       type: object
                       properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        cardCount:
+                          type: integer
                         cards:
                           type: array
                           items:
                             $ref: '#/components/schemas/Card'
-                        isHuman:
-                          type: boolean
-                        penaltyCount:
-                          type: integer
-                  centerPile:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Card'
-                  circlePileCount:
+                  circleCount:
                     type: integer
-                  phase:
+                    description: Remaining cards in the circle pile
+                  centerTop:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                    description: Top card of the center pile (null if empty)
+                  centerCount:
                     type: integer
+                    description: Number of cards in the center pile
                   currentTurn:
                     type: integer
-                  winnerIdx:
+                  gameEndFlag:
+                    type: boolean
+                  loserIdx:
                     type: integer
+                    description: Index of the losing player (-1 if game not ended)
+                  lastDrawCard:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  lastPenalty:
+                    type: boolean
+                    description: Whether the last draw triggered a suit-match penalty
                   cpuActions:
                     type: array
                     items:
                       type: object
+                      properties:
+                        drawPlayerIdx:
+                          type: integer
+                        drawnCard:
+                          nullable: true
+                          allOf:
+                            - $ref: '#/components/schemas/Card'
+                        penaltyFlag:
+                          type: boolean
+                        penaltyCount:
+                          type: integer
+                        hesitationMs:
+                          type: integer
+                  humanAction:
+                    nullable: true
+                    type: object
+                    properties:
+                      drawPlayerIdx:
+                        type: integer
+                      drawnCard:
+                        nullable: true
+                        allOf:
+                          - $ref: '#/components/schemas/Card'
+                      penaltyFlag:
+                        type: boolean
+                      penaltyCount:
+                        type: integer
                   message:
                     type: string
                   messageCode:
@@ -3373,13 +3415,13 @@ paths:
                     type: array
                     items:
                       type: object
-                  centerPile:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Card'
-                  circlePileCount:
+                  circleCount:
                     type: integer
-                  phase:
+                  centerCount:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  loserIdx:
                     type: integer
                   message:
                     type: string
