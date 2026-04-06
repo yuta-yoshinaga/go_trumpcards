@@ -26,7 +26,7 @@ func (pr *ClockSolitaireCuiPresenter) Output(g interfaces.ClockSolitaireGame, la
 			pile := piles[pileIdx]
 			label := labels[i]
 			fmt.Fprintf(b, "[%s時] ", label)
-			for _, pc := range pile[:domain.ClockSolitaireCardsPerPile] {
+			for _, pc := range pile {
 				if pc.FaceUp {
 					fmt.Fprintf(b, "%s ", cuiCardStr(pc.Card))
 				} else {
@@ -40,7 +40,7 @@ func (pr *ClockSolitaireCuiPresenter) Output(g interfaces.ClockSolitaireGame, la
 		b.WriteString("----------\n")
 		centerPile := piles[domain.ClockSolitaireKingPileIdx]
 		b.WriteString("[中央K] ")
-		for _, pc := range centerPile[:domain.ClockSolitaireCardsPerPile] {
+		for _, pc := range centerPile {
 			if pc.FaceUp {
 				fmt.Fprintf(b, "%s ", cuiCardStr(pc.Card))
 			} else {

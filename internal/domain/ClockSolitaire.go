@@ -147,14 +147,13 @@ func (cs *ClockSolitaire) checkGameClear() bool {
 	return true
 }
 
-// flipTopFaceDown 指定パイルの一番上の裏向きカードをめくってcurrentCardにする
+// flipTopFaceDown 指定パイルの一番上の裏向きカードをパイルから取り出してcurrentCardにする
 func (cs *ClockSolitaire) flipTopFaceDown(pileIdx int) {
 	pile := cs.piles[pileIdx]
 	for i := len(pile) - 1; i >= 0; i-- {
 		if !pile[i].FaceUp {
-			pile[i].FaceUp = true
-			cs.faceUpCount[pileIdx]++
 			cs.currentCard = pile[i].Card
+			cs.piles[pileIdx] = append(pile[:i], pile[i+1:]...)
 			return
 		}
 	}

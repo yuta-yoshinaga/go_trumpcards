@@ -26,19 +26,18 @@ func TestClockSolitaire_Reset(t *testing.T) {
 	assert.NotNil(t, cs.GetCurrentCard())
 	assert.Empty(t, cs.GetActionLog())
 
-	// 各パイルに4枚ずつ配られている（ただし中央パイルは1枚めくられて+currentCard）
+	// 各パイルのカード数確認（中央パイルは1枚取り出してcurrentCardにした状態）
 	piles := cs.GetPiles()
 	totalCards := 0
 	for i := range ClockSolitairePileCount {
 		totalCards += len(piles[i])
 	}
-	// 52枚 = 13パイル × 4枚（中央パイルの1枚はcurrentCardとして手に持っている状態だが、
-	// flipTopFaceDownはFaceUp=trueにするだけでパイルから取り出さない）
-	assert.Equal(t, 52, totalCards)
+	// 51枚 = 中央パイル3枚 + 残り12パイル×4枚（1枚はcurrentCardとして手に持っている）
+	assert.Equal(t, 51, totalCards)
 
-	// 中央パイルの一番上が表向き
+	// Reset直後はまだ配置済みカードがないのでfaceUpCountはすべて0
 	fuc := cs.GetFaceUpCount()
-	assert.Equal(t, 1, fuc[ClockSolitaireKingPileIdx])
+	assert.Equal(t, 0, fuc[ClockSolitaireKingPileIdx])
 }
 
 func TestClockSolitaire_Reset_ClearsState(t *testing.T) {
@@ -64,8 +63,8 @@ func TestClockSolitaire_Step_PlacesCardAtCorrectPile(t *testing.T) {
 	err := cs.Step()
 	require.NoError(t, err)
 
-	// pile 0 にカードが追加されている
-	assert.Equal(t, origLen+1, len(cs.GetPiles()[0]))
+	// pile 0 にカードが配置され、flipTopFaceDownで1枚取り出されるため長さは変わらない
+	assert.Equal(t, origLen, len(cs.GetPiles()[0]))
 	lastCard := cs.GetPiles()[0][len(cs.GetPiles()[0])-1]
 	assert.Equal(t, ace, lastCard.Card)
 	assert.True(t, lastCard.FaceUp)
