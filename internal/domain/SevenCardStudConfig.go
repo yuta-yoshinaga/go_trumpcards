@@ -51,7 +51,7 @@ func DefaultSevenCardStudConfig() SevenCardStudConfig {
 		BigBet:           10,
 		InitChips:        1000,
 		BettingLimit:     BettingLimitFixed,
-		TableSize:        SevenCardStudTableSize7,
+		TableSize:        SevenCardStudTableSize4,
 		TournamentMode:   false,
 		AnteLevelHands:   10,
 		AnteMultiplier:   200,

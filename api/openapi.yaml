@@ -10388,7 +10388,7 @@ components:
             $ref: '#/components/schemas/SevenCardStudPlayer'
         communityCard:
           nullable: true
-          description: Not used in Seven Card Stud (always null)
+          description: Used as a shared community card only when the deck runs out of cards, otherwise null
         pot:
           type: integer
           description: Current main pot size

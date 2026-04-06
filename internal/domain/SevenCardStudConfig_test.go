@@ -16,7 +16,7 @@ func TestDefaultSevenCardStudConfig(t *testing.T) {
 	assert.Equal(t, 10, cfg.BigBet)
 	assert.Equal(t, 1000, cfg.InitChips)
 	assert.Equal(t, BettingLimitFixed, cfg.BettingLimit)
-	assert.Equal(t, SevenCardStudTableSize7, cfg.TableSize)
+	assert.Equal(t, SevenCardStudTableSize4, cfg.TableSize)
 	assert.False(t, cfg.TournamentMode)
 	assert.NoError(t, cfg.Validate())
 }

@@ -83,14 +83,14 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 		// ドアカード (表向き — 全プレイヤー表示)
 		doorCards := player.GetDoorCards()
 		if len(doorCards) > 0 {
-			fmt.Fprintf(&b, "  表札: %s\n", cuiCardSliceStrEmoji(doorCards))
+			fmt.Fprintf(&b, "  ドアカード: %s\n", cuiCardSliceStrEmoji(doorCards))
 		}
 
 		// ホールカード (伏せ札 — 人間のみ表示)
 		if player.GetIsHuman() && !player.GetFolded() {
 			holeCards := player.GetHoleCards()
 			if len(holeCards) > 0 {
-				fmt.Fprintf(&b, "  伏せ札: %s\n", cuiCardSliceStrEmoji(holeCards))
+				fmt.Fprintf(&b, "  ホールカード: %s\n", cuiCardSliceStrEmoji(holeCards))
 			}
 		}
 	}
