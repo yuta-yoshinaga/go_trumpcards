@@ -55,7 +55,8 @@
     "pinochle": "Pinochle",
     "golf": "Golf",
     "pigtail": "Pig's Tail",
-    "sevencardstud": "Seven Card Stud"
+    "sevencardstud": "Seven Card Stud",
+    "clocksolitaire": "Clock Solitaire"
   },
   "sound": {
     "mute": "Mute sound",
@@ -269,7 +270,10 @@
     "golf.noHint": "No hint available",
     "golf.stalemate": "No moves can lead to a win. Please undo or give up.",
     "pigtail.result.humanLose": "Game Over! You lose!",
-    "pigtail.result.cpuLose": "Game Over! CPU {{cpuId}} loses!"
+    "pigtail.result.cpuLose": "Game Over! CPU {{cpuId}} loses!",
+    "clocksolitaire.playing": "Playing",
+    "clocksolitaire.gameClear": "Game Clear! Steps: {{stepCount}}",
+    "clocksolitaire.gameOver": "Game Over"
   },
   "manual": {
     "ariaLabel": "Game Manual",

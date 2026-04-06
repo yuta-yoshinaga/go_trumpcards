@@ -1,0 +1,128 @@
+import { screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { clocksolitaireApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, ClockSolitaireCard, ClockSolitaireResponse } from '../types/card';
+import { ClockSolitairePage } from './ClockSolitairePage';
+
+vi.mock('../api/gameApi', () => ({
+  clocksolitaireApi: { exec: vi.fn() },
+  actionLogApi: { clocksolitaire: vi.fn() },
+}));
+
+const mockExec = vi.mocked(clocksolitaireApi.exec);
+
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+function makeTestPiles(): ClockSolitaireCard[][] {
+  const piles: ClockSolitaireCard[][] = [];
+  for (let i = 0; i < 13; i++) {
+    const pile: ClockSolitaireCard[] = [];
+    for (let j = 0; j < 4; j++) {
+      pile.push({ card: card('SPADE', (i % 13) + 1), faceUp: false });
+    }
+    piles.push(pile);
+  }
+  piles[12][3].faceUp = true;
+  return piles;
+}
+
+function makeFaceUpCount(): number[] {
+  const fuc = Array(13).fill(0);
+  fuc[12] = 1;
+  return fuc;
+}
+
+const playingState: ClockSolitaireResponse = {
+  piles: makeTestPiles(),
+  faceUpCount: makeFaceUpCount(),
+  phase: 0,
+  stepCount: 0,
+  currentCard: card('SPADE', 5),
+  message: '',
+  messageCode: 'clocksolitaire.playing',
+};
+
+const gameClearState: ClockSolitaireResponse = {
+  ...playingState,
+  phase: 1,
+  stepCount: 48,
+  currentCard: undefined,
+  messageCode: 'clocksolitaire.gameClear',
+  messageParams: { stepCount: '48' },
+};
+
+const gameOverState: ClockSolitaireResponse = {
+  ...playingState,
+  phase: 2,
+  stepCount: 30,
+  currentCard: undefined,
+  messageCode: 'clocksolitaire.gameOver',
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockExec.mockResolvedValue(playingState);
+});
+
+describe('ClockSolitairePage', () => {
+  it('renders heading', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+  });
+
+  it('renders step count', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByText(/ステップ数/)).toBeInTheDocument());
+  });
+
+  it('calls reset on mount', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows game clear phase name', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームクリア'));
+  });
+
+  it('shows game over phase name', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームオーバー'));
+  });
+
+  it('renders clock position labels', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByText('12')).toBeInTheDocument());
+    expect(screen.getByText('6')).toBeInTheDocument();
+  });
+
+  it('renders center K label', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByText('K')).toBeInTheDocument());
+  });
+
+  it('renders current card section when playing', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByText('手持ちカード')).toBeInTheDocument());
+  });
+
+  it('does not render current card section when game over', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームオーバー'));
+    expect(screen.queryByText('手持ちカード')).not.toBeInTheDocument();
+  });
+
+  it('renders face-up count for piles', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getAllByText('0/4').length).toBeGreaterThan(0));
+  });
+
+  it('renders playing phase indicator', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('プレイ中'));
+  });
+});

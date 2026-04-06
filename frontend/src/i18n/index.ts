@@ -6,6 +6,7 @@ import enBaccarat from './locales/en/baccarat.json';
 import enBlackjack from './locales/en/blackjack.json';
 import enBridge from './locales/en/bridge.json';
 import enCanasta from './locales/en/canasta.json';
+import enClocksolitaire from './locales/en/clocksolitaire.json';
 import enCommon from './locales/en/common.json';
 import enCrazyeights from './locales/en/crazyeights.json';
 import enCribbage from './locales/en/cribbage.json';
@@ -46,6 +47,7 @@ import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaBridge from './locales/ja/bridge.json';
 import jaCanasta from './locales/ja/canasta.json';
+import jaClocksolitaire from './locales/ja/clocksolitaire.json';
 import jaCommon from './locales/ja/common.json';
 import jaCrazyeights from './locales/ja/crazyeights.json';
 import jaCribbage from './locales/ja/cribbage.json';
@@ -128,6 +130,7 @@ i18n
         golf: jaGolf,
         pigtail: jaPigtail,
         sevencardstud: jaSevencardstud,
+        clocksolitaire: jaClocksolitaire,
         tutorial: jaTutorial,
       },
       en: {
@@ -170,6 +173,7 @@ i18n
         golf: enGolf,
         pigtail: enPigtail,
         sevencardstud: enSevencardstud,
+        clocksolitaire: enClocksolitaire,
         tutorial: enTutorial,
       },
     },
@@ -215,6 +219,7 @@ i18n
       'golf',
       'pigtail',
       'sevencardstud',
+      'clocksolitaire',
       'tutorial',
     ],
     detection: {

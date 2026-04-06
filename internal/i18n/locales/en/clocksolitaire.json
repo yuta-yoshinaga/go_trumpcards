@@ -1,0 +1,5 @@
+{
+  "helpTitle": "Clock Solitaire",
+  "helpStep": "  s                        step (flip next card)",
+  "helpAutoPlay": "  a                        auto play (run all steps)"
+}

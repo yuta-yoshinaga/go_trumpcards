@@ -239,6 +239,23 @@ func main() {
 		},
 	)
 
+	// Clock Solitaire
+	registerKV(mux, "/clocksolitaire/exec", "clocksolitaire:",
+		func() usecase.ClockSolitaireInteractorIF {
+			cs := domain.NewClockSolitaire(domain.NewTrumpCards(0))
+			return usecase.NewClockSolitaireInteractor(cs, new(presenter.ClockSolitaireWebPresenter))
+		},
+		func(data []byte) (usecase.ClockSolitaireInteractorIF, error) {
+			return usecase.RestoreClockSolitaireInteractor(data, new(presenter.ClockSolitaireWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.ClockSolitaireInteractorIF], f func() usecase.ClockSolitaireInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewClockSolitaireWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

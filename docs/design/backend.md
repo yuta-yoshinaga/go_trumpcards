@@ -993,6 +993,18 @@ classDiagram
         +Phase() GolfPhase
     }
 
+    class ClockSolitaire {
+        -trumpCards *TrumpCards
+        -piles [13][]*ClockCard
+        -currentPileIdx int
+        -stepCount int
+        -phase ClockSolitairePhase
+        +Reset()
+        +Step() error
+        +AutoPlay() error
+        +Phase() ClockSolitairePhase
+    }
+
     class Cribbage {
         -trumpCards *TrumpCards
         -players []*CribbagePlayer
@@ -1049,6 +1061,11 @@ classDiagram
         +bool Matched
     }
 
+    class ClockCard {
+        +*Card Card
+        +bool FaceUp
+    }
+
     Klondike --> "*" KlondikeTableauCard
     FreeCell --> "*" Card
     Spider --> "*" SpiderTableauCard
@@ -1058,6 +1075,7 @@ classDiagram
     Memory --> "*" MemoryBoardCard
     Memory --> "*" MemoryPlayer
     MemoryPlayer --|> GamePlayer
+    ClockSolitaire --> "*" ClockCard
 ```
 
 ### 1.3 ユースケース層 (Interactor・Presenter)
@@ -1226,6 +1244,7 @@ classDiagram
         -gofish *GoFishWebController
         -pigtail *PigsTailWebController
         -sevencardstud *SevenCardStudWebController
+        -clocksolitaire *ClockSolitaireWebController
         +Exec()
     }
 
@@ -1716,21 +1735,21 @@ stateDiagram-v2
     note right of Result : MemoryPhaseResult = 2
 ```
 
-### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf フェーズ遷移
+### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf / ClockSolitaire フェーズ遷移
 
-6つのソリティア系ゲームは共通のフェーズ構造を持ちます。
+7つのソリティア系ゲームは共通のフェーズ構造を持ちます。
 
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Move / Draw / Deal / Remove / Undo
-    Playing --> GameClear : 全カードをFoundation/Pyramid/Tableau除去完了
+    Playing --> Playing : Move / Draw / Deal / Remove / Step / Undo
+    Playing --> GameClear : 全カードをFoundation/Pyramid/Tableau除去完了または全表向き
     Playing --> GameClear : Autocomplete成功 (Klondike/FreeCell/Spider のみ)
-    Playing --> GameOver : GiveUp
+    Playing --> GameOver : GiveUp または4枚目のK表向き(ClockSolitaire)
     GameClear --> [*]
     GameOver --> [*]
 
-    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks/Golf 共通 Phase = 0
+    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks/Golf/ClockSolitaire 共通 Phase = 0
     note right of GameClear : Phase = 1
     note right of GameOver : Phase = 2
 ```
@@ -1741,7 +1760,9 @@ TriPeaks 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件は�
 
 Golf 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件はウェイストトップ±1ランク（K-Aラップ）。7列×5段の35枚全除去でクリア。
 
-各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` / `GolfPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
+ClockSolitaire 固有のアクション: `Step` / `AutoPlay`。52枚を13山に4枚ずつ配り、ランクに対応する山へ移動させる完全自動ゲーム。4枚目のKが表向きになる前に全カードが表向きになるとクリア。
+
+各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` / `GolfPhasePlaying` / `ClockSolitairePhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
 
 ### 3.9 CrazyEights フェーズ遷移
 
