@@ -287,6 +287,17 @@ input[type="search"]:focus-visible {
   animation: pulse-once 1s ease-in-out 2;
 }
 
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse,

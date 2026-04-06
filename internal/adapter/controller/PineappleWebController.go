@@ -172,19 +172,11 @@ func (p PineappleWebInput) ToConfig() (domain.PineappleConfig, error) {
 // PineappleWebController パイナップルポーカーWebコントローラークラス
 type PineappleWebController = GameWebController[usecase.PineappleInteractorIF, PineappleWebInput, *PineappleWebOutput]
 
-// NewPineappleWebController コンストラクタ
-func NewPineappleWebController(factory func() usecase.PineappleInteractorIF) *PineappleWebController {
-	return NewGameWebController(factory, newPineappleDefaultOutput, pineappleDispatch)
-}
-
-// NewPineappleWebControllerWithProvider creates a PineappleWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewPineappleWebControllerWithProvider(
-	provider SessionProvider[usecase.PineappleInteractorIF],
-	factory func() usecase.PineappleInteractorIF,
-) *PineappleWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newPineappleDefaultOutput, pineappleDispatch)
-}
+// NewPineappleWebController and NewPineappleWebControllerWithProvider are
+// the standard and provider-backed constructors for PineappleWebController.
+var NewPineappleWebController, NewPineappleWebControllerWithProvider = webControllerPair[usecase.PineappleInteractorIF, PineappleWebInput, *PineappleWebOutput](
+	newPineappleDefaultOutput, pineappleDispatch,
+)
 
 func newPineappleDefaultOutput(msg string) *PineappleWebOutput {
 	return &PineappleWebOutput{

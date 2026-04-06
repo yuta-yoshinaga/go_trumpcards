@@ -27,7 +27,7 @@ export function useSpeedGame() {
   }, [clearSelection]);
 
   // NOTE: exec here is the game API exec function from useGameApi, not child_process.exec
-  const { state, loading, error, exec: gameExec } = useGameApi(speedApi.exec, { onSuccess });
+  const { state, loading, error, exec: gameExec, retry } = useGameApi(speedApi.exec, { onSuccess });
 
   useEffect(() => {
     gameExec('reset', undefined, undefined, DEFAULT_SPEED_CONFIG);
@@ -62,5 +62,6 @@ export function useSpeedGame() {
     handlePlay,
     handleFlip,
     handleHint,
+    retry,
   };
 }

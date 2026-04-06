@@ -360,6 +360,29 @@ func (s *Spider) CanUndo() bool {
 	return len(s.history) > 0 && s.phase == SpiderPhasePlaying
 }
 
+// UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す。膠着状態でなければ0、脱出不可なら-1。
+func (s *Spider) UndoToEscape() int {
+	if !s.isStalemate {
+		return 0
+	}
+	for i := len(s.history) - 1; i >= 0; i-- {
+		if !s.history[i].isStalemate {
+			return len(s.history) - i
+		}
+	}
+	return -1
+}
+
+// UndoN n回連続でアンドゥを実行する。
+func (s *Spider) UndoN(n int) error {
+	for i := 0; i < n; i++ {
+		if err := s.Undo(); err != nil {
+			return fmt.Errorf("undo step %d failed: %w", i+1, err)
+		}
+	}
+	return nil
+}
+
 // --- State getters/setters ---
 
 // GetPhase フェーズ取得

@@ -53,11 +53,17 @@
     "speed": "スピード",
     "gofish": "Go Fish",
     "pinochle": "ピノクル",
-    "golf": "ゴルフ"
+    "golf": "ゴルフ",
+    "pigtail": "ぶたのしっぽ",
+    "sevencardstud": "セブンカードスタッド",
+    "clocksolitaire": "クロックソリティア"
   },
   "sound": {
     "mute": "サウンドをオフにする",
     "unmute": "サウンドをオンにする"
+  },
+  "settings": {
+    "title": "設定"
   },
   "player": {
     "you": "あなた",
@@ -80,7 +86,8 @@
     "bettingLimit": "リミット:",
     "fixed": "Fixed",
     "potLimit": "Pot Limit",
-    "noLimit": "No Limit"
+    "noLimit": "No Limit",
+    "rangeHint": "{{min}} 〜 {{max}} の範囲で入力してください"
   },
   "button": {
     "reset": "リセット",
@@ -128,6 +135,7 @@
     "chipsWon": "+{{amount}}チップ",
     "kicker": "キッカー: {{kickers}}",
     "mucked": "マック",
+    "player": "プレイヤー",
     "errorBoundaryTitle": "エラーが発生しました",
     "errorBoundaryRetry": "再試行"
   },
@@ -260,11 +268,42 @@
     "golf.gameOver": "ゲームオーバー",
     "golf.hintAvailable": "ヒントがあります",
     "golf.noHint": "ヒントはありません",
-    "golf.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
+    "golf.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "pigtail.result.humanLose": "ゲーム終了！ あなたの負け！",
+    "pigtail.result.cpuLose": "ゲーム終了！ CPU {{cpuId}}の負け！",
+    "clocksolitaire.playing": "プレイ中",
+    "clocksolitaire.gameClear": "ゲームクリア！ ステップ数: {{stepCount}}",
+    "clocksolitaire.gameOver": "ゲームオーバー"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",
     "close": "閉じる",
     "button": "マニュアル"
+  },
+  "metaAi": {
+    "learning": "AI: 学習中...",
+    "adapting": "AI: 適応中",
+    "adapted": "AI: 適応済",
+    "strategyShift": "CPU戦略変更: {{strategy}}",
+    "strategy": {
+      "aggressive": "攻撃的",
+      "defensive": "守備的",
+      "balanced": "バランス型",
+      "cautious": "慎重",
+      "observing": "観察中"
+    }
+  },
+  "cli": {
+    "switchToCli": "CLIモードに切り替え",
+    "switchToGui": "GUIモードに切り替え",
+    "prompt": "コマンドを入力...",
+    "unknownCommand": "不明なコマンド: {{cmd}}",
+    "unknownCommandWithSuggestion": "不明なコマンド: {{cmd}}。もしかして: {{suggestion}}",
+    "emptyInput": "コマンドを入力してください。'help' でヘルプを表示",
+    "helpCommon": "共通コマンド: r/reset (リセット), help/? (ヘルプ), clear (ログクリア)"
+  },
+  "solitaire": {
+    "undoToEscape": "{{n}}手前に戻る",
+    "noEscape": "戻れる手がありません。リセットしてください。"
   }
 }

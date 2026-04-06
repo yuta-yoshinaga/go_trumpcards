@@ -7,7 +7,7 @@ import { useGameApi } from './useGameApi';
 
 /** Hook that manages Klondike game state, source selection, hints, and moves. */
 export function useKlondikeGame() {
-  const { state, loading, error, exec: rawExec } = useGameApi(klondikeApi.exec);
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(klondikeApi.exec);
   const [selectedSource, setSelectedSource] = useState<KlondikeMoveZone | null>(null);
   const [hint, setHint] = useState<KlondikeHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
@@ -106,5 +106,6 @@ export function useKlondikeGame() {
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,
+    retry,
   };
 }

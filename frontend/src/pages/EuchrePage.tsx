@@ -1,6 +1,8 @@
-import { useCallback, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useMemo, useState } from 'react';
+import type { euchreApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -14,20 +16,27 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { EuchreSkeleton } from '../components/skeleton/EuchreSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useEuchreGame } from '../hooks/useEuchreGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { TutorialProvider } from '../providers/TutorialProvider';
+import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { EuchreResponse } from '../types/card';
 import { EuchrePhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { EUCHRE_HELP, parseEuchreCommand } from '../utils/cli/commands/euchreCommands';
+import { formatEuchreState } from '../utils/cli/formatters/euchreFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
 const SUIT_NAMES: Readonly<Record<number, string>> = {
@@ -83,12 +92,6 @@ const EU_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Euchre tutorial configuration. */
-const EU_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'euchre',
-  steps: EU_TUTORIAL_STEPS,
-};
-
 const EUCHRE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [EuchrePhase.PICK_UP]: 'pickUp',
   [EuchrePhase.CALL_TRUMP]: 'callTrump',
@@ -101,11 +104,10 @@ const EUCHRE_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Euchre game page with pick-up, trump calling, trick play, and team scoring. */
 export function EuchrePage() {
-  const { t: tEuchre } = useTranslation('euchre');
   return (
-    <TutorialProvider config={EU_TUTORIAL_CONFIG} translateMessage={tEuchre}>
+    <TutorialWrapper gameName="euchre" steps={EU_TUTORIAL_STEPS}>
       <EuchrePageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 
@@ -113,10 +115,12 @@ export function EuchrePage() {
 function EuchrePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('euchre');
+  const { playSound } = useSound();
   const {
     state,
     loading,
     error,
+    retry,
     apiExec,
     euchreConfig,
     selectedCardIndices,
@@ -142,6 +146,18 @@ function EuchrePageContent() {
   } = useGameHint('euchre', state);
   const { cardWidth, isMobile, solitaireMinColWidth } = useCardDimensions();
   const [goAlone, setGoAlone] = useState(false);
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('euchre');
+  const cliConfig: CliGameConfig<EuchreResponse, Parameters<typeof euchreApi.exec>> = useMemo(
+    () => ({
+      gameName: 'euchre',
+      parseCommand: parseEuchreCommand,
+      formatResponse: formatEuchreState,
+      helpText: EUCHRE_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayPhaseForKbd = state?.phase === EuchrePhase.PLAY;
   const isDiscardPhaseForKbd = state?.phase === EuchrePhase.DISCARD;
@@ -190,334 +206,360 @@ function EuchrePageContent() {
       <GamePageHeading title={tc('nav.euchre')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanBidTurn || isHumanTurn || isHumanDiscard}>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/euchre" />
       </PhaseIndicator>
 
-      {/* Settings */}
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          {/* Settings */}
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select',
-                id: 'cpuDifficulty',
-                label: t('settings.cpuDifficulty'),
-                value: euchreConfig.cpuDifficulty,
-                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                  value: o.value,
-                  label: t(`settings.${o.label.toLowerCase()}`),
-                })),
-                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: euchreConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'pointLimit',
+                    label: t('settings.pointLimit'),
+                    value: euchreConfig.pointLimit,
+                    options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('pointLimit', v),
+                  },
+                  {
+                    type: 'checkbox',
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
               },
-              {
-                type: 'select',
-                id: 'pointLimit',
-                label: t('settings.pointLimit'),
-                value: euchreConfig.pointLimit,
-                options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                onSelect: (v) => handleConfigChange('pointLimit', v),
-              },
-              {
-                type: 'checkbox',
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
-              },
-            ],
-          },
-        ]}
-      />
+            ]}
+          />
 
-      {/* Scrollable area */}
-      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Round/Trick info */}
-        <div className="text-white text-center mb-2">
-          <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-          <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-          {state.trumpSuit > 0 && <span>{t('trumpSuit', { suit: suitName(state.trumpSuit) })}</span>}
-          {state.trumpSuit === 0 && <span>{t('noTrump')}</span>}
-        </div>
+          {/* Scrollable area */}
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Round/Trick info */}
+            <div className="text-white text-center mb-2">
+              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+              {state.trumpSuit > 0 && <span>{t('trumpSuit', { suit: suitName(state.trumpSuit) })}</span>}
+              {state.trumpSuit === 0 && <span>{t('noTrump')}</span>}
+            </div>
 
-        <div className={lgTwoColGrid}>
-          {/* Left: game play area */}
-          <div>
-            {/* Maker / Going alone info */}
-            {state.makerTeam >= 0 && (
-              <div className="text-yellow-300 text-center mb-2">
-                <span className="mr-4">{t('maker', { team: state.makerTeam })}</span>
-                {state.goingAlone && <span>{t('goingAlone')}</span>}
+            <div className={lgTwoColGrid}>
+              {/* Left: game play area */}
+              <div>
+                {/* Maker / Going alone info */}
+                {state.makerTeam >= 0 && (
+                  <div className="text-yellow-300 text-center mb-2">
+                    <span className="mr-4">{t('maker', { team: state.makerTeam })}</span>
+                    {state.goingAlone && <span>{t('goingAlone')}</span>}
+                  </div>
+                )}
+
+                {/* Pick-up phase instruction */}
+                {isHumanBidTurn && isPickUpPhase && (
+                  <div className="text-yellow-300 text-center mb-2" data-tutorial="eu-pickup-controls">
+                    {t('pickUpPhase')}
+                  </div>
+                )}
+
+                {/* Call trump phase instruction */}
+                {isHumanBidTurn && isCallTrumpPhase && (
+                  <div className="text-yellow-300 text-center mb-2">{t('callTrumpPhase')}</div>
+                )}
+
+                {/* Discard phase instruction */}
+                {isHumanDiscard && <div className="text-yellow-300 text-center mb-2">{t('discardPhase')}</div>}
+
+                {/* Face-up card */}
+                {state.faceUpCard && (isPickUpPhase || isCallTrumpPhase) && (
+                  <div className="my-2 text-center">
+                    <div className="text-white/70 text-sm mb-1">{t('faceUpCard')}</div>
+                    <div className="inline-block">
+                      <AnimatedCard
+                        card={state.faceUpCard}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Current trick */}
+                {state.currentTrick.length > 0 && (
+                  <div className="my-3 p-3 rounded bg-black/40" data-tutorial="eu-trick-display">
+                    <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
+                    <div className="flex gap-2">
+                      {state.currentTrick.map((trickCard) => (
+                        <div key={`trick-${trickCard.playerIdx}`} className="text-center">
+                          <AnimatedCard
+                            card={trickCard.card}
+                            width={cardWidth}
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          />
+                          <div className="text-game-text-muted text-xs mt-1">
+                            {playerName(
+                              state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
+                              state.players[trickCard.playerIdx]?.isHuman ?? false,
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Partnership info */}
+                {humanPlayer && (
+                  <div className="text-white/70 text-sm text-center mb-2" data-tutorial="eu-team-info">
+                    {t('partnership', {
+                      partner: playerName(
+                        state.players.find((p) => !p.isHuman && p.team === humanTeam)?.id ?? -1,
+                        false,
+                      ),
+                    })}
+                    {state.dealerIdx === humanPlayer.id ? ` | ${t('dealer')}` : ''}
+                  </div>
+                )}
               </div>
-            )}
 
-            {/* Pick-up phase instruction */}
-            {isHumanBidTurn && isPickUpPhase && (
-              <div className="text-yellow-300 text-center mb-2" data-tutorial="eu-pickup-controls">
-                {t('pickUpPhase')}
-              </div>
-            )}
-
-            {/* Call trump phase instruction */}
-            {isHumanBidTurn && isCallTrumpPhase && (
-              <div className="text-yellow-300 text-center mb-2">{t('callTrumpPhase')}</div>
-            )}
-
-            {/* Discard phase instruction */}
-            {isHumanDiscard && <div className="text-yellow-300 text-center mb-2">{t('discardPhase')}</div>}
-
-            {/* Face-up card */}
-            {state.faceUpCard && (isPickUpPhase || isCallTrumpPhase) && (
-              <div className="my-2 text-center">
-                <div className="text-white/70 text-sm mb-1">{t('faceUpCard')}</div>
-                <div className="inline-block">
-                  <AnimatedCard card={state.faceUpCard} width={cardWidth} />
-                </div>
-              </div>
-            )}
-
-            {/* Current trick */}
-            {state.currentTrick.length > 0 && (
-              <div className="my-3 p-3 rounded bg-black/40" data-tutorial="eu-trick-display">
-                <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
-                <div className="flex gap-2">
-                  {state.currentTrick.map((trickCard) => (
-                    <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                      <AnimatedCard card={trickCard.card} width={cardWidth} />
-                      <div className="text-game-text-muted text-xs mt-1">
-                        {playerName(
-                          state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
-                          state.players[trickCard.playerIdx]?.isHuman ?? false,
-                        )}
+              {/* Right: info sidebar */}
+              <div>
+                {/* CPU players */}
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                      <div className="text-white/70 text-sm">
+                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('team', { n: p.team })}{' '}
+                        | {t('trickCount', { count: p.trickCount })}
+                        {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
                       </div>
                     </div>
                   ))}
+
+                {/* Team scores */}
+                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="eu-score-table">
+                  <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
+                  <table className="w-full text-sm text-white/70">
+                    <thead>
+                      <tr>
+                        <th scope="col" className="text-left">
+                          {t('team', { n: '' })}
+                        </th>
+                        <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.teamScores.map((score, idx) => (
+                        <tr key={idx} className={idx === humanTeam ? 'text-yellow-300' : ''}>
+                          <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
+                          <td className="text-center">{score}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            )}
-
-            {/* Partnership info */}
-            {humanPlayer && (
-              <div className="text-white/70 text-sm text-center mb-2" data-tutorial="eu-team-info">
-                {t('partnership', {
-                  partner: playerName(state.players.find((p) => !p.isHuman && p.team === humanTeam)?.id ?? -1, false),
-                })}
-                {state.dealerIdx === humanPlayer.id ? ` | ${t('dealer')}` : ''}
-              </div>
-            )}
-          </div>
-
-          {/* Right: info sidebar */}
-          <div>
-            {/* CPU players */}
-            {state.players
-              .filter((p) => !p.isHuman)
-              .map((p) => (
-                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                  <div className="text-white/70 text-sm">
-                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('team', { n: p.team })} |{' '}
-                    {t('trickCount', { count: p.trickCount })}
-                    {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
-                  </div>
-                </div>
-              ))}
-
-            {/* Team scores */}
-            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="eu-score-table">
-              <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
-              <table className="w-full text-sm text-white/70">
-                <thead>
-                  <tr>
-                    <th scope="col" className="text-left">
-                      {t('team', { n: '' })}
-                    </th>
-                    <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.teamScores.map((score, idx) => (
-                    <tr key={idx} className={idx === humanTeam ? 'text-yellow-300' : ''}>
-                      <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
-                      <td className="text-center">{score}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
+
+            {/* Message */}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-        </div>
 
-        {/* Message */}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={isGameEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      {/* Footer */}
-      <GameFooter className={`${gameTheme.euchre.footer} px-4 py-2.5`}>
-        {/* Human cards */}
-        {humanPlayer && (
-          <div
-            className={isMobile ? 'flex gap-1 overflow-x-auto mb-2' : 'flex flex-wrap gap-1 mb-2'}
-            data-tutorial="eu-player-hand"
-          >
-            {humanPlayer.cards.map((card, idx) => (
-              <button
-                type="button"
-                key={`${card.design}-${card.value}-${idx}`}
-                onClick={() => toggleCard(idx)}
-                aria-label={cardAlt(card)}
-                aria-pressed={selectedCardIndices.includes(idx)}
-                className={`transition-transform ${focusRingCard}`}
-                style={{
-                  background: 'none',
-                  padding: 0,
-                  borderRadius: 8,
-                  ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                  boxSizing: 'border-box',
-                  ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
-                }}
+          {/* Footer */}
+          <GameFooter className={`${gameTheme.euchre.footer} px-4 py-2.5`}>
+            {/* Human cards */}
+            {humanPlayer && (
+              <div
+                className={isMobile ? 'flex gap-1 overflow-x-auto mb-2' : 'flex flex-wrap gap-1 mb-2'}
+                data-tutorial="eu-player-hand"
               >
-                <AnimatedCard card={card} width={cardWidth} />
-              </button>
-            ))}
-          </div>
-        )}
-
-        <ErrorAlert message={error ?? hintError} />
-
-        {hint && (
-          <div className="text-yellow-300 text-sm mb-2">
-            {hint.cardIndex != null
-              ? `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`
-              : `(${t(`hintReason.${hint.reason}`)})`}
-          </div>
-        )}
-        {frontendHintEnabled && frontendHint && (
-          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-        )}
-
-        <div className="flex gap-2 items-center flex-wrap" data-tutorial="eu-play-button">
-          {(isHumanBidTurn || isHumanTurn) && (
-            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-              {tc('button.hint')}
-            </button>
-          )}
-
-          {/* Pick-up phase controls */}
-          {isHumanBidTurn && isPickUpPhase && (
-            <>
-              <button type="button" className={btnPrimary} onClick={() => handleOrderUp(false)} disabled={loading}>
-                {t('orderUpButton')}
-              </button>
-              <button type="button" className={btnPrimary} onClick={() => handleOrderUp(true)} disabled={loading}>
-                {t('orderUpAloneButton')}
-              </button>
-              <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
-                {t('passButton')}
-              </button>
-            </>
-          )}
-
-          {/* Call trump phase controls */}
-          {isHumanBidTurn && isCallTrumpPhase && (
-            <>
-              {[1, 2, 3, 4]
-                .filter(
-                  (s) =>
-                    state.faceUpCard == null ||
-                    s !==
-                      ({ SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4, JOKER: 0 } as Record<string, number>)[
-                        state.faceUpCard.design
-                      ],
-                )
-                .map((s) => (
+                {humanPlayer.cards.map((card, idx) => (
                   <button
-                    key={s}
                     type="button"
-                    className={btnPrimary}
-                    onClick={() => handleCallTrump(s, goAlone)}
-                    disabled={loading}
+                    key={`${card.design}-${card.value}-${idx}`}
+                    onClick={() => toggleCard(idx)}
+                    aria-label={cardAlt(card)}
+                    aria-pressed={selectedCardIndices.includes(idx)}
+                    className={`transition-transform ${focusRingCard}`}
+                    style={{
+                      background: 'none',
+                      padding: 0,
+                      borderRadius: 8,
+                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                      boxSizing: 'border-box',
+                      ...(isMobile ? { minWidth: solitaireMinColWidth, flexShrink: 0 } : {}),
+                    }}
                   >
-                    {t(SUIT_NAMES[s])}
+                    <AnimatedCard
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
                   </button>
                 ))}
-              <label className="text-white text-sm flex items-center gap-1">
-                <input type="checkbox" checked={goAlone} onChange={(e) => setGoAlone(e.target.checked)} />
-                {t('goAloneCheck')}
-              </label>
-              <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
-                {t('passButton')}
+              </div>
+            )}
+
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {hint && (
+              <div className="text-yellow-300 text-sm mb-2">
+                {hint.cardIndex != null
+                  ? `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`
+                  : `(${t(`hintReason.${hint.reason}`)})`}
+              </div>
+            )}
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
+
+            <div className="flex gap-2 items-center flex-wrap" data-tutorial="eu-play-button">
+              {(isHumanBidTurn || isHumanTurn) && (
+                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                  {tc('button.hint')}
+                </button>
+              )}
+
+              {/* Pick-up phase controls */}
+              {isHumanBidTurn && isPickUpPhase && (
+                <>
+                  <button type="button" className={btnPrimary} onClick={() => handleOrderUp(false)} disabled={loading}>
+                    {t('orderUpButton')}
+                  </button>
+                  <button type="button" className={btnPrimary} onClick={() => handleOrderUp(true)} disabled={loading}>
+                    {t('orderUpAloneButton')}
+                  </button>
+                  <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
+                    {t('passButton')}
+                  </button>
+                </>
+              )}
+
+              {/* Call trump phase controls */}
+              {isHumanBidTurn && isCallTrumpPhase && (
+                <>
+                  {[1, 2, 3, 4]
+                    .filter(
+                      (s) =>
+                        state.faceUpCard == null ||
+                        s !==
+                          ({ SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4, JOKER: 0 } as Record<string, number>)[
+                            state.faceUpCard.design
+                          ],
+                    )
+                    .map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleCallTrump(s, goAlone)}
+                        disabled={loading}
+                      >
+                        {t(SUIT_NAMES[s])}
+                      </button>
+                    ))}
+                  <label className="text-white text-sm flex items-center gap-1">
+                    <input type="checkbox" checked={goAlone} onChange={(e) => setGoAlone(e.target.checked)} />
+                    {t('goAloneCheck')}
+                  </label>
+                  <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
+                    {t('passButton')}
+                  </button>
+                </>
+              )}
+
+              {/* Discard phase */}
+              {isHumanDiscard && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleDiscard}
+                  disabled={loading || selectedCardIndices.length !== 1}
+                >
+                  {t('discardButton')}
+                </button>
+              )}
+
+              {/* Play phase */}
+              {isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handlePlay}
+                  disabled={loading || selectedCardIndices.length !== 1}
+                >
+                  {t('playButton')}
+                </button>
+              )}
+
+              {/* Trick end */}
+              {isTrickEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                  {t('nextTrick')}
+                </button>
+              )}
+
+              {/* Round end */}
+              {isRoundEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
+                </button>
+              )}
+
+              {/* Reset */}
+              <button
+                type="button"
+                className={btnOutline}
+                data-tutorial="eu-reset-button"
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    return apiExec('reset', undefined, undefined, undefined, {
+                      cpuDifficulty: euchreConfig.cpuDifficulty,
+                      pointLimit: euchreConfig.pointLimit,
+                    });
+                  })
+                }
+                disabled={loading}
+              >
+                {tc('button.reset')}
               </button>
-            </>
-          )}
-
-          {/* Discard phase */}
-          {isHumanDiscard && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handleDiscard}
-              disabled={loading || selectedCardIndices.length !== 1}
-            >
-              {t('discardButton')}
-            </button>
-          )}
-
-          {/* Play phase */}
-          {isHumanTurn && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handlePlay}
-              disabled={loading || selectedCardIndices.length !== 1}
-            >
-              {t('playButton')}
-            </button>
-          )}
-
-          {/* Trick end */}
-          {isTrickEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-              {t('nextTrick')}
-            </button>
-          )}
-
-          {/* Round end */}
-          {isRoundEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-              {t('nextRound')}
-            </button>
-          )}
-
-          {/* Reset */}
-          <button
-            type="button"
-            className={btnOutline}
-            data-tutorial="eu-reset-button"
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                return apiExec('reset', undefined, undefined, undefined, {
-                  cpuDifficulty: euchreConfig.cpuDifficulty,
-                  pointLimit: euchreConfig.pointLimit,
-                });
-              })
-            }
-            disabled={loading}
-          >
-            {tc('button.reset')}
-          </button>
-        </div>
-      </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+            </div>
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

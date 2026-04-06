@@ -28,6 +28,8 @@ type SpiderInteractorIF interface {
 	ActionLog() string
 	// Undo アンドゥ
 	Undo() string
+	// UndoN n回連続アンドゥ
+	UndoN(n int) string
 }
 
 // SpiderInteractor スパイダーソリティアインタラクタークラス
@@ -85,6 +87,11 @@ func (si *SpiderInteractor) ActionLog() string {
 // Undo アンドゥ
 func (si *SpiderInteractor) Undo() string {
 	return execAndPresent(si.s, si.sp, si.s.Undo)
+}
+
+// UndoN n回連続アンドゥ
+func (si *SpiderInteractor) UndoN(n int) string {
+	return execAndPresent(si.s, si.sp, func() error { return si.s.UndoN(n) })
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.

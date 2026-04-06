@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -15,18 +16,24 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BaccaratSkeleton } from '../components/skeleton/BaccaratSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { TutorialProvider } from '../providers/TutorialProvider';
+import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { BaccaratSideBetResult } from '../types/card';
+import type { BaccaratResponse, BaccaratSideBetResult } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
+import { BACCARAT_HELP, parseBaccaratCommand } from '../utils/cli/commands/baccaratCommands';
+import { formatBaccaratState } from '../utils/cli/formatters/baccaratFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 const BET_TYPE_LABELS: Record<number, string> = {
   [BaccaratBetType.PLAYER]: 'betType.player',
@@ -61,12 +68,6 @@ const BAC_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
 ];
-
-/** Baccarat tutorial configuration. */
-const BAC_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'baccarat',
-  steps: BAC_TUTORIAL_STEPS,
-};
 
 const ROAD_PLAYER = 0;
 const ROAD_BANKER = 1;
@@ -179,11 +180,10 @@ function SideBetResultsDisplay({
 
 /** Renders the Baccarat game page with betting and result display. */
 export function BaccaratPage() {
-  const { t: tBac } = useTranslation('baccarat');
   return (
-    <TutorialProvider config={BAC_TUTORIAL_CONFIG} translateMessage={tBac}>
+    <TutorialWrapper gameName="baccarat" steps={BAC_TUTORIAL_STEPS}>
       <BaccaratPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 
@@ -198,9 +198,22 @@ function BaccaratPageContent() {
   const [bankerPairBet, setBankerPairBet] = useState(0);
 
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi } = useGameApi(baccaratApi.exec);
+  const { state, loading, error, exec: execApi, retry } = useGameApi(baccaratApi.exec);
   const hintState = useMemo(() => (state ? { ...state, betType } : null), [state, betType]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('baccarat', hintState);
+  const { playSound } = useSound();
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('baccarat');
+  const cliConfig: CliGameConfig<BaccaratResponse, Parameters<typeof baccaratApi.exec>> = useMemo(
+    () => ({
+      gameName: 'baccarat',
+      parseCommand: parseBaccaratCommand,
+      formatResponse: formatBaccaratState,
+      helpText: BACCARAT_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useEffect(() => {
     execApi('reset');
@@ -246,196 +259,217 @@ function BaccaratPageContent() {
       {/* Phase indicator */}
       <PhaseIndicator phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}>
         <span>{t('label.chips', { chips: state.chips })}</span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/baccarat" />
       </PhaseIndicator>
 
-      <div
-        data-testid="card-area"
-        className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
-          .filter(Boolean)
-          .join(' ')}
-      >
-        {isBetPhase && state.playerHand.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-6 gap-4">
-            <p className="text-white/50 text-lg">{t('betGuide')}</p>
-            <div className="bg-black/30 rounded-lg p-4 w-full max-w-sm">
-              <div className="text-white font-bold text-sm mb-2">{t('payoutRef.title')}</div>
-              <ul className="text-white/70 text-sm space-y-1">
-                {(['playerWin', 'bankerWin', 'tie', 'playerPair', 'bankerPair'] as const).map((key) => (
-                  <li key={key}>{t(`payoutRef.${key}`)}</li>
-                ))}
-              </ul>
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div
+            data-testid="card-area"
+            className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']
+              .filter(Boolean)
+              .join(' ')}
+          >
+            {isBetPhase && state.playerHand.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-6 gap-4">
+                <p className="text-white/50 text-lg">{t('betGuide')}</p>
+                <div className="bg-black/30 rounded-lg p-4 w-full max-w-sm">
+                  <div className="text-white font-bold text-sm mb-2">{t('payoutRef.title')}</div>
+                  <ul className="text-white/70 text-sm space-y-1">
+                    {(['playerWin', 'bankerWin', 'tie', 'playerPair', 'bankerPair'] as const).map((key) => (
+                      <li key={key}>{t(`payoutRef.${key}`)}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {/* Player Hand */}
+            {state.playerHand.length > 0 && (
+              <div className="mb-4" data-tutorial="bac-player-hand">
+                <div className="text-yellow-300 font-bold text-center mb-1">
+                  <span aria-hidden="true">🟡</span> {t('player')} {t('label.value', { value: state.playerHandValue })}
+                </div>
+                <div className="flex justify-center gap-2">
+                  {state.playerHand.map((card, i) => (
+                    <AnimatedCard
+                      key={`p-${card.design}-${card.value}-${i}`}
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Banker Hand */}
+            {state.bankerHand.length > 0 && (
+              <div className="mb-4" data-tutorial="bac-banker-hand">
+                <div className="text-red-300 font-bold text-center mb-1">
+                  <span aria-hidden="true">🔴</span> {t('banker')} {t('label.value', { value: state.bankerHandValue })}
+                </div>
+                <div className="flex justify-center gap-2">
+                  {state.bankerHand.map((card, i) => (
+                    <AnimatedCard
+                      key={`b-${card.design}-${card.value}-${i}`}
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Payout info */}
+            {isEndPhase && (
+              <div className="text-white text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
+            )}
+
+            {/* Side bet results */}
+            {isEndPhase && state.sideBetResults.length > 0 && (
+              <SideBetResultsDisplay results={state.sideBetResults} t={t} />
+            )}
+
+            {/* Big Road */}
+            <div className="flex flex-col items-center">
+              {state.history.length > 0 && <div className="text-white text-sm font-bold mb-1">{t('road.title')}</div>}
+              <BigRoadGrid history={state.history} />
+              {state.history.length > 0 && (
+                <button
+                  type="button"
+                  className="text-xs text-gray-400 underline mb-2"
+                  onClick={handleClearHistory}
+                  disabled={loading}
+                >
+                  {t('road.clear')}
+                </button>
+              )}
             </div>
+
+            {/* Action Log */}
+            {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
-        )}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-        {/* Player Hand */}
-        {state.playerHand.length > 0 && (
-          <div className="mb-4" data-tutorial="bac-player-hand">
-            <div className="text-yellow-300 font-bold text-center mb-1">
-              <span aria-hidden="true">🟡</span> {t('player')} {t('label.value', { value: state.playerHandValue })}
-            </div>
-            <div className="flex justify-center gap-2">
-              {state.playerHand.map((card, i) => (
-                <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Banker Hand */}
-        {state.bankerHand.length > 0 && (
-          <div className="mb-4" data-tutorial="bac-banker-hand">
-            <div className="text-red-300 font-bold text-center mb-1">
-              <span aria-hidden="true">🔴</span> {t('banker')} {t('label.value', { value: state.bankerHandValue })}
-            </div>
-            <div className="flex justify-center gap-2">
-              {state.bankerHand.map((card, i) => (
-                <AnimatedCard key={`b-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Payout info */}
-        {isEndPhase && (
-          <div className="text-white text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
-        )}
-
-        {/* Side bet results */}
-        {isEndPhase && state.sideBetResults.length > 0 && (
-          <SideBetResultsDisplay results={state.sideBetResults} t={t} />
-        )}
-
-        {/* Big Road */}
-        <div className="flex flex-col items-center">
-          {state.history.length > 0 && <div className="text-white text-sm font-bold mb-1">{t('road.title')}</div>}
-          <BigRoadGrid history={state.history} />
-          {state.history.length > 0 && (
-            <button
-              type="button"
-              className="text-xs text-gray-400 underline mb-2"
-              onClick={handleClearHistory}
-              disabled={loading}
-            >
-              {t('road.clear')}
-            </button>
-          )}
-        </div>
-
-        {/* Action Log */}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-      </div>
-
-      {/* Footer */}
-      <GameFooter className={`${gameTheme.baccarat.footer} px-4 pt-3`}>
-        <ErrorAlert message={error} />
-        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-        <SettingsPanel
-          title={t('settings.title')}
-          groups={[
-            {
-              items: [
+          {/* Footer */}
+          <GameFooter className={`${gameTheme.baccarat.footer} px-4 pt-3`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[
                 {
-                  type: 'checkbox',
-                  id: 'baccarat-hint',
-                  label: tc('hint.toggle', { ns: 'tutorial' }),
-                  checked: hintEnabled,
-                  onToggle: setHintEnabled,
+                  items: [
+                    {
+                      type: 'checkbox',
+                      id: 'baccarat-hint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
+                    },
+                  ],
                 },
-              ],
-            },
-          ]}
-        />
-        {isBetPhase && (
-          <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="bac-bet-controls">
-            <div className="flex items-center gap-2">
-              <label htmlFor="baccarat-bet-amount" className="text-white text-sm">
-                {t('label.betAmount')}
-              </label>
-              <input
-                id="baccarat-bet-amount"
-                type="number"
-                min={10}
-                max={state.chips}
-                step={10}
-                value={betAmount}
-                onChange={(e) => setBetAmount(Number(e.target.value))}
-                className="w-24 px-2 py-1 rounded text-sm"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label htmlFor="baccarat-bet-type" className="text-white text-sm">
-                {t('label.betTarget')}
-              </label>
-              <select
-                id="baccarat-bet-type"
-                value={betType}
-                onChange={(e) => setBetType(Number(e.target.value))}
-                className="px-2 py-1 rounded text-sm"
-              >
-                <option value={BaccaratBetType.PLAYER}>{t(BET_TYPE_LABELS[BaccaratBetType.PLAYER])}</option>
-                <option value={BaccaratBetType.BANKER}>{t(BET_TYPE_LABELS[BaccaratBetType.BANKER])}</option>
-                <option value={BaccaratBetType.TIE}>{t(BET_TYPE_LABELS[BaccaratBetType.TIE])}</option>
-              </select>
-            </div>
-            {/* Side bet inputs */}
-            <div className="flex items-center gap-2">
-              <label htmlFor="baccarat-pp-bet" className="text-white text-sm">
-                {t('sideBet.playerPair')}
-              </label>
-              <input
-                id="baccarat-pp-bet"
-                type="number"
-                min={0}
-                max={state.chips}
-                step={10}
-                value={playerPairBet}
-                onChange={(e) => setPlayerPairBet(Number(e.target.value))}
-                className="w-20 px-2 py-1 rounded text-sm"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label htmlFor="baccarat-bp-bet" className="text-white text-sm">
-                {t('sideBet.bankerPair')}
-              </label>
-              <input
-                id="baccarat-bp-bet"
-                type="number"
-                min={0}
-                max={state.chips}
-                step={10}
-                value={bankerPairBet}
-                onChange={(e) => setBankerPairBet(Number(e.target.value))}
-                className="w-20 px-2 py-1 rounded text-sm"
-              />
-            </div>
-            <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
-              {t('button.bet')}
-            </button>
-          </div>
-        )}
-        {isEndPhase && (
-          <div className="flex justify-center gap-2 pb-2">
-            <div data-tutorial="bac-reset-button">
-              <button
-                type="button"
-                className={btnOutline}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('button.reset')}
-              </button>
-            </div>
-            <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-      </GameFooter>
-      <WinCelebration show={state.phase === BaccaratPhase.END} />
+              ]}
+            />
+            {isBetPhase && (
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="bac-bet-controls">
+                <div className="flex items-center gap-2">
+                  <label htmlFor="baccarat-bet-amount" className="text-white text-sm">
+                    {t('label.betAmount')}
+                  </label>
+                  <input
+                    id="baccarat-bet-amount"
+                    type="number"
+                    min={10}
+                    max={state.chips}
+                    step={10}
+                    value={betAmount}
+                    onChange={(e) => setBetAmount(Number(e.target.value))}
+                    className="w-24 px-2 py-1 rounded text-sm"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="baccarat-bet-type" className="text-white text-sm">
+                    {t('label.betTarget')}
+                  </label>
+                  <select
+                    id="baccarat-bet-type"
+                    value={betType}
+                    onChange={(e) => setBetType(Number(e.target.value))}
+                    className="px-2 py-1 rounded text-sm"
+                  >
+                    <option value={BaccaratBetType.PLAYER}>{t(BET_TYPE_LABELS[BaccaratBetType.PLAYER])}</option>
+                    <option value={BaccaratBetType.BANKER}>{t(BET_TYPE_LABELS[BaccaratBetType.BANKER])}</option>
+                    <option value={BaccaratBetType.TIE}>{t(BET_TYPE_LABELS[BaccaratBetType.TIE])}</option>
+                  </select>
+                </div>
+                {/* Side bet inputs */}
+                <div className="flex items-center gap-2">
+                  <label htmlFor="baccarat-pp-bet" className="text-white text-sm">
+                    {t('sideBet.playerPair')}
+                  </label>
+                  <input
+                    id="baccarat-pp-bet"
+                    type="number"
+                    min={0}
+                    max={state.chips}
+                    step={10}
+                    value={playerPairBet}
+                    onChange={(e) => setPlayerPairBet(Number(e.target.value))}
+                    className="w-20 px-2 py-1 rounded text-sm"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="baccarat-bp-bet" className="text-white text-sm">
+                    {t('sideBet.bankerPair')}
+                  </label>
+                  <input
+                    id="baccarat-bp-bet"
+                    type="number"
+                    min={0}
+                    max={state.chips}
+                    step={10}
+                    value={bankerPairBet}
+                    onChange={(e) => setBankerPairBet(Number(e.target.value))}
+                    className="w-20 px-2 py-1 rounded text-sm"
+                  />
+                </div>
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                  {t('button.bet')}
+                </button>
+              </div>
+            )}
+            {isEndPhase && (
+              <div className="flex justify-center gap-2 pb-2">
+                <div data-tutorial="bac-reset-button">
+                  <button
+                    type="button"
+                    className={btnOutline}
+                    onClick={() => requestConfirm(handleReset)}
+                    disabled={loading}
+                  >
+                    {t('button.reset')}
+                  </button>
+                </div>
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+              </div>
+            )}
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={state.phase === BaccaratPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

@@ -50,6 +50,16 @@ func (_m *MockTriPeaksGame) CanUndo() bool {
 	return ret.Get(0).(bool)
 }
 
+func (_m *MockTriPeaksGame) UndoToEscape() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+func (_m *MockTriPeaksGame) UndoN(n int) error {
+	ret := _m.Called(n)
+	return ret.Error(0)
+}
+
 func (_m *MockTriPeaksGame) GetPhase() domain.TriPeaksPhase {
 	ret := _m.Called()
 	return ret.Get(0).(domain.TriPeaksPhase)

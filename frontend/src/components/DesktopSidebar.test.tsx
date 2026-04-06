@@ -5,10 +5,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { DesktopSidebar } from './DesktopSidebar';
 
-function renderSidebar(initialPath = '/', props?: { soundMuted?: boolean; onSoundToggle?: () => void }) {
+vi.mock('../providers/SoundProvider', () => ({
+  useSound: vi.fn(() => ({
+    muted: false,
+    toggleMute: vi.fn(),
+    playSound: vi.fn(),
+  })),
+}));
+
+function renderSidebar(initialPath = '/') {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
-      <DesktopSidebar {...props} />
+      <DesktopSidebar />
     </MemoryRouter>,
   );
 }
@@ -203,21 +211,9 @@ describe('DesktopSidebar', () => {
   });
 
   describe('SoundToggle', () => {
-    it('does not render when props not provided', () => {
+    it('renders SoundToggle from context', () => {
       renderSidebar();
-      expect(screen.queryByRole('button', { name: i18n.t('sound.mute') })).not.toBeInTheDocument();
-    });
-
-    it('renders when soundMuted and onSoundToggle are provided', () => {
-      renderSidebar('/', { soundMuted: false, onSoundToggle: vi.fn() });
       expect(screen.getByRole('button', { name: i18n.t('sound.mute') })).toBeInTheDocument();
-    });
-
-    it('calls onSoundToggle when clicked', () => {
-      const onSoundToggle = vi.fn();
-      renderSidebar('/', { soundMuted: false, onSoundToggle });
-      fireEvent.click(screen.getByRole('button', { name: i18n.t('sound.mute') }));
-      expect(onSoundToggle).toHaveBeenCalledTimes(1);
     });
   });
 

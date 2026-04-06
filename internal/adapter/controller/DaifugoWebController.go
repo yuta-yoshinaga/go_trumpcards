@@ -123,19 +123,11 @@ type DaifugoWebOutput struct {
 // DaifugoWebController 大富豪Webコントローラークラス
 type DaifugoWebController = GameWebController[usecase.DaifugoInteractorIF, DaifugoWebInput, *DaifugoWebOutput]
 
-// NewDaifugoWebController コンストラクタ
-func NewDaifugoWebController(factory func() usecase.DaifugoInteractorIF) *DaifugoWebController {
-	return NewGameWebController(factory, newDaifugoDefaultOutput, daifugoDispatch)
-}
-
-// NewDaifugoWebControllerWithProvider creates a DaifugoWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewDaifugoWebControllerWithProvider(
-	provider SessionProvider[usecase.DaifugoInteractorIF],
-	factory func() usecase.DaifugoInteractorIF,
-) *DaifugoWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newDaifugoDefaultOutput, daifugoDispatch)
-}
+// NewDaifugoWebController and NewDaifugoWebControllerWithProvider are
+// the standard and provider-backed constructors for DaifugoWebController.
+var NewDaifugoWebController, NewDaifugoWebControllerWithProvider = webControllerPair[usecase.DaifugoInteractorIF, DaifugoWebInput, *DaifugoWebOutput](
+	newDaifugoDefaultOutput, daifugoDispatch,
+)
 
 func newDaifugoDefaultOutput(msg string) *DaifugoWebOutput {
 	return &DaifugoWebOutput{

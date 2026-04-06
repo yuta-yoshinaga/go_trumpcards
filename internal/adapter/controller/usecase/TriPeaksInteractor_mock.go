@@ -43,3 +43,8 @@ func (_m *MockTriPeaksInteractor) Undo() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+func (_m *MockTriPeaksInteractor) UndoN(n int) string {
+	ret := _m.Called(n)
+	return ret.Get(0).(string)
+}

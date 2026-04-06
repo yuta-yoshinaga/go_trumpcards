@@ -62,6 +62,8 @@ export interface TrickGameBaseResult<TState, TArgs extends unknown[], TConfig ex
   handleNextRound: () => void;
   /** Fetches a hint from the server. */
   handleHint: () => Promise<void>;
+  /** Retries the last failed API call. */
+  retry: () => Promise<void>;
 }
 
 /**
@@ -95,7 +97,7 @@ export function useTrickGameBase<TState, TArgs extends unknown[], TConfig extend
     setHint(null);
   }, [clearSelection]);
 
-  const { state, loading, error, exec } = useGameApi(apiFn, { onSuccess });
+  const { state, loading, error, exec, retry } = useGameApi(apiFn, { onSuccess });
 
   const defaultConfigRef = useRef(defaultConfig);
 
@@ -149,5 +151,6 @@ export function useTrickGameBase<TState, TArgs extends unknown[], TConfig extend
     handleNextTrick,
     handleNextRound,
     handleHint,
+    retry,
   };
 }

@@ -38,33 +38,26 @@ type PyramidWebOutputHint struct {
 
 // PyramidWebOutput ピラミッドWebアウトプット
 type PyramidWebOutput struct {
-	Pyramid     [][]*PyramidWebOutputCard `json:"pyramid"`
-	StockCount  int                       `json:"stockCount"`
-	Waste       []*WebOutputCard          `json:"waste"`
-	Phase       int                       `json:"phase"`
-	MoveCount   int                       `json:"moveCount"`
-	CanUndo     bool                      `json:"canUndo"`
-	IsStalemate bool                      `json:"isStalemate"`
-	Hint        *PyramidWebOutputHint     `json:"hint,omitempty"`
+	Pyramid      [][]*PyramidWebOutputCard `json:"pyramid"`
+	StockCount   int                       `json:"stockCount"`
+	Waste        []*WebOutputCard          `json:"waste"`
+	Phase        int                       `json:"phase"`
+	MoveCount    int                       `json:"moveCount"`
+	CanUndo      bool                      `json:"canUndo"`
+	IsStalemate  bool                      `json:"isStalemate"`
+	UndoToEscape int                       `json:"undoToEscape"`
+	Hint         *PyramidWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 }
 
 // PyramidWebController ピラミッドWebコントローラークラス
 type PyramidWebController = GameWebController[usecase.PyramidInteractorIF, PyramidWebInput, *PyramidWebOutput]
 
-// NewPyramidWebController コンストラクタ
-func NewPyramidWebController(factory func() usecase.PyramidInteractorIF) *PyramidWebController {
-	return NewGameWebController(factory, newPyramidDefaultOutput, pyramidDispatch)
-}
-
-// NewPyramidWebControllerWithProvider creates a PyramidWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewPyramidWebControllerWithProvider(
-	provider SessionProvider[usecase.PyramidInteractorIF],
-	factory func() usecase.PyramidInteractorIF,
-) *PyramidWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newPyramidDefaultOutput, pyramidDispatch)
-}
+// NewPyramidWebController and NewPyramidWebControllerWithProvider are
+// the standard and provider-backed constructors for PyramidWebController.
+var NewPyramidWebController, NewPyramidWebControllerWithProvider = webControllerPair[usecase.PyramidInteractorIF, PyramidWebInput, *PyramidWebOutput](
+	newPyramidDefaultOutput, pyramidDispatch,
+)
 
 func newPyramidDefaultOutput(msg string) *PyramidWebOutput {
 	return &PyramidWebOutput{
@@ -86,6 +79,12 @@ func pyramidDispatch(bc *baseController, w http.ResponseWriter, pi usecase.Pyram
 		bc.writePresenterResponse(w, pi.GiveUp())
 	case "u", "undo":
 		bc.writePresenterResponse(w, pi.Undo())
+	case "undo_n":
+		if param.N == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+			return true
+		}
+		bc.writePresenterResponse(w, pi.UndoN(*param.N))
 	default:
 		return dispatchHintAndLog(param.Command, bc, w, pi.Hint, pi.ActionLog)
 	}

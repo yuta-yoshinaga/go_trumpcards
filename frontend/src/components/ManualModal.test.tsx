@@ -20,8 +20,8 @@ vi.mock('../constants/manualTexts', () => ({
 
 describe('ManualModal', () => {
   it('renders nothing when closed', () => {
-    const { container } = render(<ManualModal open={false} onClose={vi.fn()} gamePath="/" />);
-    expect(container.innerHTML).toBe('');
+    render(<ManualModal open={false} onClose={vi.fn()} gamePath="/" />);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('renders markdown content when open', () => {
@@ -48,9 +48,10 @@ describe('ManualModal', () => {
   });
 
   it('renders mermaid diagram', async () => {
-    const { container } = render(<ManualModal open={true} onClose={vi.fn()} gamePath="/mermaid" />);
+    render(<ManualModal open={true} onClose={vi.fn()} gamePath="/mermaid" />);
     await waitFor(() => {
-      expect(container.querySelector('svg')).toBeTruthy();
+      const dialog = screen.getByRole('dialog');
+      expect(dialog.querySelector('svg')).toBeTruthy();
     });
   });
 
@@ -123,9 +124,10 @@ describe('ManualModal', () => {
   });
 
   it('renders regular code block inside pre without unwrapping', () => {
-    const { container } = render(<ManualModal open={true} onClose={vi.fn()} gamePath="/code" />);
-    expect(container.querySelector('pre')).toBeInTheDocument();
-    expect(container.querySelector('code')).toBeInTheDocument();
+    render(<ManualModal open={true} onClose={vi.fn()} gamePath="/code" />);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.querySelector('pre')).toBeInTheDocument();
+    expect(dialog.querySelector('code')).toBeInTheDocument();
   });
 
   it('ignores non-Tab/non-Escape keydown events', () => {

@@ -20,9 +20,13 @@ The test stack is **Vitest + React Testing Library + jest-dom**.
 |-------|----------|--------------|
 | API client | `src/api/*.test.ts` | Correct URL, request body, and error handling for every API method |
 | Components | `src/components/*.test.tsx` | Rendered output, props, event handlers |
+| CLI components | `src/components/cli/*.test.tsx` | Terminal rendering, command input, toggle state |
 | Pages | `src/pages/*.test.tsx` | On-mount API calls, rendering for each game phase/state, button interactions |
 | Hooks | `src/hooks/*.test.ts` | State transitions, localStorage persistence, return values |
+| CLI hooks | `src/hooks/useCliMode.test.ts`, `src/hooks/useCliGame.test.ts` | CLI mode toggle, log management, command orchestration |
 | Utils | `src/utils/**/*.test.ts` | Pure function input/output, edge cases |
+| CLI commands | `src/utils/cli/commands/*.test.ts` | Command parsing, alias mapping, error handling |
+| CLI formatters | `src/utils/cli/formatters/*.test.ts` | Game state text formatting, edge cases |
 
 **Branch coverage (C1) must be 80% or higher** for `src/api`, `src/components`, `src/pages`, and `src/utils`. Focus testing effort on business logic and critical paths rather than exhaustively covering every conditional branch.
 
@@ -91,8 +95,9 @@ bun run build && bun run check && bun run test
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
+| `TutorialWrapper` | `src/components/tutorial/TutorialWrapper.tsx` | Combines TutorialProvider + i18n; wraps game page with `gameName` and `steps` props |
 | `TutorialButton` | `src/components/tutorial/TutorialButton.tsx` | Shared tutorial start button |
-| `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; wraps game page, renders overlay |
+| `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; renders overlay (used internally by TutorialWrapper) |
 | `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight |
 | `useTutorial` | `src/hooks/useTutorial.ts` | State management (step progression, localStorage, resume/restart) |
 | `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hints for BlackJack, Poker, Hearts, Spades |
@@ -104,4 +109,4 @@ bun run build && bun run check && bun run test
 1. Define `TutorialStep[]` array with `target` (CSS selector using `data-tutorial` attributes), `messageKey`, `placement`, and `advanceOn`
 2. Add `data-tutorial="<step-name>"` attributes to the game page's key UI elements
 3. Add tutorial step text to `src/i18n/locales/{ja,en}/<game>.json` under a `tutorial` key
-4. Wrap the page content with `<TutorialProvider config={config} translateMessage={t}>` and import `TutorialButton` from `../components/tutorial/TutorialButton`
+4. Wrap the page content with `<TutorialWrapper gameName="<game>" steps={steps}>` and import `TutorialButton` from `../components/tutorial/TutorialButton`

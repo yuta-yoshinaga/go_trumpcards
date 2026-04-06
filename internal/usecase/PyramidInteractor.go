@@ -30,6 +30,8 @@ type PyramidInteractorIF interface {
 	ActionLog() string
 	// Undo アンドゥ
 	Undo() string
+	// UndoN n回連続アンドゥ
+	UndoN(n int) string
 }
 
 // PyramidInteractor ピラミッドインタラクタークラス
@@ -92,6 +94,11 @@ func (pi *PyramidInteractor) ActionLog() string {
 // Undo アンドゥ
 func (pi *PyramidInteractor) Undo() string {
 	return execAndPresent(pi.p, pi.pp, pi.p.Undo)
+}
+
+// UndoN n回連続アンドゥ
+func (pi *PyramidInteractor) UndoN(n int) string {
+	return execAndPresent(pi.p, pi.pp, func() error { return pi.p.UndoN(n) })
 }
 
 // Snapshot serialises the game state to JSON for KV persistence.

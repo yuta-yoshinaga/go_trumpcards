@@ -12,6 +12,7 @@ export function useGameApi<TState, TArgs extends unknown[]>(
   loading: boolean;
   error: string | null;
   exec: (...args: TArgs) => Promise<void>;
+  retry: () => Promise<void>;
 } {
   const [state, setState] = useState<TState | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,6 +21,7 @@ export function useGameApi<TState, TArgs extends unknown[]>(
   apiFnRef.current = apiFn;
   const onSuccessRef = useRef(options?.onSuccess);
   onSuccessRef.current = options?.onSuccess;
+  const lastArgsRef = useRef<TArgs | null>(null);
 
   const mutation = useMutation({
     mutationFn: (args: TArgs) => apiFnRef.current(...args),
@@ -27,7 +29,8 @@ export function useGameApi<TState, TArgs extends unknown[]>(
   const mutateAsyncRef = useRef(mutation.mutateAsync);
   mutateAsyncRef.current = mutation.mutateAsync;
 
-  const exec = useCallback(async (...args: TArgs) => {
+  const execFn = useCallback(async (...args: TArgs) => {
+    lastArgsRef.current = args;
     setLoading(true);
     try {
       setError(null);
@@ -41,5 +44,11 @@ export function useGameApi<TState, TArgs extends unknown[]>(
     }
   }, []);
 
-  return { state, setState, loading, error, exec };
+  const retry = useCallback(async () => {
+    if (lastArgsRef.current) {
+      await execFn(...lastArgsRef.current);
+    }
+  }, [execFn]);
+
+  return { state, setState, loading, error, exec: execFn, retry };
 }

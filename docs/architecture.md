@@ -25,11 +25,15 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
   src/
     api/                       # API client functions (fetch wrappers for game endpoints)
     components/                # Shared React components (NavBar, CardImage, CardBack)
+      cli/                     # CLI mode components (CliTerminal, CliToggle)
     hooks/                     # Custom React hooks (useGameApi, backed by TanStack React Query)
     i18n/                      # i18n config and translation files (ja/en)
     pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage)
     providers/                 # React context providers (QueryProvider for TanStack React Query)
     types/                     # TypeScript type definitions for card/game data
+    utils/cli/                 # CLI mode utilities
+      commands/                # Per-game command parsers (text input → API args)
+      formatters/              # Per-game response formatters (JSON → terminal text)
   e2e/                         # Playwright E2E test specs
 public/                        # Built frontend assets served by Go web server
   assets/                      # Vite-compiled JS/CSS bundles
@@ -43,7 +47,7 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `internal/usecase/presenter/` are used in tests to avoid I/O.
-- **Web API**: Thirty-six endpoints -- `POST /blackjack/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), `POST /sevens/exec` (Sevens), `POST /doubt/exec` (Doubt), `POST /holdem/exec` (Texas Hold'em), `POST /omaha/exec` (Omaha Hold'em), `POST /shortdeck/exec` (Short Deck Hold'em), `POST /pineapple/exec` (Pineapple Poker), `POST /hearts/exec` (Hearts), `POST /memory/exec` (Memory), `POST /klondike/exec` (Klondike), `POST /freecell/exec` (FreeCell), `POST /baccarat/exec` (Baccarat), `POST /spades/exec` (Spades), `POST /crazyeights/exec` (Crazy Eights), `POST /ginrummy/exec` (Gin Rummy), `POST /spider/exec` (Spider Solitaire), `POST /napoleon/exec` (Napoleon), `POST /indianpoker/exec` (Indian Poker), `POST /videopoker/exec` (Video Poker), `POST /deuceswild/exec` (Deuces Wild), `POST /jokerpoker/exec` (Joker Poker), `POST /euchre/exec` (Euchre), `POST /pyramid/exec` (Pyramid), `POST /tripeaks/exec` (TriPeaks), `POST /cribbage/exec` (Cribbage), `POST /threecard/exec` (Three Card Poker), `POST /ohhell/exec` (Oh Hell), `POST /bridge/exec` (Contract Bridge), `POST /speed/exec` (Speed), `POST /gofish/exec` (Go Fish), `POST /canasta/exec` (Canasta), `POST /pinochle/exec` (Pinochle), and `POST /golf/exec` (Golf Solitaire) -- accept JSON with a `Cmd` field and game state.
+- **Web API**: Thirty-nine endpoints -- `POST /blackjack/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), `POST /sevens/exec` (Sevens), `POST /doubt/exec` (Doubt), `POST /holdem/exec` (Texas Hold'em), `POST /omaha/exec` (Omaha Hold'em), `POST /shortdeck/exec` (Short Deck Hold'em), `POST /pineapple/exec` (Pineapple Poker), `POST /hearts/exec` (Hearts), `POST /memory/exec` (Memory), `POST /klondike/exec` (Klondike), `POST /freecell/exec` (FreeCell), `POST /baccarat/exec` (Baccarat), `POST /spades/exec` (Spades), `POST /crazyeights/exec` (Crazy Eights), `POST /ginrummy/exec` (Gin Rummy), `POST /spider/exec` (Spider Solitaire), `POST /napoleon/exec` (Napoleon), `POST /indianpoker/exec` (Indian Poker), `POST /videopoker/exec` (Video Poker), `POST /deuceswild/exec` (Deuces Wild), `POST /jokerpoker/exec` (Joker Poker), `POST /euchre/exec` (Euchre), `POST /pyramid/exec` (Pyramid), `POST /tripeaks/exec` (TriPeaks), `POST /cribbage/exec` (Cribbage), `POST /threecard/exec` (Three Card Poker), `POST /ohhell/exec` (Oh Hell), `POST /bridge/exec` (Contract Bridge), `POST /speed/exec` (Speed), `POST /gofish/exec` (Go Fish), `POST /canasta/exec` (Canasta), `POST /pinochle/exec` (Pinochle), `POST /golf/exec` (Golf Solitaire), `POST /pigtail/exec` (Pig's Tail), `POST /sevencardstud/exec` (Seven Card Stud), and `POST /clocksolitaire/exec` (Clock Solitaire) -- accept JSON with a `Cmd` field and game state.
 - **Swagger UI**: Available at `/swagger/` -- serves the OpenAPI spec (`api/openapi.yaml`) via Swagger UI for interactive API documentation and testing. The spec is embedded into the binary with `go:embed`; the Swagger UI frontend is loaded from a CDN.
 
 ## Cloudflare Workers (WASM) deployment
@@ -70,9 +74,9 @@ Games are distributed across three Workers to stay under the 1MB gzip size limit
 
 | Worker | Category | Entry point | Games |
 |--------|----------|-------------|-------|
-| **casino** | Table & poker | `cmd/workers/casino/main.go` | blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard |
-| **classic** | Trick-taking & matching | `cmd/workers/classic/main.go` | hearts, spades, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish |
-| **solo** | Solitaire & rummy | `cmd/workers/solo/main.go` | klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, cribbage, golf |
+| **casino** | Table & poker | `cmd/workers/casino/main.go` | blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, sevencardstud |
+| **classic** | Trick-taking & matching | `cmd/workers/classic/main.go` | hearts, spades, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail |
+| **solo** | Solitaire & rummy | `cmd/workers/solo/main.go` | klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire |
 
 The frontend routes requests to the correct Worker via `workerUrl` mapping in `frontend/src/api/gameApi.ts`. When `VITE_WORKER_*_URL` env vars are unset, requests fall back to relative URLs (Docker deployment).
 

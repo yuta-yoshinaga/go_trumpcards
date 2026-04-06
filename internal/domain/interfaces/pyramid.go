@@ -26,6 +26,10 @@ type PyramidGame interface {
 
 	// CanUndo 元に戻す操作が可能かを返す
 	CanUndo() bool
+	// UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す
+	UndoToEscape() int
+	// UndoN n回連続でアンドゥを実行する
+	UndoN(n int) error
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.PyramidPhase
 	// GetMoveCount 移動回数を取得する

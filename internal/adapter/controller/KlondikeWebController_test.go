@@ -363,6 +363,35 @@ func TestKlondikeWebController_Undo(t *testing.T) {
 	})
 }
 
+func TestKlondikeWebController_UndoN(t *testing.T) {
+	mockOutput := `{"tableau":[],"stockCount":0,"waste":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
+
+	kiMock := new(usecase.MockKlondikeInteractor)
+	kiMock.On("UndoN", 3).Return(mockOutput)
+
+	factory := func() uc.KlondikeInteractorIF { return kiMock }
+	ctrl := controller.NewKlondikeWebController(factory)
+	defer ctrl.Stop()
+
+	t.Run("undo_n with valid n", func(t *testing.T) {
+		n := 3
+		input := controller.KlondikeWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1", N: &n},
+		}
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(mockOutput)
+	})
+
+	t.Run("undo_n with missing n", func(t *testing.T) {
+		input := controller.KlondikeWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1"},
+		}
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusBadRequest)
+	})
+}
+
 func TestKlondikeWebController_Stop(t *testing.T) {
 	kiMock := new(usecase.MockKlondikeInteractor)
 	factory := func() uc.KlondikeInteractorIF { return kiMock }

@@ -909,6 +909,7 @@ export interface KlondikeResponse {
   drawCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   score: number;
   scoringMode: number;
   message: string;
@@ -937,6 +938,7 @@ export interface FreeCellResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
@@ -1065,6 +1067,7 @@ export interface SpiderResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   score: number;
   difficulty: number;
   message: string;
@@ -1294,6 +1297,7 @@ export interface PyramidResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
@@ -1325,6 +1329,7 @@ export interface TriPeaksResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
@@ -1725,8 +1730,160 @@ export interface GolfResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  undoToEscape?: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
   hint?: GolfHint;
+}
+
+// --- Pig's Tail ---
+
+/** Pig's Tail player output from the server. */
+export interface PigsTailPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+}
+
+/** Pig's Tail CPU action record. */
+export interface PigsTailCpuAction {
+  drawPlayerIdx: number;
+  drawnCard: Card | null;
+  penaltyFlag: boolean;
+  penaltyCount: number;
+  hesitationMs?: number;
+}
+
+/** Pig's Tail game state response. */
+export interface PigsTailResponse {
+  players: PigsTailPlayer[];
+  circleCount: number;
+  centerTop: Card | null;
+  centerCount: number;
+  currentTurn: number;
+  gameEndFlag: boolean;
+  loserIdx: number;
+  lastDrawCard: Card | null;
+  lastPenalty: boolean;
+  cpuActions: PigsTailCpuAction[];
+  humanAction: PigsTailCpuAction | null;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Seven Card Stud ---
+
+/** Player data in Seven Card Stud. */
+export interface SevenCardStudPlayerData {
+  id: number;
+  isHuman: boolean;
+  holeCards: Card[];
+  doorCards: Card[];
+  chips: number;
+  currentBet: number;
+  folded: boolean;
+  allIn: boolean;
+  handRank: number;
+  handName: string;
+  bestHand: Card[];
+  playStyleName: string;
+  totalHands: number;
+  vpip: number;
+  pfr: number;
+  threeBet: number;
+  af: string;
+}
+
+/** CPU betting action in Seven Card Stud. */
+export interface SevenCardStudCpuAction {
+  playerIdx: number;
+  action: number;
+  amount: number;
+}
+
+/** Seven Card Stud round result for a single player. */
+export interface SevenCardStudResult {
+  playerIdx: number;
+  handRank: number;
+  handName: string;
+  kickers: string;
+  bestHand: Card[];
+  wonAmount: number;
+  mucked: boolean;
+}
+
+/** Side pot in Seven Card Stud with eligible players. */
+export interface SevenCardStudSidePot {
+  amount: number;
+  eligiblePlayers: number[];
+}
+
+/** Full Seven Card Stud game state returned from the API. */
+export interface SevenCardStudResponse {
+  players: SevenCardStudPlayerData[];
+  communityCard: Card | null;
+  pot: number;
+  sidePots: SevenCardStudSidePot[];
+  dealerIdx: number;
+  currentTurn: number;
+  phase: number;
+  gameEndFlag: boolean;
+  lastBet: number;
+  minRaise: number;
+  bettingLimit: number;
+  raiseCount: number;
+  maxBetAmount: number;
+  roundResults: SevenCardStudResult[];
+  cpuActions: SevenCardStudCpuAction[];
+  handCount: number;
+  ante: number;
+  bringIn: number;
+  smallBet: number;
+  bigBet: number;
+  tournamentMode: boolean;
+  anteLevelHands: number;
+  anteMultiplier: number;
+  tableSize: number;
+  bringInPlayerIdx: number;
+  rebuyAvailable: boolean;
+  addonAvailable: boolean;
+  rebuyCounts: number[];
+  addonUsed: boolean[];
+  rebuyEnabled: boolean;
+  addonEnabled: boolean;
+  rebuyMaxCount: number;
+  rebuyChips: number;
+  addonChips: number;
+  rebuyPeriodHands: number;
+  addonAfterHand: number;
+  rebuyPhaseType: number;
+  muckAvailable: boolean;
+  metaAI?: BettingMetaAI;
+  profile?: BettingHumanProfileData;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Clock Solitaire (クロックソリティア) ---
+
+/** A card in a Clock Solitaire pile with face-up status. */
+export interface ClockSolitaireCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** Full Clock Solitaire game state returned from the API. */
+export interface ClockSolitaireResponse {
+  piles: ClockSolitaireCard[][];
+  faceUpCount: number[];
+  phase: number;
+  stepCount: number;
+  currentCard?: Card;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }

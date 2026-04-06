@@ -6,11 +6,11 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
 import { gameRoutes } from './constants/gameRoutes';
-import { useGameSound } from './hooks/useGameSound';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
 import { CanastaPage } from './pages/CanastaPage';
+import { ClockSolitairePage } from './pages/ClockSolitairePage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { CribbagePage } from './pages/CribbagePage';
 import { DaifugoPage } from './pages/DaifugoPage';
@@ -31,10 +31,12 @@ import { NapoleonPage } from './pages/NapoleonPage';
 import { OhHellPage } from './pages/OhHellPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
+import { PigsTailPage } from './pages/PigsTailPage';
 import { PineapplePage } from './pages/PineapplePage';
 import { PinochlePage } from './pages/PinochlePage';
 import { PokerPage } from './pages/PokerPage';
 import { PyramidPage } from './pages/PyramidPage';
+import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
 import { SpadesPage } from './pages/SpadesPage';
@@ -57,6 +59,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/holdem': <HoldemPage />,
   '/omaha': <OmahaPage />,
   '/pineapple': <PineapplePage />,
+  '/sevencardstud': <SevenCardStudPage />,
   '/shortdeck': <ShortDeckPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,
@@ -82,20 +85,21 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/gofish': <GoFishPage />,
   '/pinochle': <PinochlePage />,
   '/golf': <GolfPage />,
+  '/pigtail': <PigsTailPage />,
+  '/clocksolitaire': <ClockSolitairePage />,
 };
 
 /** Root application component with router and game page routes. */
 export default function App() {
   const { t } = useTranslation();
-  const { muted, toggleMute } = useGameSound();
   return (
     <HashRouter>
       <ErrorBoundary>
         <div className="flex flex-col h-full lg:flex-row">
           <SkipNavLink targetId="main-content" label={t('nav.skipToContent')} />
-          <DesktopSidebar soundMuted={muted} onSoundToggle={toggleMute} />
+          <DesktopSidebar />
           <div className="flex flex-col flex-1 min-w-0">
-            <NavBar soundMuted={muted} onSoundToggle={toggleMute} />
+            <NavBar />
             <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col min-h-0">
               <Routes>
                 {gameRoutes.map(({ path }) => (

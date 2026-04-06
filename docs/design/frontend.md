@@ -25,6 +25,9 @@
   - [2.10 GoFishPage フェーズ別レンダリングフロー](#210-gofishpage-フェーズ別レンダリングフロー)
   - [2.11 CanastaPage フェーズ別レンダリングフロー](#211-canastapage-フェーズ別レンダリングフロー)
   - [2.12 PinochlePage フェーズ別レンダリングフロー](#212-pinochlepage-フェーズ別レンダリングフロー)
+  - [2.13 PigsTailPage フェーズ別レンダリングフロー](#213-pigstailpage-フェーズ別レンダリングフロー)
+  - [2.14 SevenCardStudPage フェーズ別レンダリングフロー](#214-sevencardstudpage-フェーズ別レンダリングフロー)
+  - [2.15 CLIモード コマンド実行フロー](#215-cliモード-コマンド実行フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -32,6 +35,7 @@
   - [3.4 アクションログ状態 (useActionLog)](#34-アクションログ状態-useactionlog)
   - [3.5 ゲーム設定パネル状態](#35-ゲーム設定パネル状態)
   - [3.6 チュートリアル状態 (useTutorial)](#36-チュートリアル状態-usetutorial)
+  - [3.7 CLIモード状態 (useCliMode + useCliGame)](#37-cliモード状態-useclimode--usecligame)
 
 ---
 
@@ -150,6 +154,17 @@ classDiagram
         +object messageParams
     }
 
+    class ClockSolitaireResponse {
+        +object[][] piles
+        +number faceUpCount
+        +number phase
+        +number stepCount
+        +Card currentCard
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
     class CribbageResponse {
         +object[] players
         +number phase
@@ -232,7 +247,52 @@ classDiagram
         +string message
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全35ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    class PigsTailResponse {
+        +object[] players
+        +Card[] centerPile
+        +number circlePileCount
+        +number phase
+        +number currentTurn
+        +number winnerIdx
+        +object[] cpuActions
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    class SevenCardStudResponse {
+        +object[] players (holeCards, doorCards)
+        +number pot
+        +object[] sidePots
+        +number dealerIdx
+        +number currentTurn
+        +number phase
+        +boolean gameEndFlag
+        +number lastBet
+        +number minRaise
+        +number bettingLimit
+        +number raiseCount
+        +number maxBetAmount
+        +object[] roundResults
+        +object[] cpuActions
+        +number handCount
+        +number ante
+        +number bringIn
+        +number smallBet
+        +number bigBet
+        +boolean tournamentMode
+        +number anteLevelHands
+        +number anteMultiplier
+        +number tableSize
+        +number bringInPlayerIdx
+        +boolean rebuyAvailable
+        +boolean addonAvailable
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全39ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -399,6 +459,19 @@ classDiagram
         GAME_OVER = 2
     }
 
+    class ClockSolitairePhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
+    class PigsTailPhase {
+        <<enumeration>>
+        PLAY = 0
+        GAME_END = 1
+    }
+
     class CribbagePhase {
         <<enumeration>>
         DISCARD = 0
@@ -467,7 +540,20 @@ classDiagram
         GAME_END = 6
     }
 
-    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase は、\nそれぞれ同一の値を持つ別定数です"
+    class SevenCardStudPhase {
+        <<enumeration>>
+        INIT = 0
+        THIRD_STREET = 1
+        FOURTH_STREET = 2
+        FIFTH_STREET = 3
+        SIXTH_STREET = 4
+        SEVENTH_STREET = 5
+        SHOWDOWN = 6
+        END = 7
+        REBUY = 8
+    }
+
+    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase は、\nそれぞれ同一の値を持つ別定数です"
 ```
 
 ### 1.2 API クライアント層
@@ -508,6 +594,10 @@ classDiagram
         +run(cmd, col?) Promise~GolfResponse~
     }
 
+    class ClockSolitaireApi {
+        +run(cmd) Promise~ClockSolitaireResponse~
+    }
+
     class CribbageApi {
         +run(cmd, args?, config?) Promise~CribbageResponse~
     }
@@ -515,7 +605,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全30ゲーム()
+        ...全39ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -524,6 +614,7 @@ classDiagram
     KlondikeApi --> gameApi : uses postJson/gameExec
     PyramidApi --> gameApi : uses postJson/gameExec
     TriPeaksApi --> gameApi : uses postJson/gameExec
+    ClockSolitaireApi --> gameApi : uses postJson/gameExec
     CribbageApi --> gameApi : uses postJson/gameExec
     actionLogApi --> gameApi : uses gameExec
 
@@ -545,8 +636,14 @@ classDiagram
 
     CanastaApi --> gameApi : uses postJson/gameExec
 
+    class PigsTailApi {
+        +run(cmd) Promise~PigsTailResponse~
+    }
+
+    PigsTailApi --> gameApi : uses postJson/gameExec
+
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全36ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, canasta, spider,\nnapoleon, indianpoker, videopoker, deuceswild,\njokerpoker, euchre, pyramid, tripeaks, cribbage,\nthreecard, ohhell, bridge, speed, gofish,\npinochle, golf)"
+    note for BlackJackApi "全39ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -703,10 +800,28 @@ classDiagram
         +Function addRecent
     }
 
+    class useCliMode {
+        +boolean cliEnabled
+        +Function toggleCli
+        +CliLogEntry[] logEntries
+        +Function addInput
+        +Function addOutput
+        +Function addError
+        +Function clearLog
+    }
+    note for useCliMode "localStorage persistence per game"
+
+    class useCliGame~TState_TArgs~ {
+        +Function handleCommand
+    }
+    note for useCliGame "Orchestrates command parse -> exec -> format -> log"
+
     useGamePageSetup --> useActionLog : composes
     useGamePageSetup --> useConfirmDialog : composes
     useTutorial ..> useReducedMotion : optional
     useGameHint --> useLocalStorageToggle : uses
+    useCliMode --> useLocalStorageToggle : uses
+    useCliGame --> useCliMode : reads logEntries
 ```
 
 ### 1.4 Hook 層 (ゲーム固有Hook)
@@ -795,6 +910,19 @@ classDiagram
         +Function handleReset
     }
 
+    class useClockSolitaireGame {
+        +ClockSolitaireResponse state
+        +Function handleStep
+        +Function handleAutoPlay
+        +Function handleReset
+    }
+
+    class usePigsTailGame {
+        +PigsTailResponse state
+        +Function handleDraw
+        +Function handleReset
+    }
+
     class useCribbageGame {
         +CribbageResponse state
         +Function handleDiscard
@@ -809,6 +937,8 @@ classDiagram
     usePyramidGame --> useGameApi : uses
     useTriPeaksGame --> useGameApi : uses
     useGolfGame --> useGameApi : uses
+    useClockSolitaireGame --> useGameApi : uses
+    usePigsTailGame --> useGameApi : uses
     useCribbageGame --> useGameApi : uses
     useMemoryGame --> useGameApi : uses
     useDoubtGame --> useGameApi : uses
@@ -860,7 +990,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全34ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全39ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -995,6 +1125,21 @@ classDiagram
         +Function onNext
         +Function onSkip
         +glass-panel ツールチップ
+    }
+
+    class CliTerminal {
+        +CliLogEntry[] logEntries
+        +Function onCommand
+        +boolean disabled
+        +コマンド履歴 (up/down)
+        +自動スクロール
+        +黒背景 + 等幅フォント
+    }
+
+    class CliToggle {
+        +boolean cliEnabled
+        +Function onToggle
+        +GUI/CLI アイコン切替
     }
 
     TutorialOverlay --> TutorialTooltip : renders
@@ -1262,6 +1407,38 @@ classDiagram
 
     CanastaPage --|> GamePage : follows pattern
 
+    class PigsTailPage {
+        +CPUプレイヤーエリア (手札枚数表示)
+        +山札残り枚数
+        +場札トップカード表示
+        +引くボタン
+        +CPU行動アニメーション
+    }
+
+    PigsTailPage --|> GamePage : follows pattern
+
+    class SevenCardStudPage {
+        +CPUプレイヤーエリア (ドアカード表示)
+        +ホールカード・ドアカード表示
+        +ベッティングアクションボタン
+        +ポット・サイドポット表示
+        +HUD統計表示
+        +マック/ショー選択
+        +リバイ/アドオン画面
+        +CPU行動アニメーション
+    }
+
+    SevenCardStudPage --|> GamePage : follows pattern
+
+    class ClockSolitairePage {
+        +13山を時計配置で表示
+        +表向き/伏せカード表示
+        +ステップ/自動再生ボタン
+        +進捗インジケーター(表向き枚数)
+    }
+
+    ClockSolitairePage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -1272,10 +1449,10 @@ classDiagram
     GamePage --> GamePageHeading : renders
     GamePage --> ManualButton : renders
 
-    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple)
+    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全34ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全39ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1298,15 +1475,15 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (33ゲーム)
+        +Routes (39ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Baccarat, ThreeCard]
-        +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
-        +trickTaking: [Hearts, Spades, OhHell, Euchre, Napoleon, Bridge]
-        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish]
-        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Memory]
+        +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
+        +trickTaking: [Hearts, Spades, OhHell, Euchre, Bridge, Napoleon]
+        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail]
+        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire]
         +rummy: [GinRummy, Canasta, Cribbage]
     }
 
@@ -1321,11 +1498,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 31 pages
+    App --> GamePage : routes to 39 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "34名前空間: common + 32ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "41名前空間: common + 39ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
@@ -1757,6 +1934,92 @@ sequenceDiagram
     Hook-->>Page: 再レンダリング → ビッドフェーズUI
 ```
 
+### 2.13 PigsTailPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as PigsTailPage
+    participant Hook as usePigsTailGame
+    participant API as gameApi
+
+    Note over User,API: プレイフェーズ (phase=0) - ドロー
+    User->>Page: 引くボタンクリック
+    Page->>Hook: handleDraw()
+    Hook->>API: gameExec("draw")
+    API-->>Hook: PigsTailResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → ドロー結果UI
+
+    Note over User,API: CPU行動アニメーション
+    Page-->>User: CPUドローをアニメーション再生
+
+    Note over User,API: ゲーム終了 (phase=1)
+    Page-->>User: 勝者・手札枚数表示
+    User->>Page: リセットボタンクリック
+    Page->>Hook: handleReset()
+    Hook->>API: gameExec("reset")
+    API-->>Hook: PigsTailResponse (phase=0)
+    Hook-->>Page: 再レンダリング → プレイフェーズUI
+```
+
+### 2.14 SevenCardStudPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as SevenCardStudPage
+    participant Hook as useSevenCardStudGame
+    participant API as gameApi
+
+    Note over User,API: サード～セブンスストリート - ベッティング
+    User->>Page: アクションボタンクリック (fold/check/call/bet/raise/allin)
+    Page->>Hook: handleAction(command, amount)
+    Hook->>API: gameExec(command, {amount, humanPlayMs})
+    API-->>Hook: SevenCardStudResponse (phase=1-5)
+    Hook-->>Page: 再レンダリング → ベッティング結果UI
+
+    Note over User,API: CPU行動アニメーション
+    Page-->>User: CPUアクションをアニメーション再生
+
+    Note over User,API: ショーダウン (phase=6)
+    Page-->>User: 全員の手札・役名表示
+
+    Note over User,API: マック/ショー選択
+    User->>Page: マック or ショーボタンクリック
+    Page->>Hook: handleMuck() / handleShow()
+    Hook->>API: gameExec("muck" / "show")
+
+    Note over User,API: リバイ/アドオン (phase=8)
+    User->>Page: リバイ or スキップボタンクリック
+    Page->>Hook: handleRebuy() / handleSkipRebuy()
+    Hook->>API: gameExec("rebuy" / "skiprebuy")
+    API-->>Hook: SevenCardStudResponse (phase=0)
+    Hook-->>Page: 再レンダリング → 次ハンドUI
+```
+
+### 2.15 CLIモード コマンド実行フロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー (CliTerminal入力)
+    participant useCliGame as useCliGame
+    participant Parser as parseXxxCommand
+    participant API as useGameApi
+    participant Formatter as formatXxxState
+    participant Log as useCliMode.logEntries
+
+    User->>useCliGame: handleCommand("hit")
+    useCliGame->>Log: addInput("hit")
+    useCliGame->>Parser: parseCommand("hit")
+    Parser-->>useCliGame: { args = ["hit"] }
+    useCliGame->>API: 実行("hit")
+    API-->>useCliGame: state更新
+    useCliGame->>Formatter: formatResponse(state)
+    Formatter-->>useCliGame: テキスト出力
+    useCliGame->>Log: addOutput(テキスト)
+    Log-->>User: CliTerminal再レンダリング (自動スクロール)
+```
+
 ---
 
 ## 3. ステートマシン図
@@ -1865,4 +2128,35 @@ stateDiagram-v2
 
     note right of Completed : localStorage に完了フラグ保存\ntutorial_completed_{gameName} = true
     note right of Active : advanceOn=click → 対象クリックで next()\nadvanceOn=next → 次へボタンで next()
+```
+
+### 3.7 CLIモード状態 (useCliMode + useCliGame)
+
+```mermaid
+stateDiagram-v2
+    [*] --> GUI : 初期化 (localStorage確認)
+
+    GUI --> CLI : toggleCli()
+    CLI --> GUI : toggleCli()
+
+    state CLI {
+        [*] --> Idle : CliTerminal表示
+
+        Idle --> Parsing : コマンド入力 (Enter)
+        Parsing --> Help : help/?
+        Parsing --> Clear : clear
+        Parsing --> Executing : コマンドパース成功
+        Parsing --> Error : パースエラー
+
+        Help --> Idle : ヘルプテキスト表示
+        Clear --> Idle : ログクリア
+        Error --> Idle : エラーメッセージ表示
+        Executing --> Formatting : API成功
+        Executing --> Error : APIエラー
+        Formatting --> Idle : 整形テキスト表示 (自動スクロール)
+    }
+
+    note right of GUI : GUIコンポーネント表示\nGameFooter + カードUI
+    note right of CLI : CliTerminal表示\n黒背景 + 等幅フォント\nコマンド履歴 (up/down)
+    note left of GUI : ゲーム状態はGUI/CLI共有\nuseGameApi.state は同一
 ```

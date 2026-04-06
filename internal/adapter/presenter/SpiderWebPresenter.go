@@ -22,6 +22,7 @@ func (p *SpiderWebPresenter) Output(s interfaces.SpiderGame, lastErr error) stri
 	resObj.Score = s.GetScore()
 	resObj.Difficulty = int(s.GetDifficulty())
 	resObj.IsStalemate = s.IsStalemate()
+	resObj.UndoToEscape = s.UndoToEscape()
 
 	// タブロー
 	tableau := s.GetTableau()
@@ -78,6 +79,7 @@ func (p *SpiderWebPresenter) HintOutput(s interfaces.SpiderGame) string {
 	resObj.Score = s.GetScore()
 	resObj.Difficulty = int(s.GetDifficulty())
 	resObj.IsStalemate = s.IsStalemate()
+	resObj.UndoToEscape = s.UndoToEscape()
 	resObj.Tableau = make([][]*controller.SpiderWebOutputTableauCard, 0)
 
 	if hint != nil {

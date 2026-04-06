@@ -50,6 +50,33 @@ func TestWriteFishCompletion(t *testing.T) {
 	}
 }
 
+func TestWriteInstallHint(t *testing.T) {
+	tests := []struct {
+		shell    string
+		contains []string
+	}{
+		{"bash", []string{"~/.bashrc", "source <(trumpcards completion bash)"}},
+		{"zsh", []string{"fpath", "compinit", "trumpcards completion zsh"}},
+		{"fish", []string{"~/.config/fish/completions/trumpcards.fish", "trumpcards completion fish | source"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.shell, func(t *testing.T) {
+			var buf bytes.Buffer
+			writeInstallHint(&buf, tt.shell)
+			output := buf.String()
+			for _, s := range tt.contains {
+				assert.Contains(t, output, s, "install hint for %s should contain %q", tt.shell, s)
+			}
+		})
+	}
+}
+
+func TestWriteInstallHint_UnsupportedShell(t *testing.T) {
+	var buf bytes.Buffer
+	writeInstallHint(&buf, "powershell")
+	assert.Empty(t, buf.String())
+}
+
 func TestRunCompletion_NoArgs(t *testing.T) {
 	code := runCompletion(nil)
 	assert.Equal(t, 1, code)

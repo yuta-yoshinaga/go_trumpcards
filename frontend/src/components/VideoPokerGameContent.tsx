@@ -2,15 +2,21 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
+import type { CliGameConfig } from '../utils/cli/types';
 import { ActionLogPanel } from './ActionLogPanel';
+import { CliTerminal } from './cli/CliTerminal';
+import { CliToggle } from './cli/CliToggle';
 import { ErrorAlert } from './ErrorAlert';
 import { GameFooter } from './GameFooter';
 import { GameMessageBox } from './GameMessageBox';
@@ -39,6 +45,8 @@ export interface VideoPokerGameContentProps {
   payoutTableRows: string[];
   /** Route path for the game manual lookup (e.g., "/videopoker") */
   gamePath: string;
+  /** CLI game configuration for CLI mode integration */
+  cliGameConfig: Omit<CliGameConfig<VideoPokerResponse, Parameters<VideoPokerGameContentProps['apiExec']>>, 'gameName'>;
 }
 
 /** Payout table display component (collapsed by default, user can expand on tap). */
@@ -62,16 +70,27 @@ export function VideoPokerGameContent({
   apiExec,
   payoutTableRows,
   gamePath,
+  cliGameConfig,
 }: VideoPokerGameContentProps) {
   const { t: tNs } = useTranslation(i18nNamespace);
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup(gameName);
+  const { playSound } = useSound();
 
   const [betAmount, setBetAmount] = useState(1);
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
 
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi } = useGameApi(apiExec);
+  const { state, loading, error, exec: execApi, retry } = useGameApi(apiExec);
+
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(gameName);
+  const cliConfig: CliGameConfig<VideoPokerResponse, Parameters<typeof apiExec>> = useMemo(
+    () => ({ gameName, ...cliGameConfig }),
+    [gameName, cliGameConfig],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
   const { hint, hintEnabled, setHintEnabled } = useGameHint(gameName, state);
 
   useEffect(() => {
@@ -145,108 +164,123 @@ export function VideoPokerGameContent({
       <GamePageHeading title={tc(`nav.${gameName}`)} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isBetPhase || isDrawPhase}>
         <span>{t('label.chips', { chips: state.chips })}</span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath={gamePath} />
       </PhaseIndicator>
 
-      <div
-        className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint} ${isBetPhase ? 'flex flex-col' : ''}`}
-      >
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div
+            className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint} ${isBetPhase ? 'flex flex-col' : ''}`}
+          >
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
 
-        {state.hand.length > 0 && (
-          <div className="mb-4" data-tutorial="vp-hand">
-            <div className="flex justify-center gap-2">
-              {state.hand.map((card, i) => (
-                <div key={`vp-${card.design}-${card.value}-${i}`} className="flex flex-col items-center">
+            {state.hand.length > 0 && (
+              <div className="mb-4" data-tutorial="vp-hand">
+                <div className="flex justify-center gap-2">
+                  {state.hand.map((card, i) => (
+                    <div key={`vp-${card.design}-${card.value}-${i}`} className="flex flex-col items-center">
+                      <button
+                        type="button"
+                        onClick={() => toggleHold(i)}
+                        disabled={!isDrawPhase}
+                        className={`rounded transition-transform ${displayHeld[i] ? 'ring-2 ring-yellow-400 -translate-y-2' : ''}`}
+                        aria-label={displayHeld[i] ? `${tNs('hold')} ${i}` : tNs('card', { index: i })}
+                        aria-pressed={displayHeld[i] ?? false}
+                      >
+                        <AnimatedCard
+                          card={card}
+                          width={cardWidth}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                        />
+                      </button>
+                      {displayHeld[i] && <span className="text-yellow-400 text-xs font-bold mt-1">{tNs('hold')}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {isResultPhase && state.payout > 0 && (
+              <div className="text-white text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
+            )}
+
+            {isBetPhase && (
+              <div className="flex-1 flex flex-col items-center justify-center" data-tutorial="vp-bet-controls">
+                <ErrorAlert message={error} onRetry={retry} />
+                <div className="flex items-center gap-2">
+                  <label htmlFor="vp-bet-amount" className="text-white text-sm">
+                    {t('label.betAmount')}
+                  </label>
+                  <select
+                    id="vp-bet-amount"
+                    value={betAmount}
+                    onChange={(e) => setBetAmount(Number(e.target.value))}
+                    className="px-2 py-1 rounded text-sm"
+                  >
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button type="button" className={`${btnPrimary} mt-2`} onClick={handleDeal} disabled={loading}>
+                  {t('button.deal')}
+                </button>
+                <p className="text-gray-400 text-xs mt-2">{tNs('dealGuide')}</p>
+              </div>
+            )}
+
+            <PayoutTable t={tNs} rows={payoutTableRows} />
+
+            {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+          </div>
+
+          <GameFooter className={`${gameTheme[gameName].footer} px-4 pt-3`}>
+            {!isBetPhase && <ErrorAlert message={error} onRetry={retry} />}
+            {hintEnabled && hint && <HintTooltip reason={tNs(hint.reason)} confidence={hint.confidence} />}
+            {isDrawPhase && (
+              <div className="flex justify-center gap-2 pb-2" data-tutorial="vp-draw-button">
+                <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
+                  {t('button.draw')}
+                </button>
+              </div>
+            )}
+            {isResultPhase && (
+              <div className="flex justify-center gap-2 pb-2">
+                <div data-tutorial="vp-reset-button">
                   <button
                     type="button"
-                    onClick={() => toggleHold(i)}
-                    disabled={!isDrawPhase}
-                    className={`rounded transition-transform ${displayHeld[i] ? 'ring-2 ring-yellow-400 -translate-y-2' : ''}`}
-                    aria-label={displayHeld[i] ? `${tNs('hold')} ${i}` : tNs('card', { index: i })}
-                    aria-pressed={displayHeld[i] ?? false}
+                    className={btnPrimary}
+                    onClick={() => requestConfirm(handleReset)}
+                    disabled={loading}
                   >
-                    <AnimatedCard card={card} width={cardWidth} />
+                    {t('button.reset')}
                   </button>
-                  {displayHeld[i] && <span className="text-yellow-400 text-xs font-bold mt-1">{tNs('hold')}</span>}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {isResultPhase && state.payout > 0 && (
-          <div className="text-white text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
-        )}
-
-        {isBetPhase && (
-          <div className="flex-1 flex flex-col items-center justify-center" data-tutorial="vp-bet-controls">
-            <ErrorAlert message={error} />
-            <div className="flex items-center gap-2">
-              <label htmlFor="vp-bet-amount" className="text-white text-sm">
-                {t('label.betAmount')}
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+              </div>
+            )}
+            <div className="flex justify-center pb-2">
+              <label className="text-white text-sm flex items-center gap-1">
+                <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                {tc('hint.toggle', { ns: 'tutorial' })}
               </label>
-              <select
-                id="vp-bet-amount"
-                value={betAmount}
-                onChange={(e) => setBetAmount(Number(e.target.value))}
-                className="px-2 py-1 rounded text-sm"
-              >
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
             </div>
-            <button type="button" className={`${btnPrimary} mt-2`} onClick={handleDeal} disabled={loading}>
-              {t('button.deal')}
-            </button>
-            <p className="text-gray-400 text-xs mt-2">{tNs('dealGuide')}</p>
-          </div>
-        )}
-
-        <PayoutTable t={tNs} rows={payoutTableRows} />
-
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-      </div>
-
-      <GameFooter className={`${gameTheme[gameName].footer} px-4 pt-3`}>
-        {!isBetPhase && <ErrorAlert message={error} />}
-        {hintEnabled && hint && <HintTooltip reason={tNs(hint.reason)} confidence={hint.confidence} />}
-        {isDrawPhase && (
-          <div className="flex justify-center gap-2 pb-2" data-tutorial="vp-draw-button">
-            <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
-              {t('button.draw')}
-            </button>
-          </div>
-        )}
-        {isResultPhase && (
-          <div className="flex justify-center gap-2 pb-2">
-            <div data-tutorial="vp-reset-button">
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('button.reset')}
-              </button>
-            </div>
-            <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        <div className="flex justify-center pb-2">
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('hint.toggle', { ns: 'tutorial' })}
-          </label>
-        </div>
-      </GameFooter>
-      <WinCelebration show={isResultPhase && state.result === 1} />
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={isResultPhase && state.result === 1} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

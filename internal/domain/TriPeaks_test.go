@@ -589,3 +589,52 @@ func TestTriPeaks_StalemateAfterDraw(t *testing.T) {
 	// waste top is J(11), card is 9 — not adjacent, and stock is empty
 	assert.True(t, tp.IsStalemate())
 }
+
+// --- UndoToEscape / UndoN tests ---
+
+func TestTriPeaks_UndoToEscape_NotInStalemate(t *testing.T) {
+	tp := newTestTriPeaks()
+	tp.Reset()
+	assert.Equal(t, 0, tp.UndoToEscape())
+}
+
+func TestTriPeaks_UndoToEscape_StalemateNoHistory(t *testing.T) {
+	tp := newTestTriPeaks()
+	tp.Reset()
+	tp.SetIsStalemate(true)
+	assert.Equal(t, -1, tp.UndoToEscape())
+}
+
+func TestTriPeaks_UndoToEscape_StalemateWithEscape(t *testing.T) {
+	tp := newTestTriPeaks()
+	tp.Reset()
+	_ = tp.Draw()
+	tp.SetIsStalemate(true)
+	n := tp.UndoToEscape()
+	assert.Equal(t, 1, n)
+}
+
+func TestTriPeaks_UndoN_Zero(t *testing.T) {
+	tp := newTestTriPeaks()
+	tp.Reset()
+	err := tp.UndoN(0)
+	assert.NoError(t, err)
+}
+
+func TestTriPeaks_UndoN_Valid(t *testing.T) {
+	tp := newTestTriPeaks()
+	tp.Reset()
+	_ = tp.Draw()
+	_ = tp.Draw()
+	err := tp.UndoN(2)
+	assert.NoError(t, err)
+}
+
+func TestTriPeaks_UndoN_Excessive(t *testing.T) {
+	tp := newTestTriPeaks()
+	tp.Reset()
+	_ = tp.Draw()
+	err := tp.UndoN(5)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "undo step")
+}

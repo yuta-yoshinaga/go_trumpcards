@@ -16,6 +16,7 @@ type WebInput interface {
 type BaseWebInput struct {
 	Command   string `json:"command"`
 	SessionID string `json:"sessionId"`
+	N         *int   `json:"n,omitempty"`
 }
 
 // GetCommand returns the command string.

@@ -70,19 +70,11 @@ func (p MemoryWebInput) ToConfig() domain.MemoryConfig {
 // MemoryWebController 神経衰弱Webコントローラークラス
 type MemoryWebController = GameWebController[usecase.MemoryInteractorIF, MemoryWebInput, *MemoryWebOutput]
 
-// NewMemoryWebController コンストラクタ
-func NewMemoryWebController(factory func() usecase.MemoryInteractorIF) *MemoryWebController {
-	return NewGameWebController(factory, newMemoryDefaultOutput, memoryDispatch)
-}
-
-// NewMemoryWebControllerWithProvider creates a MemoryWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewMemoryWebControllerWithProvider(
-	provider SessionProvider[usecase.MemoryInteractorIF],
-	factory func() usecase.MemoryInteractorIF,
-) *MemoryWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newMemoryDefaultOutput, memoryDispatch)
-}
+// NewMemoryWebController and NewMemoryWebControllerWithProvider are
+// the standard and provider-backed constructors for MemoryWebController.
+var NewMemoryWebController, NewMemoryWebControllerWithProvider = webControllerPair[usecase.MemoryInteractorIF, MemoryWebInput, *MemoryWebOutput](
+	newMemoryDefaultOutput, memoryDispatch,
+)
 
 func newMemoryDefaultOutput(msg string) *MemoryWebOutput {
 	return &MemoryWebOutput{

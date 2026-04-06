@@ -69,19 +69,11 @@ func (p CrazyEightsWebInput) ToConfig() domain.CrazyEightsConfig {
 // CrazyEightsWebController クレイジーエイトWebコントローラークラス
 type CrazyEightsWebController = GameWebController[usecase.CrazyEightsInteractorIF, CrazyEightsWebInput, *CrazyEightsWebOutput]
 
-// NewCrazyEightsWebController コンストラクタ
-func NewCrazyEightsWebController(factory func() usecase.CrazyEightsInteractorIF) *CrazyEightsWebController {
-	return NewGameWebController(factory, newCrazyEightsDefaultOutput, crazyEightsDispatch)
-}
-
-// NewCrazyEightsWebControllerWithProvider creates a CrazyEightsWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewCrazyEightsWebControllerWithProvider(
-	provider SessionProvider[usecase.CrazyEightsInteractorIF],
-	factory func() usecase.CrazyEightsInteractorIF,
-) *CrazyEightsWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newCrazyEightsDefaultOutput, crazyEightsDispatch)
-}
+// NewCrazyEightsWebController and NewCrazyEightsWebControllerWithProvider are
+// the standard and provider-backed constructors for CrazyEightsWebController.
+var NewCrazyEightsWebController, NewCrazyEightsWebControllerWithProvider = webControllerPair[usecase.CrazyEightsInteractorIF, CrazyEightsWebInput, *CrazyEightsWebOutput](
+	newCrazyEightsDefaultOutput, crazyEightsDispatch,
+)
 
 func newCrazyEightsDefaultOutput(msg string) *CrazyEightsWebOutput {
 	return &CrazyEightsWebOutput{

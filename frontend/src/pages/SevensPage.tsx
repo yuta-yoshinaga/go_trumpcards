@@ -1,6 +1,8 @@
-import { useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useMemo } from 'react';
+import type { sevensApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import type { SettingsGroup } from '../components/common/SettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -17,15 +19,22 @@ import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { SevensSkeleton } from '../components/skeleton/SevensSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
-import { TutorialProvider } from '../providers/TutorialProvider';
+import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { SevensResponse } from '../types/card';
+import type { TutorialStep } from '../types/tutorial';
+import { parseSevensCommand, SEVENS_HELP } from '../utils/cli/commands/sevensCommands';
+import { formatSevensState } from '../utils/cli/formatters/sevensFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { actionDesc } from '../utils/sevensUtils';
 
@@ -48,19 +57,12 @@ const SV_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Sevens tutorial configuration. */
-const SV_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'sevens',
-  steps: SV_TUTORIAL_STEPS,
-};
-
 /** Renders the Sevens game page with board, player areas, and joker placement. */
 export function SevensPage() {
-  const { t: tSv } = useTranslation('sevens');
   return (
-    <TutorialProvider config={SV_TUTORIAL_CONFIG} translateMessage={tSv}>
+    <TutorialWrapper gameName="sevens" steps={SV_TUTORIAL_STEPS}>
       <SevensPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 
@@ -68,11 +70,13 @@ export function SevensPage() {
 function SevensPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sevens');
+  const { playSound } = useSound();
   const {
     state,
     loading,
     error,
     exec,
+    retry,
     jokerCardIdx,
     setJokerCardIdx,
     cfgTunnel,
@@ -101,6 +105,18 @@ function SevensPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('sevens', state);
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('sevens');
+  const cliConfig: CliGameConfig<SevensResponse, Parameters<typeof sevensApi.exec>> = useMemo(
+    () => ({
+      gameName: 'sevens',
+      parseCommand: parseSevensCommand,
+      formatResponse: formatSevensState,
+      helpText: SEVENS_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isHumanTurnForKbd = !!state && !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const humanCardCount = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
@@ -244,174 +260,182 @@ function SevensPageContent() {
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.sevens.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.sevens')} />
       <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/sevens" />
       </PhaseIndicator>
-      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        {state.config &&
-          (state.config.tunnelEnabled ||
-            state.config.tunnelSkipWidth >= 2 ||
-            state.config.jokerCount > 0 ||
-            state.config.cpuStrategy !== 0 ||
-            state.config.maxPasses !== 5 ||
-            state.config.noJokerFinish ||
-            state.config.jokerReclaimEnabled ||
-            state.config.endStopEnabled ||
-            state.config.jokerConsecutiveBanned) && (
-            <div className="bg-black/30 rounded-lg text-yellow-300 py-1.5 px-3 mb-2 text-xs">
-              {t('rules.title')}
-              {state.config.tunnelEnabled && ` ${t('rules.tunnelTag')}`}
-              {state.config.tunnelSkipWidth >= 2 &&
-                ` ${t('rules.tunnelSkipTag', { width: state.config.tunnelSkipWidth })}`}
-              {state.config.jokerCount > 0 && ` ${t('rules.jokerTag', { count: state.config.jokerCount })}`}
-              {state.config.cpuStrategy === 1 && ` ${t('rules.cpuStrategy')}`}
-              {state.config.cpuStrategy === 2 && ` ${t('rules.cpuHarassment')}`}
-              {state.config.maxPasses === 0 && ` ${t('rules.passUnlimited')}`}
-              {state.config.maxPasses !== 5 &&
-                state.config.maxPasses !== 0 &&
-                ` ${t('rules.passCount', { count: state.config.maxPasses })}`}
-              {state.config.noJokerFinish && ` ${t('rules.noJokerFinish')}`}
-              {state.config.jokerReclaimEnabled && ` ${t('rules.jokerReclaim')}`}
-              {state.config.endStopEnabled && ` ${t('rules.endStop')}`}
-              {state.config.jokerConsecutiveBanned && ` ${t('rules.jokerConsecutiveBanned')}`}
+
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {state.config &&
+              (state.config.tunnelEnabled ||
+                state.config.tunnelSkipWidth >= 2 ||
+                state.config.jokerCount > 0 ||
+                state.config.cpuStrategy !== 0 ||
+                state.config.maxPasses !== 5 ||
+                state.config.noJokerFinish ||
+                state.config.jokerReclaimEnabled ||
+                state.config.endStopEnabled ||
+                state.config.jokerConsecutiveBanned) && (
+                <div className="bg-black/30 rounded-lg text-yellow-300 py-1.5 px-3 mb-2 text-xs">
+                  {t('rules.title')}
+                  {state.config.tunnelEnabled && ` ${t('rules.tunnelTag')}`}
+                  {state.config.tunnelSkipWidth >= 2 &&
+                    ` ${t('rules.tunnelSkipTag', { width: state.config.tunnelSkipWidth })}`}
+                  {state.config.jokerCount > 0 && ` ${t('rules.jokerTag', { count: state.config.jokerCount })}`}
+                  {state.config.cpuStrategy === 1 && ` ${t('rules.cpuStrategy')}`}
+                  {state.config.cpuStrategy === 2 && ` ${t('rules.cpuHarassment')}`}
+                  {state.config.maxPasses === 0 && ` ${t('rules.passUnlimited')}`}
+                  {state.config.maxPasses !== 5 &&
+                    state.config.maxPasses !== 0 &&
+                    ` ${t('rules.passCount', { count: state.config.maxPasses })}`}
+                  {state.config.noJokerFinish && ` ${t('rules.noJokerFinish')}`}
+                  {state.config.jokerReclaimEnabled && ` ${t('rules.jokerReclaim')}`}
+                  {state.config.endStopEnabled && ` ${t('rules.endStop')}`}
+                  {state.config.jokerConsecutiveBanned && ` ${t('rules.jokerConsecutiveBanned')}`}
+                </div>
+              )}
+
+            <div className="flex gap-2.5 flex-wrap mb-2.5">
+              {cpuPlayers.map((player) => (
+                <SevensCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
+              ))}
             </div>
-          )}
 
-        <div className="flex gap-2.5 flex-wrap mb-2.5">
-          {cpuPlayers.map((player) => (
-            <SevensCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
-          ))}
-        </div>
+            <div data-tutorial="sv-board">
+              <SevensBoard
+                tablePlaced={tablePlaced}
+                tunnelEnabled={tunnelEnabled}
+                tunnelSkipWidth={state.config.tunnelSkipWidth}
+                endStopEnabled={state.config.endStopEnabled}
+                jokerSelecting={jokerCardIdx !== null}
+                onJokerPlace={handleJokerPlace}
+              />
+            </div>
 
-        <div data-tutorial="sv-board">
-          <SevensBoard
-            tablePlaced={tablePlaced}
-            tunnelEnabled={tunnelEnabled}
-            tunnelSkipWidth={state.config.tunnelSkipWidth}
-            endStopEnabled={state.config.endStopEnabled}
-            jokerSelecting={jokerCardIdx !== null}
-            onJokerPlace={handleJokerPlace}
-          />
-        </div>
-
-        {state.humanAction && (
-          <div
-            data-testid={state.humanAction.forcedPass ? 'human-action-forced-pass' : 'human-action'}
-            className={`rounded-lg py-2 px-3.5 my-2 text-xs ${state.humanAction.forcedPass ? 'bg-red-900/50 text-orange-200 border border-red-500/50' : 'bg-black/40 text-green-200'}`}
-          >
-            {actionDesc(state.players, state.humanAction, t)}
-          </div>
-        )}
-
-        {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
-            <span className="text-white">{tc('label.cpuActions')}</span>
-            {state.cpuActions.map((a, i) => (
+            {state.humanAction && (
               <div
-                key={`cpu-action-${a.playerIdx}-${i}`}
-                data-testid={a.forcedPass ? `cpu-action-forced-pass-${i}` : `cpu-action-${i}`}
-                className={a.forcedPass ? 'text-orange-200' : 'text-white'}
+                data-testid={state.humanAction.forcedPass ? 'human-action-forced-pass' : 'human-action'}
+                className={`rounded-lg py-2 px-3.5 my-2 text-xs ${state.humanAction.forcedPass ? 'bg-red-900/50 text-orange-200 border border-red-500/50' : 'bg-black/40 text-green-200'}`}
               >
-                {actionDesc(state.players, a, t)}
+                {actionDesc(state.players, state.humanAction, t)}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        <GameMessageBox
-          message={
-            state.gameEndFlag
-              ? `${t('resultPrefix')} ${state.players
-                  .filter((p) => p.rank > 0)
-                  .sort((a, b) => a.rank - b.rank)
-                  .map((p) =>
-                    t('resultEntry', { name: playerName(p.id, p.isHuman), rank: t('rankLabel', { rank: p.rank }) }),
-                  )
-                  .join(' ')}`
-              : state.message
-          }
-          messageCode={state.gameEndFlag ? undefined : state.messageCode}
-          messageParams={state.gameEndFlag ? undefined : state.messageParams}
-        />
+            {state.cpuActions && state.cpuActions.length > 0 && (
+              <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
+                <span className="text-white">{tc('label.cpuActions')}</span>
+                {state.cpuActions.map((a, i) => (
+                  <div
+                    key={`cpu-action-${a.playerIdx}-${i}`}
+                    data-testid={a.forcedPass ? `cpu-action-forced-pass-${i}` : `cpu-action-${i}`}
+                    className={a.forcedPass ? 'text-orange-200' : 'text-white'}
+                  >
+                    {actionDesc(state.players, a, t)}
+                  </div>
+                ))}
+              </div>
+            )}
 
-        <ActionLogSection
-          isEndPhase={state.gameEndFlag}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
+            <GameMessageBox
+              message={
+                state.gameEndFlag
+                  ? `${t('resultPrefix')} ${state.players
+                      .filter((p) => p.rank > 0)
+                      .sort((a, b) => a.rank - b.rank)
+                      .map((p) =>
+                        t('resultEntry', { name: playerName(p.id, p.isHuman), rank: t('rankLabel', { rank: p.rank }) }),
+                      )
+                      .join(' ')}`
+                  : state.message
+              }
+              messageCode={state.gameEndFlag ? undefined : state.messageCode}
+              messageParams={state.gameEndFlag ? undefined : state.messageParams}
+            />
 
-      <GameFooter className={`${gameTheme.sevens.footer} px-4 py-2.5`}>
-        {humanPlayer && (
-          <div className="mb-2" data-tutorial="sv-player-hand">
-            <SevensHumanArea
-              player={humanPlayer}
-              isCurrentTurn={isHumanTurn}
-              tablePlaced={tablePlaced}
-              tunnelEnabled={tunnelEnabled}
-              tunnelSkipWidth={state.config.tunnelSkipWidth}
-              noJokerFinish={state.config.noJokerFinish}
-              endStopEnabled={state.config.endStopEnabled}
-              jokerConsecutiveBanned={state.config.jokerConsecutiveBanned}
-              loading={loading}
-              onPlay={handleCardPlay}
+            <ActionLogSection
+              isEndPhase={state.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
             />
           </div>
-        )}
 
-        <div data-tutorial="sv-settings">
-          <SettingsPanel title={t('config.title')} groups={settingsGroups} />
-        </div>
+          <GameFooter className={`${gameTheme.sevens.footer} px-4 py-2.5`}>
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="sv-player-hand">
+                <SevensHumanArea
+                  player={humanPlayer}
+                  isCurrentTurn={isHumanTurn}
+                  tablePlaced={tablePlaced}
+                  tunnelEnabled={tunnelEnabled}
+                  tunnelSkipWidth={state.config.tunnelSkipWidth}
+                  noJokerFinish={state.config.noJokerFinish}
+                  endStopEnabled={state.config.endStopEnabled}
+                  jokerConsecutiveBanned={state.config.jokerConsecutiveBanned}
+                  loading={loading}
+                  onPlay={handleCardPlay}
+                />
+              </div>
+            )}
 
-        <ErrorAlert message={error} />
+            <div data-tutorial="sv-settings">
+              <SettingsPanel title={t('config.title')} groups={settingsGroups} />
+            </div>
 
-        {frontendHintEnabled && frontendHint && (
-          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-        )}
+            <ErrorAlert message={error} onRetry={retry} />
 
-        <div className="text-center">
-          <button
-            type="button"
-            className={`${btnOutline} min-w-[90px]`}
-            disabled={loading}
-            data-tutorial="sv-reset-button"
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                exec('reset', -1, 0, 0, {
-                  tunnelEnabled: cfgTunnel,
-                  tunnelSkipWidth: cfgTunnelSkipWidth,
-                  jokerCount: cfgJokerCount,
-                  cpuStrategy: cfgCpuStrategy,
-                  maxPasses: cfgMaxPasses,
-                  noJokerFinish: cfgNoJokerFinish,
-                  jokerReclaim: cfgJokerReclaim,
-                  endStop: cfgEndStop,
-                  jokerConsecutiveBanned: cfgJokerConsBan,
-                });
-              })
-            }
-          >
-            {tc('button.reset')}
-          </button>
-          <button
-            type="button"
-            className={`${btnSecondary} min-w-[90px]`}
-            disabled={loading || !canPass}
-            onClick={() => exec('play', -1)}
-            data-tutorial="sv-play-pass"
-          >
-            {tc('button.pass')}
-          </button>
-          {jokerCardIdx !== null && (
-            <button type="button" className={`${btnSecondary} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>
-              {tc('button.cancel')}
-            </button>
-          )}
-        </div>
-      </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
+
+            <div className="text-center">
+              <button
+                type="button"
+                className={`${btnOutline} min-w-[90px]`}
+                disabled={loading}
+                data-tutorial="sv-reset-button"
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    exec('reset', -1, 0, 0, {
+                      tunnelEnabled: cfgTunnel,
+                      tunnelSkipWidth: cfgTunnelSkipWidth,
+                      jokerCount: cfgJokerCount,
+                      cpuStrategy: cfgCpuStrategy,
+                      maxPasses: cfgMaxPasses,
+                      noJokerFinish: cfgNoJokerFinish,
+                      jokerReclaim: cfgJokerReclaim,
+                      endStop: cfgEndStop,
+                      jokerConsecutiveBanned: cfgJokerConsBan,
+                    });
+                  })
+                }
+              >
+                {tc('button.reset')}
+              </button>
+              <button
+                type="button"
+                className={`${btnSecondary} min-w-[90px]`}
+                disabled={loading || !canPass}
+                onClick={() => exec('play', -1)}
+                data-tutorial="sv-play-pass"
+              >
+                {tc('button.pass')}
+              </button>
+              {jokerCardIdx !== null && (
+                <button type="button" className={`${btnSecondary} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>
+                  {tc('button.cancel')}
+                </button>
+              )}
+            </div>
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

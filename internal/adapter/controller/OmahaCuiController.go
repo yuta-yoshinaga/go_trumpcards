@@ -3,6 +3,7 @@ package controller
 import (
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -40,12 +41,18 @@ func (c *OmahaCuiController) Exec(command string) string {
 			case "c", "call":
 				return c.oi.Action(domain.OmahaActionCall, 0, 0), true
 			case "b", "bet":
+				if len(args) < 1 {
+					return cuiutil.PromptRequest(i18n.T("promptBetAmount"), "b {0}"), true
+				}
 				amount, err := parseAmount(args)
 				if err != nil {
 					return err.Error(), true
 				}
 				return c.oi.Action(domain.OmahaActionBet, amount, 0), true
 			case "ra", "raise":
+				if len(args) < 1 {
+					return cuiutil.PromptRequest(i18n.T("promptRaiseAmount"), "ra {0}"), true
+				}
 				amount, err := parseAmount(args)
 				if err != nil {
 					return err.Error(), true

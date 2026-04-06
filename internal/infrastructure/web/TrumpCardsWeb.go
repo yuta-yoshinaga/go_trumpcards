@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	corsmw "github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/cors"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -57,6 +59,9 @@ type TrumpCardsWeb struct {
 	cnc  *controller.CanastaWebController
 	pinc *controller.PinochleWebController
 	glfc *controller.GolfWebController
+	ptc  *controller.PigsTailWebController
+	scsc *controller.SevenCardStudWebController
+	csc  *controller.ClockSolitaireWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -343,6 +348,25 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			golf := domain.NewGolf(domain.NewTrumpCards(0))
 			return usecase.NewGolfInteractor(golf, new(presenter.GolfWebPresenter))
 		}),
+		ptc: controller.NewPigsTailWebController(func() usecase.PigsTailInteractorIF {
+			players := []*domain.PigsTailPlayer{
+				domain.NewPigsTailPlayer(true),
+				domain.NewPigsTailPlayer(false),
+				domain.NewPigsTailPlayer(false),
+				domain.NewPigsTailPlayer(false),
+			}
+			pigsTail := domain.NewPigsTail(domain.NewTrumpCards(0), players)
+			return usecase.NewPigsTailInteractor(pigsTail, new(presenter.PigsTailWebPresenter))
+		}),
+		scsc: controller.NewSevenCardStudWebController(func() usecase.SevenCardStudInteractorIF {
+			cfg := domain.DefaultSevenCardStudConfig()
+			scs := domain.NewSevenCardStud(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewSevenCardStudInteractor(scs, new(presenter.SevenCardStudWebPresenter))
+		}),
+		csc: controller.NewClockSolitaireWebController(func() usecase.ClockSolitaireInteractorIF {
+			cs := domain.NewClockSolitaire(domain.NewTrumpCards(0))
+			return usecase.NewClockSolitaireInteractor(cs, new(presenter.ClockSolitaireWebPresenter))
+		}),
 	}
 }
 
@@ -391,6 +415,9 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/canasta/exec", web.cnc.Exec},
 		{"/pinochle/exec", web.pinc.Exec},
 		{"/golf/exec", web.glfc.Exec},
+		{"/pigtail/exec", web.ptc.Exec},
+		{"/sevencardstud/exec", web.scsc.Exec},
+		{"/clocksolitaire/exec", web.csc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -430,8 +457,8 @@ func (web *TrumpCardsWeb) Exec() error {
 		return fmt.Errorf("failed to listen on %s: %w", srv.Addr, err)
 	}
 	port := ln.Addr().(*net.TCPAddr).Port
-	fmt.Printf("Server is running at http://localhost:%d\n", port)
-	fmt.Println("Press Ctrl+C to stop")
+	fmt.Println(i18n.Tf("webServerRunning", "port", strconv.Itoa(port)))
+	fmt.Println(i18n.T("webServerStop"))
 
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.Serve(ln) }()
@@ -444,7 +471,7 @@ func (web *TrumpCardsWeb) Exec() error {
 			runErr = fmt.Errorf("server error: %w", err)
 		}
 	case <-ctx.Done():
-		fmt.Println("\nShutting down server...")
+		fmt.Println("\n" + i18n.T("webServerShutdown"))
 		slog.Info("shutting down server")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
@@ -484,7 +511,15 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.ohlc.Stop()
 	web.brc.Stop()
 	web.cnc.Stop()
-	fmt.Println("Server stopped.")
+	web.pnc.Stop()
+	web.spdc.Stop()
+	web.gfc.Stop()
+	web.pinc.Stop()
+	web.glfc.Stop()
+	web.ptc.Stop()
+	web.scsc.Stop()
+	web.csc.Stop()
+	fmt.Println(i18n.T("webServerStopped"))
 	slog.Info("server stopped")
 	return runErr
 }

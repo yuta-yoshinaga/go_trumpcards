@@ -53,11 +53,17 @@
     "speed": "Speed",
     "gofish": "Go Fish",
     "pinochle": "Pinochle",
-    "golf": "Golf"
+    "golf": "Golf",
+    "pigtail": "Pig's Tail",
+    "sevencardstud": "Seven Card Stud",
+    "clocksolitaire": "Clock Solitaire"
   },
   "sound": {
     "mute": "Mute sound",
     "unmute": "Unmute sound"
+  },
+  "settings": {
+    "title": "Settings"
   },
   "player": {
     "you": "You",
@@ -80,7 +86,8 @@
     "bettingLimit": "Limit:",
     "fixed": "Fixed",
     "potLimit": "Pot Limit",
-    "noLimit": "No Limit"
+    "noLimit": "No Limit",
+    "rangeHint": "Enter a value between {{min}} and {{max}}"
   },
   "button": {
     "reset": "Reset",
@@ -128,6 +135,7 @@
     "chipsWon": "+{{amount}} chips",
     "kicker": "Kicker: {{kickers}}",
     "mucked": "Mucked",
+    "player": "Player",
     "errorBoundaryTitle": "An error occurred",
     "errorBoundaryRetry": "Retry"
   },
@@ -260,11 +268,42 @@
     "golf.gameOver": "Game Over",
     "golf.hintAvailable": "Hint available",
     "golf.noHint": "No hint available",
-    "golf.stalemate": "No moves can lead to a win. Please undo or give up."
+    "golf.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "pigtail.result.humanLose": "Game Over! You lose!",
+    "pigtail.result.cpuLose": "Game Over! CPU {{cpuId}} loses!",
+    "clocksolitaire.playing": "Playing",
+    "clocksolitaire.gameClear": "Game Clear! Steps: {{stepCount}}",
+    "clocksolitaire.gameOver": "Game Over"
   },
   "manual": {
     "ariaLabel": "Game Manual",
     "close": "Close",
     "button": "Manual"
+  },
+  "metaAi": {
+    "learning": "AI: Learning...",
+    "adapting": "AI: Adapting",
+    "adapted": "AI: Adapted",
+    "strategyShift": "CPU strategy shift: {{strategy}}",
+    "strategy": {
+      "aggressive": "Aggressive",
+      "defensive": "Defensive",
+      "balanced": "Balanced",
+      "cautious": "Cautious",
+      "observing": "Observing"
+    }
+  },
+  "cli": {
+    "switchToCli": "Switch to CLI mode",
+    "switchToGui": "Switch to GUI mode",
+    "prompt": "Enter command...",
+    "unknownCommand": "Unknown command: {{cmd}}",
+    "unknownCommandWithSuggestion": "Unknown command: {{cmd}}. Did you mean: {{suggestion}}",
+    "emptyInput": "Please enter a command. Type 'help' for help.",
+    "helpCommon": "Common commands: r/reset (reset), help/? (help), clear (clear log)"
+  },
+  "solitaire": {
+    "undoToEscape": "Undo {{n}} steps to escape",
+    "noEscape": "No escapable state found. Please reset."
   }
 }

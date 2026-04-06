@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// CrazyEightsCui クレイジーエイトCUIクラス
-type CrazyEightsCui struct {
-	cc *controller.CrazyEightsCuiController
-}
-
 // NewCrazyEightsCui コンストラクタ
-func NewCrazyEightsCui() *CrazyEightsCui {
+func NewCrazyEightsCui() *genericCuiGame {
 	config := domain.DefaultCrazyEightsConfig()
 	players := []*domain.CrazyEightsPlayer{
 		domain.NewCrazyEightsPlayer(true),
@@ -23,17 +18,8 @@ func NewCrazyEightsCui() *CrazyEightsCui {
 		domain.NewCrazyEightsPlayer(false),
 	}
 	ce := domain.NewCrazyEights(domain.NewTrumpCards(0), players, config)
-	return &CrazyEightsCui{
-		cc: controller.NewCrazyEightsCuiController(usecase.NewCrazyEightsInteractor(ce, new(presenter.CrazyEightsCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *CrazyEightsCui) Controller() CuiExecer { return cui.cc }
-
-// HelpLines returns the game's help lines.
-func (cui *CrazyEightsCui) HelpLines() []string {
-	return []string{
+	cc := controller.NewCrazyEightsCuiController(usecase.NewCrazyEightsInteractor(ce, new(presenter.CrazyEightsCuiPresenter)))
+	return newCuiGame(cc, []string{
 		i18n.T("crazyeights.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -51,10 +37,5 @@ func (cui *CrazyEightsCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *CrazyEightsCui) Exec() {
-	RunCuiLoop(cui.cc, cui.HelpLines())
+	})
 }

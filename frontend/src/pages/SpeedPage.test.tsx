@@ -82,9 +82,15 @@ describe('SpeedPage', () => {
     });
   });
 
-  it('renders the page heading', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => {}));
     renderWithProviders(<SpeedPage />);
-    expect(screen.getByText('スピード')).toBeInTheDocument();
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('renders the page heading', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('スピード')).toBeInTheDocument());
   });
 
   it('renders player hand after API resolves', async () => {

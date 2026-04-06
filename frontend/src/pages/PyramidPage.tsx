@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import type { pyramidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -16,17 +18,24 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PyramidSkeleton } from '../components/skeleton/PyramidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePyramidGame } from '../hooks/usePyramidGame';
-import { TutorialProvider } from '../providers/TutorialProvider';
+import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { PyramidResponse } from '../types/card';
 import { PyramidPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { PYRAMID_HELP, parsePyramidCommand } from '../utils/cli/commands/pyramidCommands';
+import { formatPyramidState } from '../utils/cli/formatters/pyramidFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Pyramid tutorial step definitions. */
 const PY_TUTORIAL_STEPS: TutorialStep[] = [
@@ -62,19 +71,12 @@ const PY_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Pyramid tutorial configuration. */
-const PY_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'pyramid',
-  steps: PY_TUTORIAL_STEPS,
-};
-
 /** Renders the Pyramid Solitaire game page with pyramid, stock/waste, and controls. */
 export function PyramidPage() {
-  const { t: tPy } = useTranslation('pyramid');
   return (
-    <TutorialProvider config={PY_TUTORIAL_CONFIG} translateMessage={tPy}>
+    <TutorialWrapper gameName="pyramid" steps={PY_TUTORIAL_STEPS}>
       <PyramidPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 
@@ -82,10 +84,13 @@ export function PyramidPage() {
 function PyramidPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pyramid');
+  const { playSound } = useSound();
   const {
     state,
     loading,
     error,
+    exec,
+    retry,
     hintError,
     selectedCard,
     hint,
@@ -103,6 +108,18 @@ function PyramidPageContent() {
   } = useGameHint('pyramid', state);
   const { cardHeight, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pyramid');
+  const cliConfig: CliGameConfig<PyramidResponse, Parameters<typeof pyramidApi.exec>> = useMemo(
+    () => ({
+      gameName: 'pyramid',
+      parseCommand: parsePyramidCommand,
+      formatResponse: formatPyramidState,
+      helpText: PYRAMID_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayingForKbd = state?.phase === PyramidPhase.PLAYING;
 
@@ -154,202 +171,227 @@ function PyramidPageContent() {
         <span>
           {t('moveCount')}: {state.moveCount}
         </span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/pyramid" />
       </PhaseIndicator>
 
-      <LandscapeBanner message={t('landscapeBanner')} />
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <LandscapeBanner message={t('landscapeBanner')} />
 
-      {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        {/* Pyramid */}
-        <div data-tutorial="py-pyramid" className="flex flex-col items-center mb-3">
-          {state.pyramid.map((row, rowIdx) => {
-            const cols = row.length;
-            const rowWidth = cols * (effectiveCardWidth + cardGap) - cardGap;
-            const offsetX = (pyramidWidth - rowWidth) / 2;
-            return (
-              <div
-                key={`row-${rowIdx.toString()}`}
-                className="relative"
-                style={{
-                  height: rowIdx < state.pyramid.length - 1 ? cardHeight - rowOverlap : cardHeight,
-                  width: pyramidWidth,
-                }}
-              >
-                {row.map((pc, colIdx) => {
-                  const left = offsetX + colIdx * (effectiveCardWidth + cardGap);
-                  if (pc.removed) {
-                    return (
-                      <div
-                        key={`pc-${rowIdx.toString()}-${colIdx.toString()}`}
-                        className="absolute"
-                        style={{ left, width: effectiveCardWidth, height: cardHeight }}
-                      />
-                    );
-                  }
-                  if (!pc.card) return null;
-                  const exposed = pc.exposed;
-                  return (
-                    <div key={`pc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!exposed || !pc.card) return;
-                          handleSelectCard({ zone: 'pyramid', row: rowIdx, col: colIdx }, pc.card.value);
-                        }}
-                        disabled={!isPlaying || loading || !exposed}
-                        aria-label={cardAlt(pc.card)}
-                        aria-pressed={isSelected('pyramid', rowIdx, colIdx)}
-                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                          isSelected('pyramid', rowIdx, colIdx) ? 'ring-2 ring-yellow-400' : ''
-                        } ${!exposed ? 'opacity-60' : ''}`}
-                      >
-                        <AnimatedCard card={pc.card} width={effectiveCardWidth} />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Stock + Waste */}
-        <div className="flex gap-4 justify-center mb-3" data-tutorial="py-stock-waste">
-          {/* Stock */}
-          <div className="text-center">
-            <div className="text-game-text-muted text-xs mb-1">
-              {t('stock')} ({state.stockCount})
+          {/* Scrollable area */}
+          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            {/* Pyramid */}
+            <div data-tutorial="py-pyramid" className="flex flex-col items-center mb-3">
+              {state.pyramid.map((row, rowIdx) => {
+                const cols = row.length;
+                const rowWidth = cols * (effectiveCardWidth + cardGap) - cardGap;
+                const offsetX = (pyramidWidth - rowWidth) / 2;
+                return (
+                  <div
+                    key={`row-${rowIdx.toString()}`}
+                    className="relative"
+                    style={{
+                      height: rowIdx < state.pyramid.length - 1 ? cardHeight - rowOverlap : cardHeight,
+                      width: pyramidWidth,
+                    }}
+                  >
+                    {row.map((pc, colIdx) => {
+                      const left = offsetX + colIdx * (effectiveCardWidth + cardGap);
+                      if (pc.removed) {
+                        return (
+                          <div
+                            key={`pc-${rowIdx.toString()}-${colIdx.toString()}`}
+                            className="absolute"
+                            style={{ left, width: effectiveCardWidth, height: cardHeight }}
+                          />
+                        );
+                      }
+                      if (!pc.card) return null;
+                      const exposed = pc.exposed;
+                      return (
+                        <div key={`pc-${rowIdx.toString()}-${colIdx.toString()}`} className="absolute" style={{ left }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!exposed || !pc.card) return;
+                              handleSelectCard({ zone: 'pyramid', row: rowIdx, col: colIdx }, pc.card.value);
+                            }}
+                            disabled={!isPlaying || loading || !exposed}
+                            aria-label={cardAlt(pc.card)}
+                            aria-pressed={isSelected('pyramid', rowIdx, colIdx)}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                              isSelected('pyramid', rowIdx, colIdx) ? 'ring-2 ring-yellow-400' : ''
+                            } ${!exposed ? 'opacity-60' : ''}`}
+                          >
+                            <AnimatedCard
+                              card={pc.card}
+                              width={effectiveCardWidth}
+                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
-            {state.stockCount > 0 ? (
-              <AnimatedCardBack
-                width={effectiveCardWidth}
-                onClick={isPlaying ? handleDraw : undefined}
-                ariaLabel={t('draw')}
-              />
-            ) : (
-              <div
-                style={{ width: effectiveCardWidth, height: cardHeight }}
-                className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
-              >
-                {t('empty')}
+
+            {/* Stock + Waste */}
+            <div className="flex gap-4 justify-center mb-3" data-tutorial="py-stock-waste">
+              {/* Stock */}
+              <div className="text-center">
+                <div className="text-game-text-muted text-xs mb-1">
+                  {t('stock')} ({state.stockCount})
+                </div>
+                {state.stockCount > 0 ? (
+                  <AnimatedCardBack
+                    width={effectiveCardWidth}
+                    onClick={isPlaying ? handleDraw : undefined}
+                    ariaLabel={t('draw')}
+                    onFlipComplete={() => playSound('cardFlip')}
+                  />
+                ) : (
+                  <div
+                    style={{ width: effectiveCardWidth, height: cardHeight }}
+                    className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
+                  >
+                    {t('empty')}
+                  </div>
+                )}
+              </div>
+
+              {/* Waste */}
+              <div className="text-center">
+                <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                {state.waste.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const topCard = state.waste[state.waste.length - 1];
+                      handleSelectCard({ zone: 'waste' }, topCard.value);
+                    }}
+                    disabled={!isPlaying || loading}
+                    aria-label={cardAlt(state.waste[state.waste.length - 1])}
+                    aria-pressed={isSelected('waste')}
+                    className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                      isSelected('waste') ? 'ring-2 ring-yellow-400' : ''
+                    }`}
+                  >
+                    <AnimatedCard
+                      card={state.waste[state.waste.length - 1]}
+                      width={effectiveCardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                  </button>
+                ) : (
+                  <div
+                    style={{ width: effectiveCardWidth, height: cardHeight }}
+                    className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
+                  >
+                    {t('empty')}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Hint display */}
+            <div data-tutorial="py-hint-display">
+              {hint && (
+                <div className="text-yellow-300 text-sm mb-2 text-center">
+                  {t('hintAvailable')}: {t(`hintType.${hint.type}`)}
+                </div>
+              )}
+            </div>
+            {frontendHintEnabled && frontendHint && (
+              <div className="flex justify-center">
+                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
               </div>
             )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={isEnded}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
 
-          {/* Waste */}
-          <div className="text-center">
-            <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
-            {state.waste.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => {
-                  const topCard = state.waste[state.waste.length - 1];
-                  handleSelectCard({ zone: 'waste' }, topCard.value);
-                }}
-                disabled={!isPlaying || loading}
-                aria-label={cardAlt(state.waste[state.waste.length - 1])}
-                aria-pressed={isSelected('waste')}
-                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                  isSelected('waste') ? 'ring-2 ring-yellow-400' : ''
-                }`}
-              >
-                <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
-              </button>
-            ) : (
-              <div
-                style={{ width: effectiveCardWidth, height: cardHeight }}
-                className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
-              >
-                {t('empty')}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Hint display */}
-        <div data-tutorial="py-hint-display">
-          {hint && (
-            <div className="text-yellow-300 text-sm mb-2 text-center">
-              {t('hintAvailable')}: {t(`hintType.${hint.type}`)}
-            </div>
-          )}
-        </div>
-        {frontendHintEnabled && frontendHint && (
-          <div className="flex justify-center">
-            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-          </div>
-        )}
-
-        {/* Message */}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={isEnded}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      {/* Settings */}
-      <SettingsPanel
-        title={tc('settings.title')}
-        groups={[
-          {
-            items: [
+          {/* Settings */}
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
               {
-                type: 'checkbox' as const,
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
               },
-            ],
-          },
-        ]}
-      />
+            ]}
+          />
 
-      {/* Footer */}
-      <GameFooter className={`${gameTheme.pyramid.footer} px-4 py-2.5`}>
-        <ErrorAlert message={error ?? hintError} />
-        <div className="flex gap-2 items-center flex-wrap">
-          {isPlaying && (
-            <div data-tutorial="py-controls">
-              <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
-                {t('draw')}
-              </button>
-              <button type="button" className={btnPrimary} onClick={handleUndo} disabled={loading || !state.canUndo}>
-                {t('undo')}
-              </button>
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
-                {t('hint')}
-              </button>
-              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                {t('giveup')}
-              </button>
+          {/* Footer */}
+          <GameFooter className={`${gameTheme.pyramid.footer} px-4 py-2.5`}>
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+            <div className="flex gap-2 items-center flex-wrap">
+              {isPlaying && (
+                <div data-tutorial="py-controls">
+                  <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
+                    {t('draw')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleUndo}
+                    disabled={loading || !state.canUndo}
+                  >
+                    {t('undo')}
+                  </button>
+                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+                    {t('hint')}
+                  </button>
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('giveup')}
+                  </button>
+                </div>
+              )}
+              <div data-tutorial="py-reset-button">
+                <button
+                  type="button"
+                  className={btnOutline}
+                  onClick={() =>
+                    requestConfirm(() => {
+                      hideActionLog();
+                      return handleReset();
+                    })
+                  }
+                  disabled={loading}
+                >
+                  {tc('button.reset')}
+                </button>
+              </div>
             </div>
-          )}
-          <div data-tutorial="py-reset-button">
-            <button
-              type="button"
-              className={btnOutline}
-              onClick={() =>
-                requestConfirm(() => {
-                  hideActionLog();
-                  return handleReset();
-                })
-              }
-              disabled={loading}
-            >
-              {tc('button.reset')}
-            </button>
-          </div>
-        </div>
-      </GameFooter>
-      <WinCelebration show={state.phase === PyramidPhase.GAME_CLEAR} />
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={state.phase === PyramidPhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

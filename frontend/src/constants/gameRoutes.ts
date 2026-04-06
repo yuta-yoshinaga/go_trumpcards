@@ -34,6 +34,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/omaha', labelKey: 'nav.omaha', icon: '4️⃣' },
       { path: '/shortdeck', labelKey: 'nav.shortdeck', icon: '6️⃣' },
       { path: '/pineapple', labelKey: 'nav.pineapple', icon: '🍍' },
+      { path: '/sevencardstud', labelKey: 'nav.sevencardstud', icon: '7️⃣' },
       { path: '/indianpoker', labelKey: 'nav.indianpoker', icon: '🙈' },
       { path: '/videopoker', labelKey: 'nav.videopoker', icon: '📺' },
       { path: '/deuceswild', labelKey: 'nav.deuceswild', icon: '2️⃣' },
@@ -64,6 +65,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/speed', labelKey: 'nav.speed', icon: '⚡' },
       { path: '/gofish', labelKey: 'nav.gofish', icon: '🐟' },
       { path: '/pinochle', labelKey: 'nav.pinochle', icon: '🎯' },
+      { path: '/pigtail', labelKey: 'nav.pigtail', icon: '🐷' },
     ],
   },
   {
@@ -77,6 +79,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/tripeaks', labelKey: 'nav.tripeaks', icon: '⛰️' },
       { path: '/golf', labelKey: 'nav.golf', icon: '⛳' },
       { path: '/memory', labelKey: 'nav.memory', icon: '🧠' },
+      { path: '/clocksolitaire', labelKey: 'nav.clocksolitaire', icon: '🕐' },
     ],
   },
   {

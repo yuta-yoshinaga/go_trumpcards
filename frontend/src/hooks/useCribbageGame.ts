@@ -29,7 +29,7 @@ export function useCribbageGame() {
   const onSuccess = useCallback(() => {
     clearSelection();
   }, [clearSelection]);
-  const { state, loading, error, exec: rawExec } = useGameApi(cribbageApi.exec, { onSuccess });
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(cribbageApi.exec, { onSuccess });
 
   const gameExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -74,5 +74,6 @@ export function useCribbageGame() {
     handleGo,
     handleShowNext,
     handleNextRound,
+    retry,
   };
 }

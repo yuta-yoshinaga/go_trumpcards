@@ -63,4 +63,18 @@ describe('AnimatedCard', () => {
     render(<AnimatedCard card={mockCard} draggable onDragStart={onDragStart} />);
     expect(screen.getByRole('img')).toHaveAttribute('draggable', 'true');
   });
+
+  it('accepts onDealComplete callback prop', () => {
+    vi.mocked(useReducedMotion).mockReturnValue(false);
+    const onDealComplete = vi.fn();
+    render(<AnimatedCard card={mockCard} onDealComplete={onDealComplete} />);
+    expect(screen.getByTestId('animated-card')).toBeInTheDocument();
+  });
+
+  it('does not pass onDealComplete in reduced motion mode', () => {
+    vi.mocked(useReducedMotion).mockReturnValue(true);
+    const onDealComplete = vi.fn();
+    render(<AnimatedCard card={mockCard} onDealComplete={onDealComplete} />);
+    expect(screen.queryByTestId('animated-card')).not.toBeInTheDocument();
+  });
 });

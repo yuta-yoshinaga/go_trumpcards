@@ -138,19 +138,63 @@ describe('BettingControls', () => {
     expect(input).not.toHaveAttribute('max');
   });
 
-  it('clamps input value to maxBetAmount', () => {
+  it('passes through value exceeding maxBetAmount without clamping', () => {
     const onBetAmountChange = vi.fn();
     render(<BettingControls {...makeProps({ maxBetAmount: 50, onBetAmountChange })} />);
     const input = screen.getByLabelText('ベット額:');
     fireEvent.change(input, { target: { value: '80' } });
-    expect(onBetAmountChange).toHaveBeenCalledWith(50);
+    expect(onBetAmountChange).toHaveBeenCalledWith(80);
   });
 
-  it('does not clamp when value is within maxBetAmount', () => {
-    const onBetAmountChange = vi.fn();
-    render(<BettingControls {...makeProps({ maxBetAmount: 100, onBetAmountChange })} />);
+  it('shows range hint when value exceeds maxBetAmount', () => {
+    render(<BettingControls {...makeProps({ betAmount: 80, maxBetAmount: 50 })} />);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText(/10 〜 50/)).toBeInTheDocument();
+  });
+
+  it('shows range hint when value is below minRaise', () => {
+    render(<BettingControls {...makeProps({ betAmount: 5, minRaise: 10, maxBetAmount: 100 })} />);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText(/10 〜 100/)).toBeInTheDocument();
+  });
+
+  it('does not show range hint when value is within range', () => {
+    render(<BettingControls {...makeProps({ betAmount: 30, minRaise: 10, maxBetAmount: 100 })} />);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('sets aria-invalid on input when out of range', () => {
+    render(<BettingControls {...makeProps({ betAmount: 80, maxBetAmount: 50 })} />);
     const input = screen.getByLabelText('ベット額:');
-    fireEvent.change(input, { target: { value: '80' } });
-    expect(onBetAmountChange).toHaveBeenCalledWith(80);
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('applies error styling to input when out of range', () => {
+    render(<BettingControls {...makeProps({ betAmount: 80, maxBetAmount: 50 })} />);
+    const input = screen.getByLabelText('ベット額:');
+    expect(input.className).toContain('bg-red-100');
+  });
+
+  it('disables bet/raise button when value is out of range', () => {
+    render(<BettingControls {...makeProps({ betAmount: 5 })} />);
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+  });
+
+  it('disables raise button when value is out of range with outstanding bet', () => {
+    render(<BettingControls {...makeProps({ betAmount: 5, hasOutstandingBet: true })} />);
+    expect(screen.getByRole('button', { name: 'レイズ' })).toBeDisabled();
+  });
+
+  it('treats NaN betAmount as out of range', () => {
+    render(<BettingControls {...makeProps({ betAmount: NaN })} />);
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+    expect(screen.getByLabelText('ベット額:')).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('does not disable check/call/fold/all-in when out of range', () => {
+    render(<BettingControls {...makeProps({ betAmount: 5, hasOutstandingBet: true })} />);
+    expect(screen.getByRole('button', { name: 'コール' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'フォールド' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'オールイン' })).not.toBeDisabled();
   });
 });

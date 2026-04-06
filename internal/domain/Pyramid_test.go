@@ -589,3 +589,46 @@ func TestPyramid_RemovePair_ExposesParent(t *testing.T) {
 
 	assert.True(t, p.IsExposed(5, 2))
 }
+
+// --- UndoToEscape / UndoN tests ---
+
+func TestPyramid_UndoToEscape_NotInStalemate(t *testing.T) {
+	p := newTestPyramid()
+	assert.Equal(t, 0, p.UndoToEscape())
+}
+
+func TestPyramid_UndoToEscape_StalemateNoHistory(t *testing.T) {
+	p := newTestPyramid()
+	p.SetIsStalemate(true)
+	assert.Equal(t, -1, p.UndoToEscape())
+}
+
+func TestPyramid_UndoToEscape_StalemateWithEscape(t *testing.T) {
+	p := newTestPyramid()
+	_ = p.Draw()
+	p.SetIsStalemate(true)
+	n := p.UndoToEscape()
+	assert.Equal(t, 1, n)
+}
+
+func TestPyramid_UndoN_Zero(t *testing.T) {
+	p := newTestPyramid()
+	err := p.UndoN(0)
+	assert.NoError(t, err)
+}
+
+func TestPyramid_UndoN_Valid(t *testing.T) {
+	p := newTestPyramid()
+	_ = p.Draw()
+	_ = p.Draw()
+	err := p.UndoN(2)
+	assert.NoError(t, err)
+}
+
+func TestPyramid_UndoN_Excessive(t *testing.T) {
+	p := newTestPyramid()
+	_ = p.Draw()
+	err := p.UndoN(5)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "undo step")
+}

@@ -243,6 +243,34 @@ func TestFreeCellWebController(t *testing.T) {
 	}
 }
 
+func TestFreeCellWebController_UndoN(t *testing.T) {
+	mockOutput := mustFreeCellOutputJSON("ok")
+
+	fiMock := new(usecase.MockFreeCellInteractor)
+	fiMock.On("UndoN", 3).Return(mockOutput)
+
+	factory := func() uc.FreeCellInteractorIF { return fiMock }
+	ctrl := controller.NewFreeCellWebController(factory)
+
+	t.Run("undo_n with valid n", func(t *testing.T) {
+		n := 3
+		input := controller.FreeCellWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1", N: &n},
+		}
+		recorded := execRequest(t, ctrl.Exec, input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(mockOutput)
+	})
+
+	t.Run("undo_n with missing n", func(t *testing.T) {
+		input := controller.FreeCellWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "undo_n", SessionID: "s1"},
+		}
+		recorded := execRequest(t, ctrl.Exec, input)
+		recorded.CodeIs(http.StatusBadRequest)
+	})
+}
+
 func TestFreeCellWebController_MoveErrors(t *testing.T) {
 	fiMock := new(usecase.MockFreeCellInteractor)
 	factory := func() uc.FreeCellInteractorIF { return fiMock }

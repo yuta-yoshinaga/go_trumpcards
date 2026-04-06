@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// GoFishCui Go FishCUIクラス
-type GoFishCui struct {
-	gfc *controller.GoFishCuiController
-}
-
 // NewGoFishCui コンストラクタ
-func NewGoFishCui() *GoFishCui {
+func NewGoFishCui() *genericCuiGame {
 	players := []*domain.GoFishPlayer{
 		domain.NewGoFishPlayer(true),
 		domain.NewGoFishPlayer(false),
@@ -22,19 +17,10 @@ func NewGoFishCui() *GoFishCui {
 		domain.NewGoFishPlayer(false),
 	}
 	goFish := domain.NewGoFish(domain.NewTrumpCards(0), players)
-	return &GoFishCui{
-		gfc: controller.NewGoFishCuiController(
-			usecase.NewGoFishInteractor(goFish, new(presenter.GoFishCuiPresenter)),
-		),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *GoFishCui) Controller() CuiExecer { return cui.gfc }
-
-// HelpLines returns the game's help lines.
-func (cui *GoFishCui) HelpLines() []string {
-	return []string{
+	gfc := controller.NewGoFishCuiController(
+		usecase.NewGoFishInteractor(goFish, new(presenter.GoFishCuiPresenter)),
+	)
+	return newCuiGame(gfc, []string{
 		i18n.T("gofish.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -47,10 +33,5 @@ func (cui *GoFishCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *GoFishCui) Exec() {
-	RunCuiLoop(cui.gfc, cui.HelpLines())
+	})
 }

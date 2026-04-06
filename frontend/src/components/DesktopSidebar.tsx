@@ -11,13 +11,8 @@ import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
 /** Lookup map from path to game route for favorite rendering. */
 const routeByPath = new Map(gameRoutes.map((r) => [r.path, r]));
 
-interface DesktopSidebarProps {
-  soundMuted?: boolean;
-  onSoundToggle?: () => void;
-}
-
 /** Persistent left sidebar navigation for large desktop (≥1024px) with search, favorites, categories, and tutorial progress. */
-export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProps) {
+export function DesktopSidebar() {
   const { pathname } = useLocation();
   const { t, i18n } = useTranslation('common');
   const currentLang = i18n.language;
@@ -227,7 +222,7 @@ export function DesktopSidebar({ soundMuted, onSoundToggle }: DesktopSidebarProp
             EN
           </button>
         </div>
-        {soundMuted !== undefined && onSoundToggle && <SoundToggle muted={soundMuted} onToggle={onSoundToggle} />}
+        <SoundToggle />
       </div>
     </aside>
   );

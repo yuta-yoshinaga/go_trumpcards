@@ -21,6 +21,7 @@ func setupPyramidWebMockDefaults(pg *interfaces.MockPyramidGame) {
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
+	pg.On("UndoToEscape").Return(0).Maybe()
 	pg.On("AllRemoved").Return(false).Maybe()
 
 	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
@@ -89,6 +90,7 @@ func TestPyramidWebPresenterOutput_GameClear(t *testing.T) {
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
+	pg.On("UndoToEscape").Return(0).Maybe()
 
 	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
 	for row := range domain.PyramidRowCnt {
@@ -126,6 +128,7 @@ func TestPyramidWebPresenterOutput_GameOver(t *testing.T) {
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("IsStalemate").Return(false).Maybe()
+	pg.On("UndoToEscape").Return(0).Maybe()
 
 	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
 	for row := range domain.PyramidRowCnt {
@@ -159,6 +162,7 @@ func TestPyramidWebPresenterOutput_Stalemate(t *testing.T) {
 	pg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	pg.On("CanUndo").Return(false).Maybe()
 	pg.On("IsStalemate").Return(true).Maybe()
+	pg.On("UndoToEscape").Return(-1).Maybe()
 
 	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
 	for row := range domain.PyramidRowCnt {
@@ -188,6 +192,7 @@ func TestPyramidWebPresenterHintOutput_WithHint(t *testing.T) {
 	pg.On("GetMoveCount").Return(0)
 	pg.On("GetStockCount").Return(24)
 	pg.On("CanUndo").Return(false)
+	pg.On("UndoToEscape").Return(0)
 
 	p := &PyramidWebPresenter{}
 	result := p.HintOutput(pg)
@@ -205,6 +210,7 @@ func TestPyramidWebPresenterHintOutput_NoHint(t *testing.T) {
 	pg.On("GetMoveCount").Return(0)
 	pg.On("GetStockCount").Return(24)
 	pg.On("CanUndo").Return(false)
+	pg.On("UndoToEscape").Return(0)
 
 	p := &PyramidWebPresenter{}
 	result := p.HintOutput(pg)

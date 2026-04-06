@@ -7,7 +7,7 @@ import { useGameApi } from './useGameApi';
 
 /** Hook that manages FreeCell game state, source selection, hints, and moves. */
 export function useFreeCellGame() {
-  const { state, loading, error, exec: rawExec } = useGameApi(freecellApi.exec);
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(freecellApi.exec);
   const [selectedSource, setSelectedSource] = useState<FreeCellMoveZone | null>(null);
   const [hint, setHint] = useState<FreeCellHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
@@ -95,5 +95,6 @@ export function useFreeCellGame() {
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,
+    retry,
   };
 }

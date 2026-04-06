@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全34ゲーム)](#12-ゲームドメイン-全34ゲーム)
+  - [1.2 ゲームドメイン (全39ゲーム)](#12-ゲームドメイン-全39ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -20,7 +20,9 @@
   - [2.7 Bridge オークション・トリックフロー](#27-bridge-オークショントリックフロー)
   - [2.8 Pineapple ディスカードフロー](#28-pineapple-ディスカードフロー)
   - [2.9 Speed プレイフロー](#29-speed-プレイフロー)
-  - [2.10 GoFish 要求フロー](#210-gofish-要求フロー)
+  - [2.10 GoFish 要求フロー](#210-gofish-要求フロ���)
+  - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
+  - [2.12 SevenCardStud ベッティングフロー](#212-sevencardstud-ベッティングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -29,7 +31,7 @@
   - [3.5 Spades フェーズ遷移](#35-spades-フェーズ遷移)
   - [3.6 Doubt フェーズ遷移](#36-doubt-フェーズ遷移)
   - [3.7 Memory フェーズ遷移](#37-memory-フェーズ遷移)
-  - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks--golf-フェーズ遷移)
+  - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf / ClockSolitaire フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks--golf--clocksolitaire-フェーズ遷移)
   - [3.9 CrazyEights フェーズ遷移](#39-crazyeights-フェーズ遷移)
   - [3.10 GinRummy フェーズ遷移](#310-ginrummy-フェーズ遷移)
   - [3.11 Baccarat フェーズ遷移](#311-baccarat-フェーズ遷移)
@@ -47,6 +49,8 @@
   - [3.23 GoFish フェーズ遷移](#323-gofish-フェーズ遷移)
   - [3.24 Canasta フェーズ遷移](#324-canasta-フェーズ遷移)
   - [3.25 Pinochle フェーズ遷移](#325-pinochle-フェーズ遷移)
+  - [3.26 PigsTail フェーズ遷移](#326-pigstail-フェーズ遷移)
+  - [3.27 SevenCardStud フェーズ遷移](#327-sevencardstud-フェーズ遷移)
 
 ---
 
@@ -114,7 +118,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全34ゲーム)
+### 1.2 ゲームドメイン (全39ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -790,6 +794,83 @@ classDiagram
     GinRummyPlayer --|> GamePlayer
     SpeedPlayer --|> Player
     GoFishPlayer --|> GamePlayer
+
+    class PigsTail {
+        -trumpCards *TrumpCards
+        -players []*PigsTailPlayer
+        -circlePile []*Card
+        -centerPile []*Card
+        -phase PigsTailPhase
+        -currentTurn int
+        +Reset()
+        +Draw() error
+        +Phase() PigsTailPhase
+        +ActionLog() []*ActionLogEntry
+    }
+
+    class PigsTailPlayer {
+        -penaltyCards []*Card
+    }
+
+    PigsTail --> "4" PigsTailPlayer
+    PigsTailPlayer --|> GamePlayer
+```
+
+#### セブンカード・スタッド
+
+```mermaid
+classDiagram
+    class SevenCardStud {
+        -trumpCards *TrumpCards
+        -players []*SevenCardStudPlayer
+        -config SevenCardStudConfig
+        -phase int
+        -pot int
+        -bettingState BettingState
+        -dealerIdx int
+        -currentTurn int
+        -bringInPlayerIdx int
+        -humanProfile *BettingHumanProfile
+        +Reset()
+        +PlayerFold() error
+        +PlayerCheck() error
+        +PlayerCall() error
+        +PlayerBet(amount int) error
+        +PlayerRaise(amount int) error
+        +PlayerAllIn() error
+        +PlayerRebuy() error
+        +PlayerAddon() error
+        +PlayerMuck() error
+        +PlayerShow() error
+        +Phase() int
+        +ActionLog() []*ActionLogEntry
+    }
+
+    class SevenCardStudPlayer {
+        +[]*Card HoleCards
+        +[]*Card DoorCards
+        +int HandRank
+        +string HandName
+    }
+
+    class SevenCardStudConfig {
+        +int Ante
+        +int BringIn
+        +int SmallBet
+        +int BigBet
+        +BettingLimitType BettingLimit
+        +int TableSize
+        +bool TournamentMode
+        +int AnteLevelHands
+        +int AnteMultiplier
+        +bool CpuMetaAI
+    }
+
+    SevenCardStud --> "*" SevenCardStudPlayer
+    SevenCardStud --> "1" SevenCardStudConfig
+    SevenCardStud --> "1" BettingState
+    SevenCardStudPlayer --|> GamePlayer
+    SevenCardStudPlayer --> "1" ChipHolder
 ```
 
 #### ソリティア系ゲーム
@@ -810,6 +891,8 @@ classDiagram
         +Move(from string, fromCol int, fromIdx int, to string, toCol int) error
         +Hint() *KlondikeHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +Autocomplete() error
         +GiveUp()
         +Phase() KlondikePhase
@@ -826,6 +909,8 @@ classDiagram
         +Move(from string, fromCol int, fromIdx int, to string, toCol int) error
         +Hint() *FreeCellHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +Autocomplete() error
         +GiveUp()
         +Phase() FreeCellPhase
@@ -844,6 +929,8 @@ classDiagram
         +Move(fromCol int, fromIdx int, toCol int) error
         +Hint() *SpiderHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +Autocomplete() error
         +GiveUp()
         +Phase() SpiderPhase
@@ -864,6 +951,8 @@ classDiagram
         +RemoveWasteKing() error
         +GetHint() *PyramidHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +GiveUp()
         +Phase() PyramidPhase
     }
@@ -880,6 +969,8 @@ classDiagram
         +Remove(row int, col int) error
         +GetHint() *TriPeaksHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +GiveUp()
         +Phase() TriPeaksPhase
     }
@@ -896,8 +987,22 @@ classDiagram
         +Remove(col int) error
         +GetHint() *GolfHint
         +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
         +GiveUp()
         +Phase() GolfPhase
+    }
+
+    class ClockSolitaire {
+        -trumpCards *TrumpCards
+        -piles [13][]*ClockCard
+        -currentPileIdx int
+        -stepCount int
+        -phase ClockSolitairePhase
+        +Reset()
+        +Step() error
+        +AutoPlay() error
+        +Phase() ClockSolitairePhase
     }
 
     class Cribbage {
@@ -956,6 +1061,11 @@ classDiagram
         +bool Matched
     }
 
+    class ClockCard {
+        +*Card Card
+        +bool FaceUp
+    }
+
     Klondike --> "*" KlondikeTableauCard
     FreeCell --> "*" Card
     Spider --> "*" SpiderTableauCard
@@ -965,6 +1075,7 @@ classDiagram
     Memory --> "*" MemoryBoardCard
     Memory --> "*" MemoryPlayer
     MemoryPlayer --|> GamePlayer
+    ClockSolitaire --> "*" ClockCard
 ```
 
 ### 1.3 ユースケース層 (Interactor・Presenter)
@@ -1018,7 +1129,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全31ゲーム共通)**
+**Interactor パターン (全39ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1090,8 +1201,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "27ゲーム × CUI/Web = 54 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "27ゲーム × CUI/Web = 54 Presenter 実装"
+    note for GameCuiController "39ゲーム × CUI/Web = 78 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "39ゲーム × CUI/Web = 78 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1131,6 +1242,9 @@ classDiagram
         -bridge *BridgeWebController
         -speed *SpeedWebController
         -gofish *GoFishWebController
+        -pigtail *PigsTailWebController
+        -sevencardstud *SevenCardStudWebController
+        -clocksolitaire *ClockSolitaireWebController
         +Exec()
     }
 
@@ -1152,8 +1266,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 30 controllers
-    GameManager --> "*" CuiExecer : holds 29 games
+    TrumpCardsWeb --> "*" GameWebController : holds 39 controllers
+    GameManager --> "*" CuiExecer : holds 39 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1467,6 +1581,46 @@ sequenceDiagram
     Pres-->>User: Go Fish結果・手札更新表示
 ```
 
+### 2.11 PigsTail ドローフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as PigsTailInteractor
+    participant Domain as PigsTail
+    participant Pres as Presenter
+
+    Note over User,Pres: ドローフロー
+    User->>Ctrl: draw
+    Ctrl->>Interactor: Draw()
+    Interactor->>Domain: Draw()
+    Domain->>Domain: 山札から1枚引く → スート一致判定 → ペナルティ or 場に置く → CPU自動プレイ
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ドロー結果・手札枚数更新表示
+```
+
+### 2.12 SevenCardStud ベッティングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as SevenCardStudInteractor
+    participant Domain as SevenCardStud
+    participant Pres as Presenter
+
+    Note over User,Pres: ベッティングフロー (サード～セブンスストリート)
+    User->>Ctrl: bet 40 / call / raise 80 / fold / allin
+    Ctrl->>Interactor: PlayerBet(40) / PlayerCall() / PlayerRaise(80) / PlayerFold() / PlayerAllIn()
+    Interactor->>Domain: アクション実行
+    Domain->>Domain: ベット処理 → CPU自動アクション → ストリート進行判定
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ベッティング結果・カード更新表示
+```
+
 ---
 
 ## 3. ステートマシン図
@@ -1581,21 +1735,21 @@ stateDiagram-v2
     note right of Result : MemoryPhaseResult = 2
 ```
 
-### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf フェーズ遷移
+### 3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf / ClockSolitaire フェーズ遷移
 
-6つのソリティア系ゲームは共通のフェーズ構造を持ちます。
+7つのソリティア系ゲームは共通のフェーズ構造を持ちます。
 
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Move / Draw / Deal / Remove / Undo
-    Playing --> GameClear : 全カードをFoundation/Pyramid/Tableau除去完了
+    Playing --> Playing : Move / Draw / Deal / Remove / Step / Undo
+    Playing --> GameClear : 全カードをFoundation/Pyramid/Tableau除去完了または全表向き
     Playing --> GameClear : Autocomplete成功 (Klondike/FreeCell/Spider のみ)
-    Playing --> GameOver : GiveUp
+    Playing --> GameOver : GiveUp または4枚目のK表向き(ClockSolitaire)
     GameClear --> [*]
     GameOver --> [*]
 
-    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks/Golf 共通 Phase = 0
+    note right of Playing : Klondike/FreeCell/Spider/Pyramid/TriPeaks/Golf/ClockSolitaire 共通 Phase = 0
     note right of GameClear : Phase = 1
     note right of GameOver : Phase = 2
 ```
@@ -1606,7 +1760,9 @@ TriPeaks 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件は�
 
 Golf 固有のアクション: `Draw` / `Remove` / `Undo`。除去条件はウェイストトップ±1ランク（K-Aラップ）。7列×5段の35枚全除去でクリア。
 
-各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` / `GolfPhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
+ClockSolitaire 固有のアクション: `Step` / `AutoPlay`。52枚を13山に4枚ずつ配り、ランクに対応する山へ移動させる完全自動ゲーム。4枚目のKが表向きになる前に全カードが表向きになるとクリア。
+
+各ゲームのフェーズ定数名: `KlondikePhasePlaying` / `FreeCellPhasePlaying` / `SpiderPhasePlaying` / `PyramidPhasePlaying` / `TriPeaksPhasePlaying` / `GolfPhasePlaying` / `ClockSolitairePhasePlaying` = 0、`…GameClear` = 1、`…GameOver` = 2。
 
 ### 3.9 CrazyEights フェーズ遷移
 
@@ -1912,6 +2068,51 @@ stateDiagram-v2
     note right of TrickEnd : PinochlePhaseTrickEnd = 4
     note right of RoundEnd : PinochlePhaseRoundEnd = 5
     note right of GameEnd : PinochlePhaseGameEnd = 6
+```
+
+### 3.26 PigsTail フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : Draw() → スート不一致 or 一致ペナルティ → CPU自動プレイ
+    Play --> GameEnd : 山札が空
+    GameEnd --> [*]
+
+    note right of Play : PigsTailPhasePlay = 0
+    note right of GameEnd : PigsTailPhaseGameEnd = 1
+```
+
+### 3.27 SevenCardStud フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Init : Reset()
+    Init --> ThirdSt : アンティ + ホールカード2枚 + ドアカード1枚配布 + ブリングイン
+    ThirdSt --> FourthSt : ベッティング完了
+    ThirdSt --> Showdown : 1人以外 Fold
+    FourthSt --> FifthSt : ベッティング完了
+    FourthSt --> Showdown : 1人以外 Fold
+    FifthSt --> SixthSt : ベッティング完了
+    FifthSt --> Showdown : 1人以外 Fold
+    SixthSt --> SeventhSt : ベッティング完了
+    SixthSt --> Showdown : 1人以外 Fold
+    SeventhSt --> Showdown : ベッティング完了
+    Showdown --> End : 勝者決定
+    End --> Rebuy : リバイ/アドオン有効
+    End --> Init : 次ラウンド (Reset)
+    Rebuy --> Init : リバイ/アドオン完了
+    End --> [*] : ゲーム終了
+
+    note right of Init : SevenCardStudPhaseInit = 0
+    note right of ThirdSt : SevenCardStudPhaseThirdSt = 1
+    note right of FourthSt : SevenCardStudPhaseFourthSt = 2
+    note right of FifthSt : SevenCardStudPhaseFifthSt = 3
+    note right of SixthSt : SevenCardStudPhaseSixthSt = 4
+    note right of SeventhSt : SevenCardStudPhaseSeventhSt = 5
+    note right of Showdown : SevenCardStudPhaseShowdown = 6
+    note right of End : SevenCardStudPhaseEnd = 7
+    note right of Rebuy : SevenCardStudPhaseRebuy = 8
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

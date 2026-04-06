@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -85,49 +86,60 @@ func TestSpiderCuiControllerMoveErrors(t *testing.T) {
 		si := newMockSpiderInteractor()
 		c := NewSpiderCuiController(si)
 		result := c.Exec("m")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move one arg not t", func(t *testing.T) {
 		si := newMockSpiderInteractor()
 		c := NewSpiderCuiController(si)
 		result := c.Exec("m x 0 3 t 4")
-		assert.Contains(t, result, "Usage")
+		assert.NotEmpty(t, result)
+		assert.False(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move invalid from col", func(t *testing.T) {
 		si := newMockSpiderInteractor()
 		c := NewSpiderCuiController(si)
 		result := c.Exec("m t abc 3 t 4")
-		assert.Contains(t, result, "Invalid from column")
+		assert.Contains(t, result, "abc")
 	})
 
 	t.Run("move wrong arg count", func(t *testing.T) {
 		si := newMockSpiderInteractor()
 		c := NewSpiderCuiController(si)
 		result := c.Exec("m t 0 3")
-		assert.Contains(t, result, "Usage")
+		assert.True(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move missing t marker", func(t *testing.T) {
 		si := newMockSpiderInteractor()
 		c := NewSpiderCuiController(si)
 		result := c.Exec("m t 0 3 f 4")
-		assert.Contains(t, result, "Usage")
+		assert.NotEmpty(t, result)
+		assert.False(t, cuiutil.IsPromptRequest(result))
 	})
 
 	t.Run("move invalid card index", func(t *testing.T) {
 		si := newMockSpiderInteractor()
 		c := NewSpiderCuiController(si)
 		result := c.Exec("m t 0 abc t 4")
-		assert.Contains(t, result, "Invalid card index")
+		assert.Contains(t, result, "abc")
 	})
 
 	t.Run("move invalid to col", func(t *testing.T) {
 		si := newMockSpiderInteractor()
 		c := NewSpiderCuiController(si)
 		result := c.Exec("m t 0 3 t abc")
-		assert.Contains(t, result, "Invalid to column")
+		assert.Contains(t, result, "abc")
+	})
+
+	t.Run("move chained wizard 4-arg toCol prompt", func(t *testing.T) {
+		si := newMockSpiderInteractor()
+		c := NewSpiderCuiController(si)
+		result := c.Exec("m t 0 3 t")
+		assert.True(t, cuiutil.IsPromptRequest(result))
+		_, tmpl := cuiutil.ParsePromptRequest(result)
+		assert.Contains(t, tmpl, "m t 0 3 t {0}")
 	})
 }
 

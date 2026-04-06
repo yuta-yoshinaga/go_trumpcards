@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import type { spiderApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -16,17 +18,24 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SpiderSkeleton } from '../components/skeleton/SpiderSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSpiderGame } from '../hooks/useSpiderGame';
-import { TutorialProvider } from '../providers/TutorialProvider';
+import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { SpiderResponse } from '../types/card';
 import { SpiderPhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseSpiderCommand, SPIDER_HELP } from '../utils/cli/commands/spiderCommands';
+import { formatSpiderState } from '../utils/cli/formatters/spiderFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Spider Solitaire tutorial step definitions. */
 const SPD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -68,19 +77,12 @@ const SPD_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Spider Solitaire tutorial configuration. */
-const SPD_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'spider',
-  steps: SPD_TUTORIAL_STEPS,
-};
-
 /** Renders the Spider Solitaire game page with 10 tableau columns and stock. */
 export function SpiderPage() {
-  const { t: tSpd } = useTranslation('spider');
   return (
-    <TutorialProvider config={SPD_TUTORIAL_CONFIG} translateMessage={tSpd}>
+    <TutorialWrapper gameName="spider" steps={SPD_TUTORIAL_STEPS}>
       <SpiderPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 
@@ -88,10 +90,13 @@ export function SpiderPage() {
 function SpiderPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spider');
+  const { playSound } = useSound();
   const {
     state,
     loading,
     error,
+    exec,
+    retry,
     hintError,
     selectedSource,
     hint,
@@ -112,6 +117,18 @@ function SpiderPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('spider', state);
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spider');
+  const cliConfig: CliGameConfig<SpiderResponse, Parameters<typeof spiderApi.exec>> = useMemo(
+    () => ({
+      gameName: 'spider',
+      parseCommand: parseSpiderCommand,
+      formatResponse: formatSpiderState,
+      helpText: SPIDER_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
 
@@ -161,6 +178,7 @@ function SpiderPageContent() {
         <span className="ml-3">
           {t('score')}: {state.score}
         </span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/spider" />
         <span className="ml-3" data-tutorial="spd-completed-suits">
@@ -168,200 +186,241 @@ function SpiderPageContent() {
         </span>
       </PhaseIndicator>
 
-      <LandscapeBanner message={t('landscapeBanner')} />
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <LandscapeBanner message={t('landscapeBanner')} />
 
-      {/* Scrollable area */}
-      <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-        {/* Stock row */}
-        <div className="flex gap-2 mb-3 items-start">
-          {/* Stock */}
-          <div className="text-center" data-tutorial="spd-stock-pile">
-            <div className="text-game-text-muted text-xs mb-1">
-              {t('stock')} ({state.stockCount})
-            </div>
-            {state.stockCount > 0 ? (
-              <AnimatedCardBack width={cardWidth} onClick={isPlaying ? handleDeal : undefined} ariaLabel={t('deal')} />
-            ) : (
-              <div
-                style={{ width: cardWidth, height: cardHeight }}
-                className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
-              >
-                {t('empty')}
-              </div>
-            )}
-            {state.stockCount > 0 && (
-              <div className="text-game-text-muted text-xs mt-1">{t('dealsRemaining', { count: dealsRemaining })}</div>
-            )}
-          </div>
-        </div>
-
-        {/* Tableau (10 columns) */}
-        <div className="relative">
-          <div className="flex gap-0.5 sm:gap-1 mb-3" data-tutorial="spd-tableau">
-            {state.tableau.map((col, colIdx) => (
-              <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
-                <div className="relative" style={{ minHeight: cardHeight }}>
-                  {col.length === 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
-                      disabled={!isPlaying || loading || !selectedSource}
-                      style={{ height: cardHeight }}
-                      className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                    >
-                      {t('empty')}
-                    </button>
-                  ) : (
-                    col.map((tc, cardIdx) => (
-                      <div
-                        key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                        className="absolute left-0 right-0"
-                        style={{ top: cardIdx * cardOverlap }}
-                      >
-                        {tc.faceUp && tc.card ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (selectedSource) {
-                                // If clicking a different column, treat as move target
-                                // If clicking the same column, switch source selection
-                                if (selectedSource.col !== colIdx) {
-                                  handleSelectTarget({ zone: 'tableau', col: colIdx });
-                                } else {
-                                  handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
-                                }
-                              } else {
-                                handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
-                              }
-                            }}
-                            disabled={!isPlaying || loading}
-                            aria-label={cardAlt(tc.card)}
-                            aria-pressed={isSourceSelected(colIdx, cardIdx)}
-                            className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
-                          >
-                            <AnimatedCard card={tc.card} width={cardWidth} style={{ width: '100%' }} />
-                          </button>
-                        ) : (
-                          <AnimatedCardBack width={cardWidth} style={{ width: '100%' }} />
-                        )}
-                      </div>
-                    ))
-                  )}
-                  {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+          {/* Scrollable area */}
+          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            {/* Stock row */}
+            <div className="flex gap-2 mb-3 items-start">
+              {/* Stock */}
+              <div className="text-center" data-tutorial="spd-stock-pile">
+                <div className="text-game-text-muted text-xs mb-1">
+                  {t('stock')} ({state.stockCount})
                 </div>
+                {state.stockCount > 0 ? (
+                  <AnimatedCardBack
+                    width={cardWidth}
+                    onClick={isPlaying ? handleDeal : undefined}
+                    ariaLabel={t('deal')}
+                    onFlipComplete={() => playSound('cardFlip')}
+                  />
+                ) : (
+                  <div
+                    style={{ width: cardWidth, height: cardHeight }}
+                    className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
+                  >
+                    {t('empty')}
+                  </div>
+                )}
+                {state.stockCount > 0 && (
+                  <div className="text-game-text-muted text-xs mt-1">
+                    {t('dealsRemaining', { count: dealsRemaining })}
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Hint display */}
-        {hint && (
-          <div className="text-yellow-300 text-sm mb-2">
-            {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
-          </div>
-        )}
-        {frontendHintEnabled && frontendHint && (
-          <div className="flex justify-center">
-            <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-          </div>
-        )}
-
-        {/* Message */}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={isEnded}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      {/* Settings */}
-      <SettingsPanel
-        title={tc('settings.title')}
-        groups={[
-          {
-            items: [
-              {
-                type: 'checkbox' as const,
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
-              },
-            ],
-          },
-        ]}
-      />
-
-      {/* Footer */}
-      <GameFooter className={`${gameTheme.spider.footer} px-4 py-2.5`}>
-        <ErrorAlert message={error ?? hintError} />
-        <div className="flex gap-2 items-center flex-wrap">
-          {isPlaying && (
-            <div data-tutorial="spd-controls">
-              <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading || isAutoCompleting}>
-                {t('deal')}
-              </button>
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handleUndo}
-                disabled={loading || isAutoCompleting || !state.canUndo}
-              >
-                {t('undo')}
-              </button>
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || isAutoCompleting}>
-                {t('hint')}
-              </button>
-              <button
-                type="button"
-                className={btnSuccess}
-                onClick={handleAutoComplete}
-                disabled={loading || isAutoCompleting}
-              >
-                {t('autoComplete')}
-              </button>
-              <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading || isAutoCompleting}>
-                {t('giveup')}
-              </button>
             </div>
-          )}
-          {/* Difficulty selector */}
-          <div data-tutorial="spd-difficulty">
-            <select
-              value={currentDifficulty}
-              onChange={(e) => {
-                handleResetWithConfig({ difficulty: Number(e.target.value) });
-              }}
-              className="bg-gray-700 text-white text-sm rounded px-2 py-1"
-              aria-label={t('difficulty')}
-            >
-              <option value={1}>{t('difficulty1')}</option>
-              <option value={2}>{t('difficulty2')}</option>
-              <option value={4}>{t('difficulty4')}</option>
-            </select>
+
+            {/* Tableau (10 columns) */}
+            <div className="relative">
+              <div className="flex gap-0.5 sm:gap-1 mb-3" data-tutorial="spd-tableau">
+                {state.tableau.map((col, colIdx) => (
+                  <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                    <div className="relative" style={{ minHeight: cardHeight }}>
+                      {col.length === 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
+                          disabled={!isPlaying || loading || !selectedSource}
+                          style={{ height: cardHeight }}
+                          className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                        >
+                          {t('empty')}
+                        </button>
+                      ) : (
+                        col.map((tc, cardIdx) => (
+                          <div
+                            key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                            className="absolute left-0 right-0"
+                            style={{ top: cardIdx * cardOverlap }}
+                          >
+                            {tc.faceUp && tc.card ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (selectedSource) {
+                                    // If clicking a different column, treat as move target
+                                    // If clicking the same column, switch source selection
+                                    if (selectedSource.col !== colIdx) {
+                                      handleSelectTarget({ zone: 'tableau', col: colIdx });
+                                    } else {
+                                      handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
+                                    }
+                                  } else {
+                                    handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
+                                  }
+                                }}
+                                disabled={!isPlaying || loading}
+                                aria-label={cardAlt(tc.card)}
+                                aria-pressed={isSourceSelected(colIdx, cardIdx)}
+                                className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
+                              >
+                                <AnimatedCard
+                                  card={tc.card}
+                                  width={cardWidth}
+                                  style={{ width: '100%' }}
+                                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                                />
+                              </button>
+                            ) : (
+                              <AnimatedCardBack
+                                width={cardWidth}
+                                style={{ width: '100%' }}
+                                onFlipComplete={() => playSound('cardFlip')}
+                              />
+                            )}
+                          </div>
+                        ))
+                      )}
+                      {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Hint display */}
+            {hint && (
+              <div className="text-yellow-300 text-sm mb-2">
+                {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
+              </div>
+            )}
+            {frontendHintEnabled && frontendHint && (
+              <div className="flex justify-center">
+                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+              </div>
+            )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={isEnded}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-          <div data-tutorial="spd-reset-button">
-            <button
-              type="button"
-              className={btnOutline}
-              onClick={() =>
-                requestConfirm(() => {
-                  hideActionLog();
-                  return handleReset();
-                })
-              }
-              disabled={loading}
-            >
-              {tc('button.reset')}
-            </button>
-          </div>
-        </div>
-      </GameFooter>
-      <WinCelebration show={state.phase === SpiderPhase.GAME_CLEAR} />
+
+          {/* Settings */}
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
+
+          {/* Footer */}
+          <GameFooter className={`${gameTheme.spider.footer} px-4 py-2.5`}>
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+            <div className="flex gap-2 items-center flex-wrap">
+              {isPlaying && (
+                <div data-tutorial="spd-controls">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleDeal}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('deal')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleUndo}
+                    disabled={loading || isAutoCompleting || !state.canUndo}
+                  >
+                    {t('undo')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleHint}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('hint')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleAutoComplete}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('autoComplete')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={handleGiveUp}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('giveup')}
+                  </button>
+                </div>
+              )}
+              {/* Difficulty selector */}
+              <div data-tutorial="spd-difficulty">
+                <select
+                  value={currentDifficulty}
+                  onChange={(e) => {
+                    handleResetWithConfig({ difficulty: Number(e.target.value) });
+                  }}
+                  className="bg-gray-700 text-white text-sm rounded px-2 py-1"
+                  aria-label={t('difficulty')}
+                >
+                  <option value={1}>{t('difficulty1')}</option>
+                  <option value={2}>{t('difficulty2')}</option>
+                  <option value={4}>{t('difficulty4')}</option>
+                </select>
+              </div>
+              <div data-tutorial="spd-reset-button">
+                <button
+                  type="button"
+                  className={btnOutline}
+                  onClick={() =>
+                    requestConfirm(() => {
+                      hideActionLog();
+                      return handleReset();
+                    })
+                  }
+                  disabled={loading}
+                >
+                  {tc('button.reset')}
+                </button>
+              </div>
+            </div>
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={state.phase === SpiderPhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

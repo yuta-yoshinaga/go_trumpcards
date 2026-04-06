@@ -48,4 +48,18 @@ describe('AnimatedCardBack', () => {
     render(<AnimatedCardBack dealDelay={0.3} />);
     expect(screen.getByTestId('animated-card-back')).toBeInTheDocument();
   });
+
+  it('accepts onFlipComplete callback prop', () => {
+    vi.mocked(useReducedMotion).mockReturnValue(false);
+    const onFlipComplete = vi.fn();
+    render(<AnimatedCardBack onFlipComplete={onFlipComplete} />);
+    expect(screen.getByTestId('animated-card-back')).toBeInTheDocument();
+  });
+
+  it('does not pass onFlipComplete in reduced motion mode', () => {
+    vi.mocked(useReducedMotion).mockReturnValue(true);
+    const onFlipComplete = vi.fn();
+    render(<AnimatedCardBack onFlipComplete={onFlipComplete} />);
+    expect(screen.queryByTestId('animated-card-back')).not.toBeInTheDocument();
+  });
 });

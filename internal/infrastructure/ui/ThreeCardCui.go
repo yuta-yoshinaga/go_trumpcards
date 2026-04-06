@@ -8,27 +8,13 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// ThreeCardCui スリーカードポーカーCUIクラス
-type ThreeCardCui struct {
-	tc *controller.ThreeCardCuiController
-}
-
 // NewThreeCardCui コンストラクタ
-func NewThreeCardCui() *ThreeCardCui {
-	return &ThreeCardCui{
-		tc: controller.NewThreeCardCuiController(usecase.NewThreeCardInteractor(
-			domain.NewDefaultThreeCard(),
-			new(presenter.ThreeCardCuiPresenter),
-		)),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *ThreeCardCui) Controller() CuiExecer { return cui.tc }
-
-// HelpLines returns the game's help lines.
-func (cui *ThreeCardCui) HelpLines() []string {
-	return []string{
+func NewThreeCardCui() *genericCuiGame {
+	tc := controller.NewThreeCardCuiController(usecase.NewThreeCardInteractor(
+		domain.NewDefaultThreeCard(),
+		new(presenter.ThreeCardCuiPresenter),
+	))
+	return newCuiGame(tc, []string{
 		i18n.T("threecard.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -41,10 +27,5 @@ func (cui *ThreeCardCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *ThreeCardCui) Exec() {
-	RunCuiLoop(cui.tc, cui.HelpLines())
+	})
 }

@@ -7,6 +7,8 @@ import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuActionToast } from '../components/CpuActionToast';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { EquityDisplay } from '../components/EquityDisplay';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -23,19 +25,26 @@ import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { OmahaSkeleton } from '../components/skeleton/OmahaSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { TutorialProvider } from '../providers/TutorialProvider';
+import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { OmahaResponse } from '../types/card';
 import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
+import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
+import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Omaha Hold'em tutorial step definitions. */
 const OH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -83,12 +92,6 @@ const OH_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Omaha Hold'em tutorial configuration. */
-const OH_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'omaha',
-  steps: OH_TUTORIAL_STEPS,
-};
-
 const OMAHA_PHASE_KEYS: Readonly<Record<number, string>> = {
   [OmahaPhase.PRE_FLOP]: 'preFlop',
   [OmahaPhase.FLOP]: 'flop',
@@ -132,11 +135,10 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
 
 /** Renders the Omaha Hold'em game page with community cards, betting, and showdown. */
 export function OmahaPage() {
-  const { t: tOmaha } = useTranslation('omaha');
   return (
-    <TutorialProvider config={OH_TUTORIAL_CONFIG} translateMessage={tOmaha}>
+    <TutorialWrapper gameName="omaha" steps={OH_TUTORIAL_STEPS}>
       <OmahaPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 
@@ -146,13 +148,26 @@ function OmahaPageContent() {
     useGamePageSetup('omaha');
   const phaseNames = usePhaseNames('omaha', OMAHA_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec: execApi } = useGameApi(omahaApi.exec);
+  const { state, loading, error, exec: execApi, retry } = useGameApi(omahaApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('omaha', state);
   const turnStartRef = useRef(0);
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('omaha');
+  const cliConfig: CliGameConfig<OmahaResponse, Parameters<typeof omahaApi.exec>> = useMemo(
+    () => ({
+      gameName: 'omaha',
+      parseCommand: parseOmahaCommand,
+      formatResponse: formatOmahaState,
+      helpText: OMAHA_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useEffect(() => {
     execApi('reset');
@@ -240,286 +255,299 @@ function OmahaPageContent() {
         {state?.tournamentMode && (
           <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
         )}
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/omaha" />
       </PhaseIndicator>
 
-      {/* Scrollable: community cards + CPU players */}
-      <div className={`relative flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
-        {(() => {
-          const communityCardsContent = (
-            <>
-              <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
-              <div className="flex flex-wrap gap-2">
-                {state?.communityCards?.length
-                  ? state.communityCards.map((card) => (
-                      <AnimatedCard
-                        key={`${card.design}-${card.value}`}
-                        card={card}
-                        width={cardWidth}
-                        style={{ border: '3px solid transparent' }}
-                      />
-                    ))
-                  : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-              </div>
-            </>
-          );
-          const cpuPlayerCards = cpuPlayers.map((player) => (
-            <CpuPlayerCard
-              key={player.id}
-              player={player}
-              showCards={isShowdown}
-              faceDownCount={4}
-              showHandName={isShowdown}
-              extraInfo={
-                player.totalHands > 0 ? (
-                  <HudStats vpip={player.vpip} pfr={player.pfr} threeBet={player.threeBet} af={player.af} />
-                ) : undefined
-              }
-            />
-          ));
-
-          if (isLargeDesktop) {
-            return (
-              <PokerTableLayout
-                communityCardsTutorial="oh-community-cards"
-                cpuAreaTutorial="oh-cpu-area"
-                communityCards={communityCardsContent}
-                cpuPlayers={cpuPlayerCards}
-              />
-            );
-          }
-
-          return (
-            <>
-              <div
-                className={`mb-4 ${isMobile ? 'sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm' : ''}`}
-                data-tutorial="oh-community-cards"
-              >
-                {communityCardsContent}
-              </div>
-              <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="oh-cpu-area">
-                {cpuPlayerCards}
-              </CpuAccordion>
-            </>
-          );
-        })()}
-
-        {/* CPU actions: toast on mobile, inline log on desktop */}
-        {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
-
-        {/* Round results */}
-        {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
-
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={!!state?.gameEndFlag}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      {/* Sticky footer: player hand + buttons */}
-      <GameFooter className={`${gameTheme.omaha.footer} px-5 py-3`}>
-        {/* Learning mode toggle */}
-        <div className="flex items-center gap-2 mb-2" data-testid="learning-mode-toggle">
-          <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
-            {t('learning.toggle')}
-          </label>
-          <input
-            id="learningModeCheckbox"
-            type="checkbox"
-            checked={learningMode}
-            onChange={(e) => setLearningMode(e.target.checked)}
-          />
-        </div>
-
-        {/* Equity display */}
-        {learningMode && state?.equity && state.potOdds != null && (
-          <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-        )}
-
-        {/* Human player */}
-        {humanPlayer && (
-          <div className="mb-2" data-tutorial="oh-player-hand">
-            <div className="text-white text-lg mb-1">
-              {t('yourHand')}
-              <span className="ml-3 text-xs">
-                {tc('betting.chips')} {humanPlayer.chips}
-              </span>
-              {humanPlayer.totalHands > 0 && (
-                <HudStats
-                  vpip={humanPlayer.vpip}
-                  pfr={humanPlayer.pfr}
-                  threeBet={humanPlayer.threeBet}
-                  af={humanPlayer.af}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          {/* Scrollable: community cards + CPU players */}
+          <div className={`relative flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
+            {(() => {
+              const communityCardsContent = (
+                <>
+                  <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {state?.communityCards?.length
+                      ? state.communityCards.map((card) => (
+                          <AnimatedCard
+                            key={`${card.design}-${card.value}`}
+                            card={card}
+                            width={cardWidth}
+                            style={{ border: '3px solid transparent' }}
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          />
+                        ))
+                      : Array.from({ length: 5 }).map((_, i) => (
+                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                        ))}
+                  </div>
+                </>
+              );
+              const cpuPlayerCards = cpuPlayers.map((player) => (
+                <CpuPlayerCard
+                  key={player.id}
+                  player={player}
+                  showCards={isShowdown}
+                  faceDownCount={4}
+                  showHandName={isShowdown}
+                  extraInfo={
+                    player.totalHands > 0 ? (
+                      <HudStats vpip={player.vpip} pfr={player.pfr} threeBet={player.threeBet} af={player.af} />
+                    ) : undefined
+                  }
                 />
-              )}
-              {humanPlayer.currentBet > 0 && (
-                <span className="ml-2 text-xs">
-                  {tc('betting.currentBet')} {humanPlayer.currentBet}
-                </span>
-              )}
-              {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
-              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
-              {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                  {humanPlayer.handName}
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="oh-combination-rule">
-              {humanPlayer.cards?.length
-                ? humanPlayer.cards.map((card) => (
-                    <AnimatedCard
-                      key={`${card.design}-${card.value}`}
-                      card={card}
-                      width={cardWidth}
-                      style={{ border: '3px solid transparent' }}
-                    />
-                  ))
-                : !humanPlayer.folded &&
-                  Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-            </div>
-          </div>
-        )}
+              ));
 
-        {/* Message */}
-        <GameMessageBox
-          message={state?.message}
-          messageCode={state?.messageCode}
-          messageParams={state?.messageParams}
-          alwaysVisible
-        />
+              if (isLargeDesktop) {
+                return (
+                  <PokerTableLayout
+                    communityCardsTutorial="oh-community-cards"
+                    cpuAreaTutorial="oh-cpu-area"
+                    communityCards={communityCardsContent}
+                    cpuPlayers={cpuPlayerCards}
+                  />
+                );
+              }
 
-        <ErrorAlert message={error} />
+              return (
+                <>
+                  <div
+                    className={`mb-4 ${isMobile ? 'sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm' : ''}`}
+                    data-tutorial="oh-community-cards"
+                  >
+                    {communityCardsContent}
+                  </div>
+                  <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="oh-cpu-area">
+                    {cpuPlayerCards}
+                  </CpuAccordion>
+                </>
+              );
+            })()}
 
-        {/* Muck/Show controls */}
-        {isMuckPhase && (
-          <div className="mb-2 text-center" data-testid="muck-controls">
-            <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                className={`${btnPrimary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('muck')}
-              >
-                {t('muck.muck')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('show')}
-              >
-                {t('muck.show')}
-              </button>
-            </div>
-          </div>
-        )}
+            {/* CPU actions: toast on mobile, inline log on desktop */}
+            {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
 
-        {/* Rebuy/Addon controls */}
-        {isRebuyPhase && (
-          <div className="mb-2 text-center" data-testid="rebuy-controls">
-            <p className="text-white mb-2">
-              {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
-            </p>
-            <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                className={`${btnPrimary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('rebuy')}
-              >
-                {t('rebuy.accept')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('skiprebuy')}
-              >
-                {t('rebuy.skip')}
-              </button>
-            </div>
-          </div>
-        )}
-        {isAddonPhase && (
-          <div className="mb-2 text-center" data-testid="addon-controls">
-            <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
-            <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                className={`${btnPrimary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('addon')}
-              >
-                {t('addon.accept')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => execApi('skipaddon')}
-              >
-                {t('addon.skip')}
-              </button>
-            </div>
-          </div>
-        )}
+            {/* Round results */}
+            {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
 
-        {/* Hint */}
-        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-        {/* Betting controls */}
-        {canAct && (
-          <div data-tutorial="oh-action-buttons">
-            <BettingControls
-              inputId="omahaBetAmount"
-              betAmount={betAmount}
-              onBetAmountChange={setBetAmount}
-              minRaise={minRaise}
-              maxBetAmount={state?.maxBetAmount}
-              hasOutstandingBet={hasOutstandingBet}
-              loading={loading}
-              onCall={() => execApi('call', undefined, undefined, getElapsed())}
-              onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-              onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-              onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-              onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-              onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={!!state?.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
             />
           </div>
-        )}
 
-        {/* Settings + Reset */}
-        <div className="text-center flex items-center justify-center gap-3" data-tutorial="oh-reset-button">
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('hint.toggle', { ns: 'tutorial' })}
-          </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-            {t('settings.cpuMetaAI')}
-          </label>
-          <button
-            type="button"
-            className={`${btnOutline} min-w-[90px]`}
-            disabled={loading}
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                execApi('reset', undefined, { cpuMetaAI });
-              })
-            }
-          >
-            {tc('button.reset')}
-          </button>
-        </div>
-      </GameFooter>
-      <WinCelebration show={phase === OmahaPhase.END} />
+          {/* Sticky footer: player hand + buttons */}
+          <GameFooter className={`${gameTheme.omaha.footer} px-5 py-3`}>
+            {/* Learning mode toggle */}
+            <div className="flex items-center gap-2 mb-2" data-testid="learning-mode-toggle">
+              <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
+                {t('learning.toggle')}
+              </label>
+              <input
+                id="learningModeCheckbox"
+                type="checkbox"
+                checked={learningMode}
+                onChange={(e) => setLearningMode(e.target.checked)}
+              />
+            </div>
+
+            {/* Equity display */}
+            {learningMode && state?.equity && state.potOdds != null && (
+              <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+            )}
+
+            {/* Human player */}
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="oh-player-hand">
+                <div className="text-white text-lg mb-1">
+                  {t('yourHand')}
+                  <span className="ml-3 text-xs">
+                    {tc('betting.chips')} {humanPlayer.chips}
+                  </span>
+                  {humanPlayer.totalHands > 0 && (
+                    <HudStats
+                      vpip={humanPlayer.vpip}
+                      pfr={humanPlayer.pfr}
+                      threeBet={humanPlayer.threeBet}
+                      af={humanPlayer.af}
+                    />
+                  )}
+                  {humanPlayer.currentBet > 0 && (
+                    <span className="ml-2 text-xs">
+                      {tc('betting.currentBet')} {humanPlayer.currentBet}
+                    </span>
+                  )}
+                  {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
+                  {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
+                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                      {humanPlayer.handName}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="oh-combination-rule">
+                  {humanPlayer.cards?.length
+                    ? humanPlayer.cards.map((card) => (
+                        <AnimatedCard
+                          key={`${card.design}-${card.value}`}
+                          card={card}
+                          width={cardWidth}
+                          style={{ border: '3px solid transparent' }}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                        />
+                      ))
+                    : !humanPlayer.folded &&
+                      Array.from({ length: 4 }).map((_, i) => (
+                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                      ))}
+                </div>
+              </div>
+            )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state?.message}
+              messageCode={state?.messageCode}
+              messageParams={state?.messageParams}
+              alwaysVisible
+            />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Muck/Show controls */}
+            {isMuckPhase && (
+              <div className="mb-2 text-center" data-testid="muck-controls">
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('muck')}
+                  >
+                    {t('muck.muck')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('show')}
+                  >
+                    {t('muck.show')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Rebuy/Addon controls */}
+            {isRebuyPhase && (
+              <div className="mb-2 text-center" data-testid="rebuy-controls">
+                <p className="text-white mb-2">
+                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
+                </p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('rebuy')}
+                  >
+                    {t('rebuy.accept')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('skiprebuy')}
+                  >
+                    {t('rebuy.skip')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isAddonPhase && (
+              <div className="mb-2 text-center" data-testid="addon-controls">
+                <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('addon')}
+                  >
+                    {t('addon.accept')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('skipaddon')}
+                  >
+                    {t('addon.skip')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Betting controls */}
+            {canAct && (
+              <div data-tutorial="oh-action-buttons">
+                <BettingControls
+                  inputId="omahaBetAmount"
+                  betAmount={betAmount}
+                  onBetAmountChange={setBetAmount}
+                  minRaise={minRaise}
+                  maxBetAmount={state?.maxBetAmount}
+                  hasOutstandingBet={hasOutstandingBet}
+                  loading={loading}
+                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                />
+              </div>
+            )}
+
+            {/* Settings + Reset */}
+            <div className="text-center flex items-center justify-center gap-3" data-tutorial="oh-reset-button">
+              <label className="text-white text-sm flex items-center gap-1">
+                <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
+              <label className="text-white text-sm flex items-center gap-1">
+                <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                {t('settings.cpuMetaAI')}
+              </label>
+              <button
+                type="button"
+                className={`${btnOutline} min-w-[90px]`}
+                disabled={loading}
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    execApi('reset', undefined, { cpuMetaAI });
+                  })
+                }
+              >
+                {tc('button.reset')}
+              </button>
+            </div>
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={phase === OmahaPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

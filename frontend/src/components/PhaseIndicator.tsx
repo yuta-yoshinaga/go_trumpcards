@@ -24,7 +24,7 @@ export function PhaseIndicator({ phaseName, isHumanTurn, children }: PhaseIndica
         <span
           className={
             isHumanTurn
-              ? 'text-green-400 animate-pulse font-bold text-base bg-green-900/40 px-2 py-0.5 rounded-full'
+              ? 'text-ds-success animate-pulse font-bold text-base bg-green-900/40 px-2 py-0.5 rounded-full'
               : 'text-game-text-muted'
           }
         >

@@ -56,6 +56,10 @@ func TestExecCuiCommand(t *testing.T) {
 		assert.Equal(t, "bye.", execCuiCommand("quit", resetFn, validCmds, gameHandler))
 	})
 
+	t.Run("exit command", func(t *testing.T) {
+		assert.Equal(t, "bye.", execCuiCommand("exit", resetFn, validCmds, gameHandler))
+	})
+
 	t.Run("r command without args", func(t *testing.T) {
 		assert.Equal(t, "reset", execCuiCommand("r", resetFn, validCmds, gameHandler))
 	})

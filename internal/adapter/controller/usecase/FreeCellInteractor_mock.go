@@ -65,3 +65,8 @@ func (_m *MockFreeCellInteractor) Undo() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+func (_m *MockFreeCellInteractor) UndoN(n int) string {
+	ret := _m.Called(n)
+	return ret.Get(0).(string)
+}

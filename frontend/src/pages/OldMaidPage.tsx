@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import type { oldmaidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -19,18 +21,24 @@ import { OldMaidSettingsDialog } from '../components/oldmaid/OldMaidSettingsDial
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
-import { TutorialProvider } from '../providers/TutorialProvider';
+import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { CpuAction } from '../types/card';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { CpuAction, OldMaidResponse } from '../types/card';
+import type { TutorialStep } from '../types/tutorial';
 import { cardLabel } from '../utils/cardUtils';
+import { OLDMAID_HELP, parseOldmaidCommand } from '../utils/cli/commands/oldmaidCommands';
+import { formatOldmaidState } from '../utils/cli/formatters/oldmaidFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** Old Maid tutorial step definitions. */
@@ -61,19 +69,12 @@ const OM_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Old Maid tutorial configuration. */
-const OM_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'oldmaid',
-  steps: OM_TUTORIAL_STEPS,
-};
-
 /** Renders the Old Maid game page with settings dialog, player areas, and draw history. */
 export function OldMaidPage() {
-  const { t: tOm } = useTranslation('oldmaid');
   return (
-    <TutorialProvider config={OM_TUTORIAL_CONFIG} translateMessage={tOm}>
+    <TutorialWrapper gameName="oldmaid" steps={OM_TUTORIAL_STEPS}>
       <OldMaidPageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 
@@ -81,6 +82,7 @@ export function OldMaidPage() {
 function OldMaidPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('oldmaid');
+  const { playSound } = useSound();
   const {
     displayState,
     setupMode,
@@ -95,6 +97,7 @@ function OldMaidPageContent() {
     revealedCard,
     loading,
     error,
+    retry,
     gameExec,
     handleStart,
     handleReset,
@@ -124,6 +127,18 @@ function OldMaidPageContent() {
   };
 
   const { cardWidth, isMobile } = useCardDimensions();
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('oldmaid');
+  const cliConfig: CliGameConfig<OldMaidResponse, Parameters<typeof oldmaidApi.exec>> = useMemo(
+    () => ({
+      gameName: 'oldmaid',
+      parseCommand: parseOldmaidCommand,
+      formatResponse: formatOldmaidState,
+      helpText: OLDMAID_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(gameExec, cliConfig, displayState, { addInput, addOutput, addError, clearLog });
 
   const isHumanTurnForKbd =
     !!displayState && !displayState.gameEndFlag && !!displayState.players[displayState.currentTurn]?.isHuman;
@@ -171,200 +186,216 @@ function OldMaidPageContent() {
     >
       <GamePageHeading title={tc('nav.oldmaid')} />
       <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/oldmaid" />
       </PhaseIndicator>
-      <SettingsPanel
-        title={t('button.settings')}
-        groups={[
-          {
-            items: [
+
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={t('button.settings')}
+            groups={[
               {
-                type: 'checkbox',
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
+                items: [
+                  {
+                    type: 'checkbox',
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
               },
-            ],
-          },
-        ]}
-      />
-      {/* Scrollable: CPU rows + discard + status + logs + result */}
-      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Mode badge */}
-        {state.mode === OldMaidMode.JijiNuki && (
-          <div className="text-center mb-1">
-            <span className="inline-block rounded-md bg-red-600 px-2.5 py-0.5 text-sm font-bold text-white">
-              {t('badge.jijiNuki')}
-            </span>
-          </div>
-        )}
-
-        {/* CPU row */}
-        <div className="flex gap-2 flex-wrap mb-2 justify-center" data-tutorial="om-cpu-area">
-          {cpuPlayers.map((player) => (
-            <OldMaidPlayerArea
-              key={player.id}
-              player={player}
-              isTarget={state.nextDrawTargetIdx === player.id}
-              isHumanTurn={isHumanTurn}
-              gameEndFlag={state.gameEndFlag}
-              loading={loading}
-              highlightedCardIdx={state.nextDrawTargetIdx === player.id ? state.cpuHighlightedCardIdx : -1}
-              isSuspect={suspectPins.has(player.id)}
-              compactNonTarget={isMobile}
-              onToggleSuspect={() =>
-                setSuspectPins((prev) => {
-                  const next = new Set(prev);
-                  if (next.has(player.id)) {
-                    next.delete(player.id);
-                  } else {
-                    next.add(player.id);
-                  }
-                  return next;
-                })
-              }
-              onDraw={(drawIdx) => gameExec('draw', drawIdx)}
-            />
-          ))}
-        </div>
-
-        {/* Discarded Area */}
-        <OldMaidDiscardedArea cards={state.lastDiscardedCards} />
-
-        {/* Card reveal area */}
-        {state.lastDrawCard && !state.gameEndFlag && (
-          <div className="flex justify-center my-2" data-testid="card-reveal-area">
-            {revealedCard ? (
-              <div className="animate-flipIn">
-                <AnimatedCard card={revealedCard} width={cardWidth} />
+            ]}
+          />
+          {/* Scrollable: CPU rows + discard + status + logs + result */}
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Mode badge */}
+            {state.mode === OldMaidMode.JijiNuki && (
+              <div className="text-center mb-1">
+                <span className="inline-block rounded-md bg-red-600 px-2.5 py-0.5 text-sm font-bold text-white">
+                  {t('badge.jijiNuki')}
+                </span>
               </div>
-            ) : (
-              <AnimatedCardBack width={cardWidth} />
             )}
-          </div>
-        )}
 
-        {/* Status */}
-        {statusLines.length > 0 && (
-          <div className="bg-black/50 rounded-lg text-white py-2 px-3 my-2 whitespace-pre-line text-sm">
-            {statusLines.join('\n')}
-          </div>
-        )}
+            {/* CPU row */}
+            <div className="flex gap-2 flex-wrap mb-2 justify-center" data-tutorial="om-cpu-area">
+              {cpuPlayers.map((player) => (
+                <OldMaidPlayerArea
+                  key={player.id}
+                  player={player}
+                  isTarget={state.nextDrawTargetIdx === player.id}
+                  isHumanTurn={isHumanTurn}
+                  gameEndFlag={state.gameEndFlag}
+                  loading={loading}
+                  highlightedCardIdx={state.nextDrawTargetIdx === player.id ? state.cpuHighlightedCardIdx : -1}
+                  isSuspect={suspectPins.has(player.id)}
+                  compactNonTarget={isMobile}
+                  onToggleSuspect={() =>
+                    setSuspectPins((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(player.id)) {
+                        next.delete(player.id);
+                      } else {
+                        next.add(player.id);
+                      }
+                      return next;
+                    })
+                  }
+                  onDraw={(drawIdx) => gameExec('draw', drawIdx)}
+                />
+              ))}
+            </div>
 
-        {/* CPU log */}
-        {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg text-game-text-muted py-1.5 px-2.5 my-1.5 whitespace-pre-line text-xs max-h-[120px] overflow-y-auto">
-            {[
-              tc('label.cpuActions'),
-              ...state.cpuActions.map((action: CpuAction) => {
-                const from = findPlayerName(state.players, action.drawPlayerIdx);
-                const target = findPlayerName(state.players, action.drawFromIdx);
-                let msg = t('drewCard', { from, target });
-                // CPU drawn card is intentionally hidden to preserve game fairness
-                if (action.discardedPairs > 0) msg += t('discardedPairs', { count: action.discardedPairs });
-                return msg;
-              }),
-            ].join('\n')}
-          </div>
-        )}
+            {/* Discarded Area */}
+            <OldMaidDiscardedArea cards={state.lastDiscardedCards} />
 
-        {/* Draw History Timeline */}
-        <OldMaidDrawHistory entries={state.drawHistory ?? []} players={state.players} />
+            {/* Card reveal area */}
+            {state.lastDrawCard && !state.gameEndFlag && (
+              <div className="flex justify-center my-2" data-testid="card-reveal-area">
+                {revealedCard ? (
+                  <div className="animate-flipIn">
+                    <AnimatedCard
+                      card={revealedCard}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                  </div>
+                ) : (
+                  <AnimatedCardBack width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                )}
+              </div>
+            )}
 
-        {/* Result */}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+            {/* Status */}
+            {statusLines.length > 0 && (
+              <div className="bg-black/50 rounded-lg text-white py-2 px-3 my-2 whitespace-pre-line text-sm">
+                {statusLines.join('\n')}
+              </div>
+            )}
 
-        {/* JijiNuki: show removed card at game end */}
-        {state.gameEndFlag && state.removedCard && (
-          <div className="text-center my-2 text-white text-sm">
-            {t('removedCard', { card: cardLabel(state.removedCard) })}
-          </div>
-        )}
+            {/* CPU log */}
+            {state.cpuActions && state.cpuActions.length > 0 && (
+              <div className="bg-black/40 rounded-lg text-game-text-muted py-1.5 px-2.5 my-1.5 whitespace-pre-line text-xs max-h-[120px] overflow-y-auto">
+                {[
+                  tc('label.cpuActions'),
+                  ...state.cpuActions.map((action: CpuAction) => {
+                    const from = findPlayerName(state.players, action.drawPlayerIdx);
+                    const target = findPlayerName(state.players, action.drawFromIdx);
+                    let msg = t('drewCard', { from, target });
+                    // CPU drawn card is intentionally hidden to preserve game fairness
+                    if (action.discardedPairs > 0) msg += t('discardedPairs', { count: action.discardedPairs });
+                    return msg;
+                  }),
+                ].join('\n')}
+              </div>
+            )}
 
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={state.gameEndFlag}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
+            {/* Draw History Timeline */}
+            <OldMaidDrawHistory entries={state.drawHistory ?? []} players={state.players} />
 
-      {/* Sticky footer: human player hand + buttons */}
-      <GameFooter className={`${gameTheme.oldmaid.footer} px-4 py-2.5`}>
-        {/* Human player */}
-        {humanPlayer && (
-          <div className="mb-2" data-tutorial="om-player-hand">
-            <OldMaidPlayerArea
-              player={humanPlayer}
-              isTarget={false}
-              isHumanTurn={isHumanTurn}
-              gameEndFlag={state.gameEndFlag}
-              loading={loading}
-              highlightedCardIdx={-1}
-              onDraw={(drawIdx) => gameExec('draw', drawIdx)}
-              onReorder={handleReorder}
+            {/* Result */}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {/* JijiNuki: show removed card at game end */}
+            {state.gameEndFlag && state.removedCard && (
+              <div className="text-center my-2 text-white text-sm">
+                {t('removedCard', { card: cardLabel(state.removedCard) })}
+              </div>
+            )}
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={state.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
             />
           </div>
-        )}
 
-        <ErrorAlert message={error} />
+          {/* Sticky footer: human player hand + buttons */}
+          <GameFooter className={`${gameTheme.oldmaid.footer} px-4 py-2.5`}>
+            {/* Human player */}
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="om-player-hand">
+                <OldMaidPlayerArea
+                  player={humanPlayer}
+                  isTarget={false}
+                  isHumanTurn={isHumanTurn}
+                  gameEndFlag={state.gameEndFlag}
+                  loading={loading}
+                  highlightedCardIdx={-1}
+                  onDraw={(drawIdx) => gameExec('draw', drawIdx)}
+                  onReorder={handleReorder}
+                />
+              </div>
+            )}
 
-        {frontendHintEnabled && frontendHint && (
-          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-        )}
+            <ErrorAlert message={error} onRetry={retry} />
 
-        {/* Buttons */}
-        <div className="text-center">
-          <button
-            type="button"
-            className={`${btnSecondary} min-w-[80px]`}
-            disabled={loading}
-            onClick={() => {
-              syncSetupFromSettings();
-              setSettingsOpen(true);
-            }}
-          >
-            {t('button.settings')}
-          </button>
-          <span data-tutorial="om-reset-button">
-            <button
-              type="button"
-              className={`${btnOutline} min-w-[80px]`}
-              disabled={loading}
-              onClick={() =>
-                requestConfirm(() => {
-                  hideActionLog();
-                  handleReset();
-                })
-              }
-            >
-              {tc('button.reset')}
-            </button>
-          </span>
-          <span data-tutorial="om-draw-button">
-            <button
-              type="button"
-              className={`${btnPrimary} min-w-[110px]`}
-              disabled={loading || !isHumanTurn || state.gameEndFlag}
-              onClick={() => gameExec('draw')}
-            >
-              {t('button.drawRandom')}
-            </button>
-          </span>
-          <button
-            type="button"
-            className={`${btnSecondary} min-w-[110px]`}
-            disabled={loading || state.gameEndFlag}
-            onClick={() => gameExec('shuffle')}
-          >
-            {t('button.shuffle')}
-          </button>
-        </div>
-      </GameFooter>
-      <WinCelebration show={!!state?.gameEndFlag} />
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
+
+            {/* Buttons */}
+            <div className="text-center">
+              <button
+                type="button"
+                className={`${btnSecondary} min-w-[80px]`}
+                disabled={loading}
+                onClick={() => {
+                  syncSetupFromSettings();
+                  setSettingsOpen(true);
+                }}
+              >
+                {t('button.settings')}
+              </button>
+              <span data-tutorial="om-reset-button">
+                <button
+                  type="button"
+                  className={`${btnOutline} min-w-[80px]`}
+                  disabled={loading}
+                  onClick={() =>
+                    requestConfirm(() => {
+                      hideActionLog();
+                      handleReset();
+                    })
+                  }
+                >
+                  {tc('button.reset')}
+                </button>
+              </span>
+              <span data-tutorial="om-draw-button">
+                <button
+                  type="button"
+                  className={`${btnPrimary} min-w-[110px]`}
+                  disabled={loading || !isHumanTurn || state.gameEndFlag}
+                  onClick={() => gameExec('draw')}
+                >
+                  {t('button.drawRandom')}
+                </button>
+              </span>
+              <button
+                type="button"
+                className={`${btnSecondary} min-w-[110px]`}
+                disabled={loading || state.gameEndFlag}
+                onClick={() => gameExec('shuffle')}
+              >
+                {t('button.shuffle')}
+              </button>
+            </div>
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
       <OldMaidSettingsDialog
         open={settingsOpen}

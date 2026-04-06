@@ -8,27 +8,13 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// BlackJackCui ブラックジャックCUIクラス
-type BlackJackCui struct {
-	bjc *controller.BlackJackCuiController
-}
-
 // NewBlackJackCui コンストラクタ
-func NewBlackJackCui() *BlackJackCui {
-	return &BlackJackCui{
-		bjc: controller.NewBlackJackCuiController(usecase.NewBlackJackInteractor(
-			domain.NewDefaultBlackJack(),
-			new(presenter.BlackJackCuiPresenter),
-		)),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *BlackJackCui) Controller() CuiExecer { return cui.bjc }
-
-// HelpLines returns the game's help lines.
-func (cui *BlackJackCui) HelpLines() []string {
-	return []string{
+func NewBlackJackCui() *genericCuiGame {
+	bjc := controller.NewBlackJackCuiController(usecase.NewBlackJackInteractor(
+		domain.NewDefaultBlackJack(),
+		new(presenter.BlackJackCuiPresenter),
+	))
+	return newCuiGame(bjc, []string{
 		i18n.T("blackjack.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -47,10 +33,5 @@ func (cui *BlackJackCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *BlackJackCui) Exec() {
-	RunCuiLoop(cui.bjc, cui.HelpLines())
+	})
 }

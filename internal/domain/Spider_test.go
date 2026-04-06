@@ -939,3 +939,59 @@ func TestSpiderHintNoValidSequence(t *testing.T) {
 	hint := s.GetHint()
 	assert.Nil(t, hint)
 }
+
+// --- UndoToEscape / UndoN tests ---
+
+func TestSpiderUndoToEscape_NotInStalemate(t *testing.T) {
+	tc := NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade})
+	s := NewSpider(tc)
+	s.Reset()
+	assert.Equal(t, 0, s.UndoToEscape())
+}
+
+func TestSpiderUndoToEscape_StalemateNoHistory(t *testing.T) {
+	tc := NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade})
+	s := NewSpider(tc)
+	s.Reset()
+	s.SetIsStalemate(true)
+	assert.Equal(t, -1, s.UndoToEscape())
+}
+
+func TestSpiderUndoToEscape_StalemateWithEscape(t *testing.T) {
+	tc := NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade})
+	s := NewSpider(tc)
+	s.Reset()
+	err := s.Deal()
+	assert.NoError(t, err)
+	s.SetIsStalemate(true)
+	n := s.UndoToEscape()
+	assert.Equal(t, 1, n)
+}
+
+func TestSpiderUndoN_Zero(t *testing.T) {
+	tc := NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade})
+	s := NewSpider(tc)
+	s.Reset()
+	err := s.UndoN(0)
+	assert.NoError(t, err)
+}
+
+func TestSpiderUndoN_Valid(t *testing.T) {
+	tc := NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade})
+	s := NewSpider(tc)
+	s.Reset()
+	_ = s.Deal()
+	_ = s.Deal()
+	err := s.UndoN(2)
+	assert.NoError(t, err)
+}
+
+func TestSpiderUndoN_Excessive(t *testing.T) {
+	tc := NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade})
+	s := NewSpider(tc)
+	s.Reset()
+	_ = s.Deal()
+	err := s.UndoN(5)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "undo step")
+}

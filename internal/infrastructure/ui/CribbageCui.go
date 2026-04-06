@@ -8,30 +8,16 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// CribbageCui クリベッジCUIクラス
-type CribbageCui struct {
-	cc *controller.CribbageCuiController
-}
-
 // NewCribbageCui コンストラクタ
-func NewCribbageCui() *CribbageCui {
+func NewCribbageCui() *genericCuiGame {
 	config := domain.DefaultCribbageConfig()
 	players := []*domain.CribbagePlayer{
 		domain.NewCribbagePlayer(true),
 		domain.NewCribbagePlayer(false),
 	}
 	g := domain.NewCribbage(domain.NewTrumpCards(0), players, config)
-	return &CribbageCui{
-		cc: controller.NewCribbageCuiController(usecase.NewCribbageInteractor(g, new(presenter.CribbageCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *CribbageCui) Controller() CuiExecer { return cui.cc }
-
-// HelpLines returns the game's help lines.
-func (cui *CribbageCui) HelpLines() []string {
-	return []string{
+	cc := controller.NewCribbageCuiController(usecase.NewCribbageInteractor(g, new(presenter.CribbageCuiPresenter)))
+	return newCuiGame(cc, []string{
 		i18n.T("cribbage.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -50,10 +36,5 @@ func (cui *CribbageCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *CribbageCui) Exec() {
-	RunCuiLoop(cui.cc, cui.HelpLines())
+	})
 }

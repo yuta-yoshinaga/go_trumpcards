@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
+import { useRef } from 'react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { dealSpring, hoverLift, selectLift } from '../../styles/motionPresets';
 import { CardImage } from '../CardImage';
 
 interface AnimatedCardProps extends React.ComponentProps<typeof CardImage> {
@@ -11,6 +13,8 @@ interface AnimatedCardProps extends React.ComponentProps<typeof CardImage> {
   layoutId?: string;
   /** Additional class name for the motion wrapper div. */
   wrapperClassName?: string;
+  /** Callback fired when the deal-in animation completes. */
+  onDealComplete?: () => void;
 }
 
 /** Renders an animated face-up playing card with deal and select animations. */
@@ -19,9 +23,13 @@ export function AnimatedCard({
   isSelected = false,
   layoutId,
   wrapperClassName,
+  onDealComplete,
   ...rest
 }: AnimatedCardProps) {
   const reduced = useReducedMotion();
+  // Guard: onAnimationComplete fires for any animation (hover, selection), not just the initial deal.
+  // Use a ref so the deal callback fires exactly once per component instance.
+  const dealCalledRef = useRef(false);
 
   if (reduced) {
     return <CardImage {...rest} />;
@@ -34,15 +42,19 @@ export function AnimatedCard({
       initial={{ opacity: 0, y: 30 }}
       animate={{
         opacity: 1,
-        y: isSelected ? -8 : 0,
-        scale: isSelected ? 1.02 : 1,
+        y: isSelected ? selectLift.y : 0,
+        scale: isSelected ? selectLift.scale : 1,
       }}
-      whileHover={{ y: -4, scale: 1.05 }}
+      whileHover={hoverLift}
       transition={{
-        type: 'spring',
-        stiffness: 300,
-        damping: 25,
+        ...dealSpring,
         delay: dealDelay,
+      }}
+      onAnimationComplete={() => {
+        if (!dealCalledRef.current) {
+          dealCalledRef.current = true;
+          onDealComplete?.();
+        }
       }}
       style={wrapperClassName ? undefined : { display: 'inline-block' }}
       data-testid="animated-card"

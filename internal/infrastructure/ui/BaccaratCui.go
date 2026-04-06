@@ -8,27 +8,13 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// BaccaratCui バカラCUIクラス
-type BaccaratCui struct {
-	bc *controller.BaccaratCuiController
-}
-
 // NewBaccaratCui コンストラクタ
-func NewBaccaratCui() *BaccaratCui {
-	return &BaccaratCui{
-		bc: controller.NewBaccaratCuiController(usecase.NewBaccaratInteractor(
-			domain.NewDefaultBaccarat(),
-			new(presenter.BaccaratCuiPresenter),
-		)),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *BaccaratCui) Controller() CuiExecer { return cui.bc }
-
-// HelpLines returns the game's help lines.
-func (cui *BaccaratCui) HelpLines() []string {
-	return []string{
+func NewBaccaratCui() *genericCuiGame {
+	bc := controller.NewBaccaratCuiController(usecase.NewBaccaratInteractor(
+		domain.NewDefaultBaccarat(),
+		new(presenter.BaccaratCuiPresenter),
+	))
+	return newCuiGame(bc, []string{
 		i18n.T("baccarat.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -40,10 +26,5 @@ func (cui *BaccaratCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *BaccaratCui) Exec() {
-	RunCuiLoop(cui.bc, cui.HelpLines())
+	})
 }

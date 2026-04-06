@@ -19,6 +19,7 @@ func (pr *PyramidWebPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 	resObj.StockCount = p.GetStockCount()
 	resObj.CanUndo = p.CanUndo()
 	resObj.IsStalemate = p.IsStalemate()
+	resObj.UndoToEscape = p.UndoToEscape()
 
 	// ウェイスト
 	waste := p.GetWaste()
@@ -82,6 +83,7 @@ func (pr *PyramidWebPresenter) HintOutput(p interfaces.PyramidGame) string {
 	resObj.MoveCount = p.GetMoveCount()
 	resObj.StockCount = p.GetStockCount()
 	resObj.CanUndo = p.CanUndo()
+	resObj.UndoToEscape = p.UndoToEscape()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Pyramid = make([][]*controller.PyramidWebOutputCard, 0)
 

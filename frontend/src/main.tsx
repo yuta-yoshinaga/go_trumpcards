@@ -4,6 +4,7 @@ import './i18n';
 import './index.css';
 import App from './App.tsx';
 import { QueryProvider } from './providers/QueryProvider';
+import { SoundProvider } from './providers/SoundProvider';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -12,7 +13,9 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <QueryProvider>
-      <App />
+      <SoundProvider>
+        <App />
+      </SoundProvider>
     </QueryProvider>
   </StrictMode>,
 );

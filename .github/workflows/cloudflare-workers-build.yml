@@ -17,6 +17,9 @@ on:
       - 'Makefile'
       - 'internal/**'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   tinygo-build:
     runs-on: ubuntu-latest
@@ -24,9 +27,9 @@ jobs:
       matrix:
         worker: [casino, classic, solo]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: '1.25'
 
@@ -68,7 +71,7 @@ jobs:
             exit 1
           fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wasm-${{ matrix.worker }}
           path: workers/${{ matrix.worker }}/build/*.wasm

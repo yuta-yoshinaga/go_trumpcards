@@ -6,6 +6,7 @@ import enBaccarat from './locales/en/baccarat.json';
 import enBlackjack from './locales/en/blackjack.json';
 import enBridge from './locales/en/bridge.json';
 import enCanasta from './locales/en/canasta.json';
+import enClocksolitaire from './locales/en/clocksolitaire.json';
 import enCommon from './locales/en/common.json';
 import enCrazyeights from './locales/en/crazyeights.json';
 import enCribbage from './locales/en/cribbage.json';
@@ -27,10 +28,12 @@ import enNapoleon from './locales/en/napoleon.json';
 import enOhhell from './locales/en/ohhell.json';
 import enOldmaid from './locales/en/oldmaid.json';
 import enOmaha from './locales/en/omaha.json';
+import enPigtail from './locales/en/pigtail.json';
 import enPineapple from './locales/en/pineapple.json';
 import enPinochle from './locales/en/pinochle.json';
 import enPoker from './locales/en/poker.json';
 import enPyramid from './locales/en/pyramid.json';
+import enSevencardstud from './locales/en/sevencardstud.json';
 import enSevens from './locales/en/sevens.json';
 import enShortdeck from './locales/en/shortdeck.json';
 import enSpades from './locales/en/spades.json';
@@ -44,6 +47,7 @@ import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaBridge from './locales/ja/bridge.json';
 import jaCanasta from './locales/ja/canasta.json';
+import jaClocksolitaire from './locales/ja/clocksolitaire.json';
 import jaCommon from './locales/ja/common.json';
 import jaCrazyeights from './locales/ja/crazyeights.json';
 import jaCribbage from './locales/ja/cribbage.json';
@@ -65,10 +69,12 @@ import jaNapoleon from './locales/ja/napoleon.json';
 import jaOhhell from './locales/ja/ohhell.json';
 import jaOldmaid from './locales/ja/oldmaid.json';
 import jaOmaha from './locales/ja/omaha.json';
+import jaPigtail from './locales/ja/pigtail.json';
 import jaPineapple from './locales/ja/pineapple.json';
 import jaPinochle from './locales/ja/pinochle.json';
 import jaPoker from './locales/ja/poker.json';
 import jaPyramid from './locales/ja/pyramid.json';
+import jaSevencardstud from './locales/ja/sevencardstud.json';
 import jaSevens from './locales/ja/sevens.json';
 import jaShortdeck from './locales/ja/shortdeck.json';
 import jaSpades from './locales/ja/spades.json';
@@ -122,6 +128,9 @@ i18n
         speed: jaSpeed,
         gofish: jaGofish,
         golf: jaGolf,
+        pigtail: jaPigtail,
+        sevencardstud: jaSevencardstud,
+        clocksolitaire: jaClocksolitaire,
         tutorial: jaTutorial,
       },
       en: {
@@ -162,6 +171,9 @@ i18n
         speed: enSpeed,
         gofish: enGofish,
         golf: enGolf,
+        pigtail: enPigtail,
+        sevencardstud: enSevencardstud,
+        clocksolitaire: enClocksolitaire,
         tutorial: enTutorial,
       },
     },
@@ -205,6 +217,9 @@ i18n
       'speed',
       'gofish',
       'golf',
+      'pigtail',
+      'sevencardstud',
+      'clocksolitaire',
       'tutorial',
     ],
     detection: {
@@ -216,6 +231,14 @@ i18n
       escapeValue: false,
     },
   });
+
+// Sync <html lang> with the active i18n language (WCAG 2.1 SC 3.1.1)
+if (typeof document !== 'undefined') {
+  document.documentElement.lang = i18n.language;
+  i18n.on('languageChanged', (lng: string) => {
+    document.documentElement.lang = lng;
+  });
+}
 
 /** Configured i18next instance with ja/en translations and language detection. */
 export default i18n;

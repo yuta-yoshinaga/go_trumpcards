@@ -87,13 +87,8 @@ function LangToggle({ currentLang, i18n, t }: LangToggleProps) {
 /** Lookup map from path to game route for recent/favorite rendering. */
 const routeByPath = new Map(gameRoutes.map((r) => [r.path, r]));
 
-interface NavBarProps {
-  soundMuted?: boolean;
-  onSoundToggle?: () => void;
-}
-
 /** Renders the top navigation bar with game links grouped by category and language toggle. */
-export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
+export function NavBar() {
   const { pathname } = useLocation();
   const { t, i18n } = useTranslation('common');
   const currentLang = i18n.language;
@@ -168,7 +163,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
   }, [searchTerm, searchableRoutes]);
 
   return (
-    <div className="glass-panel--dark lg:hidden">
+    <div className="glass-panel--dark lg:hidden relative z-30">
       <div className="flex items-center justify-between sm:hidden my-2 mx-2.5">
         <Link
           to="/"
@@ -178,7 +173,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
           {SITE_NAME}
         </Link>
         <div className="flex items-center gap-2">
-          {soundMuted !== undefined && onSoundToggle && <SoundToggle muted={soundMuted} onToggle={onSoundToggle} />}
+          <SoundToggle />
           <LangToggle currentLang={currentLang} i18n={i18n} t={t} />
           <button
             ref={toggleRef}
@@ -344,7 +339,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         )}
         <TutorialProgressPanel />
         <div className="hidden sm:flex sm:items-center sm:gap-2">
-          {soundMuted !== undefined && onSoundToggle && <SoundToggle muted={soundMuted} onToggle={onSoundToggle} />}
+          <SoundToggle />
           <LangToggle currentLang={currentLang} i18n={i18n} t={t} />
         </div>
       </nav>

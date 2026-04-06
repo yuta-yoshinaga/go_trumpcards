@@ -7,6 +7,8 @@ import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuActionToast } from '../components/CpuActionToast';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { EquityDisplay } from '../components/EquityDisplay';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -23,19 +25,26 @@ import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { TutorialProvider } from '../providers/TutorialProvider';
+import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { PineappleResponse } from '../types/card';
 import { HoldemRebuyPhaseType, PineapplePhase } from '../types/phases';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
+import { PINEAPPLE_HELP, parsePineappleCommand } from '../utils/cli/commands/pineappleCommands';
+import { formatPineappleState } from '../utils/cli/formatters/pineappleFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Pineapple Poker tutorial step definitions. */
 const PN_TUTORIAL_STEPS: TutorialStep[] = [
@@ -89,12 +98,6 @@ const PN_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Pineapple Poker tutorial configuration. */
-const PN_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'pineapple',
-  steps: PN_TUTORIAL_STEPS,
-};
-
 const PINEAPPLE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PineapplePhase.PRE_FLOP]: 'preFlop',
   [PineapplePhase.FLOP]: 'flop',
@@ -139,11 +142,10 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
 
 /** Renders the Pineapple Poker game page with community cards, discard phase, betting, and showdown. */
 export function PineapplePage() {
-  const { t: tPineapple } = useTranslation('pineapple');
   return (
-    <TutorialProvider config={PN_TUTORIAL_CONFIG} translateMessage={tPineapple}>
+    <TutorialWrapper gameName="pineapple" steps={PN_TUTORIAL_STEPS}>
       <PineapplePageContent />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }
 
@@ -153,14 +155,27 @@ function PineapplePageContent() {
     useGamePageSetup('pineapple');
   const phaseNames = usePhaseNames('pineapple', PINEAPPLE_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec: apiExec } = useGameApi(pineappleApi.exec);
+  const { state, loading, error, exec: apiExec, retry } = useGameApi(pineappleApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pineapple', state);
   const [selectedDiscard, setSelectedDiscard] = useState<number | null>(null);
   const turnStartRef = useRef(0);
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pineapple');
+  const cliConfig: CliGameConfig<PineappleResponse, Parameters<typeof pineappleApi.exec>> = useMemo(
+    () => ({
+      gameName: 'pineapple',
+      parseCommand: parsePineappleCommand,
+      formatResponse: formatPineappleState,
+      helpText: PINEAPPLE_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useEffect(() => {
     apiExec('reset');
@@ -257,318 +272,334 @@ function PineapplePageContent() {
         {state?.tournamentMode && (
           <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
         )}
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/pineapple" />
       </PhaseIndicator>
 
-      {/* Scrollable: community cards + CPU players */}
-      <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
-        {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
-        {(() => {
-          const communityCardsContent = (
-            <>
-              <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
-              <div className="flex flex-wrap gap-2">
-                {state?.communityCards?.length
-                  ? state.communityCards.map((card) => (
-                      <AnimatedCard
-                        key={`${card.design}-${card.value}`}
-                        card={card}
-                        width={cardWidth}
-                        style={{ border: '3px solid transparent' }}
-                      />
-                    ))
-                  : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-              </div>
-            </>
-          );
-          const cpuPlayerCards = cpuPlayers.map((p) => (
-            <CpuPlayerCard
-              key={p.id}
-              player={p}
-              showCards={isShowdown}
-              faceDownCount={2}
-              showHandName={isShowdown}
-              extraInfo={
-                p.totalHands > 0 ? <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} /> : undefined
-              }
-            />
-          ));
-
-          if (!isMobile) {
-            return (
-              <PokerTableLayout
-                communityCardsTutorial="pn-community-cards"
-                cpuAreaTutorial="pn-cpu-area"
-                communityCards={communityCardsContent}
-                cpuPlayers={cpuPlayerCards}
-              />
-            );
-          }
-
-          return (
-            <>
-              <div
-                className="sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm"
-                data-tutorial="pn-community-cards"
-              >
-                {communityCardsContent}
-              </div>
-              <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="pn-cpu-area">
-                {cpuPlayerCards}
-              </CpuAccordion>
-            </>
-          );
-        })()}
-
-        {/* CPU actions: toast on mobile, inline log on desktop */}
-        {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
-
-        {/* Round results */}
-        {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
-
-        {/* Action log */}
-        <ActionLogSection
-          isEndPhase={!!state?.gameEndFlag}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      {/* Sticky footer: player hand + buttons */}
-      <GameFooter className={`${gameTheme.holdem.footer} px-5 py-3`}>
-        {/* Learning mode toggle */}
-        <div
-          className="flex items-center gap-2 mb-2"
-          data-testid="learning-mode-toggle"
-          data-tutorial="pn-learning-mode"
-        >
-          <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
-            {t('learning.toggle')}
-          </label>
-          <input
-            id="learningModeCheckbox"
-            type="checkbox"
-            checked={learningMode}
-            onChange={(e) => setLearningMode(e.target.checked)}
-          />
-        </div>
-
-        {/* Equity display */}
-        {learningMode && state?.equity && state.potOdds != null && (
-          <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-        )}
-
-        {/* Human player */}
-        {humanPlayer && (
-          <div className="mb-2" data-tutorial="pn-player-hand">
-            <div className="text-white text-lg mb-1">
-              {t('yourHand')}
-              <span className="ml-3 text-xs">
-                {tc('betting.chips')} {humanPlayer.chips}
-              </span>
-              {humanPlayer.totalHands > 0 && (
-                <HudStats
-                  vpip={humanPlayer.vpip}
-                  pfr={humanPlayer.pfr}
-                  threeBet={humanPlayer.threeBet}
-                  af={humanPlayer.af}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          {/* Scrollable: community cards + CPU players */}
+          <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
+            {(() => {
+              const communityCardsContent = (
+                <>
+                  <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {state?.communityCards?.length
+                      ? state.communityCards.map((card) => (
+                          <AnimatedCard
+                            key={`${card.design}-${card.value}`}
+                            card={card}
+                            width={cardWidth}
+                            style={{ border: '3px solid transparent' }}
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          />
+                        ))
+                      : Array.from({ length: 5 }).map((_, i) => (
+                          <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                        ))}
+                  </div>
+                </>
+              );
+              const cpuPlayerCards = cpuPlayers.map((p) => (
+                <CpuPlayerCard
+                  key={p.id}
+                  player={p}
+                  showCards={isShowdown}
+                  faceDownCount={2}
+                  showHandName={isShowdown}
+                  extraInfo={
+                    p.totalHands > 0 ? (
+                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
+                    ) : undefined
+                  }
                 />
-              )}
-              {humanPlayer.currentBet > 0 && (
-                <span className="ml-2 text-xs">
-                  {tc('betting.currentBet')} {humanPlayer.currentBet}
-                </span>
-              )}
-              {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
-              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
-              {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                  {humanPlayer.handName}
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {humanPlayer.cards?.length
-                ? humanPlayer.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}`}
-                      type="button"
-                      onClick={() => canDiscard && setSelectedDiscard(idx)}
-                      aria-pressed={canDiscard ? selectedDiscard === idx : undefined}
-                      className={canDiscard ? 'cursor-pointer' : 'cursor-default'}
-                      disabled={!canDiscard}
-                    >
-                      <AnimatedCard
-                        card={card}
-                        width={cardWidth}
-                        style={{
-                          border: canDiscard && selectedDiscard === idx ? '3px solid #f59e0b' : '3px solid transparent',
-                        }}
-                      />
-                    </button>
-                  ))
-                : !humanPlayer.folded &&
-                  Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-            </div>
-          </div>
-        )}
+              ));
 
-        {/* Message */}
-        <GameMessageBox
-          message={state?.message}
-          messageCode={state?.messageCode}
-          messageParams={state?.messageParams}
-          alwaysVisible
-        />
+              if (!isMobile) {
+                return (
+                  <PokerTableLayout
+                    communityCardsTutorial="pn-community-cards"
+                    cpuAreaTutorial="pn-cpu-area"
+                    communityCards={communityCardsContent}
+                    cpuPlayers={cpuPlayerCards}
+                  />
+                );
+              }
 
-        <ErrorAlert message={error} />
+              return (
+                <>
+                  <div
+                    className="sticky top-0 z-10 bg-game-bg-green-poker pb-1 shadow-sm"
+                    data-tutorial="pn-community-cards"
+                  >
+                    {communityCardsContent}
+                  </div>
+                  <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="pn-cpu-area">
+                    {cpuPlayerCards}
+                  </CpuAccordion>
+                </>
+              );
+            })()}
 
-        {/* Discard controls */}
-        {canDiscard && (
-          <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
-            <p className="text-white mb-2">{t('discard.select')}</p>
-            <button
-              type="button"
-              className={`${btnPrimary} min-w-[90px]`}
-              disabled={loading || selectedDiscard === null}
-              onClick={() => {
-                if (selectedDiscard !== null) {
-                  apiExec('discard', undefined, { cardIdx: selectedDiscard });
-                  setSelectedDiscard(null);
-                }
-              }}
-            >
-              {t('discard.prompt')}
-            </button>
-          </div>
-        )}
+            {/* CPU actions: toast on mobile, inline log on desktop */}
+            {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
 
-        {/* Muck/Show controls */}
-        {isMuckPhase && (
-          <div className="mb-2 text-center" data-testid="muck-controls">
-            <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                className={`${btnPrimary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => apiExec('muck')}
-              >
-                {t('muck.muck')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => apiExec('show')}
-              >
-                {t('muck.show')}
-              </button>
-            </div>
-          </div>
-        )}
+            {/* Round results */}
+            {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
 
-        {/* Rebuy/Addon controls */}
-        {isRebuyPhase && (
-          <div className="mb-2 text-center" data-testid="rebuy-controls">
-            <p className="text-white mb-2">
-              {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
-            </p>
-            <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                className={`${btnPrimary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => apiExec('rebuy')}
-              >
-                {t('rebuy.accept')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => apiExec('skiprebuy')}
-              >
-                {t('rebuy.skip')}
-              </button>
-            </div>
-          </div>
-        )}
-        {isAddonPhase && (
-          <div className="mb-2 text-center" data-testid="addon-controls">
-            <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
-            <div className="flex justify-center gap-2">
-              <button
-                type="button"
-                className={`${btnPrimary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => apiExec('addon')}
-              >
-                {t('addon.accept')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading}
-                onClick={() => apiExec('skipaddon')}
-              >
-                {t('addon.skip')}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Hint */}
-        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-        {/* Betting controls */}
-        {canAct && (
-          <div data-tutorial="pn-action-buttons">
-            <BettingControls
-              inputId="pineappleBetAmount"
-              betAmount={betAmount}
-              onBetAmountChange={setBetAmount}
-              minRaise={minRaise}
-              maxBetAmount={state?.maxBetAmount}
-              hasOutstandingBet={hasOutstandingBet}
-              loading={loading}
-              onCall={() => apiExec('call', undefined, undefined, getElapsed())}
-              onRaise={() => apiExec('raise', betAmount, undefined, getElapsed())}
-              onBet={() => apiExec('bet', betAmount, undefined, getElapsed())}
-              onCheck={() => apiExec('check', undefined, undefined, getElapsed())}
-              onFold={() => apiExec('fold', undefined, undefined, getElapsed())}
-              onAllIn={() => apiExec('allin', undefined, undefined, getElapsed())}
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={!!state?.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
             />
           </div>
-        )}
 
-        {/* Settings + Reset */}
-        <div className="text-center flex items-center justify-center gap-3" data-tutorial="pn-reset-button">
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('hint.toggle', { ns: 'tutorial' })}
-          </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-            {t('settings.cpuMetaAI')}
-          </label>
-          <button
-            type="button"
-            className={`${btnOutline} min-w-[90px]`}
-            disabled={loading}
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                apiExec('reset', undefined, { cpuMetaAI });
-              })
-            }
-          >
-            {tc('button.reset')}
-          </button>
-        </div>
-      </GameFooter>
-      <WinCelebration show={phase === PineapplePhase.END} />
+          {/* Sticky footer: player hand + buttons */}
+          <GameFooter className={`${gameTheme.holdem.footer} px-5 py-3`}>
+            {/* Learning mode toggle */}
+            <div
+              className="flex items-center gap-2 mb-2"
+              data-testid="learning-mode-toggle"
+              data-tutorial="pn-learning-mode"
+            >
+              <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
+                {t('learning.toggle')}
+              </label>
+              <input
+                id="learningModeCheckbox"
+                type="checkbox"
+                checked={learningMode}
+                onChange={(e) => setLearningMode(e.target.checked)}
+              />
+            </div>
+
+            {/* Equity display */}
+            {learningMode && state?.equity && state.potOdds != null && (
+              <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+            )}
+
+            {/* Human player */}
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="pn-player-hand">
+                <div className="text-white text-lg mb-1">
+                  {t('yourHand')}
+                  <span className="ml-3 text-xs">
+                    {tc('betting.chips')} {humanPlayer.chips}
+                  </span>
+                  {humanPlayer.totalHands > 0 && (
+                    <HudStats
+                      vpip={humanPlayer.vpip}
+                      pfr={humanPlayer.pfr}
+                      threeBet={humanPlayer.threeBet}
+                      af={humanPlayer.af}
+                    />
+                  )}
+                  {humanPlayer.currentBet > 0 && (
+                    <span className="ml-2 text-xs">
+                      {tc('betting.currentBet')} {humanPlayer.currentBet}
+                    </span>
+                  )}
+                  {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
+                  {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
+                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                      {humanPlayer.handName}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {humanPlayer.cards?.length
+                    ? humanPlayer.cards.map((card, idx) => (
+                        <button
+                          key={`${card.design}-${card.value}`}
+                          type="button"
+                          onClick={() => canDiscard && setSelectedDiscard(idx)}
+                          aria-pressed={canDiscard ? selectedDiscard === idx : undefined}
+                          className={canDiscard ? 'cursor-pointer' : 'cursor-default'}
+                          disabled={!canDiscard}
+                        >
+                          <AnimatedCard
+                            card={card}
+                            width={cardWidth}
+                            style={{
+                              border:
+                                canDiscard && selectedDiscard === idx ? '3px solid #f59e0b' : '3px solid transparent',
+                            }}
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          />
+                        </button>
+                      ))
+                    : !humanPlayer.folded &&
+                      Array.from({ length: 3 }).map((_, i) => (
+                        <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
+                      ))}
+                </div>
+              </div>
+            )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state?.message}
+              messageCode={state?.messageCode}
+              messageParams={state?.messageParams}
+              alwaysVisible
+            />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Discard controls */}
+            {canDiscard && (
+              <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
+                <p className="text-white mb-2">{t('discard.select')}</p>
+                <button
+                  type="button"
+                  className={`${btnPrimary} min-w-[90px]`}
+                  disabled={loading || selectedDiscard === null}
+                  onClick={() => {
+                    if (selectedDiscard !== null) {
+                      apiExec('discard', undefined, { cardIdx: selectedDiscard });
+                      setSelectedDiscard(null);
+                    }
+                  }}
+                >
+                  {t('discard.prompt')}
+                </button>
+              </div>
+            )}
+
+            {/* Muck/Show controls */}
+            {isMuckPhase && (
+              <div className="mb-2 text-center" data-testid="muck-controls">
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => apiExec('muck')}
+                  >
+                    {t('muck.muck')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => apiExec('show')}
+                  >
+                    {t('muck.show')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Rebuy/Addon controls */}
+            {isRebuyPhase && (
+              <div className="mb-2 text-center" data-testid="rebuy-controls">
+                <p className="text-white mb-2">
+                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
+                </p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => apiExec('rebuy')}
+                  >
+                    {t('rebuy.accept')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => apiExec('skiprebuy')}
+                  >
+                    {t('rebuy.skip')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isAddonPhase && (
+              <div className="mb-2 text-center" data-testid="addon-controls">
+                <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => apiExec('addon')}
+                  >
+                    {t('addon.accept')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => apiExec('skipaddon')}
+                  >
+                    {t('addon.skip')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Betting controls */}
+            {canAct && (
+              <div data-tutorial="pn-action-buttons">
+                <BettingControls
+                  inputId="pineappleBetAmount"
+                  betAmount={betAmount}
+                  onBetAmountChange={setBetAmount}
+                  minRaise={minRaise}
+                  maxBetAmount={state?.maxBetAmount}
+                  hasOutstandingBet={hasOutstandingBet}
+                  loading={loading}
+                  onCall={() => apiExec('call', undefined, undefined, getElapsed())}
+                  onRaise={() => apiExec('raise', betAmount, undefined, getElapsed())}
+                  onBet={() => apiExec('bet', betAmount, undefined, getElapsed())}
+                  onCheck={() => apiExec('check', undefined, undefined, getElapsed())}
+                  onFold={() => apiExec('fold', undefined, undefined, getElapsed())}
+                  onAllIn={() => apiExec('allin', undefined, undefined, getElapsed())}
+                />
+              </div>
+            )}
+
+            {/* Settings + Reset */}
+            <div className="text-center flex items-center justify-center gap-3" data-tutorial="pn-reset-button">
+              <label className="text-white text-sm flex items-center gap-1">
+                <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
+              <label className="text-white text-sm flex items-center gap-1">
+                <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                {t('settings.cpuMetaAI')}
+              </label>
+              <button
+                type="button"
+                className={`${btnOutline} min-w-[90px]`}
+                disabled={loading}
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    apiExec('reset', undefined, { cpuMetaAI });
+                  })
+                }
+              >
+                {tc('button.reset')}
+              </button>
+            </div>
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={phase === PineapplePhase.END} onCelebrate={() => playSound('winFanfare')} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

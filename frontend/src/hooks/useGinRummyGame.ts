@@ -29,7 +29,7 @@ export function useGinRummyGame() {
   const onSuccess = useCallback(() => {
     clearSelection();
   }, [clearSelection]);
-  const { state, loading, error, exec: rawExec } = useGameApi(ginrummyApi.exec, { onSuccess });
+  const { state, loading, error, exec: rawExec, retry } = useGameApi(ginrummyApi.exec, { onSuccess });
 
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -84,5 +84,6 @@ export function useGinRummyGame() {
     handleLayoff,
     handleSkipLayoff,
     handleNextRound,
+    retry,
   };
 }

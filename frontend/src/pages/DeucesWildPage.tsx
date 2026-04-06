@@ -1,8 +1,10 @@
-import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
 import { deuceswildApi } from '../api/gameApi';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { VideoPokerGameContent } from '../components/VideoPokerGameContent';
-import { TutorialProvider } from '../providers/TutorialProvider';
-import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import type { TutorialStep } from '../types/tutorial';
+import { DEUCESWILD_HELP, parseDeuceswildCommand } from '../utils/cli/commands/deuceswildCommands';
+import { formatDeuceswildState } from '../utils/cli/formatters/deuceswildFormatter';
 
 /** Deuces Wild payout table rows. */
 const DW_PAYOUT_ROWS = [
@@ -47,24 +49,26 @@ const DW_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Deuces Wild tutorial configuration. */
-const DW_TUTORIAL_CONFIG: TutorialConfig = {
-  gameName: 'deuceswild',
-  steps: DW_TUTORIAL_STEPS,
-};
-
 /** Renders the Deuces Wild game page. */
 export function DeucesWildPage() {
-  const { t: tDw } = useTranslation('deuceswild');
+  const cliGameConfig = useMemo(
+    () => ({
+      parseCommand: parseDeuceswildCommand,
+      formatResponse: formatDeuceswildState,
+      helpText: DEUCESWILD_HELP,
+    }),
+    [],
+  );
   return (
-    <TutorialProvider config={DW_TUTORIAL_CONFIG} translateMessage={tDw}>
+    <TutorialWrapper gameName="deuceswild" steps={DW_TUTORIAL_STEPS}>
       <VideoPokerGameContent
         gameName="deuceswild"
         i18nNamespace="deuceswild"
         apiExec={deuceswildApi.exec}
         payoutTableRows={DW_PAYOUT_ROWS}
         gamePath="/deuceswild"
+        cliGameConfig={cliGameConfig}
       />
-    </TutorialProvider>
+    </TutorialWrapper>
   );
 }

@@ -131,7 +131,7 @@ export function useDaifugoGame() {
     [clearSelection],
   );
 
-  const { loading, error, exec } = useGameApi(daifugoApi.exec, { onSuccess });
+  const { loading, error, exec, retry } = useGameApi(daifugoApi.exec, { onSuccess });
 
   useEffect(() => {
     exec('reset');
@@ -176,5 +176,6 @@ export function useDaifugoGame() {
     handleDragCard,
     handleDrop,
     handleConfigChange,
+    retry,
   };
 }

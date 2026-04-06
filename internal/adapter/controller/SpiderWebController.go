@@ -49,6 +49,7 @@ type SpiderWebOutput struct {
 	MoveCount      int                             `json:"moveCount"`
 	CanUndo        bool                            `json:"canUndo"`
 	IsStalemate    bool                            `json:"isStalemate"`
+	UndoToEscape   int                             `json:"undoToEscape"`
 	Score          int                             `json:"score"`
 	Difficulty     int                             `json:"difficulty"`
 	Hint           *SpiderWebOutputHint            `json:"hint,omitempty"`
@@ -58,19 +59,11 @@ type SpiderWebOutput struct {
 // SpiderWebController スパイダーソリティアWebコントローラークラス
 type SpiderWebController = GameWebController[usecase.SpiderInteractorIF, SpiderWebInput, *SpiderWebOutput]
 
-// NewSpiderWebController コンストラクタ
-func NewSpiderWebController(factory func() usecase.SpiderInteractorIF) *SpiderWebController {
-	return NewGameWebController(factory, newSpiderDefaultOutput, spiderDispatch)
-}
-
-// NewSpiderWebControllerWithProvider creates a SpiderWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewSpiderWebControllerWithProvider(
-	provider SessionProvider[usecase.SpiderInteractorIF],
-	factory func() usecase.SpiderInteractorIF,
-) *SpiderWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newSpiderDefaultOutput, spiderDispatch)
-}
+// NewSpiderWebController and NewSpiderWebControllerWithProvider are
+// the standard and provider-backed constructors for SpiderWebController.
+var NewSpiderWebController, NewSpiderWebControllerWithProvider = webControllerPair[usecase.SpiderInteractorIF, SpiderWebInput, *SpiderWebOutput](
+	newSpiderDefaultOutput, spiderDispatch,
+)
 
 func newSpiderDefaultOutput(msg string) *SpiderWebOutput {
 	return &SpiderWebOutput{
@@ -101,6 +94,12 @@ func spiderDispatch(bc *baseController, w http.ResponseWriter, si usecase.Spider
 		bc.writePresenterResponse(w, si.AutoComplete())
 	case "u", "undo":
 		bc.writePresenterResponse(w, si.Undo())
+	case "undo_n":
+		if param.N == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: n is required."))
+			return true
+		}
+		bc.writePresenterResponse(w, si.UndoN(*param.N))
 	default:
 		return dispatchHintAndLog(param.Command, bc, w, si.Hint, si.ActionLog)
 	}

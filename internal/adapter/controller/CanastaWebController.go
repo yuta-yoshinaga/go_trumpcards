@@ -84,19 +84,11 @@ func (p CanastaWebInput) ToConfig() domain.CanastaConfig {
 // CanastaWebController カナスタWebコントローラークラス
 type CanastaWebController = GameWebController[usecase.CanastaInteractorIF, CanastaWebInput, *CanastaWebOutput]
 
-// NewCanastaWebController コンストラクタ
-func NewCanastaWebController(factory func() usecase.CanastaInteractorIF) *CanastaWebController {
-	return NewGameWebController(factory, newCanastaDefaultOutput, canastaDispatch)
-}
-
-// NewCanastaWebControllerWithProvider creates a CanastaWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewCanastaWebControllerWithProvider(
-	provider SessionProvider[usecase.CanastaInteractorIF],
-	factory func() usecase.CanastaInteractorIF,
-) *CanastaWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newCanastaDefaultOutput, canastaDispatch)
-}
+// NewCanastaWebController and NewCanastaWebControllerWithProvider are
+// the standard and provider-backed constructors for CanastaWebController.
+var NewCanastaWebController, NewCanastaWebControllerWithProvider = webControllerPair[usecase.CanastaInteractorIF, CanastaWebInput, *CanastaWebOutput](
+	newCanastaDefaultOutput, canastaDispatch,
+)
 
 func newCanastaDefaultOutput(msg string) *CanastaWebOutput {
 	return &CanastaWebOutput{

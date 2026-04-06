@@ -164,6 +164,35 @@ describe('MobileHandGrid', () => {
     }
   });
 
+  it('expands margin for neighbors of selected card', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const cards = makeCards(10);
+      // Select card at index 3 (4th card in first row of 5)
+      const { container } = render(
+        <MobileHandGrid cards={cards} selectedIndices={[3]} onToggle={() => {}} cardWidth={40} />,
+      );
+      const rows = container.querySelectorAll('[data-testid="hand-row"]');
+      const firstRowButtons = rows[0].querySelectorAll('button');
+      // Card at index 3 (selected) and 4 (right of selected) both expand — should have wider margin
+      const neighborMargin = Number.parseFloat(firstRowButtons[4].style.marginLeft);
+      // Card at index 1 is not selected or adjacent-to-selected — should have base margin
+      const baseMargin = Number.parseFloat(firstRowButtons[1].style.marginLeft);
+      expect(neighborMargin).toBeGreaterThan(baseMargin);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    }
+  });
+
+  it('does not expand first card margin even if neighbor is selected', () => {
+    const cards = makeCards(6);
+    // Select card at index 0 — card at index 1 is neighbor, but card 0 (i=0) always has marginLeft=0
+    render(<MobileHandGrid cards={cards} selectedIndices={[0]} onToggle={() => {}} cardWidth={40} />);
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[0].style.marginLeft).toBe('0px');
+  });
+
   it('uses positive gap when viewport is wide enough for all cards', () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });

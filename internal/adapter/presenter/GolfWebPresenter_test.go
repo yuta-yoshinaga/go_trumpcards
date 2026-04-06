@@ -21,6 +21,7 @@ func setupGolfWebMockDefaults(gg *interfaces.MockGolfGame) {
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("IsStalemate").Return(false).Maybe()
+	gg.On("UndoToEscape").Return(0).Maybe()
 	gg.On("AllRemoved").Return(false).Maybe()
 
 	var layout [domain.GolfColCnt][domain.GolfRowCnt]*domain.GolfCard
@@ -87,6 +88,7 @@ func TestGolfWebPresenterOutput_Stalemate(t *testing.T) {
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("IsStalemate").Return(true).Maybe()
+	gg.On("UndoToEscape").Return(-1).Maybe()
 	var layout [domain.GolfColCnt][domain.GolfRowCnt]*domain.GolfCard
 	gg.On("GetLayout").Return(layout).Maybe()
 	for c := range domain.GolfColCnt {
@@ -112,6 +114,7 @@ func TestGolfWebPresenterOutput_GameClear(t *testing.T) {
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("IsStalemate").Return(false).Maybe()
+	gg.On("UndoToEscape").Return(0).Maybe()
 	var layout [domain.GolfColCnt][domain.GolfRowCnt]*domain.GolfCard
 	gg.On("GetLayout").Return(layout).Maybe()
 	for c := range domain.GolfColCnt {
@@ -138,6 +141,7 @@ func TestGolfWebPresenterOutput_GameOver(t *testing.T) {
 	gg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	gg.On("CanUndo").Return(false).Maybe()
 	gg.On("IsStalemate").Return(false).Maybe()
+	gg.On("UndoToEscape").Return(0).Maybe()
 	var layout [domain.GolfColCnt][domain.GolfRowCnt]*domain.GolfCard
 	gg.On("GetLayout").Return(layout).Maybe()
 	for c := range domain.GolfColCnt {
@@ -161,6 +165,7 @@ func TestGolfWebPresenterHintOutput(t *testing.T) {
 		gg.On("GetMoveCount").Return(0)
 		gg.On("GetStockCount").Return(16)
 		gg.On("CanUndo").Return(false)
+		gg.On("UndoToEscape").Return(0)
 
 		p := &GolfWebPresenter{}
 		result := p.HintOutput(gg)
@@ -178,6 +183,7 @@ func TestGolfWebPresenterHintOutput(t *testing.T) {
 		gg.On("GetMoveCount").Return(0)
 		gg.On("GetStockCount").Return(0)
 		gg.On("CanUndo").Return(false)
+		gg.On("UndoToEscape").Return(0)
 
 		p := &GolfWebPresenter{}
 		result := p.HintOutput(gg)

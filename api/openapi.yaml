@@ -86,6 +86,12 @@ tags:
     description: Speed (スピード) game
   - name: gofish
     description: Go Fish (ゴーフィッシュ) game
+  - name: pigtail
+    description: Pig's Tail (ぶたのしっぽ) game
+  - name: sevencardstud
+    description: Seven Card Stud (セブンカード・スタッド) game
+  - name: clocksolitaire
+    description: Clock Solitaire (クロックソリティア) game
 
 paths:
   /blackjack/exec:
@@ -1234,6 +1240,7 @@ paths:
         | `hint`         | `h`  | Get a hint for the next move |
         | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
         | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
         | `log`          | `l`  | View action log |
       operationId: klondikeExec
       requestBody:
@@ -1317,6 +1324,7 @@ paths:
         | `hint`         | `h`  | Get a hint for the next move |
         | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
         | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
         | `log`          | `l`  | View action log |
       operationId: freecellExec
       requestBody:
@@ -1845,6 +1853,7 @@ paths:
         | `hint`         | `h`     | Get a move suggestion |
         | `autocomplete` | `ac`    | Auto-complete (when all face up) |
         | `undo`         | `u`     | Undo last move |
+        | `undo_n`       |         | Undo N moves (requires `n` parameter) |
         | `log`          | `l`     | View action log |
       operationId: spiderExec
       requestBody:
@@ -2394,6 +2403,7 @@ paths:
         | `giveup`       | `g`  | Give up the current game |
         | `hint`         | `h`  | Get a hint for the next move |
         | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
         | `log`          | `l`  | View action log |
       operationId: pyramidExec
       requestBody:
@@ -2497,6 +2507,7 @@ paths:
         | `giveup`       | `g`  | Give up the current game |
         | `hint`         | `h`  | Get a hint for the next move |
         | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
         | `log`          | `l`  | View action log |
       operationId: tripeaksExec
       requestBody:
@@ -3140,6 +3151,7 @@ paths:
         | `giveup`       | `g`  | Give up the current game |
         | `hint`         | `h`  | Get a hint for the next move |
         | `undo`         | `u`  | Undo the last action |
+        | `undo_n`       |      | Undo N actions (requires `n` parameter) |
         | `log`          | `l`  | View action log |
       operationId: golfExec
       requestBody:
@@ -3154,10 +3166,14 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+                  enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, undo_n, log, l]
                 col:
                   type: integer
                   description: Column index (0-6) for remove command
+                n:
+                  type: integer
+                  description: Number of undos to perform (required when command is undo_n)
+                  example: 3
                 sessionId:
                   type: string
             examples:
@@ -3212,6 +3228,10 @@ paths:
                     type: boolean
                   isStalemate:
                     type: boolean
+                  undoToEscape:
+                    type: integer
+                    description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+                    example: 0
                   message:
                     type: string
                   messageCode:
@@ -3245,6 +3265,427 @@ paths:
                   phase:
                     type: integer
                   moveCount:
+                    type: integer
+                  message:
+                    type: string
+
+  /pigtail/exec:
+    post:
+      tags:
+        - pigtail
+      summary: Execute a Pig's Tail game command
+      description: |
+        Send a command to advance the Pig's Tail (ぶたのしっぽ) game session
+        identified by `sessionId`.  Pig's Tail is a matching card game for 4
+        players (1 human + 3 CPU) using a standard 52-card deck.  Cards are
+        placed face-down in a circle pile.  Players take turns drawing 1 card
+        and placing it face-up on the center pile.  If the drawn card's suit
+        matches the center top card's suit, the player takes all center cards
+        as a penalty.  When the circle pile is empty, the player with the most
+        cards loses.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Game in progress |
+        | GameEnd  | `1`   | Circle pile empty; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `draw`  | `d`     | Draw a card from the circle pile |
+        | `log`   | `l`     | View action log |
+      operationId: pigtailExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, log, l]
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw a card from circle pile
+                value:
+                  command: draw
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                  circleCount:
+                    type: integer
+                    description: Remaining cards in the circle pile
+                  centerTop:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                    description: Top card of the center pile (null if empty)
+                  centerCount:
+                    type: integer
+                    description: Number of cards in the center pile
+                  currentTurn:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  loserIdx:
+                    type: integer
+                    description: Index of the losing player (-1 if game not ended)
+                  lastDrawCard:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  lastPenalty:
+                    type: boolean
+                    description: Whether the last draw triggered a suit-match penalty
+                  cpuActions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        drawPlayerIdx:
+                          type: integer
+                        drawnCard:
+                          nullable: true
+                          allOf:
+                            - $ref: '#/components/schemas/Card'
+                        penaltyFlag:
+                          type: boolean
+                        penaltyCount:
+                          type: integer
+                        hesitationMs:
+                          type: integer
+                  humanAction:
+                    nullable: true
+                    type: object
+                    properties:
+                      drawPlayerIdx:
+                        type: integer
+                      drawnCard:
+                        nullable: true
+                        allOf:
+                          - $ref: '#/components/schemas/Card'
+                      penaltyFlag:
+                        type: boolean
+                      penaltyCount:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                  circleCount:
+                    type: integer
+                  centerCount:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  loserIdx:
+                    type: integer
+                  message:
+                    type: string
+
+  /sevencardstud/exec:
+    post:
+      tags:
+        - sevencardstud
+      summary: Execute a Seven Card Stud game command
+      description: |
+        Send a command to advance the Seven Card Stud game session identified by
+        `sessionId`.  Seven Card Stud is a classic stud poker variant with no
+        community cards.  Each player receives 2 face-down hole cards and 1
+        face-up door card on Third Street, then 1 face-up card each on Fourth
+        through Sixth Street, and 1 final face-down card on Seventh Street.
+        Uses antes and bring-in (lowest door card) instead of blinds.  Betting
+        order changes each street based on best visible hand (door cards).
+        Best 5 out of 7 cards wins.
+
+        The game supports configurable table sizes: 2-max through 7-max
+        (default 4, i.e., 1 human + 3 CPU).
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Init       | `0`   | Before any cards are dealt |
+        | ThirdSt    | `1`   | 2 hole cards + 1 door card; first betting round (bring-in) |
+        | FourthSt   | `2`   | 4th card (face-up); betting round |
+        | FifthSt    | `3`   | 5th card (face-up); betting round |
+        | SixthSt    | `4`   | 6th card (face-up); betting round |
+        | SeventhSt  | `5`   | 7th card (face-down); final betting round |
+        | Showdown   | `6`   | Hands evaluated; winners determined |
+        | End        | `7`   | Round complete; results displayed |
+        | Rebuy      | `8`   | Rebuy/addon decision phase |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `fold`  | `f`     | Fold and forfeit the pot |
+        | `check` | `ck`    | Pass without betting (only when no outstanding bet) |
+        | `call`  | `c`     | Match the current bet |
+        | `bet`   | `b`     | Place a bet (use `amount`) |
+        | `raise` | `ra`    | Raise by a specified amount on top of calling (use `amount`) |
+        | `allin` | `a`     | Go all-in with all remaining chips |
+        | `rebuy` | `rb`    | Buy back chips during rebuy period |
+        | `skiprebuy` | `sr` | Skip rebuy opportunity |
+        | `addon` | `ad`    | Add chips (one-time addon purchase) |
+        | `skipaddon` | `sa` | Skip addon opportunity |
+        | `muck`  | `m`     | Muck (hide) hand at showdown |
+        | `show`  | `sh`    | Show hand at showdown |
+        | `log`   | `l`     | View action log |
+        | `quit`  | `q`     | End the session |
+      operationId: sevencardstudExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevenCardStudRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              resetCustomAnte:
+                summary: Start with custom ante and bring-in
+                value:
+                  command: reset
+                  ante: 5
+                  bringIn: 10
+                  smallBet: 20
+                  bigBet: 40
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              call:
+                summary: Call
+                value:
+                  command: call
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 40
+                value:
+                  command: bet
+                  amount: 40
+                  sessionId: my-session-001
+              raise:
+                summary: Raise by 80
+                value:
+                  command: raise
+                  amount: 80
+                  sessionId: my-session-001
+              allin:
+                summary: Go all-in
+                value:
+                  command: allin
+                  sessionId: my-session-001
+              rebuy:
+                summary: Accept rebuy
+                value:
+                  command: rebuy
+                  sessionId: my-session-001
+              skipaddon:
+                summary: Skip addon
+                value:
+                  command: skipaddon
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    pot: 0
+                    sidePots: []
+                    dealerIdx: 0
+                    currentTurn: 0
+                    phase: 0
+                    gameEndFlag: false
+                    lastBet: 0
+                    minRaise: 0
+                    roundResults: []
+                    cpuActions: []
+                    message: param error.
+
+
+  /clocksolitaire/exec:
+    post:
+      tags:
+        - clocksolitaire
+      summary: Execute a Clock Solitaire game command
+      description: |
+        Send a command to advance the Clock Solitaire (クロックソリティア) game session identified by
+        `sessionId`.  Clock Solitaire is a fully automatic single-player solitaire card game using a
+        standard 52-card deck.  52 cards are dealt face-down into 13 piles of 4 cards: 12 piles placed
+        at clock positions 1-12 and 1 pile in the center (King position).  One card at a time is flipped
+        face-up and placed at the bottom of the pile matching its rank.  The game clears when all cards
+        are face-up before the 4th King is placed; the game is over when the 4th King is turned while
+        face-down cards remain.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All cards are face-up; player wins |
+        | GameOver   | `2`   | 4th King turned while face-down cards remain |
+
+        | Command    | Aliases | Description |
+        |------------|---------|-------------|
+        | `reset`    | `r`     | Start / restart a game |
+        | `step`     | `s`     | Flip and place one card |
+        | `autoplay` | `a`     | Play all remaining cards to completion |
+        | `log`      | `l`     | View action log |
+      operationId: clocksolitaireExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, step, s, autoplay, a, log, l]
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              step:
+                summary: Flip and place one card
+                value:
+                  command: step
+                  sessionId: my-session-001
+              autoplay:
+                summary: Play all remaining cards to completion
+                value:
+                  command: autoplay
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  piles:
+                    type: array
+                    description: |
+                      13 piles indexed 0-12 (index 0 = position 1, index 11 = position 12, index 12 = center/King).
+                      Each pile is an array of card objects.
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          card:
+                            $ref: '#/components/schemas/Card'
+                          faceUp:
+                            type: boolean
+                  faceUpCount:
+                    type: integer
+                    description: Total number of face-up cards across all piles
+                  phase:
+                    type: integer
+                    description: "0=Playing, 1=GameClear, 2=GameOver"
+                  stepCount:
+                    type: integer
+                    description: Number of cards flipped so far
+                  currentCard:
+                    description: The card most recently flipped (null before first step)
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  piles:
+                    type: array
+                    items:
+                      type: array
+                  faceUpCount:
+                    type: integer
+                  phase:
+                    type: integer
+                  stepCount:
                     type: integer
                   message:
                     type: string
@@ -6300,7 +6741,7 @@ components:
             Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
             `move` (`m`), `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
             `log` (`l`).
-          enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, log, l]
+          enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
           example: move
         from:
           description: Source zone for a move command
@@ -6322,6 +6763,10 @@ components:
               description: "Scoring mode: 0 = None, 1 = Vegas"
               enum: [0, 1]
               example: 0
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -6354,6 +6799,7 @@ components:
         - drawCount
         - canUndo
         - isStalemate
+        - undoToEscape
         - score
         - scoringMode
         - message
@@ -6403,6 +6849,10 @@ components:
           type: boolean
           description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
         score:
           type: integer
           description: "Vegas score: -52 + 5 × foundation cards"
@@ -6471,8 +6921,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `move` (`m`),
             `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
-            `undo` (`u`), `log` (`l`).
-          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, log, l]
+            `undo` (`u`), `undo_n`, `log` (`l`).
+          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
           example: move
         from:
           description: Source zone for a move command
@@ -6480,6 +6930,10 @@ components:
         to:
           description: Destination zone for a move command
           $ref: '#/components/schemas/FreeCellZone'
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -6496,6 +6950,7 @@ components:
         - moveCount
         - canUndo
         - isStalemate
+        - undoToEscape
         - message
       properties:
         tableau:
@@ -6535,6 +6990,10 @@ components:
           type: boolean
           description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
         hint:
           type: object
           description: Hint for the next available move (only present when hint command is used)
@@ -7437,7 +7896,11 @@ components:
       properties:
         command:
           type: string
-          enum: [reset, deal, move, giveup, hint, autocomplete, undo, log]
+          enum: [reset, deal, move, giveup, hint, autocomplete, undo, undo_n, log]
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
         sessionId:
           type: string
         from:
@@ -7495,6 +7958,7 @@ components:
         - moveCount
         - canUndo
         - isStalemate
+        - undoToEscape
         - score
         - difficulty
         - message
@@ -7519,6 +7983,10 @@ components:
           type: boolean
         isStalemate:
           type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
         score:
           type: integer
         difficulty:
@@ -8154,8 +8622,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
             `remove` (`rm`), `giveup` (`g`), `hint` (`h`), `undo` (`u`),
-            `log` (`l`).
-          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+            `undo_n`, `log` (`l`).
+          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, undo_n, log, l]
           example: remove
         card1:
           description: First card for a remove command
@@ -8163,6 +8631,10 @@ components:
         card2:
           description: Second card for a remove command (pair removal)
           $ref: '#/components/schemas/PyramidCard'
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -8195,6 +8667,7 @@ components:
         - moveCount
         - canUndo
         - isStalemate
+        - undoToEscape
         - message
       properties:
         pyramid:
@@ -8230,6 +8703,10 @@ components:
           type: boolean
           description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
         message:
           type: string
           description: Game result or status message. Empty while the game is in progress.
@@ -8274,8 +8751,8 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
             `remove` (`rm`), `giveup` (`g`), `hint` (`h`), `undo` (`u`),
-            `log` (`l`).
-          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+            `undo_n`, `log` (`l`).
+          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, undo_n, log, l]
           example: remove
         row:
           type: integer
@@ -8285,6 +8762,10 @@ components:
           type: integer
           description: Column index of the tableau card to remove (0-based)
           example: 0
+        n:
+          type: integer
+          description: Number of undos to perform (required when command is undo_n)
+          example: 3
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -8317,6 +8798,7 @@ components:
         - moveCount
         - canUndo
         - isStalemate
+        - undoToEscape
         - message
       properties:
         tableau:
@@ -8352,6 +8834,10 @@ components:
           type: boolean
           description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to reach a non-stalemate state (0 if not stalemate, -1 if no escape)
+          example: 0
         message:
           type: string
           description: Game result or status message. Empty while the game is in progress.
@@ -9654,3 +10140,546 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Seven Card Stud
+    # -------------------------------------------------------------------------
+    SevenCardStudRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `fold` (`f`),
+            `check` (`ck`), `call` (`c`), `bet` (`b`), `raise` (`ra`),
+            `allin` (`a`), `rebuy` (`rb`), `skiprebuy` (`sr`),
+            `addon` (`ad`), `skipaddon` (`sa`), `muck` (`m`),
+            `show` (`sh`), `log` (`l`), `quit` (`q`).
+          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, m, muck, sh, show, log, l, q, quit]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Bet/raise amount (for the `bet` and `raise` commands).
+            Ignored for other commands.
+          minimum: 1
+          example: 40
+        humanPlayMs:
+          type: integer
+          description: Human play hesitation time in milliseconds (0=not measured)
+          example: 1200
+        ante:
+          type: integer
+          description: |
+            Ante amount (for the `reset` command).
+            Defaults to 2 when omitted.
+          minimum: 1
+          example: 2
+        bringIn:
+          type: integer
+          description: |
+            Bring-in amount (for the `reset` command).
+            Defaults to 5 when omitted.
+          minimum: 1
+          example: 5
+        smallBet:
+          type: integer
+          description: |
+            Small bet amount used on Third/Fourth Street (for the `reset` command).
+            Defaults to 10 when omitted.
+          minimum: 1
+          example: 10
+        bigBet:
+          type: integer
+          description: |
+            Big bet amount used on Fifth/Sixth/Seventh Street (for the `reset` command).
+            Defaults to 20 when omitted.
+          minimum: 1
+          example: 20
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type (used with `reset` command).
+            0 = Fixed (default), 1 = Pot Limit, 2 = No Limit.
+          minimum: 0
+          maximum: 2
+          example: 0
+        tableSize:
+          type: integer
+          description: |
+            Table size (used with `reset` command).
+            2 through 7 players. Defaults to 4.
+          minimum: 2
+          maximum: 7
+          example: 4
+        tournamentMode:
+          type: boolean
+          description: |
+            Enable tournament mode with ante escalation (for the `reset` command).
+            Defaults to false when omitted.
+          example: false
+        anteLevelHands:
+          type: integer
+          description: |
+            Number of hands before ante increases in tournament mode (for the `reset` command).
+            Defaults to 10 when omitted. Must be >= 1.
+          minimum: 1
+          example: 10
+        anteMultiplier:
+          type: integer
+          description: |
+            Ante multiplier as a percentage when ante increases (for the `reset` command).
+            Defaults to 200 (= 2x). Must be >= 101.
+          minimum: 101
+          example: 200
+        rebuyEnabled:
+          type: boolean
+          description: |
+            Enable rebuy (used with `reset` command).
+            Defaults to false when omitted.
+          example: false
+        rebuyMaxCount:
+          type: integer
+          description: |
+            Maximum number of rebuys per player (used with `reset` command).
+            Defaults to 3 when omitted.
+          minimum: 1
+          example: 3
+        rebuyChips:
+          type: integer
+          description: |
+            Chips granted per rebuy (used with `reset` command).
+            Defaults to 1000 when omitted.
+          minimum: 1
+          example: 1000
+        rebuyPeriodHands:
+          type: integer
+          description: |
+            Number of hands during which rebuy is available (used with `reset` command).
+            Defaults to 10 when omitted.
+          minimum: 1
+          example: 10
+        addonEnabled:
+          type: boolean
+          description: |
+            Enable addon (used with `reset` command).
+            Defaults to false when omitted.
+          example: false
+        addonChips:
+          type: integer
+          description: |
+            Chips granted by addon (used with `reset` command).
+            Defaults to 1500 when omitted.
+          minimum: 1
+          example: 1500
+        addonAfterHand:
+          type: integer
+          description: |
+            Hand number after which addon becomes available (used with `reset` command).
+            Defaults to 10 when omitted.
+          minimum: 1
+          example: 10
+        cpuMetaAI:
+          type: boolean
+          description: |
+            When true, CPUs adaptively adjust bluff and call behavior based on
+            session-scoped game history (Meta-AI). Defaults to false.
+          default: false
+          example: false
+        profile:
+          type: object
+          description: Human player profile for Meta-AI (sent back by the client to persist across sessions)
+        sessionId:
+          type: string
+          description: Unique session identifier (max 256 characters)
+          maxLength: 256
+          example: my-session-001
+
+    SevenCardStudPlayer:
+      type: object
+      required:
+        - id
+        - isHuman
+        - holeCards
+        - doorCards
+        - chips
+        - currentBet
+        - folded
+        - allIn
+        - handRank
+        - handName
+        - bestHand
+        - playStyleName
+      properties:
+        id:
+          type: integer
+          description: Player index (0 = human, 1+ = CPU)
+          example: 0
+        isHuman:
+          type: boolean
+          description: Whether this is the human player
+          example: true
+        holeCards:
+          type: array
+          description: |
+            Face-down hole cards (2 initially, 3 after Seventh Street).
+            Human player's cards are always visible.
+            CPU cards are hidden (empty array) until showdown.
+          items:
+            $ref: '#/components/schemas/Card'
+        doorCards:
+          type: array
+          description: |
+            Face-up door cards (1 on Third Street, up to 4 by Sixth Street).
+            Visible to all players.
+          items:
+            $ref: '#/components/schemas/Card'
+        chips:
+          type: integer
+          description: Current chip count
+          minimum: 0
+          example: 990
+        currentBet:
+          type: integer
+          description: Current round bet amount
+          minimum: 0
+          example: 10
+        folded:
+          type: boolean
+          description: Whether the player has folded
+          example: false
+        allIn:
+          type: boolean
+          description: Whether the player is all-in
+          example: false
+        handRank:
+          type: integer
+          description: |
+            Numeric hand rank (only populated at showdown for non-folded players):
+            0 = High Card, 1 = One Pair, 2 = Two Pair, 3 = Three of a Kind,
+            4 = Straight, 5 = Flush, 6 = Full House, 7 = Four of a Kind,
+            8 = Straight Flush, 9 = Royal Flush.
+          minimum: 0
+          maximum: 9
+          example: 0
+        handName:
+          type: string
+          description: Human-readable hand name (empty until showdown)
+          example: ""
+        bestHand:
+          type: array
+          description: Best 5-card hand (only populated at showdown)
+          items:
+            $ref: '#/components/schemas/Card'
+        playStyleName:
+          type: string
+          description: |
+            CPU play style name: TAG (Tight-Aggressive), LAP (Loose-Passive),
+            TAP (Tight-Passive), LAG (Loose-Aggressive), GTO (Game Theory Optimal).
+            Empty for human player.
+          example: TAG
+        totalHands:
+          type: integer
+          description: Total number of hands played (for HUD stats)
+          minimum: 0
+          example: 10
+        vpip:
+          type: integer
+          description: VPIP percentage (Voluntarily Put $ In Pot)
+          minimum: 0
+          maximum: 100
+          example: 50
+        pfr:
+          type: integer
+          description: PFR percentage (Pre-Flop Raise)
+          minimum: 0
+          maximum: 100
+          example: 25
+        threeBet:
+          type: integer
+          description: 3Bet percentage
+          minimum: 0
+          maximum: 100
+          example: 10
+        af:
+          type: string
+          description: "Aggression Factor (postflop bets+raises / calls). Values: decimal (e.g. \"2.5\"), \"inf\" (bets but no calls), \"-\" (no actions)"
+          example: "2.5"
+
+    SevenCardStudCpuAction:
+      type: object
+      description: Record of a CPU player's betting action
+      required:
+        - playerIdx
+        - action
+        - amount
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the CPU player who acted
+          example: 1
+        action:
+          type: integer
+          description: |
+            Action taken: 0 = Fold, 1 = Check, 2 = Call,
+            3 = Bet, 4 = Raise, 5 = All-in.
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 2
+        amount:
+          type: integer
+          description: Amount bet/raised (0 for fold/check/call/all-in)
+          example: 0
+
+    SevenCardStudResult:
+      type: object
+      description: Result for a player at showdown
+      required:
+        - playerIdx
+        - handRank
+        - handName
+        - bestHand
+        - wonAmount
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player
+          example: 0
+        handRank:
+          type: integer
+          description: Numeric hand rank
+          example: 1
+        handName:
+          type: string
+          description: Hand name (e.g., "One Pair")
+          example: One Pair
+        kickers:
+          type: string
+          description: Kicker card values formatted as display string
+        bestHand:
+          type: array
+          description: Best 5-card hand
+          items:
+            $ref: '#/components/schemas/Card'
+        wonAmount:
+          type: integer
+          description: Chips won from the pot
+          example: 40
+        mucked:
+          type: boolean
+          description: Whether the player mucked (hid) their hand at showdown
+          example: false
+
+    SevenCardStudSidePot:
+      type: object
+      description: A side pot created when a player goes all-in
+      required:
+        - amount
+        - eligiblePlayers
+      properties:
+        amount:
+          type: integer
+          description: Total chips in this side pot
+          example: 100
+        eligiblePlayers:
+          type: array
+          description: Indices of players eligible to win this pot
+          items:
+            type: integer
+          example: [0, 1, 2]
+
+    SevenCardStudResponse:
+      type: object
+      required:
+        - players
+        - pot
+        - sidePots
+        - dealerIdx
+        - currentTurn
+        - phase
+        - gameEndFlag
+        - lastBet
+        - minRaise
+        - roundResults
+        - cpuActions
+        - message
+      properties:
+        players:
+          type: array
+          description: State of all players (2-7 depending on table size)
+          items:
+            $ref: '#/components/schemas/SevenCardStudPlayer'
+        communityCard:
+          nullable: true
+          description: Used as a shared community card only when the deck runs out of cards, otherwise null
+        pot:
+          type: integer
+          description: Current main pot size
+          minimum: 0
+          example: 30
+        sidePots:
+          type: array
+          description: Side pots (created when players go all-in with different amounts)
+          items:
+            $ref: '#/components/schemas/SevenCardStudSidePot'
+        dealerIdx:
+          type: integer
+          description: Index of the dealer for this round
+          example: 0
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        phase:
+          type: integer
+          description: |
+            Current game phase:
+            - `0` — Init
+            - `1` — Third Street
+            - `2` — Fourth Street
+            - `3` — Fifth Street
+            - `4` — Sixth Street
+            - `5` — Seventh Street
+            - `6` — Showdown
+            - `7` — End
+            - `8` — Rebuy/Addon
+          enum: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+          example: 1
+        gameEndFlag:
+          type: boolean
+          description: Whether the round has ended
+          example: false
+        lastBet:
+          type: integer
+          description: The current highest bet in this betting round
+          minimum: 0
+          example: 10
+        minRaise:
+          type: integer
+          description: Minimum raise amount
+          minimum: 0
+          example: 20
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type: 0 = Fixed, 1 = Pot Limit, 2 = No Limit.
+          enum: [0, 1, 2]
+        raiseCount:
+          type: integer
+          description: Number of raises in the current betting round.
+          minimum: 0
+        maxBetAmount:
+          type: integer
+          description: |
+            Maximum allowed bet/raise amount for Pot Limit mode.
+            0 means no limit (Fixed or No Limit mode).
+          minimum: 0
+        roundResults:
+          type: array
+          description: Results for each non-folded player at showdown
+          items:
+            $ref: '#/components/schemas/SevenCardStudResult'
+        cpuActions:
+          type: array
+          description: CPU actions that occurred since the last human action
+          items:
+            $ref: '#/components/schemas/SevenCardStudCpuAction'
+        message:
+          type: string
+          description: |
+            Game result or status message.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        handCount:
+          type: integer
+          description: Number of hands played (for tournament mode display)
+          minimum: 0
+          example: 0
+        ante:
+          type: integer
+          description: Current ante amount
+          minimum: 1
+          example: 2
+        bringIn:
+          type: integer
+          description: Current bring-in amount
+          minimum: 1
+          example: 5
+        smallBet:
+          type: integer
+          description: Small bet amount (Third/Fourth Street)
+          minimum: 1
+          example: 10
+        bigBet:
+          type: integer
+          description: Big bet amount (Fifth/Sixth/Seventh Street)
+          minimum: 1
+          example: 20
+        tournamentMode:
+          type: boolean
+          description: Whether tournament mode (ante escalation) is active
+          example: false
+        anteLevelHands:
+          type: integer
+          description: Number of hands before ante increases
+          minimum: 1
+          example: 10
+        anteMultiplier:
+          type: integer
+          description: Ante multiplier percentage (e.g. 200 = 2x)
+          minimum: 101
+          example: 200
+        tableSize:
+          type: integer
+          description: Current table size (2-7)
+          minimum: 2
+          maximum: 7
+          example: 4
+        bringInPlayerIdx:
+          type: integer
+          description: Index of the player required to post the bring-in (lowest door card)
+          example: 2
+        rebuyAvailable:
+          type: boolean
+          description: Whether rebuy is available in the current phase
+          example: false
+        addonAvailable:
+          type: boolean
+          description: Whether addon is available in the current phase
+          example: false
+        rebuyPhaseType:
+          type: integer
+          description: |
+            Type of rebuy phase: 1 = rebuy, 2 = addon.
+            Only present when phase is 8 (Rebuy/Addon).
+          enum: [1, 2]
+        rebuyChips:
+          type: integer
+          description: Chips available for current rebuy
+          minimum: 0
+        rebuyMaxCount:
+          type: integer
+          description: Maximum rebuy count setting
+          minimum: 0
+        rebuyCounts:
+          type: array
+          description: Rebuy count per player (same order as players array)
+          items:
+            type: integer
+            minimum: 0
+        addonChips:
+          type: integer
+          description: Chips available for addon
+          minimum: 0
+        muckAvailable:
+          type: boolean
+          description: Whether the human player can muck (hide) their hand at showdown

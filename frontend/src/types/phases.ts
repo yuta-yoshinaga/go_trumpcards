@@ -29,6 +29,9 @@
  *   - VideoPoker:  internal/domain/VideoPoker.go  (VideoPokerPhaseBet, VideoPokerPhaseDraw, VideoPokerPhaseResult)
  *   - Pinochle:    internal/domain/Pinochle.go    (PinochlePhaseBid, PinochlePhaseTrump, PinochlePhaseMeld, PinochlePhasePlay, PinochlePhaseTrickEnd, PinochlePhaseRoundEnd, PinochlePhaseGameEnd)
  *   - Golf:        internal/domain/Golf.go        (GolfPhasePlaying, GolfPhaseGameClear, GolfPhaseGameOver)
+ *   - PigsTail:    internal/domain/PigsTail.go    (PigsTailPhasePlaying, PigsTailPhaseGameOver)
+ *   - SevenCardStud: internal/domain/SevenCardStud.go (SevenCardStudPhaseInit, SevenCardStudPhaseThirdStreet, ..., SevenCardStudPhaseEnd, SevenCardStudPhaseRebuy)
+ *   - ClockSolitaire: internal/domain/ClockSolitaire.go (ClockSolitairePhasePlaying, ClockSolitairePhaseGameClear, ClockSolitairePhaseGameOver)
  */
 
 /** BlackJack phase constants (sync: internal/domain/BlackJack.go). */
@@ -317,6 +320,33 @@ export const PinochlePhase = {
 
 /** Golf Solitaire phase constants (sync: internal/domain/Golf.go). */
 export const GolfPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Seven Card Stud phase constants (sync: internal/domain/SevenCardStud.go). */
+export const SevenCardStudPhase = {
+  INIT: 0,
+  THIRD_STREET: 1,
+  FOURTH_STREET: 2,
+  FIFTH_STREET: 3,
+  SIXTH_STREET: 4,
+  SEVENTH_STREET: 5,
+  SHOWDOWN: 6,
+  END: 7,
+  REBUY: 8,
+} as const;
+
+/** Seven Card Stud rebuy phase type constants (sync: internal/domain/SevenCardStud.go). */
+export const SevenCardStudRebuyPhaseType = {
+  NONE: 0,
+  REBUY: 1,
+  ADDON: 2,
+} as const;
+
+/** Clock Solitaire phase constants (sync: internal/domain/ClockSolitaire.go). */
+export const ClockSolitairePhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,

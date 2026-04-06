@@ -65,6 +65,16 @@ func (_m *MockPyramidGame) CanUndo() bool {
 	return ret.Bool(0)
 }
 
+func (_m *MockPyramidGame) UndoToEscape() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+func (_m *MockPyramidGame) UndoN(n int) error {
+	ret := _m.Called(n)
+	return ret.Error(0)
+}
+
 func (_m *MockPyramidGame) GetPhase() domain.PyramidPhase {
 	ret := _m.Called()
 	return ret.Get(0).(domain.PyramidPhase)

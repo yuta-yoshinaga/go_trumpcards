@@ -377,6 +377,29 @@ func main() {
 		},
 	)
 
+	// Pig's Tail
+	registerKV(mux, "/pigtail/exec", "pigtail:",
+		func() usecase.PigsTailInteractorIF {
+			players := []*domain.PigsTailPlayer{
+				domain.NewPigsTailPlayer(true),
+				domain.NewPigsTailPlayer(false),
+				domain.NewPigsTailPlayer(false),
+				domain.NewPigsTailPlayer(false),
+			}
+			pigsTail := domain.NewPigsTail(domain.NewTrumpCards(0), players)
+			return usecase.NewPigsTailInteractor(pigsTail, new(presenter.PigsTailWebPresenter))
+		},
+		func(data []byte) (usecase.PigsTailInteractorIF, error) {
+			return usecase.RestorePigsTailInteractor(data, new(presenter.PigsTailWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.PigsTailInteractorIF], f func() usecase.PigsTailInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewPigsTailWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

@@ -8,25 +8,11 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// GolfCui ゴルフソリティアCUIクラス
-type GolfCui struct {
-	gc *controller.GolfCuiController
-}
-
 // NewGolfCui コンストラクタ
-func NewGolfCui() *GolfCui {
+func NewGolfCui() *genericCuiGame {
 	golf := domain.NewGolf(domain.NewTrumpCards(0))
-	return &GolfCui{
-		gc: controller.NewGolfCuiController(usecase.NewGolfInteractor(golf, new(presenter.GolfCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *GolfCui) Controller() CuiExecer { return cui.gc }
-
-// HelpLines returns the game's help lines.
-func (cui *GolfCui) HelpLines() []string {
-	return []string{
+	gc := controller.NewGolfCuiController(usecase.NewGolfInteractor(golf, new(presenter.GolfCuiPresenter)))
+	return newCuiGame(gc, []string{
 		i18n.T("golf.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -40,10 +26,5 @@ func (cui *GolfCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *GolfCui) Exec() {
-	RunCuiLoop(cui.gc, cui.HelpLines())
+	})
 }

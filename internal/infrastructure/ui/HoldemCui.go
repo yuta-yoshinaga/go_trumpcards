@@ -8,26 +8,12 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// HoldemCui テキサスホールデムCUIクラス
-type HoldemCui struct {
-	hc *controller.HoldemCuiController
-}
-
 // NewHoldemCui コンストラクタ
-func NewHoldemCui() *HoldemCui {
+func NewHoldemCui() *genericCuiGame {
 	cfg := domain.DefaultHoldemConfig()
 	holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
-	return &HoldemCui{
-		hc: controller.NewHoldemCuiController(usecase.NewHoldemInteractor(holdem, new(presenter.HoldemCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *HoldemCui) Controller() CuiExecer { return cui.hc }
-
-// HelpLines returns the game's help lines.
-func (cui *HoldemCui) HelpLines() []string {
-	return []string{
+	hc := controller.NewHoldemCuiController(usecase.NewHoldemInteractor(holdem, new(presenter.HoldemCuiPresenter)))
+	return newCuiGame(hc, []string{
 		i18n.T("holdem.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -54,10 +40,5 @@ func (cui *HoldemCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *HoldemCui) Exec() {
-	RunCuiLoop(cui.hc, cui.HelpLines())
+	})
 }

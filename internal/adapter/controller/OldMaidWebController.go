@@ -99,19 +99,11 @@ func (p OldMaidWebInput) ToConfig() (domain.OldMaidConfig, error) {
 // OldMaidWebController ババ抜きWebコントローラークラス
 type OldMaidWebController = GameWebController[usecase.OldMaidInteractorIF, OldMaidWebInput, *OldMaidWebOutput]
 
-// NewOldMaidWebController コンストラクタ
-func NewOldMaidWebController(factory func() usecase.OldMaidInteractorIF) *OldMaidWebController {
-	return NewGameWebController(factory, newOldMaidDefaultOutput, oldMaidDispatch)
-}
-
-// NewOldMaidWebControllerWithProvider creates an OldMaidWebController with an
-// explicit SessionProvider (e.g. KV-backed for Workers).
-func NewOldMaidWebControllerWithProvider(
-	provider SessionProvider[usecase.OldMaidInteractorIF],
-	factory func() usecase.OldMaidInteractorIF,
-) *OldMaidWebController {
-	return NewGameWebControllerWithProvider(provider, factory, newOldMaidDefaultOutput, oldMaidDispatch)
-}
+// NewOldMaidWebController and NewOldMaidWebControllerWithProvider are
+// the standard and provider-backed constructors for OldMaidWebController.
+var NewOldMaidWebController, NewOldMaidWebControllerWithProvider = webControllerPair[usecase.OldMaidInteractorIF, OldMaidWebInput, *OldMaidWebOutput](
+	newOldMaidDefaultOutput, oldMaidDispatch,
+)
 
 func newOldMaidDefaultOutput(msg string) *OldMaidWebOutput {
 	return &OldMaidWebOutput{

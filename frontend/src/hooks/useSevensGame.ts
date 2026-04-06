@@ -106,7 +106,7 @@ export function useSevensGame() {
     });
   }, []);
 
-  const { loading, error, exec } = useGameApi(sevensApi.exec, { onSuccess });
+  const { loading, error, exec, retry } = useGameApi(sevensApi.exec, { onSuccess });
 
   useEffect(() => {
     exec('reset');
@@ -159,5 +159,6 @@ export function useSevensGame() {
     setCfgJokerConsBan,
     handleCardPlay,
     handleJokerPlace,
+    retry,
   };
 }

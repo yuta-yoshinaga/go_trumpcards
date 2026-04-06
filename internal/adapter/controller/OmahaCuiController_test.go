@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -60,7 +61,7 @@ func TestOmahaCuiController_Bet(t *testing.T) {
 func TestOmahaCuiController_Bet_NoAmount(t *testing.T) {
 	mi := new(usecase.MockOmahaInteractor)
 	c := NewOmahaCuiController(mi)
-	assert.Contains(t, c.Exec("b"), "金額の指定が必要です")
+	assert.True(t, cuiutil.IsPromptRequest(c.Exec("b")))
 }
 
 func TestOmahaCuiController_Bet_InvalidAmount(t *testing.T) {
@@ -81,7 +82,7 @@ func TestOmahaCuiController_Raise(t *testing.T) {
 func TestOmahaCuiController_Raise_NoAmount(t *testing.T) {
 	mi := new(usecase.MockOmahaInteractor)
 	c := NewOmahaCuiController(mi)
-	assert.Contains(t, c.Exec("ra"), "金額の指定が必要です")
+	assert.True(t, cuiutil.IsPromptRequest(c.Exec("ra")))
 }
 
 func TestOmahaCuiController_Raise_InvalidAmount(t *testing.T) {

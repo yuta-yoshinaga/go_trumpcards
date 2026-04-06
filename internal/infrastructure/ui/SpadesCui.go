@@ -8,13 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// SpadesCui スペードCUIクラス
-type SpadesCui struct {
-	sc *controller.SpadesCuiController
-}
-
 // NewSpadesCui コンストラクタ
-func NewSpadesCui() *SpadesCui {
+func NewSpadesCui() *genericCuiGame {
 	config := domain.DefaultSpadesConfig()
 	players := []*domain.SpadesPlayer{
 		domain.NewSpadesPlayer(true),
@@ -23,17 +18,8 @@ func NewSpadesCui() *SpadesCui {
 		domain.NewSpadesPlayer(false),
 	}
 	spades := domain.NewSpades(domain.NewTrumpCards(0), players, config)
-	return &SpadesCui{
-		sc: controller.NewSpadesCuiController(usecase.NewSpadesInteractor(spades, new(presenter.SpadesCuiPresenter))),
-	}
-}
-
-// Controller returns the game controller.
-func (cui *SpadesCui) Controller() CuiExecer { return cui.sc }
-
-// HelpLines returns the game's help lines.
-func (cui *SpadesCui) HelpLines() []string {
-	return []string{
+	sc := controller.NewSpadesCuiController(usecase.NewSpadesInteractor(spades, new(presenter.SpadesCuiPresenter)))
+	return newCuiGame(sc, []string{
 		i18n.T("spades.helpTitle"),
 		"",
 		i18n.T("gameCommands"),
@@ -51,10 +37,5 @@ func (cui *SpadesCui) HelpLines() []string {
 		i18n.T("resetEntry"),
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
-	}
-}
-
-// Exec ゲーム実行
-func (cui *SpadesCui) Exec() {
-	RunCuiLoop(cui.sc, cui.HelpLines())
+	})
 }

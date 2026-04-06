@@ -5,10 +5,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { NavBar } from './NavBar';
 
-function renderNavBar(initialPath = '/', props?: { soundMuted?: boolean; onSoundToggle?: () => void }) {
+vi.mock('../providers/SoundProvider', () => ({
+  useSound: vi.fn(() => ({
+    muted: false,
+    toggleMute: vi.fn(),
+    playSound: vi.fn(),
+  })),
+}));
+
+function renderNavBar(initialPath = '/') {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
-      <NavBar {...props} />
+      <NavBar />
     </MemoryRouter>,
   );
 }
@@ -624,23 +632,9 @@ describe('NavBar', () => {
   });
 
   describe('SoundToggle', () => {
-    it('does not render SoundToggle when props not provided', () => {
+    it('renders SoundToggle from context', () => {
       renderNavBar();
-      expect(screen.queryByRole('button', { name: 'サウンドをオフにする' })).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'サウンドをオンにする' })).not.toBeInTheDocument();
-    });
-
-    it('renders SoundToggle when soundMuted and onSoundToggle are provided', () => {
-      renderNavBar('/', { soundMuted: false, onSoundToggle: vi.fn() });
       expect(screen.getAllByRole('button', { name: 'サウンドをオフにする' }).length).toBeGreaterThan(0);
-    });
-
-    it('calls onSoundToggle when SoundToggle is clicked', () => {
-      const onSoundToggle = vi.fn();
-      renderNavBar('/', { soundMuted: false, onSoundToggle });
-      const buttons = screen.getAllByRole('button', { name: 'サウンドをオフにする' });
-      fireEvent.click(buttons[0]);
-      expect(onSoundToggle).toHaveBeenCalledTimes(1);
     });
   });
 });
