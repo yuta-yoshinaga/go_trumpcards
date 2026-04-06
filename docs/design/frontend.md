@@ -553,7 +553,7 @@ classDiagram
         REBUY = 8
     }
 
-    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase は、\nそれぞれ同一の値を持つ別定数です"
+    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase は、\nそれぞれ同一の値を持つ別定数です"
 ```
 
 ### 1.2 API クライアント層

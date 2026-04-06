@@ -70,11 +70,11 @@ GAMES:
   speed        Speed (スピード)
   gofish       Go Fish (ゴーフィッシュ)
   pinochle     Pinochle (ピノクル)
-  pigtail          Pig's Tail (ブタのしっぽ)
-  sevencardstud    Seven Card Stud (セブンカードスタッド)
-  golf             Golf Solitaire (ゴルフ)
-  clocksolitaire   Clock Solitaire (クロックソリティア)
-  completion       Generate shell completion script (bash, zsh, fish)
+  pigtail      Pig's Tail (ブタのしっぽ)
+  sevencardstud Seven Card Stud (セブンカードスタッド)
+  golf         Golf Solitaire (ゴルフ)
+  clocksolitaire Clock Solitaire (クロックソリティア)
+  completion   Generate shell completion script (bash, zsh, fish)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
