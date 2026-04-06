@@ -127,7 +127,7 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 |--------|-------------|-------|
 | **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, sevencardstud) |
 | **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail) |
-| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf) |
+| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire) |
 
 **When adding/modifying a game, always update both:**
 1. The worker entry point (`cmd/workers/<worker>/main.go`) — register with `registerKV`

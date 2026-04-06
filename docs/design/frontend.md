@@ -292,7 +292,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全36ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全39ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -540,7 +540,20 @@ classDiagram
         GAME_END = 6
     }
 
-    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase は、\nそれぞれ同一の値を持つ別定数です"
+    class SevenCardStudPhase {
+        <<enumeration>>
+        INIT = 0
+        THIRD_STREET = 1
+        FOURTH_STREET = 2
+        FIFTH_STREET = 3
+        SIXTH_STREET = 4
+        SEVENTH_STREET = 5
+        SHOWDOWN = 6
+        END = 7
+        REBUY = 8
+    }
+
+    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase は、\nそれぞれ同一の値を持つ別定数です"
 ```
 
 ### 1.2 API クライアント層
@@ -592,7 +605,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全30ゲーム()
+        ...全39ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -630,7 +643,7 @@ classDiagram
     PigsTailApi --> gameApi : uses postJson/gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全37ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail)"
+    note for BlackJackApi "全39ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -977,7 +990,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全36ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全39ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1462,15 +1475,15 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (33ゲーム)
+        +Routes (39ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Baccarat, ThreeCard]
-        +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
-        +trickTaking: [Hearts, Spades, OhHell, Euchre, Napoleon, Bridge]
-        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish]
-        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Memory, ClockSolitaire]
+        +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
+        +trickTaking: [Hearts, Spades, OhHell, Euchre, Bridge, Napoleon]
+        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail]
+        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire]
         +rummy: [GinRummy, Canasta, Cribbage]
     }
 
@@ -1485,11 +1498,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 31 pages
+    App --> GamePage : routes to 39 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "34名前空間: common + 32ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "41名前空間: common + 39ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---

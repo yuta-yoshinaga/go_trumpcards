@@ -29,6 +29,9 @@
  *   - VideoPoker:  internal/domain/VideoPoker.go  (VideoPokerPhaseBet, VideoPokerPhaseDraw, VideoPokerPhaseResult)
  *   - Pinochle:    internal/domain/Pinochle.go    (PinochlePhaseBid, PinochlePhaseTrump, PinochlePhaseMeld, PinochlePhasePlay, PinochlePhaseTrickEnd, PinochlePhaseRoundEnd, PinochlePhaseGameEnd)
  *   - Golf:        internal/domain/Golf.go        (GolfPhasePlaying, GolfPhaseGameClear, GolfPhaseGameOver)
+ *   - PigsTail:    internal/domain/PigsTail.go    (PigsTailPhasePlaying, PigsTailPhaseGameOver)
+ *   - SevenCardStud: internal/domain/SevenCardStud.go (SevenCardStudPhaseInit, SevenCardStudPhaseThirdStreet, ..., SevenCardStudPhaseEnd, SevenCardStudPhaseRebuy)
+ *   - ClockSolitaire: internal/domain/ClockSolitaire.go (ClockSolitairePhasePlaying, ClockSolitairePhaseGameClear, ClockSolitairePhaseGameOver)
  */
 
 /** BlackJack phase constants (sync: internal/domain/BlackJack.go). */
