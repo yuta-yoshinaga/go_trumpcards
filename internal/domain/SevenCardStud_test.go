@@ -790,7 +790,7 @@ func TestSevenCardStud_CPUDecide_GTO_PotLimitAmountCap(t *testing.T) {
 	s.players[1].AddHoleCard(NewCard(CardDesignHeart, 9, true))
 	s.players[1].AddDoorCard(NewCard(CardDesignDiamond, 9, true))
 	s.SetPhase(SevenCardStudPhaseThirdStreet)
-	s.SetPot(1)    // tiny pot → maxBetAmount = pot+lastBet = 1
+	s.SetPot(1) // tiny pot → maxBetAmount = pot+lastBet = 1
 	s.SetLastBet(0)
 	s.SetMinRaise(5) // minRaise=5 > maxBetAmount=1 → cpuPotBet returns 5, gets capped to 1
 	cfg := s.GetConfig()
@@ -859,10 +859,10 @@ func TestSevenCardStud_CPUDecide_PostThirdFallbackFold(t *testing.T) {
 	//   if handRank >= condCallRank && callAmount > 0 → Call
 	//   else → FoldOrCheck
 	params := cpuStyleParams{
-		aggressive:          true,
-		bluffRate:           0, // no bluff → deterministic
-		postFlopRaiseRank:   PokerHandTwoPair,
-		postFlopRaisePotPct: 66,
+		aggressive:           true,
+		bluffRate:            0, // no bluff → deterministic
+		postFlopRaiseRank:    PokerHandTwoPair,
+		postFlopRaisePotPct:  66,
 		postFlopCondCallRank: PokerHandOnePair,
 		postFlopFallbackFold: true,
 	}

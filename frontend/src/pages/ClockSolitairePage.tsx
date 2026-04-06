@@ -105,6 +105,7 @@ function ClockSolitairePageContent() {
             const pile = state.piles[i];
             const faceUpCount = state.faceUpCount[i];
             const isComplete = faceUpCount >= 4;
+            const topCard = pile?.[pile.length - 1]?.card ?? null;
             const cx = radius + cardWidth / 2 + 8 + pos.x * radius;
             const cy = radius + cardHeight / 2 + 8 + pos.y * radius;
 
@@ -121,12 +122,8 @@ function ClockSolitairePageContent() {
                 <span className="mb-0.5 text-xs font-bold text-white/70">{CLOCK_LABELS[i]}</span>
                 {pile && pile.length > 0 ? (
                   <div className="relative" style={{ width: cardWidth }}>
-                    {isComplete && pile[pile.length - 1].card ? (
-                      <AnimatedCard
-                        card={pile[pile.length - 1].card}
-                        width={cardWidth}
-                        className="rounded border-2 border-green-400"
-                      />
+                    {isComplete && topCard ? (
+                      <AnimatedCard card={topCard} width={cardWidth} className="rounded border-2 border-green-400" />
                     ) : (
                       <AnimatedCardBack width={cardWidth} />
                     )}
@@ -155,27 +152,31 @@ function ClockSolitairePageContent() {
             }}
           >
             <span className="mb-0.5 text-xs font-bold text-yellow-400">K</span>
-            {state.piles[12] && state.piles[12].length > 0 ? (
-              <div className="relative" style={{ width: cardWidth }}>
-                {state.faceUpCount[12] >= 4 && state.piles[12][state.piles[12].length - 1].card ? (
-                  <AnimatedCard
-                    card={state.piles[12][state.piles[12].length - 1].card}
-                    width={cardWidth}
-                    className="rounded border-2 border-yellow-400"
-                  />
-                ) : (
-                  <AnimatedCardBack width={cardWidth} />
-                )}
-                <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-white/60">
-                  {state.faceUpCount[12]}/4
-                </span>
-              </div>
-            ) : (
-              <div
-                className="rounded border border-dashed border-white/30"
-                style={{ width: cardWidth, height: cardHeight }}
-              />
-            )}
+            {(() => {
+              const centerPile = state.piles[12];
+              const centerTopCard = centerPile?.[centerPile.length - 1]?.card ?? null;
+              return centerPile && centerPile.length > 0 ? (
+                <div className="relative" style={{ width: cardWidth }}>
+                  {state.faceUpCount[12] >= 4 && centerTopCard ? (
+                    <AnimatedCard
+                      card={centerTopCard}
+                      width={cardWidth}
+                      className="rounded border-2 border-yellow-400"
+                    />
+                  ) : (
+                    <AnimatedCardBack width={cardWidth} />
+                  )}
+                  <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-white/60">
+                    {state.faceUpCount[12]}/4
+                  </span>
+                </div>
+              ) : (
+                <div
+                  className="rounded border border-dashed border-white/30"
+                  style={{ width: cardWidth, height: cardHeight }}
+                />
+              );
+            })()}
           </div>
         </div>
 

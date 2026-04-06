@@ -665,10 +665,7 @@ describe('SevenCardStudPage', () => {
   it('shows human hand name badge at showdown when not folded', async () => {
     mockExec.mockResolvedValue({
       ...showdownState,
-      players: [
-        humanPlayer({ handName: 'フラッシュ', folded: false }),
-        cpuPlayer(1, { handName: 'ハイカード' }),
-      ],
+      players: [humanPlayer({ handName: 'フラッシュ', folded: false }), cpuPlayer(1, { handName: 'ハイカード' })],
     });
     renderWithProviders(<SevenCardStudPage />);
     await waitFor(() => expect(screen.getByText('フラッシュ')).toBeInTheDocument());
@@ -717,10 +714,7 @@ describe('SevenCardStudPage', () => {
   it('shows allIn badge for human when allIn during showdown', async () => {
     mockExec.mockResolvedValue({
       ...showdownState,
-      players: [
-        humanPlayer({ allIn: true, folded: false }),
-        cpuPlayer(1),
-      ],
+      players: [humanPlayer({ allIn: true, folded: false }), cpuPlayer(1)],
     });
     renderWithProviders(<SevenCardStudPage />);
     await waitFor(() => expect(screen.getByText('[オールイン]')).toBeInTheDocument());
