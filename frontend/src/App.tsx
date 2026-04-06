@@ -30,6 +30,7 @@ import { NapoleonPage } from './pages/NapoleonPage';
 import { OhHellPage } from './pages/OhHellPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
+import { PigsTailPage } from './pages/PigsTailPage';
 import { PineapplePage } from './pages/PineapplePage';
 import { PinochlePage } from './pages/PinochlePage';
 import { PokerPage } from './pages/PokerPage';
@@ -81,6 +82,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/gofish': <GoFishPage />,
   '/pinochle': <PinochlePage />,
   '/golf': <GolfPage />,
+  '/pigtail': <PigsTailPage />,
 };
 
 /** Root application component with router and game page routes. */

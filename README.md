@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した36種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した37種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -55,6 +55,7 @@ Go + Clean Architecture で実装した36種類のトランプゲーム。CLI �
 | ゴーフィッシュ (Go Fish) | `gofish` | [CUI](docs/manual/cui/gofish.md) / [Web](docs/manual/web/gofish.md) |
 | ピノクル (Pinochle) | `pinochle` | [CUI](docs/manual/cui/pinochle.md) / [Web](docs/manual/web/pinochle.md) |
 | ゴルフ (Golf Solitaire) | `golf` | [CUI](docs/manual/cui/golf.md) / [Web](docs/manual/web/golf.md) |
+| ぶたのしっぽ (Pig's Tail) | `pigtail` | [CUI](docs/manual/cui/pigtail.md) / [Web](docs/manual/web/pigtail.md) |
 
 ## Demo
 

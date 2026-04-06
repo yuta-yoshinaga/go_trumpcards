@@ -27,6 +27,7 @@ import enNapoleon from './locales/en/napoleon.json';
 import enOhhell from './locales/en/ohhell.json';
 import enOldmaid from './locales/en/oldmaid.json';
 import enOmaha from './locales/en/omaha.json';
+import enPigtail from './locales/en/pigtail.json';
 import enPineapple from './locales/en/pineapple.json';
 import enPinochle from './locales/en/pinochle.json';
 import enPoker from './locales/en/poker.json';
@@ -65,6 +66,7 @@ import jaNapoleon from './locales/ja/napoleon.json';
 import jaOhhell from './locales/ja/ohhell.json';
 import jaOldmaid from './locales/ja/oldmaid.json';
 import jaOmaha from './locales/ja/omaha.json';
+import jaPigtail from './locales/ja/pigtail.json';
 import jaPineapple from './locales/ja/pineapple.json';
 import jaPinochle from './locales/ja/pinochle.json';
 import jaPoker from './locales/ja/poker.json';
@@ -122,6 +124,7 @@ i18n
         speed: jaSpeed,
         gofish: jaGofish,
         golf: jaGolf,
+        pigtail: jaPigtail,
         tutorial: jaTutorial,
       },
       en: {
@@ -162,6 +165,7 @@ i18n
         speed: enSpeed,
         gofish: enGofish,
         golf: enGolf,
+        pigtail: enPigtail,
         tutorial: enTutorial,
       },
     },
@@ -205,6 +209,7 @@ i18n
       'speed',
       'gofish',
       'golf',
+      'pigtail',
       'tutorial',
     ],
     detection: {

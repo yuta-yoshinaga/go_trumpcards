@@ -1736,3 +1736,40 @@ export interface GolfResponse {
   messageParams?: Record<string, string>;
   hint?: GolfHint;
 }
+
+// --- Pig's Tail ---
+
+/** Pig's Tail player output from the server. */
+export interface PigsTailPlayer {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+}
+
+/** Pig's Tail CPU action record. */
+export interface PigsTailCpuAction {
+  drawPlayerIdx: number;
+  drawnCard: Card | null;
+  penaltyFlag: boolean;
+  penaltyCount: number;
+  hesitationMs?: number;
+}
+
+/** Pig's Tail game state response. */
+export interface PigsTailResponse {
+  players: PigsTailPlayer[];
+  circleCount: number;
+  centerTop: Card | null;
+  centerCount: number;
+  currentTurn: number;
+  gameEndFlag: boolean;
+  loserIdx: number;
+  lastDrawCard: Card | null;
+  lastPenalty: boolean;
+  cpuActions: PigsTailCpuAction[];
+  humanAction: PigsTailCpuAction | null;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}

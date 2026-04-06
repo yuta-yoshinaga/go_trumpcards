@@ -24,6 +24,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
   PokerResponse,
@@ -75,6 +76,7 @@ const workerUrl: Record<string, string> = {
   speed: WORKER_CLASSIC,
   gofish: WORKER_CLASSIC,
   pinochle: WORKER_CLASSIC,
+  pigtail: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
@@ -910,6 +912,12 @@ export const golfApi = {
     gameExec<GolfResponse>('golf', { command, col }),
 };
 
+/** Pig's Tail game API client. */
+export const pigtailApi = {
+  exec: (command: 'reset' | 'draw', cpuHesitationEnabled?: boolean) =>
+    gameExec<PigsTailResponse>('pigtail', { command, cpuHesitationEnabled }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -947,6 +955,7 @@ const games = [
   'gofish',
   'pinochle',
   'golf',
+  'pigtail',
 ] as const;
 type Game = (typeof games)[number];
 

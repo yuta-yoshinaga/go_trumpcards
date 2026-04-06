@@ -182,6 +182,7 @@ ENVIRONMENT VARIABLES:
 		"gofish":      func() int { ui.NewGoFishCui().Exec(); return 0 },
 		"pinochle":    func() int { ui.NewPinochleCui().Exec(); return 0 },
 		"golf":        func() int { ui.NewGolfCui().Exec(); return 0 },
+		"pigtail":     func() int { ui.NewPigsTailCui().Exec(); return 0 },
 		"completion": func() int {
 			return runCompletion(flag.Args()[1:])
 		},

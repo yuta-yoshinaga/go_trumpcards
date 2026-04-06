@@ -20,7 +20,8 @@
   - [2.7 Bridge オークション・トリックフロー](#27-bridge-オークショントリックフロー)
   - [2.8 Pineapple ディスカードフロー](#28-pineapple-ディスカードフロー)
   - [2.9 Speed プレイフロー](#29-speed-プレイフロー)
-  - [2.10 GoFish 要求フロー](#210-gofish-要求フロー)
+  - [2.10 GoFish 要求フロー](#210-gofish-要求フロ���)
+  - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -47,6 +48,7 @@
   - [3.23 GoFish フェーズ遷移](#323-gofish-フェーズ遷移)
   - [3.24 Canasta フェーズ遷移](#324-canasta-フェーズ遷移)
   - [3.25 Pinochle フェーズ遷移](#325-pinochle-フェーズ遷移)
+  - [3.26 PigsTail フェーズ遷移](#326-pigstail-フェーズ遷移)
 
 ---
 
@@ -114,7 +116,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全34ゲーム)
+### 1.2 ゲームドメイン (全35ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -790,6 +792,26 @@ classDiagram
     GinRummyPlayer --|> GamePlayer
     SpeedPlayer --|> Player
     GoFishPlayer --|> GamePlayer
+
+    class PigsTail {
+        -trumpCards *TrumpCards
+        -players []*PigsTailPlayer
+        -circlePile []*Card
+        -centerPile []*Card
+        -phase PigsTailPhase
+        -currentTurn int
+        +Reset()
+        +Draw() error
+        +Phase() PigsTailPhase
+        +ActionLog() []*ActionLogEntry
+    }
+
+    class PigsTailPlayer {
+        -penaltyCards []*Card
+    }
+
+    PigsTail --> "4" PigsTailPlayer
+    PigsTailPlayer --|> GamePlayer
 ```
 
 #### ソリティア系ゲーム
@@ -1143,6 +1165,7 @@ classDiagram
         -bridge *BridgeWebController
         -speed *SpeedWebController
         -gofish *GoFishWebController
+        -pigtail *PigsTailWebController
         +Exec()
     }
 
@@ -1164,8 +1187,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 36 controllers
-    GameManager --> "*" CuiExecer : holds 36 games
+    TrumpCardsWeb --> "*" GameWebController : holds 37 controllers
+    GameManager --> "*" CuiExecer : holds 37 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1477,6 +1500,26 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: Go Fish結果・手札更新表示
+```
+
+### 2.11 PigsTail ドローフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as PigsTailInteractor
+    participant Domain as PigsTail
+    participant Pres as Presenter
+
+    Note over User,Pres: ドローフロー
+    User->>Ctrl: draw
+    Ctrl->>Interactor: Draw()
+    Interactor->>Domain: Draw()
+    Domain->>Domain: 山札から1枚引く → スート一致判定 → ペナルティ or 場に置く → CPU自動プレイ
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ドロー結果・手札枚数更新表示
 ```
 
 ---
@@ -1924,6 +1967,19 @@ stateDiagram-v2
     note right of TrickEnd : PinochlePhaseTrickEnd = 4
     note right of RoundEnd : PinochlePhaseRoundEnd = 5
     note right of GameEnd : PinochlePhaseGameEnd = 6
+```
+
+### 3.26 PigsTail フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : Draw() → スート不一致 or 一致ペナルティ → CPU自動プレイ
+    Play --> GameEnd : 山札が空
+    GameEnd --> [*]
+
+    note right of Play : PigsTailPhasePlay = 0
+    note right of GameEnd : PigsTailPhaseGameEnd = 1
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

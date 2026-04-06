@@ -53,7 +53,8 @@
     "speed": "スピード",
     "gofish": "Go Fish",
     "pinochle": "ピノクル",
-    "golf": "ゴルフ"
+    "golf": "ゴルフ",
+    "pigtail": "ぶたのしっぽ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -265,7 +266,9 @@
     "golf.gameOver": "ゲームオーバー",
     "golf.hintAvailable": "ヒントがあります",
     "golf.noHint": "ヒントはありません",
-    "golf.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
+    "golf.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "pigtail.result.humanLose": "ゲーム終了！ あなたの負け！",
+    "pigtail.result.cpuLose": "ゲーム終了！ CPU {{cpuId}}の負け！"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

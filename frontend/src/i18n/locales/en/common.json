@@ -53,7 +53,8 @@
     "speed": "Speed",
     "gofish": "Go Fish",
     "pinochle": "Pinochle",
-    "golf": "Golf"
+    "golf": "Golf",
+    "pigtail": "Pig's Tail"
   },
   "sound": {
     "mute": "Mute sound",
@@ -265,7 +266,9 @@
     "golf.gameOver": "Game Over",
     "golf.hintAvailable": "Hint available",
     "golf.noHint": "No hint available",
-    "golf.stalemate": "No moves can lead to a win. Please undo or give up."
+    "golf.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "pigtail.result.humanLose": "Game Over! You lose!",
+    "pigtail.result.cpuLose": "Game Over! CPU {{cpuId}} loses!"
   },
   "manual": {
     "ariaLabel": "Game Manual",
