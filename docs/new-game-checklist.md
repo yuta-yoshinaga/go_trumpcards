@@ -30,6 +30,7 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 17. **`docs/architecture.md`**: Update endpoint count and list
 18. **`api/openapi.yaml`**: Add endpoint path, tag definition, and request/response schemas in components
 19. **`docs/manual/cui/<game>.md`** and **`docs/manual/web/<game>.md`**: Add game manuals
+19b. **`frontend/src/constants/manualTexts.ts`**: Import the web manual and add route mapping entry
 
 ## Final verification
 

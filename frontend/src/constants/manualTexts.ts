@@ -6,6 +6,7 @@ import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
+import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
@@ -26,10 +27,12 @@ import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
+import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
+import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
 import spades from '../../../docs/manual/web/spades.md?raw';
@@ -45,6 +48,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/baccarat': baccarat,
   '/bridge': bridge,
   '/canasta': canasta,
+  '/clocksolitaire': clocksolitaire,
   '/crazyeights': crazyeights,
   '/cribbage': cribbage,
   '/daifugo': daifugo,
@@ -66,9 +70,11 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/oldmaid': oldmaid,
   '/omaha': omaha,
   '/pineapple': pineapple,
+  '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/poker': poker,
   '/pyramid': pyramid,
+  '/sevencardstud': sevencardstud,
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
