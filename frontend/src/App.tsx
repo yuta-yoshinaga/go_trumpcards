@@ -35,6 +35,7 @@ import { PineapplePage } from './pages/PineapplePage';
 import { PinochlePage } from './pages/PinochlePage';
 import { PokerPage } from './pages/PokerPage';
 import { PyramidPage } from './pages/PyramidPage';
+import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
 import { SpadesPage } from './pages/SpadesPage';
@@ -57,6 +58,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/holdem': <HoldemPage />,
   '/omaha': <OmahaPage />,
   '/pineapple': <PineapplePage />,
+  '/sevencardstud': <SevenCardStudPage />,
   '/shortdeck': <ShortDeckPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,

@@ -60,6 +60,7 @@ type TrumpCardsWeb struct {
 	pinc *controller.PinochleWebController
 	glfc *controller.GolfWebController
 	ptc  *controller.PigsTailWebController
+	scsc *controller.SevenCardStudWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -356,6 +357,11 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			pigsTail := domain.NewPigsTail(domain.NewTrumpCards(0), players)
 			return usecase.NewPigsTailInteractor(pigsTail, new(presenter.PigsTailWebPresenter))
 		}),
+		scsc: controller.NewSevenCardStudWebController(func() usecase.SevenCardStudInteractorIF {
+			cfg := domain.DefaultSevenCardStudConfig()
+			scs := domain.NewSevenCardStud(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewSevenCardStudInteractor(scs, new(presenter.SevenCardStudWebPresenter))
+		}),
 	}
 }
 
@@ -405,6 +411,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/pinochle/exec", web.pinc.Exec},
 		{"/golf/exec", web.glfc.Exec},
 		{"/pigtail/exec", web.ptc.Exec},
+		{"/sevencardstud/exec", web.scsc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)

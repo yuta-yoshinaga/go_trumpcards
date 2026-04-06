@@ -29,6 +29,7 @@ import type {
   PinochleResponse,
   PokerResponse,
   PyramidResponse,
+  SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
   SpadesResponse,
@@ -62,6 +63,7 @@ const workerUrl: Record<string, string> = {
   jokerpoker: WORKER_CASINO,
   threecard: WORKER_CASINO,
   pineapple: WORKER_CASINO,
+  sevencardstud: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
@@ -361,6 +363,58 @@ export const pineappleApi = {
       addonChips: config?.addonChips,
       addonAfterHand: config?.addonAfterHand,
       cpuMetaAI: config?.cpuMetaAI,
+    }),
+};
+
+/** Configuration options for Seven Card Stud game settings. */
+export interface SevenCardStudConfigInput {
+  ante?: number;
+  bringIn?: number;
+  smallBet?: number;
+  bigBet?: number;
+  tournamentMode?: boolean;
+  anteLevelHands?: number;
+  anteMultiplier?: number;
+  bettingLimit?: number;
+  tableSize?: number;
+  rebuyEnabled?: boolean;
+  rebuyMaxCount?: number;
+  rebuyChips?: number;
+  rebuyPeriodHands?: number;
+  addonEnabled?: boolean;
+  addonChips?: number;
+  addonAfterHand?: number;
+  cpuMetaAI?: boolean;
+}
+
+/** API client for the Seven Card Stud /sevencardstud/exec endpoint. */
+export const sevenCardStudApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'fold'
+      | 'check'
+      | 'call'
+      | 'bet'
+      | 'raise'
+      | 'allin'
+      | 'rebuy'
+      | 'skiprebuy'
+      | 'addon'
+      | 'skipaddon'
+      | 'muck'
+      | 'show',
+    amount?: number,
+    config?: SevenCardStudConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) =>
+    gameExec<SevenCardStudResponse>('sevencardstud', {
+      command,
+      amount,
+      humanPlayMs,
+      profile,
+      ...config,
     }),
 };
 
@@ -929,6 +983,7 @@ const games = [
   'omaha',
   'shortdeck',
   'pineapple',
+  'sevencardstud',
   'hearts',
   'spades',
   'napoleon',

@@ -77,6 +77,7 @@ import jaNapoleon from '../i18n/locales/ja/napoleon.json';
 import jaOldmaid from '../i18n/locales/ja/oldmaid.json';
 import jaOmaha from '../i18n/locales/ja/omaha.json';
 import jaPoker from '../i18n/locales/ja/poker.json';
+import jaSevencardstud from '../i18n/locales/ja/sevencardstud.json';
 import jaSevens from '../i18n/locales/ja/sevens.json';
 import jaSpades from '../i18n/locales/ja/spades.json';
 import jaSpeed from '../i18n/locales/ja/speed.json';
@@ -112,6 +113,7 @@ i18n.use(initReactI18next).init({
     'threecard',
     'speed',
     'gofish',
+    'sevencardstud',
     'tutorial',
   ],
   resources: {
@@ -139,6 +141,7 @@ i18n.use(initReactI18next).init({
       threecard: jaThreecard,
       speed: jaSpeed,
       gofish: jaGofish,
+      sevencardstud: jaSevencardstud,
       tutorial: jaTutorial,
     },
     en: {

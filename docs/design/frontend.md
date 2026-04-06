@@ -26,7 +26,8 @@
   - [2.11 CanastaPage フェーズ別レンダリングフロー](#211-canastapage-フェーズ別レンダリングフロー)
   - [2.12 PinochlePage フェーズ別レンダリングフロー](#212-pinochlepage-フェーズ別レンダリングフロー)
   - [2.13 PigsTailPage フェーズ別レンダリングフロー](#213-pigstailpage-フェーズ別レンダリングフロー)
-  - [2.14 CLIモード コマンド実行フロー](#214-cliモード-コマンド実行フロー)
+  - [2.14 SevenCardStudPage フェーズ別レンダリングフロー](#214-sevencardstudpage-フェーズ別レンダリングフロー)
+  - [2.15 CLIモード コマンド実行フロー](#215-cliモード-コマンド実行フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -243,6 +244,38 @@ classDiagram
         +number currentTurn
         +number winnerIdx
         +object[] cpuActions
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    class SevenCardStudResponse {
+        +object[] players (holeCards, doorCards)
+        +number pot
+        +object[] sidePots
+        +number dealerIdx
+        +number currentTurn
+        +number phase
+        +boolean gameEndFlag
+        +number lastBet
+        +number minRaise
+        +number bettingLimit
+        +number raiseCount
+        +number maxBetAmount
+        +object[] roundResults
+        +object[] cpuActions
+        +number handCount
+        +number ante
+        +number bringIn
+        +number smallBet
+        +number bigBet
+        +boolean tournamentMode
+        +number anteLevelHands
+        +number anteMultiplier
+        +number tableSize
+        +number bringInPlayerIdx
+        +boolean rebuyAvailable
+        +boolean addonAvailable
         +string message
         +string messageCode
         +object messageParams
@@ -913,7 +946,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全34ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全36ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1340,6 +1373,19 @@ classDiagram
 
     PigsTailPage --|> GamePage : follows pattern
 
+    class SevenCardStudPage {
+        +CPUプレイヤーエリア (ドアカード表示)
+        +ホールカード・ドアカード表示
+        +ベッティングアクションボタン
+        +ポット・サイドポット表示
+        +HUD統計表示
+        +マック/ショー選択
+        +リバイ/アドオン画面
+        +CPU行動アニメーション
+    }
+
+    SevenCardStudPage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -1350,10 +1396,10 @@ classDiagram
     GamePage --> GamePageHeading : renders
     GamePage --> ManualButton : renders
 
-    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple)
+    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全35ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全36ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1863,7 +1909,42 @@ sequenceDiagram
     Hook-->>Page: 再レンダリング → プレイフェーズUI
 ```
 
-### 2.14 CLIモード コマンド実行フロー
+### 2.14 SevenCardStudPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as SevenCardStudPage
+    participant Hook as useSevenCardStudGame
+    participant API as gameApi
+
+    Note over User,API: サード～セブンスストリート - ベッティング
+    User->>Page: アクションボタンクリック (fold/check/call/bet/raise/allin)
+    Page->>Hook: handleAction(command, amount)
+    Hook->>API: gameExec(command, {amount, humanPlayMs})
+    API-->>Hook: SevenCardStudResponse (phase=1-5)
+    Hook-->>Page: 再レンダリング → ベッティング結果UI
+
+    Note over User,API: CPU行動アニメーション
+    Page-->>User: CPUアクションをアニメーション再生
+
+    Note over User,API: ショーダウン (phase=6)
+    Page-->>User: 全員の手札・役名表示
+
+    Note over User,API: マック/ショー選択
+    User->>Page: マック or ショーボタンクリック
+    Page->>Hook: handleMuck() / handleShow()
+    Hook->>API: gameExec("muck" / "show")
+
+    Note over User,API: リバイ/アドオン (phase=8)
+    User->>Page: リバイ or スキップボタンクリック
+    Page->>Hook: handleRebuy() / handleSkipRebuy()
+    Hook->>API: gameExec("rebuy" / "skiprebuy")
+    API-->>Hook: SevenCardStudResponse (phase=0)
+    Hook-->>Page: 再レンダリング → 次ハンドUI
+```
+
+### 2.15 CLIモード コマンド実行フロー
 
 ```mermaid
 sequenceDiagram
