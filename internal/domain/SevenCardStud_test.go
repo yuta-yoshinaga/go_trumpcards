@@ -951,9 +951,10 @@ func TestSevenCardStud_CPUDecide_MetaAI_FoldToCallPath(t *testing.T) {
 	hitCall := false
 	for i := 0; i < 1000; i++ {
 		action, _ := s.cpuDecide(1)
-		if action == SevenCardStudActionFold {
+		switch action {
+		case SevenCardStudActionFold:
 			hitFold = true
-		} else if action == SevenCardStudActionCall {
+		case SevenCardStudActionCall:
 			hitCall = true
 		}
 		if hitFold && hitCall {
