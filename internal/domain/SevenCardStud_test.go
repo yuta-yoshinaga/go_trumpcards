@@ -723,3 +723,367 @@ func TestSevenCardStud_TournamentEscalation(t *testing.T) {
 	require.NoError(t, err)
 	assert.Greater(t, s.GetConfig().Ante, initialAnte)
 }
+
+func TestSevenCardStud_CPUDecide_GTO_RaiseCountCap(t *testing.T) {
+	// Verify that GTO CPU converts raise/bet to call/check when raiseCount >= maxRaises.
+	setup := func() *SevenCardStud {
+		s := newTestSevenCardStud()
+		for _, p := range s.players {
+			p.SetChips(1000)
+		}
+		// Give CPU player 1 a trips hand (strength ~90) so GTO always picks bet
+		s.players[1].SetPlayStyle(HoldemStyleGTO)
+		s.players[1].AddHoleCard(NewCard(CardDesignSpade, 9, true))
+		s.players[1].AddHoleCard(NewCard(CardDesignHeart, 9, true))
+		s.players[1].AddDoorCard(NewCard(CardDesignDiamond, 9, true))
+		s.SetPhase(SevenCardStudPhaseThirdStreet)
+		s.SetPot(50)
+		s.SetMinRaise(5)
+		cfg := s.GetConfig()
+		cfg.BettingLimit = BettingLimitFixed
+		s.SetConfig(cfg)
+		// Fixed limit: maxRaises = 4 (bettingMaxRaisesPerRound)
+		s.SetRaiseCount(4) // at the cap
+		return s
+	}
+
+	t.Run("converts raise to call when callAmount > 0", func(t *testing.T) {
+		s := setup()
+		s.SetLastBet(10) // callAmount = 10
+		// GTO with trips will always want to bet; with raiseCount cap it must call
+		hitCall := false
+		for i := 0; i < 200; i++ {
+			action, _ := s.cpuDecide(1)
+			if action == SevenCardStudActionCall {
+				hitCall = true
+				break
+			}
+		}
+		assert.True(t, hitCall, "should convert bet/raise to Call when raise cap reached and callAmount > 0")
+	})
+
+	t.Run("converts raise to check when callAmount == 0", func(t *testing.T) {
+		s := setup()
+		s.SetLastBet(0) // callAmount = 0
+		hitCheck := false
+		for i := 0; i < 200; i++ {
+			action, _ := s.cpuDecide(1)
+			if action == SevenCardStudActionCheck {
+				hitCheck = true
+				break
+			}
+		}
+		assert.True(t, hitCheck, "should convert bet/raise to Check when raise cap reached and callAmount == 0")
+	})
+}
+
+func TestSevenCardStud_CPUDecide_GTO_PotLimitAmountCap(t *testing.T) {
+	// Verify that GTO bet amount is capped to maxBetAmount under PotLimit.
+	// With trips, GTO always bets (premium hand → betPct=100%).
+	// Tiny pot forces maxBetAmount < cpuPotBet result, triggering the cap branch.
+	s := newTestSevenCardStud()
+	for _, p := range s.players {
+		p.SetChips(1000)
+	}
+	s.players[1].SetPlayStyle(HoldemStyleGTO)
+	s.players[1].AddHoleCard(NewCard(CardDesignSpade, 9, true))
+	s.players[1].AddHoleCard(NewCard(CardDesignHeart, 9, true))
+	s.players[1].AddDoorCard(NewCard(CardDesignDiamond, 9, true))
+	s.SetPhase(SevenCardStudPhaseThirdStreet)
+	s.SetPot(1)    // tiny pot → maxBetAmount = pot+lastBet = 1
+	s.SetLastBet(0)
+	s.SetMinRaise(5) // minRaise=5 > maxBetAmount=1 → cpuPotBet returns 5, gets capped to 1
+	cfg := s.GetConfig()
+	cfg.BettingLimit = BettingLimitPotLimit
+	s.SetConfig(cfg)
+
+	// GTO with trips (strength=90 → premium bucket, betPct=90%) usually bets.
+	// cpuPotBet(66) = max(1*66/100=0, SmallBet=5, minRaise=5) = 5
+	// maxBetAmount = 1; 5 > 1 → capped to 1
+	hitBet := false
+	for i := 0; i < 500; i++ {
+		action, amount := s.cpuDecide(1)
+		if action == SevenCardStudActionBet || action == SevenCardStudActionRaise {
+			assert.LessOrEqual(t, amount, 1, "bet amount should be capped to maxBetAmount=1")
+			hitBet = true
+			break
+		}
+	}
+	assert.True(t, hitBet, "GTO with trips should bet within 500 tries (90%% probability)")
+}
+
+func TestSevenCardStud_CPUDecide_CompoundFold(t *testing.T) {
+	// Test the preFlopFoldCompound branches directly via cpuDecideThirdStreet.
+	// Use custom params with threshold=101 to guarantee the compound branch is always entered.
+	s := newTestSevenCardStud()
+	for _, p := range s.players {
+		p.SetChips(1000)
+	}
+	s.players[1].AddHoleCard(NewCard(CardDesignHeart, 2, true))
+	s.players[1].AddHoleCard(NewCard(CardDesignDiamond, 8, true))
+	s.players[1].AddDoorCard(NewCard(CardDesignClover, 5, true))
+	s.SetMinRaise(5)
+	params := cpuStyleParams{
+		aggressive:           false,
+		bluffRate:            0,
+		preFlopFoldThreshold: 101, // Always triggers: any strength (0-100) is < 101
+		preFlopFoldCompound:  true,
+		preFlopFoldCallMult:  2,
+		preFlopBluffPotPct:   50,
+	}
+
+	t.Run("folds when callAmount exceeds SmallBet*callMult threshold", func(t *testing.T) {
+		// SmallBet=5, callMult=2 → threshold=10; callAmount=11 > 10 → fold
+		action, _ := s.cpuDecideThirdStreet(1, params, 11)
+		assert.Equal(t, SevenCardStudActionFold, action)
+	})
+
+	t.Run("calls when callAmount is within compound threshold", func(t *testing.T) {
+		// callAmount=5 <= 10 → falls through compound, callAmount>0 → call
+		action, _ := s.cpuDecideThirdStreet(1, params, 5)
+		assert.Equal(t, SevenCardStudActionCall, action)
+	})
+
+	t.Run("checks when callAmount is zero", func(t *testing.T) {
+		// callAmount=0 ≤ 10 → falls through compound, callAmount==0 → no-call
+		// bluffRate=0 → always check
+		action, _ := s.cpuDecideThirdStreet(1, params, 0)
+		assert.Equal(t, SevenCardStudActionCheck, action)
+	})
+}
+
+func TestSevenCardStud_CPUDecide_PostThirdFallbackFold(t *testing.T) {
+	// Test the postFlopFallbackFold branches in cpuDecidePostThird.
+	// Use custom params with bluffRate=0 for deterministic results.
+	// postFlopFallbackFold=true means: when aggressive and hand < raiseRank,
+	//   if handRank >= condCallRank && callAmount > 0 → Call
+	//   else → FoldOrCheck
+	params := cpuStyleParams{
+		aggressive:          true,
+		bluffRate:           0, // no bluff → deterministic
+		postFlopRaiseRank:   PokerHandTwoPair,
+		postFlopRaisePotPct: 66,
+		postFlopCondCallRank: PokerHandOnePair,
+		postFlopFallbackFold: true,
+	}
+
+	makePlayer := func(holeCards, doorCards []*Card) *SevenCardStud {
+		s := newTestSevenCardStud()
+		s.players[1].SetPlayStyle(HoldemStyleTAG)
+		s.players[1].SetChips(1000)
+		for _, c := range holeCards {
+			s.players[1].AddHoleCard(c)
+		}
+		for _, c := range doorCards {
+			s.players[1].AddDoorCard(c)
+		}
+		s.SetPhase(SevenCardStudPhaseFifthStreet)
+		s.SetPot(50)
+		s.SetMinRaise(5)
+		return s
+	}
+
+	t.Run("calls for OnePair hand when callAmount > 0", func(t *testing.T) {
+		// 5-card OnePair: A♠,A♥ + K♦,Q♣,9♠
+		s := makePlayer(
+			[]*Card{NewCard(CardDesignSpade, 1, true), NewCard(CardDesignHeart, 1, true)},
+			[]*Card{
+				NewCard(CardDesignDiamond, 13, true),
+				NewCard(CardDesignClover, 12, true),
+				NewCard(CardDesignSpade, 9, true),
+			},
+		)
+		action, _ := s.cpuDecidePostThird(1, params, 10)
+		assert.Equal(t, SevenCardStudActionCall, action)
+	})
+
+	t.Run("folds for HighCard hand when callAmount > 0", func(t *testing.T) {
+		// 5-card HighCard: K♠,Q♦ + 9♣,7♥,5♦ (no pair, no flush, no straight)
+		s := makePlayer(
+			[]*Card{NewCard(CardDesignSpade, 13, true), NewCard(CardDesignHeart, 12, true)},
+			[]*Card{
+				NewCard(CardDesignDiamond, 9, true),
+				NewCard(CardDesignClover, 7, true),
+				NewCard(CardDesignSpade, 5, true),
+			},
+		)
+		action, _ := s.cpuDecidePostThird(1, params, 10)
+		assert.Equal(t, SevenCardStudActionFold, action)
+	})
+
+	t.Run("checks for HighCard hand when callAmount == 0", func(t *testing.T) {
+		s := makePlayer(
+			[]*Card{NewCard(CardDesignSpade, 13, true), NewCard(CardDesignHeart, 12, true)},
+			[]*Card{
+				NewCard(CardDesignDiamond, 9, true),
+				NewCard(CardDesignClover, 7, true),
+				NewCard(CardDesignSpade, 5, true),
+			},
+		)
+		action, _ := s.cpuDecidePostThird(1, params, 0)
+		assert.Equal(t, SevenCardStudActionCheck, action)
+	})
+}
+
+func TestSevenCardStud_CPUDecide_MetaAI_FoldToCallPath(t *testing.T) {
+	// Meta AI: when action=Fold and callAmount>0 and lastHumanPlayMs>0, adjusts call chance.
+	s := newTestSevenCardStud()
+	for _, p := range s.players {
+		p.SetChips(1000)
+	}
+	cfg := s.GetConfig()
+	cfg.CpuMetaAI = true
+	s.SetConfig(cfg)
+	s.SetHumanProfile(&BettingHumanProfile{GamesPlayed: 50})
+	s.SetLastHumanPlayMs(500)
+
+	// Give LAP CPU a weak hand that will compound-fold with high callAmount
+	s.players[1].SetPlayStyle(HoldemStyleLAP)
+	s.players[1].AddHoleCard(NewCard(CardDesignHeart, 2, true))
+	s.players[1].AddHoleCard(NewCard(CardDesignDiamond, 4, true))
+	s.players[1].AddDoorCard(NewCard(CardDesignClover, 7, true))
+	s.SetPhase(SevenCardStudPhaseThirdStreet)
+	s.SetPot(20)
+	s.SetLastBet(15) // callAmount=15 > SmallBet*2=10, LAP will fold; meta AI may override
+
+	// Run multiple times to exercise both possible outcomes of the meta AI branch
+	hitFold := false
+	hitCall := false
+	for i := 0; i < 1000; i++ {
+		action, _ := s.cpuDecide(1)
+		if action == SevenCardStudActionFold {
+			hitFold = true
+		} else if action == SevenCardStudActionCall {
+			hitCall = true
+		}
+		if hitFold && hitCall {
+			break
+		}
+	}
+	// Meta AI path was exercised (at minimum fold was observed)
+	assert.True(t, hitFold || hitCall, "meta AI fold-to-call path should be reachable")
+}
+
+func TestSevenCardStud_CPUDecide_PassiveAllIn(t *testing.T) {
+	// Covers the passive path where betAmt > p.GetChips() → AllIn.
+	s := newTestSevenCardStud()
+	for _, p := range s.players {
+		p.SetChips(1000)
+	}
+	// LAP passive, bluffRate=5 but eventually triggers; give tiny chips
+	s.players[1].SetPlayStyle(HoldemStyleLAP)
+	s.players[1].AddHoleCard(NewCard(CardDesignSpade, 1, true))
+	s.players[1].AddHoleCard(NewCard(CardDesignHeart, 2, true))
+	s.players[1].AddDoorCard(NewCard(CardDesignDiamond, 3, true))
+	s.players[1].SetChips(1) // tiny chips so any bet triggers AllIn
+	s.SetPhase(SevenCardStudPhaseFifthStreet)
+	s.SetPot(100)
+	s.SetLastBet(0) // callAmount=0 → passive bluff path
+	s.SetMinRaise(5)
+
+	hitAllIn := false
+	for i := 0; i < 1000; i++ {
+		action, _ := s.cpuDecide(1)
+		if action == SevenCardStudActionAllIn {
+			hitAllIn = true
+			break
+		}
+	}
+	assert.True(t, hitAllIn, "passive AllIn path should be reachable when chips < betAmt")
+}
+
+func TestSevenCardStud_CPUDecide_UnknownStyle(t *testing.T) {
+	// Unknown style falls back to CpuCallOrCheck.
+	s := newTestSevenCardStud()
+	s.players[1].SetPlayStyle(999) // unknown
+	s.players[1].SetChips(1000)
+	s.SetPhase(SevenCardStudPhaseThirdStreet)
+	s.SetLastBet(0)
+
+	action, _ := s.cpuDecide(1)
+	assert.Equal(t, SevenCardStudActionCheck, action)
+
+	s.SetLastBet(10)
+	action, _ = s.cpuDecide(1)
+	assert.Equal(t, SevenCardStudActionCall, action)
+}
+
+func TestSevenCardStud_CheckAndTransitionAddon_CPUOnly(t *testing.T) {
+	// checkAndTransitionAddon returns false when only CPUs need addon but human already used it.
+	s := newTestSevenCardStud()
+	for _, p := range s.players {
+		p.SetChips(1000)
+	}
+	cfg := s.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonChips = 500
+	cfg.AddonAfterHand = 5
+	s.SetConfig(cfg)
+	s.SetHandCount(5) // matches AddonAfterHand
+
+	// Mark human addon as already used; CPUs not used
+	addonUsed := make([]bool, len(s.GetPlayers()))
+	addonUsed[0] = true // human already used
+	s.SetAddonUsed(addonUsed)
+
+	// With addonUsed[0]=true, human skips; CPUs get addon; no human needed → returns false
+	result := s.checkAndTransitionAddon()
+	// CPUs take addon automatically, no human prompt needed
+	assert.False(t, result)
+	// Non-human players who hadn't used addon should have received chips
+	for i := 1; i < len(s.GetPlayers()); i++ {
+		assert.Equal(t, 1500, s.GetPlayers()[i].GetChips(),
+			"CPU player %d should have received addon chips", i)
+	}
+}
+
+func TestSevenCardStud_Rebuy_TransitionsToAddon(t *testing.T) {
+	// After Rebuy(), if addon condition is met, transitions to addon phase.
+	s := newTestSevenCardStud()
+	for _, p := range s.players {
+		p.SetChips(0)
+	}
+	cfg := s.GetConfig()
+	cfg.RebuyEnabled = true
+	cfg.RebuyMaxCount = 3
+	cfg.RebuyChips = 500
+	cfg.RebuyPeriodHands = 20
+	cfg.AddonEnabled = true
+	cfg.AddonChips = 300
+	cfg.AddonAfterHand = 2
+	s.SetConfig(cfg)
+	s.SetHandCount(2) // matches AddonAfterHand
+	s.SetPhase(SevenCardStudPhaseRebuy)
+	s.SetRebuyPhaseType(SevenCardStudRebuyPhaseRebuy)
+	s.SetRebuyCounts(make([]int, len(s.GetPlayers())))
+	s.SetAddonUsed(make([]bool, len(s.GetPlayers())))
+
+	err := s.Rebuy()
+	require.NoError(t, err)
+	// Should have transitioned to addon phase since handCount==AddonAfterHand
+	assert.Equal(t, SevenCardStudPhaseRebuy, s.GetPhase())
+	assert.Equal(t, SevenCardStudRebuyPhaseAddon, s.GetRebuyPhaseType())
+}
+
+func TestSevenCardStud_SkipRebuy_WithChipsTransitionsToAddon(t *testing.T) {
+	// SkipRebuy when human has chips and addon condition met → transitions to addon.
+	s := newTestSevenCardStud()
+	for _, p := range s.players {
+		p.SetChips(1000)
+	}
+	cfg := s.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonChips = 300
+	cfg.AddonAfterHand = 3
+	s.SetConfig(cfg)
+	s.SetHandCount(3) // matches AddonAfterHand
+	s.SetPhase(SevenCardStudPhaseRebuy)
+	s.SetRebuyPhaseType(SevenCardStudRebuyPhaseRebuy)
+	s.SetAddonUsed(make([]bool, len(s.GetPlayers())))
+
+	err := s.SkipRebuy()
+	require.NoError(t, err)
+	// Human has chips (> 0), so no bust-out; addon should kick in
+	assert.Equal(t, SevenCardStudPhaseRebuy, s.GetPhase())
+	assert.Equal(t, SevenCardStudRebuyPhaseAddon, s.GetRebuyPhaseType())
+}

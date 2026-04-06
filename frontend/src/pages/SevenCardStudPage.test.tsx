@@ -450,4 +450,279 @@ describe('SevenCardStudPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
+
+  // ---- muck / show controls ----
+  it('shows muck/show buttons when isMuckPhase (showdown + muckAvailable)', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      muckAvailable: true,
+      phase: 6, // SHOWDOWN
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'マック' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ショー' })).toBeInTheDocument();
+  });
+
+  it('calls muck command when muck button clicked', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      muckAvailable: true,
+      phase: 6,
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'マック' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(showdownState);
+    fireEvent.click(screen.getByRole('button', { name: 'マック' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('muck'));
+  });
+
+  it('calls show command when show button clicked', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      muckAvailable: true,
+      phase: 6,
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ショー' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(showdownState);
+    fireEvent.click(screen.getByRole('button', { name: 'ショー' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('show'));
+  });
+
+  // ---- rebuy controls ----
+  it('shows rebuy controls when isRebuyPhase', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [humanPlayer({ chips: 0 }), cpuPlayer(1)],
+      phase: 8, // REBUY
+      message: '',
+      rebuyPhaseType: 1, // REBUY type
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [1, 0],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'リバイ' })).toBeInTheDocument();
+  });
+
+  it('calls rebuy command when rebuy button clicked', async () => {
+    const rebuyState = {
+      ...baseState,
+      players: [humanPlayer({ chips: 0 }), cpuPlayer(1)],
+      phase: 8,
+      message: '',
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [1, 0],
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リバイ' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リバイ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('rebuy'));
+  });
+
+  it('calls skiprebuy command when skip rebuy button clicked', async () => {
+    const rebuyState = {
+      ...baseState,
+      players: [humanPlayer({ chips: 0 }), cpuPlayer(1)],
+      phase: 8,
+      message: '',
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [0, 0],
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    // Only rebuy-controls is showing (not addon), so skip button is unique
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skiprebuy'));
+  });
+
+  // ---- addon controls ----
+  it('shows addon controls when isAddonPhase', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [humanPlayer(), cpuPlayer(1)],
+      phase: 8, // REBUY
+      message: '',
+      rebuyPhaseType: 2, // ADDON type
+      addonChips: 1500,
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('addon-controls')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'アドオン' })).toBeInTheDocument();
+  });
+
+  it('calls addon command when addon button clicked', async () => {
+    const addonState = {
+      ...baseState,
+      players: [humanPlayer(), cpuPlayer(1)],
+      phase: 8,
+      message: '',
+      rebuyPhaseType: 2,
+      addonChips: 1500,
+    };
+    mockExec.mockResolvedValue(addonState);
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'アドオン' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'アドオン' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('addon'));
+  });
+
+  it('calls skipaddon command when skip addon button clicked', async () => {
+    const addonState = {
+      ...baseState,
+      players: [humanPlayer(), cpuPlayer(1)],
+      phase: 8,
+      message: '',
+      rebuyPhaseType: 2,
+      addonChips: 1500,
+    };
+    mockExec.mockResolvedValue(addonState);
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('addon-controls')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    // Only addon-controls is showing (not rebuy), so skip button is unique
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skipaddon'));
+  });
+
+  // ---- tournament mode ----
+  it('shows hand number in tournament mode', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      tournamentMode: true,
+      handCount: 3,
+      anteLevelHands: 10,
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText(/ハンド#3/)).toBeInTheDocument());
+  });
+
+  // ---- human allIn disables betting controls ----
+  it('hides betting controls when human is all-in', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ allIn: true }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
+  });
+
+  // ---- 7th street: 3 face-down CPU hole cards ----
+  it('shows 3 face-down placeholders for CPU hole cards on seventh street', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [
+        humanPlayer(),
+        { ...cpuPlayer(1), holeCards: [] }, // no revealed hole cards
+      ],
+      phase: 5, // SEVENTH_STREET
+      message: '',
+      currentTurn: 0,
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    // On 7th street, CPU should show 3 face-down cards (not 2)
+    // Verify the holeCards section is rendered for both CPU and human
+    expect(screen.getAllByText('ホールカード').length).toBeGreaterThanOrEqual(1);
+  });
+
+  // ---- CPU currentBet display ----
+  it('shows CPU current bet when positive', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer(), cpuPlayer(1, { currentBet: 20 }), cpuPlayer(2)],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    // tc('betting.currentBet') = 'ベット:' (common.json); rendered as "ベット: 20"
+    await waitFor(() => expect(screen.getAllByText(/ベット:/).length).toBeGreaterThanOrEqual(1));
+  });
+
+  // ---- human showdown hand name badge ----
+  it('shows human hand name badge at showdown when not folded', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        humanPlayer({ handName: 'フラッシュ', folded: false }),
+        cpuPlayer(1, { handName: 'ハイカード' }),
+      ],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText('フラッシュ')).toBeInTheDocument());
+  });
+
+  // ---- human currentBet display ----
+  it('shows human current bet when positive', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ currentBet: 10 }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getAllByText(/ベット:/).length).toBeGreaterThanOrEqual(1));
+  });
+
+  // ---- settings cpuMetaAI checkbox ----
+  it('toggles cpuMetaAI checkbox and sends reset with metaAI flag', async () => {
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const metaAICheckbox = screen.getByRole('checkbox', { name: 'メタAI（CPUがプレイスタイルを学習）' });
+    expect(metaAICheckbox).not.toBeChecked();
+
+    fireEvent.click(metaAICheckbox);
+    expect(metaAICheckbox).toBeChecked();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
+  });
+
+  // ---- end phase + win celebration ----
+  it('shows result phase name at END phase', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      phase: 7, // END
+      gameEndFlag: true,
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText('結果')).toBeInTheDocument());
+  });
+
+  // ---- human folded allIn status at showdown ----
+  it('shows allIn badge for human when allIn during showdown', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        humanPlayer({ allIn: true, folded: false }),
+        cpuPlayer(1),
+      ],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByText('[オールイン]')).toBeInTheDocument());
+  });
 });

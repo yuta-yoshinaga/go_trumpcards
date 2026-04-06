@@ -64,3 +64,9 @@ func (s *SevenCardStud) SetStartingChips(chips []int) { s.startingChips = chips 
 
 // GetLastHumanPlayMs 最後の人間迷い時間取得（テスト用）
 func (s *SevenCardStud) GetLastHumanPlayMs() int { return s.lastHumanPlayMs }
+
+// SetLastHumanPlayMs 最後の人間迷い時間設定（テスト用）
+func (s *SevenCardStud) SetLastHumanPlayMs(ms int) { s.lastHumanPlayMs = ms }
+
+// SetRaiseCount レイズ回数設定（テスト用）
+func (s *SevenCardStud) SetRaiseCount(count int) { s.raiseCount = count }
