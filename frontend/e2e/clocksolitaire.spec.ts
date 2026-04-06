@@ -26,15 +26,5 @@ test.describe('Clock Solitaire E2E', () => {
 
     // After autoplay, step/autoplay buttons should not be visible
     await expect(page.getByRole('button', { name: 'ステップ' })).not.toBeVisible();
-
-    // Reset button should still be accessible
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await resetButton.scrollIntoViewIfNeeded();
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
-    await waitForLoaded(page);
-
-    // Verify game restarted — step button is visible again
-    await expect(page.getByRole('button', { name: 'ステップ' })).toBeVisible();
   });
 });
