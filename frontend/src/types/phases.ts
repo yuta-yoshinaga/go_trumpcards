@@ -341,3 +341,10 @@ export const SevenCardStudRebuyPhaseType = {
   REBUY: 1,
   ADDON: 2,
 } as const;
+
+/** Clock Solitaire phase constants (sync: internal/domain/ClockSolitaire.go). */
+export const ClockSolitairePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;

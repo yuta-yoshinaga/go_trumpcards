@@ -4,6 +4,7 @@ import type {
   BlackJackResponse,
   BridgeResponse,
   CanastaResponse,
+  ClockSolitaireResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoConfigInput,
@@ -89,6 +90,7 @@ const workerUrl: Record<string, string> = {
   canasta: WORKER_SOLO,
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
+  clocksolitaire: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -972,6 +974,12 @@ export const pigtailApi = {
     gameExec<PigsTailResponse>('pigtail', { command, cpuHesitationEnabled }),
 };
 
+/** API client for the Clock Solitaire /clocksolitaire/exec endpoint. */
+export const clocksolitaireApi = {
+  exec: (command: 'reset' | 'step' | 'autoplay' | 'log') =>
+    gameExec<ClockSolitaireResponse>('clocksolitaire', { command }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1011,6 +1019,7 @@ const games = [
   'pinochle',
   'golf',
   'pigtail',
+  'clocksolitaire',
 ] as const;
 type Game = (typeof games)[number];
 

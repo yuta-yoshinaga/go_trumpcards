@@ -1,0 +1,23 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "クロックソリティア",
+  "stepCount": "ステップ数",
+  "step": "ステップ",
+  "autoplay": "オートプレイ",
+  "currentCard": "手持ちカード",
+  "center": "中央(K)",
+  "playing": "プレイ中",
+  "gameClear": "ゲームクリア！ ステップ数: {{stepCount}}",
+  "gameOver": "ゲームオーバー",
+  "tutorial": {
+    "clockFace": "時計の文字盤の位置にカードが並んでいます。",
+    "centerPile": "中央はKのパイルです。",
+    "controls": "ステップで1枚ずつ、オートプレイで自動進行します。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "landscapeBanner": "横向きにすると操作しやすくなります"
+}

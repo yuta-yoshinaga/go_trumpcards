@@ -90,6 +90,8 @@ tags:
     description: Pig's Tail (ぶたのしっぽ) game
   - name: sevencardstud
     description: Seven Card Stud (セブンカード・スタッド) game
+  - name: clocksolitaire
+    description: Clock Solitaire (クロックソリティア) game
 
 paths:
   /blackjack/exec:
@@ -3564,6 +3566,129 @@ paths:
                     roundResults: []
                     cpuActions: []
                     message: param error.
+
+
+  /clocksolitaire/exec:
+    post:
+      tags:
+        - clocksolitaire
+      summary: Execute a Clock Solitaire game command
+      description: |
+        Send a command to advance the Clock Solitaire (クロックソリティア) game session identified by
+        `sessionId`.  Clock Solitaire is a fully automatic single-player solitaire card game using a
+        standard 52-card deck.  52 cards are dealt face-down into 13 piles of 4 cards: 12 piles placed
+        at clock positions 1-12 and 1 pile in the center (King position).  One card at a time is flipped
+        face-up and placed at the bottom of the pile matching its rank.  The game clears when all cards
+        are face-up before the 4th King is placed; the game is over when the 4th King is turned while
+        face-down cards remain.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All cards are face-up; player wins |
+        | GameOver   | `2`   | 4th King turned while face-down cards remain |
+
+        | Command    | Aliases | Description |
+        |------------|---------|-------------|
+        | `reset`    | `r`     | Start / restart a game |
+        | `step`     | `s`     | Flip and place one card |
+        | `autoplay` | `a`     | Play all remaining cards to completion |
+        | `log`      | `l`     | View action log |
+      operationId: clocksolitaireExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, step, s, autoplay, a, log, l]
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              step:
+                summary: Flip and place one card
+                value:
+                  command: step
+                  sessionId: my-session-001
+              autoplay:
+                summary: Play all remaining cards to completion
+                value:
+                  command: autoplay
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  piles:
+                    type: array
+                    description: |
+                      13 piles indexed 0-12 (index 0 = position 1, index 11 = position 12, index 12 = center/King).
+                      Each pile is an array of card objects.
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          card:
+                            $ref: '#/components/schemas/Card'
+                          faceUp:
+                            type: boolean
+                  faceUpCount:
+                    type: integer
+                    description: Total number of face-up cards across all piles
+                  phase:
+                    type: integer
+                    description: "0=Playing, 1=GameClear, 2=GameOver"
+                  stepCount:
+                    type: integer
+                    description: Number of cards flipped so far
+                  currentCard:
+                    description: The card most recently flipped (null before first step)
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  piles:
+                    type: array
+                    items:
+                      type: array
+                  faceUpCount:
+                    type: integer
+                  phase:
+                    type: integer
+                  stepCount:
+                    type: integer
+                  message:
+                    type: string
 
 components:
   schemas:
@@ -10558,4 +10683,3 @@ components:
         muckAvailable:
           type: boolean
           description: Whether the human player can muck (hide) their hand at showdown
-          example: false

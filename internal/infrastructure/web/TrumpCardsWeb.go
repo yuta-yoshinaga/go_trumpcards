@@ -61,6 +61,7 @@ type TrumpCardsWeb struct {
 	glfc *controller.GolfWebController
 	ptc  *controller.PigsTailWebController
 	scsc *controller.SevenCardStudWebController
+	csc  *controller.ClockSolitaireWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -362,6 +363,10 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			scs := domain.NewSevenCardStud(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
 			return usecase.NewSevenCardStudInteractor(scs, new(presenter.SevenCardStudWebPresenter))
 		}),
+		csc: controller.NewClockSolitaireWebController(func() usecase.ClockSolitaireInteractorIF {
+			cs := domain.NewClockSolitaire(domain.NewTrumpCards(0))
+			return usecase.NewClockSolitaireInteractor(cs, new(presenter.ClockSolitaireWebPresenter))
+		}),
 	}
 }
 
@@ -412,6 +417,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/golf/exec", web.glfc.Exec},
 		{"/pigtail/exec", web.ptc.Exec},
 		{"/sevencardstud/exec", web.scsc.Exec},
+		{"/clocksolitaire/exec", web.csc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -511,6 +517,8 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.pinc.Stop()
 	web.glfc.Stop()
 	web.ptc.Stop()
+	web.scsc.Stop()
+	web.csc.Stop()
 	fmt.Println(i18n.T("webServerStopped"))
 	slog.Info("server stopped")
 	return runErr

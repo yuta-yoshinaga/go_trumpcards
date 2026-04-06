@@ -1867,3 +1867,23 @@ export interface SevenCardStudResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+// --- Clock Solitaire (クロックソリティア) ---
+
+/** A card in a Clock Solitaire pile with face-up status. */
+export interface ClockSolitaireCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** Full Clock Solitaire game state returned from the API. */
+export interface ClockSolitaireResponse {
+  piles: ClockSolitaireCard[][];
+  faceUpCount: number[];
+  phase: number;
+  stepCount: number;
+  currentCard?: Card;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}

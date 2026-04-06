@@ -154,6 +154,17 @@ classDiagram
         +object messageParams
     }
 
+    class ClockSolitaireResponse {
+        +object[][] piles
+        +number faceUpCount
+        +number phase
+        +number stepCount
+        +Card currentCard
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
     class CribbageResponse {
         +object[] players
         +number phase
@@ -448,6 +459,13 @@ classDiagram
         GAME_OVER = 2
     }
 
+    class ClockSolitairePhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
     class PigsTailPhase {
         <<enumeration>>
         PLAY = 0
@@ -563,6 +581,10 @@ classDiagram
         +run(cmd, col?) Promise~GolfResponse~
     }
 
+    class ClockSolitaireApi {
+        +run(cmd) Promise~ClockSolitaireResponse~
+    }
+
     class CribbageApi {
         +run(cmd, args?, config?) Promise~CribbageResponse~
     }
@@ -579,6 +601,7 @@ classDiagram
     KlondikeApi --> gameApi : uses postJson/gameExec
     PyramidApi --> gameApi : uses postJson/gameExec
     TriPeaksApi --> gameApi : uses postJson/gameExec
+    ClockSolitaireApi --> gameApi : uses postJson/gameExec
     CribbageApi --> gameApi : uses postJson/gameExec
     actionLogApi --> gameApi : uses gameExec
 
@@ -874,6 +897,13 @@ classDiagram
         +Function handleReset
     }
 
+    class useClockSolitaireGame {
+        +ClockSolitaireResponse state
+        +Function handleStep
+        +Function handleAutoPlay
+        +Function handleReset
+    }
+
     class usePigsTailGame {
         +PigsTailResponse state
         +Function handleDraw
@@ -894,6 +924,7 @@ classDiagram
     usePyramidGame --> useGameApi : uses
     useTriPeaksGame --> useGameApi : uses
     useGolfGame --> useGameApi : uses
+    useClockSolitaireGame --> useGameApi : uses
     usePigsTailGame --> useGameApi : uses
     useCribbageGame --> useGameApi : uses
     useMemoryGame --> useGameApi : uses
@@ -1386,6 +1417,15 @@ classDiagram
 
     SevenCardStudPage --|> GamePage : follows pattern
 
+    class ClockSolitairePage {
+        +13山を時計配置で表示
+        +表向き/伏せカード表示
+        +ステップ/自動再生ボタン
+        +進捗インジケーター(表向き枚数)
+    }
+
+    ClockSolitairePage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -1399,7 +1439,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全36ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全39ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1430,7 +1470,7 @@ classDiagram
         +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, OhHell, Euchre, Napoleon, Bridge]
         +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish]
-        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Memory]
+        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Memory, ClockSolitaire]
         +rummy: [GinRummy, Canasta, Cribbage]
     }
 

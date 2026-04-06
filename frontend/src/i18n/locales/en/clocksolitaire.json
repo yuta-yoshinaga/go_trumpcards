@@ -1,0 +1,23 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Clock Solitaire",
+  "stepCount": "Steps",
+  "step": "Step",
+  "autoplay": "Auto Play",
+  "currentCard": "Current Card",
+  "center": "Center(K)",
+  "playing": "Playing",
+  "gameClear": "Game Clear! Steps: {{stepCount}}",
+  "gameOver": "Game Over",
+  "tutorial": {
+    "clockFace": "Cards are arranged in clock positions.",
+    "centerPile": "The center pile is for Kings.",
+    "controls": "Step advances one card, Auto Play runs to completion.",
+    "resetButton": "Press Reset to start a new game."
+  },
+  "landscapeBanner": "Rotate to landscape for a better experience"
+}
