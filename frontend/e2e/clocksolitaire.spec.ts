@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Clock Solitaire E2E', () => {
-  test('navigates, resets, and plays steps', async ({ page }) => {
+  test('navigates and plays steps', async ({ page }) => {
     await navigateTo(page, '/clocksolitaire');
 
     // Verify step count is displayed
@@ -13,21 +13,6 @@ test.describe('Clock Solitaire E2E', () => {
     await expect(stepButton).toBeVisible();
     await stepButton.click();
     await waitForLoaded(page);
-
-    // Click step a few more times
-    for (let i = 0; i < 3; i++) {
-      await stepButton.click();
-      await waitForLoaded(page);
-    }
-
-    // Click reset
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
-    await waitForLoaded(page);
-
-    // Verify game restarted
-    await expect(page.getByText(/ステップ数/)).toBeVisible();
   });
 
   test('autoplay completes the game', async ({ page }) => {
@@ -41,5 +26,15 @@ test.describe('Clock Solitaire E2E', () => {
 
     // After autoplay, step/autoplay buttons should not be visible
     await expect(page.getByRole('button', { name: 'ステップ' })).not.toBeVisible();
+
+    // Reset button should still be accessible
+    const resetButton = page.getByRole('button', { name: 'リセット' });
+    await resetButton.scrollIntoViewIfNeeded();
+    await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
+    await waitForLoaded(page);
+
+    // Verify game restarted — step button is visible again
+    await expect(page.getByRole('button', { name: 'ステップ' })).toBeVisible();
   });
 });
