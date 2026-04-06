@@ -13,6 +13,7 @@
   "doorCards": "ドアカード",
   "holeCards": "ホールカード",
   "yourHand": "あなたの手札",
+  "anteBringIn": "アンティ/ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",

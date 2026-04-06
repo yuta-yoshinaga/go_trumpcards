@@ -42,6 +42,7 @@ func TestSevenCardStudConfig_Validate(t *testing.T) {
 		{name: "table size 0 (no change)", modify: func(c *SevenCardStudConfig) { c.TableSize = 0 }, wantErr: false},
 		{name: "pot limit", modify: func(c *SevenCardStudConfig) { c.BettingLimit = BettingLimitPotLimit }, wantErr: false},
 		{name: "no limit", modify: func(c *SevenCardStudConfig) { c.BettingLimit = BettingLimitNoLimit }, wantErr: false},
+		{name: "init chips zero", modify: func(c *SevenCardStudConfig) { c.InitChips = 0 }, wantErr: true},
 	}
 
 	for _, tt := range tests {

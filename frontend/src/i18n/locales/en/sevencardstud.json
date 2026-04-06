@@ -13,6 +13,7 @@
   "doorCards": "Door Cards",
   "holeCards": "Hole Cards",
   "yourHand": "Your Hand",
+  "anteBringIn": "Ante/Bring-in",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

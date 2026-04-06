@@ -30,10 +30,10 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ディーラー:")
 		assert.Contains(t, result, "ポット:")
 		assert.Contains(t, result, "あなた")
-		assert.Contains(t, result, "伏せ札:")
+		assert.Contains(t, result, "ホールカード:")
 		assert.Contains(t, result, "♠10")
 		assert.Contains(t, result, "♥11")
-		assert.Contains(t, result, "表札:")
+		assert.Contains(t, result, "ドアカード:")
 		assert.Contains(t, result, "♣5")
 	})
 
@@ -54,7 +54,7 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		players[1].AddDoorCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "表札:")
+		assert.Contains(t, result, "ドアカード:")
 		assert.Contains(t, result, "♥7")
 	})
 
@@ -64,10 +64,10 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		players[1].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 
 		result := p.Output(s, nil)
-		// CPU player name is shown but 伏せ札 section should not appear for CPU
+		// CPU player name is shown but ホールカード section should not appear for CPU
 		assert.Contains(t, result, "CPU 1")
-		// No 伏せ札 section for CPU (human has no hole cards either in this test)
-		assert.NotContains(t, result, "伏せ札:")
+		// No ホールカード section for CPU (human has no hole cards either in this test)
+		assert.NotContains(t, result, "ホールカード:")
 	})
 
 	t.Run("folded player", func(t *testing.T) {

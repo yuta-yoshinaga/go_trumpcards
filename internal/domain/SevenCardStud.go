@@ -655,10 +655,14 @@ func (s *SevenCardStud) resolveShowdown() {
 	for _, p := range s.players {
 		if !p.GetFolded() {
 			if s.communityCard != nil {
-				// 共有カードを一時的にholeCardsに追加して評価
 				p.AddHoleCard(s.communityCard)
+				p.EvalBestHand()
+				// 一時的に追加した共有カードを除去
+				hc := p.GetHoleCards()
+				p.SetHoleCards(hc[:len(hc)-1])
+			} else {
+				p.EvalBestHand()
 			}
-			p.EvalBestHand()
 		}
 	}
 

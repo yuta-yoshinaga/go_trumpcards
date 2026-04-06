@@ -254,13 +254,16 @@ function SevenCardStudPageContent() {
           {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
         </span>
         <span>
-          Ante/Bring-in:{' '}
+          {t('anteBringIn')}:{' '}
           <strong>
             {state?.ante ?? 0}/{state?.bringIn ?? 0}
           </strong>
         </span>
         <span>
-          {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+          {tc('label.dealer')}{' '}
+          <strong>
+            {tc('label.player')} {state?.dealerIdx ?? 0}
+          </strong>
         </span>
         {state?.tournamentMode && (
           <span>{t('handNumber', { count: state.handCount, level: state.anteLevelHands })}</span>
@@ -331,7 +334,9 @@ function SevenCardStudPageContent() {
                           />
                         ))
                       : !p.folded &&
-                        Array.from({ length: 3 }).map((_, i) => (
+                        Array.from({
+                          length: (state?.phase ?? 0) >= SevenCardStudPhase.SEVENTH_STREET ? 3 : 2,
+                        }).map((_, i) => (
                           <AnimatedCardBack key={i} width={cardWidth} onFlipComplete={() => playSound('cardFlip')} />
                         ))}
                   </div>

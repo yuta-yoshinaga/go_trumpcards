@@ -88,6 +88,9 @@ func (c SevenCardStudConfig) Validate() error {
 	if err := ValidateMin("ante level hands", c.AnteLevelHands, 1); err != nil {
 		return err
 	}
+	if err := ValidateMin("init chips", c.InitChips, 1); err != nil {
+		return err
+	}
 	// TableSize == 0 means "keep current size / no change"; only validate non-zero values.
 	if c.TableSize != 0 && !IsValidSevenCardStudTableSize(c.TableSize) {
 		return fmt.Errorf("invalid table size %d, must be 2-%d", c.TableSize, SevenCardStudTableSize7)
