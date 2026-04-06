@@ -54,7 +54,8 @@
     "gofish": "Go Fish",
     "pinochle": "Pinochle",
     "golf": "Golf",
-    "pigtail": "Pig's Tail"
+    "pigtail": "Pig's Tail",
+    "sevencardstud": "Seven Card Stud"
   },
   "sound": {
     "mute": "Mute sound",

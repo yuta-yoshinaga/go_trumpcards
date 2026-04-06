@@ -275,6 +275,24 @@ func main() {
 		},
 	)
 
+	// Seven Card Stud
+	registerKV(mux, "/sevencardstud/exec", "sevencardstud:",
+		func() usecase.SevenCardStudInteractorIF {
+			cfg := domain.DefaultSevenCardStudConfig()
+			scs := domain.NewSevenCardStud(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewSevenCardStudInteractor(scs, new(presenter.SevenCardStudWebPresenter))
+		},
+		func(data []byte) (usecase.SevenCardStudInteractorIF, error) {
+			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))
+		},
+		func(p controller.SessionProvider[usecase.SevenCardStudInteractorIF], f func() usecase.SevenCardStudInteractorIF) interface {
+			Exec(http.ResponseWriter, *http.Request)
+			Stop()
+		} {
+			return controller.NewSevenCardStudWebControllerWithProvider(p, f)
+		},
+	)
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

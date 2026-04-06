@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全34ゲーム)](#12-ゲームドメイン-全34ゲーム)
+  - [1.2 ゲームドメイン (全36ゲーム)](#12-ゲームドメイン-全36ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -22,6 +22,7 @@
   - [2.9 Speed プレイフロー](#29-speed-プレイフロー)
   - [2.10 GoFish 要求フロー](#210-gofish-要求フロ���)
   - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
+  - [2.12 SevenCardStud ベッティングフロー](#212-sevencardstud-ベッティングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -49,6 +50,7 @@
   - [3.24 Canasta フェーズ遷移](#324-canasta-フェーズ遷移)
   - [3.25 Pinochle フェーズ遷移](#325-pinochle-フェーズ遷移)
   - [3.26 PigsTail フェーズ遷移](#326-pigstail-フェーズ遷移)
+  - [3.27 SevenCardStud フェーズ遷移](#327-sevencardstud-フェーズ遷移)
 
 ---
 
@@ -116,7 +118,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全35ゲーム)
+### 1.2 ゲームドメイン (全36ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -814,6 +816,63 @@ classDiagram
     PigsTailPlayer --|> GamePlayer
 ```
 
+#### セブンカード・スタッド
+
+```mermaid
+classDiagram
+    class SevenCardStud {
+        -trumpCards *TrumpCards
+        -players []*SevenCardStudPlayer
+        -config SevenCardStudConfig
+        -phase int
+        -pot int
+        -bettingState BettingState
+        -dealerIdx int
+        -currentTurn int
+        -bringInPlayerIdx int
+        -humanProfile *BettingHumanProfile
+        +Reset()
+        +PlayerFold() error
+        +PlayerCheck() error
+        +PlayerCall() error
+        +PlayerBet(amount int) error
+        +PlayerRaise(amount int) error
+        +PlayerAllIn() error
+        +PlayerRebuy() error
+        +PlayerAddon() error
+        +PlayerMuck() error
+        +PlayerShow() error
+        +Phase() int
+        +ActionLog() []*ActionLogEntry
+    }
+
+    class SevenCardStudPlayer {
+        +[]*Card HoleCards
+        +[]*Card DoorCards
+        +int HandRank
+        +string HandName
+    }
+
+    class SevenCardStudConfig {
+        +int Ante
+        +int BringIn
+        +int SmallBet
+        +int BigBet
+        +BettingLimitType BettingLimit
+        +int TableSize
+        +bool TournamentMode
+        +int AnteLevelHands
+        +int AnteMultiplier
+        +bool CpuMetaAI
+    }
+
+    SevenCardStud --> "*" SevenCardStudPlayer
+    SevenCardStud --> "1" SevenCardStudConfig
+    SevenCardStud --> "1" BettingState
+    SevenCardStudPlayer --|> GamePlayer
+    SevenCardStudPlayer --> "1" ChipHolder
+```
+
 #### ソリティア系ゲーム
 
 ```mermaid
@@ -1166,6 +1225,7 @@ classDiagram
         -speed *SpeedWebController
         -gofish *GoFishWebController
         -pigtail *PigsTailWebController
+        -sevencardstud *SevenCardStudWebController
         +Exec()
     }
 
@@ -1520,6 +1580,26 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: ドロー結果・手札枚数更新表示
+```
+
+### 2.12 SevenCardStud ベッティングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as SevenCardStudInteractor
+    participant Domain as SevenCardStud
+    participant Pres as Presenter
+
+    Note over User,Pres: ベッティングフロー (サード～セブンスストリート)
+    User->>Ctrl: bet 40 / call / raise 80 / fold / allin
+    Ctrl->>Interactor: PlayerBet(40) / PlayerCall() / PlayerRaise(80) / PlayerFold() / PlayerAllIn()
+    Interactor->>Domain: アクション実行
+    Domain->>Domain: ベット処理 → CPU自動アクション → ストリート進行判定
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ベッティング結果・カード更新表示
 ```
 
 ---
@@ -1980,6 +2060,38 @@ stateDiagram-v2
 
     note right of Play : PigsTailPhasePlay = 0
     note right of GameEnd : PigsTailPhaseGameEnd = 1
+```
+
+### 3.27 SevenCardStud フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Init : Reset()
+    Init --> ThirdSt : アンティ + ホールカード2枚 + ドアカード1枚配布 + ブリングイン
+    ThirdSt --> FourthSt : ベッティング完了
+    ThirdSt --> Showdown : 1人以外 Fold
+    FourthSt --> FifthSt : ベッティング完了
+    FourthSt --> Showdown : 1人以外 Fold
+    FifthSt --> SixthSt : ベッティング完了
+    FifthSt --> Showdown : 1人以外 Fold
+    SixthSt --> SeventhSt : ベッティング完了
+    SixthSt --> Showdown : 1人以外 Fold
+    SeventhSt --> Showdown : ベッティング完了
+    Showdown --> End : 勝者決定
+    End --> Rebuy : リバイ/アドオン有効
+    End --> Init : 次ラウンド (Reset)
+    Rebuy --> Init : リバイ/アドオン完了
+    End --> [*] : ゲーム終了
+
+    note right of Init : SevenCardStudPhaseInit = 0
+    note right of ThirdSt : SevenCardStudPhaseThirdSt = 1
+    note right of FourthSt : SevenCardStudPhaseFourthSt = 2
+    note right of FifthSt : SevenCardStudPhaseFifthSt = 3
+    note right of SixthSt : SevenCardStudPhaseSixthSt = 4
+    note right of SeventhSt : SevenCardStudPhaseSeventhSt = 5
+    note right of Showdown : SevenCardStudPhaseShowdown = 6
+    note right of End : SevenCardStudPhaseEnd = 7
+    note right of Rebuy : SevenCardStudPhaseRebuy = 8
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

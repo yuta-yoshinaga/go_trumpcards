@@ -32,6 +32,7 @@ import enPineapple from './locales/en/pineapple.json';
 import enPinochle from './locales/en/pinochle.json';
 import enPoker from './locales/en/poker.json';
 import enPyramid from './locales/en/pyramid.json';
+import enSevencardstud from './locales/en/sevencardstud.json';
 import enSevens from './locales/en/sevens.json';
 import enShortdeck from './locales/en/shortdeck.json';
 import enSpades from './locales/en/spades.json';
@@ -71,6 +72,7 @@ import jaPineapple from './locales/ja/pineapple.json';
 import jaPinochle from './locales/ja/pinochle.json';
 import jaPoker from './locales/ja/poker.json';
 import jaPyramid from './locales/ja/pyramid.json';
+import jaSevencardstud from './locales/ja/sevencardstud.json';
 import jaSevens from './locales/ja/sevens.json';
 import jaShortdeck from './locales/ja/shortdeck.json';
 import jaSpades from './locales/ja/spades.json';
@@ -125,6 +127,7 @@ i18n
         gofish: jaGofish,
         golf: jaGolf,
         pigtail: jaPigtail,
+        sevencardstud: jaSevencardstud,
         tutorial: jaTutorial,
       },
       en: {
@@ -166,6 +169,7 @@ i18n
         gofish: enGofish,
         golf: enGolf,
         pigtail: enPigtail,
+        sevencardstud: enSevencardstud,
         tutorial: enTutorial,
       },
     },
@@ -210,6 +214,7 @@ i18n
       'gofish',
       'golf',
       'pigtail',
+      'sevencardstud',
       'tutorial',
     ],
     detection: {

@@ -321,3 +321,23 @@ export const GolfPhase = {
   GAME_CLEAR: 1,
   GAME_OVER: 2,
 } as const;
+
+/** Seven Card Stud phase constants (sync: internal/domain/SevenCardStud.go). */
+export const SevenCardStudPhase = {
+  INIT: 0,
+  THIRD_STREET: 1,
+  FOURTH_STREET: 2,
+  FIFTH_STREET: 3,
+  SIXTH_STREET: 4,
+  SEVENTH_STREET: 5,
+  SHOWDOWN: 6,
+  END: 7,
+  REBUY: 8,
+} as const;
+
+/** Seven Card Stud rebuy phase type constants (sync: internal/domain/SevenCardStud.go). */
+export const SevenCardStudRebuyPhaseType = {
+  NONE: 0,
+  REBUY: 1,
+  ADDON: 2,
+} as const;
