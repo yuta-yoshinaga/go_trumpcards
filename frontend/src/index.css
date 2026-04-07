@@ -56,6 +56,15 @@
   --color-ds-info: #5b8fb9;
   --color-ds-border: rgba(212, 168, 83, 0.15);
   --color-ds-border-subtle: rgba(139, 154, 175, 0.12);
+  /* Poker action button colors (from DESIGN.md game-specific palette) */
+  --color-poker-call: #059669;
+  --color-poker-call-hover: #047857;
+  --color-poker-raise: #0ea5e9;
+  --color-poker-raise-hover: #0284c7;
+  --color-poker-allin: #f59e0b;
+  --color-poker-allin-hover: #d97706;
+  --color-poker-fold: #6b7280;
+  --color-poker-fold-hover: #4b5563;
   /* Typography */
   --font-display: "Fraunces", "Noto Sans JP", serif;
   --font-body: "DM Sans", "Noto Sans JP", system-ui, sans-serif;
