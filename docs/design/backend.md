@@ -798,13 +798,12 @@ classDiagram
     class PigsTail {
         -trumpCards *TrumpCards
         -players []*PigsTailPlayer
-        -circlePile []*Card
-        -centerPile []*Card
-        -phase PigsTailPhase
+        -center []*Card
         -currentTurn int
+        -gameEndFlag bool
         +Reset()
         +Draw() error
-        +Phase() PigsTailPhase
+        +GetGameEndFlag() bool
         +ActionLog() []*ActionLogEntry
     }
 
@@ -2079,8 +2078,8 @@ stateDiagram-v2
     Play --> GameEnd : 山札が空
     GameEnd --> [*]
 
-    note right of Play : PigsTailPhasePlay = 0
-    note right of GameEnd : PigsTailPhaseGameEnd = 1
+    note right of Play : gameEndFlag = false
+    note right of GameEnd : gameEndFlag = true
 ```
 
 ### 3.27 SevenCardStud フェーズ遷移

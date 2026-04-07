@@ -468,8 +468,8 @@ classDiagram
 
     class PigsTailPhase {
         <<enumeration>>
-        PLAY = 0
-        GAME_END = 1
+        PIGTAIL_PHASE_PLAY = 0
+        PIGTAIL_PHASE_END = 1
     }
 
     class CribbagePhase {
