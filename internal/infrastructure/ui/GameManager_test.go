@@ -267,6 +267,7 @@ func TestGameManager_SwitchAliasMultiple(t *testing.T) {
 		canonical string
 	}{
 		{"7stud", "sevencardstud"},
+		{"7cs", "sevencardstud"},
 		{"clock", "clocksolitaire"},
 		{"crazy8", "crazyeights"},
 		{"indian", "indianpoker"},

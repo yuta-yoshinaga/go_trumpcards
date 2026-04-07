@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -240,7 +241,13 @@ ENVIRONMENT VARIABLES:
 			gamesFlags := flag.NewFlagSet("games", flag.ContinueOnError)
 			short := gamesFlags.Bool("short", false, "Print game names only")
 			if err := gamesFlags.Parse(flag.Args()[1:]); err != nil {
+				if errors.Is(err, flag.ErrHelp) {
+					return 0
+				}
 				return 1
+			}
+			if gamesFlags.NArg() > 0 {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(gamesFlags.Args(), " ")))
 			}
 			for _, name := range ui.GameNames {
 				if *short {
@@ -266,6 +273,9 @@ ENVIRONMENT VARIABLES:
 			port := webFlags.Int("port", 0, "Port number for the web server (default: 8080)")
 			webFlags.IntVar(port, "p", 0, "Port number for the web server (shorthand)")
 			if err := webFlags.Parse(flag.Args()[1:]); err != nil {
+				if errors.Is(err, flag.ErrHelp) {
+					return 0
+				}
 				return 1
 			}
 			if webFlags.NArg() > 0 {
