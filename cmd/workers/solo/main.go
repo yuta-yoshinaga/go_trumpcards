@@ -3,6 +3,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/syumai/workers"
@@ -20,7 +21,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Klondike
-	worker.RegisterKV(mux, "/klondike/exec", "klondike:",
+	if err := worker.RegisterKV(mux, "/klondike/exec", "klondike:",
 		func() usecase.KlondikeInteractorIF {
 			klondike := domain.NewKlondike(domain.NewTrumpCards(0))
 			return usecase.NewKlondikeInteractor(klondike, new(presenter.KlondikeWebPresenter))
@@ -29,10 +30,12 @@ func main() {
 			return usecase.RestoreKlondikeInteractor(data, new(presenter.KlondikeWebPresenter))
 		},
 		controller.NewKlondikeWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// FreeCell
-	worker.RegisterKV(mux, "/freecell/exec", "freecell:",
+	if err := worker.RegisterKV(mux, "/freecell/exec", "freecell:",
 		func() usecase.FreeCellInteractorIF {
 			freeCell := domain.NewFreeCell(domain.NewTrumpCards(0))
 			return usecase.NewFreeCellInteractor(freeCell, new(presenter.FreeCellWebPresenter))
@@ -41,10 +44,12 @@ func main() {
 			return usecase.RestoreFreeCellInteractor(data, new(presenter.FreeCellWebPresenter))
 		},
 		controller.NewFreeCellWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Spider
-	worker.RegisterKV(mux, "/spider/exec", "spider:",
+	if err := worker.RegisterKV(mux, "/spider/exec", "spider:",
 		func() usecase.SpiderInteractorIF {
 			spider := domain.NewSpider(domain.NewTrumpCardsWithSuits(domain.SpiderTotalCards, []int{domain.CardDesignSpade}))
 			return usecase.NewSpiderInteractor(spider, new(presenter.SpiderWebPresenter))
@@ -53,10 +58,12 @@ func main() {
 			return usecase.RestoreSpiderInteractor(data, new(presenter.SpiderWebPresenter))
 		},
 		controller.NewSpiderWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Pyramid
-	worker.RegisterKV(mux, "/pyramid/exec", "pyramid:",
+	if err := worker.RegisterKV(mux, "/pyramid/exec", "pyramid:",
 		func() usecase.PyramidInteractorIF {
 			pyramid := domain.NewPyramid(domain.NewTrumpCards(0))
 			return usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidWebPresenter))
@@ -65,10 +72,12 @@ func main() {
 			return usecase.RestorePyramidInteractor(data, new(presenter.PyramidWebPresenter))
 		},
 		controller.NewPyramidWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// TriPeaks
-	worker.RegisterKV(mux, "/tripeaks/exec", "tripeaks:",
+	if err := worker.RegisterKV(mux, "/tripeaks/exec", "tripeaks:",
 		func() usecase.TriPeaksInteractorIF {
 			triPeaks := domain.NewTriPeaks(domain.NewTrumpCards(0))
 			return usecase.NewTriPeaksInteractor(triPeaks, new(presenter.TriPeaksWebPresenter))
@@ -77,10 +86,12 @@ func main() {
 			return usecase.RestoreTriPeaksInteractor(data, new(presenter.TriPeaksWebPresenter))
 		},
 		controller.NewTriPeaksWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Memory
-	worker.RegisterKV(mux, "/memory/exec", "memory:",
+	if err := worker.RegisterKV(mux, "/memory/exec", "memory:",
 		func() usecase.MemoryInteractorIF {
 			config := domain.DefaultMemoryConfig()
 			players := []*domain.MemoryPlayer{
@@ -96,10 +107,12 @@ func main() {
 			return usecase.RestoreMemoryInteractor(data, new(presenter.MemoryWebPresenter))
 		},
 		controller.NewMemoryWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Gin Rummy
-	worker.RegisterKV(mux, "/ginrummy/exec", "ginrummy:",
+	if err := worker.RegisterKV(mux, "/ginrummy/exec", "ginrummy:",
 		func() usecase.GinRummyInteractorIF {
 			config := domain.DefaultGinRummyConfig()
 			players := []*domain.GinRummyPlayer{
@@ -113,10 +126,12 @@ func main() {
 			return usecase.RestoreGinRummyInteractor(data, new(presenter.GinRummyWebPresenter))
 		},
 		controller.NewGinRummyWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Cribbage
-	worker.RegisterKV(mux, "/cribbage/exec", "cribbage:",
+	if err := worker.RegisterKV(mux, "/cribbage/exec", "cribbage:",
 		func() usecase.CribbageInteractorIF {
 			config := domain.DefaultCribbageConfig()
 			players := []*domain.CribbagePlayer{
@@ -130,10 +145,12 @@ func main() {
 			return usecase.RestoreCribbageInteractor(data, new(presenter.CribbageWebPresenter))
 		},
 		controller.NewCribbageWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Canasta
-	worker.RegisterKV(mux, "/canasta/exec", "canasta:",
+	if err := worker.RegisterKV(mux, "/canasta/exec", "canasta:",
 		func() usecase.CanastaInteractorIF {
 			config := domain.DefaultCanastaConfig()
 			players := []*domain.CanastaPlayer{
@@ -147,10 +164,12 @@ func main() {
 			return usecase.RestoreCanastaInteractor(data, new(presenter.CanastaWebPresenter))
 		},
 		controller.NewCanastaWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Golf
-	worker.RegisterKV(mux, "/golf/exec", "golf:",
+	if err := worker.RegisterKV(mux, "/golf/exec", "golf:",
 		func() usecase.GolfInteractorIF {
 			golf := domain.NewGolf(domain.NewTrumpCards(0))
 			return usecase.NewGolfInteractor(golf, new(presenter.GolfWebPresenter))
@@ -159,10 +178,12 @@ func main() {
 			return usecase.RestoreGolfInteractor(data, new(presenter.GolfWebPresenter))
 		},
 		controller.NewGolfWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Clock Solitaire
-	worker.RegisterKV(mux, "/clocksolitaire/exec", "clocksolitaire:",
+	if err := worker.RegisterKV(mux, "/clocksolitaire/exec", "clocksolitaire:",
 		func() usecase.ClockSolitaireInteractorIF {
 			cs := domain.NewClockSolitaire(domain.NewTrumpCards(0))
 			return usecase.NewClockSolitaireInteractor(cs, new(presenter.ClockSolitaireWebPresenter))
@@ -171,7 +192,9 @@ func main() {
 			return usecase.RestoreClockSolitaireInteractor(data, new(presenter.ClockSolitaireWebPresenter))
 		},
 		controller.NewClockSolitaireWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {

@@ -58,6 +58,8 @@ vi.mock('framer-motion', async () => {
   return { motion: createMotionProxy(), AnimatePresence };
 });
 
+import { buildResources } from '../i18n/buildResources';
+
 // Eagerly import all locale JSON files via Vite glob
 const jaModules = import.meta.glob('../i18n/locales/ja/*.json', {
   eager: true,
@@ -68,15 +70,6 @@ const enModules = import.meta.glob('../i18n/locales/en/*.json', {
   eager: true,
   import: 'default',
 }) as Record<string, Record<string, string>>;
-
-function buildResources(modules: Record<string, Record<string, string>>): Record<string, Record<string, string>> {
-  const resources: Record<string, Record<string, string>> = {};
-  for (const [path, mod] of Object.entries(modules)) {
-    const name = path.split('/').pop()?.replace('.json', '');
-    if (name) resources[name] = mod;
-  }
-  return resources;
-}
 
 const jaResources = buildResources(jaModules);
 const enResources = buildResources(enModules);

@@ -3,6 +3,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/syumai/workers"
@@ -20,7 +21,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// BlackJack
-	worker.RegisterKV(mux, "/blackjack/exec", "blackjack:",
+	if err := worker.RegisterKV(mux, "/blackjack/exec", "blackjack:",
 		func() usecase.BlackJackInteractorIF {
 			return usecase.NewBlackJackInteractor(
 				domain.NewDefaultBlackJack(),
@@ -31,10 +32,12 @@ func main() {
 			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
 		},
 		controller.NewBlackJackWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Baccarat
-	worker.RegisterKV(mux, "/baccarat/exec", "baccarat:",
+	if err := worker.RegisterKV(mux, "/baccarat/exec", "baccarat:",
 		func() usecase.BaccaratInteractorIF {
 			return usecase.NewBaccaratInteractor(
 				domain.NewDefaultBaccarat(),
@@ -45,10 +48,12 @@ func main() {
 			return usecase.RestoreBaccaratInteractor(data, new(presenter.BaccaratWebPresenter))
 		},
 		controller.NewBaccaratWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Poker
-	worker.RegisterKV(mux, "/poker/exec", "poker:",
+	if err := worker.RegisterKV(mux, "/poker/exec", "poker:",
 		func() usecase.PokerInteractorIF {
 			config := domain.DefaultPokerConfig()
 			players := []*domain.PokerPlayer{
@@ -64,10 +69,12 @@ func main() {
 			return usecase.RestorePokerInteractor(data, new(presenter.PokerWebPresenter))
 		},
 		controller.NewPokerWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Texas Hold'em
-	worker.RegisterKV(mux, "/holdem/exec", "holdem:",
+	if err := worker.RegisterKV(mux, "/holdem/exec", "holdem:",
 		func() usecase.HoldemInteractorIF {
 			cfg := domain.DefaultHoldemConfig()
 			holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
@@ -77,10 +84,12 @@ func main() {
 			return usecase.RestoreHoldemInteractor(data, new(presenter.HoldemWebPresenter))
 		},
 		controller.NewHoldemWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Omaha
-	worker.RegisterKV(mux, "/omaha/exec", "omaha:",
+	if err := worker.RegisterKV(mux, "/omaha/exec", "omaha:",
 		func() usecase.OmahaInteractorIF {
 			cfg := domain.DefaultOmahaConfig()
 			omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
@@ -90,10 +99,12 @@ func main() {
 			return usecase.RestoreOmahaInteractor(data, new(presenter.OmahaWebPresenter))
 		},
 		controller.NewOmahaWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Short Deck
-	worker.RegisterKV(mux, "/shortdeck/exec", "shortdeck:",
+	if err := worker.RegisterKV(mux, "/shortdeck/exec", "shortdeck:",
 		func() usecase.ShortDeckInteractorIF {
 			cfg := domain.DefaultShortDeckConfig()
 			sd := domain.NewShortDeck(domain.NewTrumpCardsShortDeck(), domain.NewShortDeckPlayersForTable(cfg.TableSize), cfg)
@@ -103,10 +114,12 @@ func main() {
 			return usecase.RestoreShortDeckInteractor(data, new(presenter.ShortDeckWebPresenter))
 		},
 		controller.NewShortDeckWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Indian Poker
-	worker.RegisterKV(mux, "/indianpoker/exec", "indianpoker:",
+	if err := worker.RegisterKV(mux, "/indianpoker/exec", "indianpoker:",
 		func() usecase.IndianPokerInteractorIF {
 			cfg := domain.DefaultIndianPokerConfig()
 			ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
@@ -116,10 +129,12 @@ func main() {
 			return usecase.RestoreIndianPokerInteractor(data, new(presenter.IndianPokerWebPresenter))
 		},
 		controller.NewIndianPokerWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Video Poker
-	worker.RegisterKV(mux, "/videopoker/exec", "videopoker:",
+	if err := worker.RegisterKV(mux, "/videopoker/exec", "videopoker:",
 		func() usecase.VideoPokerInteractorIF {
 			return usecase.NewVideoPokerInteractor(
 				domain.NewDefaultVideoPoker(),
@@ -130,10 +145,12 @@ func main() {
 			return usecase.RestoreVideoPokerInteractor(data, new(presenter.VideoPokerWebPresenter))
 		},
 		controller.NewVideoPokerWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Deuces Wild
-	worker.RegisterKV(mux, "/deuceswild/exec", "deuceswild:",
+	if err := worker.RegisterKV(mux, "/deuceswild/exec", "deuceswild:",
 		func() usecase.VideoPokerInteractorIF {
 			return usecase.NewVideoPokerInteractor(
 				domain.NewDeucesWildVideoPoker(),
@@ -144,10 +161,12 @@ func main() {
 			return usecase.RestoreVideoPokerInteractor(data, new(presenter.VideoPokerWebPresenter))
 		},
 		controller.NewVideoPokerWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Joker Poker
-	worker.RegisterKV(mux, "/jokerpoker/exec", "jokerpoker:",
+	if err := worker.RegisterKV(mux, "/jokerpoker/exec", "jokerpoker:",
 		func() usecase.VideoPokerInteractorIF {
 			return usecase.NewVideoPokerInteractor(
 				domain.NewJokerPokerVideoPoker(),
@@ -158,10 +177,12 @@ func main() {
 			return usecase.RestoreVideoPokerInteractor(data, new(presenter.VideoPokerWebPresenter))
 		},
 		controller.NewVideoPokerWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Three Card Poker
-	worker.RegisterKV(mux, "/threecard/exec", "threecard:",
+	if err := worker.RegisterKV(mux, "/threecard/exec", "threecard:",
 		func() usecase.ThreeCardInteractorIF {
 			return usecase.NewThreeCardInteractor(
 				domain.NewDefaultThreeCard(),
@@ -172,10 +193,12 @@ func main() {
 			return usecase.RestoreThreeCardInteractor(data, new(presenter.ThreeCardWebPresenter))
 		},
 		controller.NewThreeCardWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Pineapple Poker
-	worker.RegisterKV(mux, "/pineapple/exec", "pineapple:",
+	if err := worker.RegisterKV(mux, "/pineapple/exec", "pineapple:",
 		func() usecase.PineappleInteractorIF {
 			cfg := domain.DefaultPineappleConfig()
 			pineapple := domain.NewPineapple(domain.NewTrumpCards(0), domain.NewPineapplePlayersForTable(cfg.TableSize), cfg)
@@ -185,10 +208,12 @@ func main() {
 			return usecase.RestorePineappleInteractor(data, new(presenter.PineappleWebPresenter))
 		},
 		controller.NewPineappleWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Seven Card Stud
-	worker.RegisterKV(mux, "/sevencardstud/exec", "sevencardstud:",
+	if err := worker.RegisterKV(mux, "/sevencardstud/exec", "sevencardstud:",
 		func() usecase.SevenCardStudInteractorIF {
 			cfg := domain.DefaultSevenCardStudConfig()
 			scs := domain.NewSevenCardStud(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
@@ -198,7 +223,9 @@ func main() {
 			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))
 		},
 		controller.NewSevenCardStudWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {

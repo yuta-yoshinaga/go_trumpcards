@@ -3,6 +3,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/syumai/workers"
@@ -20,7 +21,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Hearts
-	worker.RegisterKV(mux, "/hearts/exec", "hearts:",
+	if err := worker.RegisterKV(mux, "/hearts/exec", "hearts:",
 		func() usecase.HeartsInteractorIF {
 			config := domain.DefaultHeartsConfig()
 			players := []*domain.HeartsPlayer{
@@ -36,10 +37,12 @@ func main() {
 			return usecase.RestoreHeartsInteractor(data, new(presenter.HeartsWebPresenter))
 		},
 		controller.NewHeartsWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Spades
-	worker.RegisterKV(mux, "/spades/exec", "spades:",
+	if err := worker.RegisterKV(mux, "/spades/exec", "spades:",
 		func() usecase.SpadesInteractorIF {
 			config := domain.DefaultSpadesConfig()
 			players := []*domain.SpadesPlayer{
@@ -55,10 +58,12 @@ func main() {
 			return usecase.RestoreSpadesInteractor(data, new(presenter.SpadesWebPresenter))
 		},
 		controller.NewSpadesWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Euchre
-	worker.RegisterKV(mux, "/euchre/exec", "euchre:",
+	if err := worker.RegisterKV(mux, "/euchre/exec", "euchre:",
 		func() usecase.EuchreInteractorIF {
 			config := domain.DefaultEuchreConfig()
 			players := []*domain.EuchrePlayer{
@@ -74,10 +79,12 @@ func main() {
 			return usecase.RestoreEuchreInteractor(data, new(presenter.EuchreWebPresenter))
 		},
 		controller.NewEuchreWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Napoleon
-	worker.RegisterKV(mux, "/napoleon/exec", "napoleon:",
+	if err := worker.RegisterKV(mux, "/napoleon/exec", "napoleon:",
 		func() usecase.NapoleonInteractorIF {
 			config := domain.DefaultNapoleonConfig()
 			players := []*domain.NapoleonPlayer{
@@ -93,10 +100,12 @@ func main() {
 			return usecase.RestoreNapoleonInteractor(data, new(presenter.NapoleonWebPresenter))
 		},
 		controller.NewNapoleonWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Old Maid
-	worker.RegisterKV(mux, "/oldmaid/exec", "oldmaid:",
+	if err := worker.RegisterKV(mux, "/oldmaid/exec", "oldmaid:",
 		func() usecase.OldMaidInteractorIF {
 			players := []*domain.OldMaidPlayer{
 				domain.NewOldMaidPlayer(true),
@@ -111,10 +120,12 @@ func main() {
 			return usecase.RestoreOldMaidInteractor(data, new(presenter.OldMaidWebPresenter))
 		},
 		controller.NewOldMaidWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Doubt
-	worker.RegisterKV(mux, "/doubt/exec", "doubt:",
+	if err := worker.RegisterKV(mux, "/doubt/exec", "doubt:",
 		func() usecase.DoubtInteractorIF {
 			players := []*domain.DoubtPlayer{
 				domain.NewDoubtPlayer(true),
@@ -129,10 +140,12 @@ func main() {
 			return usecase.RestoreDoubtInteractor(data, new(presenter.DoubtWebPresenter))
 		},
 		controller.NewDoubtWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Daifugo
-	worker.RegisterKV(mux, "/daifugo/exec", "daifugo:",
+	if err := worker.RegisterKV(mux, "/daifugo/exec", "daifugo:",
 		func() usecase.DaifugoInteractorIF {
 			config := domain.DefaultDaifugoConfig()
 			players := []*domain.DaifugoPlayer{
@@ -148,10 +161,12 @@ func main() {
 			return usecase.RestoreDaifugoInteractor(data, new(presenter.DaifugoWebPresenter))
 		},
 		controller.NewDaifugoWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Sevens
-	worker.RegisterKV(mux, "/sevens/exec", "sevens:",
+	if err := worker.RegisterKV(mux, "/sevens/exec", "sevens:",
 		func() usecase.SevensInteractorIF {
 			config := domain.DefaultSevensConfig()
 			players := []*domain.SevensPlayer{
@@ -167,10 +182,12 @@ func main() {
 			return usecase.RestoreSevensInteractor(data, new(presenter.SevensWebPresenter))
 		},
 		controller.NewSevensWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Crazy Eights
-	worker.RegisterKV(mux, "/crazyeights/exec", "crazyeights:",
+	if err := worker.RegisterKV(mux, "/crazyeights/exec", "crazyeights:",
 		func() usecase.CrazyEightsInteractorIF {
 			config := domain.DefaultCrazyEightsConfig()
 			players := []*domain.CrazyEightsPlayer{
@@ -186,10 +203,12 @@ func main() {
 			return usecase.RestoreCrazyEightsInteractor(data, new(presenter.CrazyEightsWebPresenter))
 		},
 		controller.NewCrazyEightsWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Oh Hell
-	worker.RegisterKV(mux, "/ohhell/exec", "ohhell:",
+	if err := worker.RegisterKV(mux, "/ohhell/exec", "ohhell:",
 		func() usecase.OhHellInteractorIF {
 			config := domain.DefaultOhHellConfig()
 			players := []*domain.OhHellPlayer{
@@ -205,10 +224,12 @@ func main() {
 			return usecase.RestoreOhHellInteractor(data, new(presenter.OhHellWebPresenter))
 		},
 		controller.NewOhHellWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Contract Bridge
-	worker.RegisterKV(mux, "/bridge/exec", "bridge:",
+	if err := worker.RegisterKV(mux, "/bridge/exec", "bridge:",
 		func() usecase.BridgeInteractorIF {
 			config := domain.DefaultBridgeConfig()
 			players := []*domain.BridgePlayer{
@@ -224,10 +245,12 @@ func main() {
 			return usecase.RestoreBridgeInteractor(data, new(presenter.BridgeWebPresenter))
 		},
 		controller.NewBridgeWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Speed
-	worker.RegisterKV(mux, "/speed/exec", "speed:",
+	if err := worker.RegisterKV(mux, "/speed/exec", "speed:",
 		func() usecase.SpeedInteractorIF {
 			config := domain.DefaultSpeedConfig()
 			players := []*domain.SpeedPlayer{
@@ -241,10 +264,12 @@ func main() {
 			return usecase.RestoreSpeedInteractor(data, new(presenter.SpeedWebPresenter))
 		},
 		controller.NewSpeedWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Go Fish
-	worker.RegisterKV(mux, "/gofish/exec", "gofish:",
+	if err := worker.RegisterKV(mux, "/gofish/exec", "gofish:",
 		func() usecase.GoFishInteractorIF {
 			players := []*domain.GoFishPlayer{
 				domain.NewGoFishPlayer(true),
@@ -259,10 +284,12 @@ func main() {
 			return usecase.RestoreGoFishInteractor(data, new(presenter.GoFishWebPresenter))
 		},
 		controller.NewGoFishWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Pinochle
-	worker.RegisterKV(mux, "/pinochle/exec", "pinochle:",
+	if err := worker.RegisterKV(mux, "/pinochle/exec", "pinochle:",
 		func() usecase.PinochleInteractorIF {
 			config := domain.DefaultPinochleConfig()
 			players := []*domain.PinochlePlayer{
@@ -278,10 +305,12 @@ func main() {
 			return usecase.RestorePinochleInteractor(data, new(presenter.PinochleWebPresenter))
 		},
 		controller.NewPinochleWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Pig's Tail
-	worker.RegisterKV(mux, "/pigtail/exec", "pigtail:",
+	if err := worker.RegisterKV(mux, "/pigtail/exec", "pigtail:",
 		func() usecase.PigsTailInteractorIF {
 			players := []*domain.PigsTailPlayer{
 				domain.NewPigsTailPlayer(true),
@@ -296,7 +325,9 @@ func main() {
 			return usecase.RestorePigsTailInteractor(data, new(presenter.PigsTailWebPresenter))
 		},
 		controller.NewPigsTailWebControllerWithProvider,
-	)
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
