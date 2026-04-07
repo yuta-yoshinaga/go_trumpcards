@@ -8,6 +8,8 @@
     "searchPlaceholder": "Search games...",
     "searchClear": "Clear search",
     "noResults": "No games found",
+    "searchResultCount": "{{count}} games found",
+    "searchNoResults": "No matching games",
     "recentGames": "Recently Played",
     "favoriteGames": "Favorites",
     "addFavorite": "Add to favorites",
@@ -127,6 +129,7 @@
   "label": {
     "result": "Result:",
     "cpuAction": "CPU Actions:",
+    "cpuActionLog": "CPU player action log",
     "cpuActions": "[CPU Actions]",
     "cpuOpponents": "CPU Opponents ({{count}})",
     "pot": "Pot:",

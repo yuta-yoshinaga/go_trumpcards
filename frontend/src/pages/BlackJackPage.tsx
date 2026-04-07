@@ -444,7 +444,12 @@ function BlackJackPageContent() {
 
             {/* Result message */}
             <div data-tutorial="bj-result-message">
-              <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+              <GameMessageBox
+                message={message}
+                messageCode={state?.messageCode}
+                messageParams={state?.messageParams}
+                severity={phase === BjPhase.END ? 'alert' : 'info'}
+              />
             </div>
 
             {/* Action log */}

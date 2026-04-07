@@ -303,6 +303,7 @@ function PokerPageContent() {
                 messageCode={state?.messageCode}
                 messageParams={state?.messageParams}
                 alwaysVisible
+                severity={phase === PokerPhase.END ? 'alert' : 'info'}
               />
             </div>
 

@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-game-status-active: #5cb85c;
-  --color-game-status-waiting: #f0ad4e;
-  --color-game-status-out: #dc3545;
+  --color-game-status-active: var(--color-ds-success);
+  --color-game-status-waiting: var(--color-ds-warning);
+  --color-game-status-out: var(--color-ds-error);
   --color-game-text-muted: #f0f0f0;
   --color-game-text-highlight: #ccffcc;
   --color-game-text-strong: #222222;

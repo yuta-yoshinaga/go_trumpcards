@@ -16,7 +16,7 @@ describe('HintTooltip', () => {
   it('uses solid border for strong confidence', () => {
     render(<HintTooltip reason="test" confidence="strong" />);
     const el = screen.getByTestId('hint-tooltip');
-    expect(el).toHaveClass('border-yellow-400');
+    expect(el).toHaveClass('border-ds-accent');
     expect(el).not.toHaveClass('border-dashed');
   });
 

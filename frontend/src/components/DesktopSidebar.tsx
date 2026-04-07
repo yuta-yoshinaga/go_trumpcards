@@ -126,6 +126,12 @@ export function DesktopSidebar() {
           </div>
         )}
 
+        <div aria-live="polite" className="sr-only">
+          {searchTerm &&
+            (filteredPaths && filteredPaths.size > 0
+              ? t('nav.searchResultCount', { count: filteredPaths.size })
+              : t('nav.searchNoResults'))}
+        </div>
         {/* Search results or category list */}
         {filteredPaths ? (
           <div className="flex flex-col gap-0.5">
