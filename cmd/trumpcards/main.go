@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -74,6 +75,9 @@ GAMES:
   sevencardstud Seven Card Stud (セブンカードスタッド)
   golf         Golf Solitaire (ゴルフ)
   clocksolitaire Clock Solitaire (クロックソリティア)
+
+COMMANDS:
+  games        List all available games (--short for names only)
   completion   Generate shell completion script (bash, zsh, fish)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
@@ -90,6 +94,8 @@ EXAMPLES:
   trumpcards                     Start interactive mode (switch games with 'switch <game>')
   trumpcards blackjack           Play BlackJack
   trumpcards --lang en poker     Play Poker in English
+  trumpcards games               List all available games
+  trumpcards games --short       List game names only (for scripting)
   trumpcards update              Self-update to the latest version
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
   trumpcards web                 Start the web GUI server
@@ -148,6 +154,49 @@ ENVIRONMENT VARIABLES:
 	if i18n.Lang() != detectedLang && detectedLang != "" {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnsupportedLang", "lang", detectedLang))
 	}
+	// gameDescriptions maps canonical game names to display descriptions.
+	gameDescriptions := map[string]string{
+		"blackjack":      "BlackJack (ブラックジャック)",
+		"poker":          "5-card Draw Poker (ポーカー)",
+		"oldmaid":        "Old Maid (ババ抜き)",
+		"daifugo":        "Daifugo / Great Fool (大富豪)",
+		"sevens":         "Sevens (7並べ)",
+		"doubt":          "Doubt (ダウト)",
+		"holdem":         "Texas Hold'em (テキサスホールデム)",
+		"omaha":          "Omaha Hold'em (オマハホールデム)",
+		"shortdeck":      "Short Deck (6+ Hold'em) (ショートデック)",
+		"pineapple":      "Pineapple Poker (パイナップルポーカー)",
+		"hearts":         "Hearts (ハーツ)",
+		"memory":         "Memory / Concentration (神経衰弱)",
+		"klondike":       "Klondike Solitaire (ソリティア)",
+		"freecell":       "FreeCell (フリーセル)",
+		"baccarat":       "Baccarat (バカラ)",
+		"spades":         "Spades (スペード)",
+		"crazyeights":    "Crazy Eights (クレイジーエイト)",
+		"ginrummy":       "Gin Rummy (ジンラミー)",
+		"canasta":        "Canasta (カナスタ)",
+		"spider":         "Spider Solitaire (スパイダーソリティア)",
+		"napoleon":       "Napoleon (ナポレオン)",
+		"indianpoker":    "Indian Poker (インディアンポーカー)",
+		"videopoker":     "Video Poker Jacks or Better (ビデオポーカー)",
+		"deuceswild":     "Deuces Wild (デューシーズワイルド)",
+		"jokerpoker":     "Joker Poker (ジョーカーポーカー)",
+		"euchre":         "Euchre (ユーカー)",
+		"pyramid":        "Pyramid (ピラミッド)",
+		"tripeaks":       "TriPeaks (トリピークス)",
+		"cribbage":       "Cribbage (クリベッジ)",
+		"threecard":      "Three Card Poker (スリーカードポーカー)",
+		"ohhell":         "Oh Hell (オー・ヘル)",
+		"bridge":         "Contract Bridge (コントラクトブリッジ)",
+		"speed":          "Speed (スピード)",
+		"gofish":         "Go Fish (ゴーフィッシュ)",
+		"pinochle":       "Pinochle (ピノクル)",
+		"golf":           "Golf Solitaire (ゴルフ)",
+		"pigtail":        "Pig's Tail (ブタのしっぽ)",
+		"sevencardstud":  "Seven Card Stud (セブンカードスタッド)",
+		"clocksolitaire": "Clock Solitaire (クロックソリティア)",
+	}
+
 	commands := map[string]func() int{
 		"blackjack":      func() int { ui.NewBlackJackCui().Exec(); return 0 },
 		"poker":          func() int { ui.NewPokerCui().Exec(); return 0 },
@@ -188,6 +237,27 @@ ENVIRONMENT VARIABLES:
 		"pigtail":        func() int { ui.NewPigsTailCui().Exec(); return 0 },
 		"sevencardstud":  func() int { ui.NewSevenCardStudCui().Exec(); return 0 },
 		"clocksolitaire": func() int { ui.NewClockSolitaireCui().Exec(); return 0 },
+		"games": func() int {
+			gamesFlags := flag.NewFlagSet("games", flag.ContinueOnError)
+			short := gamesFlags.Bool("short", false, "Print game names only")
+			if err := gamesFlags.Parse(flag.Args()[1:]); err != nil {
+				if errors.Is(err, flag.ErrHelp) {
+					return 0
+				}
+				return 1
+			}
+			if gamesFlags.NArg() > 0 {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(gamesFlags.Args(), " ")))
+			}
+			for _, name := range ui.GameNames {
+				if *short {
+					fmt.Println(name)
+				} else {
+					fmt.Printf("  %-16s %s\n", name, gameDescriptions[name])
+				}
+			}
+			return 0
+		},
 		"completion": func() int {
 			return runCompletion(flag.Args()[1:])
 		},
@@ -203,12 +273,19 @@ ENVIRONMENT VARIABLES:
 			port := webFlags.Int("port", 0, "Port number for the web server (default: 8080)")
 			webFlags.IntVar(port, "p", 0, "Port number for the web server (shorthand)")
 			if err := webFlags.Parse(flag.Args()[1:]); err != nil {
+				if errors.Is(err, flag.ErrHelp) {
+					return 0
+				}
 				return 1
 			}
 			if webFlags.NArg() > 0 {
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(webFlags.Args(), " ")))
 			}
-			if *port > 0 {
+			if *port != 0 {
+				if *port < 1 || *port > 65535 {
+					fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(*port)))
+					return 1
+				}
 				_ = os.Setenv("PORT", strconv.Itoa(*port))
 			}
 			infrastructure.InitLogger()
@@ -222,9 +299,13 @@ ENVIRONMENT VARIABLES:
 	}
 
 	// Commands that parse their own sub-flags; skip the extra-args warning for these.
-	subFlagCommands := map[string]bool{"web": true, "completion": true}
+	subFlagCommands := map[string]bool{"web": true, "completion": true, "games": true}
 
 	arg := strings.ToLower(flag.Arg(0))
+	// Resolve game name aliases (e.g., "gin" -> "ginrummy", "7stud" -> "sevencardstud").
+	if canonical, ok := ui.GameAliases[arg]; ok {
+		arg = canonical
+	}
 	if handler, ok := commands[arg]; ok {
 		if flag.NArg() > 1 && !subFlagCommands[arg] {
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(flag.Args()[1:], " ")))

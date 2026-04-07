@@ -423,6 +423,7 @@ function HoldemPageContent() {
               messageCode={state?.messageCode}
               messageParams={state?.messageParams}
               alwaysVisible
+              severity={phase === HoldemPhase.END || phase === HoldemPhase.SHOWDOWN ? 'alert' : 'info'}
             />
 
             <ErrorAlert message={error} onRetry={retry} />

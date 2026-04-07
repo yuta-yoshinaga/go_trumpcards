@@ -8,6 +8,7 @@
     "searchPlaceholder": "ゲームを検索...",
     "searchClear": "検索をクリア",
     "noResults": "該当するゲームがありません",
+    "searchResultCount": "{{count}}件のゲームが見つかりました",
     "recentGames": "最近プレイしたゲーム",
     "favoriteGames": "お気に入り",
     "addFavorite": "お気に入りに追加",
@@ -127,6 +128,7 @@
   "label": {
     "result": "結果:",
     "cpuAction": "CPU行動:",
+    "cpuActionLog": "CPUプレイヤーの行動ログ",
     "cpuActions": "[CPUの行動]",
     "cpuOpponents": "CPU対戦相手 ({{count}})",
     "pot": "ポット:",

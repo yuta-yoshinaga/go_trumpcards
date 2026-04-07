@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -10,6 +8,8 @@ import (
 
 // PokerInteractorIF ポーカーインタラクターインタフェース
 type PokerInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// ResetWithConfig 設定を変更してゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
@@ -30,7 +30,7 @@ type PokerInteractorIF interface {
 
 // PokerInteractor ポーカーインタラクタークラス
 type PokerInteractor struct {
-	p  interfaces.PokerGame
+	GameBase[interfaces.PokerGame]
 	pp presenter.PokerPresenter
 }
 
@@ -38,73 +38,66 @@ type PokerInteractor struct {
 func NewPokerInteractor(p interfaces.PokerGame, pp presenter.PokerPresenter) *PokerInteractor {
 	mustNotNil("PokerInteractor", map[string]any{"p": p, "pp": pp})
 	return &PokerInteractor{
-		p:  p,
-		pp: pp,
+		GameBase: GameBase[interfaces.PokerGame]{Game: p},
+		pp:       pp,
 	}
 }
 
 // Reset ゲーム初期化
 func (pi *PokerInteractor) Reset() string {
-	return execAndPresent(pi.p, pi.pp, pi.p.Reset)
+	return execAndPresent(pi.Game, pi.pp, pi.Game.Reset)
 }
 
 // GetConfig 現在の設定を取得
 func (pi *PokerInteractor) GetConfig() domain.PokerConfig {
-	return pi.p.GetConfig()
+	return pi.Game.GetConfig()
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (pi *PokerInteractor) ResetWithConfig(cfg domain.PokerConfig, profileData []byte) string {
 	if err := cfg.Validate(); err != nil {
-		return pi.pp.Output(pi.p, err)
+		return pi.pp.Output(pi.Game, err)
 	}
-	pi.p.SetConfig(cfg)
-	err := pi.p.Reset()
+	pi.Game.SetConfig(cfg)
+	err := pi.Game.Reset()
 	if len(profileData) > 0 {
-		_ = pi.p.ImportProfile(profileData)
+		_ = pi.Game.ImportProfile(profileData)
 	}
-	return pi.pp.Output(pi.p, err)
+	return pi.pp.Output(pi.Game, err)
 }
 
 // Action プレイヤーアクション実行
 func (pi *PokerInteractor) Action(action int, amount int, humanPlayMs int) string {
-	return execAndPresent(pi.p, pi.pp, func() error { return pi.p.PlayerAction(action, amount, humanPlayMs) })
+	return execAndPresent(pi.Game, pi.pp, func() error { return pi.Game.PlayerAction(action, amount, humanPlayMs) })
 }
 
 // Exchange カード交換
 func (pi *PokerInteractor) Exchange(indices []int) string {
-	return execAndPresent(pi.p, pi.pp, func() error { return pi.p.PlayerExchange(indices) })
+	return execAndPresent(pi.Game, pi.pp, func() error { return pi.Game.PlayerExchange(indices) })
 }
 
 // Stand カード交換なし
 func (pi *PokerInteractor) Stand() string {
-	return execAndPresent(pi.p, pi.pp, pi.p.PlayerStand)
+	return execAndPresent(pi.Game, pi.pp, pi.Game.PlayerStand)
 }
 
 // ActionLog 棋譜を出力する
 func (pi *PokerInteractor) ActionLog() string {
-	return pi.pp.ActionLogOutput(pi.p)
+	return pi.pp.ActionLogOutput(pi.Game)
 }
 
 // Odds ドローオッズ計算
 func (pi *PokerInteractor) Odds(indices []int) string {
-	odds, err := pi.p.CalcDrawOdds(indices)
+	odds, err := pi.Game.CalcDrawOdds(indices)
 	if err != nil {
-		return pi.pp.Output(pi.p, err)
+		return pi.pp.Output(pi.Game, err)
 	}
-	return pi.pp.OutputWithOdds(pi.p, nil, odds)
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (pi *PokerInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(pi.p)
+	return pi.pp.OutputWithOdds(pi.Game, nil, odds)
 }
 
 // RestorePokerInteractor deserialises JSON into a PokerInteractor.
 func RestorePokerInteractor(data []byte, pp presenter.PokerPresenter) (*PokerInteractor, error) {
-	p, err := restoreGame[domain.Poker](data)
-	if err != nil {
-		return nil, err
-	}
-	return &PokerInteractor{p: p, pp: pp}, nil
+	return restoreAndBuild[domain.Poker](data, func(g *domain.Poker) *PokerInteractor {
+		return &PokerInteractor{GameBase: GameBase[interfaces.PokerGame]{Game: g}, pp: pp}
+	})
 }

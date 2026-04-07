@@ -80,11 +80,11 @@ func TestSevensInteractor_Play_GameEndFlag(t *testing.T) {
 	si := NewSevensInteractor(newInternalTestSevens(), spMock)
 
 	s := buildSevensEndedGame()
-	si.s = s
+	si.Game = s
 
 	// Human plays card at index 0 → finishes → checkGameEnd → gameEndFlag = true.
 	si.Play(0)
-	assert.True(t, si.s.GetGameEndFlag())
+	assert.True(t, si.Game.GetGameEndFlag())
 
 	// Now call Play with gameEndFlag == true → early return.
 	result := si.Play(0)
@@ -97,9 +97,9 @@ func TestSevensInteractor_Play_NotHumanTurn(t *testing.T) {
 	spMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	si := NewSevensInteractor(newInternalTestSevens(), spMock)
 
-	si.s = buildSevensCpuTurnGame()
+	si.Game = buildSevensCpuTurnGame()
 
-	assert.False(t, si.s.IsHumanTurn())
+	assert.False(t, si.Game.IsHumanTurn())
 	result := si.Play(0)
 	assert.Equal(t, mockOutput, result)
 }
@@ -129,11 +129,11 @@ func TestSevensInteractor_PlayJoker_GameEndFlag(t *testing.T) {
 	}
 	// Give human a joker.
 	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
-	si.s = s
+	si.Game = s
 
 	// Play joker at a valid position (spade 6, adjacent to 7).
 	si.PlayJoker(0, domain.CardDesignSpade, 6)
-	assert.True(t, si.s.GetGameEndFlag())
+	assert.True(t, si.Game.GetGameEndFlag())
 
 	// Now call PlayJoker with gameEndFlag == true → early return.
 	result := si.PlayJoker(0, domain.CardDesignSpade, 5)
@@ -170,12 +170,12 @@ func TestSevensInteractor_PlayJoker_SuccessRunCpuTurns(t *testing.T) {
 	players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
 	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
 
-	si.s = s
+	si.Game = s
 
 	// Human plays joker at spade 6 (adjacent to 7) → success → runCpuTurns.
 	result := si.PlayJoker(0, domain.CardDesignSpade, 6)
 	assert.Equal(t, mockOutput, result)
-	assert.False(t, si.s.GetGameEndFlag())
+	assert.False(t, si.Game.GetGameEndFlag())
 }
 
 func TestSevensInteractor_PlayJoker_NotHumanTurn(t *testing.T) {
@@ -184,9 +184,9 @@ func TestSevensInteractor_PlayJoker_NotHumanTurn(t *testing.T) {
 	spMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	si := NewSevensInteractor(newInternalTestSevens(), spMock)
 
-	si.s = buildSevensCpuTurnGame()
+	si.Game = buildSevensCpuTurnGame()
 
-	assert.False(t, si.s.IsHumanTurn())
+	assert.False(t, si.Game.IsHumanTurn())
 	result := si.PlayJoker(0, domain.CardDesignSpade, 6)
 	assert.Equal(t, mockOutput, result)
 }
@@ -229,7 +229,7 @@ func TestSevensInteractor_runCpuTurns_HumanAutoHandleNoOption(t *testing.T) {
 	// CPU3 gets heart 6 (playable, adjacent to 7).
 	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
 
-	si.s = s
+	si.Game = s
 
 	// runCpuTurns is called: human is turn 0, has no option → AutoHandleNoOption
 	// → human is eliminated → turn advances to CPU → CPUs play → eventually
@@ -237,13 +237,13 @@ func TestSevensInteractor_runCpuTurns_HumanAutoHandleNoOption(t *testing.T) {
 	si.runCpuTurns()
 
 	// Verify human was eliminated (AutoHandleNoOption path was taken).
-	assert.True(t, si.s.GetPlayer(0).GetIsEliminated())
-	assert.True(t, si.s.GetPlayer(0).GetIsFinished())
+	assert.True(t, si.Game.GetPlayer(0).GetIsEliminated())
+	assert.True(t, si.Game.GetPlayer(0).GetIsFinished())
 
 	// Verify subsequent CPU turns ran and the game ended.
 	// The last remaining player is auto-finished by checkGameEnd (may still hold cards).
-	assert.True(t, si.s.GetGameEndFlag())
-	for i := 1; i < si.s.GetPlayerCnt(); i++ {
-		assert.True(t, si.s.GetPlayer(i).GetIsFinished(), "player %d should be finished", i)
+	assert.True(t, si.Game.GetGameEndFlag())
+	for i := 1; i < si.Game.GetPlayerCnt(); i++ {
+		assert.True(t, si.Game.GetPlayer(i).GetIsFinished(), "player %d should be finished", i)
 	}
 }

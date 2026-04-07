@@ -27,6 +27,8 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # crazyeights, ginrummy, spider, napoleon, indianpoker, videopoker, deuceswild,
 # jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, ohhell, bridge, speed,
 # gofish, canasta, pinochle, golf, pigtail, sevencardstud, clocksolitaire
+go run ./cmd/trumpcards games      # List all available games
+go run ./cmd/trumpcards games --short  # List game names only (for scripting)
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/trumpcards web --port 3000  # Start web server on custom port
@@ -102,7 +104,7 @@ Before marking any task complete:
 | Add/remove frontend source files or change testing approach | Update Testing section in [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |
 | Change frontend tooling or scripts | [`frontend/README.md`](frontend/README.md) (Scripts, Tooling) |
 | Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game (follow `docs/manual/cui_template.md` / `docs/manual/web_template.md` format) |
-| Add a new game manual | Copy `docs/manual/cui_template.md` → `docs/manual/cui/<game>.md`, `docs/manual/web_template.md` → `docs/manual/web/<game>.md` and fill in game-specific content |
+| Add a new game manual | Copy `docs/manual/cui_template.md` → `docs/manual/cui/<game>.md`, `docs/manual/web_template.md` → `docs/manual/web/<game>.md` and fill in game-specific content. Also import in `frontend/src/constants/manualTexts.ts` and add route mapping |
 | Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](CLAUDE.md) and [`internal/CLAUDE.md`](internal/CLAUDE.md) |
 | Make an architectural decision that passes the ADR litmus test (see Workflow section) | Add or update an ADR in [`docs/adr/`](docs/adr/) (written in Japanese) and update the index in [`docs/adr/README.md`](docs/adr/README.md) |
 | Add/modify exported Go symbol | Ensure GoDoc comment (`// SymbolName description`) is present |

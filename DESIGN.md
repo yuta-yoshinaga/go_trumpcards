@@ -79,6 +79,16 @@
 | `--error-hover` | `#B54949` | Error button hover |
 | `--surface-elevated-hover` | `#2A3A4F` | Elevated surface hover |
 
+### Game-specific palette (poker action buttons)
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--poker-call` | `#059669` | Call / Check — positive action |
+| `--poker-raise` | `#0ea5e9` | Raise / Bet — escalation |
+| `--poker-allin` | `#f59e0b` | All-in — high-stakes |
+| `--poker-fold` | `#6b7280` | Fold — passive/exit |
+
+These use design system tokens for game UX color-coding. They are scoped to poker-family button styles (`btnPoker*` in `buttonStyles.ts`) and are defined in `index.css`.
+
 ### Light mode (planned, not yet implemented)
 | Token | Hex |
 |-------|-----|

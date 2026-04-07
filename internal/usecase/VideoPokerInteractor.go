@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -10,6 +8,8 @@ import (
 
 // VideoPokerInteractorIF ビデオポーカーインタラクターインタフェース
 type VideoPokerInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// Bet ベット
@@ -22,7 +22,7 @@ type VideoPokerInteractorIF interface {
 
 // VideoPokerInteractor ビデオポーカーインタラクタークラス
 type VideoPokerInteractor struct {
-	vp  interfaces.VideoPokerGame
+	GameBase[interfaces.VideoPokerGame]
 	vpp presenter.VideoPokerPresenter
 }
 
@@ -30,41 +30,34 @@ type VideoPokerInteractor struct {
 func NewVideoPokerInteractor(vp interfaces.VideoPokerGame, vpp presenter.VideoPokerPresenter) *VideoPokerInteractor {
 	mustNotNil("VideoPokerInteractor", map[string]any{"vp": vp, "vpp": vpp})
 	return &VideoPokerInteractor{
-		vp:  vp,
-		vpp: vpp,
+		GameBase: GameBase[interfaces.VideoPokerGame]{Game: vp},
+		vpp:      vpp,
 	}
 }
 
 // Reset ゲーム初期化
 func (vi *VideoPokerInteractor) Reset() string {
-	return runAndPresent(vi.vp, vi.vpp, vi.vp.Reset)
+	return runAndPresent(vi.Game, vi.vpp, vi.Game.Reset)
 }
 
 // Bet ベット
 func (vi *VideoPokerInteractor) Bet(amount int) string {
-	return execAndPresent(vi.vp, vi.vpp, func() error { return vi.vp.Bet(amount) })
+	return execAndPresent(vi.Game, vi.vpp, func() error { return vi.Game.Bet(amount) })
 }
 
 // Hold ホールド＆ドロー
 func (vi *VideoPokerInteractor) Hold(indices []int) string {
-	return execAndPresent(vi.vp, vi.vpp, func() error { return vi.vp.Hold(indices) })
+	return execAndPresent(vi.Game, vi.vpp, func() error { return vi.Game.Hold(indices) })
 }
 
 // ActionLog 棋譜を出力する
 func (vi *VideoPokerInteractor) ActionLog() string {
-	return vi.vpp.ActionLogOutput(vi.vp)
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (vi *VideoPokerInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(vi.vp)
+	return vi.vpp.ActionLogOutput(vi.Game)
 }
 
 // RestoreVideoPokerInteractor deserialises JSON into a VideoPokerInteractor.
 func RestoreVideoPokerInteractor(data []byte, vpp presenter.VideoPokerPresenter) (*VideoPokerInteractor, error) {
-	vp, err := restoreGame[domain.VideoPoker](data)
-	if err != nil {
-		return nil, err
-	}
-	return &VideoPokerInteractor{vp: vp, vpp: vpp}, nil
+	return restoreAndBuild[domain.VideoPoker](data, func(g *domain.VideoPoker) *VideoPokerInteractor {
+		return &VideoPokerInteractor{GameBase: GameBase[interfaces.VideoPokerGame]{Game: g}, vpp: vpp}
+	})
 }

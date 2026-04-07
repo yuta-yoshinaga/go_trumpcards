@@ -33,3 +33,9 @@ func (m *MockThreeCardInteractor) ActionLog() string {
 	args := m.Called()
 	return args.String(0)
 }
+
+// Snapshot モック
+func (m *MockThreeCardInteractor) Snapshot() ([]byte, error) {
+	ret := m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

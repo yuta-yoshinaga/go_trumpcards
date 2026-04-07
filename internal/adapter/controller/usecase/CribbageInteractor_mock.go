@@ -48,3 +48,9 @@ func (_m *MockCribbageInteractor) GetConfig() domain.CribbageConfig {
 func (_m *MockCribbageInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
+
+// Snapshot モック
+func (_m *MockCribbageInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -10,6 +8,8 @@ import (
 
 // DaifugoInteractorIF 大富豪インタラクターインタフェース
 type DaifugoInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// Play 人間プレイヤーがカードを出す (または パスする)
@@ -26,7 +26,7 @@ type DaifugoInteractorIF interface {
 
 // DaifugoInteractor 大富豪インタラクタークラス
 type DaifugoInteractor struct {
-	dg  interfaces.DaifugoGame
+	GameBase[interfaces.DaifugoGame]
 	dgp presenter.DaifugoPresenter
 }
 
@@ -34,68 +34,61 @@ type DaifugoInteractor struct {
 func NewDaifugoInteractor(dg interfaces.DaifugoGame, dgp presenter.DaifugoPresenter) *DaifugoInteractor {
 	mustNotNil("DaifugoInteractor", map[string]any{"dg": dg, "dgp": dgp})
 	return &DaifugoInteractor{
-		dg:  dg,
-		dgp: dgp,
+		GameBase: GameBase[interfaces.DaifugoGame]{Game: dg},
+		dgp:      dgp,
 	}
 }
 
 // Reset ゲーム初期化
 func (di *DaifugoInteractor) Reset() string {
-	di.dg.Reset()
+	di.Game.Reset()
 	di.runCpuTurns()
-	return di.dgp.Output(di.dg, nil)
+	return di.dgp.Output(di.Game, nil)
 }
 
 // Play 人間プレイヤーがカードを出す (または パスする)
 // indices: 出すカードのインデックス。空の場合はパス。
 func (di *DaifugoInteractor) Play(indices []int) string {
-	if out, blocked := guardNotPlayable(di.dg, di.dgp); blocked {
+	if out, blocked := guardNotPlayable(di.Game, di.dgp); blocked {
 		return out
 	}
-	err := di.dg.PlayerPlay(indices)
-	if err == nil && !di.dg.GetGameEndFlag() && !di.dg.HasPendingAction() {
+	err := di.Game.PlayerPlay(indices)
+	if err == nil && !di.Game.GetGameEndFlag() && !di.Game.HasPendingAction() {
 		di.runCpuTurns()
 	}
-	return di.dgp.Output(di.dg, err)
+	return di.dgp.Output(di.Game, err)
 }
 
 // GetConfig 現在の設定を返す
 func (di *DaifugoInteractor) GetConfig() domain.DaifugoConfig {
-	return di.dg.GetConfig()
+	return di.Game.GetConfig()
 }
 
 // ResetWithConfig 設定を変更してゲームを初期化
 func (di *DaifugoInteractor) ResetWithConfig(config domain.DaifugoConfig) string {
-	return resetWithValidatedConfig(di.dg, di.dgp, config, di.dg.SetConfig, di.Reset)
+	return resetWithValidatedConfig(di.Game, di.dgp, config, di.Game.SetConfig, di.Reset)
 }
 
 // Sort 手札ソートモードを変更
 func (di *DaifugoInteractor) Sort(mode domain.DaifugoSortMode) string {
-	return execAndPresent(di.dg, di.dgp, func() error { return di.dg.SortHumanHand(mode) })
+	return execAndPresent(di.Game, di.dgp, func() error { return di.Game.SortHumanHand(mode) })
 }
 
 // ActionLog 棋譜を出力する
 func (di *DaifugoInteractor) ActionLog() string {
-	return di.dgp.ActionLogOutput(di.dg)
+	return di.dgp.ActionLogOutput(di.Game)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (di *DaifugoInteractor) runCpuTurns() {
-	for !di.dg.GetGameEndFlag() && !di.dg.IsHumanTurn() {
-		di.dg.CpuPlay()
+	for !di.Game.GetGameEndFlag() && !di.Game.IsHumanTurn() {
+		di.Game.CpuPlay()
 	}
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (di *DaifugoInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(di.dg)
 }
 
 // RestoreDaifugoInteractor deserialises JSON into a DaifugoInteractor.
 func RestoreDaifugoInteractor(data []byte, dgp presenter.DaifugoPresenter) (*DaifugoInteractor, error) {
-	dg, err := restoreGame[domain.Daifugo](data)
-	if err != nil {
-		return nil, err
-	}
-	return &DaifugoInteractor{dg: dg, dgp: dgp}, nil
+	return restoreAndBuild[domain.Daifugo](data, func(g *domain.Daifugo) *DaifugoInteractor {
+		return &DaifugoInteractor{GameBase: GameBase[interfaces.DaifugoGame]{Game: g}, dgp: dgp}
+	})
 }

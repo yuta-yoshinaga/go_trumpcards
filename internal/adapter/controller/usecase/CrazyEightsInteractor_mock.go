@@ -44,3 +44,9 @@ func (_m *MockCrazyEightsInteractor) GetConfig() domain.CrazyEightsConfig {
 func (_m *MockCrazyEightsInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
+
+// Snapshot モック
+func (_m *MockCrazyEightsInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

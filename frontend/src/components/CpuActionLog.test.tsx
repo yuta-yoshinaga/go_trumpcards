@@ -24,6 +24,15 @@ describe('CpuActionLog', () => {
     expect(screen.getByText('Player 2: フォールド')).toBeInTheDocument();
   });
 
+  it('has role="log" and aria-live="polite" for screen readers', () => {
+    const actions = [{ playerIdx: 1, action: 0, amount: 0 }];
+    render(<CpuActionLog actions={actions} />);
+    const el = screen.getByRole('log');
+    expect(el).toBeInTheDocument();
+    expect(el).toHaveAttribute('aria-live', 'polite');
+    expect(el).toHaveAttribute('aria-label', 'CPUプレイヤーの行動ログ');
+  });
+
   it('renders unknown action as 不明', () => {
     const actions = [{ playerIdx: 1, action: 99, amount: 0 }];
     render(<CpuActionLog actions={actions} />);

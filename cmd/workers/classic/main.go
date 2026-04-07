@@ -13,42 +13,15 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	corsmw "github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/cors"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/worker"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
-
-// registerKV creates a KV-backed session provider for a game and registers the
-// controller on the given mux. It eliminates the repeated boilerplate of
-// creating a provider, building a controller, and wiring up the route.
-func registerKV[I any](
-	mux *http.ServeMux,
-	path string,
-	kvPrefix string,
-	factory func() I,
-	restore func([]byte) (I, error),
-	newCtrl func(controller.SessionProvider[I], func() I) interface {
-		Exec(http.ResponseWriter, *http.Request)
-		Stop()
-	},
-) {
-	kvProvider, err := controller.NewKVSessionProvider[I](
-		"GAME_SESSIONS", kvPrefix,
-		func(i I) ([]byte, error) {
-			return any(i).(interface{ Snapshot() ([]byte, error) }).Snapshot()
-		},
-		restore,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ctrl := newCtrl(kvProvider, factory)
-	mux.HandleFunc(path, ctrl.Exec)
-}
 
 func main() {
 	mux := http.NewServeMux()
 
 	// Hearts
-	registerKV(mux, "/hearts/exec", "hearts:",
+	if err := worker.RegisterKV(mux, "/hearts/exec", "hearts:",
 		func() usecase.HeartsInteractorIF {
 			config := domain.DefaultHeartsConfig()
 			players := []*domain.HeartsPlayer{
@@ -63,16 +36,13 @@ func main() {
 		func(data []byte) (usecase.HeartsInteractorIF, error) {
 			return usecase.RestoreHeartsInteractor(data, new(presenter.HeartsWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.HeartsInteractorIF], f func() usecase.HeartsInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewHeartsWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewHeartsWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Spades
-	registerKV(mux, "/spades/exec", "spades:",
+	if err := worker.RegisterKV(mux, "/spades/exec", "spades:",
 		func() usecase.SpadesInteractorIF {
 			config := domain.DefaultSpadesConfig()
 			players := []*domain.SpadesPlayer{
@@ -87,16 +57,13 @@ func main() {
 		func(data []byte) (usecase.SpadesInteractorIF, error) {
 			return usecase.RestoreSpadesInteractor(data, new(presenter.SpadesWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.SpadesInteractorIF], f func() usecase.SpadesInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewSpadesWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewSpadesWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Euchre
-	registerKV(mux, "/euchre/exec", "euchre:",
+	if err := worker.RegisterKV(mux, "/euchre/exec", "euchre:",
 		func() usecase.EuchreInteractorIF {
 			config := domain.DefaultEuchreConfig()
 			players := []*domain.EuchrePlayer{
@@ -111,16 +78,13 @@ func main() {
 		func(data []byte) (usecase.EuchreInteractorIF, error) {
 			return usecase.RestoreEuchreInteractor(data, new(presenter.EuchreWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.EuchreInteractorIF], f func() usecase.EuchreInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewEuchreWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewEuchreWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Napoleon
-	registerKV(mux, "/napoleon/exec", "napoleon:",
+	if err := worker.RegisterKV(mux, "/napoleon/exec", "napoleon:",
 		func() usecase.NapoleonInteractorIF {
 			config := domain.DefaultNapoleonConfig()
 			players := []*domain.NapoleonPlayer{
@@ -135,16 +99,13 @@ func main() {
 		func(data []byte) (usecase.NapoleonInteractorIF, error) {
 			return usecase.RestoreNapoleonInteractor(data, new(presenter.NapoleonWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.NapoleonInteractorIF], f func() usecase.NapoleonInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewNapoleonWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewNapoleonWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Old Maid
-	registerKV(mux, "/oldmaid/exec", "oldmaid:",
+	if err := worker.RegisterKV(mux, "/oldmaid/exec", "oldmaid:",
 		func() usecase.OldMaidInteractorIF {
 			players := []*domain.OldMaidPlayer{
 				domain.NewOldMaidPlayer(true),
@@ -158,16 +119,13 @@ func main() {
 		func(data []byte) (usecase.OldMaidInteractorIF, error) {
 			return usecase.RestoreOldMaidInteractor(data, new(presenter.OldMaidWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.OldMaidInteractorIF], f func() usecase.OldMaidInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewOldMaidWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewOldMaidWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Doubt
-	registerKV(mux, "/doubt/exec", "doubt:",
+	if err := worker.RegisterKV(mux, "/doubt/exec", "doubt:",
 		func() usecase.DoubtInteractorIF {
 			players := []*domain.DoubtPlayer{
 				domain.NewDoubtPlayer(true),
@@ -181,16 +139,13 @@ func main() {
 		func(data []byte) (usecase.DoubtInteractorIF, error) {
 			return usecase.RestoreDoubtInteractor(data, new(presenter.DoubtWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.DoubtInteractorIF], f func() usecase.DoubtInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewDoubtWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewDoubtWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Daifugo
-	registerKV(mux, "/daifugo/exec", "daifugo:",
+	if err := worker.RegisterKV(mux, "/daifugo/exec", "daifugo:",
 		func() usecase.DaifugoInteractorIF {
 			config := domain.DefaultDaifugoConfig()
 			players := []*domain.DaifugoPlayer{
@@ -205,16 +160,13 @@ func main() {
 		func(data []byte) (usecase.DaifugoInteractorIF, error) {
 			return usecase.RestoreDaifugoInteractor(data, new(presenter.DaifugoWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.DaifugoInteractorIF], f func() usecase.DaifugoInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewDaifugoWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewDaifugoWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Sevens
-	registerKV(mux, "/sevens/exec", "sevens:",
+	if err := worker.RegisterKV(mux, "/sevens/exec", "sevens:",
 		func() usecase.SevensInteractorIF {
 			config := domain.DefaultSevensConfig()
 			players := []*domain.SevensPlayer{
@@ -229,16 +181,13 @@ func main() {
 		func(data []byte) (usecase.SevensInteractorIF, error) {
 			return usecase.RestoreSevensInteractor(data, new(presenter.SevensWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.SevensInteractorIF], f func() usecase.SevensInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewSevensWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewSevensWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Crazy Eights
-	registerKV(mux, "/crazyeights/exec", "crazyeights:",
+	if err := worker.RegisterKV(mux, "/crazyeights/exec", "crazyeights:",
 		func() usecase.CrazyEightsInteractorIF {
 			config := domain.DefaultCrazyEightsConfig()
 			players := []*domain.CrazyEightsPlayer{
@@ -253,16 +202,13 @@ func main() {
 		func(data []byte) (usecase.CrazyEightsInteractorIF, error) {
 			return usecase.RestoreCrazyEightsInteractor(data, new(presenter.CrazyEightsWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.CrazyEightsInteractorIF], f func() usecase.CrazyEightsInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewCrazyEightsWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewCrazyEightsWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Oh Hell
-	registerKV(mux, "/ohhell/exec", "ohhell:",
+	if err := worker.RegisterKV(mux, "/ohhell/exec", "ohhell:",
 		func() usecase.OhHellInteractorIF {
 			config := domain.DefaultOhHellConfig()
 			players := []*domain.OhHellPlayer{
@@ -277,16 +223,13 @@ func main() {
 		func(data []byte) (usecase.OhHellInteractorIF, error) {
 			return usecase.RestoreOhHellInteractor(data, new(presenter.OhHellWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.OhHellInteractorIF], f func() usecase.OhHellInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewOhHellWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewOhHellWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Contract Bridge
-	registerKV(mux, "/bridge/exec", "bridge:",
+	if err := worker.RegisterKV(mux, "/bridge/exec", "bridge:",
 		func() usecase.BridgeInteractorIF {
 			config := domain.DefaultBridgeConfig()
 			players := []*domain.BridgePlayer{
@@ -301,16 +244,13 @@ func main() {
 		func(data []byte) (usecase.BridgeInteractorIF, error) {
 			return usecase.RestoreBridgeInteractor(data, new(presenter.BridgeWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.BridgeInteractorIF], f func() usecase.BridgeInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewBridgeWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewBridgeWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Speed
-	registerKV(mux, "/speed/exec", "speed:",
+	if err := worker.RegisterKV(mux, "/speed/exec", "speed:",
 		func() usecase.SpeedInteractorIF {
 			config := domain.DefaultSpeedConfig()
 			players := []*domain.SpeedPlayer{
@@ -323,16 +263,13 @@ func main() {
 		func(data []byte) (usecase.SpeedInteractorIF, error) {
 			return usecase.RestoreSpeedInteractor(data, new(presenter.SpeedWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.SpeedInteractorIF], f func() usecase.SpeedInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewSpeedWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewSpeedWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Go Fish
-	registerKV(mux, "/gofish/exec", "gofish:",
+	if err := worker.RegisterKV(mux, "/gofish/exec", "gofish:",
 		func() usecase.GoFishInteractorIF {
 			players := []*domain.GoFishPlayer{
 				domain.NewGoFishPlayer(true),
@@ -346,15 +283,13 @@ func main() {
 		func(data []byte) (usecase.GoFishInteractorIF, error) {
 			return usecase.RestoreGoFishInteractor(data, new(presenter.GoFishWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.GoFishInteractorIF], f func() usecase.GoFishInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewGoFishWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewGoFishWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
-	registerKV(mux, "/pinochle/exec", "pinochle:",
+	// Pinochle
+	if err := worker.RegisterKV(mux, "/pinochle/exec", "pinochle:",
 		func() usecase.PinochleInteractorIF {
 			config := domain.DefaultPinochleConfig()
 			players := []*domain.PinochlePlayer{
@@ -369,16 +304,13 @@ func main() {
 		func(data []byte) (usecase.PinochleInteractorIF, error) {
 			return usecase.RestorePinochleInteractor(data, new(presenter.PinochleWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.PinochleInteractorIF], f func() usecase.PinochleInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewPinochleWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewPinochleWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Pig's Tail
-	registerKV(mux, "/pigtail/exec", "pigtail:",
+	if err := worker.RegisterKV(mux, "/pigtail/exec", "pigtail:",
 		func() usecase.PigsTailInteractorIF {
 			players := []*domain.PigsTailPlayer{
 				domain.NewPigsTailPlayer(true),
@@ -392,13 +324,10 @@ func main() {
 		func(data []byte) (usecase.PigsTailInteractorIF, error) {
 			return usecase.RestorePigsTailInteractor(data, new(presenter.PigsTailWebPresenter))
 		},
-		func(p controller.SessionProvider[usecase.PigsTailInteractorIF], f func() usecase.PigsTailInteractorIF) interface {
-			Exec(http.ResponseWriter, *http.Request)
-			Stop()
-		} {
-			return controller.NewPigsTailWebControllerWithProvider(p, f)
-		},
-	)
+		controller.NewPigsTailWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {

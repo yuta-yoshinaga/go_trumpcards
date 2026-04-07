@@ -34,6 +34,7 @@
   "cliUnsupportedLang": "Warning: unsupported language \"{{lang}}\", defaulting to ja",
   "emptyInputHint": "Type 'help' for available commands.",
   "cliStartupBanner": "trumpcards {{version}} - Interactive Mode",
+  "cliInvalidPort": "Error: invalid port number {{port}} (must be 1-65535)",
   "cliExtraArgsWarning": "Warning: extra arguments ignored: {{args}}",
   "metaAIRequired": "Meta-AI setting is required (0=off, 1=on).",
   "invalidMetaAI": "Invalid value: {{val}}. Please enter 0 or 1.",
