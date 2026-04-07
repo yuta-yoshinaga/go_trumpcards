@@ -1,10 +1,10 @@
 # Desktop UI/UX Review
 
-PC画面（1280x800, 一般的なラップトップ相当）で全ゲーム画面のスクリーンショットを撮影し、UI/UX課題を抽出してGitHub Issueを作成する。
+PC画面（1280x800, 一般的なラップトップ相当）で全ゲーム画面をagent-browserで操作・撮影し、UI/UX課題を抽出してGitHub Issueを作成する。
 
 ## 前提条件
 
-- Playwright のChromium がインストール済み（`~/.cache/ms-playwright/`）
+- [agent-browser](https://github.com/vercel-labs/agent-browser) がインストール済み（`npm install -g agent-browser && agent-browser install`）
 - Go サーバーが起動可能な状態
 - `gh` CLIでGitHubにログイン済み
 - 画像アップロード先として catbox.moe を使用（永続的な無料ホスティング、APIキー不要）
@@ -23,11 +23,7 @@ PORT=8080 go run ./cmd/server &
 for i in $(seq 1 10); do curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/ | grep -q 200 && break; sleep 1; done
 ```
 
-### 2. スクリーンショット撮影
-
-HashRouter (`/#/path`) を使用。全ゲーム画面のフルページスクリーンショットを撮影する。
-
-**2a. 初期表示状態の撮影（チュートリアルダイアログ付き）**
+### 2. ゲーム一覧の取得
 
 ```sh
 mkdir -p /tmp/desktop-screenshots
@@ -35,97 +31,79 @@ mkdir -p /tmp/desktop-screenshots
 ROOT_GAME=$(grep -P "path:\s*'/'" frontend/src/constants/gameRoutes.ts | grep -oP "labelKey:\s*'nav\.\K[^']*")
 ALL_GAMES=$(grep -oP "path:\s*'/\K[^']*" frontend/src/constants/gameRoutes.ts | sed "s/^$/$ROOT_GAME/" | tr '\n' ' ' | sed 's/ $//')
 GAMES="${ARGUMENTS:-$ALL_GAMES}"
+echo "対象ゲーム: $GAMES"
+```
+
+### 3. agent-browserによるスクリーンショット撮影
+
+agent-browser CLIを使い、デスクトップビューポートでゲーム画面を撮影・確認する。
+
+**3a. ブラウザ起動・ビューポート設定**
+
+```sh
+agent-browser open "http://localhost:8080/"
+agent-browser set viewport 1280 800
+```
+
+**3b. 各ゲームについて以下を繰り返す**
+
+各ゲームについて、以下の操作をagent-browserで実行する:
+
+```sh
 for game in $GAMES; do
   path="/#/$game"
   [ "$game" = "$ROOT_GAME" ] && path="/"
-  PLAYWRIGHT_BROWSERS_PATH=~/.cache/ms-playwright bunx playwright screenshot \
-    --browser chromium --viewport-size "1280,800" --full-page \
-    --wait-for-selector '[aria-live="polite"]' \
-    "http://localhost:8080$path" "/tmp/desktop-screenshots/${game}.png" 2>&1
+
+  # 1. ページ遷移
+  agent-browser open "http://localhost:8080$path"
+
+  # 2. ゲームコンテンツの読み込み待ち
+  agent-browser wait '[aria-live="polite"]'
+
+  # 3. 初期表示スクショ（チュートリアルダイアログ付き）
+  agent-browser screenshot "/tmp/desktop-screenshots/${game}.png" --full
+
+  # 4. チュートリアルスキップ（スキップボタンがあればクリック）
+  agent-browser snapshot
+  agent-browser find role button click --name "スキップ" 2>/dev/null || true
+
+  # 5. プレイ画面スクショ
+  agent-browser wait 300
+  agent-browser screenshot "/tmp/desktop-screenshots/${game}-play.png" --full
 done
 ```
 
-**2b. チュートリアルスキップ後のプレイ画面撮影**
+**3c. ナビゲーションメニュー撮影**
 
-Playwrightスクリプトを使い、チュートリアルをスキップしてからプレイ状態のスクリーンショットを撮る。ゲーム操作（ベット、カード選択等）も可能な場合は行う。
-
-```js
-// /tmp/desktop-play-screenshots.js
-const { chromium } = require('playwright');
-(async () => {
-  const browser = await chromium.launch({ headless: true });
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
-  const page = await ctx.newPage();
-
-  async function dismissTutorial(page) {
-    const skipBtn = page.getByRole('button', { name: 'スキップ' });
-    if (await skipBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
-      await skipBtn.click();
-      await page.waitForTimeout(300);
-    }
-  }
-
-  // ゲーム一覧を gameRoutes.ts から動的に取得（信頼できるソース）
-  const fs = require('fs');
-  const src = fs.readFileSync('frontend/src/constants/gameRoutes.ts', 'utf8');
-  const rootLabel = src.match(/path:\s*'\/'\s*,\s*labelKey:\s*'nav\.([^']*)'/);
-  const rootGame = rootLabel ? rootLabel[1] : 'blackjack';
-  const allGames = [...src.matchAll(/path:\s*'\/([^']*)'/g)].map(m => ({
-    name: m[1] || rootGame,
-    path: m[1] ? `/#/${m[1]}` : '/',
-  }));
-
-  // $ARGUMENTS で指定されたゲームのみにフィルタ（未指定時は全ゲーム）
-  const args = process.env.REVIEW_GAMES;
-  const games = args
-    ? allGames.filter(g => args.split(/\s+/).includes(g.name))
-    : allGames;
-
-  for (const { name, path } of games) {
-    await page.goto(`http://localhost:8080${path}`);
-    // Wait for game content to render (skeleton disappears, real content with aria-live appears)
-    await page.waitForSelector('[aria-live="polite"]', { timeout: 10000 });
-    await dismissTutorial(page);
-    await page.waitForTimeout(300);
-    await page.screenshot({ path: `/tmp/desktop-screenshots/${name}-play.png`, fullPage: true });
-  }
-
-  await browser.close();
-})();
+```sh
+agent-browser open "http://localhost:8080/"
+agent-browser wait '[aria-live="polite"]'
+agent-browser find role button click --name "スキップ" 2>/dev/null || true
+agent-browser wait 300
+# ハンバーガーメニューが存在する場合はクリック（PC版ではメニューバーかもしれない）
+agent-browser find role button click --name "メニューを開く" 2>/dev/null || true
+agent-browser wait 500
+agent-browser screenshot "/tmp/desktop-screenshots/nav-open.png" --full
 ```
 
-実行: `PLAYWRIGHT_BROWSERS_PATH=~/.cache/ms-playwright REVIEW_GAMES="$ARGUMENTS" bun /tmp/desktop-play-screenshots.js`
+**3d. PC固有のインタラクション確認**
 
-**2c. ナビゲーションメニュー展開状態の撮影**
+プレイ画面で以下のPC固有操作を確認する:
 
-PC版ではサイドバーまたは展開メニューとして表示される可能性がある。
+```sh
+# hover状態の視覚フィードバック確認（カードやボタンにマウスオーバー）
+agent-browser snapshot
+# snapshot結果から主要なボタン/カードの参照IDを取得し、hover確認
+agent-browser mouse move <x> <y>  # ボタン座標にマウス移動
+agent-browser screenshot "/tmp/desktop-screenshots/hover-check.png"
 
-```js
-// /tmp/desktop-nav-screenshot.js
-const { chromium } = require('playwright');
-(async () => {
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-  await page.goto('http://localhost:8080/');
-  // Wait for game content to render
-  await page.waitForSelector('[aria-live="polite"]', { timeout: 10000 });
-  const skipBtn = page.getByRole('button', { name: 'スキップ' });
-  if (await skipBtn.isVisible({ timeout: 1500 }).catch(() => false)) {
-    await skipBtn.click();
-    await page.waitForTimeout(300);
-  }
-  // ハンバーガーメニューが存在する場合はクリック（PC版ではメニューバーかもしれない）
-  const menuBtn = page.getByRole('button', { name: 'メニューを開く' });
-  if (await menuBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await menuBtn.click();
-    await page.waitForTimeout(500);
-  }
-  await page.screenshot({ path: '/tmp/desktop-screenshots/nav-open.png', fullPage: true });
-  await browser.close();
-})();
+# キーボードアクセシビリティ確認（Tab移動）
+agent-browser press Tab
+agent-browser press Tab
+agent-browser screenshot "/tmp/desktop-screenshots/keyboard-focus.png"
 ```
 
-### 3. スクリーンショット確認
+### 4. スクリーンショット確認
 
 Read ツールで各スクリーンショットを読み込み、視覚的に確認する。
 
@@ -160,7 +138,7 @@ Read ツールで各スクリーンショットを読み込み、視覚的に確
 - **アクション誘導**: ユーザーが次のアクションを迷わずできるか。ただしCTAの明確さのためにスクロールが発生する設計は不可
 - **一貫性 > 個別最適**: 同種のゲーム（例: Video Poker系3ゲーム）は同じレイアウトパターンを共有すべき
 
-### 4. 既存Issue確認（起票前に必須）
+### 5. 既存Issue確認（起票前に必須）
 
 課題を発見したら、**起票前に必ず以下を実行**する:
 
@@ -175,7 +153,7 @@ gh issue list --search "<課題のキーワード>" --state all --limit 20
 - 矛盾する過去対応がある場合は**新規issueを起票せず**、既存issueにコメントで経緯と根本原因の考察を残す
 - 同一課題がclosedで再発している場合は、既存issueを再openするか、根本原因を特定した新issueを起票する
 
-### 5. 課題分類
+### 6. 課題分類
 
 発見した課題を以下の重大度で分類する:
 
@@ -185,7 +163,7 @@ gh issue list --search "<課題のキーワード>" --state all --limit 20
 | MEDIUM | スクロールなしで遊べるが操作性や視認性に問題がある |
 | LOW | 見た目の統一感、細かい改善点（ゲームプレイに支障なし） |
 
-### 6. GitHub Issue作成
+### 7. GitHub Issue作成
 
 各課題ごとにGitHub Issueを作成する。
 
@@ -213,7 +191,7 @@ gh issue list --search "<課題のキーワード>" --state all --limit 20
 Desktop (1280x800)
 ```
 
-### 7. スクリーンショット添付
+### 8. スクリーンショット添付
 
 catbox.moe に画像をアップロードし、各IssueにコメントでMarkdown画像リンクを添付する。
 
@@ -228,19 +206,46 @@ gh issue comment <ISSUE_NUMBER> --body "## スクリーンショット（Desktop
 ![ゲーム名]($URL)"
 ```
 
-### 8. クリーンアップ
+### 9. クリーンアップ
 
 ```sh
+agent-browser close
 pkill -f 'go run' || true
-rm -rf /tmp/desktop-screenshots /tmp/desktop-play-screenshots.js /tmp/desktop-nav-screenshot.js
+rm -rf /tmp/desktop-screenshots
 ```
+
+## agent-browser コマンドリファレンス
+
+本コマンドで使用する主要なagent-browserコマンド:
+
+| コマンド | 用途 |
+|----------|------|
+| `agent-browser open <url>` | ページ遷移 |
+| `agent-browser set viewport 1280 800` | ビューポートをデスクトップサイズに設定 |
+| `agent-browser wait <selector>` | セレクタ出現の待機 |
+| `agent-browser wait <ms>` | ミリ秒待機 |
+| `agent-browser screenshot <path> --full` | フルページスクリーンショット撮影 |
+| `agent-browser snapshot` | アクセシビリティツリー取得（AI向け要素探索） |
+| `agent-browser find role button click --name "..."` | ボタンをアクセシビリティ名で検索・クリック |
+| `agent-browser find text "..." click` | テキストで要素を検索・クリック |
+| `agent-browser click <ref>` | snapshot参照ID（`@e2`等）で要素クリック |
+| `agent-browser mouse move <x> <y>` | マウスを指定座標に移動（hover確認） |
+| `agent-browser press <key>` | キー入力（Tab, Enter等のキーボード操作確認） |
+| `agent-browser is visible <selector>` | 要素の可視状態を確認 |
+| `agent-browser get text <selector>` | 要素のテキスト取得 |
+| `agent-browser close` | ブラウザ終了 |
+
+**操作のコツ**:
+- `snapshot` でアクセシビリティツリーを取得し、参照ID（`@e1`, `@e2`...）で要素を特定してから `click @e2` で操作する
+- `find role button click --name "..."` でアクセシビリティ名ベースの要素探索・操作が可能
+- 要素が見つからない場合は `2>/dev/null || true` で握りつぶしてスクリプトを継続する
+- PC版では `mouse move` でhover状態の確認、`press Tab` でキーボードフォーカスの確認も行う
 
 ## 注意事項
 
 - **リソース制約**: WSL2環境（~2GB RAM）のため、サーバー起動中に他の重いタスク（go test, bun run test等）は実行しない
 - **HashRouter**: URLは `http://localhost:8080/#/<game>` 形式。`/` 直打ちは404になる
 - **チュートリアルダイアログ**: 初回表示時にほぼ全ゲームで表示される。スキップ状態はlocalStorageに保存される
-- **ヘッドレスChromium**: `/opt/google/chrome/chrome` ではなく `~/.cache/ms-playwright/` のChromiumを使う。`PLAYWRIGHT_BROWSERS_PATH` 環境変数で指定する
 - **catbox.moe**: 永続的な無料ホスティング。APIキー不要。1ファイル200MBまで
 - ゲームルート一覧は `frontend/src/constants/gameRoutes.ts` で管理されており、本コマンドは同ファイルから動的に取得するため、ゲームの追加・削除時にこのコマンドファイルの更新は不要
 - モバイル版のレビュー結果と照合し、PC・モバイル共通の課題は既存Issueにデスクトップのスクリーンショットを追記する（重複Issue作成を避ける）
