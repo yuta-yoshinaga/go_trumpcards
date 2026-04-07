@@ -59,11 +59,11 @@ func TestOldMaidInteractor_Draw_GameEndFlag(t *testing.T) {
 	ompMock := new(presenter.MockOldMaidPresenter)
 	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	oi := NewOldMaidInteractor(newInternalTestOldMaid(), ompMock)
-	oi.om = buildOldMaidEndedGame()
+	oi.Game = buildOldMaidEndedGame()
 
 	// Human draws from CPU1 (card index 0) → pair discarded → game ends.
 	oi.Draw(0)
-	assert.True(t, oi.om.GetGameEndFlag())
+	assert.True(t, oi.Game.GetGameEndFlag())
 
 	// Now call Draw with gameEndFlag == true → early return.
 	result := oi.Draw(0)
@@ -75,10 +75,10 @@ func TestOldMaidInteractor_Draw_NotHumanTurn(t *testing.T) {
 	ompMock := new(presenter.MockOldMaidPresenter)
 	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	oi := NewOldMaidInteractor(newInternalTestOldMaid(), ompMock)
-	oi.om = buildOldMaidCpuTurnGame()
+	oi.Game = buildOldMaidCpuTurnGame()
 
 	// currentTurn = 0, player 0 is CPU → !IsHumanTurn() is true.
-	assert.False(t, oi.om.IsHumanTurn())
+	assert.False(t, oi.Game.IsHumanTurn())
 	result := oi.Draw(0)
 	assert.Equal(t, mockOutput, result)
 }

@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -22,7 +20,7 @@ type BaccaratInteractorIF interface {
 
 // BaccaratInteractor バカラインタラクタークラス
 type BaccaratInteractor struct {
-	b  interfaces.BaccaratGame
+	GameBase[interfaces.BaccaratGame]
 	bp presenter.BaccaratPresenter
 }
 
@@ -30,41 +28,34 @@ type BaccaratInteractor struct {
 func NewBaccaratInteractor(b interfaces.BaccaratGame, bp presenter.BaccaratPresenter) *BaccaratInteractor {
 	mustNotNil("BaccaratInteractor", map[string]any{"b": b, "bp": bp})
 	return &BaccaratInteractor{
-		b:  b,
-		bp: bp,
+		GameBase: GameBase[interfaces.BaccaratGame]{Game: b},
+		bp:       bp,
 	}
 }
 
 // Reset ゲーム初期化
 func (bi *BaccaratInteractor) Reset() string {
-	return runAndPresent(bi.b, bi.bp, bi.b.Reset)
+	return runAndPresent(bi.Game, bi.bp, bi.Game.Reset)
 }
 
 // Bet ベット
 func (bi *BaccaratInteractor) Bet(amount, betType, ppBet, bpBet int) string {
-	return execAndPresent(bi.b, bi.bp, func() error { return bi.b.Bet(amount, betType, ppBet, bpBet) })
+	return execAndPresent(bi.Game, bi.bp, func() error { return bi.Game.Bet(amount, betType, ppBet, bpBet) })
 }
 
 // ClearHistory 罫線履歴クリア
 func (bi *BaccaratInteractor) ClearHistory() string {
-	return runAndPresent(bi.b, bi.bp, bi.b.ClearHistory)
+	return runAndPresent(bi.Game, bi.bp, bi.Game.ClearHistory)
 }
 
 // ActionLog 棋譜を出力する
 func (bi *BaccaratInteractor) ActionLog() string {
-	return bi.bp.ActionLogOutput(bi.b)
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (bi *BaccaratInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(bi.b)
+	return bi.bp.ActionLogOutput(bi.Game)
 }
 
 // RestoreBaccaratInteractor deserialises JSON into a BaccaratInteractor.
 func RestoreBaccaratInteractor(data []byte, bp presenter.BaccaratPresenter) (*BaccaratInteractor, error) {
-	bac, err := restoreGame[domain.Baccarat](data)
-	if err != nil {
-		return nil, err
-	}
-	return &BaccaratInteractor{b: bac, bp: bp}, nil
+	return restoreAndBuild[domain.Baccarat](data, func(g *domain.Baccarat) *BaccaratInteractor {
+		return &BaccaratInteractor{GameBase: GameBase[interfaces.BaccaratGame]{Game: g}, bp: bp}
+	})
 }

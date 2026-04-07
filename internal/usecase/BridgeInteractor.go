@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -32,102 +30,102 @@ type BridgeInteractorIF interface {
 
 // BridgeInteractor ブリッジインタラクタークラス
 type BridgeInteractor struct {
-	b  interfaces.BridgeGame
+	GameBase[interfaces.BridgeGame]
 	bp presenter.BridgePresenter
 }
 
 // NewBridgeInteractor コンストラクタ
 func NewBridgeInteractor(b interfaces.BridgeGame, bp presenter.BridgePresenter) *BridgeInteractor {
 	mustNotNil("BridgeInteractor", map[string]any{"b": b, "bp": bp})
-	return &BridgeInteractor{b: b, bp: bp}
+	return &BridgeInteractor{GameBase: GameBase[interfaces.BridgeGame]{Game: b}, bp: bp}
 }
 
 // Reset ゲーム初期化
 func (bi *BridgeInteractor) Reset() string {
-	bi.b.Reset()
+	bi.Game.Reset()
 	bi.runCpuBids()
 	bi.runCpuTurns()
-	return bi.bp.Output(bi.b, nil)
+	return bi.bp.Output(bi.Game, nil)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (bi *BridgeInteractor) ResetWithConfig(cfg domain.BridgeConfig) string {
-	return resetWithValidatedConfig(bi.b, bi.bp, cfg, bi.b.SetConfig, bi.Reset)
+	return resetWithValidatedConfig(bi.Game, bi.bp, cfg, bi.Game.SetConfig, bi.Reset)
 }
 
 // Bid ビッドする
 func (bi *BridgeInteractor) Bid(bidType int, level int, suit int) string {
-	if out, blocked := guardGameEnd(bi.b, bi.bp); blocked {
+	if out, blocked := guardGameEnd(bi.Game, bi.bp); blocked {
 		return out
 	}
-	err := bi.b.PlayerBid(bidType, level, suit)
+	err := bi.Game.PlayerBid(bidType, level, suit)
 	if err != nil {
-		return bi.bp.Output(bi.b, err)
+		return bi.bp.Output(bi.Game, err)
 	}
 	bi.runCpuBids()
 	bi.runCpuTurns()
-	return bi.bp.Output(bi.b, nil)
+	return bi.bp.Output(bi.Game, nil)
 }
 
 // Play カードをプレイ
 func (bi *BridgeInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(bi.b, bi.bp); blocked {
+	if out, blocked := guardNotPlayable(bi.Game, bi.bp); blocked {
 		return out
 	}
-	err := bi.b.PlayerPlay(cardIndex)
+	err := bi.Game.PlayerPlay(cardIndex)
 	if err != nil {
-		return bi.bp.Output(bi.b, err)
+		return bi.bp.Output(bi.Game, err)
 	}
 	bi.runCpuTurns()
-	return bi.bp.Output(bi.b, nil)
+	return bi.bp.Output(bi.Game, nil)
 }
 
 // NextTrick トリックを解決して次のトリックへ進む
 func (bi *BridgeInteractor) NextTrick() string {
-	bi.b.ResolveTrick()
-	if out, blocked := guardGameEnd(bi.b, bi.bp); blocked {
+	bi.Game.ResolveTrick()
+	if out, blocked := guardGameEnd(bi.Game, bi.bp); blocked {
 		return out
 	}
-	bi.b.NextTrick()
+	bi.Game.NextTrick()
 	bi.runCpuTurns()
-	return bi.bp.Output(bi.b, nil)
+	return bi.bp.Output(bi.Game, nil)
 }
 
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (bi *BridgeInteractor) NextRound() string {
-	bi.b.ScoreRound()
-	if out, blocked := guardGameEnd(bi.b, bi.bp); blocked {
+	bi.Game.ScoreRound()
+	if out, blocked := guardGameEnd(bi.Game, bi.bp); blocked {
 		return out
 	}
-	bi.b.NextRound()
+	bi.Game.NextRound()
 	bi.runCpuBids()
 	bi.runCpuTurns()
-	return bi.bp.Output(bi.b, nil)
+	return bi.bp.Output(bi.Game, nil)
 }
 
 // GetConfig 現在の設定を取得
 func (bi *BridgeInteractor) GetConfig() domain.BridgeConfig {
-	return bi.b.GetConfig()
+	return bi.Game.GetConfig()
 }
 
 // Hint ヒント取得
 func (bi *BridgeInteractor) Hint() string {
-	return bi.bp.HintOutput(bi.b)
+	return bi.bp.HintOutput(bi.Game)
 }
 
 // ActionLog 棋譜を出力する
 func (bi *BridgeInteractor) ActionLog() string {
-	return bi.bp.ActionLogOutput(bi.b)
+	return bi.bp.ActionLogOutput(bi.Game)
 }
 
 // runCpuBids ビッドフェーズでCPUを自動実行する
 func (bi *BridgeInteractor) runCpuBids() {
-	runCpuBidsLoop(bi.b, domain.BridgePhaseBid)
+	runCpuBidsLoop(bi.Game, domain.BridgePhaseBid)
 }
 
 // runCpuTurns プレイフェーズでCPUターンを自動実行する
 func (bi *BridgeInteractor) runCpuTurns() {
-	runCpuTurnsLoop(bi.b, trickPhases[domain.BridgePhase]{
+	runCpuTurnsLoop(bi.Game, trickPhases[domain.BridgePhase]{
 		play:     domain.BridgePhasePlay,
 		trickEnd: domain.BridgePhaseTrickEnd,
 		roundEnd: domain.BridgePhaseRoundEnd,
@@ -135,16 +133,9 @@ func (bi *BridgeInteractor) runCpuTurns() {
 	})
 }
 
-// Snapshot serialises the game state to JSON for KV persistence.
-func (bi *BridgeInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(bi.b)
-}
-
 // RestoreBridgeInteractor deserialises JSON into a BridgeInteractor.
 func RestoreBridgeInteractor(data []byte, bp presenter.BridgePresenter) (*BridgeInteractor, error) {
-	b, err := restoreGame[domain.Bridge](data)
-	if err != nil {
-		return nil, err
-	}
-	return &BridgeInteractor{b: b, bp: bp}, nil
+	return restoreAndBuild[domain.Bridge](data, func(g *domain.Bridge) *BridgeInteractor {
+		return &BridgeInteractor{GameBase: GameBase[interfaces.BridgeGame]{Game: g}, bp: bp}
+	})
 }

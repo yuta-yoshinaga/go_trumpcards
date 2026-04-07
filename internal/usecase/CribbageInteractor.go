@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -32,124 +30,117 @@ type CribbageInteractorIF interface {
 
 // CribbageInteractor クリベッジインタラクタークラス
 type CribbageInteractor struct {
-	g  interfaces.CribbageGame
+	GameBase[interfaces.CribbageGame]
 	gp presenter.CribbagePresenter
 }
 
 // NewCribbageInteractor コンストラクタ
 func NewCribbageInteractor(g interfaces.CribbageGame, gp presenter.CribbagePresenter) *CribbageInteractor {
 	mustNotNil("CribbageInteractor", map[string]any{"g": g, "gp": gp})
-	return &CribbageInteractor{g: g, gp: gp}
+	return &CribbageInteractor{GameBase: GameBase[interfaces.CribbageGame]{Game: g}, gp: gp}
 }
 
 // Reset ゲーム初期化
 func (ci *CribbageInteractor) Reset() string {
-	ci.g.Reset()
+	ci.Game.Reset()
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (ci *CribbageInteractor) ResetWithConfig(cfg domain.CribbageConfig) string {
-	return resetWithValidatedConfig(ci.g, ci.gp, cfg, ci.g.SetConfig, ci.Reset)
+	return resetWithValidatedConfig(ci.Game, ci.gp, cfg, ci.Game.SetConfig, ci.Reset)
 }
 
 // Discard クリブに2枚捨てる
 func (ci *CribbageInteractor) Discard(cardIndices []int) string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerDiscard(cardIndices)
+	err := ci.Game.PlayerDiscard(cardIndices)
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // Peg ペギングでカードを出す
 func (ci *CribbageInteractor) Peg(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerPeg(cardIndex)
+	err := ci.Game.PlayerPeg(cardIndex)
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // Go Goを宣言する
 func (ci *CribbageInteractor) Go() string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerGo()
+	err := ci.Game.PlayerGo()
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // ShowNext ショーフェーズの次のスコア計算
 func (ci *CribbageInteractor) ShowNext() string {
-	if out, blocked := guardGameEnd(ci.g, ci.gp); blocked {
+	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.ShowNext()
+	err := ci.Game.ShowNext()
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // NextRound 次のラウンドへ進む
 func (ci *CribbageInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(ci.g, ci.gp); blocked {
+	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
 		return out
 	}
-	ci.g.NextRound()
+	ci.Game.NextRound()
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // GetConfig 現在の設定を取得
 func (ci *CribbageInteractor) GetConfig() domain.CribbageConfig {
-	return ci.g.GetConfig()
+	return ci.Game.GetConfig()
 }
 
 // ActionLog 棋譜を出力する
 func (ci *CribbageInteractor) ActionLog() string {
-	return ci.gp.ActionLogOutput(ci.g)
+	return ci.gp.ActionLogOutput(ci.Game)
 }
 
 // runCpuTurns CPUターンを実行
 func (ci *CribbageInteractor) runCpuTurns() {
-	for !ci.g.GetGameEndFlag() {
-		phase := ci.g.GetPhase()
+	for !ci.Game.GetGameEndFlag() {
+		phase := ci.Game.GetPhase()
 		if phase == domain.CribbagePhaseRoundEnd || phase == domain.CribbagePhaseGameEnd ||
 			phase == domain.CribbagePhaseShow {
 			break
 		}
-		if ci.g.IsHumanTurn() {
+		if ci.Game.IsHumanTurn() {
 			break
 		}
-		ci.g.CpuPlay()
+		ci.Game.CpuPlay()
 	}
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (ci *CribbageInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(ci.g)
 }
 
 // RestoreCribbageInteractor deserialises JSON into a CribbageInteractor.
 func RestoreCribbageInteractor(data []byte, gp presenter.CribbagePresenter) (*CribbageInteractor, error) {
-	g, err := restoreGame[domain.Cribbage](data)
-	if err != nil {
-		return nil, err
-	}
-	return &CribbageInteractor{g: g, gp: gp}, nil
+	return restoreAndBuild[domain.Cribbage](data, func(g *domain.Cribbage) *CribbageInteractor {
+		return &CribbageInteractor{GameBase: GameBase[interfaces.CribbageGame]{Game: g}, gp: gp}
+	})
 }

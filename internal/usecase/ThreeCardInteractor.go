@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -24,7 +22,7 @@ type ThreeCardInteractorIF interface {
 
 // ThreeCardInteractor スリーカードポーカーインタラクタークラス
 type ThreeCardInteractor struct {
-	tc interfaces.ThreeCardGame
+	GameBase[interfaces.ThreeCardGame]
 	tp presenter.ThreeCardPresenter
 }
 
@@ -32,46 +30,39 @@ type ThreeCardInteractor struct {
 func NewThreeCardInteractor(tc interfaces.ThreeCardGame, tp presenter.ThreeCardPresenter) *ThreeCardInteractor {
 	mustNotNil("ThreeCardInteractor", map[string]any{"tc": tc, "tp": tp})
 	return &ThreeCardInteractor{
-		tc: tc,
-		tp: tp,
+		GameBase: GameBase[interfaces.ThreeCardGame]{Game: tc},
+		tp:       tp,
 	}
 }
 
 // Reset ゲーム初期化
 func (ti *ThreeCardInteractor) Reset() string {
-	return runAndPresent(ti.tc, ti.tp, ti.tc.Reset)
+	return runAndPresent(ti.Game, ti.tp, ti.Game.Reset)
 }
 
 // Bet アンテベット
 func (ti *ThreeCardInteractor) Bet(ante, pairPlus int) string {
-	return execAndPresent(ti.tc, ti.tp, func() error { return ti.tc.Bet(ante, pairPlus) })
+	return execAndPresent(ti.Game, ti.tp, func() error { return ti.Game.Bet(ante, pairPlus) })
 }
 
 // Play プレイ
 func (ti *ThreeCardInteractor) Play() string {
-	return execAndPresent(ti.tc, ti.tp, ti.tc.Play)
+	return execAndPresent(ti.Game, ti.tp, ti.Game.Play)
 }
 
 // Fold フォールド
 func (ti *ThreeCardInteractor) Fold() string {
-	return execAndPresent(ti.tc, ti.tp, ti.tc.Fold)
+	return execAndPresent(ti.Game, ti.tp, ti.Game.Fold)
 }
 
 // ActionLog 棋譜を出力する
 func (ti *ThreeCardInteractor) ActionLog() string {
-	return ti.tp.ActionLogOutput(ti.tc)
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (ti *ThreeCardInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(ti.tc)
+	return ti.tp.ActionLogOutput(ti.Game)
 }
 
 // RestoreThreeCardInteractor deserialises JSON into a ThreeCardInteractor.
 func RestoreThreeCardInteractor(data []byte, tp presenter.ThreeCardPresenter) (*ThreeCardInteractor, error) {
-	tc, err := restoreGame[domain.ThreeCard](data)
-	if err != nil {
-		return nil, err
-	}
-	return &ThreeCardInteractor{tc: tc, tp: tp}, nil
+	return restoreAndBuild[domain.ThreeCard](data, func(g *domain.ThreeCard) *ThreeCardInteractor {
+		return &ThreeCardInteractor{GameBase: GameBase[interfaces.ThreeCardGame]{Game: g}, tp: tp}
+	})
 }

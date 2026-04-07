@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -30,66 +28,59 @@ type GolfInteractorIF interface {
 
 // GolfInteractor ゴルフソリティアインタラクタークラス
 type GolfInteractor struct {
-	g  interfaces.GolfGame
+	GameBase[interfaces.GolfGame]
 	gp presenter.GolfPresenter
 }
 
 // NewGolfInteractor コンストラクタ
 func NewGolfInteractor(g interfaces.GolfGame, gp presenter.GolfPresenter) *GolfInteractor {
 	mustNotNil("GolfInteractor", map[string]any{"g": g, "gp": gp})
-	return &GolfInteractor{g: g, gp: gp}
+	return &GolfInteractor{GameBase: GameBase[interfaces.GolfGame]{Game: g}, gp: gp}
 }
 
 // Reset ゲーム初期化
 func (gi *GolfInteractor) Reset() string {
-	return runAndPresent(gi.g, gi.gp, gi.g.Reset)
+	return runAndPresent(gi.Game, gi.gp, gi.Game.Reset)
 }
 
 // Draw ストックからウェイストにカードを引く
 func (gi *GolfInteractor) Draw() string {
-	return execAndPresent(gi.g, gi.gp, gi.g.Draw)
+	return execAndPresent(gi.Game, gi.gp, gi.Game.Draw)
 }
 
 // Remove タブローのカードを除去
 func (gi *GolfInteractor) Remove(col int) string {
-	return execAndPresent(gi.g, gi.gp, func() error { return gi.g.Remove(col) })
+	return execAndPresent(gi.Game, gi.gp, func() error { return gi.Game.Remove(col) })
 }
 
 // GiveUp ギブアップ
 func (gi *GolfInteractor) GiveUp() string {
-	return runAndPresent(gi.g, gi.gp, gi.g.GiveUp)
+	return runAndPresent(gi.Game, gi.gp, gi.Game.GiveUp)
 }
 
 // Hint ヒント取得
 func (gi *GolfInteractor) Hint() string {
-	return gi.gp.HintOutput(gi.g)
+	return gi.gp.HintOutput(gi.Game)
 }
 
 // ActionLog 棋譜を出力する
 func (gi *GolfInteractor) ActionLog() string {
-	return gi.gp.ActionLogOutput(gi.g)
+	return gi.gp.ActionLogOutput(gi.Game)
 }
 
 // Undo アンドゥ
 func (gi *GolfInteractor) Undo() string {
-	return execAndPresent(gi.g, gi.gp, gi.g.Undo)
+	return execAndPresent(gi.Game, gi.gp, gi.Game.Undo)
 }
 
 // UndoN n回連続アンドゥ
 func (gi *GolfInteractor) UndoN(n int) string {
-	return execAndPresent(gi.g, gi.gp, func() error { return gi.g.UndoN(n) })
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (gi *GolfInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(gi.g)
+	return execAndPresent(gi.Game, gi.gp, func() error { return gi.Game.UndoN(n) })
 }
 
 // RestoreGolfInteractor deserialises JSON into a GolfInteractor.
 func RestoreGolfInteractor(data []byte, gp presenter.GolfPresenter) (*GolfInteractor, error) {
-	golf, err := restoreGame[domain.Golf](data)
-	if err != nil {
-		return nil, err
-	}
-	return &GolfInteractor{g: golf, gp: gp}, nil
+	return restoreAndBuild[domain.Golf](data, func(g *domain.Golf) *GolfInteractor {
+		return &GolfInteractor{GameBase: GameBase[interfaces.GolfGame]{Game: g}, gp: gp}
+	})
 }

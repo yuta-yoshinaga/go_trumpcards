@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -34,76 +32,69 @@ type SpiderInteractorIF interface {
 
 // SpiderInteractor スパイダーソリティアインタラクタークラス
 type SpiderInteractor struct {
-	s  interfaces.SpiderGame
+	GameBase[interfaces.SpiderGame]
 	sp presenter.SpiderPresenter
 }
 
 // NewSpiderInteractor コンストラクタ
 func NewSpiderInteractor(s interfaces.SpiderGame, sp presenter.SpiderPresenter) *SpiderInteractor {
 	mustNotNil("SpiderInteractor", map[string]any{"s": s, "sp": sp})
-	return &SpiderInteractor{s: s, sp: sp}
+	return &SpiderInteractor{GameBase: GameBase[interfaces.SpiderGame]{Game: s}, sp: sp}
 }
 
 // Reset ゲーム初期化
 func (si *SpiderInteractor) Reset() string {
-	return runAndPresent(si.s, si.sp, si.s.Reset)
+	return runAndPresent(si.Game, si.sp, si.Game.Reset)
 }
 
 // ResetWithConfig 設定付きリセット
 func (si *SpiderInteractor) ResetWithConfig(cfg domain.SpiderConfig) string {
-	return runAndPresent(si.s, si.sp, func() { si.s.ResetWithConfig(cfg) })
+	return runAndPresent(si.Game, si.sp, func() { si.Game.ResetWithConfig(cfg) })
 }
 
 // Deal ストックからタブローに配る
 func (si *SpiderInteractor) Deal() string {
-	return execAndPresent(si.s, si.sp, si.s.Deal)
+	return execAndPresent(si.Game, si.sp, si.Game.Deal)
 }
 
 // MoveTableauToTableau タブロー間でカードを移動
 func (si *SpiderInteractor) MoveTableauToTableau(fromCol, cardIndex, toCol int) string {
-	return execAndPresent(si.s, si.sp, func() error { return si.s.MoveTableauToTableau(fromCol, cardIndex, toCol) })
+	return execAndPresent(si.Game, si.sp, func() error { return si.Game.MoveTableauToTableau(fromCol, cardIndex, toCol) })
 }
 
 // GiveUp ギブアップ
 func (si *SpiderInteractor) GiveUp() string {
-	return runAndPresent(si.s, si.sp, si.s.GiveUp)
+	return runAndPresent(si.Game, si.sp, si.Game.GiveUp)
 }
 
 // Hint ヒント取得
 func (si *SpiderInteractor) Hint() string {
-	return si.sp.HintOutput(si.s)
+	return si.sp.HintOutput(si.Game)
 }
 
 // AutoComplete オートコンプリート
 func (si *SpiderInteractor) AutoComplete() string {
-	return execAndPresent(si.s, si.sp, si.s.AutoComplete)
+	return execAndPresent(si.Game, si.sp, si.Game.AutoComplete)
 }
 
 // ActionLog 棋譜を出力する
 func (si *SpiderInteractor) ActionLog() string {
-	return si.sp.ActionLogOutput(si.s)
+	return si.sp.ActionLogOutput(si.Game)
 }
 
 // Undo アンドゥ
 func (si *SpiderInteractor) Undo() string {
-	return execAndPresent(si.s, si.sp, si.s.Undo)
+	return execAndPresent(si.Game, si.sp, si.Game.Undo)
 }
 
 // UndoN n回連続アンドゥ
 func (si *SpiderInteractor) UndoN(n int) string {
-	return execAndPresent(si.s, si.sp, func() error { return si.s.UndoN(n) })
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (si *SpiderInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(si.s)
+	return execAndPresent(si.Game, si.sp, func() error { return si.Game.UndoN(n) })
 }
 
 // RestoreSpiderInteractor deserialises JSON into a SpiderInteractor.
 func RestoreSpiderInteractor(data []byte, sp presenter.SpiderPresenter) (*SpiderInteractor, error) {
-	spi, err := restoreGame[domain.Spider](data)
-	if err != nil {
-		return nil, err
-	}
-	return &SpiderInteractor{s: spi, sp: sp}, nil
+	return restoreAndBuild[domain.Spider](data, func(g *domain.Spider) *SpiderInteractor {
+		return &SpiderInteractor{GameBase: GameBase[interfaces.SpiderGame]{Game: g}, sp: sp}
+	})
 }

@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -58,7 +56,7 @@ type BlackJackInteractorIF interface {
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
 type BlackJackInteractor struct {
-	bj  interfaces.BlackJackGame
+	GameBase[interfaces.BlackJackGame]
 	bjp presenter.BlackJackPresenter
 }
 
@@ -66,82 +64,82 @@ type BlackJackInteractor struct {
 func NewBlackJackInteractor(bj interfaces.BlackJackGame, bjp presenter.BlackJackPresenter) *BlackJackInteractor {
 	mustNotNil("BlackJackInteractor", map[string]any{"bj": bj, "bjp": bjp})
 	return &BlackJackInteractor{
-		bj:  bj,
-		bjp: bjp,
+		GameBase: GameBase[interfaces.BlackJackGame]{Game: bj},
+		bjp:      bjp,
 	}
 }
 
 // Reset ゲーム初期化
 func (bi *BlackJackInteractor) Reset() string {
-	return runAndPresent(bi.bj, bi.bjp, bi.bj.Reset)
+	return runAndPresent(bi.Game, bi.bjp, bi.Game.Reset)
 }
 
 // Hit ヒット
 func (bi *BlackJackInteractor) Hit() string {
-	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerHit)
+	return execAndPresent(bi.Game, bi.bjp, bi.Game.PlayerHit)
 }
 
 // Stand スタンド
 func (bi *BlackJackInteractor) Stand() string {
-	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerStand)
+	return execAndPresent(bi.Game, bi.bjp, bi.Game.PlayerStand)
 }
 
 // Bet ベット
 func (bi *BlackJackInteractor) Bet(amount, ppBet, t3Bet, handCount int) string {
-	return execAndPresent(bi.bj, bi.bjp, func() error { return bi.bj.PlayerBet(amount, ppBet, t3Bet, handCount) })
+	return execAndPresent(bi.Game, bi.bjp, func() error { return bi.Game.PlayerBet(amount, ppBet, t3Bet, handCount) })
 }
 
 // DoubleDown ダブルダウン
 func (bi *BlackJackInteractor) DoubleDown() string {
-	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerDoubleDown)
+	return execAndPresent(bi.Game, bi.bjp, bi.Game.PlayerDoubleDown)
 }
 
 // Split スプリット
 func (bi *BlackJackInteractor) Split() string {
-	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerSplit)
+	return execAndPresent(bi.Game, bi.bjp, bi.Game.PlayerSplit)
 }
 
 // Insurance インシュランス
 func (bi *BlackJackInteractor) Insurance() string {
-	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerInsurance)
+	return execAndPresent(bi.Game, bi.bjp, bi.Game.PlayerInsurance)
 }
 
 // DeclineInsurance インシュランス辞退
 func (bi *BlackJackInteractor) DeclineInsurance() string {
-	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerDeclineInsurance)
+	return execAndPresent(bi.Game, bi.bjp, bi.Game.PlayerDeclineInsurance)
 }
 
 // Surrender サレンダー
 func (bi *BlackJackInteractor) Surrender() string {
-	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerSurrender)
+	return execAndPresent(bi.Game, bi.bjp, bi.Game.PlayerSurrender)
 }
 
 // EarlySurrender アーリーサレンダー
 func (bi *BlackJackInteractor) EarlySurrender() string {
-	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerEarlySurrender)
+	return execAndPresent(bi.Game, bi.bjp, bi.Game.PlayerEarlySurrender)
 }
 
 // DeclineEarlySurrender アーリーサレンダー辞退
 func (bi *BlackJackInteractor) DeclineEarlySurrender() string {
-	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerDeclineEarlySurrender)
+	return execAndPresent(bi.Game, bi.bjp, bi.Game.PlayerDeclineEarlySurrender)
 }
 
 // SetDeckCount デッキ数設定
 func (bi *BlackJackInteractor) SetDeckCount(count int) string {
-	return execAndPresent(bi.bj, bi.bjp, func() error { return bi.bj.SetDeckCount(count) })
+	return execAndPresent(bi.Game, bi.bjp, func() error { return bi.Game.SetDeckCount(count) })
 }
 
 // ToggleHint ヒント表示切り替え
 func (bi *BlackJackInteractor) ToggleHint() string {
-	return runAndPresent(bi.bj, bi.bjp, bi.bj.ToggleHint)
+	return runAndPresent(bi.Game, bi.bjp, bi.Game.ToggleHint)
 }
 
 // applyConfig は設定の取得・変更・保存・表示を行う共通ヘルパー
 func (bi *BlackJackInteractor) applyConfig(modify func(*domain.BlackJackConfig)) string {
-	config := bi.bj.GetConfig()
+	config := bi.Game.GetConfig()
 	modify(&config)
-	err := bi.bj.SetConfig(config)
-	return bi.bjp.Output(bi.bj, err)
+	err := bi.Game.SetConfig(config)
+	return bi.bjp.Output(bi.Game, err)
 }
 
 // ToggleSoft17 ソフト17ルール切り替え
@@ -181,30 +179,23 @@ func (bi *BlackJackInteractor) SetSurrenderRule(rule int) string {
 
 // ResetWithConfig 設定付きリセット
 func (bi *BlackJackInteractor) ResetWithConfig(cfg domain.BlackJackConfig) string {
-	bi.bj.Reset()
-	err := bi.bj.SetConfig(cfg)
+	bi.Game.Reset()
+	err := bi.Game.SetConfig(cfg)
 	if err != nil {
-		return bi.bjp.Output(bi.bj, err)
+		return bi.bjp.Output(bi.Game, err)
 	}
-	bi.bj.Reset()
-	return bi.bjp.Output(bi.bj, nil)
+	bi.Game.Reset()
+	return bi.bjp.Output(bi.Game, nil)
 }
 
 // ActionLog 棋譜を出力する
 func (bi *BlackJackInteractor) ActionLog() string {
-	return bi.bjp.ActionLogOutput(bi.bj)
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (bi *BlackJackInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(bi.bj)
+	return bi.bjp.ActionLogOutput(bi.Game)
 }
 
 // RestoreBlackJackInteractor deserialises JSON into a BlackJackInteractor.
 func RestoreBlackJackInteractor(data []byte, bjp presenter.BlackJackPresenter) (*BlackJackInteractor, error) {
-	bj, err := restoreGame[domain.BlackJack](data)
-	if err != nil {
-		return nil, err
-	}
-	return &BlackJackInteractor{bj: bj, bjp: bjp}, nil
+	return restoreAndBuild[domain.BlackJack](data, func(g *domain.BlackJack) *BlackJackInteractor {
+		return &BlackJackInteractor{GameBase: GameBase[interfaces.BlackJackGame]{Game: g}, bjp: bjp}
+	})
 }

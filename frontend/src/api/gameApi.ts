@@ -285,88 +285,38 @@ export interface HoldemConfigInput {
   cpuMetaAI?: boolean;
 }
 
-/** API client for the Texas Hold'em /holdem/exec endpoint. */
-export const holdemApi = {
-  exec: (
-    command:
-      | 'reset'
-      | 'fold'
-      | 'check'
-      | 'call'
-      | 'bet'
-      | 'raise'
-      | 'allin'
-      | 'rebuy'
-      | 'skiprebuy'
-      | 'addon'
-      | 'skipaddon'
-      | 'muck'
-      | 'show',
-    amount?: number,
-    config?: HoldemConfigInput,
-    humanPlayMs?: number,
-    profile?: unknown,
-  ) =>
-    gameExec<HoldemResponse>('holdem', {
-      command,
-      amount,
-      humanPlayMs,
-      profile,
-      ...config,
-    }),
-};
+/** Command set shared by Hold'em-family games. */
+type HoldemLikeCommand =
+  | 'reset'
+  | 'fold'
+  | 'check'
+  | 'call'
+  | 'bet'
+  | 'raise'
+  | 'allin'
+  | 'rebuy'
+  | 'skiprebuy'
+  | 'addon'
+  | 'skipaddon'
+  | 'muck'
+  | 'show';
 
-/** Configuration options for Pineapple Poker (extends Hold'em with cardIdx for discard). */
-export interface PineappleConfigInput extends HoldemConfigInput {
-  cardIdx?: number;
+/** Factory for Hold'em-family APIs that share the same exec pattern. */
+function createHoldemLikeApi<T, C = HoldemConfigInput>(game: string) {
+  return {
+    exec: (command: HoldemLikeCommand, amount?: number, config?: C, humanPlayMs?: number, profile?: unknown) =>
+      gameExec<T>(game, { command, amount, humanPlayMs, profile, ...(config as Record<string, unknown>) }),
+  };
 }
 
-/** API client for the Pineapple Poker /pineapple/exec endpoint. */
-export const pineappleApi = {
-  exec: (
-    command:
-      | 'reset'
-      | 'fold'
-      | 'check'
-      | 'call'
-      | 'bet'
-      | 'raise'
-      | 'allin'
-      | 'rebuy'
-      | 'skiprebuy'
-      | 'addon'
-      | 'skipaddon'
-      | 'muck'
-      | 'show'
-      | 'discard',
-    amount?: number,
-    config?: PineappleConfigInput,
-    humanPlayMs?: number,
-    profile?: unknown,
-  ) =>
-    gameExec<PineappleResponse>('pineapple', {
-      command,
-      amount,
-      humanPlayMs,
-      profile,
-      cardIdx: config?.cardIdx,
-      smallBlind: config?.smallBlind,
-      bigBlind: config?.bigBlind,
-      tournamentMode: config?.tournamentMode,
-      blindLevelHands: config?.blindLevelHands,
-      blindMultiplier: config?.blindMultiplier,
-      bettingLimit: config?.bettingLimit,
-      tableSize: config?.tableSize,
-      rebuyEnabled: config?.rebuyEnabled,
-      rebuyMaxCount: config?.rebuyMaxCount,
-      rebuyChips: config?.rebuyChips,
-      rebuyPeriodHands: config?.rebuyPeriodHands,
-      addonEnabled: config?.addonEnabled,
-      addonChips: config?.addonChips,
-      addonAfterHand: config?.addonAfterHand,
-      cpuMetaAI: config?.cpuMetaAI,
-    }),
-};
+/** API client for the Texas Hold'em /holdem/exec endpoint. */
+export const holdemApi = createHoldemLikeApi<HoldemResponse>('holdem');
+
+/** API client for the Omaha Hold'em /omaha/exec endpoint. */
+export const omahaApi = createHoldemLikeApi<OmahaResponse>('omaha');
+
+/** API client for the Short Deck Hold'em /shortdeck/exec endpoint. */
+export const shortdeckApi = createHoldemLikeApi<ShortDeckResponse>('shortdeck');
 
 /** Configuration options for Seven Card Stud game settings. */
 export interface SevenCardStudConfigInput {
@@ -390,96 +340,23 @@ export interface SevenCardStudConfigInput {
 }
 
 /** API client for the Seven Card Stud /sevencardstud/exec endpoint. */
-export const sevenCardStudApi = {
+export const sevenCardStudApi = createHoldemLikeApi<SevenCardStudResponse, SevenCardStudConfigInput>('sevencardstud');
+
+/** Configuration options for Pineapple Poker (extends Hold'em with cardIdx for discard). */
+export interface PineappleConfigInput extends HoldemConfigInput {
+  cardIdx?: number;
+}
+
+/** API client for the Pineapple Poker /pineapple/exec endpoint. */
+export const pineappleApi = {
   exec: (
-    command:
-      | 'reset'
-      | 'fold'
-      | 'check'
-      | 'call'
-      | 'bet'
-      | 'raise'
-      | 'allin'
-      | 'rebuy'
-      | 'skiprebuy'
-      | 'addon'
-      | 'skipaddon'
-      | 'muck'
-      | 'show',
+    command: HoldemLikeCommand | 'discard',
     amount?: number,
-    config?: SevenCardStudConfigInput,
+    config?: PineappleConfigInput,
     humanPlayMs?: number,
     profile?: unknown,
   ) =>
-    gameExec<SevenCardStudResponse>('sevencardstud', {
-      command,
-      amount,
-      humanPlayMs,
-      profile,
-      ...config,
-    }),
-};
-
-/** Configuration options for Omaha Hold'em (same as Hold'em). */
-export type OmahaConfigInput = HoldemConfigInput;
-
-/** API client for the Omaha Hold'em /omaha/exec endpoint. */
-export const omahaApi = {
-  exec: (
-    command:
-      | 'reset'
-      | 'fold'
-      | 'check'
-      | 'call'
-      | 'bet'
-      | 'raise'
-      | 'allin'
-      | 'rebuy'
-      | 'skiprebuy'
-      | 'addon'
-      | 'skipaddon'
-      | 'muck'
-      | 'show',
-    amount?: number,
-    config?: OmahaConfigInput,
-    humanPlayMs?: number,
-    profile?: unknown,
-  ) =>
-    gameExec<OmahaResponse>('omaha', {
-      command,
-      amount,
-      humanPlayMs,
-      profile,
-      ...config,
-    }),
-};
-
-/** Configuration options for Short Deck Hold'em (same as Hold'em). */
-export type ShortDeckConfigInput = HoldemConfigInput;
-
-/** API client for the Short Deck Hold'em /shortdeck/exec endpoint. */
-export const shortdeckApi = {
-  exec: (
-    command:
-      | 'reset'
-      | 'fold'
-      | 'check'
-      | 'call'
-      | 'bet'
-      | 'raise'
-      | 'allin'
-      | 'rebuy'
-      | 'skiprebuy'
-      | 'addon'
-      | 'skipaddon'
-      | 'muck'
-      | 'show',
-    amount?: number,
-    config?: ShortDeckConfigInput,
-    humanPlayMs?: number,
-    profile?: unknown,
-  ) =>
-    gameExec<ShortDeckResponse>('shortdeck', {
+    gameExec<PineappleResponse>('pineapple', {
       command,
       amount,
       humanPlayMs,
@@ -519,21 +396,20 @@ export interface SpadesConfigInput {
   bagPenaltyThreshold?: number;
 }
 
+/** Factory for bid-play trick-taking APIs that share the same exec pattern. */
+function createBidPlayApi<T, C>(game: string) {
+  return {
+    exec: (
+      command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint',
+      bid?: number,
+      cardIndex?: number,
+      config?: C,
+    ) => gameExec<T>(game, { command, bid, cardIndex, config }),
+  };
+}
+
 /** API client for the Spades /spades/exec endpoint. */
-export const spadesApi = {
-  exec: (
-    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint',
-    bid?: number,
-    cardIndex?: number,
-    config?: SpadesConfigInput,
-  ) =>
-    gameExec<SpadesResponse>('spades', {
-      command,
-      bid,
-      cardIndex,
-      config,
-    }),
-};
+export const spadesApi = createBidPlayApi<SpadesResponse, SpadesConfigInput>('spades');
 
 /** Configuration options for Oh Hell game settings. */
 export interface OhHellConfigInput {
@@ -544,20 +420,7 @@ export interface OhHellConfigInput {
 }
 
 /** API client for the Oh Hell /ohhell/exec endpoint. */
-export const ohHellApi = {
-  exec: (
-    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint',
-    bid?: number,
-    cardIndex?: number,
-    config?: OhHellConfigInput,
-  ) =>
-    gameExec<OhHellResponse>('ohhell', {
-      command,
-      bid,
-      cardIndex,
-      config,
-    }),
-};
+export const ohHellApi = createBidPlayApi<OhHellResponse, OhHellConfigInput>('ohhell');
 
 /** Configuration options for Memory game settings. */
 export interface MemoryConfigInput {
@@ -923,23 +786,22 @@ export const tripeaksApi = {
     gameExec<TriPeaksResponse>('tripeaks', { command, row, col }),
 };
 
+/** Factory for video poker variant APIs that share the same exec pattern. */
+function createVideoPokerApi(game: string) {
+  return {
+    exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
+      gameExec<VideoPokerResponse>(game, { command, amount, indices }),
+  };
+}
+
 /** API client for the Video Poker /videopoker/exec endpoint. */
-export const videopokerApi = {
-  exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
-    gameExec<VideoPokerResponse>('videopoker', { command, amount, indices }),
-};
+export const videopokerApi = createVideoPokerApi('videopoker');
 
 /** API client for the Deuces Wild /deuceswild/exec endpoint. */
-export const deuceswildApi = {
-  exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
-    gameExec<VideoPokerResponse>('deuceswild', { command, amount, indices }),
-};
+export const deuceswildApi = createVideoPokerApi('deuceswild');
 
 /** API client for the Joker Poker /jokerpoker/exec endpoint. */
-export const jokerpokerApi = {
-  exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
-    gameExec<VideoPokerResponse>('jokerpoker', { command, amount, indices }),
-};
+export const jokerpokerApi = createVideoPokerApi('jokerpoker');
 
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {

@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -30,66 +28,59 @@ type TriPeaksInteractorIF interface {
 
 // TriPeaksInteractor トリピークスインタラクタークラス
 type TriPeaksInteractor struct {
-	t  interfaces.TriPeaksGame
+	GameBase[interfaces.TriPeaksGame]
 	tp presenter.TriPeaksPresenter
 }
 
 // NewTriPeaksInteractor コンストラクタ
 func NewTriPeaksInteractor(t interfaces.TriPeaksGame, tp presenter.TriPeaksPresenter) *TriPeaksInteractor {
 	mustNotNil("TriPeaksInteractor", map[string]any{"t": t, "tp": tp})
-	return &TriPeaksInteractor{t: t, tp: tp}
+	return &TriPeaksInteractor{GameBase: GameBase[interfaces.TriPeaksGame]{Game: t}, tp: tp}
 }
 
 // Reset ゲーム初期化
 func (ti *TriPeaksInteractor) Reset() string {
-	return runAndPresent(ti.t, ti.tp, ti.t.Reset)
+	return runAndPresent(ti.Game, ti.tp, ti.Game.Reset)
 }
 
 // Draw ストックからウェイストにカードを引く
 func (ti *TriPeaksInteractor) Draw() string {
-	return execAndPresent(ti.t, ti.tp, ti.t.Draw)
+	return execAndPresent(ti.Game, ti.tp, ti.Game.Draw)
 }
 
 // Remove タブローのカードを除去
 func (ti *TriPeaksInteractor) Remove(row, col int) string {
-	return execAndPresent(ti.t, ti.tp, func() error { return ti.t.Remove(row, col) })
+	return execAndPresent(ti.Game, ti.tp, func() error { return ti.Game.Remove(row, col) })
 }
 
 // GiveUp ギブアップ
 func (ti *TriPeaksInteractor) GiveUp() string {
-	return runAndPresent(ti.t, ti.tp, ti.t.GiveUp)
+	return runAndPresent(ti.Game, ti.tp, ti.Game.GiveUp)
 }
 
 // Hint ヒント取得
 func (ti *TriPeaksInteractor) Hint() string {
-	return ti.tp.HintOutput(ti.t)
+	return ti.tp.HintOutput(ti.Game)
 }
 
 // ActionLog 棋譜を出力する
 func (ti *TriPeaksInteractor) ActionLog() string {
-	return ti.tp.ActionLogOutput(ti.t)
+	return ti.tp.ActionLogOutput(ti.Game)
 }
 
 // Undo アンドゥ
 func (ti *TriPeaksInteractor) Undo() string {
-	return execAndPresent(ti.t, ti.tp, ti.t.Undo)
+	return execAndPresent(ti.Game, ti.tp, ti.Game.Undo)
 }
 
 // UndoN n回連続アンドゥ
 func (ti *TriPeaksInteractor) UndoN(n int) string {
-	return execAndPresent(ti.t, ti.tp, func() error { return ti.t.UndoN(n) })
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (ti *TriPeaksInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(ti.t)
+	return execAndPresent(ti.Game, ti.tp, func() error { return ti.Game.UndoN(n) })
 }
 
 // RestoreTriPeaksInteractor deserialises JSON into a TriPeaksInteractor.
 func RestoreTriPeaksInteractor(data []byte, tp presenter.TriPeaksPresenter) (*TriPeaksInteractor, error) {
-	tripeaks, err := restoreGame[domain.TriPeaks](data)
-	if err != nil {
-		return nil, err
-	}
-	return &TriPeaksInteractor{t: tripeaks, tp: tp}, nil
+	return restoreAndBuild[domain.TriPeaks](data, func(g *domain.TriPeaks) *TriPeaksInteractor {
+		return &TriPeaksInteractor{GameBase: GameBase[interfaces.TriPeaksGame]{Game: g}, tp: tp}
+	})
 }

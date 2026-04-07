@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -38,139 +36,139 @@ type PinochleInteractorIF interface {
 
 // PinochleInteractor ピノクルインタラクタークラス
 type PinochleInteractor struct {
-	p  interfaces.PinochleGame
+	GameBase[interfaces.PinochleGame]
 	pp presenter.PinochlePresenter
 }
 
 // NewPinochleInteractor コンストラクタ
 func NewPinochleInteractor(p interfaces.PinochleGame, pp presenter.PinochlePresenter) *PinochleInteractor {
 	mustNotNil("PinochleInteractor", map[string]any{"p": p, "pp": pp})
-	return &PinochleInteractor{p: p, pp: pp}
+	return &PinochleInteractor{GameBase: GameBase[interfaces.PinochleGame]{Game: p}, pp: pp}
 }
 
 // Reset ゲーム初期化
 func (pi *PinochleInteractor) Reset() string {
-	pi.p.Reset()
+	pi.Game.Reset()
 	pi.runCpuBids()
-	return pi.pp.Output(pi.p, nil)
+	return pi.pp.Output(pi.Game, nil)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (pi *PinochleInteractor) ResetWithConfig(cfg domain.PinochleConfig) string {
-	return resetWithValidatedConfig(pi.p, pi.pp, cfg, pi.p.SetConfig, pi.Reset)
+	return resetWithValidatedConfig(pi.Game, pi.pp, cfg, pi.Game.SetConfig, pi.Reset)
 }
 
 // Bid ビッドする
 func (pi *PinochleInteractor) Bid(amount int) string {
-	if out, blocked := guardGameEnd(pi.p, pi.pp); blocked {
+	if out, blocked := guardGameEnd(pi.Game, pi.pp); blocked {
 		return out
 	}
-	err := pi.p.PlayerBid(amount)
+	err := pi.Game.PlayerBid(amount)
 	if err != nil {
-		return pi.pp.Output(pi.p, err)
+		return pi.pp.Output(pi.Game, err)
 	}
 	pi.runCpuBids()
-	return pi.pp.Output(pi.p, nil)
+	return pi.pp.Output(pi.Game, nil)
 }
 
 // Pass パスする
 func (pi *PinochleInteractor) Pass() string {
-	if out, blocked := guardGameEnd(pi.p, pi.pp); blocked {
+	if out, blocked := guardGameEnd(pi.Game, pi.pp); blocked {
 		return out
 	}
-	err := pi.p.PlayerPass()
+	err := pi.Game.PlayerPass()
 	if err != nil {
-		return pi.pp.Output(pi.p, err)
+		return pi.pp.Output(pi.Game, err)
 	}
 	pi.runCpuBids()
-	return pi.pp.Output(pi.p, nil)
+	return pi.pp.Output(pi.Game, nil)
 }
 
 // CallTrump トランプスートを宣言する
 func (pi *PinochleInteractor) CallTrump(suit int) string {
-	if out, blocked := guardGameEnd(pi.p, pi.pp); blocked {
+	if out, blocked := guardGameEnd(pi.Game, pi.pp); blocked {
 		return out
 	}
-	err := pi.p.PlayerCallTrump(suit)
+	err := pi.Game.PlayerCallTrump(suit)
 	if err != nil {
-		return pi.pp.Output(pi.p, err)
+		return pi.pp.Output(pi.Game, err)
 	}
-	return pi.pp.Output(pi.p, nil)
+	return pi.pp.Output(pi.Game, nil)
 }
 
 // ConfirmMelds メルドを確認してプレイフェーズに進む
 func (pi *PinochleInteractor) ConfirmMelds() string {
-	if out, blocked := guardGameEnd(pi.p, pi.pp); blocked {
+	if out, blocked := guardGameEnd(pi.Game, pi.pp); blocked {
 		return out
 	}
-	pi.p.ConfirmMelds()
+	pi.Game.ConfirmMelds()
 	pi.runCpuTurns()
-	return pi.pp.Output(pi.p, nil)
+	return pi.pp.Output(pi.Game, nil)
 }
 
 // Play カードをプレイ
 func (pi *PinochleInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(pi.p, pi.pp); blocked {
+	if out, blocked := guardNotPlayable(pi.Game, pi.pp); blocked {
 		return out
 	}
-	err := pi.p.PlayerPlay(cardIndex)
+	err := pi.Game.PlayerPlay(cardIndex)
 	if err != nil {
-		return pi.pp.Output(pi.p, err)
+		return pi.pp.Output(pi.Game, err)
 	}
 	pi.runCpuTurns()
-	return pi.pp.Output(pi.p, nil)
+	return pi.pp.Output(pi.Game, nil)
 }
 
 // NextTrick 次のトリックへ進む
 func (pi *PinochleInteractor) NextTrick() string {
-	pi.p.ResolveTrick()
-	if out, blocked := guardGameEnd(pi.p, pi.pp); blocked {
+	pi.Game.ResolveTrick()
+	if out, blocked := guardGameEnd(pi.Game, pi.pp); blocked {
 		return out
 	}
-	pi.p.NextTrick()
+	pi.Game.NextTrick()
 	pi.runCpuTurns()
-	return pi.pp.Output(pi.p, nil)
+	return pi.pp.Output(pi.Game, nil)
 }
 
 // NextRound 次のラウンドへ進む
 func (pi *PinochleInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(pi.p, pi.pp); blocked {
+	if out, blocked := guardGameEnd(pi.Game, pi.pp); blocked {
 		return out
 	}
-	pi.p.NextRound()
+	pi.Game.NextRound()
 	pi.runCpuBids()
-	return pi.pp.Output(pi.p, nil)
+	return pi.pp.Output(pi.Game, nil)
 }
 
 // GetConfig 現在の設定を取得
 func (pi *PinochleInteractor) GetConfig() domain.PinochleConfig {
-	return pi.p.GetConfig()
+	return pi.Game.GetConfig()
 }
 
 // Hint ヒント取得
 func (pi *PinochleInteractor) Hint() string {
-	return pi.pp.HintOutput(pi.p)
+	return pi.pp.HintOutput(pi.Game)
 }
 
 // ActionLog 棋譜を出力する
 func (pi *PinochleInteractor) ActionLog() string {
-	return pi.pp.ActionLogOutput(pi.p)
+	return pi.pp.ActionLogOutput(pi.Game)
 }
 
 // runCpuBids ビッドおよびトランプ宣言フェーズでCPUを自動実行する
 func (pi *PinochleInteractor) runCpuBids() {
-	for !pi.p.GetGameEndFlag() {
-		phase := pi.p.GetPhase()
+	for !pi.Game.GetGameEndFlag() {
+		phase := pi.Game.GetPhase()
 		if phase == domain.PinochlePhaseBid {
-			if pi.p.IsHumanBidTurn() {
+			if pi.Game.IsHumanBidTurn() {
 				break
 			}
-			pi.p.CpuBid()
+			pi.Game.CpuBid()
 		} else if phase == domain.PinochlePhaseTrump {
-			if pi.p.IsHumanTurn() {
+			if pi.Game.IsHumanTurn() {
 				break
 			}
-			pi.p.CpuCallTrump()
+			pi.Game.CpuCallTrump()
 		} else {
 			break
 		}
@@ -179,7 +177,7 @@ func (pi *PinochleInteractor) runCpuBids() {
 
 // runCpuTurns プレイフェーズでCPUターンを自動実行する
 func (pi *PinochleInteractor) runCpuTurns() {
-	runCpuTurnsLoop(pi.p, trickPhases[domain.PinochlePhase]{
+	runCpuTurnsLoop(pi.Game, trickPhases[domain.PinochlePhase]{
 		play:     domain.PinochlePhasePlay,
 		trickEnd: domain.PinochlePhaseTrickEnd,
 		roundEnd: domain.PinochlePhaseRoundEnd,
@@ -187,16 +185,9 @@ func (pi *PinochleInteractor) runCpuTurns() {
 	})
 }
 
-// Snapshot serialises the game state to JSON for KV persistence.
-func (pi *PinochleInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(pi.p)
-}
-
 // RestorePinochleInteractor deserialises JSON into a PinochleInteractor.
 func RestorePinochleInteractor(data []byte, pp presenter.PinochlePresenter) (*PinochleInteractor, error) {
-	p, err := restoreGame[domain.Pinochle](data)
-	if err != nil {
-		return nil, err
-	}
-	return &PinochleInteractor{p: p, pp: pp}, nil
+	return restoreAndBuild[domain.Pinochle](data, func(g *domain.Pinochle) *PinochleInteractor {
+		return &PinochleInteractor{GameBase: GameBase[interfaces.PinochleGame]{Game: g}, pp: pp}
+	})
 }

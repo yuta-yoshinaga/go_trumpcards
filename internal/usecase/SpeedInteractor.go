@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -28,86 +26,79 @@ type SpeedInteractorIF interface {
 
 // SpeedInteractor スピードインタラクタークラス
 type SpeedInteractor struct {
-	s  interfaces.SpeedGame
+	GameBase[interfaces.SpeedGame]
 	sp presenter.SpeedPresenter
 }
 
 // NewSpeedInteractor コンストラクタ
 func NewSpeedInteractor(s interfaces.SpeedGame, sp presenter.SpeedPresenter) *SpeedInteractor {
 	mustNotNil("SpeedInteractor", map[string]any{"s": s, "sp": sp})
-	return &SpeedInteractor{s: s, sp: sp}
+	return &SpeedInteractor{GameBase: GameBase[interfaces.SpeedGame]{Game: s}, sp: sp}
 }
 
 // Reset ゲーム初期化
 func (si *SpeedInteractor) Reset() string {
-	return runAndPresent(si.s, si.sp, si.s.Reset)
+	return runAndPresent(si.Game, si.sp, si.Game.Reset)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (si *SpeedInteractor) ResetWithConfig(cfg domain.SpeedConfig) string {
-	return resetWithValidatedConfig(si.s, si.sp, cfg, si.s.SetConfig, si.Reset)
+	return resetWithValidatedConfig(si.Game, si.sp, cfg, si.Game.SetConfig, si.Reset)
 }
 
 // Play 人間プレイヤーがカードを出す、その後CPUが自動応答する
 func (si *SpeedInteractor) Play(cardIndex, pileIndex int) string {
-	if out, blocked := guardGameEnd(si.s, si.sp); blocked {
+	if out, blocked := guardGameEnd(si.Game, si.sp); blocked {
 		return out
 	}
-	err := si.s.PlayerPlay(cardIndex, pileIndex)
+	err := si.Game.PlayerPlay(cardIndex, pileIndex)
 	if err != nil {
-		return si.sp.Output(si.s, err)
+		return si.sp.Output(si.Game, err)
 	}
 	// CPU自動応答ループ
-	if !si.s.GetGameEndFlag() {
-		si.s.CpuPlay()
+	if !si.Game.GetGameEndFlag() {
+		si.Game.CpuPlay()
 	}
 	// フェーズ更新 (膠着判定)
-	si.s.UpdatePhase()
-	return si.sp.Output(si.s, nil)
+	si.Game.UpdatePhase()
+	return si.sp.Output(si.Game, nil)
 }
 
 // Flip 膠着時に台札をめくる
 func (si *SpeedInteractor) Flip() string {
-	if out, blocked := guardGameEnd(si.s, si.sp); blocked {
+	if out, blocked := guardGameEnd(si.Game, si.sp); blocked {
 		return out
 	}
-	err := si.s.Flip()
+	err := si.Game.Flip()
 	if err != nil {
-		return si.sp.Output(si.s, err)
+		return si.sp.Output(si.Game, err)
 	}
 	// フリップ後にCPU自動応答
-	if !si.s.GetGameEndFlag() {
-		si.s.CpuPlay()
-		si.s.UpdatePhase()
+	if !si.Game.GetGameEndFlag() {
+		si.Game.CpuPlay()
+		si.Game.UpdatePhase()
 	}
-	return si.sp.Output(si.s, nil)
+	return si.sp.Output(si.Game, nil)
 }
 
 // Hint ヒントを取得する
 func (si *SpeedInteractor) Hint() string {
-	return si.sp.Output(si.s, nil)
+	return si.sp.Output(si.Game, nil)
 }
 
 // GetConfig 現在の設定を取得
 func (si *SpeedInteractor) GetConfig() domain.SpeedConfig {
-	return si.s.GetConfig()
+	return si.Game.GetConfig()
 }
 
 // ActionLog 棋譜を出力する
 func (si *SpeedInteractor) ActionLog() string {
-	return si.sp.ActionLogOutput(si.s)
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (si *SpeedInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(si.s)
+	return si.sp.ActionLogOutput(si.Game)
 }
 
 // RestoreSpeedInteractor deserialises JSON into a SpeedInteractor.
 func RestoreSpeedInteractor(data []byte, sp presenter.SpeedPresenter) (*SpeedInteractor, error) {
-	s, err := restoreGame[domain.Speed](data)
-	if err != nil {
-		return nil, err
-	}
-	return &SpeedInteractor{s: s, sp: sp}, nil
+	return restoreAndBuild[domain.Speed](data, func(g *domain.Speed) *SpeedInteractor {
+		return &SpeedInteractor{GameBase: GameBase[interfaces.SpeedGame]{Game: g}, sp: sp}
+	})
 }

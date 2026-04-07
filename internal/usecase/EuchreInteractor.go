@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -40,168 +38,168 @@ type EuchreInteractorIF interface {
 
 // EuchreInteractor ユーカーインタラクタークラス
 type EuchreInteractor struct {
-	e  interfaces.EuchreGame
+	GameBase[interfaces.EuchreGame]
 	ep presenter.EuchrePresenter
 }
 
 // NewEuchreInteractor コンストラクタ
 func NewEuchreInteractor(e interfaces.EuchreGame, ep presenter.EuchrePresenter) *EuchreInteractor {
 	mustNotNil("EuchreInteractor", map[string]any{"e": e, "ep": ep})
-	return &EuchreInteractor{e: e, ep: ep}
+	return &EuchreInteractor{GameBase: GameBase[interfaces.EuchreGame]{Game: e}, ep: ep}
 }
 
 // Reset ゲーム初期化
 func (ei *EuchreInteractor) Reset() string {
-	ei.e.Reset()
+	ei.Game.Reset()
 	ei.runCpuBids()
 	ei.runCpuDiscard()
 	ei.runCpuTurns()
-	return ei.ep.Output(ei.e, nil)
+	return ei.ep.Output(ei.Game, nil)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (ei *EuchreInteractor) ResetWithConfig(cfg domain.EuchreConfig) string {
-	return resetWithValidatedConfig(ei.e, ei.ep, cfg, ei.e.SetConfig, ei.Reset)
+	return resetWithValidatedConfig(ei.Game, ei.ep, cfg, ei.Game.SetConfig, ei.Reset)
 }
 
 // PickUp ピックアップ判断
 func (ei *EuchreInteractor) PickUp(orderUp bool, goAlone bool) string {
-	if out, blocked := guardGameEnd(ei.e, ei.ep); blocked {
+	if out, blocked := guardGameEnd(ei.Game, ei.ep); blocked {
 		return out
 	}
-	err := ei.e.PlayerPickUp(orderUp, goAlone)
+	err := ei.Game.PlayerPickUp(orderUp, goAlone)
 	if err != nil {
-		return ei.ep.Output(ei.e, err)
+		return ei.ep.Output(ei.Game, err)
 	}
 	ei.runCpuBids()
 	ei.runCpuDiscard()
 	ei.runCpuTurns()
-	return ei.ep.Output(ei.e, nil)
+	return ei.ep.Output(ei.Game, nil)
 }
 
 // CallTrump スートを指名する
 func (ei *EuchreInteractor) CallTrump(suit int, goAlone bool) string {
-	if out, blocked := guardGameEnd(ei.e, ei.ep); blocked {
+	if out, blocked := guardGameEnd(ei.Game, ei.ep); blocked {
 		return out
 	}
-	err := ei.e.PlayerCallTrump(suit, goAlone)
+	err := ei.Game.PlayerCallTrump(suit, goAlone)
 	if err != nil {
-		return ei.ep.Output(ei.e, err)
+		return ei.ep.Output(ei.Game, err)
 	}
 	ei.runCpuTurns()
-	return ei.ep.Output(ei.e, nil)
+	return ei.ep.Output(ei.Game, nil)
 }
 
 // Pass 現在のフェーズに応じてパスする (PickUp → PickUp(false,false), CallTrump → PassCall)
 func (ei *EuchreInteractor) Pass() string {
-	if out, blocked := guardGameEnd(ei.e, ei.ep); blocked {
+	if out, blocked := guardGameEnd(ei.Game, ei.ep); blocked {
 		return out
 	}
-	phase := ei.e.GetPhase()
+	phase := ei.Game.GetPhase()
 	switch phase {
 	case domain.EuchrePhasePickUp:
 		return ei.PickUp(false, false)
 	case domain.EuchrePhaseCallTrump:
 		return ei.PassCall()
 	default:
-		return ei.ep.Output(ei.e, domain.ErrWrongPhase)
+		return ei.ep.Output(ei.Game, domain.ErrWrongPhase)
 	}
 }
 
 // PassCall コールフェーズでパスする
 func (ei *EuchreInteractor) PassCall() string {
-	if out, blocked := guardGameEnd(ei.e, ei.ep); blocked {
+	if out, blocked := guardGameEnd(ei.Game, ei.ep); blocked {
 		return out
 	}
-	err := ei.e.PlayerPassCall()
+	err := ei.Game.PlayerPassCall()
 	if err != nil {
-		return ei.ep.Output(ei.e, err)
+		return ei.ep.Output(ei.Game, err)
 	}
 	ei.runCpuBids()
 	ei.runCpuDiscard()
 	ei.runCpuTurns()
-	return ei.ep.Output(ei.e, nil)
+	return ei.ep.Output(ei.Game, nil)
 }
 
 // Discard カードを捨てる
 func (ei *EuchreInteractor) Discard(cardIndex int) string {
-	if out, blocked := guardGameEnd(ei.e, ei.ep); blocked {
+	if out, blocked := guardGameEnd(ei.Game, ei.ep); blocked {
 		return out
 	}
-	err := ei.e.PlayerDiscard(cardIndex)
+	err := ei.Game.PlayerDiscard(cardIndex)
 	if err != nil {
-		return ei.ep.Output(ei.e, err)
+		return ei.ep.Output(ei.Game, err)
 	}
 	ei.runCpuTurns()
-	return ei.ep.Output(ei.e, nil)
+	return ei.ep.Output(ei.Game, nil)
 }
 
 // Play カードをプレイ
 func (ei *EuchreInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ei.e, ei.ep); blocked {
+	if out, blocked := guardNotPlayable(ei.Game, ei.ep); blocked {
 		return out
 	}
-	err := ei.e.PlayerPlay(cardIndex)
+	err := ei.Game.PlayerPlay(cardIndex)
 	if err != nil {
-		return ei.ep.Output(ei.e, err)
+		return ei.ep.Output(ei.Game, err)
 	}
 	ei.runCpuTurns()
-	return ei.ep.Output(ei.e, nil)
+	return ei.ep.Output(ei.Game, nil)
 }
 
 // NextTrick トリックを解決して次のトリックへ進む
 func (ei *EuchreInteractor) NextTrick() string {
-	ei.e.ResolveTrick()
-	if out, blocked := guardGameEnd(ei.e, ei.ep); blocked {
+	ei.Game.ResolveTrick()
+	if out, blocked := guardGameEnd(ei.Game, ei.ep); blocked {
 		return out
 	}
-	ei.e.NextTrick()
+	ei.Game.NextTrick()
 	ei.runCpuTurns()
-	return ei.ep.Output(ei.e, nil)
+	return ei.ep.Output(ei.Game, nil)
 }
 
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (ei *EuchreInteractor) NextRound() string {
-	ei.e.ScoreRound()
-	if out, blocked := guardGameEnd(ei.e, ei.ep); blocked {
+	ei.Game.ScoreRound()
+	if out, blocked := guardGameEnd(ei.Game, ei.ep); blocked {
 		return out
 	}
-	ei.e.NextRound()
+	ei.Game.NextRound()
 	ei.runCpuBids()
 	ei.runCpuDiscard()
 	ei.runCpuTurns()
-	return ei.ep.Output(ei.e, nil)
+	return ei.ep.Output(ei.Game, nil)
 }
 
 // GetConfig 現在の設定を取得
 func (ei *EuchreInteractor) GetConfig() domain.EuchreConfig {
-	return ei.e.GetConfig()
+	return ei.Game.GetConfig()
 }
 
 // Hint ヒント取得
 func (ei *EuchreInteractor) Hint() string {
-	return ei.ep.HintOutput(ei.e)
+	return ei.ep.HintOutput(ei.Game)
 }
 
 // ActionLog 棋譜を出力する
 func (ei *EuchreInteractor) ActionLog() string {
-	return ei.ep.ActionLogOutput(ei.e)
+	return ei.ep.ActionLogOutput(ei.Game)
 }
 
 // runCpuBids PickUpとCallTrumpフェーズでCPUを自動実行する
 func (ei *EuchreInteractor) runCpuBids() {
-	for !ei.e.GetGameEndFlag() {
-		phase := ei.e.GetPhase()
+	for !ei.Game.GetGameEndFlag() {
+		phase := ei.Game.GetPhase()
 		if phase == domain.EuchrePhasePickUp {
-			if ei.e.IsHumanBidTurn() {
+			if ei.Game.IsHumanBidTurn() {
 				break
 			}
-			ei.e.CpuPickUp()
+			ei.Game.CpuPickUp()
 		} else if phase == domain.EuchrePhaseCallTrump {
-			if ei.e.IsHumanBidTurn() {
+			if ei.Game.IsHumanBidTurn() {
 				break
 			}
-			ei.e.CpuCallTrump()
+			ei.Game.CpuCallTrump()
 		} else {
 			break
 		}
@@ -210,29 +208,24 @@ func (ei *EuchreInteractor) runCpuBids() {
 
 // runCpuDiscard DiscardフェーズでCPUディーラーを自動実行する
 func (ei *EuchreInteractor) runCpuDiscard() {
-	if ei.e.GetGameEndFlag() {
+	if ei.Game.GetGameEndFlag() {
 		return
 	}
-	if ei.e.GetPhase() == domain.EuchrePhaseDiscard {
-		if !ei.e.IsHumanTurn() {
-			ei.e.CpuDiscard()
+	if ei.Game.GetPhase() == domain.EuchrePhaseDiscard {
+		if !ei.Game.IsHumanTurn() {
+			ei.Game.CpuDiscard()
 		}
 	}
 }
 
 // runCpuTurns プレイフェーズでCPUターンを自動実行する
 func (ei *EuchreInteractor) runCpuTurns() {
-	runCpuTurnsLoop(ei.e, trickPhases[domain.EuchrePhase]{
+	runCpuTurnsLoop(ei.Game, trickPhases[domain.EuchrePhase]{
 		play:     domain.EuchrePhasePlay,
 		trickEnd: domain.EuchrePhaseTrickEnd,
 		roundEnd: domain.EuchrePhaseRoundEnd,
 		gameEnd:  domain.EuchrePhaseGameEnd,
 	})
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (ei *EuchreInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(ei.e)
 }
 
 // RestoreEuchreInteractor deserialises JSON into an EuchreInteractor.
@@ -241,5 +234,5 @@ func RestoreEuchreInteractor(data []byte, ep presenter.EuchrePresenter) (*Euchre
 	if err != nil {
 		return nil, err
 	}
-	return &EuchreInteractor{e: e, ep: ep}, nil
+	return &EuchreInteractor{GameBase: GameBase[interfaces.EuchreGame]{Game: e}, ep: ep}, nil
 }

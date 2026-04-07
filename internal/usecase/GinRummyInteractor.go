@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -34,137 +32,130 @@ type GinRummyInteractorIF interface {
 
 // GinRummyInteractor ジンラミーインタラクタークラス
 type GinRummyInteractor struct {
-	g  interfaces.GinRummyGame
+	GameBase[interfaces.GinRummyGame]
 	gp presenter.GinRummyPresenter
 }
 
 // NewGinRummyInteractor コンストラクタ
 func NewGinRummyInteractor(g interfaces.GinRummyGame, gp presenter.GinRummyPresenter) *GinRummyInteractor {
 	mustNotNil("GinRummyInteractor", map[string]any{"g": g, "gp": gp})
-	return &GinRummyInteractor{g: g, gp: gp}
+	return &GinRummyInteractor{GameBase: GameBase[interfaces.GinRummyGame]{Game: g}, gp: gp}
 }
 
 // Reset ゲーム初期化
 func (ci *GinRummyInteractor) Reset() string {
-	ci.g.Reset()
+	ci.Game.Reset()
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (ci *GinRummyInteractor) ResetWithConfig(cfg domain.GinRummyConfig) string {
-	return resetWithValidatedConfig(ci.g, ci.gp, cfg, ci.g.SetConfig, ci.Reset)
+	return resetWithValidatedConfig(ci.Game, ci.gp, cfg, ci.Game.SetConfig, ci.Reset)
 }
 
 // DrawFromStock 山札からカードを引く
 func (ci *GinRummyInteractor) DrawFromStock() string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerDrawFromStock()
+	err := ci.Game.PlayerDrawFromStock()
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // DrawFromDiscard 捨て札からカードを引く
 func (ci *GinRummyInteractor) DrawFromDiscard() string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerDrawFromDiscard()
+	err := ci.Game.PlayerDrawFromDiscard()
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // Discard カードを捨てる
 func (ci *GinRummyInteractor) Discard(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerDiscard(cardIndex)
+	err := ci.Game.PlayerDiscard(cardIndex)
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // Knock ノックする
 func (ci *GinRummyInteractor) Knock(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerKnock(cardIndex)
+	err := ci.Game.PlayerKnock(cardIndex)
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // Layoff レイオフする
 func (ci *GinRummyInteractor) Layoff(cardIndices []int) string {
-	if out, blocked := guardGameEnd(ci.g, ci.gp); blocked {
+	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerLayoff(cardIndices)
+	err := ci.Game.PlayerLayoff(cardIndices)
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // NextRound 次のラウンドへ進む
 func (ci *GinRummyInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(ci.g, ci.gp); blocked {
+	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
 		return out
 	}
-	ci.g.NextRound()
+	ci.Game.NextRound()
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // GetConfig 現在の設定を取得
 func (ci *GinRummyInteractor) GetConfig() domain.GinRummyConfig {
-	return ci.g.GetConfig()
+	return ci.Game.GetConfig()
 }
 
 // ActionLog 棋譜を出力する
 func (ci *GinRummyInteractor) ActionLog() string {
-	return ci.gp.ActionLogOutput(ci.g)
+	return ci.gp.ActionLogOutput(ci.Game)
 }
 
 // runCpuTurns CPUターンを実行
 func (ci *GinRummyInteractor) runCpuTurns() {
-	for !ci.g.GetGameEndFlag() {
-		phase := ci.g.GetPhase()
+	for !ci.Game.GetGameEndFlag() {
+		phase := ci.Game.GetPhase()
 		if phase == domain.GinRummyPhaseRoundEnd || phase == domain.GinRummyPhaseGameEnd {
 			break
 		}
-		if ci.g.IsHumanTurn() {
+		if ci.Game.IsHumanTurn() {
 			break
 		}
-		ci.g.CpuPlay()
+		ci.Game.CpuPlay()
 	}
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (ci *GinRummyInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(ci.g)
 }
 
 // RestoreGinRummyInteractor deserialises JSON into a GinRummyInteractor.
 func RestoreGinRummyInteractor(data []byte, gp presenter.GinRummyPresenter) (*GinRummyInteractor, error) {
-	g, err := restoreGame[domain.GinRummy](data)
-	if err != nil {
-		return nil, err
-	}
-	return &GinRummyInteractor{g: g, gp: gp}, nil
+	return restoreAndBuild[domain.GinRummy](data, func(g *domain.GinRummy) *GinRummyInteractor {
+		return &GinRummyInteractor{GameBase: GameBase[interfaces.GinRummyGame]{Game: g}, gp: gp}
+	})
 }

@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -24,52 +22,47 @@ type IndianPokerInteractorIF interface {
 
 // IndianPokerInteractor インディアンポーカーインタラクタークラス
 type IndianPokerInteractor struct {
-	ip  interfaces.IndianPokerGame
+	GameBase[interfaces.IndianPokerGame]
 	ipp presenter.IndianPokerPresenter
 }
 
 // NewIndianPokerInteractor コンストラクタ
 func NewIndianPokerInteractor(ip interfaces.IndianPokerGame, ipp presenter.IndianPokerPresenter) *IndianPokerInteractor {
 	mustNotNil("IndianPokerInteractor", map[string]any{"ip": ip, "ipp": ipp})
-	return &IndianPokerInteractor{ip: ip, ipp: ipp}
+	return &IndianPokerInteractor{GameBase: GameBase[interfaces.IndianPokerGame]{Game: ip}, ipp: ipp}
 }
 
 // Reset ゲーム初期化
 func (ipi *IndianPokerInteractor) Reset() string {
-	return execAndPresent(ipi.ip, ipi.ipp, ipi.ip.Reset)
+	return execAndPresent(ipi.Game, ipi.ipp, ipi.Game.Reset)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (ipi *IndianPokerInteractor) ResetWithConfig(cfg domain.IndianPokerConfig, profileData []byte) string {
 	if err := cfg.Validate(); err != nil {
-		return ipi.ipp.Output(ipi.ip, err)
+		return ipi.ipp.Output(ipi.Game, err)
 	}
-	ipi.ip.SetConfig(cfg)
-	err := ipi.ip.Reset()
+	ipi.Game.SetConfig(cfg)
+	err := ipi.Game.Reset()
 	if len(profileData) > 0 {
-		_ = ipi.ip.ImportProfile(profileData)
+		_ = ipi.Game.ImportProfile(profileData)
 	}
-	return ipi.ipp.Output(ipi.ip, err)
+	return ipi.ipp.Output(ipi.Game, err)
 }
 
 // Action プレイヤーアクション実行
 func (ipi *IndianPokerInteractor) Action(action int, amount int, humanPlayMs int) string {
-	return execAndPresent(ipi.ip, ipi.ipp, func() error { return ipi.ip.PlayerAction(action, amount, humanPlayMs) })
+	return execAndPresent(ipi.Game, ipi.ipp, func() error { return ipi.Game.PlayerAction(action, amount, humanPlayMs) })
 }
 
 // GetConfig 現在の設定を取得
 func (ipi *IndianPokerInteractor) GetConfig() domain.IndianPokerConfig {
-	return ipi.ip.GetConfig()
+	return ipi.Game.GetConfig()
 }
 
 // ActionLog 棋譜を出力する
 func (ipi *IndianPokerInteractor) ActionLog() string {
-	return ipi.ipp.ActionLogOutput(ipi.ip)
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (ipi *IndianPokerInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(ipi.ip)
+	return ipi.ipp.ActionLogOutput(ipi.Game)
 }
 
 // RestoreIndianPokerInteractor deserialises JSON into an IndianPokerInteractor.
@@ -78,5 +71,5 @@ func RestoreIndianPokerInteractor(data []byte, ipp presenter.IndianPokerPresente
 	if err != nil {
 		return nil, err
 	}
-	return &IndianPokerInteractor{ip: ip, ipp: ipp}, nil
+	return &IndianPokerInteractor{GameBase: GameBase[interfaces.IndianPokerGame]{Game: ip}, ipp: ipp}, nil
 }
