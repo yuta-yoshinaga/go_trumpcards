@@ -241,7 +241,7 @@ function PigsTailPageContent() {
                 className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white text-sm transition-colors"
                 onClick={showActionLog}
               >
-                {tc('button.log')}
+                {tc('actionLog.view')}
               </button>
             </div>
           </GameFooter>
