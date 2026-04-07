@@ -230,7 +230,7 @@ func TestGameManager_NewGameManager_Smoke(t *testing.T) {
 	mgr := NewGameManager("blackjack")
 	assert.Equal(t, "blackjack", mgr.CurrentGame())
 	assert.NotNil(t, mgr.games["blackjack"])
-	assert.Len(t, mgr.games, len(gameNames))
+	assert.Len(t, mgr.games, len(GameNames))
 }
 
 func TestGameManager_NewGameManager_AllGamesRegistered(t *testing.T) {
@@ -246,4 +246,54 @@ func TestGameManager_NewGameManager_PanicsOnInvalidGame(t *testing.T) {
 	assert.Panics(t, func() {
 		NewGameManager("chess")
 	})
+}
+
+func TestGameManager_SwitchAlias(t *testing.T) {
+	mgr := NewGameManager("blackjack")
+	mgr.InitCurrentGame()
+
+	// "gin" is an alias for "ginrummy"
+	result := mgr.Exec("switch gin")
+	assert.Contains(t, result, "ginrummy")
+	assert.Equal(t, "ginrummy", mgr.CurrentGame())
+}
+
+func TestGameManager_SwitchAliasMultiple(t *testing.T) {
+	mgr := NewGameManager("blackjack")
+	mgr.InitCurrentGame()
+
+	tests := []struct {
+		alias     string
+		canonical string
+	}{
+		{"7stud", "sevencardstud"},
+		{"clock", "clocksolitaire"},
+		{"crazy8", "crazyeights"},
+		{"indian", "indianpoker"},
+		{"video", "videopoker"},
+		{"deuces", "deuceswild"},
+		{"joker", "jokerpoker"},
+		{"short", "shortdeck"},
+		{"6plus", "shortdeck"},
+		{"3card", "threecard"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.alias, func(t *testing.T) {
+			// Reset to blackjack so we can switch
+			mgr.currentGame = "blackjack"
+			result := mgr.Exec("switch " + tt.alias)
+			assert.Contains(t, result, tt.canonical)
+			assert.Equal(t, tt.canonical, mgr.CurrentGame())
+		})
+	}
+}
+
+func TestGameAliases_AllPointToValidGames(t *testing.T) {
+	gameSet := make(map[string]bool, len(GameNames))
+	for _, name := range GameNames {
+		gameSet[name] = true
+	}
+	for alias, canonical := range GameAliases {
+		assert.True(t, gameSet[canonical], "alias %q points to unknown game %q", alias, canonical)
+	}
 }

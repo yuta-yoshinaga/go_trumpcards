@@ -8,13 +8,13 @@ import (
 
 // completionSubcommands is the list of all subcommands for shell completion.
 var completionSubcommands = []string{
-	"baccarat", "blackjack", "bridge", "canasta", "completion", "crazyeights",
-	"cribbage", "daifugo", "deuceswild", "doubt", "euchre", "freecell",
-	"ginrummy", "gofish", "golf", "hearts", "holdem", "indianpoker",
-	"jokerpoker", "klondike", "memory", "napoleon", "ohhell", "oldmaid",
-	"omaha", "pineapple", "pinochle", "poker", "pyramid", "sevens",
-	"shortdeck", "spades", "speed", "spider", "threecard", "tripeaks",
-	"update", "videopoker", "web",
+	"baccarat", "blackjack", "bridge", "canasta", "clocksolitaire", "completion",
+	"crazyeights", "cribbage", "daifugo", "deuceswild", "doubt", "euchre",
+	"freecell", "games", "ginrummy", "gofish", "golf", "hearts", "holdem",
+	"indianpoker", "jokerpoker", "klondike", "memory", "napoleon", "ohhell",
+	"oldmaid", "omaha", "pigtail", "pineapple", "pinochle", "poker", "pyramid",
+	"sevencardstud", "sevens", "shortdeck", "spades", "speed", "spider",
+	"threecard", "tripeaks", "update", "videopoker", "web",
 }
 
 // runCompletion outputs a shell completion script for the given shell name.
@@ -103,7 +103,7 @@ func writeBashCompletion(w io.Writer) error {
         return
     fi
 
-    local commands="baccarat blackjack bridge canasta completion crazyeights cribbage daifugo deuceswild doubt euchre freecell ginrummy gofish golf hearts holdem indianpoker jokerpoker klondike memory napoleon ohhell oldmaid omaha pineapple pinochle poker pyramid sevens shortdeck spades speed spider threecard tripeaks update videopoker web"
+    local commands="baccarat blackjack bridge canasta clocksolitaire completion crazyeights cribbage daifugo deuceswild doubt euchre freecell games ginrummy gofish golf hearts holdem indianpoker jokerpoker klondike memory napoleon ohhell oldmaid omaha pigtail pineapple pinochle poker pyramid sevencardstud sevens shortdeck spades speed spider threecard tripeaks update videopoker web"
     COMPREPLY=( $(compgen -W "$commands" -- "$cur") )
 }
 complete -F _trumpcards trumpcards
@@ -122,6 +122,7 @@ _trumpcards() {
         'blackjack:BlackJack'
         'bridge:Contract Bridge'
         'canasta:Canasta'
+        'clocksolitaire:Clock Solitaire'
         'completion:Generate shell completion script'
         'crazyeights:Crazy Eights'
         'cribbage:Cribbage'
@@ -130,6 +131,7 @@ _trumpcards() {
         'doubt:Doubt'
         'euchre:Euchre'
         'freecell:FreeCell'
+        'games:List available games'
         'ginrummy:Gin Rummy'
         'gofish:Go Fish'
         'golf:Golf Solitaire'
@@ -143,10 +145,12 @@ _trumpcards() {
         'ohhell:Oh Hell'
         'oldmaid:Old Maid'
         'omaha:Omaha Hold'\''em'
+        'pigtail:Pig'\''s Tail'
         'pineapple:Pineapple Poker'
         'pinochle:Pinochle'
         'poker:5-card Draw Poker'
         'pyramid:Pyramid'
+        'sevencardstud:Seven Card Stud'
         'sevens:Sevens'
         'shortdeck:Short Deck Hold'\''em'
         'spades:Spades'
@@ -206,6 +210,7 @@ complete -c trumpcards -n __fish_use_subcommand -a baccarat -d 'Baccarat'
 complete -c trumpcards -n __fish_use_subcommand -a blackjack -d 'BlackJack'
 complete -c trumpcards -n __fish_use_subcommand -a bridge -d 'Contract Bridge'
 complete -c trumpcards -n __fish_use_subcommand -a canasta -d 'Canasta'
+complete -c trumpcards -n __fish_use_subcommand -a clocksolitaire -d 'Clock Solitaire'
 complete -c trumpcards -n __fish_use_subcommand -a completion -d 'Generate shell completion script'
 complete -c trumpcards -n __fish_use_subcommand -a crazyeights -d 'Crazy Eights'
 complete -c trumpcards -n __fish_use_subcommand -a cribbage -d 'Cribbage'
@@ -214,6 +219,7 @@ complete -c trumpcards -n __fish_use_subcommand -a deuceswild -d 'Deuces Wild'
 complete -c trumpcards -n __fish_use_subcommand -a doubt -d 'Doubt'
 complete -c trumpcards -n __fish_use_subcommand -a euchre -d 'Euchre'
 complete -c trumpcards -n __fish_use_subcommand -a freecell -d 'FreeCell'
+complete -c trumpcards -n __fish_use_subcommand -a games -d 'List available games'
 complete -c trumpcards -n __fish_use_subcommand -a ginrummy -d 'Gin Rummy'
 complete -c trumpcards -n __fish_use_subcommand -a gofish -d 'Go Fish'
 complete -c trumpcards -n __fish_use_subcommand -a golf -d 'Golf Solitaire'
@@ -227,10 +233,12 @@ complete -c trumpcards -n __fish_use_subcommand -a napoleon -d 'Napoleon'
 complete -c trumpcards -n __fish_use_subcommand -a ohhell -d 'Oh Hell'
 complete -c trumpcards -n __fish_use_subcommand -a oldmaid -d 'Old Maid'
 complete -c trumpcards -n __fish_use_subcommand -a omaha -d 'Omaha Hold'\''em'
+complete -c trumpcards -n __fish_use_subcommand -a pigtail -d 'Pig'\''s Tail'
 complete -c trumpcards -n __fish_use_subcommand -a pineapple -d 'Pineapple Poker'
 complete -c trumpcards -n __fish_use_subcommand -a pinochle -d 'Pinochle'
 complete -c trumpcards -n __fish_use_subcommand -a poker -d '5-card Draw Poker'
 complete -c trumpcards -n __fish_use_subcommand -a pyramid -d 'Pyramid'
+complete -c trumpcards -n __fish_use_subcommand -a sevencardstud -d 'Seven Card Stud'
 complete -c trumpcards -n __fish_use_subcommand -a sevens -d 'Sevens'
 complete -c trumpcards -n __fish_use_subcommand -a shortdeck -d 'Short Deck Hold'\''em'
 complete -c trumpcards -n __fish_use_subcommand -a spades -d 'Spades'

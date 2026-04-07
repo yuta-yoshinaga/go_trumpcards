@@ -8,8 +8,8 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// gameNames is the canonical ordered list of available game names.
-var gameNames = []string{
+// GameNames is the canonical ordered list of available game names.
+var GameNames = []string{
 	"blackjack", "poker", "oldmaid", "daifugo", "sevens",
 	"doubt", "holdem", "omaha", "shortdeck", "pineapple",
 	"hearts", "memory", "klondike", "freecell", "baccarat",
@@ -18,6 +18,23 @@ var gameNames = []string{
 	"euchre", "pyramid", "tripeaks", "cribbage", "threecard",
 	"ohhell", "bridge", "speed", "gofish", "pinochle", "golf",
 	"pigtail", "sevencardstud", "clocksolitaire",
+}
+
+// GameAliases maps short alias names to their canonical game names.
+// Aliases are not shown in help or game lists.
+var GameAliases = map[string]string{
+	"7stud":  "sevencardstud",
+	"7cs":    "sevencardstud",
+	"clock":  "clocksolitaire",
+	"crazy8": "crazyeights",
+	"indian": "indianpoker",
+	"video":  "videopoker",
+	"deuces": "deuceswild",
+	"joker":  "jokerpoker",
+	"short":  "shortdeck",
+	"6plus":  "shortdeck",
+	"gin":    "ginrummy",
+	"3card":  "threecard",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.
@@ -48,7 +65,7 @@ func NewGameManager(startGame string) *GameManager {
 		helpLines:   helpLines,
 		initialized: make(map[string]bool),
 		currentGame: startGame,
-		gameOrder:   gameNames,
+		gameOrder:   GameNames,
 	}
 }
 
@@ -108,6 +125,9 @@ func (m *GameManager) initGame(name string) string {
 
 func (m *GameManager) switchGame(name string) string {
 	name = strings.ToLower(name)
+	if canonical, ok := GameAliases[name]; ok {
+		name = canonical
+	}
 	if _, ok := m.games[name]; !ok {
 		msg := i18n.Tf("unknownGame", "name", name)
 		if suggestion := cuiutil.SuggestCommand(name, m.gameOrder, 2); suggestion != "" {
