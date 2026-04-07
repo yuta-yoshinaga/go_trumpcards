@@ -10,7 +10,12 @@ export function CpuActionLog({ actions }: CpuActionLogProps) {
   const { t } = useTranslation('common');
   if (!actions || actions.length === 0) return null;
   return (
-    <div className="bg-black/30 rounded p-2 mb-3 text-white text-xs">
+    <div
+      role="log"
+      aria-live="polite"
+      aria-label={t('label.cpuActionLog')}
+      className="bg-black/30 rounded p-2 mb-3 text-white text-xs"
+    >
       <div className="font-bold mb-1">{t('label.cpuAction')}</div>
       {actions.map((a, i) => (
         <div key={`${i}-${a.playerIdx}-${a.action}`}>

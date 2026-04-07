@@ -45,16 +45,16 @@ describe('BettingControls', () => {
 
   it('applies poker-themed styles to action buttons', () => {
     render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
-    expect(screen.getByRole('button', { name: 'コール' }).className).toContain('bg-emerald-600');
-    expect(screen.getByRole('button', { name: 'レイズ' }).className).toContain('bg-sky-500');
-    expect(screen.getByRole('button', { name: 'フォールド' }).className).toContain('bg-gray-500');
-    expect(screen.getByRole('button', { name: 'オールイン' }).className).toContain('bg-amber-500');
+    expect(screen.getByRole('button', { name: 'コール' }).className).toContain('bg-poker-call');
+    expect(screen.getByRole('button', { name: 'レイズ' }).className).toContain('bg-poker-raise');
+    expect(screen.getByRole('button', { name: 'フォールド' }).className).toContain('bg-poker-fold');
+    expect(screen.getByRole('button', { name: 'オールイン' }).className).toContain('bg-poker-allin');
   });
 
   it('applies poker-themed styles to bet/check buttons', () => {
     render(<BettingControls {...makeProps()} />);
-    expect(screen.getByRole('button', { name: 'ベット' }).className).toContain('bg-sky-500');
-    expect(screen.getByRole('button', { name: 'チェック' }).className).toContain('bg-emerald-600');
+    expect(screen.getByRole('button', { name: 'ベット' }).className).toContain('bg-poker-raise');
+    expect(screen.getByRole('button', { name: 'チェック' }).className).toContain('bg-poker-call');
   });
 
   it('disables buttons when loading', () => {

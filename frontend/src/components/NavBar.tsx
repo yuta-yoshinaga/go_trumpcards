@@ -269,6 +269,14 @@ export function NavBar() {
             })}
           </div>
         )}
+        {isMobile && (
+          <div aria-live="polite" className="sr-only">
+            {searchTerm &&
+              (filteredRoutes && filteredRoutes.length > 0
+                ? t('nav.searchResultCount', { count: filteredRoutes.length })
+                : t('nav.noResults'))}
+          </div>
+        )}
         {filteredRoutes ? (
           <div className="flex flex-col gap-1">
             {filteredRoutes.length === 0 ? (

@@ -13,13 +13,13 @@ export const btnDanger = `${base} text-white bg-ds-error hover:bg-ds-error-hover
 export const btnSecondary = `${base} text-ds-text-primary bg-ds-surface-elevated hover:bg-ds-surface-elevated-hover`;
 
 /** Poker primary (emerald) — call/check action. */
-export const btnPokerPrimary = `${base} text-white bg-emerald-600 hover:bg-emerald-700`;
+export const btnPokerPrimary = `${base} text-white bg-poker-call hover:bg-poker-call-hover`;
 /** Poker accent (sky) — raise/bet action. */
-export const btnPokerAccent = `${base} text-white bg-sky-500 hover:bg-sky-600`;
+export const btnPokerAccent = `${base} text-white bg-poker-raise hover:bg-poker-raise-hover`;
 /** Poker all-in (amber) — high-stakes action. */
-export const btnPokerAllIn = `${base} text-white bg-amber-500 hover:bg-amber-600`;
+export const btnPokerAllIn = `${base} text-white bg-poker-allin hover:bg-poker-allin-hover`;
 /** Poker muted (gray) — fold action. */
-export const btnPokerMuted = `${base} text-white bg-gray-500 hover:bg-gray-600`;
+export const btnPokerMuted = `${base} text-white bg-poker-fold hover:bg-poker-fold-hover`;
 /** Outline button — minimal visual weight for reset etc. */
 export const btnOutline = `${base} text-ds-text-muted border border-ds-border-subtle bg-transparent hover:bg-ds-surface-elevated`;
 

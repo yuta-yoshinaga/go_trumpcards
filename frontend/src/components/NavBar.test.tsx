@@ -609,7 +609,8 @@ describe('NavBar', () => {
       fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
       const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
       fireEvent.change(input, { target: { value: 'xyznonexistent' } });
-      expect(screen.getByText(i18n.t('nav.noResults'))).toBeInTheDocument();
+      const noResultsElements = screen.getAllByText(i18n.t('nav.noResults'));
+      expect(noResultsElements.length).toBeGreaterThanOrEqual(1);
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
       window.dispatchEvent(new Event('resize'));
     });
