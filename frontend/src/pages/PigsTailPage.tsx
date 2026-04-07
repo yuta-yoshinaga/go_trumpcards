@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { pigtailApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -7,6 +7,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { ManualButton } from '../components/ManualButton';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PigsTailSkeleton } from '../components/skeleton/PigsTailSkeleton';
@@ -77,8 +78,8 @@ function PigsTailPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pigtail');
   const { state, loading, exec: execApi } = useGameApi(pigtailApi.exec);
-  const handleDraw = () => execApi('draw');
-  const handleReset = () => execApi('reset');
+  const handleDraw = useCallback(() => execApi('draw'), [execApi]);
+  const handleReset = useCallback(() => execApi('reset'), [execApi]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: initial load
   useEffect(() => {
@@ -133,6 +134,7 @@ function PigsTailPageContent() {
       <PhaseIndicator phaseName={currentPhaseName ?? ''}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
+        <ManualButton gamePath="/pigtail" />
       </PhaseIndicator>
 
       {cliEnabled ? (
