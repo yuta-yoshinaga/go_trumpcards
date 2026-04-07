@@ -5,6 +5,22 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { PigsTailResponse } from '../types/card';
 import { PigsTailPage } from './PigsTailPage';
 
+import { useCliMode } from '../hooks/useCliMode';
+
+vi.mock('../hooks/useCliMode', () => ({
+  useCliMode: vi.fn(() => ({
+    cliEnabled: false,
+    toggleCli: vi.fn(),
+    logEntries: [],
+    addInput: vi.fn(),
+    addOutput: vi.fn(),
+    addError: vi.fn(),
+    clearLog: vi.fn(),
+  })),
+}));
+
+const mockUseCliMode = vi.mocked(useCliMode);
+
 vi.mock('../api/gameApi', () => ({
   pigtailApi: { exec: vi.fn() },
   actionLogApi: { pigtail: vi.fn() },
@@ -146,5 +162,22 @@ describe('PigsTailPage', () => {
       expect(screen.getByText(/ペナルティ/)).toBeInTheDocument();
       expect(screen.getByText(/セーフ/)).toBeInTheDocument();
     });
+  });
+
+  it('renders CLI terminal when CLI mode is enabled', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+    renderWithProviders(<PigsTailPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('textbox')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: '山札から引く' })).not.toBeInTheDocument();
   });
 });
