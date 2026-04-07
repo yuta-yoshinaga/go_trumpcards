@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CARD_DIMENSIONS,
+  useBreakpoint,
   useCardDimensions,
   useIsLargeDesktop,
   useIsMediumDesktop,
@@ -36,6 +37,70 @@ describe('useWindowWidth', () => {
   it('removes listener on unmount', () => {
     vi.spyOn(window, 'removeEventListener');
     const { unmount } = renderHook(() => useWindowWidth());
+    unmount();
+    expect(window.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
+  });
+});
+
+describe('useBreakpoint', () => {
+  const originalInnerWidth = window.innerWidth;
+
+  afterEach(() => setWidth(originalInnerWidth));
+
+  it('returns mobile below 640px', () => {
+    setWidth(375);
+    const { result } = renderHook(() => useBreakpoint());
+    expect(result.current).toBe('mobile');
+  });
+
+  it('returns desktop between 640-1024px', () => {
+    setWidth(800);
+    const { result } = renderHook(() => useBreakpoint());
+    expect(result.current).toBe('desktop');
+  });
+
+  it('returns largeDesktop above 1024px', () => {
+    setWidth(1280);
+    const { result } = renderHook(() => useBreakpoint());
+    expect(result.current).toBe('largeDesktop');
+  });
+
+  it('does not re-render on within-breakpoint resize', () => {
+    setWidth(400);
+    let renderCount = 0;
+    const { result } = renderHook(() => {
+      renderCount++;
+      return useBreakpoint();
+    });
+    expect(result.current).toBe('mobile');
+    const initialRenderCount = renderCount;
+
+    act(() => {
+      setWidth(500);
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    expect(result.current).toBe('mobile');
+    expect(renderCount).toBe(initialRenderCount);
+  });
+
+  it('re-renders on cross-breakpoint resize', () => {
+    setWidth(600);
+    const { result } = renderHook(() => useBreakpoint());
+    expect(result.current).toBe('mobile');
+
+    act(() => {
+      setWidth(700);
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    expect(result.current).toBe('desktop');
+  });
+
+  it('removes listener on unmount', () => {
+    vi.spyOn(window, 'removeEventListener');
+    setWidth(800);
+    const { unmount } = renderHook(() => useBreakpoint());
     unmount();
     expect(window.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
   });

@@ -25,3 +25,6 @@ frontend/coverage/
 .vscode/
 .gstack/
 TODOS.md
+
+# gstack (team mode — installed globally, not vendored)
+.claude/skills/gstack/

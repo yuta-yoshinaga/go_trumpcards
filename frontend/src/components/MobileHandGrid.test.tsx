@@ -207,4 +207,24 @@ describe('MobileHandGrid', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
   });
+
+  it('renders CardImage instead of AnimatedCard (no animated-card testid)', () => {
+    const cards = makeCards(5);
+    const { container } = render(
+      <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+    );
+    expect(container.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(0);
+    expect(container.querySelectorAll('img')).toHaveLength(5);
+  });
+
+  it('applies deal-in animation class to card images', () => {
+    const cards = makeCards(3);
+    const { container } = render(
+      <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+    );
+    const images = container.querySelectorAll('img');
+    for (const img of images) {
+      expect(img.className).toContain('animate-card-deal-in');
+    }
+  });
 });

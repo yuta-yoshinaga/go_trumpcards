@@ -1,8 +1,9 @@
 import { useWindowWidth } from '../hooks/useCardDimensions';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { expansionMargin, focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
-import { AnimatedCard } from './motion/AnimatedCard';
+import { CardImage } from './CardImage';
 
 /** Minimum number of cards before splitting into 2 rows. */
 const TWO_ROW_THRESHOLD = 4;
@@ -38,6 +39,7 @@ interface MobileHandGridProps {
  */
 export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, dataTutorial }: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
+  const reduced = useReducedMotion();
   const buttonWidth = cardWidth + BUTTON_EXTRA;
 
   const useTwoRows = cards.length >= TWO_ROW_THRESHOLD;
@@ -82,7 +84,12 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
                     ...(useScroll ? { flexShrink: 0 } : {}),
                   }}
                 >
-                  <AnimatedCard card={card} width={cardWidth} />
+                  <CardImage
+                    card={card}
+                    width={cardWidth}
+                    className={reduced ? undefined : 'animate-card-deal-in'}
+                    style={reduced ? undefined : { animationDelay: `${i * 0.12}s` }}
+                  />
                 </button>
               );
             })}
