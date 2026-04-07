@@ -58,95 +58,30 @@ vi.mock('framer-motion', async () => {
   return { motion: createMotionProxy(), AnimatePresence };
 });
 
-import enCommon from '../i18n/locales/en/common.json';
-import jaBaccarat from '../i18n/locales/ja/baccarat.json';
-import jaBlackjack from '../i18n/locales/ja/blackjack.json';
-import jaCommon from '../i18n/locales/ja/common.json';
-import jaCrazyeights from '../i18n/locales/ja/crazyeights.json';
-import jaDaifugo from '../i18n/locales/ja/daifugo.json';
-import jaDoubt from '../i18n/locales/ja/doubt.json';
-import jaFreecell from '../i18n/locales/ja/freecell.json';
-import jaGinrummy from '../i18n/locales/ja/ginrummy.json';
-import jaGofish from '../i18n/locales/ja/gofish.json';
-import jaHearts from '../i18n/locales/ja/hearts.json';
-import jaHoldem from '../i18n/locales/ja/holdem.json';
-import jaIndianpoker from '../i18n/locales/ja/indianpoker.json';
-import jaKlondike from '../i18n/locales/ja/klondike.json';
-import jaMemory from '../i18n/locales/ja/memory.json';
-import jaNapoleon from '../i18n/locales/ja/napoleon.json';
-import jaOldmaid from '../i18n/locales/ja/oldmaid.json';
-import jaOmaha from '../i18n/locales/ja/omaha.json';
-import jaPoker from '../i18n/locales/ja/poker.json';
-import jaSevencardstud from '../i18n/locales/ja/sevencardstud.json';
-import jaSevens from '../i18n/locales/ja/sevens.json';
-import jaSpades from '../i18n/locales/ja/spades.json';
-import jaSpeed from '../i18n/locales/ja/speed.json';
-import jaSpider from '../i18n/locales/ja/spider.json';
-import jaThreecard from '../i18n/locales/ja/threecard.json';
-import jaTutorial from '../i18n/locales/ja/tutorial.json';
+import { buildResources } from '../i18n/buildResources';
+
+// Eagerly import all locale JSON files via Vite glob
+const jaModules = import.meta.glob('../i18n/locales/ja/*.json', {
+  eager: true,
+  import: 'default',
+}) as Record<string, Record<string, string>>;
+
+const enModules = import.meta.glob('../i18n/locales/en/*.json', {
+  eager: true,
+  import: 'default',
+}) as Record<string, Record<string, string>>;
+
+const jaResources = buildResources(jaModules);
+const enResources = buildResources(enModules);
 
 i18n.use(initReactI18next).init({
   lng: 'ja',
   fallbackLng: 'ja',
   defaultNS: 'common',
-  ns: [
-    'common',
-    'blackjack',
-    'poker',
-    'oldmaid',
-    'daifugo',
-    'sevens',
-    'doubt',
-    'holdem',
-    'omaha',
-    'hearts',
-    'spades',
-    'memory',
-    'baccarat',
-    'crazyeights',
-    'klondike',
-    'freecell',
-    'ginrummy',
-    'napoleon',
-    'spider',
-    'indianpoker',
-    'threecard',
-    'speed',
-    'gofish',
-    'sevencardstud',
-    'tutorial',
-  ],
+  ns: Object.keys(jaResources),
   resources: {
-    ja: {
-      common: jaCommon,
-      blackjack: jaBlackjack,
-      poker: jaPoker,
-      oldmaid: jaOldmaid,
-      daifugo: jaDaifugo,
-      sevens: jaSevens,
-      doubt: jaDoubt,
-      holdem: jaHoldem,
-      omaha: jaOmaha,
-      hearts: jaHearts,
-      spades: jaSpades,
-      memory: jaMemory,
-      baccarat: jaBaccarat,
-      crazyeights: jaCrazyeights,
-      klondike: jaKlondike,
-      freecell: jaFreecell,
-      ginrummy: jaGinrummy,
-      napoleon: jaNapoleon,
-      spider: jaSpider,
-      indianpoker: jaIndianpoker,
-      threecard: jaThreecard,
-      speed: jaSpeed,
-      gofish: jaGofish,
-      sevencardstud: jaSevencardstud,
-      tutorial: jaTutorial,
-    },
-    en: {
-      common: enCommon,
-    },
+    ja: jaResources,
+    en: enResources,
   },
   interpolation: { escapeValue: false },
 });

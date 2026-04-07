@@ -144,3 +144,9 @@ func (_m *MockBlackJackInteractor) ActionLog() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// Snapshot モック
+func (_m *MockBlackJackInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

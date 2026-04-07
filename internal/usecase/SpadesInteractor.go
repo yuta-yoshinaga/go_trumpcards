@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -10,6 +8,8 @@ import (
 
 // SpadesInteractorIF スペードインタラクターインタフェース
 type SpadesInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// ResetWithConfig 設定を変更してゲーム初期化
@@ -32,101 +32,101 @@ type SpadesInteractorIF interface {
 
 // SpadesInteractor スペードインタラクタークラス
 type SpadesInteractor struct {
-	s  interfaces.SpadesGame
+	GameBase[interfaces.SpadesGame]
 	sp presenter.SpadesPresenter
 }
 
 // NewSpadesInteractor コンストラクタ
 func NewSpadesInteractor(s interfaces.SpadesGame, sp presenter.SpadesPresenter) *SpadesInteractor {
 	mustNotNil("SpadesInteractor", map[string]any{"s": s, "sp": sp})
-	return &SpadesInteractor{s: s, sp: sp}
+	return &SpadesInteractor{GameBase: GameBase[interfaces.SpadesGame]{Game: s}, sp: sp}
 }
 
 // Reset ゲーム初期化
 func (si *SpadesInteractor) Reset() string {
-	si.s.Reset()
+	si.Game.Reset()
 	si.runCpuBids()
-	if si.s.GetPhase() == domain.SpadesPhasePlay {
+	if si.Game.GetPhase() == domain.SpadesPhasePlay {
 		si.runCpuTurns()
 	}
-	return si.sp.Output(si.s, nil)
+	return si.sp.Output(si.Game, nil)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (si *SpadesInteractor) ResetWithConfig(cfg domain.SpadesConfig) string {
-	return resetWithValidatedConfig(si.s, si.sp, cfg, si.s.SetConfig, si.Reset)
+	return resetWithValidatedConfig(si.Game, si.sp, cfg, si.Game.SetConfig, si.Reset)
 }
 
 // Bid ビッドを宣言
 func (si *SpadesInteractor) Bid(bid int) string {
-	if out, blocked := guardGameEnd(si.s, si.sp); blocked {
+	if out, blocked := guardGameEnd(si.Game, si.sp); blocked {
 		return out
 	}
-	err := si.s.PlayerBid(bid)
+	err := si.Game.PlayerBid(bid)
 	if err != nil {
-		return si.sp.Output(si.s, err)
+		return si.sp.Output(si.Game, err)
 	}
 	si.runCpuBids()
-	if si.s.GetPhase() == domain.SpadesPhasePlay {
+	if si.Game.GetPhase() == domain.SpadesPhasePlay {
 		si.runCpuTurns()
 	}
-	return si.sp.Output(si.s, nil)
+	return si.sp.Output(si.Game, nil)
 }
 
 // Play カードをプレイ
 func (si *SpadesInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(si.s, si.sp); blocked {
+	if out, blocked := guardNotPlayable(si.Game, si.sp); blocked {
 		return out
 	}
-	err := si.s.PlayerPlay(cardIndex)
+	err := si.Game.PlayerPlay(cardIndex)
 	if err != nil {
-		return si.sp.Output(si.s, err)
+		return si.sp.Output(si.Game, err)
 	}
 	si.runCpuTurns()
-	return si.sp.Output(si.s, nil)
+	return si.sp.Output(si.Game, nil)
 }
 
 // NextTrick 次のトリックへ進む
 func (si *SpadesInteractor) NextTrick() string {
-	si.s.NextTrick()
+	si.Game.NextTrick()
 	si.runCpuTurns()
-	return si.sp.Output(si.s, nil)
+	return si.sp.Output(si.Game, nil)
 }
 
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (si *SpadesInteractor) NextRound() string {
-	si.s.ScoreRound()
-	if out, blocked := guardGameEnd(si.s, si.sp); blocked {
+	si.Game.ScoreRound()
+	if out, blocked := guardGameEnd(si.Game, si.sp); blocked {
 		return out
 	}
-	si.s.NextRound()
+	si.Game.NextRound()
 	si.runCpuBids()
-	return si.sp.Output(si.s, nil)
+	return si.sp.Output(si.Game, nil)
 }
 
 // GetConfig 現在の設定を取得
 func (si *SpadesInteractor) GetConfig() domain.SpadesConfig {
-	return si.s.GetConfig()
+	return si.Game.GetConfig()
 }
 
 // Hint ヒント取得
 func (si *SpadesInteractor) Hint() string {
-	return si.sp.HintOutput(si.s)
+	return si.sp.HintOutput(si.Game)
 }
 
 // ActionLog 棋譜を出力する
 func (si *SpadesInteractor) ActionLog() string {
-	return si.sp.ActionLogOutput(si.s)
+	return si.sp.ActionLogOutput(si.Game)
 }
 
 // runCpuBids ゲームが終わるかヒューマンのビッド番またはビッドフェーズが終了するまでCPUビッドを実行
 func (si *SpadesInteractor) runCpuBids() {
-	runCpuBidsLoop(si.s, domain.SpadesPhaseBid)
+	runCpuBidsLoop(si.Game, domain.SpadesPhaseBid)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番またはトリック/ラウンド終了になるまでCPUターンを実行
 func (si *SpadesInteractor) runCpuTurns() {
-	runCpuTurnsLoop(si.s, trickPhases[domain.SpadesPhase]{
+	runCpuTurnsLoop(si.Game, trickPhases[domain.SpadesPhase]{
 		play:     domain.SpadesPhasePlay,
 		trickEnd: domain.SpadesPhaseTrickEnd,
 		roundEnd: domain.SpadesPhaseRoundEnd,
@@ -134,16 +134,9 @@ func (si *SpadesInteractor) runCpuTurns() {
 	})
 }
 
-// Snapshot serialises the game state to JSON for KV persistence.
-func (si *SpadesInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(si.s)
-}
-
 // RestoreSpadesInteractor deserialises JSON into a SpadesInteractor.
 func RestoreSpadesInteractor(data []byte, sp presenter.SpadesPresenter) (*SpadesInteractor, error) {
-	s, err := restoreGame[domain.Spades](data)
-	if err != nil {
-		return nil, err
-	}
-	return &SpadesInteractor{s: s, sp: sp}, nil
+	return restoreAndBuild[domain.Spades](data, func(g *domain.Spades) *SpadesInteractor {
+		return &SpadesInteractor{GameBase: GameBase[interfaces.SpadesGame]{Game: g}, sp: sp}
+	})
 }

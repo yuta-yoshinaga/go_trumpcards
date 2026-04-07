@@ -42,3 +42,9 @@ func (_m *MockSevensInteractor) ActionLog() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// Snapshot モック
+func (_m *MockSevensInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -10,6 +8,8 @@ import (
 
 // SevensInteractorIF 7並べインタラクターインタフェース
 type SevensInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// ResetWithConfig 設定付きゲーム初期化
@@ -24,7 +24,7 @@ type SevensInteractorIF interface {
 
 // SevensInteractor 7並べインタラクタークラス
 type SevensInteractor struct {
-	s  interfaces.SevensGame
+	GameBase[interfaces.SevensGame]
 	sp presenter.SevensPresenter
 }
 
@@ -32,83 +32,76 @@ type SevensInteractor struct {
 func NewSevensInteractor(s interfaces.SevensGame, sp presenter.SevensPresenter) *SevensInteractor {
 	mustNotNil("SevensInteractor", map[string]any{"s": s, "sp": sp})
 	return &SevensInteractor{
-		s:  s,
-		sp: sp,
+		GameBase: GameBase[interfaces.SevensGame]{Game: s},
+		sp:       sp,
 	}
 }
 
 // ResetWithConfig 設定付きゲーム初期化
 func (si *SevensInteractor) ResetWithConfig(cfg domain.SevensConfig) string {
-	si.s.SetConfig(cfg)
-	si.s.Reset()
+	si.Game.SetConfig(cfg)
+	si.Game.Reset()
 	si.runCpuTurns()
-	return si.sp.Output(si.s, nil)
+	return si.sp.Output(si.Game, nil)
 }
 
 // Reset ゲーム初期化
 func (si *SevensInteractor) Reset() string {
-	si.s.Reset()
+	si.Game.Reset()
 	si.runCpuTurns()
-	return si.sp.Output(si.s, nil)
+	return si.sp.Output(si.Game, nil)
 }
 
 // Play 人間プレイヤーがカードを出す (または パスする)
 // idx: 出すカードのインデックス。-1 の場合はパス。
 func (si *SevensInteractor) Play(idx int) string {
-	if out, blocked := guardNotPlayable(si.s, si.sp); blocked {
+	if out, blocked := guardNotPlayable(si.Game, si.sp); blocked {
 		return out
 	}
-	err := si.s.PlayerPlay(idx)
-	if err == nil && !si.s.GetGameEndFlag() {
+	err := si.Game.PlayerPlay(idx)
+	if err == nil && !si.Game.GetGameEndFlag() {
 		si.runCpuTurns()
 	}
-	return si.sp.Output(si.s, err)
+	return si.sp.Output(si.Game, err)
 }
 
 // PlayJoker 人間プレイヤーがジョーカーを指定ポジションに出す
 func (si *SevensInteractor) PlayJoker(cardIdx, targetSuit, targetValue int) string {
-	if out, blocked := guardNotPlayable(si.s, si.sp); blocked {
+	if out, blocked := guardNotPlayable(si.Game, si.sp); blocked {
 		return out
 	}
-	err := si.s.PlayerPlayJoker(cardIdx, targetSuit, targetValue)
-	if err == nil && !si.s.GetGameEndFlag() {
+	err := si.Game.PlayerPlayJoker(cardIdx, targetSuit, targetValue)
+	if err == nil && !si.Game.GetGameEndFlag() {
 		si.runCpuTurns()
 	}
-	return si.sp.Output(si.s, err)
+	return si.sp.Output(si.Game, err)
 }
 
 // ActionLog 棋譜を出力する
 func (si *SevensInteractor) ActionLog() string {
-	return si.sp.ActionLogOutput(si.s)
+	return si.sp.ActionLogOutput(si.Game)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 // 人間の手番になった場合でも選択肢がなければ自動処理する
 func (si *SevensInteractor) runCpuTurns() {
-	for !si.s.GetGameEndFlag() {
-		if si.s.IsHumanTurn() {
+	for !si.Game.GetGameEndFlag() {
+		if si.Game.IsHumanTurn() {
 			// 人間に選択肢がなければ自動処理 (失格)
-			if !si.s.HasAnyOption(si.s.GetCurrentTurn()) {
-				si.s.AutoHandleNoOption()
+			if !si.Game.HasAnyOption(si.Game.GetCurrentTurn()) {
+				si.Game.AutoHandleNoOption()
 			} else {
 				break
 			}
 		} else {
-			si.s.CpuPlay()
+			si.Game.CpuPlay()
 		}
 	}
 }
 
-// Snapshot serialises the game state to JSON for KV persistence.
-func (si *SevensInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(si.s)
-}
-
 // RestoreSevensInteractor deserialises JSON into a SevensInteractor.
 func RestoreSevensInteractor(data []byte, sp presenter.SevensPresenter) (*SevensInteractor, error) {
-	s, err := restoreGame[domain.Sevens](data)
-	if err != nil {
-		return nil, err
-	}
-	return &SevensInteractor{s: s, sp: sp}, nil
+	return restoreAndBuild[domain.Sevens](data, func(g *domain.Sevens) *SevensInteractor {
+		return &SevensInteractor{GameBase: GameBase[interfaces.SevensGame]{Game: g}, sp: sp}
+	})
 }

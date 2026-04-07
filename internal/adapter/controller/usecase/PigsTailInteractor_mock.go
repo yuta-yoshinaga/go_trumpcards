@@ -36,3 +36,9 @@ func (_m *MockPigsTailInteractor) ActionLog() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// Snapshot モック
+func (_m *MockPigsTailInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

@@ -62,3 +62,9 @@ func (_m *MockSpiderInteractor) UndoN(n int) string {
 	ret := _m.Called(n)
 	return ret.Get(0).(string)
 }
+
+// Snapshot モック
+func (_m *MockSpiderInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

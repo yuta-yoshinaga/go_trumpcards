@@ -78,3 +78,9 @@ func (_m *MockNapoleonInteractor) ActionLog() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// Snapshot モック
+func (_m *MockNapoleonInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

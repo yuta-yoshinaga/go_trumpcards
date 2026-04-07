@@ -28,3 +28,9 @@ func (m *MockBaccaratInteractor) ActionLog() string {
 	args := m.Called()
 	return args.String(0)
 }
+
+// Snapshot モック
+func (m *MockBaccaratInteractor) Snapshot() ([]byte, error) {
+	ret := m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

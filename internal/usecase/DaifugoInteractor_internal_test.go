@@ -61,11 +61,11 @@ func TestDaifugoInteractor_Play_GameEndFlag(t *testing.T) {
 	dgpMock := new(presenter.MockDaifugoPresenter)
 	dgpMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	di := NewDaifugoInteractor(newInternalTestDaifugo(), dgpMock)
-	di.dg = buildDaifugoEndedGame()
+	di.Game = buildDaifugoEndedGame()
 
 	// Play the card at index 0 → human finishes → checkGameEnd → gameEndFlag = true.
 	di.Play([]int{0})
-	assert.True(t, di.dg.GetGameEndFlag())
+	assert.True(t, di.Game.GetGameEndFlag())
 
 	// Now call Play again with gameEndFlag == true → early return.
 	result := di.Play([]int{})
@@ -77,10 +77,10 @@ func TestDaifugoInteractor_Play_NotHumanTurn(t *testing.T) {
 	dgpMock := new(presenter.MockDaifugoPresenter)
 	dgpMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	di := NewDaifugoInteractor(newInternalTestDaifugo(), dgpMock)
-	di.dg = buildDaifugoCpuTurnGame()
+	di.Game = buildDaifugoCpuTurnGame()
 
 	// currentTurn = 0, player 0 is CPU → !IsHumanTurn() is true.
-	assert.False(t, di.dg.IsHumanTurn())
+	assert.False(t, di.Game.IsHumanTurn())
 	result := di.Play([]int{})
 	assert.Equal(t, mockOutput, result)
 }

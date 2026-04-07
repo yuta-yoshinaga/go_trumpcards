@@ -90,3 +90,9 @@ func (_m *MockEuchreInteractor) ActionLog() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// Snapshot モック
+func (_m *MockEuchreInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

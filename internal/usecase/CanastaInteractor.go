@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
@@ -10,6 +8,8 @@ import (
 
 // CanastaInteractorIF カナスタインタラクターインタフェース
 type CanastaInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// ResetWithConfig 設定を変更してゲーム初期化
@@ -36,150 +36,143 @@ type CanastaInteractorIF interface {
 
 // CanastaInteractor カナスタインタラクタークラス
 type CanastaInteractor struct {
-	g  interfaces.CanastaGame
+	GameBase[interfaces.CanastaGame]
 	gp presenter.CanastaPresenter
 }
 
 // NewCanastaInteractor コンストラクタ
 func NewCanastaInteractor(g interfaces.CanastaGame, gp presenter.CanastaPresenter) *CanastaInteractor {
 	mustNotNil("CanastaInteractor", map[string]any{"g": g, "gp": gp})
-	return &CanastaInteractor{g: g, gp: gp}
+	return &CanastaInteractor{GameBase: GameBase[interfaces.CanastaGame]{Game: g}, gp: gp}
 }
 
 // Reset ゲーム初期化
 func (ci *CanastaInteractor) Reset() string {
-	ci.g.Reset()
+	ci.Game.Reset()
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (ci *CanastaInteractor) ResetWithConfig(cfg domain.CanastaConfig) string {
-	return resetWithValidatedConfig(ci.g, ci.gp, cfg, ci.g.SetConfig, ci.Reset)
+	return resetWithValidatedConfig(ci.Game, ci.gp, cfg, ci.Game.SetConfig, ci.Reset)
 }
 
 // DrawFromStock 山札からカードを引く
 func (ci *CanastaInteractor) DrawFromStock() string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerDrawFromStock()
+	err := ci.Game.PlayerDrawFromStock()
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // DrawFromDiscard 捨て札の山を取る
 func (ci *CanastaInteractor) DrawFromDiscard(naturalPairIndices []int) string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerDrawFromDiscard(naturalPairIndices)
+	err := ci.Game.PlayerDrawFromDiscard(naturalPairIndices)
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // Meld メルドを出す
 func (ci *CanastaInteractor) Meld(meldGroups [][]int) string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerMeld(meldGroups)
+	err := ci.Game.PlayerMeld(meldGroups)
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // SkipMeld メルドフェーズをスキップ
 func (ci *CanastaInteractor) SkipMeld() string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerSkipMeld()
+	err := ci.Game.PlayerSkipMeld()
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // Discard カードを捨てる
 func (ci *CanastaInteractor) Discard(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerDiscard(cardIndex)
+	err := ci.Game.PlayerDiscard(cardIndex)
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // GoOut 上がる
 func (ci *CanastaInteractor) GoOut() string {
-	if out, blocked := guardNotPlayable(ci.g, ci.gp); blocked {
+	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
 		return out
 	}
-	err := ci.g.PlayerGoOut()
+	err := ci.Game.PlayerGoOut()
 	if err != nil {
-		return ci.gp.Output(ci.g, err)
+		return ci.gp.Output(ci.Game, err)
 	}
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // NextRound 次のラウンドへ進む
 func (ci *CanastaInteractor) NextRound() string {
-	if out, blocked := guardGameEnd(ci.g, ci.gp); blocked {
+	if out, blocked := guardGameEnd(ci.Game, ci.gp); blocked {
 		return out
 	}
-	ci.g.NextRound()
+	ci.Game.NextRound()
 	ci.runCpuTurns()
-	return ci.gp.Output(ci.g, nil)
+	return ci.gp.Output(ci.Game, nil)
 }
 
 // GetConfig 現在の設定を取得
 func (ci *CanastaInteractor) GetConfig() domain.CanastaConfig {
-	return ci.g.GetConfig()
+	return ci.Game.GetConfig()
 }
 
 // ActionLog 棋譜を出力する
 func (ci *CanastaInteractor) ActionLog() string {
-	return ci.gp.ActionLogOutput(ci.g)
+	return ci.gp.ActionLogOutput(ci.Game)
 }
 
 // runCpuTurns CPUターンを実行
 func (ci *CanastaInteractor) runCpuTurns() {
-	for !ci.g.GetGameEndFlag() {
-		phase := ci.g.GetPhase()
+	for !ci.Game.GetGameEndFlag() {
+		phase := ci.Game.GetPhase()
 		if phase == domain.CanastaPhaseRoundEnd || phase == domain.CanastaPhaseGameEnd {
 			break
 		}
-		if ci.g.IsHumanTurn() {
+		if ci.Game.IsHumanTurn() {
 			break
 		}
-		ci.g.CpuPlay()
+		ci.Game.CpuPlay()
 	}
-}
-
-// Snapshot serialises the game state to JSON for KV persistence.
-func (ci *CanastaInteractor) Snapshot() ([]byte, error) {
-	return json.Marshal(ci.g)
 }
 
 // RestoreCanastaInteractor deserialises JSON into a CanastaInteractor.
 func RestoreCanastaInteractor(data []byte, gp presenter.CanastaPresenter) (*CanastaInteractor, error) {
-	g, err := restoreGame[domain.Canasta](data)
-	if err != nil {
-		return nil, err
-	}
-	return &CanastaInteractor{g: g, gp: gp}, nil
+	return restoreAndBuild[domain.Canasta](data, func(g *domain.Canasta) *CanastaInteractor {
+		return &CanastaInteractor{GameBase: GameBase[interfaces.CanastaGame]{Game: g}, gp: gp}
+	})
 }
