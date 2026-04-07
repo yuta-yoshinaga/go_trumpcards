@@ -1,9 +1,24 @@
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { clocksolitaireApi } from '../api/gameApi';
+import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ClockSolitaireCard, ClockSolitaireResponse } from '../types/card';
 import { ClockSolitairePage } from './ClockSolitairePage';
+
+vi.mock('../hooks/useCliMode', () => ({
+  useCliMode: vi.fn(() => ({
+    cliEnabled: false,
+    toggleCli: vi.fn(),
+    logEntries: [],
+    addInput: vi.fn(),
+    addOutput: vi.fn(),
+    addError: vi.fn(),
+    clearLog: vi.fn(),
+  })),
+}));
+
+const mockUseCliMode = vi.mocked(useCliMode);
 
 vi.mock('../api/gameApi', () => ({
   clocksolitaireApi: { exec: vi.fn() },
@@ -124,5 +139,22 @@ describe('ClockSolitairePage', () => {
   it('renders playing phase indicator', async () => {
     renderWithProviders(<ClockSolitairePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('プレイ中'));
+  });
+
+  it('renders CLI terminal when CLI mode is enabled', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => {
+      expect(screen.getByRole('textbox')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('手持ちカード')).not.toBeInTheDocument();
   });
 });
