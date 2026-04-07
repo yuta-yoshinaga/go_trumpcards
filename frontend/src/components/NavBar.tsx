@@ -274,7 +274,7 @@ export function NavBar() {
             {searchTerm &&
               (filteredRoutes && filteredRoutes.length > 0
                 ? t('nav.searchResultCount', { count: filteredRoutes.length })
-                : t('nav.searchNoResults'))}
+                : t('nav.noResults'))}
           </div>
         )}
         {filteredRoutes ? (

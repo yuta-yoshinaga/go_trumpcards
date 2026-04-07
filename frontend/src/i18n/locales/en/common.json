@@ -9,7 +9,6 @@
     "searchClear": "Clear search",
     "noResults": "No games found",
     "searchResultCount": "{{count}} games found",
-    "searchNoResults": "No matching games",
     "recentGames": "Recently Played",
     "favoriteGames": "Favorites",
     "addFavorite": "Add to favorites",

@@ -95,7 +95,8 @@ describe('DesktopSidebar', () => {
       renderSidebar();
       const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
       fireEvent.change(input, { target: { value: 'xyznonexistent' } });
-      expect(screen.getByText(i18n.t('nav.noResults'))).toBeInTheDocument();
+      const noResultsElements = screen.getAllByText(i18n.t('nav.noResults'));
+      expect(noResultsElements.length).toBeGreaterThanOrEqual(1);
     });
 
     it('hides categories during search and restores on clear', () => {
