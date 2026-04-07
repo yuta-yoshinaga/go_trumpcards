@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /** Breakpoint between mobile and desktop layouts (px). */
 export const SM_BREAKPOINT = 640;
 /** Breakpoint between desktop and large-desktop layouts (px). */
 export const LG_BREAKPOINT = 1024;
+
+/** Breakpoint category names. */
+export type Breakpoint = 'mobile' | 'desktop' | 'largeDesktop';
 
 /** Card dimension presets for mobile, desktop, and large-desktop viewports. */
 export const CARD_DIMENSIONS = {
@@ -33,6 +36,13 @@ export const CARD_DIMENSIONS = {
   },
 } as const;
 
+/** Derive breakpoint category from a pixel width. */
+function widthToBreakpoint(width: number): Breakpoint {
+  if (width >= LG_BREAKPOINT) return 'largeDesktop';
+  if (width >= SM_BREAKPOINT) return 'desktop';
+  return 'mobile';
+}
+
 /** Shared hook that tracks viewport width with resize listener. */
 export function useWindowWidth(): number {
   const [width, setWidth] = useState(() => window.innerWidth);
@@ -46,28 +56,48 @@ export function useWindowWidth(): number {
   return width;
 }
 
-/** Hook that returns responsive card dimensions based on viewport width. */
-export function useCardDimensions() {
-  const width = useWindowWidth();
-  const isMobile = width < SM_BREAKPOINT;
+/**
+ * Hook that tracks viewport breakpoint category, only triggering re-renders
+ * when the viewport crosses SM_BREAKPOINT (640px) or LG_BREAKPOINT (1024px).
+ * Within-breakpoint resizes are ignored to avoid wasted renders.
+ */
+export function useBreakpoint(): Breakpoint {
+  const [bp, setBp] = useState<Breakpoint>(() => widthToBreakpoint(window.innerWidth));
+  const bpRef = useRef(bp);
 
-  if (width >= LG_BREAKPOINT) return { ...CARD_DIMENSIONS.largeDesktop, isMobile };
-  if (width >= SM_BREAKPOINT) return { ...CARD_DIMENSIONS.desktop, isMobile };
-  return { ...CARD_DIMENSIONS.mobile, isMobile };
+  useEffect(() => {
+    const handleResize = () => {
+      const next = widthToBreakpoint(window.innerWidth);
+      if (next !== bpRef.current) {
+        bpRef.current = next;
+        setBp(next);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return bp;
+}
+
+/** Hook that returns responsive card dimensions based on viewport breakpoint. */
+export function useCardDimensions() {
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
+  return { ...CARD_DIMENSIONS[bp], isMobile };
 }
 
 /** Hook that returns true when viewport width is below the sm breakpoint (mobile). */
 export function useIsMobile(): boolean {
-  return useWindowWidth() < SM_BREAKPOINT;
+  return useBreakpoint() === 'mobile';
 }
 
 /** Hook that returns true when viewport width is at or above the large-desktop breakpoint. */
 export function useIsLargeDesktop(): boolean {
-  return useWindowWidth() >= LG_BREAKPOINT;
+  return useBreakpoint() === 'largeDesktop';
 }
 
 /** Hook that returns true when viewport is between sm and lg breakpoints (tablet/small desktop). */
 export function useIsMediumDesktop(): boolean {
-  const width = useWindowWidth();
-  return width >= SM_BREAKPOINT && width < LG_BREAKPOINT;
+  return useBreakpoint() === 'desktop';
 }
