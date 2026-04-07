@@ -1,11 +1,10 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pigtailApi } from '../api/gameApi';
+import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PigsTailResponse } from '../types/card';
 import { PigsTailPage } from './PigsTailPage';
-
-import { useCliMode } from '../hooks/useCliMode';
 
 vi.mock('../hooks/useCliMode', () => ({
   useCliMode: vi.fn(() => ({

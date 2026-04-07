@@ -27,6 +27,8 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # crazyeights, ginrummy, spider, napoleon, indianpoker, videopoker, deuceswild,
 # jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, ohhell, bridge, speed,
 # gofish, canasta, pinochle, golf, pigtail, sevencardstud, clocksolitaire
+go run ./cmd/trumpcards games      # List all available games
+go run ./cmd/trumpcards games --short  # List game names only (for scripting)
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/trumpcards web --port 3000  # Start web server on custom port
