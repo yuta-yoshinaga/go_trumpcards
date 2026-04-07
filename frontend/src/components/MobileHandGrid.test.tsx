@@ -1,7 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Card } from '../types/card';
 import { MobileHandGrid } from './MobileHandGrid';
+
+vi.mock('../hooks/useReducedMotion', () => ({
+  useReducedMotion: vi.fn(() => false),
+}));
 
 /** Helper to create N cards for testing. */
 function makeCards(n: number): Card[] {
@@ -226,5 +230,20 @@ describe('MobileHandGrid', () => {
     for (const img of images) {
       expect(img.className).toContain('animate-card-deal-in');
     }
+  });
+
+  it('skips deal-in animation when reduced motion is preferred', async () => {
+    const { useReducedMotion } = await import('../hooks/useReducedMotion');
+    vi.mocked(useReducedMotion).mockReturnValue(true);
+    const cards = makeCards(3);
+    const { container } = render(
+      <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+    );
+    const images = container.querySelectorAll('img');
+    for (const img of images) {
+      expect(img.className || '').not.toContain('animate-card-deal-in');
+      expect(img.style.animationDelay).toBe('');
+    }
+    vi.mocked(useReducedMotion).mockReturnValue(false);
   });
 });

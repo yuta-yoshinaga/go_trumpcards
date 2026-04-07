@@ -17,6 +17,8 @@ const DEFAULT_CARD_GAP = 2;
 const MAX_OVERLAP_RATIO = 0.7;
 /** Minimum visible width (px) per card to meet WCAG 2.5.8 tap-target guidelines. */
 const MIN_CARD_EXPOSURE_PX = 44;
+/** Animation stagger delay per card (seconds) for the deal-in animation. */
+const DEAL_IN_STAGGER_S = 0.12;
 
 /** Props for the MobileHandGrid component. */
 interface MobileHandGridProps {
@@ -88,7 +90,7 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
                     card={card}
                     width={cardWidth}
                     className={reduced ? undefined : 'animate-card-deal-in'}
-                    style={reduced ? undefined : { animationDelay: `${i * 0.12}s` }}
+                    style={reduced ? undefined : { animationDelay: `${i * DEAL_IN_STAGGER_S}s` }}
                   />
                 </button>
               );
