@@ -1,8 +1,9 @@
 import { useWindowWidth } from '../hooks/useCardDimensions';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { expansionMargin, focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
-import { AnimatedCard } from './motion/AnimatedCard';
+import { CardImage } from './CardImage';
 
 /** Minimum number of cards before splitting into 2 rows. */
 const TWO_ROW_THRESHOLD = 4;
@@ -16,6 +17,8 @@ const DEFAULT_CARD_GAP = 2;
 const MAX_OVERLAP_RATIO = 0.7;
 /** Minimum visible width (px) per card to meet WCAG 2.5.8 tap-target guidelines. */
 const MIN_CARD_EXPOSURE_PX = 44;
+/** Animation stagger delay per card (seconds) for the deal-in animation. */
+const DEAL_IN_STAGGER_S = 0.12;
 
 /** Props for the MobileHandGrid component. */
 interface MobileHandGridProps {
@@ -38,6 +41,7 @@ interface MobileHandGridProps {
  */
 export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, dataTutorial }: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
+  const reduced = useReducedMotion();
   const buttonWidth = cardWidth + BUTTON_EXTRA;
 
   const useTwoRows = cards.length >= TWO_ROW_THRESHOLD;
@@ -82,7 +86,12 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
                     ...(useScroll ? { flexShrink: 0 } : {}),
                   }}
                 >
-                  <AnimatedCard card={card} width={cardWidth} />
+                  <CardImage
+                    card={card}
+                    width={cardWidth}
+                    className={reduced ? undefined : 'animate-card-deal-in'}
+                    style={reduced ? undefined : { animationDelay: `${i * DEAL_IN_STAGGER_S}s` }}
+                  />
                 </button>
               );
             })}

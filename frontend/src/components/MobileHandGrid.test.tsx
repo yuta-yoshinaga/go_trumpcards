@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Card } from '../types/card';
 import { MobileHandGrid } from './MobileHandGrid';
 
+vi.mock('../hooks/useReducedMotion', () => ({
+  useReducedMotion: vi.fn(() => false),
+}));
+
 /** Helper to create N cards for testing. */
 function makeCards(n: number): Card[] {
   const suits: Card['design'][] = ['SPADE', 'HEART', 'DIAMOND', 'CLOVER'];
@@ -206,5 +210,40 @@ describe('MobileHandGrid', () => {
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
+  });
+
+  it('renders CardImage instead of AnimatedCard (no animated-card testid)', () => {
+    const cards = makeCards(5);
+    const { container } = render(
+      <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+    );
+    expect(container.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(0);
+    expect(container.querySelectorAll('img')).toHaveLength(5);
+  });
+
+  it('applies deal-in animation class to card images', () => {
+    const cards = makeCards(3);
+    const { container } = render(
+      <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+    );
+    const images = container.querySelectorAll('img');
+    for (const img of images) {
+      expect(img.className).toContain('animate-card-deal-in');
+    }
+  });
+
+  it('skips deal-in animation when reduced motion is preferred', async () => {
+    const { useReducedMotion } = await import('../hooks/useReducedMotion');
+    vi.mocked(useReducedMotion).mockReturnValue(true);
+    const cards = makeCards(3);
+    const { container } = render(
+      <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+    );
+    const images = container.querySelectorAll('img');
+    for (const img of images) {
+      expect(img.className || '').not.toContain('animate-card-deal-in');
+      expect(img.style.animationDelay).toBe('');
+    }
+    vi.mocked(useReducedMotion).mockReturnValue(false);
   });
 });
