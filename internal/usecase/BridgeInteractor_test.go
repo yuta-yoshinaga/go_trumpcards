@@ -176,3 +176,66 @@ func TestBridgeInteractor_ActionLog(t *testing.T) {
 	result := bi.ActionLog()
 	assert.Contains(t, result, "log")
 }
+
+func TestBridgeInteractor_Play_NotHumanTurn(t *testing.T) {
+	bpMock := new(presenter.MockBridgePresenter)
+	bpMock.On("Output", mock.Anything, mock.Anything).Return(`{"notHuman":true}`)
+	gameMock := new(interfaces.MockBridgeGame)
+	gameMock.On("GetGameEndFlag").Return(false)
+	gameMock.On("IsHumanTurn").Return(false)
+
+	bi := usecase.NewBridgeInteractor(gameMock, bpMock)
+	result := bi.Play(0)
+	assert.Contains(t, result, "notHuman")
+}
+
+func TestBridgeInteractor_NextTrick_GameEnd(t *testing.T) {
+	bpMock := new(presenter.MockBridgePresenter)
+	bpMock.On("Output", mock.Anything, mock.Anything).Return(`{"gameEnd":true}`)
+	gameMock := new(interfaces.MockBridgeGame)
+	gameMock.On("ResolveTrick").Return()
+	gameMock.On("GetGameEndFlag").Return(true)
+
+	bi := usecase.NewBridgeInteractor(gameMock, bpMock)
+	result := bi.NextTrick()
+	assert.Contains(t, result, "gameEnd")
+	gameMock.AssertCalled(t, "ResolveTrick")
+}
+
+func TestBridgeInteractor_NextRound_GameEnd(t *testing.T) {
+	bpMock := new(presenter.MockBridgePresenter)
+	bpMock.On("Output", mock.Anything, mock.Anything).Return(`{"gameEnd":true}`)
+	gameMock := new(interfaces.MockBridgeGame)
+	gameMock.On("ScoreRound").Return()
+	gameMock.On("GetGameEndFlag").Return(true)
+
+	bi := usecase.NewBridgeInteractor(gameMock, bpMock)
+	result := bi.NextRound()
+	assert.Contains(t, result, "gameEnd")
+	gameMock.AssertCalled(t, "ScoreRound")
+}
+
+func TestRestoreBridgeInteractor(t *testing.T) {
+	players := []*domain.BridgePlayer{
+		domain.NewBridgePlayer(true, 0),
+		domain.NewBridgePlayer(false, 1),
+		domain.NewBridgePlayer(false, 0),
+		domain.NewBridgePlayer(false, 1),
+	}
+	b := domain.NewBridge(domain.NewTrumpCards(0), players, domain.DefaultBridgeConfig())
+	bpMock := new(presenter.MockBridgePresenter)
+	bi := usecase.NewBridgeInteractor(b, bpMock)
+
+	data, err := bi.Snapshot()
+	assert.NoError(t, err)
+
+	restored, err := usecase.RestoreBridgeInteractor(data, bpMock)
+	assert.NoError(t, err)
+	assert.NotNil(t, restored)
+}
+
+func TestRestoreBridgeInteractor_InvalidJSON(t *testing.T) {
+	bpMock := new(presenter.MockBridgePresenter)
+	_, err := usecase.RestoreBridgeInteractor([]byte("invalid"), bpMock)
+	assert.Error(t, err)
+}

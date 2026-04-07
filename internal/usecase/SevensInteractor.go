@@ -8,6 +8,8 @@ import (
 
 // SevensInteractorIF 7並べインタラクターインタフェース
 type SevensInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// ResetWithConfig 設定付きゲーム初期化

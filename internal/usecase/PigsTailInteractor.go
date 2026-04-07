@@ -8,6 +8,8 @@ import (
 
 // PigsTailInteractorIF ぶたのしっぽインタラクターインタフェース
 type PigsTailInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset(config domain.PigsTailConfig) string
 	// GetConfig 現在の設定を返す

@@ -8,6 +8,8 @@ import (
 
 // GolfInteractorIF ゴルフソリティアインタラクターインタフェース
 type GolfInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// Draw ストックからウェイストにカードを引く

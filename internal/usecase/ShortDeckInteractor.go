@@ -8,6 +8,8 @@ import (
 
 // ShortDeckInteractorIF ショートデックホールデムインタラクターインタフェース
 type ShortDeckInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	TournamentInteractorIF
 	// Reset ゲーム初期化
 	Reset() string

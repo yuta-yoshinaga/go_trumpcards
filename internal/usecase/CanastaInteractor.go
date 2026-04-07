@@ -8,6 +8,8 @@ import (
 
 // CanastaInteractorIF カナスタインタラクターインタフェース
 type CanastaInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// ResetWithConfig 設定を変更してゲーム初期化

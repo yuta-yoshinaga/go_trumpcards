@@ -251,3 +251,99 @@ func TestEuchreInteractor_ActionLog(t *testing.T) {
 	result := ei.ActionLog()
 	assert.Contains(t, result, "action")
 }
+
+func TestEuchreInteractor_PassCall_GameEnd(t *testing.T) {
+	epMock := new(presenter.MockEuchrePresenter)
+	epMock.On("Output", mock.Anything, mock.Anything).Return(`{"gameEnd":true}`)
+	gameMock := new(interfaces.MockEuchreGame)
+	gameMock.On("GetGameEndFlag").Return(true)
+
+	ei := usecase.NewEuchreInteractor(gameMock, epMock)
+	result := ei.PassCall()
+	assert.Contains(t, result, "gameEnd")
+}
+
+func TestEuchreInteractor_Discard_GameEnd(t *testing.T) {
+	epMock := new(presenter.MockEuchrePresenter)
+	epMock.On("Output", mock.Anything, mock.Anything).Return(`{"gameEnd":true}`)
+	gameMock := new(interfaces.MockEuchreGame)
+	gameMock.On("GetGameEndFlag").Return(true)
+
+	ei := usecase.NewEuchreInteractor(gameMock, epMock)
+	result := ei.Discard(0)
+	assert.Contains(t, result, "gameEnd")
+}
+
+func TestEuchreInteractor_Discard_Error(t *testing.T) {
+	gameMock, epMock := setupEuchreInteractorMocks(domain.EuchrePhaseDiscard)
+	gameMock.On("PlayerDiscard", 99).Return(errors.New("invalid card"))
+
+	ei := usecase.NewEuchreInteractor(gameMock, epMock)
+	result := ei.Discard(99)
+	assert.Contains(t, result, "phase")
+}
+
+func TestEuchreInteractor_Play_NotHumanTurn(t *testing.T) {
+	epMock := new(presenter.MockEuchrePresenter)
+	epMock.On("Output", mock.Anything, mock.Anything).Return(`{"notHuman":true}`)
+	gameMock := new(interfaces.MockEuchreGame)
+	gameMock.On("GetGameEndFlag").Return(false)
+	gameMock.On("IsHumanTurn").Return(false)
+
+	ei := usecase.NewEuchreInteractor(gameMock, epMock)
+	result := ei.Play(0)
+	assert.Contains(t, result, "notHuman")
+}
+
+func TestEuchreInteractor_NextTrick_GameEnd(t *testing.T) {
+	epMock := new(presenter.MockEuchrePresenter)
+	epMock.On("Output", mock.Anything, mock.Anything).Return(`{"gameEnd":true}`)
+	gameMock := new(interfaces.MockEuchreGame)
+	// After ResolveTrick, game is ended
+	gameMock.On("ResolveTrick").Return()
+	gameMock.On("GetGameEndFlag").Return(true)
+
+	ei := usecase.NewEuchreInteractor(gameMock, epMock)
+	result := ei.NextTrick()
+	assert.Contains(t, result, "gameEnd")
+	gameMock.AssertCalled(t, "ResolveTrick")
+}
+
+func TestEuchreInteractor_NextRound_GameEnd(t *testing.T) {
+	epMock := new(presenter.MockEuchrePresenter)
+	epMock.On("Output", mock.Anything, mock.Anything).Return(`{"gameEnd":true}`)
+	gameMock := new(interfaces.MockEuchreGame)
+	// After ScoreRound, game is ended
+	gameMock.On("ScoreRound").Return()
+	gameMock.On("GetGameEndFlag").Return(true)
+
+	ei := usecase.NewEuchreInteractor(gameMock, epMock)
+	result := ei.NextRound()
+	assert.Contains(t, result, "gameEnd")
+	gameMock.AssertCalled(t, "ScoreRound")
+}
+
+func TestRestoreEuchreInteractor(t *testing.T) {
+	players := []*domain.EuchrePlayer{
+		domain.NewEuchrePlayer(true, 0),
+		domain.NewEuchrePlayer(false, 1),
+		domain.NewEuchrePlayer(false, 0),
+		domain.NewEuchrePlayer(false, 1),
+	}
+	e := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, domain.DefaultEuchreConfig())
+	epMock := new(presenter.MockEuchrePresenter)
+	ei := usecase.NewEuchreInteractor(e, epMock)
+
+	data, err := ei.Snapshot()
+	assert.NoError(t, err)
+
+	restored, err := usecase.RestoreEuchreInteractor(data, epMock)
+	assert.NoError(t, err)
+	assert.NotNil(t, restored)
+}
+
+func TestRestoreEuchreInteractor_InvalidJSON(t *testing.T) {
+	epMock := new(presenter.MockEuchrePresenter)
+	_, err := usecase.RestoreEuchreInteractor([]byte("invalid"), epMock)
+	assert.Error(t, err)
+}

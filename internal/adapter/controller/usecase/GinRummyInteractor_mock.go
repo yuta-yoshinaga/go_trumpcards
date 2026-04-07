@@ -52,3 +52,9 @@ func (_m *MockGinRummyInteractor) GetConfig() domain.GinRummyConfig {
 func (_m *MockGinRummyInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
+
+// Snapshot モック
+func (_m *MockGinRummyInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

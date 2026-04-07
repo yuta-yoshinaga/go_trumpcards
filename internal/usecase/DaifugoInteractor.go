@@ -8,6 +8,8 @@ import (
 
 // DaifugoInteractorIF 大富豪インタラクターインタフェース
 type DaifugoInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// Play 人間プレイヤーがカードを出す (または パスする)

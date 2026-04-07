@@ -8,6 +8,8 @@ import (
 
 // OldMaidInteractorIF ババ抜きインタラクターインタフェース
 type OldMaidInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
 	Reset(config domain.OldMaidConfig, profileData []byte) string
 	// GetConfig 現在の設定を返す

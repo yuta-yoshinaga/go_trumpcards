@@ -8,6 +8,8 @@ import (
 
 // GoFishInteractorIF Go Fishインタラクターインタフェース
 type GoFishInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset(config domain.GoFishConfig) string
 	// GetConfig 現在の設定を返す

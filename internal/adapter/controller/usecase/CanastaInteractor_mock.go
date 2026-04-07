@@ -56,3 +56,9 @@ func (_m *MockCanastaInteractor) GetConfig() domain.CanastaConfig {
 func (_m *MockCanastaInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
+
+// Snapshot モック
+func (_m *MockCanastaInteractor) Snapshot() ([]byte, error) {
+	ret := _m.Called()
+	return ret.Get(0).([]byte), ret.Error(1)
+}

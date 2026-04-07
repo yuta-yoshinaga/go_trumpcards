@@ -4,14 +4,13 @@
 package worker
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 )
 
-// snapshotIF is the interface expected on all interactors for KV persistence.
-type snapshotIF interface {
+// SnapshotIF is the interface required on all interactors for KV persistence.
+type SnapshotIF interface {
 	Snapshot() ([]byte, error)
 }
 
@@ -19,10 +18,11 @@ type snapshotIF interface {
 // controller on the given mux. Returns an error if the KV namespace cannot be
 // initialised; callers should handle it (typically with log.Fatal in main).
 //
+// I must implement SnapshotIF; this is enforced at compile time.
 // newCtrl is a controller constructor such as controller.NewBlackJackWebControllerWithProvider.
 // Passing the constructor directly avoids the 4-line closure wrapper that was
 // previously required at every call site.
-func RegisterKV[I any, P controller.WebInput, O any](
+func RegisterKV[I SnapshotIF, P controller.WebInput, O any](
 	mux *http.ServeMux,
 	path string,
 	kvPrefix string,
@@ -32,13 +32,7 @@ func RegisterKV[I any, P controller.WebInput, O any](
 ) error {
 	kvProvider, err := controller.NewKVSessionProvider[I](
 		"GAME_SESSIONS", kvPrefix,
-		func(i I) ([]byte, error) {
-			s, ok := any(i).(snapshotIF)
-			if !ok {
-				return nil, fmt.Errorf("interactor %T does not implement Snapshot()", i)
-			}
-			return s.Snapshot()
-		},
+		func(i I) ([]byte, error) { return i.Snapshot() },
 		restore,
 	)
 	if err != nil {

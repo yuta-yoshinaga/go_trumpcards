@@ -8,6 +8,8 @@ import (
 
 // ClockSolitaireInteractorIF クロックソリティアインタラクターインタフェース
 type ClockSolitaireInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// Step 1ステップ実行

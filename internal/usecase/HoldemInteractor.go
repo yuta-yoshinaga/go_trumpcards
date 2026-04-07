@@ -8,6 +8,8 @@ import (
 
 // HoldemInteractorIF テキサスホールデムインタラクターインタフェース
 type HoldemInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	TournamentInteractorIF
 	// Reset ゲーム初期化
 	Reset() string

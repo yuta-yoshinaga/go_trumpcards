@@ -8,6 +8,8 @@ import (
 
 // FreeCellInteractorIF フリーセルインタラクターインタフェース
 type FreeCellInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// MoveTableauToTableau タブローからタブローにカードを移動

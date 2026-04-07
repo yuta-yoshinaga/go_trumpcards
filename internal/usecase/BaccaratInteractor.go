@@ -8,6 +8,8 @@ import (
 
 // BaccaratInteractorIF バカラインタラクターインタフェース
 type BaccaratInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// Bet ベット

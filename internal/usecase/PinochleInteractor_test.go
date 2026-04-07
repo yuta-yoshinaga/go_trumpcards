@@ -198,3 +198,62 @@ func TestPinochleInteractor_GameEndGuard(t *testing.T) {
 	assert.Contains(t, pi.NextRound(), "gameEndFlag")
 	assert.Contains(t, pi.ConfirmMelds(), "gameEndFlag")
 }
+
+func TestPinochleInteractor_Play_Error(t *testing.T) {
+	gameMock, ppMock := setupPinochleInteractorMocks(domain.PinochlePhasePlay)
+	gameMock.On("PlayerPlay", 99).Return(domain.NewDomainError(domain.ErrInvalidCard, "invalid"))
+
+	pi := usecase.NewPinochleInteractor(gameMock, ppMock)
+	result := pi.Play(99)
+	assert.Contains(t, result, "phase")
+}
+
+func TestPinochleInteractor_Play_NotHumanTurn(t *testing.T) {
+	ppMock := new(presenter.MockPinochlePresenter)
+	ppMock.On("Output", mock.Anything, mock.Anything).Return(`{"notHuman":true}`)
+	gameMock := new(interfaces.MockPinochleGame)
+	gameMock.On("GetGameEndFlag").Return(false)
+	gameMock.On("IsHumanTurn").Return(false)
+
+	pi := usecase.NewPinochleInteractor(gameMock, ppMock)
+	result := pi.Play(0)
+	assert.Contains(t, result, "notHuman")
+}
+
+func TestPinochleInteractor_NextTrick_GameEnd(t *testing.T) {
+	ppMock := new(presenter.MockPinochlePresenter)
+	ppMock.On("Output", mock.Anything, mock.Anything).Return(`{"gameEnd":true}`)
+	gameMock := new(interfaces.MockPinochleGame)
+	gameMock.On("ResolveTrick").Return()
+	gameMock.On("GetGameEndFlag").Return(true)
+
+	pi := usecase.NewPinochleInteractor(gameMock, ppMock)
+	result := pi.NextTrick()
+	assert.Contains(t, result, "gameEnd")
+	gameMock.AssertCalled(t, "ResolveTrick")
+}
+
+func TestRestorePinochleInteractor(t *testing.T) {
+	players := []*domain.PinochlePlayer{
+		domain.NewPinochlePlayer(true, 0),
+		domain.NewPinochlePlayer(false, 1),
+		domain.NewPinochlePlayer(false, 0),
+		domain.NewPinochlePlayer(false, 1),
+	}
+	p := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, domain.DefaultPinochleConfig())
+	ppMock := new(presenter.MockPinochlePresenter)
+	pi := usecase.NewPinochleInteractor(p, ppMock)
+
+	data, err := pi.Snapshot()
+	assert.NoError(t, err)
+
+	restored, err := usecase.RestorePinochleInteractor(data, ppMock)
+	assert.NoError(t, err)
+	assert.NotNil(t, restored)
+}
+
+func TestRestorePinochleInteractor_InvalidJSON(t *testing.T) {
+	ppMock := new(presenter.MockPinochlePresenter)
+	_, err := usecase.RestorePinochleInteractor([]byte("invalid"), ppMock)
+	assert.Error(t, err)
+}

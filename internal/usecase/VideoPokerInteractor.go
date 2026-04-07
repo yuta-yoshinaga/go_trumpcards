@@ -8,6 +8,8 @@ import (
 
 // VideoPokerInteractorIF ビデオポーカーインタラクターインタフェース
 type VideoPokerInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
 	Reset() string
 	// Bet ベット
