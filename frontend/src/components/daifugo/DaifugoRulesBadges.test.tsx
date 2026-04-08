@@ -211,5 +211,33 @@ describe('DaifugoRulesBadges', () => {
       expect(screen.getByText('カードの強さが逆転しています（3が最強、2が最弱）')).toBeInTheDocument();
       expect(screen.getByText('同じスートのカードしか出せません')).toBeInTheDocument();
     });
+
+    it('wraps focus to first element on Tab from last focusable element', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      const closeButton = screen.getByRole('button', { name: '閉じる' });
+      closeButton.focus();
+      fireEvent.keyDown(document, { key: 'Tab' });
+      expect(document.activeElement).toBe(closeButton);
+    });
+
+    it('wraps focus to last element on Shift+Tab from first focusable element', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      const closeButton = screen.getByRole('button', { name: '閉じる' });
+      closeButton.focus();
+      fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+      expect(document.activeElement).toBe(closeButton);
+    });
+
+    it('ignores non-Escape non-Tab keys in modal keydown handler', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      fireEvent.keyDown(document, { key: 'Enter' });
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
   });
 });
