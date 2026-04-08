@@ -12,6 +12,9 @@ export interface StalemateEscapeButtonProps {
 export function StalemateEscapeButton({ undoToEscape, onEscape, disabled }: StalemateEscapeButtonProps) {
   const { t } = useTranslation('common');
 
+  // Guard: callers gate on state.isStalemate, but undoToEscape may be 0 or
+  // undefined (coerced via ?? 0) if the server omits it. Render nothing in
+  // that case rather than showing a broken button.
   if (undoToEscape <= 0) return null;
 
   return (

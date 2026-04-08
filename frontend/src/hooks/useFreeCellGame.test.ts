@@ -224,6 +224,19 @@ describe('useFreeCellGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
   });
 
+  it('handleUndoEscape dispatches undo_n with count', async () => {
+    const { result } = renderHook(() => useFreeCellGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(defaultState);
+    act(() => {
+      result.current.handleUndoEscape(4);
+    });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 4));
+  });
+
   it('handleSelectSource sets selectedSource', async () => {
     const { result } = renderHook(() => useFreeCellGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());

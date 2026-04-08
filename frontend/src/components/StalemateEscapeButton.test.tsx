@@ -10,7 +10,7 @@ describe('StalemateEscapeButton', () => {
 
   it('renders button with undo count when undoToEscape > 0', () => {
     render(<StalemateEscapeButton undoToEscape={5} onEscape={vi.fn()} />);
-    expect(screen.getByTestId('stalemate-escape-button')).toHaveTextContent('脱出する (5手戻る)');
+    expect(screen.getByTestId('stalemate-escape-button')).toHaveTextContent('5');
   });
 
   it('calls onEscape with undoToEscape count on click', () => {

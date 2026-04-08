@@ -175,6 +175,19 @@ describe('useSpiderGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
   });
 
+  it('handleUndoEscape dispatches undo_n with count', async () => {
+    const { result } = renderHook(() => useSpiderGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(defaultState);
+    act(() => {
+      result.current.handleUndoEscape(3);
+    });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, undefined, 3));
+  });
+
   it('handleSelectSource sets selectedSource', async () => {
     const { result } = renderHook(() => useSpiderGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
