@@ -54,6 +54,16 @@ export function useFreeCellGame() {
     callExec('undo');
   }, [callExec]);
 
+  /** Undo N moves at once to escape a stalemate. */
+  const handleUndoEscape = useCallback(
+    (n: number) => {
+      setSelectedSource(null);
+      setHint(null);
+      callExec('undo_n', undefined, undefined, n);
+    },
+    [callExec],
+  );
+
   const handleSelectSource = useCallback((zone: FreeCellMoveZone) => {
     setSelectedSource((prev) => {
       if (
@@ -92,6 +102,7 @@ export function useFreeCellGame() {
     handleHint,
     handleAutoComplete,
     handleUndo,
+    handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,

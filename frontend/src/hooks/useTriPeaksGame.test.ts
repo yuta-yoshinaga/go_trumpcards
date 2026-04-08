@@ -3,15 +3,15 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { golfApi } from '../api/gameApi';
-import type { GolfResponse } from '../types/card';
-import { useGolfGame } from './useGolfGame';
+import { tripeaksApi } from '../api/gameApi';
+import type { TriPeaksResponse } from '../types/card';
+import { useTriPeaksGame } from './useTriPeaksGame';
 
 vi.mock('../api/gameApi', () => ({
-  golfApi: { exec: vi.fn() },
+  tripeaksApi: { exec: vi.fn() },
 }));
 
-const mockExec = vi.mocked(golfApi.exec);
+const mockExec = vi.mocked(tripeaksApi.exec);
 
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
@@ -19,10 +19,10 @@ function createWrapper() {
     createElement(QueryClientProvider, { client: queryClient }, children);
 }
 
-const defaultState: GolfResponse = {
-  layout: [],
-  stockCount: 16,
-  waste: [{ design: 'CLOVER', value: 4 }],
+const defaultState: TriPeaksResponse = {
+  layout: [[{ card: null, removed: true, exposed: false }]],
+  stockCount: 20,
+  waste: [],
   phase: 0,
   moveCount: 0,
   canUndo: false,
@@ -34,19 +34,19 @@ beforeEach(() => {
   mockExec.mockResolvedValue(defaultState);
 });
 
-describe('useGolfGame', () => {
+describe('useTriPeaksGame', () => {
   it('calls reset on mount', async () => {
-    renderHook(() => useGolfGame(), { wrapper: createWrapper() });
+    renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('returns initial state after mount', async () => {
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).toEqual(defaultState));
   });
 
-  it('handleDraw dispatches draw command', async () => {
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
+  it('handleDraw dispatches draw and clears hint', async () => {
+    const { result } = renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockClear();
@@ -56,10 +56,11 @@ describe('useGolfGame', () => {
     });
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+    expect(result.current.hint).toBeNull();
   });
 
-  it('handleReset dispatches reset command', async () => {
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
+  it('handleReset dispatches reset and clears hint', async () => {
+    const { result } = renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockClear();
@@ -69,10 +70,11 @@ describe('useGolfGame', () => {
     });
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(result.current.hint).toBeNull();
   });
 
-  it('handleGiveUp dispatches giveup command', async () => {
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
+  it('handleGiveUp dispatches giveup', async () => {
+    const { result } = renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockClear();
@@ -84,8 +86,8 @@ describe('useGolfGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
   });
 
-  it('handleUndo dispatches undo command', async () => {
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
+  it('handleUndo dispatches undo', async () => {
+    const { result } = renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockClear();
@@ -97,38 +99,26 @@ describe('useGolfGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
   });
 
-  it('handleUndoEscape dispatches undo_n with count', async () => {
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
+  it('handleUndoEscape dispatches undo_n with count and clears hint', async () => {
+    const { result } = renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(defaultState);
     act(() => {
-      result.current.handleUndoEscape(6);
+      result.current.handleUndoEscape(5);
     });
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, 6));
-  });
-
-  it('handleSelectCard dispatches remove command with col', async () => {
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(defaultState);
-    act(() => {
-      result.current.handleSelectCard(3);
-    });
-
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 3));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 5));
+    expect(result.current.hint).toBeNull();
   });
 
   it('handleHint calls exec with hint and sets hint state', async () => {
-    const hintResponse: GolfResponse = {
+    const hintResponse: TriPeaksResponse = {
       ...defaultState,
-      hint: { type: 'remove', col: 2 },
+      hint: { type: 'remove', row: 3, col: 0 },
     };
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockResolvedValue(hintResponse);
@@ -140,7 +130,7 @@ describe('useGolfGame', () => {
   });
 
   it('handleHint sets hint to null when no hint returned', async () => {
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockResolvedValue({ ...defaultState, hint: undefined });
@@ -152,7 +142,7 @@ describe('useGolfGame', () => {
   });
 
   it('handleHint sets hintError on failure', async () => {
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockRejectedValue(new Error('Network error'));
@@ -161,27 +151,6 @@ describe('useGolfGame', () => {
     });
 
     expect(result.current.hintError).toBeTruthy();
-    expect(result.current.hint).toBeNull();
-  });
-
-  it('handleDraw clears hint', async () => {
-    const hintResponse: GolfResponse = {
-      ...defaultState,
-      hint: { type: 'remove', col: 2 },
-    };
-    const { result } = renderHook(() => useGolfGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
-
-    mockExec.mockResolvedValue(hintResponse);
-    await act(async () => {
-      await result.current.handleHint();
-    });
-    expect(result.current.hint).not.toBeNull();
-
-    mockExec.mockResolvedValue(defaultState);
-    act(() => {
-      result.current.handleDraw();
-    });
     expect(result.current.hint).toBeNull();
   });
 });

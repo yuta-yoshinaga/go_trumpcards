@@ -44,6 +44,15 @@ export function useGolfGame() {
     exec('undo');
   }, [exec]);
 
+  /** Batch undo to escape stalemate. */
+  const handleUndoEscape = useCallback(
+    (n: number) => {
+      setHint(null);
+      exec('undo_n', undefined, n);
+    },
+    [exec],
+  );
+
   const handleSelectCard = useCallback(
     (col: number) => {
       setHint(null);
@@ -64,6 +73,7 @@ export function useGolfGame() {
     handleGiveUp,
     handleHint,
     handleUndo,
+    handleUndoEscape,
     handleSelectCard,
     retry,
   };

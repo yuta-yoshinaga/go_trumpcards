@@ -531,4 +531,16 @@ describe('SpiderPage', () => {
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
+
+  it('does not show stalemate escape button when not stalemate', async () => {
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('stalemate-escape-button')).not.toBeInTheDocument();
+  });
+
+  it('shows stalemate escape button when isStalemate is true', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 7, canUndo: true });
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
+  });
 });

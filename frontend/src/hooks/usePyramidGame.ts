@@ -56,6 +56,16 @@ export function usePyramidGame() {
     exec('undo');
   }, [exec]);
 
+  /** Batch undo N moves to escape a stalemate. */
+  const handleUndoEscape = useCallback(
+    (n: number) => {
+      setSelectedCard(null);
+      setHint(null);
+      exec('undo_n', undefined, undefined, n);
+    },
+    [exec],
+  );
+
   const selectionToRemoveCard = useCallback((sel: PyramidSelection): PyramidRemoveCard => {
     return { zone: sel.zone, row: sel.row, col: sel.col };
   }, []);
@@ -103,6 +113,7 @@ export function usePyramidGame() {
     handleGiveUp,
     handleHint,
     handleUndo,
+    handleUndoEscape,
     handleSelectCard,
     retry,
   };

@@ -653,4 +653,27 @@ describe('FreeCellPage', () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
+
+  it('does not show stalemate escape button when not stalemate', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('stalemate-escape-button')).not.toBeInTheDocument();
+  });
+
+  it('shows stalemate escape button when isStalemate is true', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 5 });
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
+    expect(screen.getByTestId('stalemate-escape-button')).toHaveTextContent('5');
+  });
+
+  it('clicking stalemate escape button dispatches undo_n', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 3 });
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByTestId('stalemate-escape-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 3));
+  });
 });
