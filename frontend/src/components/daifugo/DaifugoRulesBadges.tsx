@@ -89,23 +89,52 @@ function RulesBadgeModal({
   badges,
   onClose,
   summaryLabel,
+  closeLabel,
 }: {
   badges: BadgeData[];
   onClose: () => void;
   summaryLabel: string;
+  closeLabel: string;
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const previousFocus = document.activeElement as HTMLElement;
     const dialog = dialogRef.current as HTMLElement;
     const focusable = getFocusableElements(dialog);
     if (focusable.length > 0) focusable[0].focus();
 
+    // Prevent background scrolling
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      // Focus trap
+      if (e.key !== 'Tab' || focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = originalOverflow;
+      previousFocus?.focus();
+    };
   }, [onClose]);
 
   return (
@@ -120,17 +149,19 @@ function RulesBadgeModal({
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label={summaryLabel}
+        aria-labelledby="rules-modal-title"
         className="glass-panel rounded-t-lg sm:rounded-lg shadow-xl p-4 w-full sm:max-w-sm sm:mx-4 max-h-[70vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-sm font-bold text-ds-text-primary">{summaryLabel}</h2>
+          <h2 id="rules-modal-title" className="text-sm font-bold text-ds-text-primary">
+            {summaryLabel}
+          </h2>
           <button
             type="button"
             onClick={onClose}
             className="text-ds-text-primary/60 hover:text-ds-text-primary text-lg leading-none"
-            aria-label="close"
+            aria-label={closeLabel}
           >
             ✕
           </button>
@@ -156,6 +187,7 @@ function RulesBadgeModal({
 /** Renders active rule badges (revolution, suit lock, eleven back, etc.) for Daifugo. */
 export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
   const { t } = useTranslation('daifugo');
+  const { t: tc } = useTranslation('common');
   const isMobile = useIsMobile();
   const [modalOpen, setModalOpen] = useState(false);
   const badges = buildBadges(state, t);
@@ -175,13 +207,19 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
           type="button"
           className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-bold bg-amber-500 text-white"
           onClick={openModal}
-          aria-label={summaryLabel}
           data-testid="rules-summary-button"
         >
           <span aria-hidden="true">⚠️</span>
           {summaryLabel}
         </button>
-        {modalOpen && <RulesBadgeModal badges={badges} onClose={closeModal} summaryLabel={summaryLabel} />}
+        {modalOpen && (
+          <RulesBadgeModal
+            badges={badges}
+            onClose={closeModal}
+            summaryLabel={summaryLabel}
+            closeLabel={tc('manual.close')}
+          />
+        )}
       </div>
     );
   }

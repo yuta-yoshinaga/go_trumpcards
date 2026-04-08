@@ -179,7 +179,16 @@ describe('DaifugoRulesBadges', () => {
       render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
       fireEvent.click(screen.getByTestId('rules-summary-button'));
       expect(screen.getByRole('dialog')).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button', { name: 'close' }));
+      fireEvent.click(screen.getByRole('button', { name: '閉じる' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('closes modal on Escape key', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      fireEvent.keyDown(document, { key: 'Escape' });
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
