@@ -141,16 +141,16 @@ function SpeedPageContent() {
               </span>
             </div>
 
-            {/* Center piles */}
+            {/* Center piles — clickable for play (normal) or flip (stuck) */}
             <div className="flex items-center justify-center gap-6" data-tutorial="sp-center-piles">
               {state.centerPiles.map((card, pi) => (
                 <button
                   type="button"
                   key={pi}
-                  onClick={() => handlePlay(pi)}
-                  disabled={!isPlayPhase || selectedCardIndices.length !== 1 || loading}
-                  className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}`}
-                  aria-label={`${t('centerPile')} ${pi}`}
+                  onClick={isStuck ? handleFlip : () => handlePlay(pi)}
+                  disabled={isStuck ? loading : !isPlayPhase || selectedCardIndices.length !== 1 || loading}
+                  className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}${isStuck ? ' animate-pulse cursor-pointer' : ''}`}
+                  aria-label={isStuck ? t('flipButton') : `${t('centerPile')} ${pi}`}
                 >
                   {card && (
                     <AnimatedCard
@@ -201,7 +201,8 @@ function SpeedPageContent() {
                   type="button"
                   onClick={handleFlip}
                   disabled={loading}
-                  className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50"
+                  className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50 animate-pulse ring-2 ring-amber-300"
+                  data-testid="flip-button"
                 >
                   {t('flipButton')}
                 </button>
