@@ -455,11 +455,12 @@ describe('MemoryPage', () => {
     expect(boardGrid).toHaveClass('grid-cols-4');
   });
 
-  it('card buttons have min-h-[44px] for WCAG tap target compliance', async () => {
+  it('card buttons have min-h-[44px] and min-w-[44px] for WCAG tap target compliance', async () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
     const cardBtn = screen.getByTestId('board-0');
     expect(cardBtn.className).toContain('min-h-[44px]');
+    expect(cardBtn.className).toContain('min-w-[44px]');
   });
 
   it('face-down cards have subtle border instead of thick blue border', async () => {
