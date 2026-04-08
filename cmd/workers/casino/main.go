@@ -227,6 +227,22 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Pai Gow Poker
+	if err := worker.RegisterKV(mux, "/paigow/exec", "paigow:",
+		func() usecase.PaiGowInteractorIF {
+			return usecase.NewPaiGowInteractor(
+				domain.NewDefaultPaiGow(),
+				new(presenter.PaiGowWebPresenter),
+			)
+		},
+		func(data []byte) (usecase.PaiGowInteractorIF, error) {
+			return usecase.RestorePaiGowInteractor(data, new(presenter.PaiGowWebPresenter))
+		},
+		controller.NewPaiGowWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

@@ -29,7 +29,8 @@
   - [2.14 SevenCardStudPage フェーズ別レンダリングフロー](#214-sevencardstudpage-フェーズ別レンダリングフロー)
   - [2.15 DurakPage フェーズ別レンダリングフロー](#215-durakpage-フェーズ別レンダリングフロー)
   - [2.16 FortyThievesPage フェーズ別レンダリングフロー](#216-fortythievespage-フェーズ別レンダリングフロー)
-  - [2.17 CLIモード コマンド実行フロー](#217-cliモード-コマンド実行フロー)
+  - [2.17 PaiGowPage フェーズ別レンダリングフロー](#217-paigowpage-フェーズ別レンダリングフロー)
+  - [2.18 CLIモード コマンド実行フロー](#218-cliモード-コマンド実行フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -291,6 +292,30 @@ classDiagram
         +string message
     }
 
+    class PaiGowResponse {
+        +Card[] playerCards
+        +Card[] dealerCards
+        +Card[] playerHighHand
+        +Card[] playerLowHand
+        +Card[] dealerHighHand
+        +Card[] dealerLowHand
+        +number phase
+        +number chips
+        +number bet
+        +number result
+        +number highHandResult
+        +number lowHandResult
+        +number payout
+        +number commission
+        +string playerHighRank
+        +string playerLowRank
+        +string dealerHighRank
+        +string dealerLowRank
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
     class SevenCardStudResponse {
         +object[] players (holeCards, doorCards)
         +number pot
@@ -538,6 +563,13 @@ classDiagram
         END = 3
     }
 
+    class PaiGowPhase {
+        <<enumeration>>
+        BET = 1
+        SET = 2
+        END = 3
+    }
+
     class SpeedPhase {
         <<enumeration>>
         PLAY = 0
@@ -701,7 +733,13 @@ classDiagram
 
     FortyThievesApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全41ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves)"
+    class PaiGowApi {
+        +run(cmd, args?) Promise~PaiGowResponse~
+    }
+
+    PaiGowApi --> gameApi : uses postJson/gameExec
+
+    note for BlackJackApi "全42ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1018,6 +1056,15 @@ classDiagram
     useGolfGame --> useGameApi : uses
     useClockSolitaireGame --> useGameApi : uses
     useFortyThievesGame --> useGameApi : uses
+
+    class usePaiGowGame {
+        +PaiGowResponse state
+        +Function handleBet
+        +Function handleSet
+        +Function handleReset
+    }
+
+    usePaiGowGame --> useGameApi : uses
     useDurakGame --> useGameApi : uses
     usePigsTailGame --> useGameApi : uses
     useCribbageGame --> useGameApi : uses
@@ -1420,6 +1467,17 @@ classDiagram
     BaccaratPage --|> GamePage : follows pattern
     ThreeCardPage --|> GamePage : follows pattern
 
+    class PaiGowPage {
+        +チップ表示
+        +ベット額入力
+        +プレイヤー7枚カード表示
+        +ローハンド選択UI
+        +ハイハンド/ローハンド比較表示
+        +配当詳細表示(コミッション込み)
+    }
+
+    PaiGowPage --|> GamePage : follows pattern
+
     class OhHellPage {
         +プレイヤー情報・スコア表示
         +切り札カード・スート表示
@@ -1578,11 +1636,11 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (41ゲーム)
+        +Routes (42ゲーム)
     }
 
     class gameCategories {
-        +table: [BlackJack, Baccarat, ThreeCard]
+        +table: [BlackJack, Baccarat, ThreeCard, PaiGow]
         +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, OhHell, Euchre, Bridge, Napoleon]
         +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail, Durak]
@@ -2172,7 +2230,41 @@ sequenceDiagram
     Page-->>User: ゲームオーバーメッセージ表示
 ```
 
-### 2.17 CLIモード コマンド実行フロー
+### 2.17 PaiGowPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as PaiGowPage
+    participant Hook as usePaiGowGame
+    participant API as gameApi
+
+    Note over User,API: ベットフェーズ (phase=1)
+    User->>Page: ベット額を入力
+    User->>Page: ベットボタンクリック
+    Page->>Hook: handleBet(amount)
+    Hook->>API: gameExec("bet", {amount})
+    API-->>Hook: PaiGowResponse (phase=2, playerCards=7枚)
+    Hook-->>Page: 再レンダリング → セットフェーズUI
+
+    Note over User,API: セットフェーズ (phase=2)
+    User->>Page: ローハンドにする2枚のカードを選択
+    User->>Page: セットボタンクリック
+    Page->>Hook: handleSet(low0, low1)
+    Hook->>API: gameExec("set", {low0, low1})
+    API-->>Hook: PaiGowResponse (phase=3, result, payout)
+    Hook-->>Page: 再レンダリング → 結果フェーズUI
+
+    Note over User,API: 結果フェーズ (phase=3)
+    Page-->>User: 両ハンド・結果・配当詳細表示
+    User->>Page: リセットボタンクリック
+    Page->>Hook: handleReset()
+    Hook->>API: gameExec("reset")
+    API-->>Hook: PaiGowResponse (phase=1)
+    Hook-->>Page: 再レンダリング → ベットフェーズUI
+```
+
+### 2.18 CLIモード コマンド実行フロー
 
 ```mermaid
 sequenceDiagram

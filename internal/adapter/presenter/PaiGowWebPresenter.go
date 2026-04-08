@@ -1,0 +1,59 @@
+package presenter
+
+import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+// PaiGowWebPresenter パイガオポーカーWebプレゼンタークラス
+type PaiGowWebPresenter struct {
+}
+
+// Output ゲーム状態を出力
+func (pp *PaiGowWebPresenter) Output(pg interfaces.PaiGowGame, lastErr error) string {
+	resObj := new(controller.PaiGowWebOutput)
+
+	resObj.PlayerCards = cardsToOutputOrEmpty(pg.GetPlayerCards())
+	resObj.DealerCards = cardsToOutputOrEmpty(pg.GetDealerCards())
+	resObj.PlayerHighHand = cardsToOutputOrEmpty(pg.GetPlayerHighHand())
+	resObj.PlayerLowHand = cardsToOutputOrEmpty(pg.GetPlayerLowHand())
+	resObj.DealerHighHand = cardsToOutputOrEmpty(pg.GetDealerHighHand())
+	resObj.DealerLowHand = cardsToOutputOrEmpty(pg.GetDealerLowHand())
+	resObj.Phase = pg.GetPhase()
+	resObj.Chips = pg.GetChips()
+	resObj.Bet = pg.GetBet()
+	resObj.Result = int(pg.GetResult())
+	resObj.HighHandResult = int(pg.GetHighHandResult())
+	resObj.LowHandResult = int(pg.GetLowHandResult())
+	resObj.Payout = pg.GetPayout()
+	resObj.Commission = pg.GetCommission()
+	resObj.PlayerHighRank = pg.GetPlayerHighRank()
+	resObj.PlayerLowRank = pg.GetPlayerLowRank()
+	resObj.DealerHighRank = pg.GetDealerHighRank()
+	resObj.DealerLowRank = pg.GetDealerLowRank()
+
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	} else if pg.GetGameEndFlag() {
+		switch pg.GetResult() {
+		case domain.GameResultWin:
+			resObj.Message = "Player wins!"
+			resObj.MessageCode = "paigow.result.playerWins"
+		case domain.GameResultLose:
+			resObj.Message = "Dealer wins!"
+			resObj.MessageCode = "paigow.result.dealerWins"
+		case domain.GameResultDraw:
+			resObj.Message = "Push!"
+			resObj.MessageCode = "paigow.result.push"
+		default:
+		}
+	}
+
+	return marshalOrError(resObj)
+}
+
+// ActionLogOutput 棋譜をJSON出力
+func (pp *PaiGowWebPresenter) ActionLogOutput(pg interfaces.PaiGowGame) string {
+	return actionLogOutputJSON(pg)
+}

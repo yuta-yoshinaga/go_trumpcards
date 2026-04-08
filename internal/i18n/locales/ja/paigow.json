@@ -1,0 +1,5 @@
+{
+  "helpTitle": "Pai Gow Poker (パイガオポーカー)",
+  "helpBet": "  b <金額>             ベット",
+  "helpSet": "  s <idx1> <idx2>      ローハンド設定 (カードのインデックスを2つ選択)"
+}

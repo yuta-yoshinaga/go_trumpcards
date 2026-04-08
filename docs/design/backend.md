@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全41ゲーム)](#12-ゲームドメイン-全41ゲーム)
+  - [1.2 ゲームドメイン (全42ゲーム)](#12-ゲームドメイン-全42ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -25,6 +25,7 @@
   - [2.12 SevenCardStud ベッティングフロー](#212-sevencardstud-ベッティングフロー)
   - [2.13 Durak アタック・ディフェンスフロー](#213-durak-アタックディフェンスフロー)
   - [2.14 FortyThieves ドロー・ムーブフロー](#214-fortythieves-ドロームーブフロー)
+  - [2.15 PaiGow ベット・セットフロー](#215-paigow-ベットセットフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -55,6 +56,7 @@
   - [3.27 SevenCardStud フェーズ遷移](#327-sevencardstud-フェーズ遷移)
   - [3.28 Durak フェーズ遷移](#328-durak-フェーズ遷移)
   - [3.29 FortyThieves フェーズ遷移](#329-fortythieves-フェーズ遷移)
+  - [3.30 PaiGow フェーズ遷移](#330-paigow-フェーズ遷移)
 
 ---
 
@@ -122,7 +124,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全41ゲーム)
+### 1.2 ゲームドメイン (全42ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -243,9 +245,28 @@ classDiagram
         +ActionLog() []*ActionLogEntry
     }
 
+    class PaiGow {
+        -trumpCards *TrumpCards
+        -playerCards []*Card
+        -dealerCards []*Card
+        -playerHighHand []*Card
+        -playerLowHand []*Card
+        -dealerHighHand []*Card
+        -dealerLowHand []*Card
+        -phase int
+        -bet int
+        +Reset()
+        +PlayerBet(amount int) error
+        +PlayerSet(low0 int, low1 int) error
+        +Phase() int
+        +ActionLog() []*ActionLogEntry
+    }
+
     Baccarat --> "1" TrumpCards
     ThreeCard --> "1" TrumpCards
     ThreeCard --> "1" ChipHolder
+    PaiGow --> "1" TrumpCards
+    PaiGow --> "1" ChipHolder
     VideoPoker --> "1" TrumpCards
     VideoPoker --> "1" ChipHolder
     VideoPoker --> "0..1" VideoPokerVariantConfig
@@ -1298,6 +1319,7 @@ classDiagram
         -clocksolitaire *ClockSolitaireWebController
         -durak *DurakWebController
         -fortythieves *FortyThievesWebController
+        -paigow *PaiGowWebController
         +Exec()
     }
 
@@ -1748,6 +1770,43 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: 組札更新表示
+```
+
+### 2.15 PaiGow ベット・セットフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as PaiGowInteractor
+    participant Domain as PaiGow
+    participant Eval as evalFiveCardHand / evalPaiGowLow
+    participant Pres as Presenter
+
+    Note over User,Pres: ベットフロー
+    User->>Ctrl: bet 100
+    Ctrl->>Interactor: Bet(100)
+    Interactor->>Domain: PlayerBet(100)
+    Domain->>Domain: チップ減算 → 7枚ずつ配布 → phase=Set
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 7枚カード表示
+
+    Note over User,Pres: セットフロー
+    User->>Ctrl: set 2 5
+    Ctrl->>Interactor: Set(2, 5)
+    Interactor->>Domain: PlayerSet(2, 5)
+    Domain->>Domain: ローハンド(2枚) / ハイハンド(5枚) 分離
+    Domain->>Domain: ディーラーハウスウェイ設定
+    Domain->>Eval: evalFiveCardHand(playerHighHand)
+    Eval-->>Domain: playerHighRank
+    Domain->>Eval: evalFiveCardHand(dealerHighHand)
+    Eval-->>Domain: dealerHighRank
+    Domain->>Domain: ハイハンド比較 → ローハンド比較
+    Domain->>Domain: 勝敗判定 → 配当計算(5%コミッション) → phase=End
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 両ハンド・結果・配当表示
 ```
 
 ---
@@ -2277,6 +2336,21 @@ stateDiagram-v2
     note right of Playing : FortyThievesPlaying = 0
     note right of GameClear : FortyThievesGameClear = 1
     note right of GameOver : FortyThievesGameOver = 2
+```
+
+### 3.30 PaiGow フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> Set : ベット → 7枚配布
+    Set --> End : ローハンド設定 → ディーラー公開 → 結果判定
+    End --> Bet : 次ラウンド (Reset)
+    End --> [*] : チップ0 (ゲーム終了)
+
+    note right of Bet : PaiGowPhaseBet = 1
+    note right of Set : PaiGowPhaseSet = 2
+    note right of End : PaiGowPhaseEnd = 3
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

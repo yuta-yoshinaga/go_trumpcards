@@ -1487,6 +1487,33 @@ export interface ThreeCardResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Pai Gow Poker (パイゴウポーカー) ---
+
+/** Pai Gow Poker API response. */
+export interface PaiGowResponse {
+  playerCards: Card[];
+  dealerCards: Card[];
+  playerHighHand: Card[];
+  playerLowHand: Card[];
+  dealerHighHand: Card[];
+  dealerLowHand: Card[];
+  phase: number;
+  chips: number;
+  bet: number;
+  result: number;
+  highHandResult: number;
+  lowHandResult: number;
+  payout: number;
+  commission: number;
+  playerHighRank: number;
+  playerLowRank: number;
+  dealerHighRank: number;
+  dealerLowRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 /** Speed player data with hand and draw pile info. */
 export interface SpeedPlayerData {
   id: number;
