@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Durak E2E', () => {
-  test('starts a game: reset → verify controls → take → reset', async ({ page }) => {
+  test('starts a game: reset → verify controls → reset', async ({ page }) => {
     await navigateTo(page, '/durak');
 
     // Click リセット to start
@@ -12,8 +12,8 @@ test.describe('Durak E2E', () => {
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
-    // Verify game heading is visible
-    await expect(page.getByText('Durak')).toBeVisible({ timeout: 10_000 });
+    // Verify game heading is visible (Japanese locale: ドゥラーク)
+    await expect(page.getByText('ドゥラーク')).toBeVisible({ timeout: 10_000 });
 
     // Game is running, reset to start fresh
     await expect(resetButton).toBeVisible();
@@ -22,6 +22,6 @@ test.describe('Durak E2E', () => {
     await waitForLoaded(page);
 
     // Verify game heading is still visible after reset
-    await expect(page.getByText('Durak')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('ドゥラーク')).toBeVisible({ timeout: 10_000 });
   });
 });
