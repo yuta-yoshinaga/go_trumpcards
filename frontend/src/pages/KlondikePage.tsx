@@ -16,6 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
@@ -110,6 +111,7 @@ function KlondikePageContent() {
     handleHint,
     handleAutoComplete,
     handleUndo,
+    handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,
@@ -492,6 +494,13 @@ function KlondikePageContent() {
                   >
                     {t('undo')}
                   </button>
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape ?? 0}
+                      onEscape={handleUndoEscape}
+                      disabled={loading || isAutoCompleting}
+                    />
+                  )}
                   <button
                     type="button"
                     className={btnSuccess}

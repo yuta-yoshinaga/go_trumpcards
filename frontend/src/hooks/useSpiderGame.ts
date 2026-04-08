@@ -69,6 +69,16 @@ export function useSpiderGame() {
     apiExec('undo');
   }, [apiExec]);
 
+  /** Undo N moves at once to escape a stalemate. */
+  const handleUndoEscape = useCallback(
+    (n: number) => {
+      setSelectedSource(null);
+      setHint(null);
+      apiExec('undo_n', undefined, undefined, undefined, n);
+    },
+    [apiExec],
+  );
+
   const handleSelectSource = useCallback((zone: SpiderMoveZone) => {
     setSelectedSource((prev) => {
       if (prev && prev.zone === zone.zone && prev.col === zone.col && prev.cardIndex === zone.cardIndex) {
@@ -103,6 +113,7 @@ export function useSpiderGame() {
     handleHint,
     handleAutoComplete,
     handleUndo,
+    handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,

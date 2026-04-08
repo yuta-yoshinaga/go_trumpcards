@@ -15,6 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GolfSkeleton } from '../components/skeleton/GolfSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
@@ -96,6 +97,7 @@ function GolfPageContent() {
     handleGiveUp,
     handleHint,
     handleUndo,
+    handleUndoEscape,
     handleSelectCard,
   } = useGolfGame();
   const { cardHeight, cardWidth, isMobile } = useCardDimensions();
@@ -303,6 +305,13 @@ function GolfPageContent() {
                   >
                     {t('undo')}
                   </button>
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape ?? 0}
+                      onEscape={handleUndoEscape}
+                      disabled={loading}
+                    />
+                  )}
                   <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
                     {t('hint')}
                   </button>

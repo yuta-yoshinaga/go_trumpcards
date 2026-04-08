@@ -100,6 +100,7 @@
     "hint": "Hint",
     "retry": "Retry"
   },
+  "stalemateEscape": "Escape (undo {{count}} moves)",
   "status": {
     "folded": "Folded",
     "allIn": "All-in",

@@ -44,6 +44,15 @@ export function useTriPeaksGame() {
     exec('undo');
   }, [exec]);
 
+  /** Batch undo to escape stalemate. */
+  const handleUndoEscape = useCallback(
+    (n: number) => {
+      setHint(null);
+      exec('undo_n', undefined, undefined, n);
+    },
+    [exec],
+  );
+
   const handleSelectCard = useCallback(
     (row: number, col: number) => {
       setHint(null);
@@ -64,6 +73,7 @@ export function useTriPeaksGame() {
     handleGiveUp,
     handleHint,
     handleUndo,
+    handleUndoEscape,
     handleSelectCard,
     retry,
   };

@@ -453,16 +453,18 @@ export interface KlondikeConfigInput {
 /** API client for the Klondike /klondike/exec endpoint. */
 export const klondikeApi = {
   exec: (
-    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
+    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
     from?: KlondikeMoveZone,
     to?: KlondikeMoveZone,
     config?: KlondikeConfigInput,
+    n?: number,
   ) =>
     gameExec<KlondikeResponse>('klondike', {
       command,
       from,
       to,
       config,
+      n,
     }),
 };
 
@@ -477,14 +479,16 @@ export interface FreeCellMoveZone {
 /** API client for the FreeCell /freecell/exec endpoint. */
 export const freecellApi = {
   exec: (
-    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
+    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
     from?: FreeCellMoveZone,
     to?: FreeCellMoveZone,
+    n?: number,
   ) =>
     gameExec<FreeCellResponse>('freecell', {
       command,
       from,
       to,
+      n,
     }),
 };
 
@@ -634,16 +638,18 @@ export interface SpiderConfigInput {
 /** API client for the Spider /spider/exec endpoint. */
 export const spiderApi = {
   exec: (
-    command: 'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
+    command: 'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
     from?: SpiderMoveZone,
     to?: SpiderMoveZone,
     config?: SpiderConfigInput,
+    n?: number,
   ) =>
     gameExec<SpiderResponse>('spider', {
       command,
       from,
       to,
       config,
+      n,
     }),
 };
 
@@ -774,16 +780,21 @@ export interface PyramidRemoveCard {
 /** API client for the Pyramid /pyramid/exec endpoint. */
 export const pyramidApi = {
   exec: (
-    command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo',
+    command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
     card1?: PyramidRemoveCard,
     card2?: PyramidRemoveCard,
-  ) => gameExec<PyramidResponse>('pyramid', { command, card1, card2 }),
+    n?: number,
+  ) => gameExec<PyramidResponse>('pyramid', { command, card1, card2, n }),
 };
 
 /** API client for the TriPeaks /tripeaks/exec endpoint. */
 export const tripeaksApi = {
-  exec: (command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo', row?: number, col?: number) =>
-    gameExec<TriPeaksResponse>('tripeaks', { command, row, col }),
+  exec: (
+    command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
+    row?: number,
+    col?: number,
+    n?: number,
+  ) => gameExec<TriPeaksResponse>('tripeaks', { command, row, col, n }),
 };
 
 /** Factory for video poker variant APIs that share the same exec pattern. */
@@ -826,8 +837,11 @@ export const goFishApi = {
 
 /** API client for the Golf Solitaire /golf/exec endpoint. */
 export const golfApi = {
-  exec: (command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo', col?: number) =>
-    gameExec<GolfResponse>('golf', { command, col }),
+  exec: (
+    command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
+    col?: number,
+    n?: number,
+  ) => gameExec<GolfResponse>('golf', { command, col, n }),
 };
 
 /** Pig's Tail game API client. */
