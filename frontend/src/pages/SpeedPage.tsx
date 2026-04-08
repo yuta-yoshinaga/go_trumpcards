@@ -149,7 +149,7 @@ function SpeedPageContent() {
                   key={pi}
                   onClick={isStuck ? handleFlip : () => handlePlay(pi)}
                   disabled={isStuck ? loading : !isPlayPhase || selectedCardIndices.length !== 1 || loading}
-                  className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}${isStuck ? ' animate-pulse cursor-pointer' : ''}`}
+                  className={`transition-transform hover:scale-105 disabled:opacity-50 ${focusRingCard}${isStuck && !loading ? ' animate-pulse cursor-pointer' : ''}`}
                   aria-label={isStuck ? t('flipButton') : `${t('centerPile')} ${pi}`}
                 >
                   {card && (
@@ -201,7 +201,7 @@ function SpeedPageContent() {
                   type="button"
                   onClick={handleFlip}
                   disabled={loading}
-                  className="px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50 animate-pulse ring-2 ring-amber-300"
+                  className={"px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50 ring-2 ring-amber-300" + (!loading ? " animate-pulse" : "")}
                   data-testid="flip-button"
                 >
                   {t('flipButton')}
