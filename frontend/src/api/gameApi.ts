@@ -891,6 +891,8 @@ export const fortyThievesApi = {
   ) => gameExec<FortyThievesResponse>('fortythieves', { command, from, to, n }),
 };
 
+export type { FortyThievesMoveZone };
+
 const games = [
   'blackjack',
   'poker',

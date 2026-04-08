@@ -281,13 +281,11 @@ func evalPaiGowBugJokerHigh(cards []*Card, jokerIdx int) int {
 	// 2. ストレート/フラッシュを完成させるカードを試す
 	// 他のカードのスートを取得
 	nonJokerDesigns := make(map[int]int)
-	nonJokerValues := make([]int, 0, 4)
 	for i, c := range cards {
 		if i == jokerIdx {
 			continue
 		}
 		nonJokerDesigns[c.GetDesign()]++
-		nonJokerValues = append(nonJokerValues, c.GetValue())
 	}
 
 	// フラッシュ候補スート: 3枚以上同じスートがあればフラッシュ可能
