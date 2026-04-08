@@ -97,7 +97,8 @@ type HintGameName =
   | 'pyramid'
   | 'tripeaks'
   | 'memory'
-  | 'sevencardstud';
+  | 'sevencardstud'
+  | 'fortythieves';
 
 /** Return type of the useGameHint hook. */
 export interface UseGameHintReturn {

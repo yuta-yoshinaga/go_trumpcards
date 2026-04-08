@@ -94,6 +94,8 @@ tags:
     description: Clock Solitaire (クロックソリティア) game
   - name: durak
     description: Durak (ドゥラーク) game
+  - name: fortythieves
+    description: Forty Thieves (フォーティシーブス) game
 
 paths:
   /blackjack/exec:
@@ -3856,11 +3858,155 @@ paths:
                   message:
                     type: string
 
+  /fortythieves/exec:
+    post:
+      tags:
+        - fortythieves
+      summary: Execute a Forty Thieves game command
+      description: |
+        Send a command to advance the Forty Thieves (フォーティシーブス) game
+        session identified by `sessionId`.  Forty Thieves is a single-player
+        solitaire card game using 2 standard decks (104 cards).  10 tableau
+        columns with 4 face-up cards each, 8 foundation piles (A→K, same suit),
+        same-suit descending tableau moves, single card moves only, and no
+        stock recycling.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | No more moves available |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `draw`         | `d`     | Draw a card from the stock to the waste |
+        | `move`         | `m`     | Move a card between tableau/waste/foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: fortyThievesExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/FortyThievesMoveZone'
+                to:
+                  $ref: '#/components/schemas/FortyThievesMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw a card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              move:
+                summary: Move a card from waste to tableau column 0
+                value:
+                  command: move
+                  from:
+                    zone: waste
+                  to:
+                    zone: tableau
+                    col: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 10 tableau columns, each an array of face-up cards
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  foundations:
+                    type: array
+                    description: 8 foundation piles (top card of each)
+                    items:
+                      nullable: true
+                      allOf:
+                        - $ref: '#/components/schemas/Card'
+                  waste:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                    description: Top card of the waste pile
+                  stockCount:
+                    type: integer
+                    description: Number of remaining cards in the stock
+                  moveCount:
+                    type: integer
+                  phase:
+                    type: integer
+                    description: "0=Playing, 1=GameClear, 2=GameOver"
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    items:
+                      type: array
+                  phase:
+                    type: integer
+                  message:
+                    type: string
+
 components:
   schemas:
     # -------------------------------------------------------------------------
     # Shared types
     # -------------------------------------------------------------------------
+    FortyThievesMoveZone:
+      type: object
+      description: Source or target zone for a Forty Thieves card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (waste, tableau, foundation)
+          enum: [waste, tableau, foundation]
+        col:
+          type: integer
+          description: Column index (required for tableau zone)
+        cardIndex:
+          type: integer
+          description: Card index within the column (required when moving from tableau)
     Card:
       type: object
       description: A single playing card

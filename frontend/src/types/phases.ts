@@ -351,3 +351,10 @@ export const ClockSolitairePhase = {
   GAME_CLEAR: 1,
   GAME_OVER: 2,
 } as const;
+
+/** Forty Thieves phase constants (sync: internal/domain/FortyThieves.go). */
+export const FortyThievesPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;

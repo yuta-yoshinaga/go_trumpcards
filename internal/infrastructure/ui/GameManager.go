@@ -18,6 +18,7 @@ var GameNames = []string{
 	"euchre", "pyramid", "tripeaks", "cribbage", "threecard",
 	"ohhell", "bridge", "speed", "gofish", "pinochle", "golf",
 	"pigtail", "sevencardstud", "clocksolitaire", "durak",
+	"fortythieves",
 }
 
 // GameAliases maps short alias names to their canonical game names.
@@ -35,6 +36,7 @@ var GameAliases = map[string]string{
 	"6plus":  "shortdeck",
 	"gin":    "ginrummy",
 	"3card":  "threecard",
+	"40t":    "fortythieves",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.
@@ -203,6 +205,7 @@ func buildGameEntries() (map[string]CuiExecer, map[string][]string) {
 		"sevencardstud":  NewSevenCardStudCui(),
 		"clocksolitaire": NewClockSolitaireCui(),
 		"durak":          NewDurakCui(),
+		"fortythieves":   NewFortyThievesCui(),
 	}
 	controllers := make(map[string]CuiExecer, len(entries))
 	helpLines := make(map[string][]string, len(entries))

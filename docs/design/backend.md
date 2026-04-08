@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全40ゲーム)](#12-ゲームドメイン-全40ゲーム)
+  - [1.2 ゲームドメイン (全41ゲーム)](#12-ゲームドメイン-全41ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -24,6 +24,7 @@
   - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
   - [2.12 SevenCardStud ベッティングフロー](#212-sevencardstud-ベッティングフロー)
   - [2.13 Durak アタック・ディフェンスフロー](#213-durak-アタックディフェンスフロー)
+  - [2.14 FortyThieves ドロー・ムーブフロー](#214-fortythieves-ドロームーブフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -53,6 +54,7 @@
   - [3.26 PigsTail フェーズ遷移](#326-pigstail-フェーズ遷移)
   - [3.27 SevenCardStud フェーズ遷移](#327-sevencardstud-フェーズ遷移)
   - [3.28 Durak フェーズ遷移](#328-durak-フェーズ遷移)
+  - [3.29 FortyThieves フェーズ遷移](#329-fortythieves-フェーズ遷移)
 
 ---
 
@@ -120,7 +122,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全40ゲーム)
+### 1.2 ゲームドメイン (全41ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1020,6 +1022,24 @@ classDiagram
         +int PlayerCount
     }
 
+    class FortyThieves {
+        -trumpCards *TrumpCards
+        -tableau [][]*Card
+        -foundations [][]*Card
+        -stock []*Card
+        -waste []*Card
+        -moveCount int
+        -phase FortyThievesPhase
+        +Reset()
+        +Draw() error
+        +Move(src string, dst string) error
+        +Undo() error
+        +GiveUp()
+        +Hint() string
+        +AutoComplete() error
+        +Phase() FortyThievesPhase
+    }
+
     class ClockSolitaire {
         -trumpCards *TrumpCards
         -piles [13][]*ClockCard
@@ -1106,6 +1126,7 @@ classDiagram
     Durak --> "*" DurakPlayer
     Durak --> "1" DurakConfig
     DurakPlayer --|> GamePlayer
+    FortyThieves --> "*" Card
 ```
 
 ### 1.3 ユースケース層 (Interactor・Presenter)
@@ -1159,7 +1180,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全40ゲーム共通)**
+**Interactor パターン (全41ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1231,8 +1252,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "40ゲーム × CUI/Web = 80 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "40ゲーム × CUI/Web = 80 Presenter 実装"
+    note for GameCuiController "41ゲーム × CUI/Web = 82 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "41ゲーム × CUI/Web = 82 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1276,6 +1297,7 @@ classDiagram
         -sevencardstud *SevenCardStudWebController
         -clocksolitaire *ClockSolitaireWebController
         -durak *DurakWebController
+        -fortythieves *FortyThievesWebController
         +Exec()
     }
 
@@ -1688,6 +1710,44 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: 手札枚数・次アタッカー表示
+```
+
+### 2.14 FortyThieves ドロー・ムーブフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as FortyThievesInteractor
+    participant Domain as FortyThieves
+    participant Pres as Presenter
+
+    Note over User,Pres: ドローフロー
+    User->>Ctrl: draw
+    Ctrl->>Interactor: Draw()
+    Interactor->>Domain: Draw()
+    Domain->>Domain: 山札からウェストへ1枚めくる
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 山札・ウェスト状態更新表示
+
+    Note over User,Pres: ムーブフロー
+    User->>Ctrl: move w f1
+    Ctrl->>Interactor: Move("w", "f1")
+    Interactor->>Domain: Move("w", "f1")
+    Domain->>Domain: ウェスト → 組札1へ移動 → 同スート昇順チェック
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: タブロー・組札状態更新表示
+
+    Note over User,Pres: オートコンプリート
+    User->>Ctrl: autocomplete
+    Ctrl->>Interactor: AutoComplete()
+    Interactor->>Domain: AutoComplete()
+    Domain->>Domain: 安全に移動可能なカードを組札へ自動移動
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 組札更新表示
 ```
 
 ---
@@ -2201,6 +2261,22 @@ stateDiagram-v2
     note right of Defend : DurakPhaseDefend = 1
     note right of BoutEnd : DurakPhaseBoutEnd = 2
     note right of GameEnd : DurakPhaseGameEnd = 3
+```
+
+### 3.29 FortyThieves フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : Draw() / Move() / Undo() / Hint() / AutoComplete()
+    Playing --> GameClear : 8組札すべて完成
+    Playing --> GameOver : 移動可能な手なし
+    GameOver --> [*]
+    GameClear --> [*]
+
+    note right of Playing : FortyThievesPlaying = 0
+    note right of GameClear : FortyThievesGameClear = 1
+    note right of GameOver : FortyThievesGameOver = 2
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

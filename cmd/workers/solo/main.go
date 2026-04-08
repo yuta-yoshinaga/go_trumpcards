@@ -196,6 +196,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Forty Thieves
+	if err := worker.RegisterKV(mux, "/fortythieves/exec", "fortythieves:",
+		func() usecase.FortyThievesInteractorIF {
+			ft := domain.NewFortyThieves(domain.NewTrumpCardsWithDecks(2, 0))
+			return usecase.NewFortyThievesInteractor(ft, new(presenter.FortyThievesWebPresenter))
+		},
+		func(data []byte) (usecase.FortyThievesInteractorIF, error) {
+			return usecase.RestoreFortyThievesInteractor(data, new(presenter.FortyThievesWebPresenter))
+		},
+		controller.NewFortyThievesWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

@@ -28,7 +28,8 @@
   - [2.13 PigsTailPage フェーズ別レンダリングフロー](#213-pigstailpage-フェーズ別レンダリングフロー)
   - [2.14 SevenCardStudPage フェーズ別レンダリングフロー](#214-sevencardstudpage-フェーズ別レンダリングフロー)
   - [2.15 DurakPage フェーズ別レンダリングフロー](#215-durakpage-フェーズ別レンダリングフロー)
-  - [2.16 CLIモード コマンド実行フロー](#216-cliモード-コマンド実行フロー)
+  - [2.16 FortyThievesPage フェーズ別レンダリングフロー](#216-fortythievespage-フェーズ別レンダリングフロー)
+  - [2.17 CLIモード コマンド実行フロー](#217-cliモード-コマンド実行フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -278,6 +279,16 @@ classDiagram
         +string message
         +string messageCode
         +object messageParams
+    }
+
+    class FortyThievesResponse {
+        +Card[][] tableau
+        +Card[] foundations
+        +Card waste
+        +number stockCount
+        +number moveCount
+        +number phase
+        +string message
     }
 
     class SevenCardStudResponse {
@@ -568,6 +579,13 @@ classDiagram
         GAME_END = 3
     }
 
+    class FortyThievesPhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
     class SevenCardStudPhase {
         <<enumeration>>
         INIT = 0
@@ -581,7 +599,7 @@ classDiagram
         REBUY = 8
     }
 
-    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase は、\nそれぞれ同一の値を持つ別定数です"
+    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase, FortyThievesPhase は、\nそれぞれ同一の値を持つ別定数です"
 ```
 
 ### 1.2 API クライアント層
@@ -677,7 +695,13 @@ classDiagram
     PigsTailApi --> gameApi : uses postJson/gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全40ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak)"
+    class FortyThievesApi {
+        +run(cmd, args?) Promise~FortyThievesResponse~
+    }
+
+    FortyThievesApi --> gameApi : uses postJson/gameExec
+
+    note for BlackJackApi "全41ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -977,11 +1001,23 @@ classDiagram
         +Function handleReset
     }
 
+    class useFortyThievesGame {
+        +FortyThievesResponse state
+        +Function handleDraw
+        +Function handleMove
+        +Function handleHint
+        +Function handleUndo
+        +Function handleAutoComplete
+        +Function handleGiveUp
+        +Function handleReset
+    }
+
     useKlondikeGame --> useGameApi : uses
     usePyramidGame --> useGameApi : uses
     useTriPeaksGame --> useGameApi : uses
     useGolfGame --> useGameApi : uses
     useClockSolitaireGame --> useGameApi : uses
+    useFortyThievesGame --> useGameApi : uses
     useDurakGame --> useGameApi : uses
     usePigsTailGame --> useGameApi : uses
     useCribbageGame --> useGameApi : uses
@@ -1035,7 +1071,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全40ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全41ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1495,6 +1531,17 @@ classDiagram
 
     ClockSolitairePage --|> GamePage : follows pattern
 
+    class FortyThievesPage {
+        +10列タブロー表示 (全カード表向き)
+        +8組札表示
+        +山札・ウェスト表示
+        +手数カウンター
+        +引く/元に戻す/ヒント/オートコンプリートボタン
+        +ギブアップ/リセットボタン
+    }
+
+    FortyThievesPage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -1508,7 +1555,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全40ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全41ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1531,7 +1578,7 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (40ゲーム)
+        +Routes (41ゲーム)
     }
 
     class gameCategories {
@@ -1539,7 +1586,7 @@ classDiagram
         +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, OhHell, Euchre, Bridge, Napoleon]
         +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail, Durak]
-        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire]
+        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves]
         +rummy: [GinRummy, Canasta, Cribbage]
     }
 
@@ -1558,7 +1605,7 @@ classDiagram
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "42名前空間: common + 40ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "43名前空間: common + 41ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
@@ -2090,7 +2137,42 @@ sequenceDiagram
     Page-->>User: 敗者表示・結果サマリー
 ```
 
-### 2.16 CLIモード コマンド実行フロー
+### 2.16 FortyThievesPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as FortyThievesPage
+    participant Hook as useFortyThievesGame
+    participant API as gameApi
+
+    Note over User,API: プレイフェーズ (phase=0)
+    User->>Page: 山札クリック
+    Page->>Hook: handleDraw()
+    Hook->>API: gameExec("draw")
+    API-->>Hook: FortyThievesResponse (phase=0)
+    Hook-->>Page: 再レンダリング → 山札・ウェスト更新
+
+    User->>Page: カード選択 → 移動先クリック
+    Page->>Hook: handleMove(src, dst)
+    Hook->>API: gameExec("move", {args})
+    API-->>Hook: FortyThievesResponse (phase=0)
+    Hook-->>Page: 再レンダリング → タブロー・組札更新
+
+    User->>Page: オートコンプリートボタンクリック
+    Page->>Hook: handleAutoComplete()
+    Hook->>API: gameExec("autocomplete")
+    API-->>Hook: FortyThievesResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → 組札更新
+
+    Note over User,API: ゲームクリア (phase=1)
+    Page-->>User: クリアメッセージ表示
+
+    Note over User,API: ゲームオーバー (phase=2)
+    Page-->>User: ゲームオーバーメッセージ表示
+```
+
+### 2.17 CLIモード コマンド実行フロー
 
 ```mermaid
 sequenceDiagram
