@@ -3902,10 +3902,14 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, draw, d, move, m, undo, u, giveup, g, hint, h, autocomplete, ac, log, l]
-                args:
-                  type: string
-                  description: Sub-arguments for the move command (source and destination)
+                  enum: [reset, r, draw, d, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/FortyThievesMoveZone'
+                to:
+                  $ref: '#/components/schemas/FortyThievesMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
                 sessionId:
                   type: string
             examples:
@@ -3920,10 +3924,14 @@ paths:
                   command: draw
                   sessionId: my-session-001
               move:
-                summary: Move a card
+                summary: Move a card from waste to tableau column 0
                 value:
                   command: move
-                  args: "w f1"
+                  from:
+                    zone: waste
+                  to:
+                    zone: tableau
+                    col: 0
                   sessionId: my-session-001
       responses:
         '200':
@@ -3983,6 +3991,22 @@ components:
     # -------------------------------------------------------------------------
     # Shared types
     # -------------------------------------------------------------------------
+    FortyThievesMoveZone:
+      type: object
+      description: Source or target zone for a Forty Thieves card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (waste, tableau, foundation)
+          enum: [waste, tableau, foundation]
+        col:
+          type: integer
+          description: Column index (required for tableau zone)
+        cardIndex:
+          type: integer
+          description: Card index within the column (required when moving from tableau)
     Card:
       type: object
       description: A single playing card

@@ -14,6 +14,7 @@ import type {
   DurakConfigInput,
   DurakResponse,
   EuchreResponse,
+  FortyThievesMoveZone,
   FortyThievesResponse,
   FreeCellResponse,
   GinRummyResponse,
@@ -871,13 +872,6 @@ export const clocksolitaireApi = {
   exec: (command: 'reset' | 'step' | 'autoplay' | 'log') =>
     gameExec<ClockSolitaireResponse>('clocksolitaire', { command }),
 };
-
-/** Forty Thieves move zone specification */
-export interface FortyThievesMoveZone {
-  zone: string;
-  col?: number;
-  cardIndex?: number;
-}
 
 /** API client for the Forty Thieves /fortythieves/exec endpoint. */
 export const fortyThievesApi = {
