@@ -14,6 +14,7 @@ import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
+import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
 import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
@@ -56,6 +57,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/deuceswild': deuceswild,
   '/doubt': doubt,
   '/durak': durak,
+  '/fortythieves': fortythieves,
   '/euchre': euchre,
   '/freecell': freecell,
   '/ginrummy': ginrummy,

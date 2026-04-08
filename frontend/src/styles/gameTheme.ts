@@ -39,6 +39,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   golf: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   memory: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   clocksolitaire: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  fortythieves: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   // Counting/Rummy — unified to blue
   ginrummy: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   canasta: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },

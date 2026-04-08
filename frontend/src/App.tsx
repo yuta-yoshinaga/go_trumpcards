@@ -18,6 +18,7 @@ import { DeucesWildPage } from './pages/DeucesWildPage';
 import { DoubtPage } from './pages/DoubtPage';
 import { DurakPage } from './pages/DurakPage';
 import { EuchrePage } from './pages/EuchrePage';
+import { FortyThievesPage } from './pages/FortyThievesPage';
 import { FreeCellPage } from './pages/FreeCellPage';
 import { GinRummyPage } from './pages/GinRummyPage';
 import { GoFishPage } from './pages/GoFishPage';
@@ -89,6 +90,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/golf': <GolfPage />,
   '/pigtail': <PigsTailPage />,
   '/clocksolitaire': <ClockSolitairePage />,
+  '/fortythieves': <FortyThievesPage />,
 };
 
 /** Root application component with router and game page routes. */

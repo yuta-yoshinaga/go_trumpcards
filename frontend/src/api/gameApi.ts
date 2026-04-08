@@ -14,6 +14,7 @@ import type {
   DurakConfigInput,
   DurakResponse,
   EuchreResponse,
+  FortyThievesResponse,
   FreeCellResponse,
   GinRummyResponse,
   GoFishResponse,
@@ -94,6 +95,7 @@ const workerUrl: Record<string, string> = {
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
   clocksolitaire: WORKER_SOLO,
+  fortythieves: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -870,6 +872,23 @@ export const clocksolitaireApi = {
     gameExec<ClockSolitaireResponse>('clocksolitaire', { command }),
 };
 
+/** Forty Thieves move zone specification */
+export interface FortyThievesMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Forty Thieves /fortythieves/exec endpoint. */
+export const fortyThievesApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
+    from?: FortyThievesMoveZone,
+    to?: FortyThievesMoveZone,
+    n?: number,
+  ) => gameExec<FortyThievesResponse>('fortythieves', { command, from, to, n }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -911,6 +930,7 @@ const games = [
   'golf',
   'pigtail',
   'clocksolitaire',
+  'fortythieves',
 ] as const;
 type Game = (typeof games)[number];
 
