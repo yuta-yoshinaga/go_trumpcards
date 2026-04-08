@@ -181,4 +181,26 @@ describe('DurakPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '値順' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('sort', undefined, undefined, undefined, 1));
   });
+
+  it('does not show win celebration when human is the loser', async () => {
+    const humanLosesState: DurakResponse = {
+      ...gameEndState,
+      loserIdx: 0,
+    };
+    mockExec.mockResolvedValue(humanLosesState);
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！')).toBeInTheDocument());
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+  });
+
+  it('does not show win celebration on draw (loserIdx -1)', async () => {
+    const drawState: DurakResponse = {
+      ...gameEndState,
+      loserIdx: -1,
+    };
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByText('ゲーム終了！')).toBeInTheDocument());
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+  });
 });

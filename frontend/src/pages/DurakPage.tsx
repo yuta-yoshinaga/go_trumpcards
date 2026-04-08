@@ -416,7 +416,7 @@ function DurakPageContent() {
         </div>
       </GameFooter>
       <WinCelebration
-        show={isGameEnd && humanPlayer !== undefined && state.loserIdx !== humanPlayer.id}
+        show={isGameEnd && humanPlayer !== undefined && state.loserIdx >= 0 && state.loserIdx !== humanPlayer.id}
         onCelebrate={() => playSound('winFanfare')}
       />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
