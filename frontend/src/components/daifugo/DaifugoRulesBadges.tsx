@@ -1,5 +1,8 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useIsMobile } from '../../hooks/useCardDimensions';
 import type { DaifugoResponse } from '../../types/card';
+import { getFocusableElements } from '../../utils/dom';
 
 const badgeStyle: React.CSSProperties = {
   display: 'inline-block',
@@ -11,10 +14,16 @@ const badgeStyle: React.CSSProperties = {
   fontWeight: 'bold',
 };
 
-/** Renders active rule badges (revolution, suit lock, eleven back, etc.) for Daifugo. */
-export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
-  const { t } = useTranslation('daifugo');
-  const badges: { label: string; description: string; bg: string; color: string }[] = [];
+interface BadgeData {
+  label: string;
+  description: string;
+  bg: string;
+  color: string;
+}
+
+/** Builds badge data from the current Daifugo state. */
+function buildBadges(state: DaifugoResponse, t: (key: string, opts?: Record<string, unknown>) => string): BadgeData[] {
+  const badges: BadgeData[] = [];
   if (state.revolutionActive) {
     badges.push({
       label: t('badge.revolution'),
@@ -72,7 +81,150 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
       color: 'white',
     });
   }
+  return badges;
+}
+
+/** Modal that displays active rule badges with their descriptions. */
+function RulesBadgeModal({
+  badges,
+  onClose,
+  summaryLabel,
+  closeLabel,
+}: {
+  badges: BadgeData[];
+  onClose: () => void;
+  summaryLabel: string;
+  closeLabel: string;
+}) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const previousFocus = document.activeElement as HTMLElement;
+    const dialog = dialogRef.current as HTMLElement;
+    const focusable = getFocusableElements(dialog);
+    if (focusable.length > 0) focusable[0].focus();
+
+    // Prevent background scrolling
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      // Focus trap
+      if (e.key !== 'Tab' || focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = originalOverflow;
+      previousFocus?.focus();
+    };
+  }, [onClose]);
+
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses on click
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50"
+      onClick={onClose}
+      role="presentation"
+    >
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: keyboard events handled at document level */}
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rules-modal-title"
+        className="glass-panel rounded-t-lg sm:rounded-lg shadow-xl p-4 w-full sm:max-w-sm sm:mx-4 max-h-[70vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-3">
+          <h2 id="rules-modal-title" className="text-sm font-bold text-ds-text-primary">
+            {summaryLabel}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-ds-text-primary/60 hover:text-ds-text-primary text-lg leading-none"
+            aria-label={closeLabel}
+          >
+            ✕
+          </button>
+        </div>
+        <ul className="space-y-2">
+          {badges.map((b) => (
+            <li key={b.label} className="flex items-start gap-2">
+              <span
+                className="shrink-0 rounded px-2 py-0.5 text-xs font-bold"
+                style={{ background: b.bg, color: b.color }}
+              >
+                {b.label}
+              </span>
+              <span className="text-xs text-ds-text-primary/80">{b.description}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+/** Renders active rule badges (revolution, suit lock, eleven back, etc.) for Daifugo. */
+export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
+  const { t } = useTranslation('daifugo');
+  const { t: tc } = useTranslation('common');
+  const isMobile = useIsMobile();
+  const [modalOpen, setModalOpen] = useState(false);
+  const badges = buildBadges(state, t);
+
+  const openModal = useCallback(() => setModalOpen(true), []);
+  const closeModal = useCallback(() => setModalOpen(false), []);
+
   if (badges.length === 0) return null;
+
+  const summaryLabel = t('badge.activeRulesSummary', { count: badges.length });
+
+  // Mobile: show collapsed summary button
+  if (isMobile) {
+    return (
+      <div className="my-1 px-1">
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-bold bg-amber-500 text-white"
+          onClick={openModal}
+          data-testid="rules-summary-button"
+        >
+          <span aria-hidden="true">⚠️</span>
+          {summaryLabel}
+        </button>
+        {modalOpen && (
+          <RulesBadgeModal
+            badges={badges}
+            onClose={closeModal}
+            summaryLabel={summaryLabel}
+            closeLabel={tc('manual.close')}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Desktop: show individual badges with tooltips
   return (
     <div className="my-1 px-1">
       {badges.map((b) => (
