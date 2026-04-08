@@ -201,7 +201,7 @@ function MemoryPageContent() {
               className="my-3 lg:my-1 p-2 lg:p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
               data-tutorial="mem-board"
             >
-              <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-0.5 md:gap-1 lg:grid-rows-4 lg:h-full">
+              <div className="grid grid-cols-4 gap-1 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13 lg:grid-rows-4 lg:h-full">
                 {state.board.map((bc, idx) => (
                   <button
                     type="button"
@@ -210,7 +210,7 @@ function MemoryPageContent() {
                     aria-label={bc.faceUp && bc.card ? cardAlt(bc.card) : t('cardFaceDown', { position: idx + 1 })}
                     disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                     onClick={() => handleFlip(idx)}
-                    className={`memory-card relative aspect-[2/3] lg:aspect-auto rounded ${focusRingWhite} ${
+                    className={`memory-card relative aspect-[2/3] min-h-[44px] min-w-[44px] lg:aspect-auto rounded ${focusRingWhite} ${
                       bc.taken
                         ? 'hidden'
                         : bc.faceUp
