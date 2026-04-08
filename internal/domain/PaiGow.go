@@ -103,9 +103,7 @@ func (pg *PaiGow) Reset() {
 		pg.chips.SetChips(PaiGowDefaultChips)
 	}
 	pg.trumpCards = NewTrumpCards(PaiGowJokerCount)
-	for range 10 {
-		pg.trumpCards.Shuffle()
-	}
+	pg.trumpCards.Shuffle()
 }
 
 // Bet ベット＆カード配布
@@ -210,11 +208,10 @@ func (pg *PaiGow) resolve() {
 
 	// 総合結果判定
 	if pg.highHandResult == GameResultWin && pg.lowHandResult == GameResultWin {
-		// 両方勝ち: 1:1（コミッション差引）
+		// 両方勝ち: 1:1配当（勝ち分に5%コミッション）
 		pg.result = GameResultWin
-		grossPayout := pg.bet * 2
-		pg.commission = grossPayout * PaiGowCommissionRate / 100
-		pg.payout = grossPayout - pg.commission
+		pg.commission = pg.bet * PaiGowCommissionRate / 100
+		pg.payout = pg.bet*2 - pg.commission
 		pg.chips.AddChips(pg.payout)
 	} else if pg.highHandResult == GameResultLose && pg.lowHandResult == GameResultLose {
 		// 両方負け: ベット没収
@@ -288,7 +285,7 @@ func evalPaiGowBugJokerHigh(cards []*Card, jokerIdx int) int {
 		nonJokerDesigns[c.GetDesign()]++
 	}
 
-	// フラッシュ候補スート: 3枚以上同じスートがあればフラッシュ可能
+	// フラッシュ候補スート: 4枚以上同じスートがあればジョーカーを含めてフラッシュ可能
 	flushDesign := -1
 	for d, cnt := range nonJokerDesigns {
 		if cnt >= 4 {
@@ -297,7 +294,7 @@ func evalPaiGowBugJokerHigh(cards []*Card, jokerIdx int) int {
 		}
 	}
 
-	// ストレート候補値を試す
+	// ストレート/フラッシュ候補値を試す
 	for v := 1; v <= CardValueMax; v++ {
 		design := CardDesignSpade
 		if flushDesign > 0 {
@@ -309,18 +306,6 @@ func evalPaiGowBugJokerHigh(cards []*Card, jokerIdx int) int {
 		if rank >= PokerHandStraight && rank > bestRank {
 			bestRank = rank
 			bestSub = sub
-		}
-	}
-	// フラッシュスートでも試す
-	if flushDesign > 0 {
-		for v := 1; v <= CardValueMax; v++ {
-			sub := NewCard(flushDesign, v, false)
-			cards[jokerIdx] = sub
-			rank := evalFiveCardHand(cards)
-			if rank >= PokerHandFlush && rank > bestRank {
-				bestRank = rank
-				bestSub = sub
-			}
 		}
 	}
 

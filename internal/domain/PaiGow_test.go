@@ -211,12 +211,12 @@ func TestPaiGow_BothWin(t *testing.T) {
 	assert.Equal(t, domain.GameResultWin, pg.GetResult())
 	assert.Equal(t, domain.GameResultWin, pg.GetHighHandResult())
 	assert.Equal(t, domain.GameResultWin, pg.GetLowHandResult())
-	// Payout: bet*2 - 5% commission
-	expectedGross := 200
-	expectedCommission := 10 // 200 * 5 / 100
+	// Payout: bet*2 - 5% commission on winnings (bet amount)
+	expectedCommission := 5 // 100 * 5 / 100
+	expectedPayout := 200 - expectedCommission
 	assert.Equal(t, expectedCommission, pg.GetCommission())
-	assert.Equal(t, expectedGross-expectedCommission, pg.GetPayout())
-	assert.Equal(t, expectedGross-expectedCommission, pg.GetChips())
+	assert.Equal(t, expectedPayout, pg.GetPayout())
+	assert.Equal(t, expectedPayout, pg.GetChips())
 }
 
 func TestPaiGow_BothLose(t *testing.T) {
