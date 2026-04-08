@@ -70,11 +70,7 @@ type durakConfigJSON struct {
 
 // MarshalJSON implements json.Marshaler.
 func (c DurakConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(durakConfigJSON{
-		PlayerCount:     c.PlayerCount,
-		CpuDifficulty:   c.CpuDifficulty,
-		TransferEnabled: c.TransferEnabled,
-	})
+	return json.Marshal(durakConfigJSON(c))
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
