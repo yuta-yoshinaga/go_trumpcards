@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した39種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した40種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -58,6 +58,7 @@ Go + Clean Architecture で実装した39種類のトランプゲーム。CLI �
 | ぶたのしっぽ (Pig's Tail) | `pigtail` | [CUI](docs/manual/cui/pigtail.md) / [Web](docs/manual/web/pigtail.md) |
 | セブンカード・スタッド (Seven Card Stud) | `sevencardstud` | [CUI](docs/manual/cui/sevencardstud.md) / [Web](docs/manual/web/sevencardstud.md) |
 | クロックソリティア (Clock Solitaire) | `clocksolitaire` | [CUI](docs/manual/cui/clocksolitaire.md) / [Web](docs/manual/web/clocksolitaire.md) |
+| ドゥラーク (Durak) | `durak` | [CUI](docs/manual/cui/durak.md) / [Web](docs/manual/web/durak.md) |
 
 ## Demo
 

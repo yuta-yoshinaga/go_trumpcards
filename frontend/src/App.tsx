@@ -16,6 +16,7 @@ import { CribbagePage } from './pages/CribbagePage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DeucesWildPage } from './pages/DeucesWildPage';
 import { DoubtPage } from './pages/DoubtPage';
+import { DurakPage } from './pages/DurakPage';
 import { EuchrePage } from './pages/EuchrePage';
 import { FreeCellPage } from './pages/FreeCellPage';
 import { GinRummyPage } from './pages/GinRummyPage';
@@ -54,6 +55,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/daifugo': <DaifugoPage />,
   '/sevens': <SevensPage />,
   '/doubt': <DoubtPage />,
+  '/durak': <DurakPage />,
   '/euchre': <EuchrePage />,
   '/bridge': <BridgePage />,
   '/holdem': <HoldemPage />,

@@ -1,0 +1,48 @@
+{
+  "phase": {
+    "attack": "Attack Phase",
+    "defend": "Defense Phase",
+    "boutEnd": "Bout End",
+    "gameEnd": "Game Over"
+  },
+  "action": {
+    "attack": "Attack",
+    "defend": "Defend",
+    "pass": "Pass",
+    "take": "Take Cards"
+  },
+  "trump": "Trump",
+  "stock": "Stock",
+  "table": "Table",
+  "tableEmpty": "(empty)",
+  "attackButton": "Attack",
+  "defendButton": "Defend",
+  "passButton": "Pass",
+  "takeButton": "Take Cards",
+  "selectCard": "Select a card",
+  "selectAttackCard": "Select attack card to defend",
+  "attacker": "Attacker",
+  "defender": "Defender",
+  "result": "Game Over!",
+  "resultHumanLose": "You are the Durak (loser)",
+  "resultCpuLose": "CPU {{idx}} is the Durak (loser)",
+  "resultDraw": "Draw!",
+  "sort": {
+    "suit": "By Suit",
+    "value": "By Value"
+  },
+  "settings": {
+    "title": "Rule Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "difficultyNormal": "Normal",
+    "difficultyEasy": "Easy",
+    "difficultyHard": "Hard",
+    "transferEnabled": "Transfer (Perevod)"
+  },
+  "tutorial": {
+    "trumpInfo": "The trump suit and stock count are shown here",
+    "playerHand": "Your hand. Click cards to select them",
+    "tableCards": "Attack and defense cards on the table",
+    "actionButtons": "Use Attack, Defend, Pass, or Take buttons"
+  }
+}

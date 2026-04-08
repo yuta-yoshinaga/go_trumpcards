@@ -92,6 +92,8 @@ tags:
     description: Seven Card Stud (セブンカード・スタッド) game
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
+  - name: durak
+    description: Durak (ドゥラーク) game
 
 paths:
   /blackjack/exec:
@@ -3686,6 +3688,170 @@ paths:
                   phase:
                     type: integer
                   stepCount:
+                    type: integer
+                  message:
+                    type: string
+
+  /durak/exec:
+    post:
+      tags:
+        - durak
+      summary: Execute a Durak game command
+      description: |
+        Send a command to advance the Durak (ドゥラーク) game session
+        identified by `sessionId`.  Durak is a popular Eastern European card
+        game for 2-6 players (1 human + 1-5 CPU) using a 36-card deck (6-A).
+        Players take turns attacking and defending.  The attacker plays cards
+        and the defender must beat each with a higher card of the same suit or
+        a trump card.  The last player with cards is the loser ("durak" = fool).
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Attack   | `0`   | Attacker plays cards |
+        | Defend   | `1`   | Defender beats attacking cards |
+        | BoutEnd  | `2`   | Bout resolved (cards discarded or picked up) |
+        | GameEnd  | `3`   | Game over; loser determined |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `attack` | `a`     | Play a card to attack |
+        | `defend` | `d`     | Play a card to defend against an attack |
+        | `pickup` | `p`     | Defender picks up all table cards |
+        | `done`   | `dn`    | Attacker ends the attack |
+        | `pass`   | `ps`    | Pass the attack to the next player |
+        | `log`    | `l`     | View action log |
+      operationId: durakExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, attack, a, defend, d, pickup, p, done, dn, pass, ps, log, l]
+                cardIndex:
+                  type: integer
+                  description: Index of the card to play (for attack/defend commands)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              attack:
+                summary: Attack with a card
+                value:
+                  command: attack
+                  cardIndex: 0
+                  sessionId: my-session-001
+              defend:
+                summary: Defend against an attack
+                value:
+                  command: defend
+                  cardIndex: 2
+                  sessionId: my-session-001
+              pickup:
+                summary: Pick up all table cards
+                value:
+                  command: pickup
+                  sessionId: my-session-001
+              done:
+                summary: End the attack
+                value:
+                  command: done
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                  tableAttack:
+                    type: array
+                    description: Cards played by the attacker on the table
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  tableDefense:
+                    type: array
+                    description: Cards played by the defender on the table
+                    items:
+                      nullable: true
+                      allOf:
+                        - $ref: '#/components/schemas/Card'
+                  trumpCard:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                    description: The trump card (bottom of the deck)
+                  trumpSuit:
+                    type: integer
+                    description: Trump suit (0=spade, 1=heart, 2=diamond, 3=club)
+                  deckCount:
+                    type: integer
+                    description: Remaining cards in the deck
+                  attackerIdx:
+                    type: integer
+                  defenderIdx:
+                    type: integer
+                  currentTurn:
+                    type: integer
+                  phase:
+                    type: integer
+                    description: "0=Attack, 1=Defend, 2=BoutEnd, 3=GameEnd"
+                  gameEndFlag:
+                    type: boolean
+                  loserIdx:
+                    type: integer
+                    description: Index of the losing player (-1 if game not ended)
+                  cpuActions:
+                    type: array
+                    items:
+                      type: object
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: array
+                  phase:
                     type: integer
                   message:
                     type: string

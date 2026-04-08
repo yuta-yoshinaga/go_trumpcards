@@ -62,6 +62,7 @@ type TrumpCardsWeb struct {
 	ptc  *controller.PigsTailWebController
 	scsc *controller.SevenCardStudWebController
 	csc  *controller.ClockSolitaireWebController
+	drc  *controller.DurakWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -367,6 +368,16 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			cs := domain.NewClockSolitaire(domain.NewTrumpCards(0))
 			return usecase.NewClockSolitaireInteractor(cs, new(presenter.ClockSolitaireWebPresenter))
 		}),
+		drc: controller.NewDurakWebController(func() usecase.DurakInteractorIF {
+			players := []*domain.DurakPlayer{
+				domain.NewDurakPlayer(true),
+				domain.NewDurakPlayer(false),
+				domain.NewDurakPlayer(false),
+				domain.NewDurakPlayer(false),
+			}
+			d := domain.NewDurak(domain.NewTrumpCardsShortDeck(), players)
+			return usecase.NewDurakInteractor(d, new(presenter.DurakWebPresenter))
+		}),
 	}
 }
 
@@ -418,6 +429,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/pigtail/exec", web.ptc.Exec},
 		{"/sevencardstud/exec", web.scsc.Exec},
 		{"/clocksolitaire/exec", web.csc.Exec},
+		{"/durak/exec", web.drc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -519,6 +531,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.ptc.Stop()
 	web.scsc.Stop()
 	web.csc.Stop()
+	web.drc.Stop()
 	fmt.Println(i18n.T("webServerStopped"))
 	slog.Info("server stopped")
 	return runErr

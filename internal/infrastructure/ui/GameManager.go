@@ -17,7 +17,7 @@ var GameNames = []string{
 	"napoleon", "indianpoker", "videopoker", "deuceswild", "jokerpoker",
 	"euchre", "pyramid", "tripeaks", "cribbage", "threecard",
 	"ohhell", "bridge", "speed", "gofish", "pinochle", "golf",
-	"pigtail", "sevencardstud", "clocksolitaire",
+	"pigtail", "sevencardstud", "clocksolitaire", "durak",
 }
 
 // GameAliases maps short alias names to their canonical game names.
@@ -202,6 +202,7 @@ func buildGameEntries() (map[string]CuiExecer, map[string][]string) {
 		"pigtail":        NewPigsTailCui(),
 		"sevencardstud":  NewSevenCardStudCui(),
 		"clocksolitaire": NewClockSolitaireCui(),
+		"durak":          NewDurakCui(),
 	}
 	controllers := make(map[string]CuiExecer, len(entries))
 	helpLines := make(map[string][]string, len(entries))
