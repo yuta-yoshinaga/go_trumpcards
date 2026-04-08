@@ -34,7 +34,8 @@
     "sequenceDesc": "階段（連続した数字）で出す必要があります",
     "nineReverseDesc": "9が出されたため、出す順番が逆回りになっています",
     "numberLockDesc": "同じ数字のカードしか出せません",
-    "sequenceLockDesc": "同じ長さの階段しか出せません"
+    "sequenceLockDesc": "同じ長さの階段しか出せません",
+    "activeRulesSummary": "特殊ルール発動中 ({{count}})"
   },
   "exchange": {
     "title": "[カード交換]",

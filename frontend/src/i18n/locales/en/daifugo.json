@@ -34,7 +34,8 @@
     "sequenceDesc": "Cards must be played as a sequence (consecutive numbers)",
     "nineReverseDesc": "A 9 was played, reversing the turn order",
     "numberLockDesc": "Only cards of the same number can be played",
-    "sequenceLockDesc": "Only sequences of the same length can be played"
+    "sequenceLockDesc": "Only sequences of the same length can be played",
+    "activeRulesSummary": "Active Rules ({{count}})"
   },
   "exchange": {
     "title": "[Card Exchange]",
