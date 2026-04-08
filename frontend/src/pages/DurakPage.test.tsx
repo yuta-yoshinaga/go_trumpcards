@@ -14,7 +14,7 @@ const mockExec = vi.mocked(durakApi.exec);
 
 const defaultConfig: DurakConfig = {
   playerCount: 4,
-  cpuDifficulty: 1,
+  cpuDifficulty: 0,
   transferEnabled: false,
 };
 

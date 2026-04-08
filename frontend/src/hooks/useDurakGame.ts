@@ -7,14 +7,14 @@ import { useGameConfig } from './useGameConfig';
 /** Default Durak game configuration. */
 export const DEFAULT_DURAK_CONFIG: DurakConfig = {
   playerCount: 4,
-  cpuDifficulty: 1,
+  cpuDifficulty: 0,
   transferEnabled: false,
 };
 
-/** CPU difficulty options for Durak settings. */
+/** CPU difficulty options for Durak settings (0=Normal, 1=Easy, 2=Hard matches backend). */
 export const CPU_DIFFICULTY_OPTIONS = [
-  { value: 0, label: 'easy' },
-  { value: 1, label: 'normal' },
+  { value: 0, label: 'normal' },
+  { value: 1, label: 'easy' },
   { value: 2, label: 'hard' },
 ] as const;
 

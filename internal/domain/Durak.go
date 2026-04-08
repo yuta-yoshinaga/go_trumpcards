@@ -37,10 +37,18 @@ type DurakTablePair struct {
 	Defense *Card `json:"d,omitempty"` // 防御カード (nil = 未防御)
 }
 
+// DurakActionType 行動種別定数
+const (
+	DurakActionAttack = 0 // 攻撃
+	DurakActionDefend = 1 // 防御
+	DurakActionPass   = 2 // パス
+	DurakActionTake   = 3 // 引き取り
+)
+
 // DurakCpuAction CPUまたは人間の1ターン分の行動記録
 type DurakCpuAction struct {
 	PlayerIdx  int   // 行動したプレイヤーインデックス
-	ActionType int   // 0=attack, 1=defend, 2=pass, 3=take
+	ActionType int   // DurakActionAttack/Defend/Pass/Take
 	CardIdx    int   // 使用した手札インデックス (-1 = パス/テイク)
 	AttackIdx  int   // 防御時: 対象の攻撃カードインデックス (-1 = 該当なし)
 	Card       *Card // 出したカード (nil = パス/テイク)
@@ -180,7 +188,7 @@ func (d *Durak) PlayerAttack(cardIdx int) error {
 
 	d.round.humanAction = &DurakCpuAction{
 		PlayerIdx:  d.round.attackerIdx,
-		ActionType: 0,
+		ActionType: DurakActionAttack,
 		CardIdx:    cardIdx,
 		AttackIdx:  -1,
 		Card:       played,
@@ -234,7 +242,7 @@ func (d *Durak) PlayerDefend(attackIdx, handIdx int) error {
 
 	d.round.humanAction = &DurakCpuAction{
 		PlayerIdx:  d.round.defenderIdx,
-		ActionType: 1,
+		ActionType: DurakActionDefend,
 		CardIdx:    handIdx,
 		AttackIdx:  attackIdx,
 		Card:       played,
@@ -274,7 +282,7 @@ func (d *Durak) PlayerPass() error {
 
 	d.round.humanAction = &DurakCpuAction{
 		PlayerIdx:  d.round.attackerIdx,
-		ActionType: 2,
+		ActionType: DurakActionPass,
 		CardIdx:    -1,
 		AttackIdx:  -1,
 	}
@@ -308,7 +316,7 @@ func (d *Durak) PlayerTakeCards() error {
 
 	d.round.humanAction = &DurakCpuAction{
 		PlayerIdx:  d.round.defenderIdx,
-		ActionType: 3,
+		ActionType: DurakActionTake,
 		CardIdx:    -1,
 		AttackIdx:  -1,
 	}
@@ -730,7 +738,7 @@ func (d *Durak) cpuAttack() {
 		played := attacker.RemoveCard(idx)
 		d.round.tablePairs = append(d.round.tablePairs, &DurakTablePair{Attack: played})
 		d.round.cpuActions = append(d.round.cpuActions, &DurakCpuAction{
-			PlayerIdx: d.round.attackerIdx, ActionType: 0, CardIdx: idx, AttackIdx: -1, Card: played,
+			PlayerIdx: d.round.attackerIdx, ActionType: DurakActionAttack, CardIdx: idx, AttackIdx: -1, Card: played,
 		})
 		d.appendLog(d.round.attackerIdx, "attack", fmt.Sprintf("attacks with %s", cardStr(played)), []*Card{played})
 
@@ -747,7 +755,7 @@ func (d *Durak) cpuAttack() {
 	if idx < 0 {
 		// パス (追加攻撃なし)
 		d.round.cpuActions = append(d.round.cpuActions, &DurakCpuAction{
-			PlayerIdx: d.round.attackerIdx, ActionType: 2, CardIdx: -1, AttackIdx: -1,
+			PlayerIdx: d.round.attackerIdx, ActionType: DurakActionPass, CardIdx: -1, AttackIdx: -1,
 		})
 		d.appendLog(d.round.attackerIdx, "pass", "stops attacking", nil)
 
@@ -763,7 +771,7 @@ func (d *Durak) cpuAttack() {
 	played := attacker.RemoveCard(idx)
 	d.round.tablePairs = append(d.round.tablePairs, &DurakTablePair{Attack: played})
 	d.round.cpuActions = append(d.round.cpuActions, &DurakCpuAction{
-		PlayerIdx: d.round.attackerIdx, ActionType: 0, CardIdx: idx, AttackIdx: -1, Card: played,
+		PlayerIdx: d.round.attackerIdx, ActionType: DurakActionAttack, CardIdx: idx, AttackIdx: -1, Card: played,
 	})
 	d.appendLog(d.round.attackerIdx, "attack", fmt.Sprintf("attacks with %s", cardStr(played)), []*Card{played})
 
@@ -789,7 +797,7 @@ func (d *Durak) cpuDefend() {
 		if bestIdx < 0 {
 			// 防御不能 → カード引き取り
 			d.round.cpuActions = append(d.round.cpuActions, &DurakCpuAction{
-				PlayerIdx: d.round.defenderIdx, ActionType: 3, CardIdx: -1, AttackIdx: -1,
+				PlayerIdx: d.round.defenderIdx, ActionType: DurakActionTake, CardIdx: -1, AttackIdx: -1,
 			})
 			d.appendLog(d.round.defenderIdx, "take", "picks up all table cards", nil)
 			d.endBout(false)
@@ -799,7 +807,7 @@ func (d *Durak) cpuDefend() {
 		played := defender.RemoveCard(bestIdx)
 		pair.Defense = played
 		d.round.cpuActions = append(d.round.cpuActions, &DurakCpuAction{
-			PlayerIdx: d.round.defenderIdx, ActionType: 1, CardIdx: bestIdx, AttackIdx: pairIdx, Card: played,
+			PlayerIdx: d.round.defenderIdx, ActionType: DurakActionDefend, CardIdx: bestIdx, AttackIdx: pairIdx, Card: played,
 		})
 		d.appendLog(d.round.defenderIdx, "defend", fmt.Sprintf("defends %s with %s", cardStr(pair.Attack), cardStr(played)), []*Card{played})
 	}
@@ -902,14 +910,6 @@ func (d *Durak) cpuFindDefenseCard(p *DurakPlayer, attack *Card) int {
 
 		isTrump := c.GetDesign() == d.trumpSuit
 		r := durakCardRank(c)
-
-		// 難易度による防御判断
-		switch d.config.CpuDifficulty {
-		case DurakDifficultyHard:
-			// Hard: 最適なカードを選ぶ (切り札も使う)
-		default:
-			// Normal: 切り札は最後の手段 (非切り札優先)
-		}
 
 		// 非切り札を優先、同グループ内では弱い順
 		if bestIdx < 0 ||
