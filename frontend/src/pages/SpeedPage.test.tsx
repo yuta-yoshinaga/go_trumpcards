@@ -108,11 +108,11 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(screen.getByText('めくる')).toBeInTheDocument());
   });
 
-  it('calls flip on button click', async () => {
+  it('calls flip on flip button click', async () => {
     mockExec.mockResolvedValue(stuckState);
     renderWithProviders(<SpeedPage />);
-    await waitFor(() => expect(screen.getByText('めくる')).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: 'めくる' }));
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('flip-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('flip'));
   });
 
@@ -209,5 +209,35 @@ describe('SpeedPage', () => {
     mockExec.mockResolvedValue(stuckState);
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('膠着')).toBeInTheDocument());
+  });
+
+  it('flip button has pulse animation when stuck', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    expect(screen.getByTestId('flip-button')).toHaveClass('animate-pulse');
+  });
+
+  it('center piles trigger flip when stuck', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('めくる')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playState);
+    // Center pile buttons should have flip aria-label when stuck
+    const flipPileBtns = screen.getAllByRole('button', { name: 'めくる' });
+    // There should be center piles + the flip button = 3 buttons with 'めくる' label
+    expect(flipPileBtns.length).toBeGreaterThanOrEqual(2);
+    fireEvent.click(flipPileBtns[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('flip'));
+  });
+
+  it('center piles have pulse animation when stuck', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('めくる')).toBeInTheDocument());
+    const flipPileBtns = screen.getAllByRole('button', { name: 'めくる' });
+    // Center pile buttons (first two) should have animate-pulse
+    expect(flipPileBtns[0]).toHaveClass('animate-pulse');
   });
 });
