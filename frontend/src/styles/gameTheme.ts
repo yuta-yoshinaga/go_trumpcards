@@ -25,6 +25,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   // Matching/Pass — unified to green
   oldmaid: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   doubt: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  durak: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   daifugo: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   sevens: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   crazyeights: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },

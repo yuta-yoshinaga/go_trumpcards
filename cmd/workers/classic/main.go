@@ -329,6 +329,26 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Durak
+	if err := worker.RegisterKV(mux, "/durak/exec", "durak:",
+		func() usecase.DurakInteractorIF {
+			players := []*domain.DurakPlayer{
+				domain.NewDurakPlayer(true),
+				domain.NewDurakPlayer(false),
+				domain.NewDurakPlayer(false),
+				domain.NewDurakPlayer(false),
+			}
+			d := domain.NewDurak(domain.NewTrumpCardsShortDeck(), players)
+			return usecase.NewDurakInteractor(d, new(presenter.DurakWebPresenter))
+		},
+		func(data []byte) (usecase.DurakInteractorIF, error) {
+			return usecase.RestoreDurakInteractor(data, new(presenter.DurakWebPresenter))
+		},
+		controller.NewDurakWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

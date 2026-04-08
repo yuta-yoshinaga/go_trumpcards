@@ -27,7 +27,8 @@
   - [2.12 PinochlePage フェーズ別レンダリングフロー](#212-pinochlepage-フェーズ別レンダリングフロー)
   - [2.13 PigsTailPage フェーズ別レンダリングフロー](#213-pigstailpage-フェーズ別レンダリングフロー)
   - [2.14 SevenCardStudPage フェーズ別レンダリングフロー](#214-sevencardstudpage-フェーズ別レンダリングフロー)
-  - [2.15 CLIモード コマンド実行フロー](#215-cliモード-コマンド実行フロー)
+  - [2.15 DurakPage フェーズ別レンダリングフロー](#215-durakpage-フェーズ別レンダリングフロー)
+  - [2.16 CLIモード コマンド実行フロー](#216-cliモード-コマンド実行フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -254,6 +255,25 @@ classDiagram
         +number phase
         +number currentTurn
         +number winnerIdx
+        +object[] cpuActions
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    class DurakResponse {
+        +object[] players
+        +Card[] tableAttack
+        +Card[] tableDefense
+        +Card trumpCard
+        +number trumpSuit
+        +number deckCount
+        +number attackerIdx
+        +number defenderIdx
+        +number currentTurn
+        +number phase
+        +boolean gameEndFlag
+        +number loserIdx
         +object[] cpuActions
         +string message
         +string messageCode
@@ -540,6 +560,14 @@ classDiagram
         GAME_END = 6
     }
 
+    class DurakPhase {
+        <<enumeration>>
+        ATTACK = 0
+        DEFEND = 1
+        BOUT_END = 2
+        GAME_END = 3
+    }
+
     class SevenCardStudPhase {
         <<enumeration>>
         INIT = 0
@@ -636,6 +664,12 @@ classDiagram
 
     CanastaApi --> gameApi : uses postJson/gameExec
 
+    class DurakApi {
+        +run(cmd, args?) Promise~DurakResponse~
+    }
+
+    DurakApi --> gameApi : uses postJson/gameExec
+
     class PigsTailApi {
         +run(cmd) Promise~PigsTailResponse~
     }
@@ -643,7 +677,7 @@ classDiagram
     PigsTailApi --> gameApi : uses postJson/gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全39ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire)"
+    note for BlackJackApi "全40ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -917,6 +951,16 @@ classDiagram
         +Function handleReset
     }
 
+    class useDurakGame {
+        +DurakResponse state
+        +Function handleAttack
+        +Function handleDefend
+        +Function handlePickUp
+        +Function handleDone
+        +Function handlePass
+        +Function handleReset
+    }
+
     class usePigsTailGame {
         +PigsTailResponse state
         +Function handleDraw
@@ -938,6 +982,7 @@ classDiagram
     useTriPeaksGame --> useGameApi : uses
     useGolfGame --> useGameApi : uses
     useClockSolitaireGame --> useGameApi : uses
+    useDurakGame --> useGameApi : uses
     usePigsTailGame --> useGameApi : uses
     useCribbageGame --> useGameApi : uses
     useMemoryGame --> useGameApi : uses
@@ -990,7 +1035,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全39ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全40ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1430,6 +1475,17 @@ classDiagram
 
     SevenCardStudPage --|> GamePage : follows pattern
 
+    class DurakPage {
+        +CPUプレイヤーエリア (手札枚数表示)
+        +テーブルカード (攻撃/防御) 表示
+        +切り札カード・スート表示
+        +デッキ残り枚数
+        +アタック/ディフェンス/ピックアップ/パスボタン
+        +CPU行動アニメーション
+    }
+
+    DurakPage --|> GamePage : follows pattern
+
     class ClockSolitairePage {
         +13山を時計配置で表示
         +表向き/伏せカード表示
@@ -1452,7 +1508,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全39ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全40ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1475,14 +1531,14 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (39ゲーム)
+        +Routes (40ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Baccarat, ThreeCard]
         +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, OhHell, Euchre, Bridge, Napoleon]
-        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail]
+        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail, Durak]
         +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire]
         +rummy: [GinRummy, Canasta, Cribbage]
     }
@@ -1498,11 +1554,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 39 pages
+    App --> GamePage : routes to 40 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "41名前空間: common + 39ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "42名前空間: common + 40ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
@@ -1997,7 +2053,44 @@ sequenceDiagram
     Hook-->>Page: 再レンダリング → 次ハンドUI
 ```
 
-### 2.15 CLIモード コマンド実行フロー
+### 2.15 DurakPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as DurakPage
+    participant Hook as useDurakGame
+    participant API as gameApi
+
+    Note over User,API: アタックフェーズ (phase=0)
+    User->>Page: カード選択 → アタックボタンクリック
+    Page->>Hook: handleAttack(cardIndex)
+    Hook->>API: gameExec("attack", {cardIndex})
+    API-->>Hook: DurakResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → テーブルカード表示
+
+    Note over User,API: ディフェンスフェーズ (phase=1)
+    User->>Page: カード選択 → ディフェンスボタンクリック
+    Page->>Hook: handleDefend(cardIndex)
+    Hook->>API: gameExec("defend", {cardIndex})
+    API-->>Hook: DurakResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → 防御結果表示
+
+    Note over User,API: ピックアップ (防御放棄)
+    User->>Page: ピックアップボタンクリック
+    Page->>Hook: handlePickUp()
+    Hook->>API: gameExec("pickup")
+    API-->>Hook: DurakResponse (phase=0)
+    Hook-->>Page: 再レンダリング → 次のバウトUI
+
+    Note over User,API: CPU行動アニメーション
+    Page-->>User: CPUアクションをアニメーション再生
+
+    Note over User,API: ゲーム終了 (phase=3)
+    Page-->>User: 敗者表示・結果サマリー
+```
+
+### 2.16 CLIモード コマンド実行フロー
 
 ```mermaid
 sequenceDiagram

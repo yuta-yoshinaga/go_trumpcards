@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全39ゲーム)](#12-ゲームドメイン-全39ゲーム)
+  - [1.2 ゲームドメイン (全40ゲーム)](#12-ゲームドメイン-全40ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -23,6 +23,7 @@
   - [2.10 GoFish 要求フロー](#210-gofish-要求フロ���)
   - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
   - [2.12 SevenCardStud ベッティングフロー](#212-sevencardstud-ベッティングフロー)
+  - [2.13 Durak アタック・ディフェンスフロー](#213-durak-アタックディフェンスフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -51,6 +52,7 @@
   - [3.25 Pinochle フェーズ遷移](#325-pinochle-フェーズ遷移)
   - [3.26 PigsTail フェーズ遷移](#326-pigstail-フェーズ遷移)
   - [3.27 SevenCardStud フェーズ遷移](#327-sevencardstud-フェーズ遷移)
+  - [3.28 Durak フェーズ遷移](#328-durak-フェーズ遷移)
 
 ---
 
@@ -118,7 +120,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全39ゲーム)
+### 1.2 ゲームドメイン (全40ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -992,6 +994,32 @@ classDiagram
         +Phase() GolfPhase
     }
 
+    class Durak {
+        -trumpCards *TrumpCards
+        -players []*DurakPlayer
+        -config DurakConfig
+        -phase DurakPhase
+        -trumpSuit int
+        -trumpCard *Card
+        -tableAttack []*Card
+        -tableDefense []*Card
+        +Reset()
+        +Attack(cardIdx int) error
+        +Defend(cardIdx int) error
+        +PickUp() error
+        +Done() error
+        +Pass() error
+        +Phase() DurakPhase
+    }
+
+    class DurakPlayer {
+        +bool IsHuman
+    }
+
+    class DurakConfig {
+        +int PlayerCount
+    }
+
     class ClockSolitaire {
         -trumpCards *TrumpCards
         -piles [13][]*ClockCard
@@ -1075,6 +1103,9 @@ classDiagram
     Memory --> "*" MemoryPlayer
     MemoryPlayer --|> GamePlayer
     ClockSolitaire --> "*" ClockCard
+    Durak --> "*" DurakPlayer
+    Durak --> "1" DurakConfig
+    DurakPlayer --|> GamePlayer
 ```
 
 ### 1.3 ユースケース層 (Interactor・Presenter)
@@ -1128,7 +1159,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全39ゲーム共通)**
+**Interactor パターン (全40ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1200,8 +1231,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "39ゲーム × CUI/Web = 78 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "39ゲーム × CUI/Web = 78 Presenter 実装"
+    note for GameCuiController "40ゲーム × CUI/Web = 80 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "40ゲーム × CUI/Web = 80 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1244,6 +1275,7 @@ classDiagram
         -pigtail *PigsTailWebController
         -sevencardstud *SevenCardStudWebController
         -clocksolitaire *ClockSolitaireWebController
+        -durak *DurakWebController
         +Exec()
     }
 
@@ -1265,8 +1297,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 39 controllers
-    GameManager --> "*" CuiExecer : holds 39 games
+    TrumpCardsWeb --> "*" GameWebController : holds 40 controllers
+    GameManager --> "*" CuiExecer : holds 40 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1618,6 +1650,44 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: ベッティング結果・カード更新表示
+```
+
+### 2.13 Durak アタック・ディフェンスフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as DurakInteractor
+    participant Domain as Durak
+    participant Pres as Presenter
+
+    Note over User,Pres: アタックフロー
+    User->>Ctrl: attack 0
+    Ctrl->>Interactor: Attack(0)
+    Interactor->>Domain: Attack(0)
+    Domain->>Domain: カード出す → テーブルに配置 → CPU自動ディフェンス判定
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: テーブル状態・手札更新表示
+
+    Note over User,Pres: ディフェンスフロー
+    User->>Ctrl: defend 2
+    Ctrl->>Interactor: Defend(2)
+    Interactor->>Domain: Defend(2)
+    Domain->>Domain: 防御カード配置 → 切り札/同スート判定 → ビート成否
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: テーブル状態・手札更新表示
+
+    Note over User,Pres: ピックアップ (防御失敗)
+    User->>Ctrl: pickup
+    Ctrl->>Interactor: PickUp()
+    Interactor->>Domain: PickUp()
+    Domain->>Domain: テーブルカード全て手札に追加 → デッキ補充 → 次のバウト
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 手札枚数・次アタッカー表示
 ```
 
 ---
@@ -2112,6 +2182,25 @@ stateDiagram-v2
     note right of Showdown : SevenCardStudPhaseShowdown = 6
     note right of End : SevenCardStudPhaseEnd = 7
     note right of Rebuy : SevenCardStudPhaseRebuy = 8
+```
+
+### 3.28 Durak フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Attack : Reset()
+    Attack --> Defend : Attack() カード配置
+    Attack --> BoutEnd : Done() アタック終了
+    Defend --> Attack : Defend() 全カードをビート → 追加アタック可能
+    Defend --> BoutEnd : PickUp() 防御失敗
+    BoutEnd --> Attack : デッキ補充 → 次のバウト
+    BoutEnd --> GameEnd : 1人以外全員手札なし
+    GameEnd --> [*]
+
+    note right of Attack : DurakPhaseAttack = 0
+    note right of Defend : DurakPhaseDefend = 1
+    note right of BoutEnd : DurakPhaseBoutEnd = 2
+    note right of GameEnd : DurakPhaseGameEnd = 3
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

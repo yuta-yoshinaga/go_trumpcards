@@ -11,6 +11,8 @@ import type {
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  DurakConfigInput,
+  DurakResponse,
   EuchreResponse,
   FreeCellResponse,
   GinRummyResponse,
@@ -73,6 +75,7 @@ const workerUrl: Record<string, string> = {
   ohhell: WORKER_CLASSIC,
   oldmaid: WORKER_CLASSIC,
   doubt: WORKER_CLASSIC,
+  durak: WORKER_CLASSIC,
   daifugo: WORKER_CLASSIC,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
@@ -207,6 +210,17 @@ export const oldmaidApi = {
 export const daifugoApi = {
   exec: (command: 'reset' | 'play' | 'sort', indices?: number[], config?: DaifugoConfigInput, sortMode?: number) =>
     gameExec<DaifugoResponse>('daifugo', { command, indices, config, sortMode }),
+};
+
+/** API client for the Durak /durak/exec endpoint. */
+export const durakApi = {
+  exec: (
+    command: 'reset' | 'attack' | 'defend' | 'pass' | 'take' | 'sort',
+    cardIdx?: number,
+    attackIdx?: number,
+    config?: DurakConfigInput,
+    sortMode?: number,
+  ) => gameExec<DurakResponse>('durak', { command, cardIdx, attackIdx, config, sortMode }),
 };
 
 /** API client for the Doubt /doubt/exec endpoint. */
@@ -863,6 +877,7 @@ const games = [
   'daifugo',
   'sevens',
   'doubt',
+  'durak',
   'holdem',
   'omaha',
   'shortdeck',
