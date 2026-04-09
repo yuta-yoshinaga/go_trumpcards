@@ -298,3 +298,33 @@ func TestGameAliases_AllPointToValidGames(t *testing.T) {
 		assert.True(t, gameSet[canonical], "alias %q points to unknown game %q", alias, canonical)
 	}
 }
+
+func TestGameRegistry_NamesMatchGameNames(t *testing.T) {
+	registry := GameRegistry()
+	assert.Equal(t, len(GameNames), len(registry), "registry and GameNames must have same length")
+	for i, entry := range registry {
+		assert.Equal(t, GameNames[i], entry.Name, "registry[%d].Name must match GameNames[%d]", i, i)
+	}
+}
+
+func TestGameRegistry_DescriptionsMatchGameDescriptions(t *testing.T) {
+	for _, entry := range GameRegistry() {
+		desc, ok := GameDescriptions[entry.Name]
+		assert.True(t, ok, "GameDescriptions must contain %q", entry.Name)
+		assert.Equal(t, entry.Description, desc)
+	}
+}
+
+func TestGameRegistry_NoDuplicateNames(t *testing.T) {
+	seen := make(map[string]bool, len(gameRegistry))
+	for _, entry := range gameRegistry {
+		assert.False(t, seen[entry.Name], "duplicate game name in registry: %q", entry.Name)
+		seen[entry.Name] = true
+	}
+}
+
+func TestGameRegistry_AllConstructorsNonNil(t *testing.T) {
+	for _, entry := range gameRegistry {
+		assert.NotNil(t, entry.NewCui, "NewCui must not be nil for %q", entry.Name)
+	}
+}

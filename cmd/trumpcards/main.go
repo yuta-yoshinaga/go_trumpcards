@@ -32,87 +32,7 @@ func main() {
 }
 
 func run() int {
-	helpText := `USAGE:
-  trumpcards [--lang ja|en] [game]
-  trumpcards --help
-
-GAMES:
-  blackjack    BlackJack (ブラックジャック)
-  poker        5-card Draw Poker (ポーカー)
-  oldmaid      Old Maid (ババ抜き)
-  daifugo      Daifugo / Great Fool (大富豪)
-  sevens       Sevens (7並べ)
-  doubt        Doubt (ダウト)
-  durak        Durak / Fool (ドゥラーク)
-  holdem       Texas Hold'em (テキサスホールデム)
-  omaha        Omaha Hold'em (オマハホールデム)
-  shortdeck    Short Deck (6+ Hold'em) (ショートデック)
-  hearts       Hearts (ハーツ)
-  memory       Memory / Concentration (神経衰弱)
-  klondike     Klondike Solitaire (ソリティア)
-  fortythieves Forty Thieves (フォーティシーブス)
-  freecell     FreeCell (フリーセル)
-  baccarat     Baccarat (バカラ)
-  spades       Spades (スペード)
-  crazyeights  Crazy Eights (クレイジーエイト)
-  ginrummy     Gin Rummy (ジンラミー)
-  canasta      Canasta (カナスタ)
-  spider       Spider Solitaire (スパイダーソリティア)
-  napoleon     Napoleon (ナポレオン)
-  indianpoker  Indian Poker (インディアンポーカー)
-  videopoker   Video Poker Jacks or Better (ビデオポーカー)
-  deuceswild   Deuces Wild (デューシーズワイルド)
-  jokerpoker   Joker Poker (ジョーカーポーカー)
-  euchre       Euchre (ユーカー)
-  pyramid      Pyramid (ピラミッド)
-  tripeaks     TriPeaks (トリピークス)
-  cribbage     Cribbage (クリベッジ)
-  threecard    Three Card Poker (スリーカードポーカー)
-  ohhell       Oh Hell (オー・ヘル)
-  bridge       Contract Bridge (コントラクトブリッジ)
-  pineapple    Pineapple Poker (パイナップルポーカー)
-  speed        Speed (スピード)
-  gofish       Go Fish (ゴーフィッシュ)
-  paigow       Pai Gow Poker (パイガオポーカー)
-  pinochle     Pinochle (ピノクル)
-  pigtail      Pig's Tail (ブタのしっぽ)
-  sevencardstud Seven Card Stud (セブンカードスタッド)
-  golf         Golf Solitaire (ゴルフ)
-  clocksolitaire Clock Solitaire (クロックソリティア)
-
-COMMANDS:
-  games        List all available games (--short for names only)
-  completion   Generate shell completion script (bash, zsh, fish)
-  update       Self-update to the latest version
-  web          Start REST API + web GUI server
-
-  (no argument) Interactive mode with game switching
-
-OPTIONS:
-  -h, --help        Show this help message
-  --lang ja|en      Language (default: ja)
-  --no-color        Disable color output
-  -V, --version     Show version information
-
-EXAMPLES:
-  trumpcards                     Start interactive mode (switch games with 'switch <game>')
-  trumpcards blackjack           Play BlackJack
-  trumpcards --lang en poker     Play Poker in English
-  trumpcards games               List all available games
-  trumpcards games --short       List game names only (for scripting)
-  trumpcards update              Self-update to the latest version
-  trumpcards update --yes        Update without confirmation prompt
-  NO_COLOR=1 trumpcards hearts   Play Hearts without color output
-  trumpcards web                 Start the web GUI server
-  trumpcards web --port 3000     Start the web GUI on port 3000
-  source <(trumpcards completion bash)   Enable bash completion
-
-ENVIRONMENT VARIABLES:
-  NO_COLOR          Disable color output when set (see https://no-color.org/)
-                    Example: NO_COLOR=1 trumpcards blackjack
-  PORT              Port number for the web server (default: 8080)
-                    Example: PORT=3000 trumpcards web
-`
+	helpText := buildHelpText()
 
 	lang := flag.String("lang", "", "language (ja or en)")
 	showVersion := flag.Bool("version", false, "Show version information")
@@ -159,176 +79,88 @@ ENVIRONMENT VARIABLES:
 	if i18n.Lang() != detectedLang && detectedLang != "" {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnsupportedLang", "lang", detectedLang))
 	}
-	// gameDescriptions maps canonical game names to display descriptions.
-	gameDescriptions := map[string]string{
-		"blackjack":      "BlackJack (ブラックジャック)",
-		"poker":          "5-card Draw Poker (ポーカー)",
-		"oldmaid":        "Old Maid (ババ抜き)",
-		"daifugo":        "Daifugo / Great Fool (大富豪)",
-		"sevens":         "Sevens (7並べ)",
-		"doubt":          "Doubt (ダウト)",
-		"holdem":         "Texas Hold'em (テキサスホールデム)",
-		"omaha":          "Omaha Hold'em (オマハホールデム)",
-		"shortdeck":      "Short Deck (6+ Hold'em) (ショートデック)",
-		"pineapple":      "Pineapple Poker (パイナップルポーカー)",
-		"hearts":         "Hearts (ハーツ)",
-		"memory":         "Memory / Concentration (神経衰弱)",
-		"klondike":       "Klondike Solitaire (ソリティア)",
-		"freecell":       "FreeCell (フリーセル)",
-		"baccarat":       "Baccarat (バカラ)",
-		"spades":         "Spades (スペード)",
-		"crazyeights":    "Crazy Eights (クレイジーエイト)",
-		"ginrummy":       "Gin Rummy (ジンラミー)",
-		"canasta":        "Canasta (カナスタ)",
-		"spider":         "Spider Solitaire (スパイダーソリティア)",
-		"napoleon":       "Napoleon (ナポレオン)",
-		"indianpoker":    "Indian Poker (インディアンポーカー)",
-		"videopoker":     "Video Poker Jacks or Better (ビデオポーカー)",
-		"deuceswild":     "Deuces Wild (デューシーズワイルド)",
-		"jokerpoker":     "Joker Poker (ジョーカーポーカー)",
-		"euchre":         "Euchre (ユーカー)",
-		"pyramid":        "Pyramid (ピラミッド)",
-		"tripeaks":       "TriPeaks (トリピークス)",
-		"cribbage":       "Cribbage (クリベッジ)",
-		"threecard":      "Three Card Poker (スリーカードポーカー)",
-		"ohhell":         "Oh Hell (オー・ヘル)",
-		"bridge":         "Contract Bridge (コントラクトブリッジ)",
-		"speed":          "Speed (スピード)",
-		"gofish":         "Go Fish (ゴーフィッシュ)",
-		"pinochle":       "Pinochle (ピノクル)",
-		"golf":           "Golf Solitaire (ゴルフ)",
-		"pigtail":        "Pig's Tail (ブタのしっぽ)",
-		"sevencardstud":  "Seven Card Stud (セブンカードスタッド)",
-		"clocksolitaire": "Clock Solitaire (クロックソリティア)",
-		"durak":          "Durak / Fool (ドゥラーク)",
-		"fortythieves":   "Forty Thieves (フォーティシーブス)",
-		"paigow":         "Pai Gow Poker (パイガオポーカー)",
+	// Build game commands from the registry (single source of truth).
+	commands := buildGameCommands()
+	commands["games"] = func() int {
+		gamesFlags := flag.NewFlagSet("games", flag.ContinueOnError)
+		short := gamesFlags.Bool("short", false, "Print game names only")
+		if err := gamesFlags.Parse(flag.Args()[1:]); err != nil {
+			if errors.Is(err, flag.ErrHelp) {
+				return 0
+			}
+			return 1
+		}
+		if gamesFlags.NArg() > 0 {
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(gamesFlags.Args(), " ")))
+		}
+		// Build reverse alias map: canonical name -> sorted list of aliases.
+		reverseAliases := make(map[string][]string)
+		for alias, canonical := range ui.GameAliases {
+			reverseAliases[canonical] = append(reverseAliases[canonical], alias)
+		}
+		for k := range reverseAliases {
+			sort.Strings(reverseAliases[k])
+		}
+		for _, name := range ui.GameNames {
+			if *short {
+				fmt.Println(name)
+			} else {
+				line := fmt.Sprintf("  %-16s %s", name, ui.GameDescriptions[name])
+				if aliases := reverseAliases[name]; len(aliases) > 0 {
+					line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliases, ", "))
+				}
+				fmt.Println(line)
+			}
+		}
+		return 0
 	}
-
-	commands := map[string]func() int{
-		"blackjack":      func() int { ui.NewBlackJackCui().Exec(); return 0 },
-		"poker":          func() int { ui.NewPokerCui().Exec(); return 0 },
-		"oldmaid":        func() int { ui.NewOldMaidCui().Exec(); return 0 },
-		"daifugo":        func() int { ui.NewDaifugoCui().Exec(); return 0 },
-		"sevens":         func() int { ui.NewSevensCui().Exec(); return 0 },
-		"doubt":          func() int { ui.NewDoubtCui().Exec(); return 0 },
-		"holdem":         func() int { ui.NewHoldemCui().Exec(); return 0 },
-		"omaha":          func() int { ui.NewOmahaCui().Exec(); return 0 },
-		"shortdeck":      func() int { ui.NewShortDeckCui().Exec(); return 0 },
-		"hearts":         func() int { ui.NewHeartsCui().Exec(); return 0 },
-		"memory":         func() int { ui.NewMemoryCui().Exec(); return 0 },
-		"klondike":       func() int { ui.NewKlondikeCui().Exec(); return 0 },
-		"freecell":       func() int { ui.NewFreeCellCui().Exec(); return 0 },
-		"baccarat":       func() int { ui.NewBaccaratCui().Exec(); return 0 },
-		"spades":         func() int { ui.NewSpadesCui().Exec(); return 0 },
-		"crazyeights":    func() int { ui.NewCrazyEightsCui().Exec(); return 0 },
-		"ginrummy":       func() int { ui.NewGinRummyCui().Exec(); return 0 },
-		"canasta":        func() int { ui.NewCanastaCui().Exec(); return 0 },
-		"spider":         func() int { ui.NewSpiderCui().Exec(); return 0 },
-		"napoleon":       func() int { ui.NewNapoleonCui().Exec(); return 0 },
-		"indianpoker":    func() int { ui.NewIndianPokerCui().Exec(); return 0 },
-		"videopoker":     func() int { ui.NewVideoPokerCui().Exec(); return 0 },
-		"deuceswild":     func() int { ui.NewDeucesWildCui().Exec(); return 0 },
-		"jokerpoker":     func() int { ui.NewJokerPokerCui().Exec(); return 0 },
-		"euchre":         func() int { ui.NewEuchreCui().Exec(); return 0 },
-		"pyramid":        func() int { ui.NewPyramidCui().Exec(); return 0 },
-		"tripeaks":       func() int { ui.NewTriPeaksCui().Exec(); return 0 },
-		"cribbage":       func() int { ui.NewCribbageCui().Exec(); return 0 },
-		"threecard":      func() int { ui.NewThreeCardCui().Exec(); return 0 },
-		"ohhell":         func() int { ui.NewOhHellCui().Exec(); return 0 },
-		"bridge":         func() int { ui.NewBridgeCui().Exec(); return 0 },
-		"pineapple":      func() int { ui.NewPineappleCui().Exec(); return 0 },
-		"speed":          func() int { ui.NewSpeedCui().Exec(); return 0 },
-		"gofish":         func() int { ui.NewGoFishCui().Exec(); return 0 },
-		"pinochle":       func() int { ui.NewPinochleCui().Exec(); return 0 },
-		"golf":           func() int { ui.NewGolfCui().Exec(); return 0 },
-		"pigtail":        func() int { ui.NewPigsTailCui().Exec(); return 0 },
-		"sevencardstud":  func() int { ui.NewSevenCardStudCui().Exec(); return 0 },
-		"clocksolitaire": func() int { ui.NewClockSolitaireCui().Exec(); return 0 },
-		"durak":          func() int { ui.NewDurakCui().Exec(); return 0 },
-		"fortythieves":   func() int { ui.NewFortyThievesCui().Exec(); return 0 },
-		"paigow":         func() int { ui.NewPaiGowCui().Exec(); return 0 },
-		"games": func() int {
-			gamesFlags := flag.NewFlagSet("games", flag.ContinueOnError)
-			short := gamesFlags.Bool("short", false, "Print game names only")
-			if err := gamesFlags.Parse(flag.Args()[1:]); err != nil {
-				if errors.Is(err, flag.ErrHelp) {
-					return 0
-				}
+	commands["completion"] = func() int {
+		return runCompletion(flag.Args()[1:])
+	}
+	commands["update"] = func() int {
+		updateFlags := flag.NewFlagSet("update", flag.ContinueOnError)
+		yes := updateFlags.Bool("yes", false, "Skip confirmation prompt")
+		updateFlags.BoolVar(yes, "y", false, "Skip confirmation prompt (shorthand)")
+		if err := updateFlags.Parse(flag.Args()[1:]); err != nil {
+			if errors.Is(err, flag.ErrHelp) {
+				return 0
+			}
+			return 1
+		}
+		updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
+		updater.SetAutoConfirm(*yes)
+		if err := updater.Exec(); err != nil {
+			return 1
+		}
+		return 0
+	}
+	commands["web"] = func() int {
+		webFlags := flag.NewFlagSet("web", flag.ContinueOnError)
+		port := webFlags.Int("port", 0, "Port number for the web server (default: 8080)")
+		webFlags.IntVar(port, "p", 0, "Port number for the web server (shorthand)")
+		if err := webFlags.Parse(flag.Args()[1:]); err != nil {
+			if errors.Is(err, flag.ErrHelp) {
+				return 0
+			}
+			return 1
+		}
+		if webFlags.NArg() > 0 {
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(webFlags.Args(), " ")))
+		}
+		if *port != 0 {
+			if *port < 1 || *port > 65535 {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(*port)))
 				return 1
 			}
-			if gamesFlags.NArg() > 0 {
-				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(gamesFlags.Args(), " ")))
-			}
-			// Build reverse alias map: canonical name -> sorted list of aliases.
-			reverseAliases := make(map[string][]string)
-			for alias, canonical := range ui.GameAliases {
-				reverseAliases[canonical] = append(reverseAliases[canonical], alias)
-			}
-			for k := range reverseAliases {
-				sort.Strings(reverseAliases[k])
-			}
-			for _, name := range ui.GameNames {
-				if *short {
-					fmt.Println(name)
-				} else {
-					line := fmt.Sprintf("  %-16s %s", name, gameDescriptions[name])
-					if aliases := reverseAliases[name]; len(aliases) > 0 {
-						line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliases, ", "))
-					}
-					fmt.Println(line)
-				}
-			}
-			return 0
-		},
-		"completion": func() int {
-			return runCompletion(flag.Args()[1:])
-		},
-		"update": func() int {
-			updateFlags := flag.NewFlagSet("update", flag.ContinueOnError)
-			yes := updateFlags.Bool("yes", false, "Skip confirmation prompt")
-			updateFlags.BoolVar(yes, "y", false, "Skip confirmation prompt (shorthand)")
-			if err := updateFlags.Parse(flag.Args()[1:]); err != nil {
-				if errors.Is(err, flag.ErrHelp) {
-					return 0
-				}
-				return 1
-			}
-			updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
-			updater.SetAutoConfirm(*yes)
-			if err := updater.Exec(); err != nil {
-				return 1
-			}
-			return 0
-		},
-		"web": func() int {
-			webFlags := flag.NewFlagSet("web", flag.ContinueOnError)
-			port := webFlags.Int("port", 0, "Port number for the web server (default: 8080)")
-			webFlags.IntVar(port, "p", 0, "Port number for the web server (shorthand)")
-			if err := webFlags.Parse(flag.Args()[1:]); err != nil {
-				if errors.Is(err, flag.ErrHelp) {
-					return 0
-				}
-				return 1
-			}
-			if webFlags.NArg() > 0 {
-				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(webFlags.Args(), " ")))
-			}
-			if *port != 0 {
-				if *port < 1 || *port > 65535 {
-					fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(*port)))
-					return 1
-				}
-				_ = os.Setenv("PORT", strconv.Itoa(*port))
-			}
-			infrastructure.InitLogger()
-			w := web.NewTrumpCardsWeb()
-			if err := w.Exec(); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-				return 1
-			}
-			return 0
-		},
+			_ = os.Setenv("PORT", strconv.Itoa(*port))
+		}
+		infrastructure.InitLogger()
+		w := web.NewTrumpCardsWeb()
+		if err := w.Exec(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			return 1
+		}
+		return 0
 	}
 
 	// Commands that parse their own sub-flags; skip the extra-args warning for these.
@@ -369,4 +201,68 @@ func mapKeys(m map[string]func() int) []string {
 		keys = append(keys, k)
 	}
 	return keys
+}
+
+// buildHelpText generates the CLI help text with the games section derived from the registry.
+func buildHelpText() string {
+	var sb strings.Builder
+	sb.WriteString(`USAGE:
+  trumpcards [--lang ja|en] [game]
+  trumpcards --help
+
+GAMES:
+`)
+	for _, entry := range ui.GameRegistry() {
+		fmt.Fprintf(&sb, "  %-16s %s\n", entry.Name, entry.Description)
+	}
+	sb.WriteString(`
+COMMANDS:
+  games        List all available games (--short for names only)
+  completion   Generate shell completion script (bash, zsh, fish)
+  update       Self-update to the latest version
+  web          Start REST API + web GUI server
+
+  (no argument) Interactive mode with game switching
+
+OPTIONS:
+  -h, --help        Show this help message
+  --lang ja|en      Language (default: ja)
+  --no-color        Disable color output
+  -V, --version     Show version information
+
+EXAMPLES:
+  trumpcards                     Start interactive mode (switch games with 'switch <game>')
+  trumpcards blackjack           Play BlackJack
+  trumpcards --lang en poker     Play Poker in English
+  trumpcards games               List all available games
+  trumpcards games --short       List game names only (for scripting)
+  trumpcards update              Self-update to the latest version
+  trumpcards update --yes        Update without confirmation prompt
+  NO_COLOR=1 trumpcards hearts   Play Hearts without color output
+  trumpcards web                 Start the web GUI server
+  trumpcards web --port 3000     Start the web GUI on port 3000
+  source <(trumpcards completion bash)   Enable bash completion
+
+ENVIRONMENT VARIABLES:
+  NO_COLOR          Disable color output when set (see https://no-color.org/)
+                    Example: NO_COLOR=1 trumpcards blackjack
+  PORT              Port number for the web server (default: 8080)
+                    Example: PORT=3000 trumpcards web
+`)
+	return sb.String()
+}
+
+// buildGameCommands generates command handlers for all games from the registry.
+func buildGameCommands() map[string]func() int {
+	registry := ui.GameRegistry()
+	commands := make(map[string]func() int, len(registry)+4)
+	for _, entry := range registry {
+		e := entry // capture loop variable
+		commands[e.Name] = func() int {
+			g := e.NewCui()
+			ui.RunCuiLoop(g.Controller(), g.HelpLines())
+			return 0
+		}
+	}
+	return commands
 }

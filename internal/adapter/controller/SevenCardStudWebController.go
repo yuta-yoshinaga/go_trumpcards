@@ -137,36 +137,14 @@ type SevenCardStudWebOutput struct {
 // Returns an error if the table size is invalid.
 func (p SevenCardStudWebInput) ToConfig() (domain.SevenCardStudConfig, error) {
 	cfg := domain.DefaultSevenCardStudConfig()
-	if p.Ante != nil && *p.Ante >= 1 {
-		cfg.Ante = *p.Ante
-	}
-	if p.BringIn != nil && *p.BringIn >= 1 {
-		cfg.BringIn = *p.BringIn
-	}
-	if p.SmallBet != nil && *p.SmallBet >= 1 {
-		cfg.SmallBet = *p.SmallBet
-	}
-	if p.BigBet != nil && *p.BigBet >= 1 {
-		cfg.BigBet = *p.BigBet
-	}
-	if p.TournamentMode != nil {
-		cfg.TournamentMode = *p.TournamentMode
-	}
-	if p.AnteLevelHands != nil && *p.AnteLevelHands >= 1 {
-		cfg.AnteLevelHands = *p.AnteLevelHands
-	}
-	if p.AnteMultiplier != nil && *p.AnteMultiplier >= 101 {
-		cfg.AnteMultiplier = *p.AnteMultiplier
-	}
-	if p.BettingLimit != nil {
-		bl := *p.BettingLimit
-		if bl < 0 {
-			bl = 0
-		} else if bl > 2 {
-			bl = 2
-		}
-		cfg.BettingLimit = domain.BettingLimitType(bl)
-	}
+	applyIntIfGte(&cfg.Ante, p.Ante, 1)
+	applyIntIfGte(&cfg.BringIn, p.BringIn, 1)
+	applyIntIfGte(&cfg.SmallBet, p.SmallBet, 1)
+	applyIntIfGte(&cfg.BigBet, p.BigBet, 1)
+	applyBool(&cfg.TournamentMode, p.TournamentMode)
+	applyIntIfGte(&cfg.AnteLevelHands, p.AnteLevelHands, 1)
+	applyIntIfGte(&cfg.AnteMultiplier, p.AnteMultiplier, 101)
+	applyBettingLimit(&cfg.BettingLimit, p.BettingLimit)
 	if p.TableSize != nil {
 		ts := *p.TableSize
 		if !domain.IsValidSevenCardStudTableSize(ts) {
@@ -174,27 +152,10 @@ func (p SevenCardStudWebInput) ToConfig() (domain.SevenCardStudConfig, error) {
 		}
 		cfg.TableSize = ts
 	}
-	if p.RebuyEnabled != nil {
-		cfg.RebuyEnabled = *p.RebuyEnabled
-	}
-	if p.RebuyMaxCount != nil && *p.RebuyMaxCount >= 1 {
-		cfg.RebuyMaxCount = *p.RebuyMaxCount
-	}
-	if p.RebuyChips != nil && *p.RebuyChips >= 1 {
-		cfg.RebuyChips = *p.RebuyChips
-	}
-	if p.RebuyPeriodHands != nil && *p.RebuyPeriodHands >= 1 {
-		cfg.RebuyPeriodHands = *p.RebuyPeriodHands
-	}
-	if p.AddonEnabled != nil {
-		cfg.AddonEnabled = *p.AddonEnabled
-	}
-	if p.AddonChips != nil && *p.AddonChips >= 1 {
-		cfg.AddonChips = *p.AddonChips
-	}
-	if p.AddonAfterHand != nil && *p.AddonAfterHand >= 1 {
-		cfg.AddonAfterHand = *p.AddonAfterHand
-	}
+	applyRebuyConfig(&cfg.RebuyEnabled, &cfg.RebuyMaxCount, &cfg.RebuyChips, &cfg.RebuyPeriodHands,
+		p.RebuyEnabled, p.RebuyMaxCount, p.RebuyChips, p.RebuyPeriodHands)
+	applyAddonConfig(&cfg.AddonEnabled, &cfg.AddonChips, &cfg.AddonAfterHand,
+		p.AddonEnabled, p.AddonChips, p.AddonAfterHand)
 	cfg.CpuMetaAI = p.CpuMetaAI
 	return cfg, nil
 }
@@ -219,6 +180,9 @@ func newSevenCardStudDefaultOutput(msg string) *SevenCardStudWebOutput {
 }
 
 func sevenCardStudDispatch(bc *baseController, w http.ResponseWriter, sgi usecase.SevenCardStudInteractorIF, param SevenCardStudWebInput, newDefault func(string) *SevenCardStudWebOutput) bool {
+	if dispatchPokerAction(bc, w, sgi, param.Command, param.Amount, param.HumanPlayMs) {
+		return true
+	}
 	switch param.Command {
 	case "r", "reset":
 		cfg, err := param.ToConfig()
@@ -227,30 +191,6 @@ func sevenCardStudDispatch(bc *baseController, w http.ResponseWriter, sgi usecas
 			return true
 		}
 		bc.writePresenterResponse(w, sgi.ResetWithConfig(cfg, param.Profile))
-	case "f", "fold":
-		bc.writePresenterResponse(w, sgi.Action(domain.SevenCardStudActionFold, 0, param.HumanPlayMs))
-	case "ck", "check":
-		bc.writePresenterResponse(w, sgi.Action(domain.SevenCardStudActionCheck, 0, param.HumanPlayMs))
-	case "c", "call":
-		bc.writePresenterResponse(w, sgi.Action(domain.SevenCardStudActionCall, 0, param.HumanPlayMs))
-	case "b", "bet":
-		bc.writePresenterResponse(w, sgi.Action(domain.SevenCardStudActionBet, param.Amount, param.HumanPlayMs))
-	case "ra", "raise":
-		bc.writePresenterResponse(w, sgi.Action(domain.SevenCardStudActionRaise, param.Amount, param.HumanPlayMs))
-	case "a", "allin":
-		bc.writePresenterResponse(w, sgi.Action(domain.SevenCardStudActionAllIn, 0, param.HumanPlayMs))
-	case "rb", "rebuy":
-		bc.writePresenterResponse(w, sgi.Rebuy())
-	case "sr", "skiprebuy":
-		bc.writePresenterResponse(w, sgi.SkipRebuy())
-	case "ad", "addon":
-		bc.writePresenterResponse(w, sgi.Addon())
-	case "sa", "skipaddon":
-		bc.writePresenterResponse(w, sgi.SkipAddon())
-	case "m", "muck":
-		bc.writePresenterResponse(w, sgi.Muck())
-	case "sh", "show":
-		bc.writePresenterResponse(w, sgi.ShowHand())
 	default:
 		return dispatchLog(param.Command, bc, w, sgi.ActionLog)
 	}

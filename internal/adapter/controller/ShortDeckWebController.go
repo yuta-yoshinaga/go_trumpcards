@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"net/http"
@@ -34,38 +33,17 @@ func newShortDeckDefaultOutput(msg string) *ShortDeckWebOutput {
 }
 
 func shortDeckDispatch(bc *baseController, w http.ResponseWriter, ogi usecase.ShortDeckInteractorIF, param ShortDeckWebInput, newDefault func(string) *ShortDeckWebOutput) bool {
+	if dispatchPokerAction(bc, w, ogi, param.Command, param.Amount, param.HumanPlayMs) {
+		return true
+	}
 	switch param.Command {
 	case "r", "reset":
 		cfg, err := param.ToConfig()
 		if err != nil {
-			bc.writeJsonResponse(w, 400, newDefault(err.Error()))
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault(err.Error()))
 			return true
 		}
 		bc.writePresenterResponse(w, ogi.ResetWithConfig(cfg, param.Profile))
-	case "f", "fold":
-		bc.writePresenterResponse(w, ogi.Action(domain.ShortDeckActionFold, 0, param.HumanPlayMs))
-	case "ck", "check":
-		bc.writePresenterResponse(w, ogi.Action(domain.ShortDeckActionCheck, 0, param.HumanPlayMs))
-	case "c", "call":
-		bc.writePresenterResponse(w, ogi.Action(domain.ShortDeckActionCall, 0, param.HumanPlayMs))
-	case "b", "bet":
-		bc.writePresenterResponse(w, ogi.Action(domain.ShortDeckActionBet, param.Amount, param.HumanPlayMs))
-	case "ra", "raise":
-		bc.writePresenterResponse(w, ogi.Action(domain.ShortDeckActionRaise, param.Amount, param.HumanPlayMs))
-	case "a", "allin":
-		bc.writePresenterResponse(w, ogi.Action(domain.ShortDeckActionAllIn, 0, param.HumanPlayMs))
-	case "rb", "rebuy":
-		bc.writePresenterResponse(w, ogi.Rebuy())
-	case "sr", "skiprebuy":
-		bc.writePresenterResponse(w, ogi.SkipRebuy())
-	case "ad", "addon":
-		bc.writePresenterResponse(w, ogi.Addon())
-	case "sa", "skipaddon":
-		bc.writePresenterResponse(w, ogi.SkipAddon())
-	case "m", "muck":
-		bc.writePresenterResponse(w, ogi.Muck())
-	case "sh", "show":
-		bc.writePresenterResponse(w, ogi.ShowHand())
 	default:
 		return dispatchLog(param.Command, bc, w, ogi.ActionLog)
 	}

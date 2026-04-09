@@ -4,19 +4,23 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 )
 
-// completionSubcommands is the list of all subcommands for shell completion.
-var completionSubcommands = []string{
-	"3card", "40t", "6plus", "7cs", "7stud",
-	"baccarat", "blackjack", "bridge", "canasta", "clock", "clocksolitaire", "completion",
-	"crazy8", "crazyeights", "cribbage", "daifugo", "deuces", "deuceswild", "doubt", "durak",
-	"euchre", "fortythieves", "freecell", "games", "gin", "ginrummy", "gofish", "golf",
-	"hearts", "holdem", "indian", "indianpoker", "joker", "jokerpoker", "klondike",
-	"memory", "napoleon", "ohhell", "oldmaid", "omaha", "paigow", "pgp", "pigtail",
-	"pineapple", "pinochle", "poker", "pyramid", "sevencardstud", "sevens", "short",
-	"shortdeck", "spades", "speed", "spider", "threecard", "tripeaks", "update",
-	"video", "videopoker", "web",
+// completionSubcommands returns the sorted list of all subcommands for shell completion,
+// derived from the game registry and aliases.
+func completionSubcommands() []string {
+	names := make([]string, 0, len(ui.GameNames)+len(ui.GameAliases)+4)
+	names = append(names, ui.GameNames...)
+	for alias := range ui.GameAliases {
+		names = append(names, alias)
+	}
+	names = append(names, "completion", "games", "update", "web")
+	sort.Strings(names)
+	return names
 }
 
 // runCompletion outputs a shell completion script for the given shell name.
@@ -82,7 +86,8 @@ func writeInstallHint(w io.Writer, shell string) {
 }
 
 func writeBashCompletion(w io.Writer) error {
-	script := `_trumpcards() {
+	cmds := strings.Join(completionSubcommands(), " ")
+	script := fmt.Sprintf(`_trumpcards() {
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
 
@@ -109,82 +114,29 @@ func writeBashCompletion(w io.Writer) error {
         return
     fi
 
-    local commands="3card 40t 6plus 7cs 7stud baccarat blackjack bridge canasta clock clocksolitaire completion crazy8 crazyeights cribbage daifugo deuces deuceswild doubt durak euchre fortythieves freecell games gin ginrummy gofish golf hearts holdem indian indianpoker joker jokerpoker klondike memory napoleon ohhell oldmaid omaha paigow pgp pigtail pineapple pinochle poker pyramid sevencardstud sevens short shortdeck spades speed spider threecard tripeaks update video videopoker web"
+    local commands="%s"
     COMPREPLY=( $(compgen -W "$commands" -- "$cur") )
 }
 complete -F _trumpcards trumpcards
-`
+`, cmds)
 	_, err := fmt.Fprint(w, script)
 	return err
 }
 
 func writeZshCompletion(w io.Writer) error {
-	script := `#compdef trumpcards
+	entries := buildCompletionEntries()
+	var sb strings.Builder
+	for _, e := range entries {
+		// Escape single quotes for zsh: ' -> '\''
+		desc := strings.ReplaceAll(e.desc, "'", `'\''`)
+		fmt.Fprintf(&sb, "        '%s:%s'\n", e.name, desc)
+	}
+	script := fmt.Sprintf(`#compdef trumpcards
 
 _trumpcards() {
     local -a commands
     commands=(
-        '3card:Three Card Poker (alias)'
-        '40t:Forty Thieves (alias)'
-        '6plus:Short Deck Hold'\''em (alias)'
-        '7cs:Seven Card Stud (alias)'
-        '7stud:Seven Card Stud (alias)'
-        'baccarat:Baccarat'
-        'blackjack:BlackJack'
-        'bridge:Contract Bridge'
-        'canasta:Canasta'
-        'clock:Clock Solitaire (alias)'
-        'clocksolitaire:Clock Solitaire'
-        'completion:Generate shell completion script'
-        'crazy8:Crazy Eights (alias)'
-        'crazyeights:Crazy Eights'
-        'cribbage:Cribbage'
-        'daifugo:Daifugo'
-        'deuces:Deuces Wild (alias)'
-        'deuceswild:Deuces Wild'
-        'doubt:Doubt'
-        'durak:Durak'
-        'euchre:Euchre'
-        'fortythieves:Forty Thieves'
-        'freecell:FreeCell'
-        'games:List available games'
-        'gin:Gin Rummy (alias)'
-        'ginrummy:Gin Rummy'
-        'gofish:Go Fish'
-        'golf:Golf Solitaire'
-        'hearts:Hearts'
-        'holdem:Texas Hold'\''em'
-        'indian:Indian Poker (alias)'
-        'indianpoker:Indian Poker'
-        'joker:Joker Poker (alias)'
-        'jokerpoker:Joker Poker'
-        'klondike:Klondike Solitaire'
-        'memory:Memory'
-        'napoleon:Napoleon'
-        'ohhell:Oh Hell'
-        'oldmaid:Old Maid'
-        'omaha:Omaha Hold'\''em'
-        'paigow:Pai Gow Poker'
-        'pgp:Pai Gow Poker (alias)'
-        'pigtail:Pig'\''s Tail'
-        'pineapple:Pineapple Poker'
-        'pinochle:Pinochle'
-        'poker:5-card Draw Poker'
-        'pyramid:Pyramid'
-        'sevencardstud:Seven Card Stud'
-        'sevens:Sevens'
-        'short:Short Deck Hold'\''em (alias)'
-        'shortdeck:Short Deck Hold'\''em'
-        'spades:Spades'
-        'speed:Speed'
-        'spider:Spider Solitaire'
-        'threecard:Three Card Poker'
-        'tripeaks:TriPeaks'
-        'update:Self-update to the latest version'
-        'video:Video Poker (alias)'
-        'videopoker:Video Poker'
-        'web:Start REST API + web GUI server'
-    )
+%s    )
 
     _arguments \
         '(-h --help)'{-h,--help}'[Show help message]' \
@@ -217,13 +169,20 @@ _trumpcards() {
 }
 
 _trumpcards "$@"
-`
+`, sb.String())
 	_, err := fmt.Fprint(w, script)
 	return err
 }
 
 func writeFishCompletion(w io.Writer) error {
-	script := `# Fish completion for trumpcards
+	entries := buildCompletionEntries()
+	var sb strings.Builder
+	for _, e := range entries {
+		// Escape single quotes for fish: ' -> \'
+		desc := strings.ReplaceAll(e.desc, "'", `\'`)
+		fmt.Fprintf(&sb, "complete -c trumpcards -n __fish_use_subcommand -a %s -d '%s'\n", e.name, desc)
+	}
+	script := fmt.Sprintf(`# Fish completion for trumpcards
 complete -c trumpcards -f
 
 # Global options
@@ -233,67 +192,7 @@ complete -c trumpcards -l lang -x -a 'ja en' -d 'Language'
 complete -c trumpcards -l no-color -d 'Disable color output'
 
 # Subcommands
-complete -c trumpcards -n __fish_use_subcommand -a 3card -d 'Three Card Poker (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a 40t -d 'Forty Thieves (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a 6plus -d 'Short Deck Hold'\''em (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a 7cs -d 'Seven Card Stud (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a 7stud -d 'Seven Card Stud (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a baccarat -d 'Baccarat'
-complete -c trumpcards -n __fish_use_subcommand -a blackjack -d 'BlackJack'
-complete -c trumpcards -n __fish_use_subcommand -a bridge -d 'Contract Bridge'
-complete -c trumpcards -n __fish_use_subcommand -a canasta -d 'Canasta'
-complete -c trumpcards -n __fish_use_subcommand -a clock -d 'Clock Solitaire (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a clocksolitaire -d 'Clock Solitaire'
-complete -c trumpcards -n __fish_use_subcommand -a completion -d 'Generate shell completion script'
-complete -c trumpcards -n __fish_use_subcommand -a crazy8 -d 'Crazy Eights (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a crazyeights -d 'Crazy Eights'
-complete -c trumpcards -n __fish_use_subcommand -a cribbage -d 'Cribbage'
-complete -c trumpcards -n __fish_use_subcommand -a daifugo -d 'Daifugo'
-complete -c trumpcards -n __fish_use_subcommand -a deuces -d 'Deuces Wild (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a deuceswild -d 'Deuces Wild'
-complete -c trumpcards -n __fish_use_subcommand -a doubt -d 'Doubt'
-complete -c trumpcards -n __fish_use_subcommand -a durak -d 'Durak'
-complete -c trumpcards -n __fish_use_subcommand -a euchre -d 'Euchre'
-complete -c trumpcards -n __fish_use_subcommand -a fortythieves -d 'Forty Thieves'
-complete -c trumpcards -n __fish_use_subcommand -a freecell -d 'FreeCell'
-complete -c trumpcards -n __fish_use_subcommand -a games -d 'List available games'
-complete -c trumpcards -n __fish_use_subcommand -a gin -d 'Gin Rummy (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a ginrummy -d 'Gin Rummy'
-complete -c trumpcards -n __fish_use_subcommand -a gofish -d 'Go Fish'
-complete -c trumpcards -n __fish_use_subcommand -a golf -d 'Golf Solitaire'
-complete -c trumpcards -n __fish_use_subcommand -a hearts -d 'Hearts'
-complete -c trumpcards -n __fish_use_subcommand -a holdem -d 'Texas Hold'\''em'
-complete -c trumpcards -n __fish_use_subcommand -a indian -d 'Indian Poker (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a indianpoker -d 'Indian Poker'
-complete -c trumpcards -n __fish_use_subcommand -a joker -d 'Joker Poker (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a jokerpoker -d 'Joker Poker'
-complete -c trumpcards -n __fish_use_subcommand -a klondike -d 'Klondike Solitaire'
-complete -c trumpcards -n __fish_use_subcommand -a memory -d 'Memory'
-complete -c trumpcards -n __fish_use_subcommand -a napoleon -d 'Napoleon'
-complete -c trumpcards -n __fish_use_subcommand -a ohhell -d 'Oh Hell'
-complete -c trumpcards -n __fish_use_subcommand -a oldmaid -d 'Old Maid'
-complete -c trumpcards -n __fish_use_subcommand -a omaha -d 'Omaha Hold'\''em'
-complete -c trumpcards -n __fish_use_subcommand -a paigow -d 'Pai Gow Poker'
-complete -c trumpcards -n __fish_use_subcommand -a pgp -d 'Pai Gow Poker (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a pigtail -d 'Pig'\''s Tail'
-complete -c trumpcards -n __fish_use_subcommand -a pineapple -d 'Pineapple Poker'
-complete -c trumpcards -n __fish_use_subcommand -a pinochle -d 'Pinochle'
-complete -c trumpcards -n __fish_use_subcommand -a poker -d '5-card Draw Poker'
-complete -c trumpcards -n __fish_use_subcommand -a pyramid -d 'Pyramid'
-complete -c trumpcards -n __fish_use_subcommand -a sevencardstud -d 'Seven Card Stud'
-complete -c trumpcards -n __fish_use_subcommand -a sevens -d 'Sevens'
-complete -c trumpcards -n __fish_use_subcommand -a short -d 'Short Deck Hold'\''em (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a shortdeck -d 'Short Deck Hold'\''em'
-complete -c trumpcards -n __fish_use_subcommand -a spades -d 'Spades'
-complete -c trumpcards -n __fish_use_subcommand -a speed -d 'Speed'
-complete -c trumpcards -n __fish_use_subcommand -a spider -d 'Spider Solitaire'
-complete -c trumpcards -n __fish_use_subcommand -a threecard -d 'Three Card Poker'
-complete -c trumpcards -n __fish_use_subcommand -a tripeaks -d 'TriPeaks'
-complete -c trumpcards -n __fish_use_subcommand -a update -d 'Self-update to the latest version'
-complete -c trumpcards -n __fish_use_subcommand -a video -d 'Video Poker (alias)'
-complete -c trumpcards -n __fish_use_subcommand -a videopoker -d 'Video Poker'
-complete -c trumpcards -n __fish_use_subcommand -a web -d 'Start REST API + web GUI server'
-
+%s
 # completion subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
 
@@ -302,7 +201,42 @@ complete -c trumpcards -n '__fish_seen_subcommand_from update' -l yes -s y -d 'S
 
 # web subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from web' -l port -s p -d 'Port number' -x
-`
+`, sb.String())
 	_, err := fmt.Fprint(w, script)
 	return err
+}
+
+// completionEntry holds a command name and its short description for shell completion.
+type completionEntry struct {
+	name string
+	desc string
+}
+
+// buildCompletionEntries builds a sorted list of all commands with descriptions
+// for shell completion, derived from the game registry and aliases.
+func buildCompletionEntries() []completionEntry {
+	descs := ui.GameDescriptions
+	// Strip Japanese text in parentheses for cleaner completion descriptions.
+	stripJa := func(s string) string {
+		if idx := strings.Index(s, " ("); idx >= 0 {
+			return s[:idx]
+		}
+		return s
+	}
+
+	entries := make([]completionEntry, 0, len(ui.GameNames)+len(ui.GameAliases)+4)
+	for _, name := range ui.GameNames {
+		entries = append(entries, completionEntry{name, stripJa(descs[name])})
+	}
+	for alias, canonical := range ui.GameAliases {
+		entries = append(entries, completionEntry{alias, stripJa(descs[canonical]) + " (alias)"})
+	}
+	entries = append(entries,
+		completionEntry{"completion", "Generate shell completion script"},
+		completionEntry{"games", "List available games"},
+		completionEntry{"update", "Self-update to the latest version"},
+		completionEntry{"web", "Start REST API + web GUI server"},
+	)
+	sort.Slice(entries, func(i, j int) bool { return entries[i].name < entries[j].name })
+	return entries
 }

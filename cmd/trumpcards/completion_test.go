@@ -20,7 +20,7 @@ func TestWriteBashCompletion(t *testing.T) {
 	assert.Contains(t, script, "--lang")
 	assert.Contains(t, script, "--port")
 	// Every subcommand in the canonical list must appear in the bash script.
-	for _, cmd := range completionSubcommands {
+	for _, cmd := range completionSubcommands() {
 		assert.Contains(t, script, cmd, "bash completion missing subcommand %q", cmd)
 	}
 }
@@ -33,7 +33,7 @@ func TestWriteZshCompletion(t *testing.T) {
 	assert.Contains(t, script, "#compdef trumpcards")
 	assert.Contains(t, script, "--port")
 	// Every subcommand in the canonical list must appear in the zsh script.
-	for _, cmd := range completionSubcommands {
+	for _, cmd := range completionSubcommands() {
 		assert.Contains(t, script, "'"+cmd+":", "zsh completion missing subcommand %q", cmd)
 	}
 }
@@ -47,7 +47,7 @@ func TestWriteFishCompletion(t *testing.T) {
 	assert.Contains(t, script, "__fish_seen_subcommand_from completion")
 	assert.Contains(t, script, "-l port")
 	// Every subcommand in the canonical list must appear in the fish script.
-	for _, cmd := range completionSubcommands {
+	for _, cmd := range completionSubcommands() {
 		assert.Contains(t, script, "-a "+cmd, "fish completion missing subcommand %q", cmd)
 	}
 }
@@ -105,30 +105,30 @@ func TestRunCompletion_ValidShells(t *testing.T) {
 
 func TestCompletionSubcommands_ContainsAllGames(t *testing.T) {
 	// Verify the list is sorted
-	for i := 1; i < len(completionSubcommands); i++ {
-		assert.True(t, completionSubcommands[i-1] < completionSubcommands[i],
-			"completionSubcommands not sorted: %q >= %q", completionSubcommands[i-1], completionSubcommands[i])
+	for i := 1; i < len(completionSubcommands()); i++ {
+		assert.True(t, completionSubcommands()[i-1] < completionSubcommands()[i],
+			"completionSubcommands() not sorted: %q >= %q", completionSubcommands()[i-1], completionSubcommands()[i])
 	}
 
 	// Verify key games are present
 	expected := []string{"blackjack", "poker", "web", "update", "completion", "golf"}
-	joined := strings.Join(completionSubcommands, " ")
+	joined := strings.Join(completionSubcommands(), " ")
 	for _, e := range expected {
 		assert.Contains(t, joined, e)
 	}
 }
 
 func TestCompletionSubcommands_SyncWithGameNames(t *testing.T) {
-	subSet := make(map[string]bool, len(completionSubcommands))
-	for _, s := range completionSubcommands {
+	subSet := make(map[string]bool, len(completionSubcommands()))
+	for _, s := range completionSubcommands() {
 		subSet[s] = true
 	}
-	// Every game in ui.GameNames must appear in completionSubcommands.
+	// Every game in ui.GameNames must appear in completionSubcommands().
 	for _, name := range ui.GameNames {
-		assert.True(t, subSet[name], "completionSubcommands missing game %q from ui.GameNames", name)
+		assert.True(t, subSet[name], "completionSubcommands() missing game %q from ui.GameNames", name)
 	}
-	// Every alias in ui.GameAliases must appear in completionSubcommands.
+	// Every alias in ui.GameAliases must appear in completionSubcommands().
 	for alias := range ui.GameAliases {
-		assert.True(t, subSet[alias], "completionSubcommands missing alias %q from ui.GameAliases", alias)
+		assert.True(t, subSet[alias], "completionSubcommands() missing alias %q from ui.GameAliases", alias)
 	}
 }
