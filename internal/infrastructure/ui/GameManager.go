@@ -8,17 +8,85 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// GameNames is the canonical ordered list of available game names.
-var GameNames = []string{
-	"blackjack", "poker", "oldmaid", "daifugo", "sevens",
-	"doubt", "holdem", "omaha", "shortdeck", "pineapple",
-	"hearts", "memory", "klondike", "freecell", "baccarat",
-	"spades", "crazyeights", "ginrummy", "canasta", "spider",
-	"napoleon", "indianpoker", "videopoker", "deuceswild", "jokerpoker",
-	"euchre", "pyramid", "tripeaks", "cribbage", "threecard",
-	"ohhell", "bridge", "speed", "gofish", "pinochle", "golf",
-	"pigtail", "sevencardstud", "clocksolitaire", "durak",
-	"fortythieves", "paigow",
+// GameRegistryEntry holds a game's name, description, and CUI constructor.
+type GameRegistryEntry struct {
+	Name        string
+	Description string
+	NewCui      func() cuiGame
+}
+
+// gameRegistry is the single source of truth for all games.
+// Order determines display order in help, games list, and completion.
+var gameRegistry = []GameRegistryEntry{
+	{"blackjack", "BlackJack (ブラックジャック)", func() cuiGame { return NewBlackJackCui() }},
+	{"poker", "5-card Draw Poker (ポーカー)", func() cuiGame { return NewPokerCui() }},
+	{"oldmaid", "Old Maid (ババ抜き)", func() cuiGame { return NewOldMaidCui() }},
+	{"daifugo", "Daifugo / Great Fool (大富豪)", func() cuiGame { return NewDaifugoCui() }},
+	{"sevens", "Sevens (7並べ)", func() cuiGame { return NewSevensCui() }},
+	{"doubt", "Doubt (ダウト)", func() cuiGame { return NewDoubtCui() }},
+	{"holdem", "Texas Hold'em (テキサスホールデム)", func() cuiGame { return NewHoldemCui() }},
+	{"omaha", "Omaha Hold'em (オマハホールデム)", func() cuiGame { return NewOmahaCui() }},
+	{"shortdeck", "Short Deck (6+ Hold'em) (ショートデック)", func() cuiGame { return NewShortDeckCui() }},
+	{"pineapple", "Pineapple Poker (パイナップルポーカー)", func() cuiGame { return NewPineappleCui() }},
+	{"hearts", "Hearts (ハーツ)", func() cuiGame { return NewHeartsCui() }},
+	{"memory", "Memory / Concentration (神経衰弱)", func() cuiGame { return NewMemoryCui() }},
+	{"klondike", "Klondike Solitaire (ソリティア)", func() cuiGame { return NewKlondikeCui() }},
+	{"freecell", "FreeCell (フリーセル)", func() cuiGame { return NewFreeCellCui() }},
+	{"baccarat", "Baccarat (バカラ)", func() cuiGame { return NewBaccaratCui() }},
+	{"spades", "Spades (スペード)", func() cuiGame { return NewSpadesCui() }},
+	{"crazyeights", "Crazy Eights (クレイジーエイト)", func() cuiGame { return NewCrazyEightsCui() }},
+	{"ginrummy", "Gin Rummy (ジンラミー)", func() cuiGame { return NewGinRummyCui() }},
+	{"canasta", "Canasta (カナスタ)", func() cuiGame { return NewCanastaCui() }},
+	{"spider", "Spider Solitaire (スパイダーソリティア)", func() cuiGame { return NewSpiderCui() }},
+	{"napoleon", "Napoleon (ナポレオン)", func() cuiGame { return NewNapoleonCui() }},
+	{"indianpoker", "Indian Poker (インディアンポーカー)", func() cuiGame { return NewIndianPokerCui() }},
+	{"videopoker", "Video Poker Jacks or Better (ビデオポーカー)", func() cuiGame { return NewVideoPokerCui() }},
+	{"deuceswild", "Deuces Wild (デューシーズワイルド)", func() cuiGame { return NewDeucesWildCui() }},
+	{"jokerpoker", "Joker Poker (ジョーカーポーカー)", func() cuiGame { return NewJokerPokerCui() }},
+	{"euchre", "Euchre (ユーカー)", func() cuiGame { return NewEuchreCui() }},
+	{"pyramid", "Pyramid (ピラミッド)", func() cuiGame { return NewPyramidCui() }},
+	{"tripeaks", "TriPeaks (トリピークス)", func() cuiGame { return NewTriPeaksCui() }},
+	{"cribbage", "Cribbage (クリベッジ)", func() cuiGame { return NewCribbageCui() }},
+	{"threecard", "Three Card Poker (スリーカードポーカー)", func() cuiGame { return NewThreeCardCui() }},
+	{"ohhell", "Oh Hell (オー・ヘル)", func() cuiGame { return NewOhHellCui() }},
+	{"bridge", "Contract Bridge (コントラクトブリッジ)", func() cuiGame { return NewBridgeCui() }},
+	{"speed", "Speed (スピード)", func() cuiGame { return NewSpeedCui() }},
+	{"gofish", "Go Fish (ゴーフィッシュ)", func() cuiGame { return NewGoFishCui() }},
+	{"pinochle", "Pinochle (ピノクル)", func() cuiGame { return NewPinochleCui() }},
+	{"golf", "Golf Solitaire (ゴルフ)", func() cuiGame { return NewGolfCui() }},
+	{"pigtail", "Pig's Tail (ブタのしっぽ)", func() cuiGame { return NewPigsTailCui() }},
+	{"sevencardstud", "Seven Card Stud (セブンカードスタッド)", func() cuiGame { return NewSevenCardStudCui() }},
+	{"clocksolitaire", "Clock Solitaire (クロックソリティア)", func() cuiGame { return NewClockSolitaireCui() }},
+	{"durak", "Durak / Fool (ドゥラーク)", func() cuiGame { return NewDurakCui() }},
+	{"fortythieves", "Forty Thieves (フォーティシーブス)", func() cuiGame { return NewFortyThievesCui() }},
+	{"paigow", "Pai Gow Poker (パイガオポーカー)", func() cuiGame { return NewPaiGowCui() }},
+}
+
+// GameRegistry returns a copy of the game registry for external use.
+func GameRegistry() []GameRegistryEntry {
+	cp := make([]GameRegistryEntry, len(gameRegistry))
+	copy(cp, gameRegistry)
+	return cp
+}
+
+// GameNames returns the canonical ordered list of available game names,
+// derived from gameRegistry. Returns a fresh copy on each call.
+func GameNames() []string {
+	names := make([]string, len(gameRegistry))
+	for i, e := range gameRegistry {
+		names[i] = e.Name
+	}
+	return names
+}
+
+// GameDescriptions returns a map of game names to their display descriptions,
+// derived from gameRegistry. Returns a fresh copy on each call.
+func GameDescriptions() map[string]string {
+	m := make(map[string]string, len(gameRegistry))
+	for _, e := range gameRegistry {
+		m[e.Name] = e.Description
+	}
+	return m
 }
 
 // GameAliases maps short alias names to their canonical game names.
@@ -68,7 +136,7 @@ func NewGameManager(startGame string) *GameManager {
 		helpLines:   helpLines,
 		initialized: make(map[string]bool),
 		currentGame: startGame,
-		gameOrder:   GameNames,
+		gameOrder:   GameNames(),
 	}
 }
 
@@ -165,55 +233,12 @@ func (m *GameManager) listGames() string {
 }
 
 func buildGameEntries() (map[string]CuiExecer, map[string][]string) {
-	entries := map[string]cuiGame{
-		"blackjack":      NewBlackJackCui(),
-		"poker":          NewPokerCui(),
-		"oldmaid":        NewOldMaidCui(),
-		"daifugo":        NewDaifugoCui(),
-		"sevens":         NewSevensCui(),
-		"doubt":          NewDoubtCui(),
-		"holdem":         NewHoldemCui(),
-		"omaha":          NewOmahaCui(),
-		"shortdeck":      NewShortDeckCui(),
-		"pineapple":      NewPineappleCui(),
-		"hearts":         NewHeartsCui(),
-		"memory":         NewMemoryCui(),
-		"klondike":       NewKlondikeCui(),
-		"freecell":       NewFreeCellCui(),
-		"baccarat":       NewBaccaratCui(),
-		"spades":         NewSpadesCui(),
-		"crazyeights":    NewCrazyEightsCui(),
-		"ginrummy":       NewGinRummyCui(),
-		"canasta":        NewCanastaCui(),
-		"spider":         NewSpiderCui(),
-		"napoleon":       NewNapoleonCui(),
-		"indianpoker":    NewIndianPokerCui(),
-		"videopoker":     NewVideoPokerCui(),
-		"deuceswild":     NewDeucesWildCui(),
-		"jokerpoker":     NewJokerPokerCui(),
-		"euchre":         NewEuchreCui(),
-		"pyramid":        NewPyramidCui(),
-		"tripeaks":       NewTriPeaksCui(),
-		"cribbage":       NewCribbageCui(),
-		"threecard":      NewThreeCardCui(),
-		"ohhell":         NewOhHellCui(),
-		"bridge":         NewBridgeCui(),
-		"speed":          NewSpeedCui(),
-		"gofish":         NewGoFishCui(),
-		"pinochle":       NewPinochleCui(),
-		"golf":           NewGolfCui(),
-		"pigtail":        NewPigsTailCui(),
-		"sevencardstud":  NewSevenCardStudCui(),
-		"clocksolitaire": NewClockSolitaireCui(),
-		"durak":          NewDurakCui(),
-		"fortythieves":   NewFortyThievesCui(),
-		"paigow":         NewPaiGowCui(),
-	}
-	controllers := make(map[string]CuiExecer, len(entries))
-	helpLines := make(map[string][]string, len(entries))
-	for name, g := range entries {
-		controllers[name] = g.Controller()
-		helpLines[name] = g.HelpLines()
+	controllers := make(map[string]CuiExecer, len(gameRegistry))
+	helpLines := make(map[string][]string, len(gameRegistry))
+	for _, entry := range gameRegistry {
+		g := entry.NewCui()
+		controllers[entry.Name] = g.Controller()
+		helpLines[entry.Name] = g.HelpLines()
 	}
 	return controllers, helpLines
 }

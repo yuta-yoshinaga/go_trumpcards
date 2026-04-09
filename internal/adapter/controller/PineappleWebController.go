@@ -100,43 +100,13 @@ type PineappleWebOutput struct {
 // ToConfig builds a PineappleConfig from the web input.
 func (p PineappleWebInput) ToConfig() (domain.PineappleConfig, error) {
 	cfg := domain.DefaultPineappleConfig()
-	sb, bb := cfg.SmallBlind, cfg.BigBlind
-	sbProvided := p.SmallBlind != nil && *p.SmallBlind >= 1
-	bbProvided := p.BigBlind != nil && *p.BigBlind >= 1
-	if sbProvided {
-		sb = *p.SmallBlind
+	if err := validateAndApplyBlinds(&cfg.SmallBlind, &cfg.BigBlind, p.SmallBlind, p.BigBlind, cfg.BigBlind); err != nil {
+		return domain.PineappleConfig{}, err
 	}
-	if bbProvided {
-		bb = *p.BigBlind
-	}
-	if sbProvided && !bbProvided && sb >= cfg.BigBlind {
-		bb = sb * 2
-	} else if bbProvided && !sbProvided && bb > 1 {
-		sb = bb / 2
-	}
-	if sb >= bb {
-		return domain.PineappleConfig{}, errors.New("param error: smallBlind must be less than bigBlind")
-	}
-	cfg.SmallBlind = sb
-	cfg.BigBlind = bb
-	if p.TournamentMode != nil {
-		cfg.TournamentMode = *p.TournamentMode
-	}
-	if p.BlindLevelHands != nil && *p.BlindLevelHands >= 1 {
-		cfg.BlindLevelHands = *p.BlindLevelHands
-	}
-	if p.BlindMultiplier != nil && *p.BlindMultiplier >= 101 {
-		cfg.BlindMultiplier = *p.BlindMultiplier
-	}
-	if p.BettingLimit != nil {
-		bl := *p.BettingLimit
-		if bl < 0 {
-			bl = 0
-		} else if bl > 2 {
-			bl = 2
-		}
-		cfg.BettingLimit = domain.BettingLimitType(bl)
-	}
+	applyBool(&cfg.TournamentMode, p.TournamentMode)
+	applyIntIfGte(&cfg.BlindLevelHands, p.BlindLevelHands, 1)
+	applyIntIfGte(&cfg.BlindMultiplier, p.BlindMultiplier, 101)
+	applyBettingLimit(&cfg.BettingLimit, p.BettingLimit)
 	if p.TableSize != nil {
 		ts := *p.TableSize
 		if !domain.IsValidHoldemTableSize(ts) {
@@ -144,27 +114,10 @@ func (p PineappleWebInput) ToConfig() (domain.PineappleConfig, error) {
 		}
 		cfg.TableSize = ts
 	}
-	if p.RebuyEnabled != nil {
-		cfg.RebuyEnabled = *p.RebuyEnabled
-	}
-	if p.RebuyMaxCount != nil && *p.RebuyMaxCount >= 1 {
-		cfg.RebuyMaxCount = *p.RebuyMaxCount
-	}
-	if p.RebuyChips != nil && *p.RebuyChips >= 1 {
-		cfg.RebuyChips = *p.RebuyChips
-	}
-	if p.RebuyPeriodHands != nil && *p.RebuyPeriodHands >= 1 {
-		cfg.RebuyPeriodHands = *p.RebuyPeriodHands
-	}
-	if p.AddonEnabled != nil {
-		cfg.AddonEnabled = *p.AddonEnabled
-	}
-	if p.AddonChips != nil && *p.AddonChips >= 1 {
-		cfg.AddonChips = *p.AddonChips
-	}
-	if p.AddonAfterHand != nil && *p.AddonAfterHand >= 1 {
-		cfg.AddonAfterHand = *p.AddonAfterHand
-	}
+	applyRebuyConfig(&cfg.RebuyEnabled, &cfg.RebuyMaxCount, &cfg.RebuyChips, &cfg.RebuyPeriodHands,
+		p.RebuyEnabled, p.RebuyMaxCount, p.RebuyChips, p.RebuyPeriodHands)
+	applyAddonConfig(&cfg.AddonEnabled, &cfg.AddonChips, &cfg.AddonAfterHand,
+		p.AddonEnabled, p.AddonChips, p.AddonAfterHand)
 	cfg.CpuMetaAI = p.CpuMetaAI
 	return cfg, nil
 }
@@ -190,6 +143,9 @@ func newPineappleDefaultOutput(msg string) *PineappleWebOutput {
 }
 
 func pineappleDispatch(bc *baseController, w http.ResponseWriter, pgi usecase.PineappleInteractorIF, param PineappleWebInput, newDefault func(string) *PineappleWebOutput) bool {
+	if dispatchPokerAction(bc, w, pgi, param.Command, param.Amount, param.HumanPlayMs) {
+		return true
+	}
 	switch param.Command {
 	case "r", "reset":
 		cfg, err := param.ToConfig()
@@ -198,36 +154,12 @@ func pineappleDispatch(bc *baseController, w http.ResponseWriter, pgi usecase.Pi
 			return true
 		}
 		bc.writePresenterResponse(w, pgi.ResetWithConfig(cfg, param.Profile))
-	case "f", "fold":
-		bc.writePresenterResponse(w, pgi.Action(domain.PineappleActionFold, 0, param.HumanPlayMs))
-	case "ck", "check":
-		bc.writePresenterResponse(w, pgi.Action(domain.PineappleActionCheck, 0, param.HumanPlayMs))
-	case "c", "call":
-		bc.writePresenterResponse(w, pgi.Action(domain.PineappleActionCall, 0, param.HumanPlayMs))
-	case "b", "bet":
-		bc.writePresenterResponse(w, pgi.Action(domain.PineappleActionBet, param.Amount, param.HumanPlayMs))
-	case "ra", "raise":
-		bc.writePresenterResponse(w, pgi.Action(domain.PineappleActionRaise, param.Amount, param.HumanPlayMs))
-	case "a", "allin":
-		bc.writePresenterResponse(w, pgi.Action(domain.PineappleActionAllIn, 0, param.HumanPlayMs))
 	case "d", "discard":
 		if param.CardIdx == nil {
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIdx is required for discard"))
 			return true
 		}
 		bc.writePresenterResponse(w, pgi.Discard(*param.CardIdx))
-	case "rb", "rebuy":
-		bc.writePresenterResponse(w, pgi.Rebuy())
-	case "sr", "skiprebuy":
-		bc.writePresenterResponse(w, pgi.SkipRebuy())
-	case "ad", "addon":
-		bc.writePresenterResponse(w, pgi.Addon())
-	case "sa", "skipaddon":
-		bc.writePresenterResponse(w, pgi.SkipAddon())
-	case "m", "muck":
-		bc.writePresenterResponse(w, pgi.Muck())
-	case "sh", "show":
-		bc.writePresenterResponse(w, pgi.ShowHand())
 	default:
 		return dispatchLog(param.Command, bc, w, pgi.ActionLog)
 	}
