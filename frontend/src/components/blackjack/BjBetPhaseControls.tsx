@@ -91,7 +91,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
 
       {/* Advanced settings: collapsible */}
       <details className="mb-2 text-white text-sm" open={props.autoExpandAdvanced || undefined}>
-        <summary className="cursor-pointer select-none text-center text-yellow-300 hover:text-yellow-200 py-1">
+        <summary className="cursor-pointer select-none text-center text-ds-warning hover:text-ds-warning-hover py-1">
           {t('advancedSettings')}
           {(props.perfectPairsBet > 0 || props.twentyOnePlus3Bet > 0) && (
             <span className="ml-2 inline-block bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded-full">

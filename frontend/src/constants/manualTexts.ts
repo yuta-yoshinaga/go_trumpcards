@@ -12,7 +12,9 @@ import cribbage from '../../../docs/manual/web/cribbage.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
+import durak from '../../../docs/manual/web/durak.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
+import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
 import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
 import gofish from '../../../docs/manual/web/gofish.md?raw';
@@ -27,6 +29,7 @@ import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
+import paigow from '../../../docs/manual/web/paigow.md?raw';
 import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
@@ -54,6 +57,8 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/daifugo': daifugo,
   '/deuceswild': deuceswild,
   '/doubt': doubt,
+  '/durak': durak,
+  '/fortythieves': fortythieves,
   '/euchre': euchre,
   '/freecell': freecell,
   '/ginrummy': ginrummy,
@@ -69,6 +74,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,
   '/omaha': omaha,
+  '/paigow': paigow,
   '/pineapple': pineapple,
   '/pigtail': pigtail,
   '/pinochle': pinochle,

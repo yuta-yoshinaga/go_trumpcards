@@ -69,6 +69,16 @@ export function useKlondikeGame() {
     exec('undo');
   }, [exec]);
 
+  /** Undo N moves at once to escape a stalemate. */
+  const handleUndoEscape = useCallback(
+    (n: number) => {
+      setSelectedSource(null);
+      setHint(null);
+      exec('undo_n', undefined, undefined, undefined, n);
+    },
+    [exec],
+  );
+
   const handleSelectSource = useCallback((zone: KlondikeMoveZone) => {
     setSelectedSource((prev) => {
       if (prev && prev.zone === zone.zone && prev.col === zone.col && prev.cardIndex === zone.cardIndex) {
@@ -103,6 +113,7 @@ export function useKlondikeGame() {
     handleHint,
     handleAutoComplete,
     handleUndo,
+    handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,

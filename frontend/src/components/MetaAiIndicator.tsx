@@ -11,8 +11,8 @@ export interface MetaAiIndicatorProps {
 
 const levelColorClass: Record<AdaptationLevel, string> = {
   learning: 'text-gray-400',
-  adapting: 'text-yellow-300',
-  adapted: 'text-green-300',
+  adapting: 'text-ds-warning',
+  adapted: 'text-ds-success',
 };
 
 /** Renders a small inline indicator showing CPU meta-AI adaptation level and strategy style. */

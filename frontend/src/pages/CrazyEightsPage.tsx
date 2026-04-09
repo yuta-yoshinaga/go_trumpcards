@@ -234,7 +234,7 @@ function CrazyEightsPageContent() {
                     <div className="text-white/70 text-sm">
                       <div>{t('discardTop')}</div>
                       {state.chosenSuit > 0 && (
-                        <div className="text-yellow-300">
+                        <div className="text-ds-warning">
                           {t('chosenSuit')}: {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
                         </div>
                       )}
@@ -286,7 +286,7 @@ function CrazyEightsPageContent() {
                     </thead>
                     <tbody>
                       {state.players.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                           <td>{playerName(p.id, p.isHuman)}</td>
                           <td className="text-center">{p.roundScore}</td>
                           <td className="text-center">{p.cumulativeScore}</td>

@@ -23,6 +23,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/', labelKey: 'nav.blackjack', icon: '🃏' },
       { path: '/baccarat', labelKey: 'nav.baccarat', icon: '💎' },
       { path: '/threecard', labelKey: 'nav.threecard', icon: '🎴' },
+      { path: '/paigow', labelKey: 'nav.paigow', icon: '🀄' },
     ],
   },
   {
@@ -59,6 +60,7 @@ export const gameCategories: readonly GameCategory[] = [
     routes: [
       { path: '/oldmaid', labelKey: 'nav.oldmaid', icon: '👵' },
       { path: '/doubt', labelKey: 'nav.doubt', icon: '🤥' },
+      { path: '/durak', labelKey: 'nav.durak', icon: '🃏' },
       { path: '/daifugo', labelKey: 'nav.daifugo', icon: '💰' },
       { path: '/sevens', labelKey: 'nav.sevens', icon: '7️⃣' },
       { path: '/crazyeights', labelKey: 'nav.crazyeights', icon: '8️⃣' },
@@ -80,6 +82,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/golf', labelKey: 'nav.golf', icon: '⛳' },
       { path: '/memory', labelKey: 'nav.memory', icon: '🧠' },
       { path: '/clocksolitaire', labelKey: 'nav.clocksolitaire', icon: '🕐' },
+      { path: '/fortythieves', labelKey: 'nav.fortythieves', icon: '🏰' },
     ],
   },
   {

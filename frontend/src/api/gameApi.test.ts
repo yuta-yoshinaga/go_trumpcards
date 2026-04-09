@@ -7,6 +7,7 @@ import {
   daifugoApi,
   doubtApi,
   ginrummyApi,
+  golfApi,
   heartsApi,
   holdemApi,
   indianpokerApi,
@@ -15,10 +16,12 @@ import {
   oldmaidApi,
   omahaApi,
   pokerApi,
+  pyramidApi,
   sessionId,
   sevensApi,
   spadesApi,
   spiderApi,
+  tripeaksApi,
 } from './gameApi';
 
 describe('gameApi', () => {
@@ -2795,6 +2798,111 @@ describe('gameApi', () => {
           sessionId,
         }),
       });
+    });
+  });
+
+  describe('pyramidApi.exec', () => {
+    const payload = {
+      pyramid: [],
+      stockCount: 20,
+      waste: [],
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+    };
+
+    it('calls with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await pyramidApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/pyramid/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', card1: undefined, card2: undefined, n: undefined, sessionId }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with undo_n command and n value', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await pyramidApi.exec('undo_n', undefined, undefined, 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/pyramid/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'undo_n', card1: undefined, card2: undefined, n: 3, sessionId }),
+        }),
+      );
+    });
+  });
+
+  describe('tripeaksApi.exec', () => {
+    const payload = {
+      layout: [],
+      stockCount: 20,
+      waste: [],
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+    };
+
+    it('calls with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await tripeaksApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/tripeaks/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', row: undefined, col: undefined, n: undefined, sessionId }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with undo_n command and n value', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await tripeaksApi.exec('undo_n', undefined, undefined, 5);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/tripeaks/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'undo_n', row: undefined, col: undefined, n: 5, sessionId }),
+        }),
+      );
+    });
+  });
+
+  describe('golfApi.exec', () => {
+    const payload = {
+      layout: [],
+      stockCount: 20,
+      waste: [],
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+    };
+
+    it('calls with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await golfApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/golf/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', col: undefined, n: undefined, sessionId }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with undo_n command and n value', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await golfApi.exec('undo_n', undefined, 4);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/golf/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'undo_n', col: undefined, n: 4, sessionId }),
+        }),
+      );
     });
   });
 });

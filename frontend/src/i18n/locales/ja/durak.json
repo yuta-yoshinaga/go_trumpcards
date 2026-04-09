@@ -1,0 +1,48 @@
+{
+  "phase": {
+    "attack": "攻撃フェーズ",
+    "defend": "防御フェーズ",
+    "boutEnd": "バウト終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "action": {
+    "attack": "攻撃",
+    "defend": "防御",
+    "pass": "パス",
+    "take": "引き取り"
+  },
+  "trump": "切り札",
+  "stock": "山札",
+  "table": "テーブル",
+  "tableEmpty": "（空）",
+  "attackButton": "攻撃",
+  "defendButton": "防御",
+  "passButton": "パス",
+  "takeButton": "引き取り",
+  "selectCard": "カードを選択してください",
+  "selectAttackCard": "防御する攻撃カードを選択",
+  "attacker": "攻撃者",
+  "defender": "防御者",
+  "result": "ゲーム終了！",
+  "resultHumanLose": "あなたがドゥラーク（負け）です",
+  "resultCpuLose": "CPU {{idx}} がドゥラーク（負け）です",
+  "resultDraw": "引き分け！",
+  "sort": {
+    "suit": "スート順",
+    "value": "値順"
+  },
+  "settings": {
+    "title": "ルール設定",
+    "cpuDifficulty": "CPU難易度",
+    "difficultyNormal": "普通",
+    "difficultyEasy": "簡単",
+    "difficultyHard": "難しい",
+    "transferEnabled": "ペレヴォード"
+  },
+  "tutorial": {
+    "trumpInfo": "切り札のスートと山札の残数が表示されます",
+    "playerHand": "あなたの手札です。カードをクリックして選択します",
+    "tableCards": "テーブル上の攻撃・防御カードが表示されます",
+    "actionButtons": "攻撃・防御・パス・引き取りボタンで操作します"
+  }
+}

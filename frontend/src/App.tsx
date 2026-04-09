@@ -16,7 +16,9 @@ import { CribbagePage } from './pages/CribbagePage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DeucesWildPage } from './pages/DeucesWildPage';
 import { DoubtPage } from './pages/DoubtPage';
+import { DurakPage } from './pages/DurakPage';
 import { EuchrePage } from './pages/EuchrePage';
+import { FortyThievesPage } from './pages/FortyThievesPage';
 import { FreeCellPage } from './pages/FreeCellPage';
 import { GinRummyPage } from './pages/GinRummyPage';
 import { GoFishPage } from './pages/GoFishPage';
@@ -31,6 +33,7 @@ import { NapoleonPage } from './pages/NapoleonPage';
 import { OhHellPage } from './pages/OhHellPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
+import { PaiGowPage } from './pages/PaiGowPage';
 import { PigsTailPage } from './pages/PigsTailPage';
 import { PineapplePage } from './pages/PineapplePage';
 import { PinochlePage } from './pages/PinochlePage';
@@ -54,6 +57,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/daifugo': <DaifugoPage />,
   '/sevens': <SevensPage />,
   '/doubt': <DoubtPage />,
+  '/durak': <DurakPage />,
   '/euchre': <EuchrePage />,
   '/bridge': <BridgePage />,
   '/holdem': <HoldemPage />,
@@ -81,12 +85,14 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/deuceswild': <DeucesWildPage />,
   '/jokerpoker': <JokerPokerPage />,
   '/threecard': <ThreeCardPage />,
+  '/paigow': <PaiGowPage />,
   '/speed': <SpeedPage />,
   '/gofish': <GoFishPage />,
   '/pinochle': <PinochlePage />,
   '/golf': <GolfPage />,
   '/pigtail': <PigsTailPage />,
   '/clocksolitaire': <ClockSolitairePage />,
+  '/fortythieves': <FortyThievesPage />,
 };
 
 /** Root application component with router and game page routes. */

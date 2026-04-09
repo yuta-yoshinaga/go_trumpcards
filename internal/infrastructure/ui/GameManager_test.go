@@ -230,16 +230,16 @@ func TestGameManager_NewGameManager_Smoke(t *testing.T) {
 	mgr := NewGameManager("blackjack")
 	assert.Equal(t, "blackjack", mgr.CurrentGame())
 	assert.NotNil(t, mgr.games["blackjack"])
-	assert.Len(t, mgr.games, len(GameNames))
+	assert.Len(t, mgr.games, len(GameNames()))
 }
 
 func TestGameManager_NewGameManager_AllGamesRegistered(t *testing.T) {
 	mgr := NewGameManager("blackjack")
-	// Verify that all 39 games are registered.
-	for _, name := range []string{"canasta", "bridge", "pineapple", "gofish", "pinochle", "pigtail", "sevencardstud", "clocksolitaire"} {
+	// Verify that recently-added games are registered.
+	for _, name := range []string{"canasta", "bridge", "pineapple", "gofish", "pinochle", "pigtail", "sevencardstud", "clocksolitaire", "durak", "fortythieves", "paigow"} {
 		assert.Contains(t, mgr.games, name, "game %q should be registered", name)
 	}
-	assert.Equal(t, 39, len(mgr.games))
+	assert.Equal(t, len(GameNames()), len(mgr.games))
 }
 
 func TestGameManager_NewGameManager_PanicsOnInvalidGame(t *testing.T) {
@@ -290,11 +290,42 @@ func TestGameManager_SwitchAliasMultiple(t *testing.T) {
 }
 
 func TestGameAliases_AllPointToValidGames(t *testing.T) {
-	gameSet := make(map[string]bool, len(GameNames))
-	for _, name := range GameNames {
+	gameSet := make(map[string]bool, len(GameNames()))
+	for _, name := range GameNames() {
 		gameSet[name] = true
 	}
 	for alias, canonical := range GameAliases {
 		assert.True(t, gameSet[canonical], "alias %q points to unknown game %q", alias, canonical)
+	}
+}
+
+func TestGameRegistry_NamesMatchGameNames(t *testing.T) {
+	registry := GameRegistry()
+	assert.Equal(t, len(GameNames()), len(registry), "registry and GameNames() must have same length")
+	for i, entry := range registry {
+		assert.Equal(t, GameNames()[i], entry.Name, "registry[%d].Name must match GameNames()[%d]", i, i)
+	}
+}
+
+func TestGameRegistry_DescriptionsMatchGameDescriptions(t *testing.T) {
+	descs := GameDescriptions()
+	for _, entry := range GameRegistry() {
+		desc, ok := descs[entry.Name]
+		assert.True(t, ok, "GameDescriptions must contain %q", entry.Name)
+		assert.Equal(t, entry.Description, desc)
+	}
+}
+
+func TestGameRegistry_NoDuplicateNames(t *testing.T) {
+	seen := make(map[string]bool, len(gameRegistry))
+	for _, entry := range gameRegistry {
+		assert.False(t, seen[entry.Name], "duplicate game name in registry: %q", entry.Name)
+		seen[entry.Name] = true
+	}
+}
+
+func TestGameRegistry_AllConstructorsNonNil(t *testing.T) {
+	for _, entry := range gameRegistry {
+		assert.NotNil(t, entry.NewCui, "NewCui must not be nil for %q", entry.Name)
 	}
 }

@@ -1,7 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 import type { DaifugoResponse } from '../../types/card';
 import { DaifugoRulesBadges } from './DaifugoRulesBadges';
+
+// Helper to simulate mobile viewport
+function setViewportWidth(width: number) {
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: width });
+  window.dispatchEvent(new Event('resize'));
+}
 
 function makeState(overrides: Partial<DaifugoResponse> = {}): DaifugoResponse {
   return {
@@ -139,5 +145,99 @@ describe('DaifugoRulesBadges', () => {
     const badge = screen.getByRole('button');
     expect(badge).toHaveAttribute('aria-label', expect.stringContaining('同じ数字のカードしか出せません'));
     expect(badge).toHaveClass('cursor-help');
+  });
+
+  describe('mobile collapsed view', () => {
+    afterEach(() => {
+      setViewportWidth(1024);
+    });
+
+    it('shows summary button instead of individual badges on mobile', () => {
+      setViewportWidth(375);
+      render(
+        <DaifugoRulesBadges
+          state={makeState({ revolutionActive: true, elevenBackActive: true, tableIsSequence: true })}
+        />,
+      );
+      expect(screen.getByTestId('rules-summary-button')).toBeInTheDocument();
+      expect(screen.getByTestId('rules-summary-button')).toHaveTextContent('特殊ルール発動中 (3)');
+      // Individual badges should NOT be visible
+      expect(screen.queryByText('革命中')).not.toBeInTheDocument();
+    });
+
+    it('opens modal when summary button is clicked', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true, elevenBackActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByText('革命中')).toBeInTheDocument();
+      expect(screen.getByText('11バック')).toBeInTheDocument();
+    });
+
+    it('closes modal when close button is clicked', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: '閉じる' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('closes modal on Escape key', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('closes modal on backdrop click', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      // Click the backdrop (presentation overlay)
+      fireEvent.click(screen.getByRole('presentation'));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('modal shows badge descriptions', () => {
+      setViewportWidth(375);
+      render(
+        <DaifugoRulesBadges state={makeState({ revolutionActive: true, suitLocked: true, lockedSuit: 'SPADE' })} />,
+      );
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      expect(screen.getByText('カードの強さが逆転しています（3が最強、2が最弱）')).toBeInTheDocument();
+      expect(screen.getByText('同じスートのカードしか出せません')).toBeInTheDocument();
+    });
+
+    it('wraps focus to first element on Tab from last focusable element', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      const closeButton = screen.getByRole('button', { name: '閉じる' });
+      closeButton.focus();
+      fireEvent.keyDown(document, { key: 'Tab' });
+      expect(document.activeElement).toBe(closeButton);
+    });
+
+    it('wraps focus to last element on Shift+Tab from first focusable element', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      const closeButton = screen.getByRole('button', { name: '閉じる' });
+      closeButton.focus();
+      fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+      expect(document.activeElement).toBe(closeButton);
+    });
+
+    it('ignores non-Escape non-Tab keys in modal keydown handler', () => {
+      setViewportWidth(375);
+      render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+      fireEvent.click(screen.getByTestId('rules-summary-button'));
+      fireEvent.keyDown(document, { key: 'Enter' });
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
   });
 });

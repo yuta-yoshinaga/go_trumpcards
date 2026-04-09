@@ -11,7 +11,11 @@ import type {
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  DurakConfigInput,
+  DurakResponse,
   EuchreResponse,
+  FortyThievesMoveZone,
+  FortyThievesResponse,
   FreeCellResponse,
   GinRummyResponse,
   GoFishResponse,
@@ -25,6 +29,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  PaiGowResponse,
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
@@ -63,6 +68,7 @@ const workerUrl: Record<string, string> = {
   deuceswild: WORKER_CASINO,
   jokerpoker: WORKER_CASINO,
   threecard: WORKER_CASINO,
+  paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
@@ -73,6 +79,7 @@ const workerUrl: Record<string, string> = {
   ohhell: WORKER_CLASSIC,
   oldmaid: WORKER_CLASSIC,
   doubt: WORKER_CLASSIC,
+  durak: WORKER_CLASSIC,
   daifugo: WORKER_CLASSIC,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
@@ -91,6 +98,7 @@ const workerUrl: Record<string, string> = {
   cribbage: WORKER_SOLO,
   golf: WORKER_SOLO,
   clocksolitaire: WORKER_SOLO,
+  fortythieves: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -207,6 +215,17 @@ export const oldmaidApi = {
 export const daifugoApi = {
   exec: (command: 'reset' | 'play' | 'sort', indices?: number[], config?: DaifugoConfigInput, sortMode?: number) =>
     gameExec<DaifugoResponse>('daifugo', { command, indices, config, sortMode }),
+};
+
+/** API client for the Durak /durak/exec endpoint. */
+export const durakApi = {
+  exec: (
+    command: 'reset' | 'attack' | 'defend' | 'pass' | 'take' | 'sort',
+    cardIdx?: number,
+    attackIdx?: number,
+    config?: DurakConfigInput,
+    sortMode?: number,
+  ) => gameExec<DurakResponse>('durak', { command, cardIdx, attackIdx, config, sortMode }),
 };
 
 /** API client for the Doubt /doubt/exec endpoint. */
@@ -453,16 +472,18 @@ export interface KlondikeConfigInput {
 /** API client for the Klondike /klondike/exec endpoint. */
 export const klondikeApi = {
   exec: (
-    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
+    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
     from?: KlondikeMoveZone,
     to?: KlondikeMoveZone,
     config?: KlondikeConfigInput,
+    n?: number,
   ) =>
     gameExec<KlondikeResponse>('klondike', {
       command,
       from,
       to,
       config,
+      n,
     }),
 };
 
@@ -477,14 +498,16 @@ export interface FreeCellMoveZone {
 /** API client for the FreeCell /freecell/exec endpoint. */
 export const freecellApi = {
   exec: (
-    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
+    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
     from?: FreeCellMoveZone,
     to?: FreeCellMoveZone,
+    n?: number,
   ) =>
     gameExec<FreeCellResponse>('freecell', {
       command,
       from,
       to,
+      n,
     }),
 };
 
@@ -619,6 +642,12 @@ export const threecardApi = {
     gameExec<ThreeCardResponse>('threecard', { command, amount, pairPlusBet }),
 };
 
+/** API client for the Pai Gow Poker /paigow/exec endpoint. */
+export const paigowApi = {
+  exec: (command: 'reset' | 'bet' | 'set' | 'log', amount?: number, low0?: number, low1?: number) =>
+    gameExec<PaiGowResponse>('paigow', { command, amount, low0, low1 }),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -634,16 +663,18 @@ export interface SpiderConfigInput {
 /** API client for the Spider /spider/exec endpoint. */
 export const spiderApi = {
   exec: (
-    command: 'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
+    command: 'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
     from?: SpiderMoveZone,
     to?: SpiderMoveZone,
     config?: SpiderConfigInput,
+    n?: number,
   ) =>
     gameExec<SpiderResponse>('spider', {
       command,
       from,
       to,
       config,
+      n,
     }),
 };
 
@@ -774,16 +805,21 @@ export interface PyramidRemoveCard {
 /** API client for the Pyramid /pyramid/exec endpoint. */
 export const pyramidApi = {
   exec: (
-    command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo',
+    command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
     card1?: PyramidRemoveCard,
     card2?: PyramidRemoveCard,
-  ) => gameExec<PyramidResponse>('pyramid', { command, card1, card2 }),
+    n?: number,
+  ) => gameExec<PyramidResponse>('pyramid', { command, card1, card2, n }),
 };
 
 /** API client for the TriPeaks /tripeaks/exec endpoint. */
 export const tripeaksApi = {
-  exec: (command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo', row?: number, col?: number) =>
-    gameExec<TriPeaksResponse>('tripeaks', { command, row, col }),
+  exec: (
+    command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
+    row?: number,
+    col?: number,
+    n?: number,
+  ) => gameExec<TriPeaksResponse>('tripeaks', { command, row, col, n }),
 };
 
 /** Factory for video poker variant APIs that share the same exec pattern. */
@@ -826,8 +862,11 @@ export const goFishApi = {
 
 /** API client for the Golf Solitaire /golf/exec endpoint. */
 export const golfApi = {
-  exec: (command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo', col?: number) =>
-    gameExec<GolfResponse>('golf', { command, col }),
+  exec: (
+    command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
+    col?: number,
+    n?: number,
+  ) => gameExec<GolfResponse>('golf', { command, col, n }),
 };
 
 /** Pig's Tail game API client. */
@@ -842,6 +881,18 @@ export const clocksolitaireApi = {
     gameExec<ClockSolitaireResponse>('clocksolitaire', { command }),
 };
 
+/** API client for the Forty Thieves /fortythieves/exec endpoint. */
+export const fortyThievesApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
+    from?: FortyThievesMoveZone,
+    to?: FortyThievesMoveZone,
+    n?: number,
+  ) => gameExec<FortyThievesResponse>('fortythieves', { command, from, to, n }),
+};
+
+export type { FortyThievesMoveZone };
+
 const games = [
   'blackjack',
   'poker',
@@ -849,6 +900,7 @@ const games = [
   'daifugo',
   'sevens',
   'doubt',
+  'durak',
   'holdem',
   'omaha',
   'shortdeck',
@@ -876,12 +928,14 @@ const games = [
   'tripeaks',
   'cribbage',
   'threecard',
+  'paigow',
   'speed',
   'gofish',
   'pinochle',
   'golf',
   'pigtail',
   'clocksolitaire',
+  'fortythieves',
 ] as const;
 type Game = (typeof games)[number];
 

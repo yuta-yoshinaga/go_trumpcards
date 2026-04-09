@@ -37,7 +37,9 @@ func TestSpeed_Reset(t *testing.T) {
 	s := newSpeedGame()
 	s.Reset()
 
-	assert.Equal(t, domain.SpeedPhasePlay, s.GetPhase())
+	// After reset, phase is Play or Stuck depending on whether the random deal
+	// produces a playable state.
+	assert.Contains(t, []domain.SpeedPhase{domain.SpeedPhasePlay, domain.SpeedPhaseStuck}, s.GetPhase())
 	assert.False(t, s.GetGameEndFlag())
 	assert.Equal(t, -1, s.GetWinnerIdx())
 

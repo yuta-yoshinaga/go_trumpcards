@@ -16,6 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { TriPeaksSkeleton } from '../components/skeleton/TriPeaksSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
@@ -106,6 +107,7 @@ function TriPeaksPageContent() {
     handleGiveUp,
     handleHint,
     handleUndo,
+    handleUndoEscape,
     handleSelectCard,
   } = useTriPeaksGame();
   const {
@@ -285,7 +287,7 @@ function TriPeaksPageContent() {
             {/* Hint display */}
             <div data-tutorial="tp-hint-display">
               {hint && (
-                <div className="text-yellow-300 text-sm mb-2 text-center">
+                <div className="text-ds-warning text-sm mb-2 text-center">
                   {t('hintAvailable')}: {t(`hintType.${hint.type}`)}
                 </div>
               )}
@@ -344,6 +346,13 @@ function TriPeaksPageContent() {
                   >
                     {t('undo')}
                   </button>
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape ?? 0}
+                      onEscape={handleUndoEscape}
+                      disabled={loading}
+                    />
+                  )}
                   <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
                     {t('hint')}
                   </button>

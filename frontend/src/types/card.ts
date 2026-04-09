@@ -1487,6 +1487,33 @@ export interface ThreeCardResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Pai Gow Poker (パイゴウポーカー) ---
+
+/** Pai Gow Poker API response. */
+export interface PaiGowResponse {
+  playerCards: Card[];
+  dealerCards: Card[];
+  playerHighHand: Card[];
+  playerLowHand: Card[];
+  dealerHighHand: Card[];
+  dealerLowHand: Card[];
+  phase: number;
+  chips: number;
+  bet: number;
+  result: number;
+  highHandResult: number;
+  lowHandResult: number;
+  payout: number;
+  commission: number;
+  playerHighRank: number;
+  playerLowRank: number;
+  dealerHighRank: number;
+  dealerLowRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 /** Speed player data with hand and draw pile info. */
 export interface SpeedPlayerData {
   id: number;
@@ -1886,4 +1913,101 @@ export interface ClockSolitaireResponse {
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
+}
+
+/** Durak player data. */
+export interface DurakPlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  cardCount: number;
+  cards: Card[];
+}
+
+/** Durak table pair (attack + optional defense card). */
+export interface DurakTablePair {
+  attack: Card;
+  defense: Card | null;
+}
+
+/** Durak CPU/human action record. */
+export interface DurakAction {
+  playerIdx: number;
+  actionType: number; // 0=attack, 1=defend, 2=pass, 3=take
+  card: Card | null;
+  attackIdx: number;
+}
+
+/** Durak game rule configuration. */
+export interface DurakConfig {
+  playerCount: number;
+  cpuDifficulty: number;
+  transferEnabled: boolean;
+}
+
+/** Input type alias for Durak configuration. */
+export type DurakConfigInput = DurakConfig;
+
+/** Full Durak game state returned from the API. */
+export interface DurakResponse {
+  players: DurakPlayerData[];
+  currentTurn: number;
+  phase: number;
+  attackerIdx: number;
+  defenderIdx: number;
+  tablePairs: DurakTablePair[];
+  trumpSuit: string;
+  trumpCard: Card | null;
+  stockCount: number;
+  loserIdx: number;
+  gameEndFlag: boolean;
+  config: DurakConfig;
+  cpuActions: DurakAction[];
+  humanAction: DurakAction | null;
+  boutNumber: number;
+  sortMode: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Forty Thieves (フォーティシーブス) ---
+
+/** A single tableau card in Forty Thieves with face-up/face-down state. */
+export interface FortyThievesTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** A suggested move hint in Forty Thieves. */
+export interface FortyThievesHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Forty Thieves game state returned from the API. */
+export interface FortyThievesResponse {
+  tableau: FortyThievesTableauCard[][];
+  stockCount: number;
+  waste: Card[];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: FortyThievesHint;
+}
+
+/** Source or target zone for a Forty Thieves card move. */
+export interface FortyThievesMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
 }

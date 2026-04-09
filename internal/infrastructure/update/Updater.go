@@ -28,6 +28,13 @@ type Updater struct {
 	writer         io.Writer
 	errWriter      io.Writer
 	httpClient     *http.Client
+	autoConfirm    bool
+}
+
+// SetAutoConfirm enables or disables the automatic confirmation of updates,
+// skipping the interactive prompt. Useful for CI/CD and scripted environments.
+func (u *Updater) SetAutoConfirm(v bool) {
+	u.autoConfirm = v
 }
 
 // NewUpdater creates a new Updater.
@@ -84,14 +91,18 @@ func (u *Updater) Exec() error {
 		return nil
 	}
 
-	// Prompt for confirmation.
-	_, _ = fmt.Fprint(u.writer, i18n.Tf("updateAvailable", "version", release.TagName)+" ")
-	var answer string
-	_, _ = fmt.Fscanln(u.reader, &answer)
-	ans := strings.ToLower(strings.TrimSpace(answer))
-	if ans != "y" && ans != "yes" {
-		_, _ = fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
-		return nil
+	// Prompt for confirmation (skipped with --yes).
+	if u.autoConfirm {
+		_, _ = fmt.Fprintln(u.writer, i18n.Tf("updateAutoConfirm", "version", release.TagName))
+	} else {
+		_, _ = fmt.Fprint(u.writer, i18n.Tf("updateAvailable", "version", release.TagName)+" ")
+		var answer string
+		_, _ = fmt.Fscanln(u.reader, &answer)
+		ans := strings.ToLower(strings.TrimSpace(answer))
+		if ans != "y" && ans != "yes" {
+			_, _ = fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
+			return nil
+		}
 	}
 
 	// Find matching asset.

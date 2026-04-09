@@ -131,6 +131,12 @@ input[type="search"] {
   border: 1px solid var(--color-ds-border-subtle);
 }
 
+/* Accent color for checkboxes and radios on dark theme */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-ds-accent);
+}
+
 input[type="number"]:focus-visible,
 input[type="text"]:focus-visible,
 input[type="search"]:focus-visible {

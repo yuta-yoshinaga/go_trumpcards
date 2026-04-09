@@ -18,14 +18,14 @@ describe('MetaAiIndicator', () => {
       render(<MetaAiIndicator adaptationLevel="adapting" strategyStyle="balanced" />);
       const el = screen.getByTestId('meta-ai-indicator');
       expect(el).toHaveTextContent('AI: 適応中');
-      expect(el.className).toContain('text-yellow-300');
+      expect(el.className).toContain('text-ds-warning');
     });
 
     it('renders adapted state in green', () => {
       render(<MetaAiIndicator adaptationLevel="adapted" strategyStyle="balanced" />);
       const el = screen.getByTestId('meta-ai-indicator');
       expect(el).toHaveTextContent('AI: 適応済');
-      expect(el.className).toContain('text-green-300');
+      expect(el.className).toContain('text-ds-success');
     });
   });
 

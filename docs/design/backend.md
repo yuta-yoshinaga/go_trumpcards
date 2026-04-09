@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全39ゲーム)](#12-ゲームドメイン-全39ゲーム)
+  - [1.2 ゲームドメイン (全42ゲーム)](#12-ゲームドメイン-全42ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -23,6 +23,9 @@
   - [2.10 GoFish 要求フロー](#210-gofish-要求フロ���)
   - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
   - [2.12 SevenCardStud ベッティングフロー](#212-sevencardstud-ベッティングフロー)
+  - [2.13 Durak アタック・ディフェンスフロー](#213-durak-アタックディフェンスフロー)
+  - [2.14 FortyThieves ドロー・ムーブフロー](#214-fortythieves-ドロームーブフロー)
+  - [2.15 PaiGow ベット・セットフロー](#215-paigow-ベットセットフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -51,6 +54,9 @@
   - [3.25 Pinochle フェーズ遷移](#325-pinochle-フェーズ遷移)
   - [3.26 PigsTail フェーズ遷移](#326-pigstail-フェーズ遷移)
   - [3.27 SevenCardStud フェーズ遷移](#327-sevencardstud-フェーズ遷移)
+  - [3.28 Durak フェーズ遷移](#328-durak-フェーズ遷移)
+  - [3.29 FortyThieves フェーズ遷移](#329-fortythieves-フェーズ遷移)
+  - [3.30 PaiGow フェーズ遷移](#330-paigow-フェーズ遷移)
 
 ---
 
@@ -118,7 +124,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全39ゲーム)
+### 1.2 ゲームドメイン (全42ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -239,9 +245,28 @@ classDiagram
         +ActionLog() []*ActionLogEntry
     }
 
+    class PaiGow {
+        -trumpCards *TrumpCards
+        -playerCards []*Card
+        -dealerCards []*Card
+        -playerHighHand []*Card
+        -playerLowHand []*Card
+        -dealerHighHand []*Card
+        -dealerLowHand []*Card
+        -phase int
+        -bet int
+        +Reset()
+        +PlayerBet(amount int) error
+        +PlayerSet(low0 int, low1 int) error
+        +Phase() int
+        +ActionLog() []*ActionLogEntry
+    }
+
     Baccarat --> "1" TrumpCards
     ThreeCard --> "1" TrumpCards
     ThreeCard --> "1" ChipHolder
+    PaiGow --> "1" TrumpCards
+    PaiGow --> "1" ChipHolder
     VideoPoker --> "1" TrumpCards
     VideoPoker --> "1" ChipHolder
     VideoPoker --> "0..1" VideoPokerVariantConfig
@@ -992,6 +1017,50 @@ classDiagram
         +Phase() GolfPhase
     }
 
+    class Durak {
+        -trumpCards *TrumpCards
+        -players []*DurakPlayer
+        -config DurakConfig
+        -phase DurakPhase
+        -trumpSuit int
+        -trumpCard *Card
+        -tableAttack []*Card
+        -tableDefense []*Card
+        +Reset()
+        +Attack(cardIdx int) error
+        +Defend(cardIdx int) error
+        +PickUp() error
+        +Done() error
+        +Pass() error
+        +Phase() DurakPhase
+    }
+
+    class DurakPlayer {
+        +bool IsHuman
+    }
+
+    class DurakConfig {
+        +int PlayerCount
+    }
+
+    class FortyThieves {
+        -trumpCards *TrumpCards
+        -tableau [][]*Card
+        -foundations [][]*Card
+        -stock []*Card
+        -waste []*Card
+        -moveCount int
+        -phase FortyThievesPhase
+        +Reset()
+        +Draw() error
+        +Move(src string, dst string) error
+        +Undo() error
+        +GiveUp()
+        +Hint() string
+        +AutoComplete() error
+        +Phase() FortyThievesPhase
+    }
+
     class ClockSolitaire {
         -trumpCards *TrumpCards
         -piles [13][]*ClockCard
@@ -1075,6 +1144,10 @@ classDiagram
     Memory --> "*" MemoryPlayer
     MemoryPlayer --|> GamePlayer
     ClockSolitaire --> "*" ClockCard
+    Durak --> "*" DurakPlayer
+    Durak --> "1" DurakConfig
+    DurakPlayer --|> GamePlayer
+    FortyThieves --> "*" Card
 ```
 
 ### 1.3 ユースケース層 (Interactor・Presenter)
@@ -1128,7 +1201,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全39ゲーム共通)**
+**Interactor パターン (全41ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1200,8 +1273,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "39ゲーム × CUI/Web = 78 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "39ゲーム × CUI/Web = 78 Presenter 実装"
+    note for GameCuiController "41ゲーム × CUI/Web = 82 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "41ゲーム × CUI/Web = 82 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1244,6 +1317,9 @@ classDiagram
         -pigtail *PigsTailWebController
         -sevencardstud *SevenCardStudWebController
         -clocksolitaire *ClockSolitaireWebController
+        -durak *DurakWebController
+        -fortythieves *FortyThievesWebController
+        -paigow *PaiGowWebController
         +Exec()
     }
 
@@ -1265,8 +1341,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 39 controllers
-    GameManager --> "*" CuiExecer : holds 39 games
+    TrumpCardsWeb --> "*" GameWebController : holds 40 controllers
+    GameManager --> "*" CuiExecer : holds 40 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1618,6 +1694,119 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: ベッティング結果・カード更新表示
+```
+
+### 2.13 Durak アタック・ディフェンスフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as DurakInteractor
+    participant Domain as Durak
+    participant Pres as Presenter
+
+    Note over User,Pres: アタックフロー
+    User->>Ctrl: attack 0
+    Ctrl->>Interactor: Attack(0)
+    Interactor->>Domain: Attack(0)
+    Domain->>Domain: カード出す → テーブルに配置 → CPU自動ディフェンス判定
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: テーブル状態・手札更新表示
+
+    Note over User,Pres: ディフェンスフロー
+    User->>Ctrl: defend 2
+    Ctrl->>Interactor: Defend(2)
+    Interactor->>Domain: Defend(2)
+    Domain->>Domain: 防御カード配置 → 切り札/同スート判定 → ビート成否
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: テーブル状態・手札更新表示
+
+    Note over User,Pres: ピックアップ (防御失敗)
+    User->>Ctrl: pickup
+    Ctrl->>Interactor: PickUp()
+    Interactor->>Domain: PickUp()
+    Domain->>Domain: テーブルカード全て手札に追加 → デッキ補充 → 次のバウト
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 手札枚数・次アタッカー表示
+```
+
+### 2.14 FortyThieves ドロー・ムーブフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as FortyThievesInteractor
+    participant Domain as FortyThieves
+    participant Pres as Presenter
+
+    Note over User,Pres: ドローフロー
+    User->>Ctrl: draw
+    Ctrl->>Interactor: Draw()
+    Interactor->>Domain: Draw()
+    Domain->>Domain: 山札からウェストへ1枚めくる
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 山札・ウェスト状態更新表示
+
+    Note over User,Pres: ムーブフロー
+    User->>Ctrl: move w f1
+    Ctrl->>Interactor: Move("w", "f1")
+    Interactor->>Domain: Move("w", "f1")
+    Domain->>Domain: ウェスト → 組札1へ移動 → 同スート昇順チェック
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: タブロー・組札状態更新表示
+
+    Note over User,Pres: オートコンプリート
+    User->>Ctrl: autocomplete
+    Ctrl->>Interactor: AutoComplete()
+    Interactor->>Domain: AutoComplete()
+    Domain->>Domain: 安全に移動可能なカードを組札へ自動移動
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 組札更新表示
+```
+
+### 2.15 PaiGow ベット・セットフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as PaiGowInteractor
+    participant Domain as PaiGow
+    participant Eval as evalFiveCardHand / evalPaiGowLow
+    participant Pres as Presenter
+
+    Note over User,Pres: ベットフロー
+    User->>Ctrl: bet 100
+    Ctrl->>Interactor: Bet(100)
+    Interactor->>Domain: PlayerBet(100)
+    Domain->>Domain: チップ減算 → 7枚ずつ配布 → phase=Set
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 7枚カード表示
+
+    Note over User,Pres: セットフロー
+    User->>Ctrl: set 2 5
+    Ctrl->>Interactor: Set(2, 5)
+    Interactor->>Domain: PlayerSet(2, 5)
+    Domain->>Domain: ローハンド(2枚) / ハイハンド(5枚) 分離
+    Domain->>Domain: ディーラーハウスウェイ設定
+    Domain->>Eval: evalFiveCardHand(playerHighHand)
+    Eval-->>Domain: playerHighRank
+    Domain->>Eval: evalFiveCardHand(dealerHighHand)
+    Eval-->>Domain: dealerHighRank
+    Domain->>Domain: ハイハンド比較 → ローハンド比較
+    Domain->>Domain: 勝敗判定 → 配当計算(5%コミッション) → phase=End
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 両ハンド・結果・配当表示
 ```
 
 ---
@@ -2112,6 +2301,56 @@ stateDiagram-v2
     note right of Showdown : SevenCardStudPhaseShowdown = 6
     note right of End : SevenCardStudPhaseEnd = 7
     note right of Rebuy : SevenCardStudPhaseRebuy = 8
+```
+
+### 3.28 Durak フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Attack : Reset()
+    Attack --> Defend : Attack() カード配置
+    Attack --> BoutEnd : Done() アタック終了
+    Defend --> Attack : Defend() 全カードをビート → 追加アタック可能
+    Defend --> BoutEnd : PickUp() 防御失敗
+    BoutEnd --> Attack : デッキ補充 → 次のバウト
+    BoutEnd --> GameEnd : 1人以外全員手札なし
+    GameEnd --> [*]
+
+    note right of Attack : DurakPhaseAttack = 0
+    note right of Defend : DurakPhaseDefend = 1
+    note right of BoutEnd : DurakPhaseBoutEnd = 2
+    note right of GameEnd : DurakPhaseGameEnd = 3
+```
+
+### 3.29 FortyThieves フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : Draw() / Move() / Undo() / Hint() / AutoComplete()
+    Playing --> GameClear : 8組札すべて完成
+    Playing --> GameOver : 移動可能な手なし
+    GameOver --> [*]
+    GameClear --> [*]
+
+    note right of Playing : FortyThievesPlaying = 0
+    note right of GameClear : FortyThievesGameClear = 1
+    note right of GameOver : FortyThievesGameOver = 2
+```
+
+### 3.30 PaiGow フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> Set : ベット → 7枚配布
+    Set --> End : ローハンド設定 → ディーラー公開 → 結果判定
+    End --> Bet : 次ラウンド (Reset)
+    End --> [*] : チップ0 (ゲーム終了)
+
+    note right of Bet : PaiGowPhaseBet = 1
+    note right of Set : PaiGowPhaseSet = 2
+    note right of End : PaiGowPhaseEnd = 3
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

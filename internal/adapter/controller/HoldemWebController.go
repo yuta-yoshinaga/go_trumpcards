@@ -146,44 +146,13 @@ type HoldemWebOutput struct {
 // Returns an error if the blind configuration is invalid or tableSize is invalid.
 func (p HoldemWebInput) ToConfig() (domain.HoldemConfig, error) {
 	cfg := domain.DefaultHoldemConfig()
-	sb, bb := cfg.SmallBlind, cfg.BigBlind
-	sbProvided := p.SmallBlind != nil && *p.SmallBlind >= 1
-	bbProvided := p.BigBlind != nil && *p.BigBlind >= 1
-	if sbProvided {
-		sb = *p.SmallBlind
+	if err := validateAndApplyBlinds(&cfg.SmallBlind, &cfg.BigBlind, p.SmallBlind, p.BigBlind, cfg.BigBlind); err != nil {
+		return domain.HoldemConfig{}, err
 	}
-	if bbProvided {
-		bb = *p.BigBlind
-	}
-	// 片方のみ指定された場合、もう片方を自動調整
-	if sbProvided && !bbProvided && sb >= cfg.BigBlind {
-		bb = sb * 2
-	} else if bbProvided && !sbProvided && bb > 1 {
-		sb = bb / 2
-	}
-	if sb >= bb {
-		return domain.HoldemConfig{}, errors.New("param error: smallBlind must be less than bigBlind")
-	}
-	cfg.SmallBlind = sb
-	cfg.BigBlind = bb
-	if p.TournamentMode != nil {
-		cfg.TournamentMode = *p.TournamentMode
-	}
-	if p.BlindLevelHands != nil && *p.BlindLevelHands >= 1 {
-		cfg.BlindLevelHands = *p.BlindLevelHands
-	}
-	if p.BlindMultiplier != nil && *p.BlindMultiplier >= 101 {
-		cfg.BlindMultiplier = *p.BlindMultiplier
-	}
-	if p.BettingLimit != nil {
-		bl := *p.BettingLimit
-		if bl < 0 {
-			bl = 0
-		} else if bl > 2 {
-			bl = 2
-		}
-		cfg.BettingLimit = domain.BettingLimitType(bl)
-	}
+	applyBool(&cfg.TournamentMode, p.TournamentMode)
+	applyIntIfGte(&cfg.BlindLevelHands, p.BlindLevelHands, 1)
+	applyIntIfGte(&cfg.BlindMultiplier, p.BlindMultiplier, 101)
+	applyBettingLimit(&cfg.BettingLimit, p.BettingLimit)
 	if p.TableSize != nil {
 		ts := *p.TableSize
 		if !domain.IsValidHoldemTableSize(ts) {
@@ -191,27 +160,10 @@ func (p HoldemWebInput) ToConfig() (domain.HoldemConfig, error) {
 		}
 		cfg.TableSize = ts
 	}
-	if p.RebuyEnabled != nil {
-		cfg.RebuyEnabled = *p.RebuyEnabled
-	}
-	if p.RebuyMaxCount != nil && *p.RebuyMaxCount >= 1 {
-		cfg.RebuyMaxCount = *p.RebuyMaxCount
-	}
-	if p.RebuyChips != nil && *p.RebuyChips >= 1 {
-		cfg.RebuyChips = *p.RebuyChips
-	}
-	if p.RebuyPeriodHands != nil && *p.RebuyPeriodHands >= 1 {
-		cfg.RebuyPeriodHands = *p.RebuyPeriodHands
-	}
-	if p.AddonEnabled != nil {
-		cfg.AddonEnabled = *p.AddonEnabled
-	}
-	if p.AddonChips != nil && *p.AddonChips >= 1 {
-		cfg.AddonChips = *p.AddonChips
-	}
-	if p.AddonAfterHand != nil && *p.AddonAfterHand >= 1 {
-		cfg.AddonAfterHand = *p.AddonAfterHand
-	}
+	applyRebuyConfig(&cfg.RebuyEnabled, &cfg.RebuyMaxCount, &cfg.RebuyChips, &cfg.RebuyPeriodHands,
+		p.RebuyEnabled, p.RebuyMaxCount, p.RebuyChips, p.RebuyPeriodHands)
+	applyAddonConfig(&cfg.AddonEnabled, &cfg.AddonChips, &cfg.AddonAfterHand,
+		p.AddonEnabled, p.AddonChips, p.AddonAfterHand)
 	cfg.CpuMetaAI = p.CpuMetaAI
 	return cfg, nil
 }
@@ -237,6 +189,9 @@ func newHoldemDefaultOutput(msg string) *HoldemWebOutput {
 }
 
 func holdemDispatch(bc *baseController, w http.ResponseWriter, hgi usecase.HoldemInteractorIF, param HoldemWebInput, newDefault func(string) *HoldemWebOutput) bool {
+	if dispatchPokerAction(bc, w, hgi, param.Command, param.Amount, param.HumanPlayMs) {
+		return true
+	}
 	switch param.Command {
 	case "r", "reset":
 		cfg, err := param.ToConfig()
@@ -245,30 +200,6 @@ func holdemDispatch(bc *baseController, w http.ResponseWriter, hgi usecase.Holde
 			return true
 		}
 		bc.writePresenterResponse(w, hgi.ResetWithConfig(cfg, param.Profile))
-	case "f", "fold":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0, param.HumanPlayMs))
-	case "ck", "check":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCheck, 0, param.HumanPlayMs))
-	case "c", "call":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCall, 0, param.HumanPlayMs))
-	case "b", "bet":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionBet, param.Amount, param.HumanPlayMs))
-	case "ra", "raise":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionRaise, param.Amount, param.HumanPlayMs))
-	case "a", "allin":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0, param.HumanPlayMs))
-	case "rb", "rebuy":
-		bc.writePresenterResponse(w, hgi.Rebuy())
-	case "sr", "skiprebuy":
-		bc.writePresenterResponse(w, hgi.SkipRebuy())
-	case "ad", "addon":
-		bc.writePresenterResponse(w, hgi.Addon())
-	case "sa", "skipaddon":
-		bc.writePresenterResponse(w, hgi.SkipAddon())
-	case "m", "muck":
-		bc.writePresenterResponse(w, hgi.Muck())
-	case "sh", "show":
-		bc.writePresenterResponse(w, hgi.ShowHand())
 	default:
 		return dispatchLog(param.Command, bc, w, hgi.ActionLog)
 	}

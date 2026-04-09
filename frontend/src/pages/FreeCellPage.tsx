@@ -15,6 +15,7 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { FreeCellSkeleton } from '../components/skeleton/FreeCellSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
@@ -100,6 +101,7 @@ function FreeCellPageContent() {
     handleHint,
     handleAutoComplete,
     handleUndo,
+    handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,
@@ -323,7 +325,7 @@ function FreeCellPageContent() {
 
             {/* Hint display */}
             {hint && (
-              <div className="text-yellow-300 text-sm mb-2">
+              <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {hint.fromZone}
                 {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {hint.toZone}
                 {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
@@ -380,6 +382,13 @@ function FreeCellPageContent() {
                   >
                     {t('undo')}
                   </button>
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape ?? 0}
+                      onEscape={handleUndoEscape}
+                      disabled={loading || isAutoCompleting}
+                    />
+                  )}
                   <button
                     type="button"
                     className={btnSuccess}

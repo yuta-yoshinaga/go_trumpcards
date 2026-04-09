@@ -351,3 +351,17 @@ export const ClockSolitairePhase = {
   GAME_CLEAR: 1,
   GAME_OVER: 2,
 } as const;
+
+/** Pai Gow Poker phase constants (sync: internal/domain/PaiGow.go). */
+export const PaiGowPhase = {
+  BET: 1,
+  SET_HANDS: 2,
+  END: 3,
+} as const;
+
+/** Forty Thieves phase constants (sync: internal/domain/FortyThieves.go). */
+export const FortyThievesPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;

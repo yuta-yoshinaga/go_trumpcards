@@ -267,7 +267,7 @@ function EuchrePageContent() {
               <div>
                 {/* Maker / Going alone info */}
                 {state.makerTeam >= 0 && (
-                  <div className="text-yellow-300 text-center mb-2">
+                  <div className="text-ds-warning text-center mb-2">
                     <span className="mr-4">{t('maker', { team: state.makerTeam })}</span>
                     {state.goingAlone && <span>{t('goingAlone')}</span>}
                   </div>
@@ -275,18 +275,18 @@ function EuchrePageContent() {
 
                 {/* Pick-up phase instruction */}
                 {isHumanBidTurn && isPickUpPhase && (
-                  <div className="text-yellow-300 text-center mb-2" data-tutorial="eu-pickup-controls">
+                  <div className="text-ds-warning text-center mb-2" data-tutorial="eu-pickup-controls">
                     {t('pickUpPhase')}
                   </div>
                 )}
 
                 {/* Call trump phase instruction */}
                 {isHumanBidTurn && isCallTrumpPhase && (
-                  <div className="text-yellow-300 text-center mb-2">{t('callTrumpPhase')}</div>
+                  <div className="text-ds-warning text-center mb-2">{t('callTrumpPhase')}</div>
                 )}
 
                 {/* Discard phase instruction */}
-                {isHumanDiscard && <div className="text-yellow-300 text-center mb-2">{t('discardPhase')}</div>}
+                {isHumanDiscard && <div className="text-ds-warning text-center mb-2">{t('discardPhase')}</div>}
 
                 {/* Face-up card */}
                 {state.faceUpCard && (isPickUpPhase || isCallTrumpPhase) && (
@@ -369,7 +369,7 @@ function EuchrePageContent() {
                     </thead>
                     <tbody>
                       {state.teamScores.map((score, idx) => (
-                        <tr key={idx} className={idx === humanTeam ? 'text-yellow-300' : ''}>
+                        <tr key={idx} className={idx === humanTeam ? 'text-ds-accent' : ''}>
                           <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
                           <td className="text-center">{score}</td>
                         </tr>
@@ -434,7 +434,7 @@ function EuchrePageContent() {
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
-              <div className="text-yellow-300 text-sm mb-2">
+              <div className="text-ds-warning text-sm mb-2">
                 {hint.cardIndex != null
                   ? `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`
                   : `(${t(`hintReason.${hint.reason}`)})`}

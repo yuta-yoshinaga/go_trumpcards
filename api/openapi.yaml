@@ -92,6 +92,12 @@ tags:
     description: Seven Card Stud (セブンカード・スタッド) game
   - name: clocksolitaire
     description: Clock Solitaire (クロックソリティア) game
+  - name: durak
+    description: Durak (ドゥラーク) game
+  - name: fortythieves
+    description: Forty Thieves (フォーティシーブス) game
+  - name: paigow
+    description: Pai Gow Poker (パイゴウポーカー) game
 
 paths:
   /blackjack/exec:
@@ -3690,11 +3696,404 @@ paths:
                   message:
                     type: string
 
+  /durak/exec:
+    post:
+      tags:
+        - durak
+      summary: Execute a Durak game command
+      description: |
+        Send a command to advance the Durak (ドゥラーク) game session
+        identified by `sessionId`.  Durak is a popular Eastern European card
+        game for 2-6 players (1 human + 1-5 CPU) using a 36-card deck (6-A).
+        Players take turns attacking and defending.  The attacker plays cards
+        and the defender must beat each with a higher card of the same suit or
+        a trump card.  The last player with cards is the loser ("durak" = fool).
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Attack   | `0`   | Attacker plays cards |
+        | Defend   | `1`   | Defender beats attacking cards |
+        | BoutEnd  | `2`   | Bout resolved (cards discarded or picked up) |
+        | GameEnd  | `3`   | Game over; loser determined |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `attack` | `a`     | Play a card to attack |
+        | `defend` | `d`     | Play a card to defend against an attack |
+        | `pickup` | `p`     | Defender picks up all table cards |
+        | `done`   | `dn`    | Attacker ends the attack |
+        | `pass`   | `ps`    | Pass the attack to the next player |
+        | `log`    | `l`     | View action log |
+      operationId: durakExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, attack, a, defend, d, pickup, p, done, dn, pass, ps, log, l]
+                cardIndex:
+                  type: integer
+                  description: Index of the card to play (for attack/defend commands)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              attack:
+                summary: Attack with a card
+                value:
+                  command: attack
+                  cardIndex: 0
+                  sessionId: my-session-001
+              defend:
+                summary: Defend against an attack
+                value:
+                  command: defend
+                  cardIndex: 2
+                  sessionId: my-session-001
+              pickup:
+                summary: Pick up all table cards
+                value:
+                  command: pickup
+                  sessionId: my-session-001
+              done:
+                summary: End the attack
+                value:
+                  command: done
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                  tableAttack:
+                    type: array
+                    description: Cards played by the attacker on the table
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  tableDefense:
+                    type: array
+                    description: Cards played by the defender on the table
+                    items:
+                      nullable: true
+                      allOf:
+                        - $ref: '#/components/schemas/Card'
+                  trumpCard:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                    description: The trump card (bottom of the deck)
+                  trumpSuit:
+                    type: integer
+                    description: Trump suit (0=spade, 1=heart, 2=diamond, 3=club)
+                  deckCount:
+                    type: integer
+                    description: Remaining cards in the deck
+                  attackerIdx:
+                    type: integer
+                  defenderIdx:
+                    type: integer
+                  currentTurn:
+                    type: integer
+                  phase:
+                    type: integer
+                    description: "0=Attack, 1=Defend, 2=BoutEnd, 3=GameEnd"
+                  gameEndFlag:
+                    type: boolean
+                  loserIdx:
+                    type: integer
+                    description: Index of the losing player (-1 if game not ended)
+                  cpuActions:
+                    type: array
+                    items:
+                      type: object
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: array
+                  phase:
+                    type: integer
+                  message:
+                    type: string
+
+  /fortythieves/exec:
+    post:
+      tags:
+        - fortythieves
+      summary: Execute a Forty Thieves game command
+      description: |
+        Send a command to advance the Forty Thieves (フォーティシーブス) game
+        session identified by `sessionId`.  Forty Thieves is a single-player
+        solitaire card game using 2 standard decks (104 cards).  10 tableau
+        columns with 4 face-up cards each, 8 foundation piles (A→K, same suit),
+        same-suit descending tableau moves, single card moves only, and no
+        stock recycling.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | No more moves available |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `draw`         | `d`     | Draw a card from the stock to the waste |
+        | `move`         | `m`     | Move a card between tableau/waste/foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: fortyThievesExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/FortyThievesMoveZone'
+                to:
+                  $ref: '#/components/schemas/FortyThievesMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw a card from the stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              move:
+                summary: Move a card from waste to tableau column 0
+                value:
+                  command: move
+                  from:
+                    zone: waste
+                  to:
+                    zone: tableau
+                    col: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 10 tableau columns, each an array of face-up cards
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  foundations:
+                    type: array
+                    description: 8 foundation piles (top card of each)
+                    items:
+                      nullable: true
+                      allOf:
+                        - $ref: '#/components/schemas/Card'
+                  waste:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                    description: Top card of the waste pile
+                  stockCount:
+                    type: integer
+                    description: Number of remaining cards in the stock
+                  moveCount:
+                    type: integer
+                  phase:
+                    type: integer
+                    description: "0=Playing, 1=GameClear, 2=GameOver"
+                  message:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    items:
+                      type: array
+                  phase:
+                    type: integer
+                  message:
+                    type: string
+
+  /paigow/exec:
+    post:
+      tags:
+        - paigow
+      summary: Execute a Pai Gow Poker game command
+      description: |
+        Send a command to advance the Pai Gow Poker (パイゴウポーカー) game session
+        identified by `sessionId`.  Pai Gow Poker is a single-player casino card game
+        using a 53-card deck (standard 52 + 1 joker).  Player and dealer each receive
+        7 cards.  Player splits cards into a 5-card high hand and 2-card low hand.
+        Both hands are compared against the dealer's hands.
+
+        The joker can be used as an ace or to complete a straight, flush, or straight
+        flush.  The high hand must outrank the low hand.  Player wins both hands to win
+        (1:1 minus 5% commission), loses both to lose, or pushes on a split.  Ties
+        (copy hands) go to the dealer.
+
+        The game proceeds through these phases:
+
+        | Phase | Value | Description |
+        |-------|-------|-------------|
+        | Bet   | `1`   | Place a bet |
+        | Set   | `2`   | Arrange 7 cards into high hand (5) and low hand (2) |
+        | End   | `3`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place bet (requires `amount`) |
+        | `set`   | `s`     | Set low hand cards (requires `low0`, `low1` as card indices) |
+        | `log`   | `l`     | View action log |
+      operationId: paigowExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaiGowRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 chips
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              set:
+                summary: Set low hand (card indices 2 and 5)
+                value:
+                  command: set
+                  low0: 2
+                  low1: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaiGowResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaiGowResponse'
+              examples:
+                paramError:
+                  value:
+                    playerCards: []
+                    dealerCards: []
+                    playerHighHand: []
+                    playerLowHand: []
+                    dealerHighHand: []
+                    dealerLowHand: []
+                    phase: 0
+                    chips: 0
+                    bet: 0
+                    result: 0
+                    message: "unsupported command"
+
 components:
   schemas:
     # -------------------------------------------------------------------------
     # Shared types
     # -------------------------------------------------------------------------
+    FortyThievesMoveZone:
+      type: object
+      description: Source or target zone for a Forty Thieves card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (waste, tableau, foundation)
+          enum: [waste, tableau, foundation]
+        col:
+          type: integer
+          description: Column index (required for tableau zone)
+        cardIndex:
+          type: integer
+          description: Card index within the column (required when moving from tableau)
     Card:
       type: object
       description: A single playing card
@@ -10683,3 +11082,166 @@ components:
         muckAvailable:
           type: boolean
           description: Whether the human player can muck (hide) their hand at showdown
+
+    # -------------------------------------------------------------------------
+    # Pai Gow Poker
+    # -------------------------------------------------------------------------
+    PaiGowRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
+            `set` (`s`), `log` (`l`).
+          enum: [r, reset, b, bet, s, set, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Bet amount.  Required for `bet` command (minimum 10, must be a
+            multiple of 10).  Ignored for other commands.
+          minimum: 10
+          example: 100
+        low0:
+          type: integer
+          description: |
+            Index of the first card to place in the low hand (0-6).
+            Required for the `set` command.
+          minimum: 0
+          maximum: 6
+          example: 2
+        low1:
+          type: integer
+          description: |
+            Index of the second card to place in the low hand (0-6).
+            Required for the `set` command.
+          minimum: 0
+          maximum: 6
+          example: 5
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PaiGowResponse:
+      type: object
+      description: Current state of the Pai Gow Poker game
+      required:
+        - playerCards
+        - dealerCards
+        - playerHighHand
+        - playerLowHand
+        - dealerHighHand
+        - dealerLowHand
+        - phase
+        - chips
+        - bet
+        - result
+        - highHandResult
+        - lowHandResult
+        - payout
+        - commission
+        - playerHighRank
+        - playerLowRank
+        - dealerHighRank
+        - dealerLowRank
+        - message
+      properties:
+        playerCards:
+          type: array
+          description: Player's 7 dealt cards
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerCards:
+          type: array
+          description: Dealer's 7 dealt cards (hidden until End phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        playerHighHand:
+          type: array
+          description: Player's 5-card high hand
+          items:
+            $ref: '#/components/schemas/Card'
+        playerLowHand:
+          type: array
+          description: Player's 2-card low hand
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHighHand:
+          type: array
+          description: Dealer's 5-card high hand
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerLowHand:
+          type: array
+          description: Dealer's 2-card low hand
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Set, 3 = End"
+          enum: [1, 2, 3]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        bet:
+          type: integer
+          description: Current bet amount
+          example: 100
+        result:
+          type: integer
+          description: "Overall game result: 1 = Player wins, -1 = Dealer wins, 0 = Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        highHandResult:
+          type: integer
+          description: "High hand comparison result: 1 = Player wins, -1 = Dealer wins, 0 = Tie"
+          enum: [-1, 0, 1]
+          example: 0
+        lowHandResult:
+          type: integer
+          description: "Low hand comparison result: 1 = Player wins, -1 = Dealer wins, 0 = Tie"
+          enum: [-1, 0, 1]
+          example: 0
+        payout:
+          type: integer
+          description: Payout for the current round (after commission)
+          example: 0
+        commission:
+          type: integer
+          description: Commission amount (5% of bet on player win)
+          example: 0
+        playerHighRank:
+          type: string
+          description: Player's high hand rank name (e.g. "Flush", "Two Pair")
+          example: ""
+        playerLowRank:
+          type: string
+          description: Player's low hand rank name (e.g. "Pair", "High Card")
+          example: ""
+        dealerHighRank:
+          type: string
+          description: Dealer's high hand rank name
+          example: ""
+        dealerLowRank:
+          type: string
+          description: Dealer's low hand rank name
+          example: ""
+        message:
+          type: string
+          description: Game result or error message. Empty during bet/set phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

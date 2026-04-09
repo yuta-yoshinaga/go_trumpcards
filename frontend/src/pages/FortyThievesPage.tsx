@@ -1,0 +1,485 @@
+import { useMemo } from 'react';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
+import { LandscapeBanner } from '../components/LandscapeBanner';
+import { ManualButton } from '../components/ManualButton';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { WinCelebration } from '../components/motion/WinCelebration';
+import { PhaseIndicator } from '../components/PhaseIndicator';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
+import { FortyThievesSkeleton } from '../components/skeleton/FortyThievesSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useFortyThievesGame } from '../hooks/useFortyThievesGame';
+import { useGameHint } from '../hooks/useGameHint';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
+import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { FortyThievesResponse } from '../types/card';
+import { FortyThievesPhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+
+const FOUNDATION_SUITS = ['♠', '♠', '♣', '♣', '♥', '♥', '♦', '♦'] as const;
+
+/** Forty Thieves tutorial step definitions. */
+const FT_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="ft-stock-waste"]',
+    messageKey: 'tutorial.stockWaste',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ft-foundation"]',
+    messageKey: 'tutorial.foundation',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ft-tableau"]',
+    messageKey: 'tutorial.tableau',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ft-controls"]',
+    messageKey: 'tutorial.controls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Renders the Forty Thieves solitaire game page with tableau, stock/waste, and foundation. */
+export function FortyThievesPage() {
+  return (
+    <TutorialWrapper gameName="fortythieves" steps={FT_TUTORIAL_STEPS}>
+      <FortyThievesPageContent />
+    </TutorialWrapper>
+  );
+}
+
+/** Format a frontend hint zone for display. */
+function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, col: number): string {
+  if (zone === 'waste') return t('frontendHint.waste');
+  if (zone === 'foundation') return t('frontendHint.foundation');
+  return t('frontendHint.tableau', { col });
+}
+
+/** Inner content of the Forty Thieves page, wrapped by TutorialProvider. */
+function FortyThievesPageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('fortythieves');
+  const { playSound } = useSound();
+  const {
+    state,
+    loading,
+    error,
+    exec,
+    retry,
+    hintError,
+    selectedSource,
+    hint,
+    handleDraw,
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+    handleUndoEscape,
+    handleSelectSource,
+    handleSelectTarget,
+    isAutoCompleting,
+  } = useFortyThievesGame();
+
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fortythieves');
+  const ftCliConfig = useMemo(
+    () => ({
+      gameName: 'fortythieves' as const,
+      parseCommand: (_cmd: string) => ({ error: 'CLI not supported' }) as const,
+      formatResponse: (_res: FortyThievesResponse): string => '',
+      helpText: [] as string[],
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(exec, ftCliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('fortythieves', state);
+  const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const windowWidth = useWindowWidth();
+
+  // Responsive card dimensions for 10-column layout
+  const ft = useMemo(() => {
+    if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap, wasteFan: 15 };
+    const padX = 16;
+    const gapPx = 4;
+    const cols = 10;
+    const colW = Math.floor((windowWidth - padX - (cols - 1) * gapPx) / cols);
+    const cw = Math.min(Math.max(colW, 24), cardWidth);
+    const ch = Math.round(cw * 1.5);
+    const co = Math.round(cw * 0.48);
+    const wasteFan = Math.round(cw * 0.3);
+    return { cw, ch, co, wasteFan };
+  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+
+  const isPlayingForKbd = state?.phase === FortyThievesPhase.PLAYING;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDraw },
+      { key: 'h', action: handleHint },
+      { key: 'a', action: handleAutoComplete },
+      { key: 'g', action: handleGiveUp },
+      { key: 'z', action: handleUndo },
+    ],
+    [handleDraw, handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!isPlayingForKbd && !loading,
+  });
+
+  if (!state) return <FortyThievesSkeleton />;
+
+  const isPlaying = state.phase === FortyThievesPhase.PLAYING;
+  const isGameClear = state.phase === FortyThievesPhase.GAME_CLEAR;
+  const isGameOver = state.phase === FortyThievesPhase.GAME_OVER;
+  const isEnded = isGameClear || isGameOver;
+
+  const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
+    selectedSource !== null &&
+    selectedSource.zone === zone &&
+    selectedSource.col === col &&
+    selectedSource.cardIndex === cardIndex;
+
+  // Waste display: show top card only
+  const wasteDisplay = state.waste.slice(-1);
+
+  return (
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.fortythieves.bg}`} aria-busy={loading} aria-live="polite">
+      <GamePageHeading title={tc('nav.fortythieves')} />
+      {/* Phase indicator */}
+      <PhaseIndicator
+        phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
+      >
+        <span>
+          {t('moveCount')}: {state.moveCount}
+        </span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        <TutorialButton />
+        <ManualButton gamePath="/fortythieves" />
+      </PhaseIndicator>
+
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <LandscapeBanner message={t('landscapeBanner')} />
+
+          {/* Scrollable area */}
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            {/* Foundation + Stock/Waste row */}
+            <div className="flex gap-1 sm:gap-2 mb-3 items-start flex-wrap">
+              {/* Stock + Waste */}
+              <div className="flex gap-1 sm:gap-2" data-tutorial="ft-stock-waste">
+                <div className="text-center">
+                  <div className="text-game-text-muted text-xs mb-1">
+                    {t('stock')} ({state.stockCount})
+                  </div>
+                  {state.stockCount > 0 ? (
+                    <AnimatedCardBack
+                      width={ft.cw}
+                      onClick={isPlaying ? handleDraw : undefined}
+                      ariaLabel={t('draw')}
+                      onFlipComplete={() => playSound('cardFlip')}
+                    />
+                  ) : (
+                    <div
+                      style={{ width: ft.cw, height: ft.ch }}
+                      className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
+                    >
+                      {t('empty')}
+                    </div>
+                  )}
+                </div>
+
+                {/* Waste */}
+                <div className="text-center">
+                  <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                  {wasteDisplay.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedSource) return;
+                        handleSelectSource({ zone: 'waste' });
+                      }}
+                      disabled={!isPlaying || loading}
+                      aria-label={cardAlt(wasteDisplay[0])}
+                      aria-pressed={isSourceSelected('waste')}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
+                    >
+                      <AnimatedCard
+                        card={wasteDisplay[0]}
+                        width={ft.cw}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
+                    </button>
+                  ) : (
+                    <div
+                      style={{ width: ft.cw, height: ft.ch }}
+                      className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
+                    >
+                      {t('empty')}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="w-2 sm:w-4" />
+
+              {/* Foundation piles (8 piles) */}
+              <div className="flex gap-1 sm:gap-2 flex-wrap" data-tutorial="ft-foundation">
+                {state.foundation.map((pile, idx) => (
+                  <div key={`f-${idx.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                    {pile.length > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
+                        disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                        aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
+                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                      >
+                        <AnimatedCard
+                          card={pile[pile.length - 1]}
+                          width={ft.cw}
+                          dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                        />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
+                        disabled={!isPlaying || loading || !selectedSource}
+                        aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                        style={{ width: ft.cw, height: ft.ch }}
+                        className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                      >
+                        A
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tableau */}
+            <div className="flex gap-1 sm:gap-2 mb-3" data-tutorial="ft-tableau">
+              {state.tableau.map((col, colIdx) => (
+                <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                  <div className="relative" style={{ minHeight: ft.ch }}>
+                    {col.length === 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
+                        disabled={!isPlaying || loading || !selectedSource}
+                        style={{ height: ft.ch }}
+                        className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                      >
+                        {t('empty')}
+                      </button>
+                    ) : (
+                      col.map((tc, cardIdx) => (
+                        <div
+                          key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                          className="absolute left-0 right-0"
+                          style={{ top: cardIdx * ft.co }}
+                        >
+                          {tc.faceUp && tc.card ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (selectedSource) {
+                                  handleSelectTarget({ zone: 'tableau', col: colIdx });
+                                } else {
+                                  handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
+                                }
+                              }}
+                              disabled={!isPlaying || loading}
+                              aria-label={cardAlt(tc.card)}
+                              aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
+                              className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
+                            >
+                              <AnimatedCard
+                                card={tc.card}
+                                width={ft.cw}
+                                style={{ width: '100%' }}
+                                wrapperClassName="block w-full"
+                                onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                              />
+                            </button>
+                          ) : (
+                            <AnimatedCardBack
+                              width={ft.cw}
+                              className="w-full"
+                              onFlipComplete={() => playSound('cardFlip')}
+                            />
+                          )}
+                        </div>
+                      ))
+                    )}
+                    {col.length > 0 && <div style={{ height: (col.length - 1) * ft.co + ft.ch }} />}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Hint display */}
+            <div data-tutorial="ft-hint-display">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
+                  {formatHintZone(t, hint.toZone, hint.toCol)}
+                </div>
+              )}
+            </div>
+            {frontendHintEnabled && frontendHint && (
+              <div className="flex justify-center">
+                <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+              </div>
+            )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={isEnded}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          {/* Settings */}
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
+
+          {/* Footer */}
+          <GameFooter className={`${gameTheme.fortythieves.footer} px-4 py-2.5`}>
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+            <div className="flex gap-2 items-center flex-wrap">
+              {isPlaying && (
+                <div data-tutorial="ft-controls">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleDraw}
+                    disabled={loading || isAutoCompleting || state.stockCount === 0}
+                  >
+                    {t('draw')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleUndo}
+                    disabled={loading || isAutoCompleting || !state.canUndo}
+                  >
+                    {t('undo')}
+                  </button>
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape ?? 0}
+                      onEscape={handleUndoEscape}
+                      disabled={loading || isAutoCompleting}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleHint}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('hint')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleAutoComplete}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('autoComplete')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={handleGiveUp}
+                    disabled={loading || isAutoCompleting}
+                  >
+                    {t('giveup')}
+                  </button>
+                </div>
+              )}
+              <div data-tutorial="ft-reset-button">
+                <button
+                  type="button"
+                  className={btnOutline}
+                  onClick={() =>
+                    requestConfirm(() => {
+                      hideActionLog();
+                      return handleReset();
+                    })
+                  }
+                  disabled={loading}
+                >
+                  {tc('button.reset')}
+                </button>
+              </div>
+            </div>
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={state.phase === FortyThievesPhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
+      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
+    </div>
+  );
+}

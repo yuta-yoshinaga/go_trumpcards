@@ -25,6 +25,7 @@
     "daifugo": "大富豪",
     "sevens": "7並べ",
     "doubt": "ダウト",
+    "durak": "ドゥラーク",
     "holdem": "テキサスホールデム",
     "omaha": "オマハホールデム",
     "hearts": "ハーツ",
@@ -57,7 +58,9 @@
     "golf": "ゴルフ",
     "pigtail": "ぶたのしっぽ",
     "sevencardstud": "セブンカードスタッド",
-    "clocksolitaire": "クロックソリティア"
+    "clocksolitaire": "クロックソリティア",
+    "fortythieves": "フォーティシーブス",
+    "paigow": "パイゴウポーカー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -100,6 +103,7 @@
     "hint": "ヒント",
     "retry": "再試行"
   },
+  "stalemateEscape": "脱出する ({{count}}手戻る)",
   "status": {
     "folded": "フォールド",
     "allIn": "オールイン",
@@ -303,9 +307,5 @@
     "unknownCommandWithSuggestion": "不明なコマンド: {{cmd}}。もしかして: {{suggestion}}",
     "emptyInput": "コマンドを入力してください。'help' でヘルプを表示",
     "helpCommon": "共通コマンド: r/reset (リセット), help/? (ヘルプ), clear (ログクリア)"
-  },
-  "solitaire": {
-    "undoToEscape": "{{n}}手前に戻る",
-    "noEscape": "戻れる手がありません。リセットしてください。"
   }
 }

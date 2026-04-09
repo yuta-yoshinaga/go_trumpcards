@@ -174,7 +174,7 @@ function PinochlePageContent() {
               {state.players?.map((p) => (
                 <div
                   key={p.id}
-                  className={`rounded p-2 text-sm ${p.isHuman ? 'bg-yellow-500/20 text-yellow-200' : 'bg-black/30 text-white/70'}`}
+                  className={`rounded p-2 text-sm ${p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-white/70'}`}
                 >
                   <div className="font-bold">{playerName(p.id, p.isHuman)}</div>
                   <div>

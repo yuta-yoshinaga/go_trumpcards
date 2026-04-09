@@ -131,7 +131,7 @@ function StatTooltip({ id, label, tooltipText }: { id: string; label: string; to
 function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; threeBet: number; af: string }) {
   const { t } = useTranslation('pineapple');
   return (
-    <span className="ml-2 text-cyan-300 text-[0.8em] hidden sm:inline" data-testid="hud-stats">
+    <span className="ml-2 text-ds-info text-[0.8em] hidden sm:inline" data-testid="hud-stats">
       <StatTooltip id="tooltip-vpip" label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:{vpip}%{' '}
       <StatTooltip id="tooltip-pfr" label={t('stats.pfr')} tooltipText={t('stats.pfrTooltip')} />:{pfr}%{' '}
       <StatTooltip id="tooltip-3bet" label={t('stats.threeBet')} tooltipText={t('stats.threeBetTooltip')} />:{threeBet}%{' '}
@@ -406,8 +406,8 @@ function PineapplePageContent() {
                       {tc('betting.currentBet')} {humanPlayer.currentBet}
                     </span>
                   )}
-                  {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
-                  {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
+                  {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
+                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                       {humanPlayer.handName}

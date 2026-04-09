@@ -270,7 +270,7 @@ function BridgePageContent() {
               <div>
                 {/* Declarer/Dummy info */}
                 {state.declarerIdx >= 0 && (
-                  <div className="text-yellow-300 text-center mb-2">
+                  <div className="text-ds-warning text-center mb-2">
                     <span className="mr-4">
                       {t('declarer')}:{' '}
                       {playerName(
@@ -291,7 +291,7 @@ function BridgePageContent() {
                 )}
 
                 {/* Bid phase instruction */}
-                {isHumanBidTurn && <div className="text-yellow-300 text-center mb-2">{t('bidPhase')}</div>}
+                {isHumanBidTurn && <div className="text-ds-warning text-center mb-2">{t('bidPhase')}</div>}
 
                 {/* Bid History */}
                 {state.bidHistory.length > 0 && (
@@ -406,7 +406,7 @@ function BridgePageContent() {
                     </thead>
                     <tbody>
                       {state.teamScores.map((score, idx) => (
-                        <tr key={idx} className={idx === humanTeam ? 'text-yellow-300' : ''}>
+                        <tr key={idx} className={idx === humanTeam ? 'text-ds-accent' : ''}>
                           <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
                           <td className="text-center">{score}</td>
                           <td className="text-center">{state.gamesWon[idx]}</td>
@@ -473,7 +473,7 @@ function BridgePageContent() {
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
-              <div className="text-yellow-300 text-sm mb-2">
+              <div className="text-ds-warning text-sm mb-2">
                 {hint.cardIndex != null
                   ? `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`
                   : `(${t(`hintReason.${hint.reason}`)})`}
