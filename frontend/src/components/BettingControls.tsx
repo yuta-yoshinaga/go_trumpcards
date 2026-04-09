@@ -58,13 +58,15 @@ export function BettingControls({
             onChange={(e) => {
               onBetAmountChange(Number(e.target.value));
             }}
-            className={`w-20 px-2 py-1 text-sm rounded ${
-              isOutOfRange ? 'bg-red-100 border-red-400 border' : 'bg-white/90'
-            } text-gray-900`}
+            className={`w-20 px-2 py-1 text-sm rounded border ${
+              isOutOfRange
+                ? 'bg-red-900/40 border-ds-error text-ds-error'
+                : 'bg-white/90 border-transparent text-gray-900'
+            }`}
           />
         </div>
         {isOutOfRange && (
-          <p id={`${inputId}-range`} className="text-red-300 text-xs" role="alert">
+          <p id={`${inputId}-range`} className="text-ds-error text-xs" role="alert">
             {t('betting.rangeHint', { min: minRaise, max: hasMax ? max : '∞' })}
           </p>
         )}

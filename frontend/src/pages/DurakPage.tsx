@@ -347,7 +347,7 @@ function DurakPageContent() {
                   {humanPlayer.cardCount}
                   {isAttacker && <span className="text-red-400 text-xs ml-2">({t('attacker')})</span>}
                   {isDefender && <span className="text-blue-400 text-xs ml-2">({t('defender')})</span>}
-                  {isHumanTurn && <span className="text-green-400 text-xs ml-2">{t('selectCard')}</span>}
+                  {isHumanTurn && <span className="text-ds-success text-xs ml-2">{t('selectCard')}</span>}
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {humanPlayer.cards.map((card, i) => (

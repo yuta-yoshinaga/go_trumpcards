@@ -358,7 +358,7 @@ function FortyThievesPageContent() {
             {/* Hint display */}
             <div data-tutorial="ft-hint-display">
               {hint && (
-                <div className="text-yellow-300 text-sm mb-2">
+                <div className="text-ds-warning text-sm mb-2">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
                   {formatHintZone(t, hint.toZone, hint.toCol)}
                 </div>

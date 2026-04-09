@@ -418,7 +418,7 @@ function KlondikePageContent() {
             {/* Hint display */}
             <div data-tutorial="kl-hint-display">
               {hint && (
-                <div className="text-yellow-300 text-sm mb-2">
+                <div className="text-ds-warning text-sm mb-2">
                   {t('hintAvailable')}: {hint.fromZone}
                   {hint.fromCol >= 0 ? ` ${t('tableau')} ${hint.fromCol}` : ` ${t('waste')}`} → {hint.toZone}
                   {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
@@ -433,7 +433,7 @@ function KlondikePageContent() {
 
             {/* Score display on game clear */}
             {isGameClear && isVegas && (
-              <div className="text-yellow-300 text-lg mb-2">
+              <div className="text-ds-warning text-lg mb-2">
                 {t('totalScore')}: {state.score + timeBonus(elapsedSeconds)}
               </div>
             )}

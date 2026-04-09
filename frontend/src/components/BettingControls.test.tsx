@@ -172,7 +172,7 @@ describe('BettingControls', () => {
   it('applies error styling to input when out of range', () => {
     render(<BettingControls {...makeProps({ betAmount: 80, maxBetAmount: 50 })} />);
     const input = screen.getByLabelText('ベット額:');
-    expect(input.className).toContain('bg-red-100');
+    expect(input.className).toContain('bg-red-900/40');
   });
 
   it('disables bet/raise button when value is out of range', () => {

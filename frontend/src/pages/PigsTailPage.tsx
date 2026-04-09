@@ -163,7 +163,7 @@ function PigsTailPageContent() {
             {/* Last action indicator */}
             {state.lastDrawCard && (
               <div
-                className={`text-center text-sm font-medium ${state.lastPenalty ? 'text-red-300' : 'text-green-300'}`}
+                className={`text-center text-sm font-medium ${state.lastPenalty ? 'text-ds-error' : 'text-ds-success'}`}
               >
                 {state.lastPenalty ? t('label.penalty') : t('label.safe')}
               </div>

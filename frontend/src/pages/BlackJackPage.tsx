@@ -333,7 +333,7 @@ function BlackJackPageContent() {
               <div className="mt-4">
                 {cpuPlayers.map((cpu, cpuIdx) => (
                   <div key={cpuIdx} className="mb-3">
-                    <h2 className="text-yellow-200 mt-0 mb-1">
+                    <h2 className="text-ds-accent mt-0 mb-1">
                       {tc('player.cpu', { id: cpuIdx + 1 })} ({cpu.chips} chips)
                       {cpu.insuranceBet > 0 && (
                         <span className="text-yellow-400 text-sm ml-2">
@@ -410,7 +410,7 @@ function BlackJackPageContent() {
 
             {/* Insurance info */}
             {state.insuranceBet > 0 && (
-              <div className="text-yellow-300 text-sm mb-1">
+              <div className="text-ds-warning text-sm mb-1">
                 {t('insurance')} {state.insuranceBet}
               </div>
             )}

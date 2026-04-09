@@ -46,7 +46,7 @@ export function EquityDisplay({ equity, potOdds }: EquityDisplayProps) {
 
       <button
         type="button"
-        className="text-xs text-cyan-300 underline cursor-pointer"
+        className="text-xs text-ds-info underline cursor-pointer"
         onClick={() => setShowHandOdds(!showHandOdds)}
         data-testid="toggle-hand-odds"
       >

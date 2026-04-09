@@ -312,20 +312,20 @@ function NapoleonPageContent() {
 
                 {/* Bid phase instruction */}
                 {isHumanBidTurn && (
-                  <div className="text-yellow-300 text-center mb-2" data-tutorial="np-bid-controls">
+                  <div className="text-ds-warning text-center mb-2" data-tutorial="np-bid-controls">
                     {t('bidPhase', { min: napoleonConfig.minBid })}
                   </div>
                 )}
 
                 {/* Trump declaration instruction */}
                 {isHumanNapoleon && (
-                  <div className="text-yellow-300 text-center mb-2" data-tutorial="np-trump-declaration">
+                  <div className="text-ds-warning text-center mb-2" data-tutorial="np-trump-declaration">
                     {t('trumpDeclarationPhase')}
                   </div>
                 )}
 
                 {/* Kitty exchange instruction */}
-                {isHumanExchange && <div className="text-yellow-300 text-center mb-2">{t('kittyExchangePhase')}</div>}
+                {isHumanExchange && <div className="text-ds-warning text-center mb-2">{t('kittyExchangePhase')}</div>}
 
                 {/* Kitty cards (during exchange phase) */}
                 {isKittyExchange && state.kitty.length > 0 && (
@@ -390,7 +390,7 @@ function NapoleonPageContent() {
                 {/* Score table */}
                 <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="np-score-table">
                   <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto -mx-2 px-2">
                     <table className="w-full text-sm text-white/70 min-w-[420px]">
                       <thead>
                         <tr>
@@ -407,7 +407,7 @@ function NapoleonPageContent() {
                       </thead>
                       <tbody>
                         {state.players.map((p) => (
-                          <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                             <td>{playerName(p.id, p.isHuman)}</td>
                             <td className="text-center">
                               {p.isNapoleon
@@ -490,7 +490,7 @@ function NapoleonPageContent() {
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
-              <div className="text-yellow-300 text-sm mb-2">
+              <div className="text-ds-warning text-sm mb-2">
                 {hint.bid != null
                   ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
                   : hint.trumpSuit != null

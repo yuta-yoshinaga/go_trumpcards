@@ -185,7 +185,7 @@ function MemoryPageContent() {
               aria-label={t('scores')}
             >
               {state.players.map((p, idx) => (
-                <span key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                <span key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                   {idx > 0 && (
                     <span className="text-white/40 mr-3" aria-hidden="true">
                       |

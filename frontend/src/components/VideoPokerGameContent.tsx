@@ -53,7 +53,7 @@ export interface VideoPokerGameContentProps {
 function PayoutTable({ t, rows }: { t: (key: string) => string; rows: string[] }) {
   return (
     <details className="mb-3 text-center">
-      <summary className="text-yellow-300 text-sm cursor-pointer lg:text-base">{t('payoutTable.title')}</summary>
+      <summary className="text-ds-warning text-sm cursor-pointer lg:text-base">{t('payoutTable.title')}</summary>
       <ul className="text-gray-300 text-xs mt-1 space-y-0.5 lg:text-sm lg:space-y-1">
         {rows.map((row) => (
           <li key={row}>{t(`payoutTable.${row}`)}</li>

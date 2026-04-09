@@ -254,7 +254,7 @@ function HeartsPageContent() {
               <div>
                 {/* Pass direction (pass phase) */}
                 {isPassPhase && (
-                  <div className="text-yellow-300 text-center mb-2" data-tutorial="ht-pass-area">
+                  <div className="text-ds-warning text-center mb-2" data-tutorial="ht-pass-area">
                     {t(`passDirection.${passDirectionKeys[state.passDirection]}`)}
                   </div>
                 )}
@@ -315,7 +315,7 @@ function HeartsPageContent() {
                     </thead>
                     <tbody>
                       {state.players.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                           <td>{playerName(p.id, p.isHuman)}</td>
                           <td className="text-center">{p.roundScore}</td>
                           <td className="text-center">{p.cumulativeScore}</td>
@@ -363,7 +363,7 @@ function HeartsPageContent() {
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
-              <div className="text-yellow-300 text-sm mb-2">
+              <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {hint.cardIndices.map((i) => `[${i}]`).join(', ')} (
                 {t(`hintReason.${hint.reason}`)})
               </div>

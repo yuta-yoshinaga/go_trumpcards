@@ -143,7 +143,7 @@ function BigRoadGrid({ history }: { history: number[] }) {
                       className={`w-5 h-5 rounded-full inline-block ${cell.result === ROAD_PLAYER ? 'bg-blue-500' : 'bg-red-500'}`}
                     />
                     {cell.tie && (
-                      <span className="absolute inset-0 flex items-center justify-center text-green-400 font-bold text-xs">
+                      <span className="absolute inset-0 flex items-center justify-center text-ds-success font-bold text-xs">
                         /
                       </span>
                     )}
@@ -296,7 +296,7 @@ function BaccaratPageContent() {
             {/* Player Hand */}
             {state.playerHand.length > 0 && (
               <div className="mb-4" data-tutorial="bac-player-hand">
-                <div className="text-yellow-300 font-bold text-center mb-1">
+                <div className="text-ds-warning font-bold text-center mb-1">
                   <span aria-hidden="true">🟡</span> {t('player')} {t('label.value', { value: state.playerHandValue })}
                 </div>
                 <div className="flex justify-center gap-2">
@@ -315,7 +315,7 @@ function BaccaratPageContent() {
             {/* Banker Hand */}
             {state.bankerHand.length > 0 && (
               <div className="mb-4" data-tutorial="bac-banker-hand">
-                <div className="text-red-300 font-bold text-center mb-1">
+                <div className="text-ds-error font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('banker')} {t('label.value', { value: state.bankerHandValue })}
                 </div>
                 <div className="flex justify-center gap-2">

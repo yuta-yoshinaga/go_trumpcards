@@ -325,7 +325,7 @@ function FreeCellPageContent() {
 
             {/* Hint display */}
             {hint && (
-              <div className="text-yellow-300 text-sm mb-2">
+              <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {hint.fromZone}
                 {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {hint.toZone}
                 {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}

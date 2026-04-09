@@ -113,7 +113,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
           if (group.title) {
             return (
               <fieldset key={group.id ?? `group-${gi.toString()}`} className={gi > 0 ? 'mt-2' : ''}>
-                <legend className="text-yellow-300 font-bold text-xs mb-1">{group.title}</legend>
+                <legend className="text-ds-warning font-bold text-xs mb-1">{group.title}</legend>
                 {content}
               </fieldset>
             );

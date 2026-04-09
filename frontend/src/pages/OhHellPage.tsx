@@ -274,7 +274,7 @@ function OhHellPageContent() {
               <div>
                 {/* Bid phase instruction */}
                 {isHumanBidTurn && (
-                  <div className="text-yellow-300 text-center mb-2" data-tutorial="oh-bid-controls">
+                  <div className="text-ds-warning text-center mb-2" data-tutorial="oh-bid-controls">
                     <div>{t('bidPhase', { max: state.handSize })}</div>
                     {state.restrictedBid >= 0 && (
                       <div className="text-orange-300 text-sm">{t('restrictedBid', { n: state.restrictedBid })}</div>
@@ -339,7 +339,7 @@ function OhHellPageContent() {
                 {/* Score table */}
                 <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="oh-score-table">
                   <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto -mx-2 px-2">
                     <table className="w-full text-sm text-white/70 min-w-[360px]">
                       <thead>
                         <tr>
@@ -354,7 +354,7 @@ function OhHellPageContent() {
                       </thead>
                       <tbody>
                         {state.players.map((p) => (
-                          <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                             <td>{playerName(p.id, p.isHuman)}</td>
                             <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
                             <td className="text-center">{p.trickCount}</td>
@@ -431,7 +431,7 @@ function OhHellPageContent() {
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
-              <div className="text-yellow-300 text-sm mb-2">
+              <div className="text-ds-warning text-sm mb-2">
                 {hint.bid != null
                   ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
                   : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
