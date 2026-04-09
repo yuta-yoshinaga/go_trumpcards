@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
-
 	"net/http"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
 // OmahaWebInput オマハホールデムWebインプット (HoldemWebInputと同一構造)
