@@ -7,6 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 )
 
 func TestWriteBashCompletion(t *testing.T) {
@@ -113,5 +115,20 @@ func TestCompletionSubcommands_ContainsAllGames(t *testing.T) {
 	joined := strings.Join(completionSubcommands, " ")
 	for _, e := range expected {
 		assert.Contains(t, joined, e)
+	}
+}
+
+func TestCompletionSubcommands_SyncWithGameNames(t *testing.T) {
+	subSet := make(map[string]bool, len(completionSubcommands))
+	for _, s := range completionSubcommands {
+		subSet[s] = true
+	}
+	// Every game in ui.GameNames must appear in completionSubcommands.
+	for _, name := range ui.GameNames {
+		assert.True(t, subSet[name], "completionSubcommands missing game %q from ui.GameNames", name)
+	}
+	// Every alias in ui.GameAliases must appear in completionSubcommands.
+	for alias := range ui.GameAliases {
+		assert.True(t, subSet[alias], "completionSubcommands missing alias %q from ui.GameAliases", alias)
 	}
 }

@@ -22,6 +22,7 @@
   "skippedWarning": "Warning: invalid values {{values}} were ignored",
   "updateAlreadyLatest": "Already on the latest version ({{version}})",
   "updateAvailable": "A new version ({{version}}) is available. Update now? [y/N]",
+  "updateAutoConfirm": "Updating to {{version}} (auto-confirmed)...",
   "updateCancelled": "Update cancelled",
   "updateDownloading": "Downloading {{version}}...",
   "updateSuccess": "Successfully updated to {{version}}",

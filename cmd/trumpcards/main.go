@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -100,6 +101,7 @@ EXAMPLES:
   trumpcards games               List all available games
   trumpcards games --short       List game names only (for scripting)
   trumpcards update              Self-update to the latest version
+  trumpcards update --yes        Update without confirmation prompt
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
   trumpcards web                 Start the web GUI server
   trumpcards web --port 3000     Start the web GUI on port 3000
@@ -258,11 +260,23 @@ ENVIRONMENT VARIABLES:
 			if gamesFlags.NArg() > 0 {
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(gamesFlags.Args(), " ")))
 			}
+			// Build reverse alias map: canonical name -> sorted list of aliases.
+			reverseAliases := make(map[string][]string)
+			for alias, canonical := range ui.GameAliases {
+				reverseAliases[canonical] = append(reverseAliases[canonical], alias)
+			}
+			for k := range reverseAliases {
+				sort.Strings(reverseAliases[k])
+			}
 			for _, name := range ui.GameNames {
 				if *short {
 					fmt.Println(name)
 				} else {
-					fmt.Printf("  %-16s %s\n", name, gameDescriptions[name])
+					line := fmt.Sprintf("  %-16s %s", name, gameDescriptions[name])
+					if aliases := reverseAliases[name]; len(aliases) > 0 {
+						line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliases, ", "))
+					}
+					fmt.Println(line)
 				}
 			}
 			return 0
@@ -271,7 +285,17 @@ ENVIRONMENT VARIABLES:
 			return runCompletion(flag.Args()[1:])
 		},
 		"update": func() int {
+			updateFlags := flag.NewFlagSet("update", flag.ContinueOnError)
+			yes := updateFlags.Bool("yes", false, "Skip confirmation prompt")
+			updateFlags.BoolVar(yes, "y", false, "Skip confirmation prompt (shorthand)")
+			if err := updateFlags.Parse(flag.Args()[1:]); err != nil {
+				if errors.Is(err, flag.ErrHelp) {
+					return 0
+				}
+				return 1
+			}
 			updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
+			updater.SetAutoConfirm(*yes)
 			if err := updater.Exec(); err != nil {
 				return 1
 			}
@@ -308,7 +332,7 @@ ENVIRONMENT VARIABLES:
 	}
 
 	// Commands that parse their own sub-flags; skip the extra-args warning for these.
-	subFlagCommands := map[string]bool{"web": true, "completion": true, "games": true}
+	subFlagCommands := map[string]bool{"web": true, "completion": true, "games": true, "update": true}
 
 	arg := strings.ToLower(flag.Arg(0))
 	// Resolve game name aliases (e.g., "gin" -> "ginrummy", "7stud" -> "sevencardstud").

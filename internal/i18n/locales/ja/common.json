@@ -22,6 +22,7 @@
   "skippedWarning": "警告: 無効な値 {{values}} は無視されました",
   "updateAlreadyLatest": "既に最新バージョン({{version}})です",
   "updateAvailable": "最新版({{version}})があります。アップデートしますか？ [y/N]",
+  "updateAutoConfirm": "{{version}} にアップデートします (自動確認)...",
   "updateCancelled": "アップデートをキャンセルしました",
   "updateDownloading": "{{version}} をダウンロード中...",
   "updateSuccess": "{{version}} にアップデートしました",
