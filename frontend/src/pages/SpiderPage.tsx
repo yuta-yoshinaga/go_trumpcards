@@ -296,7 +296,7 @@ function SpiderPageContent() {
 
             {/* Hint display */}
             {hint && (
-              <div className="text-yellow-300 text-sm mb-2">
+              <div className="text-ds-warning text-sm mb-2">
                 {t('hintAvailable')}: {t('tableau')} {hint.fromCol} [{hint.cardIndex}] → {t('tableau')} {hint.toCol}
               </div>
             )}

@@ -220,7 +220,7 @@ function ThreeCardPageContent() {
             {/* Player Hand */}
             {state.playerHand.length > 0 && (
               <div className="mb-4" data-tutorial="tc-results">
-                <div className="text-yellow-300 font-bold text-center mb-1">
+                <div className="text-ds-warning font-bold text-center mb-1">
                   <span aria-hidden="true">🟡</span> {t('player')}
                   {isEndPhase && state.playerHandRank > 0 && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.playerHandRank])})</span>
@@ -242,7 +242,7 @@ function ThreeCardPageContent() {
             {/* Dealer Hand */}
             {state.dealerHand.length > 0 && (
               <div className="mb-4">
-                <div className="text-red-300 font-bold text-center mb-1">
+                <div className="text-ds-error font-bold text-center mb-1">
                   <span aria-hidden="true">🔴</span> {t('dealer')}
                   {isEndPhase && state.dealerHandRank > 0 && (
                     <span className="ml-2 text-sm">({t(HAND_RANK_KEYS[state.dealerHandRank])})</span>

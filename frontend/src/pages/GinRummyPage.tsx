@@ -304,7 +304,7 @@ function GinRummyPageContent() {
                     </thead>
                     <tbody>
                       {state.players.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                           <td>{playerName(p.id, p.isHuman)}</td>
                           <td className="text-center">{p.roundScore}</td>
                           <td className="text-center">{p.cumulativeScore}</td>

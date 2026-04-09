@@ -238,7 +238,7 @@ function CanastaPageContent() {
                       ))}
                       {p.red3s.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-red-300 self-center mr-1">{t('red3s')}</span>
+                          <span className="text-xs text-ds-error self-center mr-1">{t('red3s')}</span>
                           {p.red3s.map((card, ri) => (
                             <AnimatedCard
                               key={`red3-${pi}-${ri}`}
@@ -270,7 +270,7 @@ function CanastaPageContent() {
                     </thead>
                     <tbody>
                       {state.players.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                           <td>{playerName(p.id, p.isHuman)}</td>
                           <td className="text-center">{p.roundScore}</td>
                           <td className="text-center">{p.cumulativeScore}</td>

@@ -26,7 +26,7 @@ export function RoundResults({ results, players }: RoundResultsProps) {
           {r.mucked ? `: ${t('label.mucked')}` : r.handName && `: ${r.handName}`}
           {!r.mucked && r.kickers && ` (${t('label.kicker', { kickers: r.kickers })})`}
           {r.wonAmount > 0 && (
-            <span className="text-yellow-300 ml-1"> {t('label.chipsWon', { amount: r.wonAmount })}</span>
+            <span className="text-ds-warning ml-1"> {t('label.chipsWon', { amount: r.wonAmount })}</span>
           )}
         </div>
       ))}

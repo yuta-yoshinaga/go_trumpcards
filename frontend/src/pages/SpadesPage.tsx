@@ -240,7 +240,7 @@ function SpadesPageContent() {
               <div>
                 {/* Bid phase instruction */}
                 {isHumanBidTurn && (
-                  <div className="text-yellow-300 text-center mb-2" data-tutorial="sp-bid-controls">
+                  <div className="text-ds-warning text-center mb-2" data-tutorial="sp-bid-controls">
                     {t('bidPhase')}
                   </div>
                 )}
@@ -289,7 +289,7 @@ function SpadesPageContent() {
                 {/* Score table */}
                 <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="sp-score-table">
                   <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto -mx-2 px-2">
                     <table className="w-full text-sm text-white/70 min-w-[360px]">
                       <thead>
                         <tr>
@@ -305,7 +305,7 @@ function SpadesPageContent() {
                       </thead>
                       <tbody>
                         {state.players.map((p) => (
-                          <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                             <td>{playerName(p.id, p.isHuman)}</td>
                             <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
                             <td className="text-center">{p.trickCount}</td>
@@ -357,7 +357,7 @@ function SpadesPageContent() {
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             {hint && (
-              <div className="text-yellow-300 text-sm mb-2">
+              <div className="text-ds-warning text-sm mb-2">
                 {hint.bid != null
                   ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
                   : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}

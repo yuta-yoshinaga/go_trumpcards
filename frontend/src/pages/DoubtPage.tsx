@@ -270,7 +270,7 @@ function DoubtPageContent() {
                   <div className="text-white font-bold mb-1">{t('table')}</div>
                   <div className="text-game-text-muted text-sm">{t('tableCards', { count: state.tableCardCount })}</div>
                   {state.lastAction && (
-                    <div className="text-yellow-300 text-xs mt-1">{actionDesc(state.lastAction, state.players, t)}</div>
+                    <div className="text-ds-warning text-xs mt-1">{actionDesc(state.lastAction, state.players, t)}</div>
                   )}
                 </div>
 
@@ -307,7 +307,7 @@ function DoubtPageContent() {
                       <>
                         <div className="text-white font-bold mb-2">{t('cpuJudging')}</div>
                         {state.cpuDoubters.length > 0 && (
-                          <div className="text-red-300 text-sm mb-2">
+                          <div className="text-ds-error text-sm mb-2">
                             {t('cpuDoubtExclaim', {
                               names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', '),
                             })}
@@ -325,7 +325,7 @@ function DoubtPageContent() {
                 {state.lastDoubtResult && (
                   <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
                     <div className="text-white font-bold mb-1">{t('doubtResult.title')}</div>
-                    <div className={state.lastDoubtResult.wasLying ? 'text-red-300' : 'text-green-300'}>
+                    <div className={state.lastDoubtResult.wasLying ? 'text-ds-error' : 'text-ds-success'}>
                       {state.lastDoubtResult.wasLying ? t('doubtResult.wasLying') : t('doubtResult.wasTruth')}
                     </div>
                     <div className="text-game-text-muted">
@@ -338,7 +338,7 @@ function DoubtPageContent() {
                       })}
                     </div>
                     {state.lastDoubtResult.discardedCount > 0 && (
-                      <div className="text-yellow-300">
+                      <div className="text-ds-warning">
                         {t('doubtResult.discarded', { count: state.lastDoubtResult.discardedCount })}
                       </div>
                     )}
@@ -433,7 +433,7 @@ function DoubtPageContent() {
                 <div className="text-white font-bold text-sm mb-1">
                   {t('yourCards', { count: humanPlayer.cardCount })}
                   {isHumanTurn && state.phase === 0 && (
-                    <span className="text-green-400 text-xs ml-2">{t('selectPrompt')}</span>
+                    <span className="text-ds-success text-xs ml-2">{t('selectPrompt')}</span>
                   )}
                 </div>
                 {/* Human cards */}

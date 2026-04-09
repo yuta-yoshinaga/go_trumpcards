@@ -304,7 +304,7 @@ function PyramidPageContent() {
             {/* Hint display */}
             <div data-tutorial="py-hint-display">
               {hint && (
-                <div className="text-yellow-300 text-sm mb-2 text-center">
+                <div className="text-ds-warning text-sm mb-2 text-center">
                   {t('hintAvailable')}: {t(`hintType.${hint.type}`)}
                 </div>
               )}
