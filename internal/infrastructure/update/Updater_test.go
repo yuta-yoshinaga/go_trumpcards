@@ -37,10 +37,8 @@ func TestExec_AlreadyLatest(t *testing.T) {
 		reader:         strings.NewReader(""),
 		writer:         out,
 		errWriter:      &bytes.Buffer{},
-		httpClient:     srv.Client(),
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
 	}
-	// Override the URL by replacing the httpClient transport.
-	u.httpClient = &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}}
 
 	err := u.Exec()
 	require.NoError(t, err)
@@ -69,6 +67,32 @@ func TestExec_UserCancels(t *testing.T) {
 	err := u.Exec()
 	require.NoError(t, err)
 	assert.Contains(t, out.String(), "v2.0.0")
+}
+
+func TestExec_UserAccepts(t *testing.T) {
+	release := ghRelease{TagName: "v2.0.0", Assets: []ghAsset{}}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	out := &bytes.Buffer{}
+	errOut := &bytes.Buffer{}
+	u := &Updater{
+		currentVersion: "1.0.0",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         strings.NewReader("y\n"),
+		writer:         out,
+		errWriter:      errOut,
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+	}
+
+	// Exec proceeds past the prompt but fails at findAsset (no matching asset).
+	err := u.Exec()
+	require.Error(t, err)
+	assert.Contains(t, out.String(), "[y/N]")
 }
 
 func TestExec_AutoConfirmSkipsPrompt(t *testing.T) {
