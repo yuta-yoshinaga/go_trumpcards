@@ -1,4 +1,7 @@
+import { useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -14,13 +17,17 @@ import { SkeletonHand } from '../components/skeleton/SkeletonHand';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, useDurakGame } from '../hooks/useDurakGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { DurakResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
 /** Durak phase constants. */
@@ -124,6 +131,18 @@ function DurakPageContent() {
     handleSort,
   } = useDurakGame();
 
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('durak');
+  const durakCliConfig: CliGameConfig<DurakResponse, Parameters<typeof gameExec>> = useMemo(
+    () => ({
+      gameName: 'durak',
+      parseCommand: (_cmd: string) => ({ error: 'CLI not supported' }) as const,
+      formatResponse: (_res: DurakResponse): string => '',
+      helpText: [] as string[],
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(gameExec, durakCliConfig, state, { addInput, addOutput, addError, clearLog });
+
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
 
@@ -171,250 +190,262 @@ function DurakPageContent() {
     <div className={`flex-1 flex flex-col min-h-0 ${theme.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.durak')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/durak" />
       </PhaseIndicator>
 
-      {/* Settings panel */}
-      <SettingsPanel
-        title={t('settings.title')}
-        groups={[
-          {
-            items: [
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          {/* Settings panel */}
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
               {
-                type: 'select',
-                id: 'cpuDifficulty',
-                label: t('settings.cpuDifficulty'),
-                value: durakConfig.cpuDifficulty,
-                options: CPU_DIFFICULTY_OPTIONS.map((opt) => ({
-                  value: opt.value,
-                  label: t(`settings.difficulty${opt.label.charAt(0).toUpperCase()}${opt.label.slice(1)}`),
-                })),
-                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: durakConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((opt) => ({
+                      value: opt.value,
+                      label: t(`settings.difficulty${opt.label.charAt(0).toUpperCase()}${opt.label.slice(1)}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'checkbox',
+                    id: 'transferEnabled',
+                    label: t('settings.transferEnabled'),
+                    checked: durakConfig.transferEnabled,
+                    onToggle: (checked) => handleConfigToggle('transferEnabled', checked),
+                  },
+                ],
               },
-              {
-                type: 'checkbox',
-                id: 'transferEnabled',
-                label: t('settings.transferEnabled'),
-                checked: durakConfig.transferEnabled,
-                onToggle: (checked) => handleConfigToggle('transferEnabled', checked),
-              },
-            ],
-          },
-        ]}
-      />
+            ]}
+          />
 
-      {/* Scrollable area */}
-      <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-        <div className={lgTwoColGrid}>
-          {/* Left: game play area */}
-          <div>
-            {/* Trump info */}
-            <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2" data-tutorial="dk-trump-info">
-              <div className="text-white font-bold mb-1">
-                {t('trump')}: {suitSymbol(state.trumpSuit)}
-                {state.trumpCard && (
-                  <span className="ml-2">
-                    <AnimatedCard card={state.trumpCard} width={cardWidth * 0.6} />
-                  </span>
+          {/* Scrollable area */}
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div className={lgTwoColGrid}>
+              {/* Left: game play area */}
+              <div>
+                {/* Trump info */}
+                <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2" data-tutorial="dk-trump-info">
+                  <div className="text-white font-bold mb-1">
+                    {t('trump')}: {suitSymbol(state.trumpSuit)}
+                    {state.trumpCard && (
+                      <span className="ml-2">
+                        <AnimatedCard card={state.trumpCard} width={cardWidth * 0.6} />
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-game-text-muted text-sm">
+                    {t('stock')}: {state.stockCount}
+                  </div>
+                </div>
+
+                {/* Table pairs */}
+                <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2" data-tutorial="dk-table-cards">
+                  <div className="text-white font-bold mb-1">{t('table')}</div>
+                  {state.tablePairs.length === 0 ? (
+                    <div className="text-game-text-muted text-sm">{t('tableEmpty')}</div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {state.tablePairs.map((pair, i) => (
+                        <button
+                          type="button"
+                          key={`pair-${pair.attack.design}-${pair.attack.value}-${i}`}
+                          className={`flex flex-col items-center gap-0.5 p-1 rounded cursor-pointer ${
+                            selectedAttackIdx === i ? 'ring-2 ring-yellow-400' : ''
+                          }`}
+                          onClick={() => setSelectedAttackIdx(selectedAttackIdx === i ? null : i)}
+                        >
+                          <AnimatedCard
+                            card={pair.attack}
+                            width={cardWidth * 0.8}
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          />
+                          {pair.defense ? (
+                            <AnimatedCard card={pair.defense} width={cardWidth * 0.8} />
+                          ) : (
+                            <div
+                              className="border border-dashed border-white/30 rounded"
+                              style={{ width: cardWidth * 0.8, height: cardWidth * 0.8 * 1.4 }}
+                            />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* CPU actions */}
+                {state.cpuActions.length > 0 && (
+                  <div className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs">
+                    {[
+                      tc('label.cpuActions'),
+                      ...state.cpuActions.map(
+                        (a) =>
+                          `${playerName(state.players[a.playerIdx]?.id ?? a.playerIdx, false)}: ${t(`action.${['attack', 'defend', 'pass', 'take'][a.actionType] ?? 'pass'}`)}`,
+                      ),
+                    ].join('\n')}
+                  </div>
                 )}
+
+                {/* Result message */}
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+
+                {/* Action log */}
+                <ActionLogSection
+                  isEndPhase={isGameEnd}
+                  actionLog={actionLog}
+                  showActionLog={showActionLog}
+                  hideActionLog={hideActionLog}
+                />
               </div>
-              <div className="text-game-text-muted text-sm">
-                {t('stock')}: {state.stockCount}
+
+              {/* Right: CPU info sidebar */}
+              <div>
+                <div className="flex gap-2 flex-wrap mb-3 lg:flex-col">
+                  {cpuPlayers.map((player) => (
+                    <div
+                      key={player.id}
+                      className={`p-2 rounded bg-black/30 ${
+                        state.currentTurn === player.id ? 'ring-2 ring-yellow-400' : ''
+                      }`}
+                    >
+                      <div className="text-white text-sm font-bold">
+                        {playerName(player.id, false)}
+                        {state.attackerIdx === player.id && (
+                          <span className="text-red-400 text-xs ml-1">({t('attacker')})</span>
+                        )}
+                        {state.defenderIdx === player.id && (
+                          <span className="text-blue-400 text-xs ml-1">({t('defender')})</span>
+                        )}
+                      </div>
+                      <div className="text-game-text-muted text-xs">{player.cardCount}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Table pairs */}
-            <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2" data-tutorial="dk-table-cards">
-              <div className="text-white font-bold mb-1">{t('table')}</div>
-              {state.tablePairs.length === 0 ? (
-                <div className="text-game-text-muted text-sm">{t('tableEmpty')}</div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {state.tablePairs.map((pair, i) => (
+          {/* Sticky footer: human player hand + action buttons */}
+          <GameFooter className={`${theme.footer} px-4 py-2.5`}>
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="dk-player-hand">
+                <div className="text-white font-bold text-sm mb-1">
+                  {humanPlayer.cardCount}
+                  {isAttacker && <span className="text-red-400 text-xs ml-2">({t('attacker')})</span>}
+                  {isDefender && <span className="text-blue-400 text-xs ml-2">({t('defender')})</span>}
+                  {isHumanTurn && <span className="text-green-400 text-xs ml-2">{t('selectCard')}</span>}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {humanPlayer.cards.map((card, i) => (
                     <button
                       type="button"
-                      key={`pair-${pair.attack.design}-${pair.attack.value}-${i}`}
-                      className={`flex flex-col items-center gap-0.5 p-1 rounded cursor-pointer ${
-                        selectedAttackIdx === i ? 'ring-2 ring-yellow-400' : ''
-                      }`}
-                      onClick={() => setSelectedAttackIdx(selectedAttackIdx === i ? null : i)}
+                      key={`${card.design}-${card.value}-${i}`}
+                      className={`cursor-pointer transition-transform ${selectedCardIdx === i ? '-translate-y-2' : ''}`}
+                      onClick={() => setSelectedCardIdx(selectedCardIdx === i ? null : i)}
                     >
                       <AnimatedCard
-                        card={pair.attack}
-                        width={cardWidth * 0.8}
+                        card={card}
+                        width={cardWidth}
+                        isSelected={selectedCardIdx === i}
                         onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                       />
-                      {pair.defense ? (
-                        <AnimatedCard card={pair.defense} width={cardWidth * 0.8} />
-                      ) : (
-                        <div
-                          className="border border-dashed border-white/30 rounded"
-                          style={{ width: cardWidth * 0.8, height: cardWidth * 0.8 * 1.4 }}
-                        />
-                      )}
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
-
-            {/* CPU actions */}
-            {state.cpuActions.length > 0 && (
-              <div className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs">
-                {[
-                  tc('label.cpuActions'),
-                  ...state.cpuActions.map(
-                    (a) =>
-                      `${playerName(state.players[a.playerIdx]?.id ?? a.playerIdx, false)}: ${t(`action.${['attack', 'defend', 'pass', 'take'][a.actionType] ?? 'pass'}`)}`,
-                  ),
-                ].join('\n')}
               </div>
             )}
 
-            {/* Result message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            <ErrorAlert message={error} onRetry={retry} />
 
-            {/* Action log */}
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          {/* Right: CPU info sidebar */}
-          <div>
-            <div className="flex gap-2 flex-wrap mb-3 lg:flex-col">
-              {cpuPlayers.map((player) => (
-                <div
-                  key={player.id}
-                  className={`p-2 rounded bg-black/30 ${
-                    state.currentTurn === player.id ? 'ring-2 ring-yellow-400' : ''
-                  }`}
-                >
-                  <div className="text-white text-sm font-bold">
-                    {playerName(player.id, false)}
-                    {state.attackerIdx === player.id && (
-                      <span className="text-red-400 text-xs ml-1">({t('attacker')})</span>
-                    )}
-                    {state.defenderIdx === player.id && (
-                      <span className="text-blue-400 text-xs ml-1">({t('defender')})</span>
-                    )}
-                  </div>
-                  <div className="text-game-text-muted text-xs">{player.cardCount}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sticky footer: human player hand + action buttons */}
-      <GameFooter className={`${theme.footer} px-4 py-2.5`}>
-        {humanPlayer && (
-          <div className="mb-2" data-tutorial="dk-player-hand">
-            <div className="text-white font-bold text-sm mb-1">
-              {humanPlayer.cardCount}
-              {isAttacker && <span className="text-red-400 text-xs ml-2">({t('attacker')})</span>}
-              {isDefender && <span className="text-blue-400 text-xs ml-2">({t('defender')})</span>}
-              {isHumanTurn && <span className="text-green-400 text-xs ml-2">{t('selectCard')}</span>}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {humanPlayer.cards.map((card, i) => (
+            {/* Action buttons */}
+            <div className="text-center" data-tutorial="dk-action-buttons">
+              <button
+                type="button"
+                className={`${btnOutline} min-w-[90px]`}
+                disabled={loading}
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    gameExec('reset', undefined, undefined, durakConfig);
+                  })
+                }
+              >
+                {tc('button.reset')}
+              </button>
+              {showAttackBtn && (
                 <button
                   type="button"
-                  key={`${card.design}-${card.value}-${i}`}
-                  className={`cursor-pointer transition-transform ${selectedCardIdx === i ? '-translate-y-2' : ''}`}
-                  onClick={() => setSelectedCardIdx(selectedCardIdx === i ? null : i)}
+                  className={`${btnDanger} min-w-[90px]`}
+                  disabled={loading || selectedCardIdx === null}
+                  onClick={handleAttack}
                 >
-                  <AnimatedCard
-                    card={card}
-                    width={cardWidth}
-                    isSelected={selectedCardIdx === i}
-                    onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                  />
+                  {t('attackButton')}
                 </button>
-              ))}
+              )}
+              {showDefendBtn && (
+                <button
+                  type="button"
+                  className={`${btnSuccess} min-w-[90px]`}
+                  disabled={loading || selectedCardIdx === null || selectedAttackIdx === null}
+                  onClick={handleDefend}
+                >
+                  {t('defendButton')}
+                </button>
+              )}
+              {showPassBtn && (
+                <button
+                  type="button"
+                  className={`${btnSecondary} min-w-[90px]`}
+                  disabled={loading}
+                  onClick={handlePass}
+                >
+                  {t('passButton')}
+                </button>
+              )}
+              {showTakeBtn && (
+                <button type="button" className={`${btnPrimary} min-w-[90px]`} disabled={loading} onClick={handleTake}>
+                  {t('takeButton')}
+                </button>
+              )}
+              {/* Sort buttons */}
+              {!isGameEnd && (
+                <>
+                  <button
+                    type="button"
+                    className={`${btnOutline} min-w-[70px]`}
+                    disabled={loading}
+                    onClick={() => handleSort(0)}
+                  >
+                    {t('sort.suit')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnOutline} min-w-[70px]`}
+                    disabled={loading}
+                    onClick={() => handleSort(1)}
+                  >
+                    {t('sort.value')}
+                  </button>
+                </>
+              )}
             </div>
-          </div>
-        )}
-
-        <ErrorAlert message={error} onRetry={retry} />
-
-        {/* Action buttons */}
-        <div className="text-center" data-tutorial="dk-action-buttons">
-          <button
-            type="button"
-            className={`${btnOutline} min-w-[90px]`}
-            disabled={loading}
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                gameExec('reset', undefined, undefined, durakConfig);
-              })
-            }
-          >
-            {tc('button.reset')}
-          </button>
-          {showAttackBtn && (
-            <button
-              type="button"
-              className={`${btnDanger} min-w-[90px]`}
-              disabled={loading || selectedCardIdx === null}
-              onClick={handleAttack}
-            >
-              {t('attackButton')}
-            </button>
-          )}
-          {showDefendBtn && (
-            <button
-              type="button"
-              className={`${btnSuccess} min-w-[90px]`}
-              disabled={loading || selectedCardIdx === null || selectedAttackIdx === null}
-              onClick={handleDefend}
-            >
-              {t('defendButton')}
-            </button>
-          )}
-          {showPassBtn && (
-            <button type="button" className={`${btnSecondary} min-w-[90px]`} disabled={loading} onClick={handlePass}>
-              {t('passButton')}
-            </button>
-          )}
-          {showTakeBtn && (
-            <button type="button" className={`${btnPrimary} min-w-[90px]`} disabled={loading} onClick={handleTake}>
-              {t('takeButton')}
-            </button>
-          )}
-          {/* Sort buttons */}
-          {!isGameEnd && (
-            <>
-              <button
-                type="button"
-                className={`${btnOutline} min-w-[70px]`}
-                disabled={loading}
-                onClick={() => handleSort(0)}
-              >
-                {t('sort.suit')}
-              </button>
-              <button
-                type="button"
-                className={`${btnOutline} min-w-[70px]`}
-                disabled={loading}
-                onClick={() => handleSort(1)}
-              >
-                {t('sort.value')}
-              </button>
-            </>
-          )}
-        </div>
-      </GameFooter>
+          </GameFooter>
+        </>
+      )}
       <WinCelebration
         show={isGameEnd && humanPlayer !== undefined && state.loserIdx >= 0 && state.loserIdx !== humanPlayer.id}
         onCelebrate={() => playSound('winFanfare')}
