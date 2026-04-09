@@ -235,11 +235,11 @@ func TestGameManager_NewGameManager_Smoke(t *testing.T) {
 
 func TestGameManager_NewGameManager_AllGamesRegistered(t *testing.T) {
 	mgr := NewGameManager("blackjack")
-	// Verify that all 41 games are registered.
-	for _, name := range []string{"canasta", "bridge", "pineapple", "gofish", "pinochle", "pigtail", "sevencardstud", "clocksolitaire", "durak", "fortythieves"} {
+	// Verify that all 42 games are registered.
+	for _, name := range []string{"canasta", "bridge", "pineapple", "gofish", "pinochle", "pigtail", "sevencardstud", "clocksolitaire", "durak", "fortythieves", "paigow"} {
 		assert.Contains(t, mgr.games, name, "game %q should be registered", name)
 	}
-	assert.Equal(t, 41, len(mgr.games))
+	assert.Equal(t, 42, len(mgr.games))
 }
 
 func TestGameManager_NewGameManager_PanicsOnInvalidGame(t *testing.T) {

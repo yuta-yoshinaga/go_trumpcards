@@ -29,6 +29,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  PaiGowResponse,
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
@@ -67,6 +68,7 @@ const workerUrl: Record<string, string> = {
   deuceswild: WORKER_CASINO,
   jokerpoker: WORKER_CASINO,
   threecard: WORKER_CASINO,
+  paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
@@ -640,6 +642,12 @@ export const threecardApi = {
     gameExec<ThreeCardResponse>('threecard', { command, amount, pairPlusBet }),
 };
 
+/** API client for the Pai Gow Poker /paigow/exec endpoint. */
+export const paigowApi = {
+  exec: (command: 'reset' | 'bet' | 'set' | 'log', amount?: number, low0?: number, low1?: number) =>
+    gameExec<PaiGowResponse>('paigow', { command, amount, low0, low1 }),
+};
+
 /** Source or target zone for a Spider card move. */
 export interface SpiderMoveZone {
   zone: string;
@@ -883,6 +891,8 @@ export const fortyThievesApi = {
   ) => gameExec<FortyThievesResponse>('fortythieves', { command, from, to, n }),
 };
 
+export type { FortyThievesMoveZone };
+
 const games = [
   'blackjack',
   'poker',
@@ -918,6 +928,7 @@ const games = [
   'tripeaks',
   'cribbage',
   'threecard',
+  'paigow',
   'speed',
   'gofish',
   'pinochle',

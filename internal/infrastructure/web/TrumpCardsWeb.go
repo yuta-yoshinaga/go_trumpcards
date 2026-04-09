@@ -64,6 +64,7 @@ type TrumpCardsWeb struct {
 	csc  *controller.ClockSolitaireWebController
 	drc  *controller.DurakWebController
 	ftc  *controller.FortyThievesWebController
+	pgc  *controller.PaiGowWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -383,6 +384,12 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			ft := domain.NewFortyThieves(domain.NewTrumpCardsWithDecks(2, 0))
 			return usecase.NewFortyThievesInteractor(ft, new(presenter.FortyThievesWebPresenter))
 		}),
+		pgc: controller.NewPaiGowWebController(func() usecase.PaiGowInteractorIF {
+			return usecase.NewPaiGowInteractor(
+				domain.NewDefaultPaiGow(),
+				new(presenter.PaiGowWebPresenter),
+			)
+		}),
 	}
 }
 
@@ -436,6 +443,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/clocksolitaire/exec", web.csc.Exec},
 		{"/durak/exec", web.drc.Exec},
 		{"/fortythieves/exec", web.ftc.Exec},
+		{"/paigow/exec", web.pgc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)

@@ -29,6 +29,7 @@ import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
+import paigow from '../../../docs/manual/web/paigow.md?raw';
 import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
@@ -73,6 +74,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,
   '/omaha': omaha,
+  '/paigow': paigow,
   '/pineapple': pineapple,
   '/pigtail': pigtail,
   '/pinochle': pinochle,

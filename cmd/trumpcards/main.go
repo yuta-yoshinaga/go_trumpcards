@@ -197,6 +197,7 @@ ENVIRONMENT VARIABLES:
 		"clocksolitaire": "Clock Solitaire (クロックソリティア)",
 		"durak":          "Durak / Fool (ドゥラーク)",
 		"fortythieves":   "Forty Thieves (フォーティシーブス)",
+		"paigow":         "Pai Gow Poker (パイガオポーカー)",
 	}
 
 	commands := map[string]func() int{
@@ -241,6 +242,7 @@ ENVIRONMENT VARIABLES:
 		"clocksolitaire": func() int { ui.NewClockSolitaireCui().Exec(); return 0 },
 		"durak":          func() int { ui.NewDurakCui().Exec(); return 0 },
 		"fortythieves":   func() int { ui.NewFortyThievesCui().Exec(); return 0 },
+		"paigow":         func() int { ui.NewPaiGowCui().Exec(); return 0 },
 		"games": func() int {
 			gamesFlags := flag.NewFlagSet("games", flag.ContinueOnError)
 			short := gamesFlags.Bool("short", false, "Print game names only")

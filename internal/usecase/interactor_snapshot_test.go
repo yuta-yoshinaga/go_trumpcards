@@ -170,6 +170,12 @@ type stubCribbagePresenter struct{}
 func (s *stubCribbagePresenter) Output(_ interfaces.CribbageGame, _ error) string { return `{}` }
 func (s *stubCribbagePresenter) ActionLogOutput(_ interfaces.CribbageGame) string { return `{}` }
 
+// stubPaiGowPresenter implements presenter.PaiGowPresenter (= GamePresenter[interfaces.PaiGowGame])
+type stubPaiGowPresenter struct{}
+
+func (s *stubPaiGowPresenter) Output(_ interfaces.PaiGowGame, _ error) string { return `{}` }
+func (s *stubPaiGowPresenter) ActionLogOutput(_ interfaces.PaiGowGame) string { return `{}` }
+
 // --- tests ---
 
 func TestBlackJackInteractor_SnapshotRestore(t *testing.T) {
@@ -545,6 +551,18 @@ func TestCribbageInteractor_SnapshotRestore(t *testing.T) {
 	require.NoError(t, err)
 
 	restored, err := RestoreCribbageInteractor(data, new(stubCribbagePresenter))
+	require.NoError(t, err)
+	require.NotNil(t, restored)
+}
+
+func TestPaiGowInteractor_SnapshotRestore(t *testing.T) {
+	pg := domain.NewDefaultPaiGow()
+	pi := NewPaiGowInteractor(pg, new(stubPaiGowPresenter))
+
+	data, err := pi.Snapshot()
+	require.NoError(t, err)
+
+	restored, err := RestorePaiGowInteractor(data, new(stubPaiGowPresenter))
 	require.NoError(t, err)
 	require.NotNil(t, restored)
 }

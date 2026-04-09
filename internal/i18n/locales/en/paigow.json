@@ -1,0 +1,5 @@
+{
+  "helpTitle": "Pai Gow Poker",
+  "helpBet": "  b <amount>           bet",
+  "helpSet": "  s <idx1> <idx2>      set low hand (choose 2 card indices)"
+}
