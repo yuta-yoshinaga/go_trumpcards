@@ -69,25 +69,25 @@ func GameRegistry() []GameRegistryEntry {
 	return cp
 }
 
-// GameNames is the canonical ordered list of available game names,
-// derived from gameRegistry.
-var GameNames = func() []string {
+// GameNames returns the canonical ordered list of available game names,
+// derived from gameRegistry. Returns a fresh copy on each call.
+func GameNames() []string {
 	names := make([]string, len(gameRegistry))
 	for i, e := range gameRegistry {
 		names[i] = e.Name
 	}
 	return names
-}()
+}
 
-// GameDescriptions maps game names to their display descriptions,
-// derived from gameRegistry.
-var GameDescriptions = func() map[string]string {
+// GameDescriptions returns a map of game names to their display descriptions,
+// derived from gameRegistry. Returns a fresh copy on each call.
+func GameDescriptions() map[string]string {
 	m := make(map[string]string, len(gameRegistry))
 	for _, e := range gameRegistry {
 		m[e.Name] = e.Description
 	}
 	return m
-}()
+}
 
 // GameAliases maps short alias names to their canonical game names.
 // Aliases are not shown in help or game lists.
@@ -136,7 +136,7 @@ func NewGameManager(startGame string) *GameManager {
 		helpLines:   helpLines,
 		initialized: make(map[string]bool),
 		currentGame: startGame,
-		gameOrder:   GameNames,
+		gameOrder:   GameNames(),
 	}
 }
 

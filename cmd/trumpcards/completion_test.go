@@ -124,8 +124,8 @@ func TestCompletionSubcommands_SyncWithGameNames(t *testing.T) {
 		subSet[s] = true
 	}
 	// Every game in ui.GameNames must appear in completionSubcommands().
-	for _, name := range ui.GameNames {
-		assert.True(t, subSet[name], "completionSubcommands() missing game %q from ui.GameNames", name)
+	for _, name := range ui.GameNames() {
+		assert.True(t, subSet[name], "completionSubcommands() missing game %q from ui.GameNames()", name)
 	}
 	// Every alias in ui.GameAliases must appear in completionSubcommands().
 	for alias := range ui.GameAliases {

@@ -230,7 +230,7 @@ func TestGameManager_NewGameManager_Smoke(t *testing.T) {
 	mgr := NewGameManager("blackjack")
 	assert.Equal(t, "blackjack", mgr.CurrentGame())
 	assert.NotNil(t, mgr.games["blackjack"])
-	assert.Len(t, mgr.games, len(GameNames))
+	assert.Len(t, mgr.games, len(GameNames()))
 }
 
 func TestGameManager_NewGameManager_AllGamesRegistered(t *testing.T) {
@@ -290,8 +290,8 @@ func TestGameManager_SwitchAliasMultiple(t *testing.T) {
 }
 
 func TestGameAliases_AllPointToValidGames(t *testing.T) {
-	gameSet := make(map[string]bool, len(GameNames))
-	for _, name := range GameNames {
+	gameSet := make(map[string]bool, len(GameNames()))
+	for _, name := range GameNames() {
 		gameSet[name] = true
 	}
 	for alias, canonical := range GameAliases {
@@ -301,15 +301,16 @@ func TestGameAliases_AllPointToValidGames(t *testing.T) {
 
 func TestGameRegistry_NamesMatchGameNames(t *testing.T) {
 	registry := GameRegistry()
-	assert.Equal(t, len(GameNames), len(registry), "registry and GameNames must have same length")
+	assert.Equal(t, len(GameNames()), len(registry), "registry and GameNames() must have same length")
 	for i, entry := range registry {
-		assert.Equal(t, GameNames[i], entry.Name, "registry[%d].Name must match GameNames[%d]", i, i)
+		assert.Equal(t, GameNames()[i], entry.Name, "registry[%d].Name must match GameNames()[%d]", i, i)
 	}
 }
 
 func TestGameRegistry_DescriptionsMatchGameDescriptions(t *testing.T) {
+	descs := GameDescriptions()
 	for _, entry := range GameRegistry() {
-		desc, ok := GameDescriptions[entry.Name]
+		desc, ok := descs[entry.Name]
 		assert.True(t, ok, "GameDescriptions must contain %q", entry.Name)
 		assert.Equal(t, entry.Description, desc)
 	}

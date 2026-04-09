@@ -20,14 +20,15 @@ func applyBool(dst *bool, src *bool) {
 	}
 }
 
-// applyBettingLimit validates and applies the betting limit.
+// applyBettingLimit validates and applies the betting limit,
+// clamping the value to the valid range [BettingLimitFixed, BettingLimitNoLimit].
 func applyBettingLimit(dst *domain.BettingLimitType, src *int) {
 	if src != nil {
 		bl := *src
-		if bl < 0 {
-			bl = 0
-		} else if bl > 2 {
-			bl = 2
+		if bl < int(domain.BettingLimitFixed) {
+			bl = int(domain.BettingLimitFixed)
+		} else if bl > int(domain.BettingLimitNoLimit) {
+			bl = int(domain.BettingLimitNoLimit)
 		}
 		*dst = domain.BettingLimitType(bl)
 	}

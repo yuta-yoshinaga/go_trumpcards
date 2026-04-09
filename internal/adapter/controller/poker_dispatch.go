@@ -26,20 +26,15 @@ type pokerAction struct {
 }
 
 // pokerActionMap maps command strings to action types for all poker-family games.
-// All games share the same int values for fold/check/call/bet/raise/allin.
+// Uses PokerAction* constants which are the canonical aliases shared by all variants
+// (HoldemActionFold, OmahaActionFold, etc. are all equal to PokerActionFold).
 var pokerActionMap = map[string]pokerAction{
-	"f":     {domain.HoldemActionFold, false},
-	"fold":  {domain.HoldemActionFold, false},
-	"ck":    {domain.HoldemActionCheck, false},
-	"check": {domain.HoldemActionCheck, false},
-	"c":     {domain.HoldemActionCall, false},
-	"call":  {domain.HoldemActionCall, false},
-	"a":     {domain.HoldemActionAllIn, false},
-	"allin": {domain.HoldemActionAllIn, false},
-	"b":     {domain.HoldemActionBet, true},
-	"bet":   {domain.HoldemActionBet, true},
-	"ra":    {domain.HoldemActionRaise, true},
-	"raise": {domain.HoldemActionRaise, true},
+	"f": {domain.PokerActionFold, false}, "fold": {domain.PokerActionFold, false},
+	"ck": {domain.PokerActionCheck, false}, "check": {domain.PokerActionCheck, false},
+	"c": {domain.PokerActionCall, false}, "call": {domain.PokerActionCall, false},
+	"a": {domain.PokerActionAllIn, false}, "allin": {domain.PokerActionAllIn, false},
+	"b": {domain.PokerActionBet, true}, "bet": {domain.PokerActionBet, true},
+	"ra": {domain.PokerActionRaise, true}, "raise": {domain.PokerActionRaise, true},
 }
 
 // pokerTournamentMap maps tournament-related commands to methods.

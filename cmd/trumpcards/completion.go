@@ -13,8 +13,8 @@ import (
 // completionSubcommands returns the sorted list of all subcommands for shell completion,
 // derived from the game registry and aliases.
 func completionSubcommands() []string {
-	names := make([]string, 0, len(ui.GameNames)+len(ui.GameAliases)+4)
-	names = append(names, ui.GameNames...)
+	names := make([]string, 0, len(ui.GameNames())+len(ui.GameAliases)+4)
+	names = append(names, ui.GameNames()...)
 	for alias := range ui.GameAliases {
 		names = append(names, alias)
 	}
@@ -215,7 +215,7 @@ type completionEntry struct {
 // buildCompletionEntries builds a sorted list of all commands with descriptions
 // for shell completion, derived from the game registry and aliases.
 func buildCompletionEntries() []completionEntry {
-	descs := ui.GameDescriptions
+	descs := ui.GameDescriptions()
 	// Strip Japanese text in parentheses for cleaner completion descriptions.
 	stripJa := func(s string) string {
 		if idx := strings.Index(s, " ("); idx >= 0 {
@@ -224,8 +224,8 @@ func buildCompletionEntries() []completionEntry {
 		return s
 	}
 
-	entries := make([]completionEntry, 0, len(ui.GameNames)+len(ui.GameAliases)+4)
-	for _, name := range ui.GameNames {
+	entries := make([]completionEntry, 0, len(ui.GameNames())+len(ui.GameAliases)+4)
+	for _, name := range ui.GameNames() {
 		entries = append(entries, completionEntry{name, stripJa(descs[name])})
 	}
 	for alias, canonical := range ui.GameAliases {

@@ -101,11 +101,12 @@ func run() int {
 		for k := range reverseAliases {
 			sort.Strings(reverseAliases[k])
 		}
-		for _, name := range ui.GameNames {
+		descs := ui.GameDescriptions()
+		for _, name := range ui.GameNames() {
 			if *short {
 				fmt.Println(name)
 			} else {
-				line := fmt.Sprintf("  %-16s %s", name, ui.GameDescriptions[name])
+				line := fmt.Sprintf("  %-16s %s", name, descs[name])
 				if aliases := reverseAliases[name]; len(aliases) > 0 {
 					line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliases, ", "))
 				}
