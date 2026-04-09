@@ -18,25 +18,25 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 
 9. **Page**: `frontend/src/pages/<Game>Page.tsx` with test file, reuse `useGamePageSetup` hook, `usePhaseNames`, `gameReplay`, `useCardDimensions`, `gameExec` API helper
 10. **Shared components**: Use `PhaseIndicator`, `SettingsPanel`, `ConfirmDialog`, `ActionLogSection`, `GameFooter`, `GameMessageBox`, `AnimatedCardBack`, `ErrorBoundary`
-10b. **CLI mode**: Wire `useCliMode`, `useCliGame`, `CliToggle`, and `CliTerminal` in the page. At minimum add a stub config (`parseCommand` returns error, empty `helpText`). Place `CliToggle` inside `PhaseIndicator` and wrap GUI content with `{cliEnabled ? <CliTerminal .../> : <>{/* GUI */}</>}`
-11. **i18n**: Add `frontend/src/i18n/locales/{ja,en}/<game>.json` translation files
-12. **Router**: Add route in `frontend/src/App.tsx` and NavBar entry
-13. **Run `bun run build && bun run check && bun run test`**
+11. **CLI mode**: Wire `useCliMode`, `useCliGame`, `CliToggle`, and `CliTerminal` in the page. At minimum add a stub config (`parseCommand` returns error, empty `helpText`). Place `CliToggle` inside `PhaseIndicator` and wrap GUI content with `{cliEnabled ? <CliTerminal .../> : <>{/* GUI */}</>}`
+12. **i18n**: Add `frontend/src/i18n/locales/{ja,en}/<game>.json` translation files
+13. **Router**: Add route in `frontend/src/App.tsx` and NavBar entry
+14. **Run `bun run build && bun run check && bun run test`**
 
 ## Documentation (same commit)
 
-14. **`README.md`**: Add game description and CLI command
-15. **`CLAUDE.md`**: Add game name to available games list in Commands section
-16. **`docs/games.md`**: Add game entity description
-17. **`docs/architecture.md`**: Update endpoint count and list
-18. **`api/openapi.yaml`**: Add endpoint path, tag definition, and request/response schemas in components
-19. **`docs/manual/cui/<game>.md`** and **`docs/manual/web/<game>.md`**: Add game manuals
-20. **`frontend/src/constants/manualTexts.ts`**: Import the web manual and add route mapping entry
+15. **`README.md`**: Add game description and CLI command
+16. **`CLAUDE.md`**: Add game name to available games list in Commands section
+17. **`docs/games.md`**: Add game entity description
+18. **`docs/architecture.md`**: Update endpoint count and list
+19. **`api/openapi.yaml`**: Add endpoint path, tag definition, and request/response schemas in components
+20. **`docs/manual/cui/<game>.md`** and **`docs/manual/web/<game>.md`**: Add game manuals
+21. **`frontend/src/constants/manualTexts.ts`**: Import the web manual and add route mapping entry
 
 ## Final verification
 
-21. `go test -tags test ./...` -- all tests pass
-22. `golangci-lint run ./...` -- no warnings
-23. `cd frontend && bun run build && bun run check && bun run test` -- all pass
-24. **E2E test**: Create `frontend/e2e/<game>.spec.ts` with basic game flow test
-25. `cd frontend && bun run e2e` -- all E2E tests pass
+22. `go test -tags test ./...` -- all tests pass
+23. `golangci-lint run ./...` -- no warnings
+24. `cd frontend && bun run build && bun run check && bun run test` -- all pass
+25. **E2E test**: Create `frontend/e2e/<game>.spec.ts` with basic game flow test
+26. `cd frontend && bun run e2e` -- all E2E tests pass

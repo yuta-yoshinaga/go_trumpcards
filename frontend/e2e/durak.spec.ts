@@ -13,7 +13,7 @@ test.describe('Durak E2E', () => {
     await waitForLoaded(page);
 
     // Verify game heading is visible (Japanese locale: ドゥラーク)
-    await expect(page.getByText('ドゥラーク')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'ドゥラーク' })).toBeVisible({ timeout: 10_000 });
 
     // Game is running, reset to start fresh
     await expect(resetButton).toBeVisible();
@@ -22,6 +22,6 @@ test.describe('Durak E2E', () => {
     await waitForLoaded(page);
 
     // Verify game heading is still visible after reset
-    await expect(page.getByText('ドゥラーク')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'ドゥラーク' })).toBeVisible({ timeout: 10_000 });
   });
 });

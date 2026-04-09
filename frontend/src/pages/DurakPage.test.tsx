@@ -203,4 +203,16 @@ describe('DurakPage', () => {
     await waitFor(() => expect(screen.getByText('ゲーム終了！')).toBeInTheDocument());
     expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
   });
+
+  it('shows CLI toggle button', async () => {
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /CLI/i })).toBeInTheDocument());
+  });
+
+  it('switches to CLI terminal on toggle click', async () => {
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => screen.getByRole('button', { name: /CLI/i }));
+    fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
+    expect(screen.queryByRole('button', { name: '攻撃' })).not.toBeInTheDocument();
+  });
 });
