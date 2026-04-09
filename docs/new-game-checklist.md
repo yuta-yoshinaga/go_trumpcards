@@ -18,6 +18,7 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 
 9. **Page**: `frontend/src/pages/<Game>Page.tsx` with test file, reuse `useGamePageSetup` hook, `usePhaseNames`, `gameReplay`, `useCardDimensions`, `gameExec` API helper
 10. **Shared components**: Use `PhaseIndicator`, `SettingsPanel`, `ConfirmDialog`, `ActionLogSection`, `GameFooter`, `GameMessageBox`, `AnimatedCardBack`, `ErrorBoundary`
+10b. **CLI mode**: Wire `useCliMode`, `useCliGame`, `CliToggle`, and `CliTerminal` in the page. At minimum add a stub config (`parseCommand` returns error, empty `helpText`). Place `CliToggle` inside `PhaseIndicator` and wrap GUI content with `{cliEnabled ? <CliTerminal .../> : <>{/* GUI */}</>}`
 11. **i18n**: Add `frontend/src/i18n/locales/{ja,en}/<game>.json` translation files
 12. **Router**: Add route in `frontend/src/App.tsx` and NavBar entry
 13. **Run `bun run build && bun run check && bun run test`**
