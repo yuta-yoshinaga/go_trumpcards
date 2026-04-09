@@ -89,4 +89,25 @@ describe('formatPaigowState', () => {
     const result = formatPaigowState(makeState({ bet: 0 }));
     expect(result).not.toContain('bet:');
   });
+
+  it('shows payout in end phase with empty hands', () => {
+    const result = formatPaigowState(
+      makeState({
+        phase: 3,
+        bet: 100,
+        payout: 100,
+        commission: 0,
+        playerHighHand: [],
+        playerLowHand: [],
+        dealerHighHand: [],
+        dealerLowHand: [],
+      }),
+    );
+    expect(result).toContain('END');
+    expect(result).toContain('payout: 100');
+    expect(result).not.toContain('Player high:');
+    expect(result).not.toContain('Player low:');
+    expect(result).not.toContain('Dealer high:');
+    expect(result).not.toContain('Dealer low:');
+  });
 });

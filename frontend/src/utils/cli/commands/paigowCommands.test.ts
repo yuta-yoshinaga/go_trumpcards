@@ -31,10 +31,12 @@ describe('parsePaigowCommand', () => {
     expect(parsePaigowCommand('reset')).toEqual({ args: ['reset'] });
   });
 
-  it('returns error with suggestion for close command', () => {
-    const result = parsePaigowCommand('bet');
-    // 'bet' is a valid command, so it should error for missing amount
+  it('returns error with suggestion for mistyped command', () => {
+    const result = parsePaigowCommand('bett');
     expect('error' in result).toBe(true);
+    if ('error' in result) {
+      expect(result.error).toContain('Did you mean');
+    }
   });
 
   it('returns error for unknown command', () => {
