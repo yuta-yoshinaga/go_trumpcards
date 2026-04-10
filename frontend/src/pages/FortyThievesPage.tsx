@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
+import type { FortyThievesMoveZone } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -26,6 +28,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useFortyThievesGame } from '../hooks/useFortyThievesGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -143,6 +146,19 @@ function FortyThievesPageContent() {
 
   const isPlayingForKbd = state?.phase === FortyThievesPhase.PLAYING;
 
+  const runExec = exec;
+  const dispatchMove = useCallback(
+    (source: FortyThievesMoveZone, target: FortyThievesMoveZone) => {
+      void runExec('move', source, target);
+    },
+    [runExec],
+  );
+  const dnd = useSolitaireDragDrop<FortyThievesMoveZone>({
+    onMove: dispatchMove,
+    isPlaying: !!isPlayingForKbd,
+    disabled: loading,
+  });
+
   const actionBindings = useMemo(
     () => [
       { key: 'd', action: handleDraw },
@@ -236,11 +252,15 @@ function FortyThievesPageContent() {
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteDisplay[0])}
                       aria-pressed={isSourceSelected('waste')}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
+                      draggable={isPlaying && !loading}
+                      onDragStart={dnd.handleDragStart({ zone: 'waste' })}
+                      onDragEnd={dnd.handleDragEnd}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
                     >
                       <AnimatedCard
                         card={wasteDisplay[0]}
                         width={ft.cw}
+                        draggable={false}
                         onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                       />
                     </button>
@@ -259,100 +279,136 @@ function FortyThievesPageContent() {
 
               {/* Foundation piles (8 piles) */}
               <div className="flex gap-1 sm:gap-2 flex-wrap" data-tutorial="ft-foundation">
-                {state.foundation.map((pile, idx) => (
-                  <div key={`f-${idx.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                    {pile.length > 0 ? (
-                      <button
-                        type="button"
-                        onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
-                        disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
-                        aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
-                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                {state.foundation.map((pile, idx) => {
+                  const foundationZone: FortyThievesMoveZone = { zone: 'foundation', col: idx };
+                  return (
+                    <div key={`f-${idx.toString()}`} className="text-center">
+                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                      <DropZone
+                        isDropTarget={dnd.isDropTarget(foundationZone)}
+                        onDragOver={dnd.handleDragOver(foundationZone)}
+                        onDrop={dnd.handleDrop(foundationZone)}
+                        onDragLeave={dnd.handleDragLeave}
                       >
-                        <AnimatedCard
-                          card={pile[pile.length - 1]}
-                          width={ft.cw}
-                          dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
-                        disabled={!isPlaying || loading || !selectedSource}
-                        aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                        style={{ width: ft.cw, height: ft.ch }}
-                        className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                      >
-                        A
-                      </button>
-                    )}
-                  </div>
-                ))}
+                        {pile.length > 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTarget(foundationZone)}
+                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            aria-label={t('foundationAriaLabel', {
+                              suit: FOUNDATION_SUITS[idx],
+                              count: pile.length,
+                            })}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                          >
+                            <AnimatedCard
+                              card={pile[pile.length - 1]}
+                              width={ft.cw}
+                              draggable={false}
+                              dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTarget(foundationZone)}
+                            disabled={!isPlaying || loading || !selectedSource}
+                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            style={{ width: ft.cw, height: ft.ch }}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                          >
+                            A
+                          </button>
+                        )}
+                      </DropZone>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             {/* Tableau */}
             <div className="flex gap-1 sm:gap-2 mb-3" data-tutorial="ft-tableau">
-              {state.tableau.map((col, colIdx) => (
-                <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
-                  <div className="relative" style={{ minHeight: ft.ch }}>
-                    {col.length === 0 ? (
-                      <button
-                        type="button"
-                        onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
-                        disabled={!isPlaying || loading || !selectedSource}
-                        style={{ height: ft.ch }}
-                        className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                      >
-                        {t('empty')}
-                      </button>
-                    ) : (
-                      col.map((tc, cardIdx) => (
-                        <div
-                          key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                          className="absolute left-0 right-0"
-                          style={{ top: cardIdx * ft.co }}
-                        >
-                          {tc.faceUp && tc.card ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (selectedSource) {
-                                  handleSelectTarget({ zone: 'tableau', col: colIdx });
-                                } else {
-                                  handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
-                                }
-                              }}
-                              disabled={!isPlaying || loading}
-                              aria-label={cardAlt(tc.card)}
-                              aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
-                              className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
-                            >
-                              <AnimatedCard
-                                card={tc.card}
-                                width={ft.cw}
-                                style={{ width: '100%' }}
-                                wrapperClassName="block w-full"
-                                onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                              />
-                            </button>
-                          ) : (
-                            <AnimatedCardBack
-                              width={ft.cw}
-                              className="w-full"
-                              onFlipComplete={() => playSound('cardFlip')}
-                            />
-                          )}
-                        </div>
-                      ))
-                    )}
-                    {col.length > 0 && <div style={{ height: (col.length - 1) * ft.co + ft.ch }} />}
+              {state.tableau.map((col, colIdx) => {
+                const tableauColZone: FortyThievesMoveZone = { zone: 'tableau', col: colIdx };
+                return (
+                  <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                    <DropZone
+                      isDropTarget={dnd.isDropTarget(tableauColZone)}
+                      onDragOver={dnd.handleDragOver(tableauColZone)}
+                      onDrop={dnd.handleDrop(tableauColZone)}
+                      onDragLeave={dnd.handleDragLeave}
+                      className="relative block"
+                    >
+                      <div className="relative" style={{ minHeight: ft.ch }}>
+                        {col.length === 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTarget(tableauColZone)}
+                            disabled={!isPlaying || loading || !selectedSource}
+                            style={{ height: ft.ch }}
+                            className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                          >
+                            {t('empty')}
+                          </button>
+                        ) : (
+                          col.map((tc, cardIdx) => {
+                            const cardZone: FortyThievesMoveZone = {
+                              zone: 'tableau',
+                              col: colIdx,
+                              cardIndex: cardIdx,
+                            };
+                            return (
+                              <div
+                                key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                                className="absolute left-0 right-0"
+                                style={{ top: cardIdx * ft.co }}
+                              >
+                                {tc.faceUp && tc.card ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (selectedSource) {
+                                        handleSelectTarget(tableauColZone);
+                                      } else {
+                                        handleSelectSource(cardZone);
+                                      }
+                                    }}
+                                    disabled={!isPlaying || loading}
+                                    aria-label={cardAlt(tc.card)}
+                                    aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
+                                    draggable={isPlaying && !loading}
+                                    onDragStart={dnd.handleDragStart(cardZone)}
+                                    onDragEnd={dnd.handleDragEnd}
+                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                  >
+                                    <AnimatedCard
+                                      card={tc.card}
+                                      width={ft.cw}
+                                      draggable={false}
+                                      style={{ width: '100%' }}
+                                      wrapperClassName="block w-full"
+                                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                                    />
+                                  </button>
+                                ) : (
+                                  <AnimatedCardBack
+                                    width={ft.cw}
+                                    className="w-full"
+                                    onFlipComplete={() => playSound('cardFlip')}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })
+                        )}
+                        {col.length > 0 && <div style={{ height: (col.length - 1) * ft.co + ft.ch }} />}
+                      </div>
+                    </DropZone>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Hint display */}
