@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
-import type { spiderApi } from '../api/gameApi';
+import { useCallback, useMemo } from 'react';
+import type { SpiderMoveZone, spiderApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -26,6 +27,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -134,6 +136,18 @@ function SpiderPageContent() {
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
 
+  const dispatchMove = useCallback(
+    (source: SpiderMoveZone, target: SpiderMoveZone) => {
+      void exec('move', source, target);
+    },
+    [exec],
+  );
+  const dnd = useSolitaireDragDrop<SpiderMoveZone>({
+    onMove: dispatchMove,
+    isPlaying: !!isPlayingForKbd,
+    disabled: loading,
+  });
+
   const currentDifficulty = state?.difficulty ?? 1;
 
   const actionBindings = useMemo(
@@ -229,68 +243,90 @@ function SpiderPageContent() {
             {/* Tableau (10 columns) */}
             <div className="relative">
               <div className="flex gap-0.5 sm:gap-1 mb-3" data-tutorial="spd-tableau">
-                {state.tableau.map((col, colIdx) => (
-                  <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
-                    <div className="relative" style={{ minHeight: cardHeight }}>
-                      {col.length === 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
-                          disabled={!isPlaying || loading || !selectedSource}
-                          style={{ height: cardHeight }}
-                          className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                        >
-                          {t('empty')}
-                        </button>
-                      ) : (
-                        col.map((tc, cardIdx) => (
-                          <div
-                            key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                            className="absolute left-0 right-0"
-                            style={{ top: cardIdx * cardOverlap }}
-                          >
-                            {tc.faceUp && tc.card ? (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (selectedSource) {
-                                    // If clicking a different column, treat as move target
-                                    // If clicking the same column, switch source selection
-                                    if (selectedSource.col !== colIdx) {
-                                      handleSelectTarget({ zone: 'tableau', col: colIdx });
-                                    } else {
-                                      handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
-                                    }
-                                  } else {
-                                    handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
-                                  }
-                                }}
-                                disabled={!isPlaying || loading}
-                                aria-label={cardAlt(tc.card)}
-                                aria-pressed={isSourceSelected(colIdx, cardIdx)}
-                                className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
-                              >
-                                <AnimatedCard
-                                  card={tc.card}
-                                  width={cardWidth}
-                                  style={{ width: '100%' }}
-                                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                                />
-                              </button>
-                            ) : (
-                              <AnimatedCardBack
-                                width={cardWidth}
-                                style={{ width: '100%' }}
-                                onFlipComplete={() => playSound('cardFlip')}
-                              />
-                            )}
-                          </div>
-                        ))
-                      )}
-                      {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                {state.tableau.map((col, colIdx) => {
+                  const tableauColZone: SpiderMoveZone = { zone: 'tableau', col: colIdx };
+                  return (
+                    <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                      <DropZone
+                        isDropTarget={dnd.isDropTarget(tableauColZone)}
+                        onDragOver={dnd.handleDragOver(tableauColZone)}
+                        onDrop={dnd.handleDrop(tableauColZone)}
+                        onDragLeave={dnd.handleDragLeave}
+                        className="relative block"
+                      >
+                        <div className="relative" style={{ minHeight: cardHeight }}>
+                          {col.length === 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectTarget(tableauColZone)}
+                              disabled={!isPlaying || loading || !selectedSource}
+                              style={{ height: cardHeight }}
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            >
+                              {t('empty')}
+                            </button>
+                          ) : (
+                            col.map((tc, cardIdx) => {
+                              const cardZone: SpiderMoveZone = {
+                                zone: 'tableau',
+                                col: colIdx,
+                                cardIndex: cardIdx,
+                              };
+                              return (
+                                <div
+                                  key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                                  className="absolute left-0 right-0"
+                                  style={{ top: cardIdx * cardOverlap }}
+                                >
+                                  {tc.faceUp && tc.card ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (selectedSource) {
+                                          // If clicking a different column, treat as move target
+                                          // If clicking the same column, switch source selection
+                                          if (selectedSource.col !== colIdx) {
+                                            handleSelectTarget(tableauColZone);
+                                          } else {
+                                            handleSelectSource(cardZone);
+                                          }
+                                        } else {
+                                          handleSelectSource(cardZone);
+                                        }
+                                      }}
+                                      disabled={!isPlaying || loading}
+                                      aria-label={cardAlt(tc.card)}
+                                      aria-pressed={isSourceSelected(colIdx, cardIdx)}
+                                      draggable={isPlaying && !loading}
+                                      onDragStart={dnd.handleDragStart(cardZone)}
+                                      onDragEnd={dnd.handleDragEnd}
+                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    >
+                                      <AnimatedCard
+                                        card={tc.card}
+                                        width={cardWidth}
+                                        draggable={false}
+                                        style={{ width: '100%' }}
+                                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                                      />
+                                    </button>
+                                  ) : (
+                                    <AnimatedCardBack
+                                      width={cardWidth}
+                                      style={{ width: '100%' }}
+                                      onFlipComplete={() => playSound('cardFlip')}
+                                    />
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                          {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                        </div>
+                      </DropZone>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

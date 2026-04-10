@@ -867,4 +867,91 @@ describe('KlondikePage', () => {
     fireEvent.click(screen.getByTestId('stalemate-escape-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, undefined, 4));
   });
+
+  describe('drag and drop', () => {
+    function buildDataTransfer() {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    }
+
+    it('waste card button is draggable when playing', async () => {
+      renderWithProviders(<KlondikePage />);
+      await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+      const wasteImg = screen.getByAltText('♣ 3');
+      const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+      expect(wasteButton).toHaveAttribute('draggable', 'true');
+    });
+
+    it('tableau face-up card is draggable when playing', async () => {
+      renderWithProviders(<KlondikePage />);
+      await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+      const cardImg = screen.getByAltText('♠ K');
+      const cardButton = cardImg.closest('button') as HTMLButtonElement;
+      expect(cardButton).toHaveAttribute('draggable', 'true');
+    });
+
+    it('dragging waste card to tableau column dispatches move', async () => {
+      renderWithProviders(<KlondikePage />);
+      await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+      const wasteImg = screen.getByAltText('♣ 3');
+      const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+      const dataTransfer = buildDataTransfer();
+
+      fireEvent.dragStart(wasteButton, { dataTransfer });
+
+      // Drop on an empty tableau column (K placeholder wrapped in DropZone)
+      const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
+      expect(kButtons.length).toBeGreaterThan(0);
+      // The DropZone wraps the K button; drop event should fire on the wrapper.
+      // Use the button's parent (the DropZone) as the drop target.
+      const dropZone = kButtons[0].closest('div');
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.dragOver(dropZone as HTMLElement, { dataTransfer });
+      fireEvent.drop(dropZone as HTMLElement, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith(
+          'move',
+          expect.objectContaining({ zone: 'waste' }),
+          expect.objectContaining({ zone: 'tableau' }),
+        ),
+      );
+    });
+
+    it('dragging waste card to foundation dispatches move', async () => {
+      renderWithProviders(<KlondikePage />);
+      await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+      const wasteImg = screen.getByAltText('♣ 3');
+      const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+      const dataTransfer = buildDataTransfer();
+
+      fireEvent.dragStart(wasteButton, { dataTransfer });
+
+      // Drop on foundation (A placeholder) wrapped in DropZone
+      const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
+      const dropZone = aButtons[0].closest('div');
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.dragOver(dropZone as HTMLElement, { dataTransfer });
+      fireEvent.drop(dropZone as HTMLElement, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith(
+          'move',
+          expect.objectContaining({ zone: 'waste' }),
+          expect.objectContaining({ zone: 'foundation', col: 0 }),
+        ),
+      );
+    });
+  });
 });
