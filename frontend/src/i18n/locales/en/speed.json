@@ -19,7 +19,8 @@
     "cpuDifficulty": "CPU Difficulty",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "autoFlip": "Auto-flip when stuck"
   },
   "hint": {
     "play": "Play card {{cardIndex}} to pile {{pileIndex}}",
