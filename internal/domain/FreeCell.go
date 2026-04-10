@@ -333,7 +333,8 @@ func (f *FreeCell) GetHint() *FreeCellHint {
 			if toCol == fromCol {
 				continue
 			}
-			// 空列へKing以外のシーケンスを移動しても意味がない（キングのみ移動意味あり）
+			// 優先度3ではKingの空列移動だけを評価する。King以外の空列移動は
+			// 有効な手ではあるが優先度が低いので、後段のフォールバックに委ねる。
 			if len(f.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
 				continue
 			}
@@ -359,6 +360,8 @@ func (f *FreeCell) GetHint() *FreeCellHint {
 		}
 		card := f.freeCells[cell]
 		for toCol := 0; toCol < FreeCellTableauCnt; toCol++ {
+			// 優先度4ではKingの空列移動だけを評価する。King以外の空列移動は
+			// 有効な手ではあるが優先度が低いので、後段のフォールバックに委ねる。
 			if len(f.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
 				continue
 			}
@@ -373,7 +376,14 @@ func (f *FreeCell) GetHint() *FreeCellHint {
 			}
 		}
 	}
-	// 優先度5: タブローからフリーセルへ
+	// 優先度5: 空列への非Kingの移動（フォールバック）
+	// フリーセルやタブローの非Kingカードを空列に移すことでタブロー奥のカードを
+	// 露出させる手。フリーセルでは空列に任意のカードを置けるため、有効な手として
+	// 候補に含める。ただし無意味な空列交換を避けるためタブロー列全体の移動は除外する。
+	if hint := f.getHintToEmptyColumn(); hint != nil {
+		return hint
+	}
+	// 優先度6: タブローからフリーセルへ
 	for col := 0; col < FreeCellTableauCnt; col++ {
 		if len(f.tableau[col]) == 0 {
 			continue
@@ -390,6 +400,80 @@ func (f *FreeCell) GetHint() *FreeCellHint {
 			}
 		}
 		break // 最初の非空列について一つのフリーセルを見つければ十分
+	}
+	return nil
+}
+
+// getHintToEmptyColumn は非Kingカードを空列に移動するフォールバックヒントを返す。
+// フリーセルから空列への移動を優先し、次にタブロー列のシーケンスを空列に移動する。
+// 列全体の移動（seqStart == 0）は意味がないため除外する。
+func (f *FreeCell) getHintToEmptyColumn() *FreeCellHint {
+	// 空列の先頭インデックスを探す
+	emptyCol := -1
+	for col := 0; col < FreeCellTableauCnt; col++ {
+		if len(f.tableau[col]) == 0 {
+			emptyCol = col
+			break
+		}
+	}
+	if emptyCol < 0 {
+		return nil
+	}
+	// フリーセル→空列（非King）
+	for cell := 0; cell < FreeCellCellCnt; cell++ {
+		card := f.freeCells[cell]
+		if card == nil || card.GetValue() == CardValueMax {
+			continue
+		}
+		return &FreeCellHint{
+			FromZone:  "freecell",
+			FromCol:   cell,
+			CardIndex: -1,
+			ToZone:    "tableau",
+			ToCol:     emptyCol,
+		}
+	}
+	// タブロー→空列（非King、列全体の移動を除く）
+	for fromCol := 0; fromCol < FreeCellTableauCnt; fromCol++ {
+		fromCards := f.tableau[fromCol]
+		if len(fromCards) == 0 {
+			continue
+		}
+		seqStart := len(fromCards) - 1
+		for seqStart > 0 {
+			if !f.isAlternateColor(fromCards[seqStart], fromCards[seqStart-1]) ||
+				fromCards[seqStart].GetValue() != fromCards[seqStart-1].GetValue()-1 {
+				break
+			}
+			seqStart--
+		}
+		// 列全体を空列に動かすのは無意味な空列交換
+		if seqStart == 0 {
+			continue
+		}
+		card := fromCards[seqStart]
+		if card.GetValue() == CardValueMax {
+			// Kingの空列移動は優先度3で処理済み
+			continue
+		}
+		movingCards := fromCards[seqStart:]
+		// 別の空列を移動先に選ぶ（fromColが空になる場合でも、maxMovableCardsは
+		// toColを除外して計算するため問題ない）
+		for toCol := 0; toCol < FreeCellTableauCnt; toCol++ {
+			if toCol == fromCol || len(f.tableau[toCol]) != 0 {
+				continue
+			}
+			if len(movingCards) > f.maxMovableCards(toCol) {
+				continue
+			}
+			return &FreeCellHint{
+				FromZone:  "tableau",
+				FromCol:   fromCol,
+				CardIndex: seqStart,
+				ToZone:    "tableau",
+				ToCol:     toCol,
+			}
+		}
 	}
 	return nil
 }
@@ -530,8 +614,8 @@ func (f *FreeCell) SetFoundation(foundation [FreeCellFoundationCnt][]*Card) {
 func (f *FreeCell) canPlaceOnTableau(card *Card, col int) bool {
 	colCards := f.tableau[col]
 	if len(colCards) == 0 {
-		// 空の列にはKのみ置ける
-		return card.GetValue() == CardValueMax
+		// フリーセルでは空列には任意のカードを置ける
+		return true
 	}
 	topCard := colCards[len(colCards)-1]
 	return f.isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
