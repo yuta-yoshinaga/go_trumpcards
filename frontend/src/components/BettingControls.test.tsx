@@ -209,6 +209,8 @@ describe('BettingControls', () => {
     it('does not render preset buttons when potSize is undefined', () => {
       render(<BettingControls {...makeProps()} />);
       expect(screen.queryByRole('button', { name: '1/2 Pot' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Pot' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Max' })).not.toBeInTheDocument();
     });
 
     it('renders 1/2 Pot and Pot preset buttons when potSize is positive', () => {
@@ -260,6 +262,26 @@ describe('BettingControls', () => {
       render(<BettingControls {...makeProps({ potSize: 1000, minRaise: 10, maxBetAmount: 300, onBetAmountChange })} />);
       fireEvent.click(screen.getByRole('button', { name: 'Pot' }));
       expect(onBetAmountChange).toHaveBeenCalledWith(300);
+    });
+
+    it('falls back to minRaise when preset computation yields NaN', () => {
+      const onBetAmountChange = vi.fn();
+      render(
+        <BettingControls
+          {...makeProps({ potSize: Number.NaN, minRaise: 10, maxBetAmount: 1000, onBetAmountChange })}
+        />,
+      );
+      // potSize NaN should not render preset buttons (showPresets = pot > 0 is false for NaN)
+      expect(screen.queryByRole('button', { name: '1/2 Pot' })).not.toBeInTheDocument();
+    });
+
+    it('floors Max preset when maxBetAmount has a fractional value', () => {
+      const onBetAmountChange = vi.fn();
+      render(
+        <BettingControls {...makeProps({ potSize: 100, minRaise: 10, maxBetAmount: 350.7, onBetAmountChange })} />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Max' }));
+      expect(onBetAmountChange).toHaveBeenCalledWith(350);
     });
 
     it('disables preset buttons when loading', () => {

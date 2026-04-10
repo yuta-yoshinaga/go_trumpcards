@@ -7,7 +7,7 @@ interface BettingControlsProps {
   onBetAmountChange: (v: number) => void;
   minRaise: number;
   maxBetAmount?: number;
-  /** Current pot size; when positive, preset quick-amount buttons (1/2 Pot, Pot, Max) are rendered. */
+  /** Current pot size; when positive, 1/2 Pot and Pot preset buttons are rendered. Max additionally requires a positive maxBetAmount. */
   potSize?: number;
   hasOutstandingBet: boolean;
   loading: boolean;
@@ -44,9 +44,9 @@ export function BettingControls({
   const pot = potSize ?? 0;
   const showPresets = pot > 0;
   const clampAmount = (v: number) => {
-    let clamped = Math.floor(v);
+    let clamped = Number.isNaN(v) ? minRaise : Math.floor(v);
     if (clamped < minRaise) clamped = minRaise;
-    if (hasMax && clamped > max) clamped = max;
+    if (hasMax && clamped > max) clamped = Math.floor(max);
     return clamped;
   };
 
@@ -104,7 +104,7 @@ export function BettingControls({
                 type="button"
                 className={`${btnPokerMuted} min-w-[70px] text-xs`}
                 disabled={loading}
-                onClick={() => onBetAmountChange(max)}
+                onClick={() => onBetAmountChange(Math.floor(max))}
               >
                 {t('betting.preset.max')}
               </button>
