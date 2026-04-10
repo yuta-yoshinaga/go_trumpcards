@@ -281,6 +281,25 @@ describe('SpeedPage auto-flip timer', () => {
     expect(mockExec).not.toHaveBeenCalledWith('flip');
   });
 
+  it('does not auto-flip while a manual flip request is in flight', async () => {
+    // First render resolves to stuckState; subsequent calls hang so loading stays true
+    mockExec.mockResolvedValueOnce(stuckState).mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    // Manual click sets loading=true for the pending mutation; wait for the
+    // loading state (disabled button) to propagate through react-query before
+    // advancing fake timers, otherwise the pre-click timer can still fire.
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('flip-button'));
+    });
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeDisabled());
+    mockExec.mockClear();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+    expect(mockExec).not.toHaveBeenCalledWith('flip');
+  });
+
   it('does not auto-flip when disabled via the settings toggle', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());

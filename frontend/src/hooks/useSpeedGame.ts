@@ -64,13 +64,12 @@ export function useSpeedGame() {
     handleFlipRef.current = handleFlip;
   }, [handleFlip]);
   useEffect(() => {
-    if (!autoFlipEnabled) return;
-    if (phase !== SpeedPhase.STUCK) return;
+    if (!autoFlipEnabled || phase !== SpeedPhase.STUCK || loading) return;
     const timerId = setTimeout(() => {
       handleFlipRef.current();
     }, AUTO_FLIP_DELAY_MS);
     return () => clearTimeout(timerId);
-  }, [autoFlipEnabled, phase]);
+  }, [autoFlipEnabled, phase, loading]);
 
   return {
     state,
