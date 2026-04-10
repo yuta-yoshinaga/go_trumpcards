@@ -21,7 +21,7 @@ function makeState(overrides: Partial<SpeedResponse> = {}): SpeedResponse {
     phase: SpeedPhase.PLAY,
     gameEndFlag: false,
     winnerIdx: -1,
-    config: { cpuDifficulty: 0 },
+    config: { cpuDifficulty: 0, autoFlip: true },
     message: '',
     ...overrides,
   };

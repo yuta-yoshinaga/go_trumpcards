@@ -1539,6 +1539,7 @@ export interface SpeedHint {
 /** Speed game configuration. */
 export interface SpeedConfig {
   cpuDifficulty: number;
+  autoFlip: boolean;
 }
 
 /** Full Speed game state returned from the API. */

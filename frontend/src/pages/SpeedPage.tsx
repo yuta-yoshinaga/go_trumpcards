@@ -74,6 +74,7 @@ function SpeedPageContent() {
     handleFlip,
     handleHint,
     handleConfigChange,
+    handleToggle,
   } = useSpeedGame();
   const {
     hint: frontendHint,
@@ -238,6 +239,13 @@ function SpeedPageContent() {
                       label: t(`settings.${o.label}`),
                     })),
                     onSelect: (v: string) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'checkbox' as const,
+                    id: 'autoFlip',
+                    label: t('settings.autoFlip'),
+                    checked: speedConfig.autoFlip,
+                    onToggle: (v: boolean) => handleToggle('autoFlip', v),
                   },
                   {
                     type: 'checkbox' as const,
