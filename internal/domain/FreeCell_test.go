@@ -241,12 +241,15 @@ func TestFreeCellMoveTableauToTableauErrors(t *testing.T) {
 		assert.Error(t, err)
 	})
 
-	t.Run("non-king to empty", func(t *testing.T) {
+	t.Run("non-king to empty succeeds", func(t *testing.T) {
+		// フリーセルでは空列に任意のカードを置けるため、非Kingの移動も成立する
 		f := setupPlayingFreeCell()
 		clearTableauFC(f)
 		f.tableau[0] = []*Card{makeCard(CardDesignSpade, 5)}
 		err := f.MoveTableauToTableau(0, 0, 1)
-		assert.Error(t, err)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(f.tableau[0]))
+		assert.Equal(t, 1, len(f.tableau[1]))
 	})
 }
 
@@ -690,6 +693,70 @@ func TestFreeCellGetHintEmptyTableauColumns(t *testing.T) {
 	assert.Equal(t, 0, hint.ToCol) // move to col 0 (non-empty)
 }
 
+func TestFreeCellGetHintFreeCellNonKingToEmptyColumn(t *testing.T) {
+	// フリーセルにしか置き場所がなく、かつ非Kingカードであっても空列へのヒントを返す
+	// （Issue #1283: FreeCellでは空列に任意のカードを置ける）。
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+
+	// フリーセルの5♥はタブロー上の6♥（同色）には置けない。他の列は空。
+	f.tableau[0] = []*Card{makeCard(CardDesignHeart, 6)}
+	f.freeCells[0] = makeCard(CardDesignHeart, 5)
+
+	hint := f.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "freecell", hint.FromZone)
+	assert.Equal(t, 0, hint.FromCol)
+	assert.Equal(t, "tableau", hint.ToZone)
+	// col 0以外の最初の空列（col 1）
+	assert.Equal(t, 1, hint.ToCol)
+}
+
+func TestFreeCellGetHintTableauNonKingSequenceToEmptyColumn(t *testing.T) {
+	// タブロー奥のカードを露出させる目的で、非Kingのシーケンスを空列に移動する
+	// ヒントを返す（Issue #1283）。
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+
+	// col 0: 隠したい9♥の上に非Kingの有効シーケンス（4♠, 3♥）が乗っている
+	f.tableau[0] = []*Card{
+		makeCard(CardDesignHeart, 9),
+		makeCard(CardDesignSpade, 4),
+		makeCard(CardDesignHeart, 3),
+	}
+	// col 1: 他のタブロー間移動を成立させないための同色カード
+	f.tableau[1] = []*Card{makeCard(CardDesignSpade, 10)}
+	// col 2-7は空。フリーセルは空のまま。
+
+	hint := f.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "tableau", hint.FromZone)
+	assert.Equal(t, 0, hint.FromCol)
+	assert.Equal(t, 1, hint.CardIndex) // 4♠の位置
+	assert.Equal(t, "tableau", hint.ToZone)
+	// col 2が最初の空列
+	assert.Equal(t, 2, hint.ToCol)
+}
+
+func TestFreeCellGetHintSkipsWholeColumnMoveToEmpty(t *testing.T) {
+	// 列全体を空列に移動するのは無意味な空列交換なので、空列への
+	// フォールバックヒントには含めない。その場合はタブロー→フリーセルに
+	// フォールバックする。
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+
+	// col 0には単独カード（これを空列に動かしても空列交換にしかならない）
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 5)}
+	// col 1-7は空、フリーセルは空
+
+	hint := f.GetHint()
+	assert.NotNil(t, hint)
+	// 空列交換を避けて、タブロー→フリーセルが選ばれる
+	assert.Equal(t, "tableau", hint.FromZone)
+	assert.Equal(t, 0, hint.FromCol)
+	assert.Equal(t, "freecell", hint.ToZone)
+}
+
 // --- AutoComplete tests ---
 
 func TestFreeCellAutoComplete(t *testing.T) {
@@ -986,7 +1053,8 @@ func TestFreeCellCanPlaceOnTableau(t *testing.T) {
 	})
 
 	t.Run("non-king on empty", func(t *testing.T) {
-		assert.False(t, f.canPlaceOnTableau(makeCard(CardDesignSpade, 5), 0))
+		// フリーセルでは空列に任意のカードを置ける（クロンダイクと異なる）
+		assert.True(t, f.canPlaceOnTableau(makeCard(CardDesignSpade, 5), 0))
 	})
 
 	t.Run("alternate color descending", func(t *testing.T) {

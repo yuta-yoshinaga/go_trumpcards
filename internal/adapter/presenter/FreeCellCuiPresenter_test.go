@@ -175,11 +175,16 @@ func TestFreeCellCuiPresenterHintToFreeCell(t *testing.T) {
 	f.Reset()
 	f.SetPhase(domain.FreeCellPhasePlaying)
 
-	// Set up tableau with cards that can't go to foundation or other tableau, only freecell
+	// Set up tableau with cards that can't go to foundation or other tableau,
+	// with all columns filled so there are no empty columns to use as fallback.
+	// Only the freecell is a valid destination.
 	var tableau [domain.FreeCellTableauCnt][]*domain.Card
 	tableau[0] = []*domain.Card{
 		domain.NewCard(domain.CardDesignSpade, 10, false),
 		domain.NewCard(domain.CardDesignSpade, 9, false),
+	}
+	for i := 1; i < domain.FreeCellTableauCnt; i++ {
+		tableau[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)}
 	}
 	f.SetTableau(tableau)
 	var cells [domain.FreeCellCellCnt]*domain.Card

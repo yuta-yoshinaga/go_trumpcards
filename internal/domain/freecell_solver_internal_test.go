@@ -403,3 +403,30 @@ func TestFreeCellSolver_AStarPriorityQueueOrder(t *testing.T) {
 	third := heap.Pop(pq).(*freeCellState)
 	assert.Equal(t, 15, third.g+third.h)
 }
+
+func TestCanPlaceOnTableau_SolverAllowsNonKingOnEmpty(t *testing.T) {
+	var tableau [FreeCellTableauCnt][]*Card
+
+	t.Run("non-King on empty column", func(t *testing.T) {
+		// FreeCell rule: any card can go on an empty column
+		heart5 := NewCard(CardDesignHeart, 5, false)
+		assert.True(t, canPlaceOnTableau(heart5, 0, tableau))
+	})
+
+	t.Run("King on empty column", func(t *testing.T) {
+		king := NewCard(CardDesignSpade, CardValueMax, false)
+		assert.True(t, canPlaceOnTableau(king, 0, tableau))
+	})
+
+	t.Run("valid alternating-color descending on non-empty", func(t *testing.T) {
+		tableau[1] = []*Card{NewCard(CardDesignSpade, 6, false)}
+		heart5 := NewCard(CardDesignHeart, 5, false)
+		assert.True(t, canPlaceOnTableau(heart5, 1, tableau))
+	})
+
+	t.Run("invalid same-color on non-empty", func(t *testing.T) {
+		tableau[2] = []*Card{NewCard(CardDesignSpade, 6, false)}
+		clover5 := NewCard(CardDesignClover, 5, false)
+		assert.False(t, canPlaceOnTableau(clover5, 2, tableau))
+	})
+}

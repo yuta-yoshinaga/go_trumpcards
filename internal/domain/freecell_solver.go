@@ -258,7 +258,8 @@ func isSolvedState(st *freeCellState) bool {
 func canPlaceOnTableau(card *Card, col int, tableau [FreeCellTableauCnt][]*Card) bool {
 	colCards := tableau[col]
 	if len(colCards) == 0 {
-		return card.GetValue() == CardValueMax
+		// フリーセルでは空列には任意のカードを置ける
+		return true
 	}
 	topCard := colCards[len(colCards)-1]
 	return isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
