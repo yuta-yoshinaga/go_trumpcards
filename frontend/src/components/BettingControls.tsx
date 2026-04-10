@@ -7,6 +7,8 @@ interface BettingControlsProps {
   onBetAmountChange: (v: number) => void;
   minRaise: number;
   maxBetAmount?: number;
+  /** Current pot size; when positive, 1/2 Pot and Pot preset buttons are rendered. Max additionally requires a positive maxBetAmount. */
+  potSize?: number;
   hasOutstandingBet: boolean;
   loading: boolean;
   onCall: () => void;
@@ -24,6 +26,7 @@ export function BettingControls({
   onBetAmountChange,
   minRaise,
   maxBetAmount,
+  potSize,
   hasOutstandingBet,
   loading,
   onCall,
@@ -38,6 +41,14 @@ export function BettingControls({
   const hasMax = max > 0;
   const isOutOfRange = Number.isNaN(betAmount) || betAmount < minRaise || (hasMax && betAmount > max);
   const canBet = !loading && !isOutOfRange;
+  const pot = potSize ?? 0;
+  const showPresets = pot > 0;
+  const clampAmount = (v: number) => {
+    let clamped = Number.isNaN(v) ? minRaise : Math.floor(v);
+    if (clamped < minRaise) clamped = minRaise;
+    if (hasMax && clamped > max) clamped = Math.floor(max);
+    return clamped;
+  };
 
   return (
     <div className="text-center mb-2">
@@ -69,6 +80,36 @@ export function BettingControls({
           <p id={`${inputId}-range`} className="text-ds-error text-xs" role="alert">
             {t('betting.rangeHint', { min: minRaise, max: hasMax ? max : '∞' })}
           </p>
+        )}
+        {showPresets && (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              type="button"
+              className={`${btnPokerMuted} min-w-[70px] text-xs`}
+              disabled={loading}
+              onClick={() => onBetAmountChange(clampAmount(pot / 2))}
+            >
+              {t('betting.preset.halfPot')}
+            </button>
+            <button
+              type="button"
+              className={`${btnPokerMuted} min-w-[70px] text-xs`}
+              disabled={loading}
+              onClick={() => onBetAmountChange(clampAmount(pot))}
+            >
+              {t('betting.preset.pot')}
+            </button>
+            {hasMax && (
+              <button
+                type="button"
+                className={`${btnPokerMuted} min-w-[70px] text-xs`}
+                disabled={loading}
+                onClick={() => onBetAmountChange(Math.floor(max))}
+              >
+                {t('betting.preset.max')}
+              </button>
+            )}
+          </div>
         )}
       </div>
       {hasOutstandingBet ? (
