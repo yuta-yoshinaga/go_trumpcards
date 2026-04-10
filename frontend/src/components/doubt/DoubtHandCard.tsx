@@ -22,7 +22,7 @@ export function DoubtHandCard({ card, index, selected, selectable, onToggle, onS
       data-card-index={index}
       aria-pressed={selected}
       disabled={!selectable}
-      className={focusRingCard}
+      className={`${focusRingCard} touch-none`}
       onClick={() => onToggle(index)}
       onPointerDown={selectable && onSwipeStart ? () => onSwipeStart(index) : undefined}
       style={{

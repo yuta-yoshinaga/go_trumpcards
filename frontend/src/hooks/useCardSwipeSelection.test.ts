@@ -110,6 +110,46 @@ describe('useCardSwipeSelection', () => {
     expect(toggle).toHaveBeenCalledTimes(3);
   });
 
+  it('treats pointercancel the same as pointerup and suppresses the trailing click', () => {
+    const toggle = vi.fn();
+    const clickHandler = vi.fn();
+    const card1 = cardElements.get(1);
+    if (!card1) throw new Error('card1 missing');
+    card1.addEventListener('click', clickHandler);
+    const { result } = renderHook(() => useCardSwipeSelection({ selected: [], toggle }));
+    act(() => {
+      result.current.onPointerDown(0);
+      firePointer('pointermove', 15);
+      firePointer('pointercancel', 15);
+      card1.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    // Both cards 0 and 1 should have been toggled before cancel fired.
+    expect(toggle).toHaveBeenCalledWith(0);
+    expect(toggle).toHaveBeenCalledWith(1);
+    // And the trailing click on the released card must be swallowed.
+    expect(clickHandler).not.toHaveBeenCalled();
+    card1.removeEventListener('click', clickHandler);
+  });
+
+  it('does not swallow clicks on non-card elements after a swipe', () => {
+    const toggle = vi.fn();
+    const nonCard = document.createElement('button');
+    document.body.appendChild(nonCard);
+    const clickHandler = vi.fn();
+    nonCard.addEventListener('click', clickHandler);
+    const { result } = renderHook(() => useCardSwipeSelection({ selected: [], toggle }));
+    act(() => {
+      result.current.onPointerDown(0);
+      firePointer('pointermove', 15);
+      firePointer('pointerup', 15);
+      // An unrelated button click in the same task must still fire.
+      nonCard.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    expect(clickHandler).toHaveBeenCalledTimes(1);
+    nonCard.removeEventListener('click', clickHandler);
+    nonCard.remove();
+  });
+
   it('suppresses the trailing click after a real swipe', () => {
     const toggle = vi.fn();
     const clickHandler = vi.fn();

@@ -22,12 +22,15 @@ interface SwipeState {
  *
  * Each card button must render with a `data-card-index="<index>"` attribute so
  * the hook can resolve which card is under the pointer via
- * `document.elementFromPoint`. The hook decides the swipe mode from the first
- * card's current selection state: if it's unselected, the swipe selects every
- * card the pointer traverses; if it's already selected, the swipe deselects
- * them. Single taps are left untouched so the existing click handler still
- * toggles one card at a time; the trailing click after an actual swipe is
- * suppressed to avoid double-toggling the card the pointer was released on.
+ * `document.elementFromPoint`. Card buttons should also carry
+ * `touch-action: none` (e.g. Tailwind's `touch-none`); otherwise mobile
+ * browsers hijack the swipe as a scroll gesture and `pointermove` events
+ * stop firing. The hook decides the swipe mode from the first card's current
+ * selection state: if it's unselected, the swipe selects every card the
+ * pointer traverses; if it's already selected, the swipe deselects them.
+ * Single taps are left untouched so the existing click handler still toggles
+ * one card at a time; the trailing click after an actual swipe is suppressed
+ * to avoid double-toggling the card the pointer was released on.
  */
 export function useCardSwipeSelection({ selected, toggle, enabled = true }: UseCardSwipeSelectionParams) {
   const stateRef = useRef<SwipeState | null>(null);
@@ -80,12 +83,20 @@ export function useCardSwipeSelection({ selected, toggle, enabled = true }: UseC
 
     const suppressNextClick = () => {
       const suppress = (clickEvent: MouseEvent) => {
-        clickEvent.stopPropagation();
-        clickEvent.preventDefault();
+        // Only eat the click if it lands on a card; an unrelated click on a
+        // nearby action button during the same task must still fire.
+        const target = clickEvent.target as Element | null;
+        if (target?.closest('[data-card-index]')) {
+          clickEvent.stopPropagation();
+          clickEvent.preventDefault();
+        }
         window.removeEventListener('click', suppress, true);
       };
       window.addEventListener('click', suppress, true);
-      // Clean up in case no click ever fires (e.g. pointerup outside any card).
+      // Fall through to the next task so the trusted click queued by the
+      // browser's pointer sequence has already fired before we unregister;
+      // this also cleans up when pointerup landed outside any card and no
+      // click follows at all.
       setTimeout(() => window.removeEventListener('click', suppress, true), 0);
     };
 

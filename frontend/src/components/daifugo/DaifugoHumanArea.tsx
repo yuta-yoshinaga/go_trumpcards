@@ -59,7 +59,7 @@ export function DaifugoHumanArea({
             aria-pressed={selectedIndices.includes(i)}
             disabled={!isCurrentTurn}
             draggable={isCurrentTurn}
-            className={focusRingCard}
+            className={`${focusRingCard} touch-none`}
             onClick={() => onToggle(i)}
             onPointerDown={isCurrentTurn && onSwipeStart ? () => onSwipeStart(i) : undefined}
             onDragStart={(e) => {
