@@ -197,4 +197,76 @@ describe('BettingControls', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: 'オールイン' })).not.toBeDisabled();
   });
+
+  describe('preset buttons', () => {
+    it('does not render preset buttons when potSize is 0', () => {
+      render(<BettingControls {...makeProps({ potSize: 0 })} />);
+      expect(screen.queryByRole('button', { name: '1/2 Pot' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Pot' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Max' })).not.toBeInTheDocument();
+    });
+
+    it('does not render preset buttons when potSize is undefined', () => {
+      render(<BettingControls {...makeProps()} />);
+      expect(screen.queryByRole('button', { name: '1/2 Pot' })).not.toBeInTheDocument();
+    });
+
+    it('renders 1/2 Pot and Pot preset buttons when potSize is positive', () => {
+      render(<BettingControls {...makeProps({ potSize: 100 })} />);
+      expect(screen.getByRole('button', { name: '1/2 Pot' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Pot' })).toBeInTheDocument();
+    });
+
+    it('renders Max preset button when maxBetAmount is positive', () => {
+      render(<BettingControls {...makeProps({ potSize: 100, maxBetAmount: 500 })} />);
+      expect(screen.getByRole('button', { name: 'Max' })).toBeInTheDocument();
+    });
+
+    it('does not render Max preset when maxBetAmount is missing', () => {
+      render(<BettingControls {...makeProps({ potSize: 100 })} />);
+      expect(screen.queryByRole('button', { name: 'Max' })).not.toBeInTheDocument();
+    });
+
+    it('sets bet amount to half of pot when 1/2 Pot clicked', () => {
+      const onBetAmountChange = vi.fn();
+      render(<BettingControls {...makeProps({ potSize: 200, minRaise: 10, maxBetAmount: 1000, onBetAmountChange })} />);
+      fireEvent.click(screen.getByRole('button', { name: '1/2 Pot' }));
+      expect(onBetAmountChange).toHaveBeenCalledWith(100);
+    });
+
+    it('sets bet amount to pot when Pot clicked', () => {
+      const onBetAmountChange = vi.fn();
+      render(<BettingControls {...makeProps({ potSize: 200, minRaise: 10, maxBetAmount: 1000, onBetAmountChange })} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Pot' }));
+      expect(onBetAmountChange).toHaveBeenCalledWith(200);
+    });
+
+    it('sets bet amount to maxBetAmount when Max clicked', () => {
+      const onBetAmountChange = vi.fn();
+      render(<BettingControls {...makeProps({ potSize: 200, minRaise: 10, maxBetAmount: 350, onBetAmountChange })} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Max' }));
+      expect(onBetAmountChange).toHaveBeenCalledWith(350);
+    });
+
+    it('clamps 1/2 Pot preset to minRaise when half-pot is below minRaise', () => {
+      const onBetAmountChange = vi.fn();
+      render(<BettingControls {...makeProps({ potSize: 10, minRaise: 20, maxBetAmount: 1000, onBetAmountChange })} />);
+      fireEvent.click(screen.getByRole('button', { name: '1/2 Pot' }));
+      expect(onBetAmountChange).toHaveBeenCalledWith(20);
+    });
+
+    it('clamps Pot preset to maxBetAmount when pot exceeds max', () => {
+      const onBetAmountChange = vi.fn();
+      render(<BettingControls {...makeProps({ potSize: 1000, minRaise: 10, maxBetAmount: 300, onBetAmountChange })} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Pot' }));
+      expect(onBetAmountChange).toHaveBeenCalledWith(300);
+    });
+
+    it('disables preset buttons when loading', () => {
+      render(<BettingControls {...makeProps({ potSize: 100, maxBetAmount: 500, loading: true })} />);
+      expect(screen.getByRole('button', { name: '1/2 Pot' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Pot' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Max' })).toBeDisabled();
+    });
+  });
 });

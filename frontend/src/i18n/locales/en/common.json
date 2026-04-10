@@ -91,7 +91,12 @@
     "fixed": "Fixed",
     "potLimit": "Pot Limit",
     "noLimit": "No Limit",
-    "rangeHint": "Enter a value between {{min}} and {{max}}"
+    "rangeHint": "Enter a value between {{min}} and {{max}}",
+    "preset": {
+      "halfPot": "1/2 Pot",
+      "pot": "Pot",
+      "max": "Max"
+    }
   },
   "button": {
     "reset": "Reset",

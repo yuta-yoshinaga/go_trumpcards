@@ -91,7 +91,12 @@
     "fixed": "Fixed",
     "potLimit": "Pot Limit",
     "noLimit": "No Limit",
-    "rangeHint": "{{min}} 〜 {{max}} の範囲で入力してください"
+    "rangeHint": "{{min}} 〜 {{max}} の範囲で入力してください",
+    "preset": {
+      "halfPot": "1/2 Pot",
+      "pot": "Pot",
+      "max": "Max"
+    }
   },
   "button": {
     "reset": "リセット",
