@@ -457,21 +457,14 @@ func (f *FreeCell) getHintToEmptyColumn() *FreeCellHint {
 			continue
 		}
 		movingCards := fromCards[seqStart:]
-		// 別の空列を移動先に選ぶ（fromColが空になる場合でも、maxMovableCardsは
-		// toColを除外して計算するため問題ない）
-		for toCol := 0; toCol < FreeCellTableauCnt; toCol++ {
-			if toCol == fromCol || len(f.tableau[toCol]) != 0 {
-				continue
-			}
-			if len(movingCards) > f.maxMovableCards(toCol) {
-				continue
-			}
+		// emptyColはfromColと異なる（fromCardsが非空のため）
+		if len(movingCards) <= f.maxMovableCards(emptyCol) {
 			return &FreeCellHint{
 				FromZone:  "tableau",
 				FromCol:   fromCol,
 				CardIndex: seqStart,
 				ToZone:    "tableau",
-				ToCol:     toCol,
+				ToCol:     emptyCol,
 			}
 		}
 	}
