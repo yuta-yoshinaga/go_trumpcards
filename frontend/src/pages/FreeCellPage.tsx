@@ -129,12 +129,11 @@ function FreeCellPageContent() {
 
   const isPlayingForKbd = state?.phase === FreeCellPhase.PLAYING;
 
-  const runExec = exec;
   const dispatchMove = useCallback(
     (source: FreeCellMoveZone, target: FreeCellMoveZone) => {
-      void runExec('move', source, target);
+      void exec('move', source, target);
     },
-    [runExec],
+    [exec],
   );
   const dnd = useSolitaireDragDrop<FreeCellMoveZone>({
     onMove: dispatchMove,

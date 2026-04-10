@@ -136,12 +136,11 @@ function SpiderPageContent() {
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
 
-  const runExec = exec;
   const dispatchMove = useCallback(
     (source: SpiderMoveZone, target: SpiderMoveZone) => {
-      void runExec('move', source, target);
+      void exec('move', source, target);
     },
-    [runExec],
+    [exec],
   );
   const dnd = useSolitaireDragDrop<SpiderMoveZone>({
     onMove: dispatchMove,

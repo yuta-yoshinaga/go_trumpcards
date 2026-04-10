@@ -36,6 +36,18 @@ interface UseSolitaireDragDropReturn<T> {
 
 const DND_DATA_TYPE = 'application/json';
 
+/**
+ * Compares two move zones by their structural fields. All solitaire move
+ * zones share `zone`, `col`, `cardIndex`, and (for FreeCell) `cell`.
+ * Avoids `JSON.stringify` cost on hot paths like dragOver and per-card
+ * highlight checks.
+ */
+function zonesEqual<T extends { zone: string }>(a: T, b: T): boolean {
+  const ax = a as { zone: string; col?: number; cardIndex?: number; cell?: number };
+  const bx = b as { zone: string; col?: number; cardIndex?: number; cell?: number };
+  return ax.zone === bx.zone && ax.col === bx.col && ax.cardIndex === bx.cardIndex && ax.cell === bx.cell;
+}
+
 /** Shared hook for HTML5 drag-and-drop across solitaire card games. */
 export function useSolitaireDragDrop<T extends { zone: string }>({
   onMove,
@@ -66,7 +78,10 @@ export function useSolitaireDragDrop<T extends { zone: string }>({
     (zone: T) => (e: React.DragEvent) => {
       if (!isDragging) return;
       e.preventDefault();
-      setDropTargetZone(zone);
+      e.dataTransfer.dropEffect = 'move';
+      // Bail out when the hover target hasn't changed to avoid re-rendering
+      // the entire game on every dragover event (~60fps).
+      setDropTargetZone((prev) => (prev && zonesEqual(prev, zone) ? prev : zone));
     },
     [isDragging],
   );
@@ -104,7 +119,7 @@ export function useSolitaireDragDrop<T extends { zone: string }>({
   const isDropTarget = useCallback(
     (zone: T): boolean => {
       if (!dropTargetZone) return false;
-      return JSON.stringify(dropTargetZone) === JSON.stringify(zone);
+      return zonesEqual(dropTargetZone, zone);
     },
     [dropTargetZone],
   );
@@ -112,7 +127,7 @@ export function useSolitaireDragDrop<T extends { zone: string }>({
   const isDragSourceFn = useCallback(
     (zone: T): boolean => {
       if (!dragSource) return false;
-      return JSON.stringify(dragSource) === JSON.stringify(zone);
+      return zonesEqual(dragSource, zone);
     },
     [dragSource],
   );

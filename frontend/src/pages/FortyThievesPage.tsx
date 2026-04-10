@@ -146,12 +146,11 @@ function FortyThievesPageContent() {
 
   const isPlayingForKbd = state?.phase === FortyThievesPhase.PLAYING;
 
-  const runExec = exec;
   const dispatchMove = useCallback(
     (source: FortyThievesMoveZone, target: FortyThievesMoveZone) => {
-      void runExec('move', source, target);
+      void exec('move', source, target);
     },
-    [runExec],
+    [exec],
   );
   const dnd = useSolitaireDragDrop<FortyThievesMoveZone>({
     onMove: dispatchMove,

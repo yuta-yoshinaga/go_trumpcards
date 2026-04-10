@@ -72,7 +72,7 @@ describe('useSolitaireDragDrop', () => {
     expect(result.current.isDragging).toBe(false);
   });
 
-  it('handleDragOver calls preventDefault and sets dropTargetZone', () => {
+  it('handleDragOver calls preventDefault, sets dropEffect, and updates dropTargetZone', () => {
     const { result } = renderHook(() => useSolitaireDragDrop<TestZone>(defaultOptions));
     const zone: TestZone = { zone: 'foundation', col: 0 };
     const event = createDragEvent();
@@ -87,7 +87,29 @@ describe('useSolitaireDragDrop', () => {
     });
 
     expect(event.preventDefault).toHaveBeenCalled();
+    expect(event.dataTransfer.dropEffect).toBe('move');
     expect(result.current.dropTargetZone).toEqual(zone);
+  });
+
+  it('handleDragOver bails out when target unchanged (avoids re-render)', () => {
+    const { result } = renderHook(() => useSolitaireDragDrop<TestZone>(defaultOptions));
+    const zone: TestZone = { zone: 'foundation', col: 0 };
+
+    act(() => {
+      result.current.handleDragStart({ zone: 'waste' })(createDragEvent());
+    });
+    act(() => {
+      result.current.handleDragOver(zone)(createDragEvent());
+    });
+    const firstRef = result.current.dropTargetZone;
+
+    // Hover over the same zone again with a fresh object reference.
+    act(() => {
+      result.current.handleDragOver({ zone: 'foundation', col: 0 })(createDragEvent());
+    });
+
+    // The state should not have updated to the new object reference.
+    expect(result.current.dropTargetZone).toBe(firstRef);
   });
 
   it('handleDragOver is no-op when not dragging', () => {
@@ -171,6 +193,27 @@ describe('useSolitaireDragDrop', () => {
     });
 
     // disabled prevents drag start, so onMove should not be called
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it('handleDrop is no-op when not playing', () => {
+    const onMove = vi.fn();
+    const { result } = renderHook(() =>
+      useSolitaireDragDrop<TestZone>({ ...defaultOptions, onMove, isPlaying: false }),
+    );
+
+    const dropEvent = createDragEvent({
+      dataTransfer: {
+        setData: vi.fn(),
+        getData: vi.fn().mockReturnValue(JSON.stringify({ zone: 'waste' })),
+        effectAllowed: '',
+      },
+    } as unknown as Partial<React.DragEvent>);
+
+    act(() => {
+      result.current.handleDrop({ zone: 'foundation' })(dropEvent);
+    });
+
     expect(onMove).not.toHaveBeenCalled();
   });
 
