@@ -69,4 +69,41 @@ describe('DoubtHandCard', () => {
     fireEvent.click(screen.getByTestId('hand-card'));
     expect(onToggle).toHaveBeenCalledWith(3);
   });
+
+  it('exposes data-card-index for swipe selection lookup', () => {
+    render(<DoubtHandCard card={card} index={4} selected={false} selectable={true} onToggle={vi.fn()} />);
+    expect(screen.getByTestId('hand-card')).toHaveAttribute('data-card-index', '4');
+  });
+
+  it('calls onSwipeStart with index on pointerdown when selectable', () => {
+    const onSwipeStart = vi.fn();
+    render(
+      <DoubtHandCard
+        card={card}
+        index={2}
+        selected={false}
+        selectable={true}
+        onToggle={vi.fn()}
+        onSwipeStart={onSwipeStart}
+      />,
+    );
+    fireEvent.pointerDown(screen.getByTestId('hand-card'));
+    expect(onSwipeStart).toHaveBeenCalledWith(2);
+  });
+
+  it('does not call onSwipeStart on pointerdown when not selectable', () => {
+    const onSwipeStart = vi.fn();
+    render(
+      <DoubtHandCard
+        card={card}
+        index={2}
+        selected={false}
+        selectable={false}
+        onToggle={vi.fn()}
+        onSwipeStart={onSwipeStart}
+      />,
+    );
+    fireEvent.pointerDown(screen.getByTestId('hand-card'));
+    expect(onSwipeStart).not.toHaveBeenCalled();
+  });
 });

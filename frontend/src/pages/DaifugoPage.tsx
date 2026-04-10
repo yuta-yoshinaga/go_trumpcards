@@ -24,6 +24,7 @@ import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCardSwipeSelection } from '../hooks/useCardSwipeSelection';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
@@ -154,6 +155,12 @@ function DaifugoPageContent() {
     onToggle: toggleCardSelection,
     onConfirm: kbdConfirm,
     onClear: clearSelection,
+    enabled: isHumanTurnForKbd && !loading,
+  });
+
+  const { onPointerDown: handleDaifugoSwipeStart } = useCardSwipeSelection({
+    selected: selectedIndices,
+    toggle: toggleCardSelection,
     enabled: isHumanTurnForKbd && !loading,
   });
 
@@ -343,6 +350,7 @@ function DaifugoPageContent() {
                   onToggle={toggleCardSelection}
                   isCurrentTurn={isHumanTurn}
                   onDragCard={handleDragCard}
+                  onSwipeStart={handleDaifugoSwipeStart}
                 />
               </div>
             )}
