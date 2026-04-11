@@ -9,6 +9,7 @@ import type {
   EuchreResponse,
   FreeCellResponse,
   GinRummyResponse,
+  GoFishResponse,
   HeartsResponse,
   HoldemResponse,
   IndianPokerResponse,
@@ -41,6 +42,7 @@ import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
+import { getGoFishHint } from '../utils/hints/gofishHint';
 import { getHeartsHint } from '../utils/hints/heartsHint';
 import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
@@ -99,7 +101,8 @@ type HintGameName =
   | 'memory'
   | 'sevencardstud'
   | 'fortythieves'
-  | 'paigow';
+  | 'paigow'
+  | 'gofish';
 
 /** Return type of the useGameHint hook. */
 export interface UseGameHintReturn {
@@ -180,6 +183,8 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
         return getGinRummyHint(state as GinRummyResponse);
       case 'cribbage':
         return getCribbageHint(state as CribbageResponse);
+      case 'gofish':
+        return getGoFishHint(state as GoFishResponse);
       default:
         return null;
     }

@@ -11,6 +11,7 @@ import { GameResetDialog } from '../components/GameResetDialog';
 import { GoFishBooksDisplay } from '../components/gofish/GoFishBooksDisplay';
 import { GoFishPlayerArea } from '../components/gofish/GoFishPlayerArea';
 import { GoFishSettingsDialog } from '../components/gofish/GoFishSettingsDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -21,6 +22,7 @@ import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGoFishGame } from '../hooks/useGoFishGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -100,6 +102,11 @@ function GoFishPageContent() {
   } = useGoFishGame();
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('gofish', state);
 
   const phaseNames = usePhaseNames('gofish', GOFISH_PHASE_KEYS);
 
@@ -149,9 +156,17 @@ function GoFishPageContent() {
 
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            {/* Turn & deck info */}
-            <div className="text-white text-center mb-2">
-              <span className="mr-4">{t('deck', { count: state.deckRemaining })}</span>
+            {/* Turn, deck info & hint toggle */}
+            <div className="text-white text-center mb-2 flex items-center justify-center gap-4">
+              <span>{t('deck', { count: state.deckRemaining })}</span>
+              <label className="inline-flex items-center gap-1 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={frontendHintEnabled}
+                  onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+                />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
             </div>
 
             {/* CPU player areas */}
@@ -187,6 +202,10 @@ function GoFishPageContent() {
                   ))}
                 </div>
               </div>
+            )}
+
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
             )}
 
             {/* Message */}

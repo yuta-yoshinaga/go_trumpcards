@@ -33,5 +33,9 @@
     "playerHand": "Your hand. Click a card to select the rank you want to ask for.",
     "askButton": "After selecting an opponent and rank, press this button to ask.",
     "resetButton": "Press reset to start a new game."
+  },
+  "hint": {
+    "askKnownRank": "Ask for the rank an opponent recently took",
+    "askMostCopies": "Ask for the rank you hold most copies of"
   }
 }
