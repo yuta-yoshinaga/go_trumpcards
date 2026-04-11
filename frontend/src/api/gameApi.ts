@@ -4,6 +4,7 @@ import type {
   BlackJackResponse,
   BridgeResponse,
   CanastaResponse,
+  CaribbeanStudResponse,
   ClockSolitaireResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -69,6 +70,7 @@ const workerUrl: Record<string, string> = {
   deuceswild: WORKER_CASINO,
   jokerpoker: WORKER_CASINO,
   threecard: WORKER_CASINO,
+  caribbeanstud: WORKER_CASINO,
   paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
@@ -671,6 +673,12 @@ export const threecardApi = {
     gameExec<ThreeCardResponse>('threecard', { command, amount, pairPlusBet }),
 };
 
+/** API client for the Caribbean Stud Poker /caribbeanstud/exec endpoint. */
+export const caribbeanstudApi = {
+  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, jackpotBet?: number) =>
+    gameExec<CaribbeanStudResponse>('caribbeanstud', { command, amount, jackpotBet }),
+};
+
 /** API client for the Pai Gow Poker /paigow/exec endpoint. */
 export const paigowApi = {
   exec: (command: 'reset' | 'bet' | 'set' | 'log', amount?: number, low0?: number, low1?: number) =>
@@ -958,6 +966,7 @@ const games = [
   'tripeaks',
   'cribbage',
   'threecard',
+  'caribbeanstud',
   'paigow',
   'speed',
   'gofish',

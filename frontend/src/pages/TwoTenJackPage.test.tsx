@@ -1,8 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, twoTenJackApi } from '../api/gameApi';
-import { useCliMode } from '../hooks/useCliMode';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTwoTenJackState } from '../test/stateFactories';
 import { TwoTenJackPage } from './TwoTenJackPage';

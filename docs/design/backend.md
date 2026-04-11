@@ -246,6 +246,25 @@ classDiagram
         +ActionLog() []*ActionLogEntry
     }
 
+    class CaribbeanStud {
+        -trumpCards *TrumpCards
+        -playerHand []*Card
+        -dealerHand []*Card
+        -phase int
+        -anteBet int
+        -jackpotBet int
+        -playBet int
+        +Reset()
+        +Bet(ante int, jackpot int) error
+        +Play() error
+        +Fold() error
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
+    }
+
+    CaribbeanStud --> "1" TrumpCards
+    CaribbeanStud --> "1" ChipHolder
+
     class PaiGow {
         -trumpCards *TrumpCards
         -playerCards []*Card

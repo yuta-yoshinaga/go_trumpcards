@@ -1,0 +1,6 @@
+{
+  "helpTitle": "Caribbean Stud Poker",
+  "helpBet": "  b <ante> [jackpot]   bet (ante required, jackpot optional)",
+  "helpPlay": "  p                    call (place play bet equal to 2x ante)",
+  "helpFold": "  f                    fold (forfeit ante)"
+}

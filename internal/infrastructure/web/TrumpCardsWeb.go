@@ -66,6 +66,7 @@ type TrumpCardsWeb struct {
 	ftc  *controller.FortyThievesWebController
 	pgc  *controller.PaiGowWebController
 	ttjc *controller.TwoTenJackWebController
+	cspc *controller.CaribbeanStudWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -402,6 +403,12 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			ttj := domain.NewTwoTenJack(domain.NewTrumpCards(0), players, config)
 			return usecase.NewTwoTenJackInteractor(ttj, new(presenter.TwoTenJackWebPresenter))
 		}),
+		cspc: controller.NewCaribbeanStudWebController(func() usecase.CaribbeanStudInteractorIF {
+			return usecase.NewCaribbeanStudInteractor(
+				domain.NewDefaultCaribbeanStud(),
+				new(presenter.CaribbeanStudWebPresenter),
+			)
+		}),
 	}
 }
 
@@ -457,6 +464,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/fortythieves/exec", web.ftc.Exec},
 		{"/paigow/exec", web.pgc.Exec},
 		{"/twotenjack/exec", web.ttjc.Exec},
+		{"/caribbeanstud/exec", web.cspc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -560,6 +568,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.csc.Stop()
 	web.drc.Stop()
 	web.ftc.Stop()
+	web.cspc.Stop()
 	fmt.Println(i18n.T("webServerStopped"))
 	slog.Info("server stopped")
 	return runErr

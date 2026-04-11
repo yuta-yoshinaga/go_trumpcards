@@ -7,6 +7,18 @@ export interface Card {
   value: number;
 }
 
+/** A face-down card sentinel returned by the backend when the card must remain hidden
+ * (e.g., dealer's hole cards in Caribbean Stud during the action phase). */
+export interface MaskedCard {
+  design: '';
+  value: 0;
+}
+
+/** Type guard distinguishing a face-down `MaskedCard` from a revealed `Card`. */
+export function isMaskedCard(card: Card | MaskedCard): card is MaskedCard {
+  return card.design === '';
+}
+
 /** Bracket data for betting profile export. */
 export interface BettingProfileBracketData {
   aggressive: number;
@@ -1531,6 +1543,32 @@ export interface ThreeCardResponse {
   playPayout: number;
   anteBonusPayout: number;
   pairPlusPayout: number;
+  totalPayout: number;
+  dealerQualified: boolean;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Caribbean Stud Poker (カリビアンスタッドポーカー) ---
+
+/** Caribbean Stud Poker API response. */
+export interface CaribbeanStudResponse {
+  playerHand: Card[];
+  /** Dealer hand: during the action phase only the first card is revealed and
+   * the remaining slots are `MaskedCard`. After the end phase all 5 are real `Card`s. */
+  dealerHand: (Card | MaskedCard)[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  jackpotBet: number;
+  playBet: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  jackpotPayout: number;
   totalPayout: number;
   dealerQualified: boolean;
   playerHandRank: number;

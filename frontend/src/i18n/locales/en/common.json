@@ -61,7 +61,8 @@
     "sevencardstud": "Seven Card Stud",
     "clocksolitaire": "Clock Solitaire",
     "fortythieves": "Forty Thieves",
-    "paigow": "Pai Gow Poker"
+    "paigow": "Pai Gow Poker",
+    "caribbeanstud": "Caribbean Stud Poker"
   },
   "sound": {
     "mute": "Mute sound",
@@ -250,6 +251,11 @@
     "threecard.result.push": "Push!",
     "threecard.result.fold": "Folded",
     "threecard.result.dealerNotQualified": "Dealer does not qualify!",
+    "caribbeanstud.result.playerWins": "You win!",
+    "caribbeanstud.result.dealerWins": "Dealer wins!",
+    "caribbeanstud.result.push": "Push!",
+    "caribbeanstud.result.fold": "Folded",
+    "caribbeanstud.result.dealerNotQualified": "Dealer does not qualify!",
     "klondike.playing": "Playing",
     "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
     "klondike.gameOver": "Game Over",
