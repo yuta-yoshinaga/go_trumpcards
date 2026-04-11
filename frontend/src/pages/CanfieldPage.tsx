@@ -90,7 +90,7 @@ export function CanfieldPage() {
         <ManualButton gamePath="/canfield" />
       </PhaseIndicator>
 
-      <LandscapeBanner message={t('phase.playing')} />
+      <LandscapeBanner message={phaseName} />
 
       <div className="flex-1 overflow-y-auto px-4 pt-3 lg:px-8">
         {/* Foundation */}
