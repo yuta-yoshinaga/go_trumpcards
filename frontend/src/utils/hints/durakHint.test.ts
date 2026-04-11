@@ -115,4 +115,41 @@ describe('getDurakHint', () => {
     const hint = getDurakHint(state);
     expect(hint?.targetAction).toBe('take');
   });
+
+  it('recommends attacking with matching non-trump in a continuation bout', () => {
+    // SPADE 6 (value 6, not trump) matches the attack value already on the table
+    // Default hand: SPADE 6, CLOVER 7, DIAMOND 9, HEART 12; trumpSuit: 'H'
+    const state = makeState({
+      tablePairs: [{ attack: card('CLOVER', 6), defense: card('HEART', 10) }],
+    });
+    const hint = getDurakHint(state);
+    expect(hint?.targetAction).toBe('attack');
+    expect(hint?.reason).toBe('hint.attackLowNonTrump');
+  });
+
+  it('recommends pass when only matching cards in hand are trumps', () => {
+    // Only HEART 12 (trump) matches value 12 on the table — no non-trump match available
+    // Default hand: SPADE 6, CLOVER 7, DIAMOND 9, HEART 12; trumpSuit: 'H'
+    const state = makeState({
+      tablePairs: [{ attack: card('DIAMOND', 12), defense: null }],
+    });
+    const hint = getDurakHint(state);
+    expect(hint?.targetAction).toBe('pass');
+    expect(hint?.reason).toBe('hint.passBout');
+  });
+
+  it('recommends take when all table pairs are already defended', () => {
+    const state = makeState({
+      attackerIdx: 1,
+      defenderIdx: 0,
+      phase: 1,
+      tablePairs: [
+        { attack: card('SPADE', 4), defense: card('SPADE', 8) },
+        { attack: card('CLOVER', 5), defense: card('CLOVER', 9) },
+      ],
+    });
+    const hint = getDurakHint(state);
+    expect(hint?.targetAction).toBe('take');
+    expect(hint?.reason).toBe('hint.takeNothingToDefend');
+  });
 });
