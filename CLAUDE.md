@@ -24,10 +24,10 @@ go run ./cmd/trumpcards <game>             # Run a specific game (e.g., blackjac
 go run ./cmd/trumpcards --lang en <game>   # Run in English
 # Available games: blackjack, poker, oldmaid, daifugo, sevens, doubt, holdem, omaha,
 # shortdeck, pineapple, hearts, memory, klondike, freecell, baccarat, spades,
-# crazyeights, ginrummy, spider, napoleon, indianpoker, videopoker, deuceswild,
-# jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, ohhell, bridge, speed,
-# gofish, canasta, pinochle, golf, pigtail, sevencardstud, clocksolitaire, durak,
-# fortythieves, paigow
+# twotenjack, crazyeights, ginrummy, spider, napoleon, indianpoker, videopoker,
+# deuceswild, jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, ohhell,
+# bridge, speed, gofish, canasta, pinochle, golf, pigtail, sevencardstud,
+# clocksolitaire, durak, fortythieves, paigow
 go run ./cmd/trumpcards games      # List all available games
 go run ./cmd/trumpcards games --short  # List game names only (for scripting)
 go run ./cmd/trumpcards update     # Self-update to the latest version
@@ -129,7 +129,7 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 | Worker | Entry point | Games |
 |--------|-------------|-------|
 | **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, sevencardstud, paigow) |
-| **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak) |
+| **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak) |
 | **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves) |
 
 **When adding/modifying a game, always update both:**

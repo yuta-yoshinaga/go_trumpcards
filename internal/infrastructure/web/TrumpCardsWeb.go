@@ -65,6 +65,7 @@ type TrumpCardsWeb struct {
 	drc  *controller.DurakWebController
 	ftc  *controller.FortyThievesWebController
 	pgc  *controller.PaiGowWebController
+	ttjc *controller.TwoTenJackWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -390,6 +391,17 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				new(presenter.PaiGowWebPresenter),
 			)
 		}),
+		ttjc: controller.NewTwoTenJackWebController(func() usecase.TwoTenJackInteractorIF {
+			config := domain.DefaultTwoTenJackConfig()
+			players := []*domain.TwoTenJackPlayer{
+				domain.NewTwoTenJackPlayer(true),
+				domain.NewTwoTenJackPlayer(false),
+				domain.NewTwoTenJackPlayer(false),
+				domain.NewTwoTenJackPlayer(false),
+			}
+			ttj := domain.NewTwoTenJack(domain.NewTrumpCards(0), players, config)
+			return usecase.NewTwoTenJackInteractor(ttj, new(presenter.TwoTenJackWebPresenter))
+		}),
 	}
 }
 
@@ -444,6 +456,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/durak/exec", web.drc.Exec},
 		{"/fortythieves/exec", web.ftc.Exec},
 		{"/paigow/exec", web.pgc.Exec},
+		{"/twotenjack/exec", web.ttjc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)

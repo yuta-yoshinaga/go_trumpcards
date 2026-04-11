@@ -1,4 +1,4 @@
-import type { HeartsResponse, SpadesResponse } from '../types/card';
+import type { HeartsResponse, SpadesResponse, TwoTenJackResponse } from '../types/card';
 
 /** Base Hearts player data for player 0 (human). */
 const heartsHumanPlayer = {
@@ -124,4 +124,79 @@ const baseSpadesState: SpadesResponse = {
  */
 export function makeSpadesState(overrides?: Partial<SpadesResponse>): SpadesResponse {
   return { ...baseSpadesState, ...overrides };
+}
+
+/** Base Two Ten Jack player data used by {@link makeTwoTenJackState}. */
+const twoTenJackPlayers: TwoTenJackResponse['players'] = [
+  {
+    id: 0,
+    isHuman: true,
+    cardCount: 13,
+    cards: [
+      { design: 'SPADE' as const, value: 1 },
+      { design: 'HEART' as const, value: 11 },
+    ],
+    roundScore: 0,
+    cumulativeScore: 0,
+    trickCount: 0,
+    capturedPoints: 0,
+  },
+  {
+    id: 1,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    trickCount: 0,
+    capturedPoints: 0,
+  },
+  {
+    id: 2,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    trickCount: 0,
+    capturedPoints: 0,
+  },
+  {
+    id: 3,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    roundScore: 0,
+    cumulativeScore: 0,
+    trickCount: 0,
+    capturedPoints: 0,
+  },
+];
+
+/** Base Two Ten Jack state used as the default for {@link makeTwoTenJackState}. */
+const baseTwoTenJackState: TwoTenJackResponse = {
+  players: twoTenJackPlayers,
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  declarerIdx: 0,
+  trumpSuit: 1,
+  currentTrick: [],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  leadPlayerIdx: 0,
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 50 },
+};
+
+/**
+ * Creates a {@link TwoTenJackResponse} with sensible defaults for tests.
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial TwoTenJackResponse fields to override.
+ * @returns A complete TwoTenJackResponse suitable for use in tests.
+ */
+export function makeTwoTenJackState(overrides?: Partial<TwoTenJackResponse>): TwoTenJackResponse {
+  return { ...baseTwoTenJackState, ...overrides };
 }

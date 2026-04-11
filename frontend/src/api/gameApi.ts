@@ -44,6 +44,7 @@ import type {
   SpiderResponse,
   ThreeCardResponse,
   TriPeaksResponse,
+  TwoTenJackResponse,
   VideoPokerResponse,
 } from '../types/card';
 
@@ -87,6 +88,7 @@ const workerUrl: Record<string, string> = {
   gofish: WORKER_CLASSIC,
   pinochle: WORKER_CLASSIC,
   pigtail: WORKER_CLASSIC,
+  twotenjack: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
@@ -429,6 +431,33 @@ function createBidPlayApi<T, C>(game: string) {
 
 /** API client for the Spades /spades/exec endpoint. */
 export const spadesApi = createBidPlayApi<SpadesResponse, SpadesConfigInput>('spades');
+
+/** Configuration options for Two Ten Jack game settings. */
+export interface TwoTenJackConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Two Ten Jack /twotenjack/exec endpoint.
+ *
+ * Argument order mirrors {@link spadesApi}: command, trumpSuit, cardIndex, config.
+ * This keeps compatibility with {@link useTrickGameBase} which invokes play as
+ * `(command, undefined, cardIndex)`.
+ */
+export const twoTenJackApi = {
+  exec: (
+    command: 'reset' | 'declare' | 'play' | 'next' | 'nextround' | 'hint',
+    trumpSuit?: number,
+    cardIndex?: number,
+    config?: TwoTenJackConfigInput,
+  ) =>
+    gameExec<TwoTenJackResponse>('twotenjack', {
+      command,
+      trumpSuit,
+      cardIndex,
+      config,
+    }),
+};
 
 /** Configuration options for Oh Hell game settings. */
 export interface OhHellConfigInput {
@@ -908,6 +937,7 @@ const games = [
   'sevencardstud',
   'hearts',
   'spades',
+  'twotenjack',
   'napoleon',
   'ohhell',
   'memory',

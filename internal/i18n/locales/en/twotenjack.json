@@ -1,0 +1,14 @@
+{
+  "helpTitle": "Two Ten Jack",
+  "helpDeclare": "  d <s>                declare trump (1=S, 2=C, 3=H, 4=D)",
+  "helpPlay": "  p <idx>              play a card",
+  "helpNext": "  n                    next trick",
+  "helpNextRound": "  nr                   next round",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               point limit",
+  "declarePhase": "Declare trump suit.",
+  "playPhase.lead": "Lead a card.",
+  "playPhase.follow": "Follow the lead suit if possible.",
+  "trickEnd": "Trick ended.",
+  "roundEnd": "Round ended."
+}
