@@ -96,6 +96,7 @@ describe('formatTwoTenJackState', () => {
 
   it('does not show trick section when currentTrick is empty', () => {
     const output = formatTwoTenJackState(makeState({ currentTrick: [] }));
-    expect(output).not.toContain('trick:');
+    // Header always contains "trick: <num>"; the trick card section uses "trick: <name>=<card>".
+    expect(output).not.toMatch(/trick: [^\d]/);
   });
 });
