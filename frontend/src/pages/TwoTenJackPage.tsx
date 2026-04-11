@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
@@ -17,6 +18,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTwoTenJackGame } from '../hooks/useTwoTenJackGame';
@@ -132,6 +134,12 @@ function TwoTenJackPageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('twotenjack', state);
+
   const isPlayPhaseForKbd = state?.phase === TwoTenJackPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
@@ -208,6 +216,13 @@ function TwoTenJackPageContent() {
                     value: twoTenJackConfig.pointLimit,
                     options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('pointLimit', v),
+                  },
+                  {
+                    type: 'checkbox',
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
                   },
                 ],
               },
@@ -305,6 +320,10 @@ function TwoTenJackPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
 
             <ActionLogSection
               isEndPhase={isGameEnd}

@@ -2,10 +2,13 @@ import { useMemo } from 'react';
 import type {
   BaccaratResponse,
   BlackJackResponse,
+  CanastaResponse,
+  CaribbeanStudResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoResponse,
   DoubtResponse,
+  DurakResponse,
   EuchreResponse,
   FreeCellResponse,
   GinRummyResponse,
@@ -20,6 +23,7 @@ import type {
   OldMaidResponse,
   OmahaResponse,
   PineappleResponse,
+  PinochleResponse,
   PokerResponse,
   PyramidResponse,
   SevensResponse,
@@ -29,16 +33,20 @@ import type {
   SpiderResponse,
   ThreeCardResponse,
   TriPeaksResponse,
+  TwoTenJackResponse,
   VideoPokerResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
+import { getCanastaHint } from '../utils/hints/canastaHint';
+import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
+import { getDurakHint } from '../utils/hints/durakHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
@@ -54,6 +62,7 @@ import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
+import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
@@ -63,6 +72,7 @@ import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
+import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
@@ -102,7 +112,12 @@ type HintGameName =
   | 'sevencardstud'
   | 'fortythieves'
   | 'paigow'
-  | 'gofish';
+  | 'gofish'
+  | 'caribbeanstud'
+  | 'durak'
+  | 'canasta'
+  | 'pinochle'
+  | 'twotenjack';
 
 /** Return type of the useGameHint hook. */
 export interface UseGameHintReturn {
@@ -185,6 +200,16 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
         return getCribbageHint(state as CribbageResponse);
       case 'gofish':
         return getGoFishHint(state as GoFishResponse);
+      case 'caribbeanstud':
+        return getCaribbeanStudHint(state as CaribbeanStudResponse);
+      case 'durak':
+        return getDurakHint(state as DurakResponse);
+      case 'canasta':
+        return getCanastaHint(state as CanastaResponse);
+      case 'pinochle':
+        return getPinochleHint(state as PinochleResponse);
+      case 'twotenjack':
+        return getTwoTenJackHint(state as TwoTenJackResponse);
       default:
         return null;
     }

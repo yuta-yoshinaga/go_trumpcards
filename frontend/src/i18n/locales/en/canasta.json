@@ -48,5 +48,12 @@
     "playerHand": "Your hand. Select cards to meld or discard.",
     "meldArea": "The meld area. Your completed melds are shown here.",
     "actionButtons": "Action buttons. Perform actions based on the current phase."
+  },
+  "hint": {
+    "drawStock": "Draw from the stock pile",
+    "takeDiscardPile": "Consider taking the discard pile",
+    "meldInitial": "Make your initial meld to open",
+    "meldExtend": "Extend an existing meld for more points",
+    "discardHighSafe": "Discard a high-rank card the opponent cannot use"
   }
 }

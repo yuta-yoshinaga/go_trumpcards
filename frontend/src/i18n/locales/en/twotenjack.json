@@ -45,5 +45,12 @@
     "scoreTable": "Score table: Aces and Jacks = 1pt, Tens = 10pt, last trick = +2 (50pt total). The declaring team needs 26 or more to make the contract.",
     "playButton": "Pick a card from your hand and press Play to play it.",
     "resetButton": "Reset the game and start over from the beginning."
+  },
+  "hint": {
+    "strategic_trump": "Your hand favors this suit as trump",
+    "lead": "Best card to lead the trick",
+    "follow_suit": "Follow the lead suit with this card",
+    "trump_cut": "Cut the trick with a trump",
+    "discard": "Cannot win — discard a low card"
   }
 }

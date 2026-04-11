@@ -8,6 +8,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -20,6 +21,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, useDurakGame } from '../hooks/useDurakGame';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -143,6 +145,12 @@ function DurakPageContent() {
   );
   const { handleCommand } = useCliGame(gameExec, durakCliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('durak', state);
+
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
 
@@ -223,6 +231,13 @@ function DurakPageContent() {
                     checked: durakConfig.transferEnabled,
                     onToggle: (checked) => handleConfigToggle('transferEnabled', checked),
                   },
+                  {
+                    type: 'checkbox',
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
                 ],
               },
             ]}
@@ -302,6 +317,10 @@ function DurakPageContent() {
                   messageCode={state.messageCode}
                   messageParams={state.messageParams}
                 />
+
+                {frontendHintEnabled && frontendHint && (
+                  <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+                )}
 
                 {/* Action log */}
                 <ActionLogSection
