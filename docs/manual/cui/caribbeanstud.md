@@ -110,3 +110,25 @@ flowchart TD
 - `p` → コール（アンテの2倍のプレイベット）
 - `f` → フォールド
 - `l` → 棋譜を表示
+
+## 画面の見方
+
+```
+===============================
+Caribbean Stud Poker
+===============================
+Chips: 1000
+Phase: ACTION
+Ante: 100   Jackpot: 10
+
+Player: [♠A] [♠K] [♥Q] [♦J] [♣10]
+Hand:   Royal Flush
+
+Dealer: [??] [??] [??] [??] [??]
+```
+
+- **Chips**: 現在の所持チップ数
+- **Phase**: 現在のフェーズ（BET / ACTION / RESULT）
+- **Ante / Jackpot**: ベット額
+- **Player**: プレイヤーの手札と役名
+- **Dealer**: ディーラーの手札（ACTIONフェーズでは伏せ、RESULTフェーズで公開）
