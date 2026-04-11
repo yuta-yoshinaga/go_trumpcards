@@ -11,6 +11,7 @@ import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { CaribbeanStudSkeleton } from '../components/skeleton/CaribbeanStudSkeleton';
@@ -261,14 +262,18 @@ function CaribbeanStudPageContent() {
                   )}
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
-                  {state.dealerHand.map((card, i) => (
-                    <AnimatedCard
-                      key={`d-${card.design}-${card.value}-${i}`}
-                      card={card}
-                      width={cardWidth}
-                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                    />
-                  ))}
+                  {state.dealerHand.map((card, i) =>
+                    (card as { design: string }).design === '' ? (
+                      <AnimatedCardBack key={`d-back-${i}`} width={cardWidth} />
+                    ) : (
+                      <AnimatedCard
+                        key={`d-${card.design}-${card.value}-${i}`}
+                        card={card}
+                        width={cardWidth}
+                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                      />
+                    ),
+                  )}
                 </div>
               </div>
             )}

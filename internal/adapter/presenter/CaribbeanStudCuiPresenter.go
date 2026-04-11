@@ -37,23 +37,34 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 	}
 
 	dealerHand := cs.GetDealerHand()
-	if len(dealerHand) > 0 && cs.GetPhase() == domain.CaribbeanStudPhaseEnd {
+	if len(dealerHand) > 0 {
 		sb.WriteString("--- " + color.Bold("DEALER") + " ---\n")
-		rank := cs.GetDealerHandRank()
-		if rank >= 0 && rank < len(domain.PokerHandNames) {
-			fmt.Fprintf(&sb, "hand: %s\n", domain.PokerHandNames[rank])
-		}
-		if cs.GetDealerQualified() {
-			sb.WriteString("(Qualified)\n")
+		if cs.GetPhase() == domain.CaribbeanStudPhaseEnd {
+			rank := cs.GetDealerHandRank()
+			if rank >= 0 && rank < len(domain.PokerHandNames) {
+				fmt.Fprintf(&sb, "hand: %s\n", domain.PokerHandNames[rank])
+			}
+			if cs.GetDealerQualified() {
+				sb.WriteString("(Qualified)\n")
+			} else {
+				sb.WriteString("(Not Qualified)\n")
+			}
+			parts := make([]string, len(dealerHand))
+			for i, card := range dealerHand {
+				parts[i] = cuiCardStr(card)
+			}
+			sb.WriteString(strings.Join(parts, ","))
+			sb.WriteString("\n")
 		} else {
-			sb.WriteString("(Not Qualified)\n")
+			// Action phase: show only the first card; hide the rest
+			parts := make([]string, len(dealerHand))
+			parts[0] = cuiCardStr(dealerHand[0])
+			for i := 1; i < len(dealerHand); i++ {
+				parts[i] = "??"
+			}
+			sb.WriteString(strings.Join(parts, ","))
+			sb.WriteString("\n")
 		}
-		parts := make([]string, len(dealerHand))
-		for i, card := range dealerHand {
-			parts[i] = cuiCardStr(card)
-		}
-		sb.WriteString(strings.Join(parts, ","))
-		sb.WriteString("\n")
 	}
 
 	sb.WriteString("----------\n")

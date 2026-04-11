@@ -51,7 +51,13 @@ func TestCaribbeanStudCuiPresenter_Output_ActionPhase(t *testing.T) {
 		domain.NewCard(domain.CardDesignDiamond, 7, false),
 		domain.NewCard(domain.CardDesignSpade, 2, false),
 	}).Maybe()
-	m.On("GetDealerHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetDealerHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 13, false),
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignClover, 3, false),
+		domain.NewCard(domain.CardDesignDiamond, 8, false),
+		domain.NewCard(domain.CardDesignHeart, 2, false),
+	}).Maybe()
 	m.On("GetGameEndFlag").Return(false).Maybe()
 	m.On("GetAnteBet").Return(100).Maybe()
 	m.On("GetJackpotBet").Return(0).Maybe()
@@ -69,6 +75,11 @@ func TestCaribbeanStudCuiPresenter_Output_ActionPhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "phase: ACTION")
 	assert.Contains(t, result, "PLAYER")
+	// First dealer card is visible
+	assert.Contains(t, result, "DEALER")
+	assert.Contains(t, result, "HEART 13")
+	// Remaining cards hidden
+	assert.Contains(t, result, "??")
 }
 
 func TestCaribbeanStudCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {

@@ -192,6 +192,52 @@ func TestCaribbeanStudWebPresenter_Output_DealerNotQualified(t *testing.T) {
 	assert.Equal(t, "caribbeanstud.result.dealerNotQualified", result.MessageCode)
 }
 
+func TestCaribbeanStudWebPresenter_Output_ActionPhase_DealerMasking(t *testing.T) {
+	p := new(CaribbeanStudWebPresenter)
+	m := new(interfaces.MockCaribbeanStudGame)
+	m.On("GetChips").Return(900).Maybe()
+	m.On("GetPhase").Return(domain.CaribbeanStudPhaseAction).Maybe()
+	m.On("GetPlayerHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 11, false),
+		domain.NewCard(domain.CardDesignDiamond, 13, false),
+		domain.NewCard(domain.CardDesignClover, 5, false),
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+	}).Maybe()
+	m.On("GetDealerHand").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, 13, false),
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignClover, 3, false),
+		domain.NewCard(domain.CardDesignDiamond, 8, false),
+		domain.NewCard(domain.CardDesignHeart, 2, false),
+	}).Maybe()
+	m.On("GetGameEndFlag").Return(false).Maybe()
+	m.On("GetAnteBet").Return(100).Maybe()
+	m.On("GetJackpotBet").Return(0).Maybe()
+	m.On("GetPlayBet").Return(0).Maybe()
+	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
+	m.On("GetAntePayout").Return(0).Maybe()
+	m.On("GetPlayPayout").Return(0).Maybe()
+	m.On("GetJackpotPayout").Return(0).Maybe()
+	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetDealerQualified").Return(false).Maybe()
+	m.On("GetPlayerHandRank").Return(0).Maybe()
+	m.On("GetDealerHandRank").Return(0).Maybe()
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+
+	result := parseCaribbeanStudOutput(t, p.Output(m, nil))
+	assert.Equal(t, domain.CaribbeanStudPhaseAction, result.Phase)
+	assert.Len(t, result.DealerHand, 5)
+	// First card is visible (face-up)
+	assert.Equal(t, "HEART", result.DealerHand[0].Design)
+	assert.Equal(t, 13, result.DealerHand[0].Value)
+	// Remaining cards are masked (face-down)
+	for i := 1; i < 5; i++ {
+		assert.Equal(t, "", result.DealerHand[i].Design, "card %d should be masked", i)
+		assert.Equal(t, 0, result.DealerHand[i].Value, "card %d value should be 0", i)
+	}
+}
+
 func TestCaribbeanStudWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(CaribbeanStudWebPresenter)
 	m := new(interfaces.MockCaribbeanStudGame)

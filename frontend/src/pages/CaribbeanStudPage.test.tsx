@@ -33,11 +33,14 @@ const betPhaseState: CaribbeanStudResponse = {
   message: '',
 };
 
+const maskedCard = { design: '' as CardDesign, value: 0 };
+
 const actionPhaseState: CaribbeanStudResponse = {
   ...betPhaseState,
   phase: 2,
   playerHand: [card('SPADE', 10), card('HEART', 11), card('DIAMOND', 13), card('CLOVER', 5), card('SPADE', 7)],
-  dealerHand: [],
+  // 1 face-up dealer card + 4 masked cards (security: dealer hand not fully revealed)
+  dealerHand: [card('HEART', 13), maskedCard, maskedCard, maskedCard, maskedCard],
   anteBet: 100,
   chips: 900,
 };
@@ -246,6 +249,21 @@ describe('CaribbeanStudPage', () => {
     renderWithProviders(<CaribbeanStudPage />);
     await waitFor(() => expect(screen.getAllByRole('img').length).toBe(10));
     expect(screen.getByText('🟡')).toBeInTheDocument();
+    expect(screen.getByText('🔴')).toBeInTheDocument();
+  });
+
+  it('renders 1 face-up and 4 face-down dealer cards in action phase', async () => {
+    mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhaseState);
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+
+    // 5 player face-up + 1 dealer face-up + 4 dealer face-down (CardBack images) = 10 imgs
+    const imgs = screen.getAllByRole('img');
+    expect(imgs.length).toBe(10);
+    // Dealer section is shown
     expect(screen.getByText('🔴')).toBeInTheDocument();
   });
 

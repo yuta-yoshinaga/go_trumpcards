@@ -15,7 +15,12 @@ func (cp *CaribbeanStudWebPresenter) Output(cs interfaces.CaribbeanStudGame, las
 	resObj := new(controller.CaribbeanStudWebOutput)
 
 	resObj.PlayerHand = cardsToOutputOrEmpty(cs.GetPlayerHand())
-	resObj.DealerHand = cardsToOutputOrEmpty(cs.GetDealerHand())
+	// During the action phase only the first dealer card is visible; mask the rest.
+	if cs.GetPhase() == domain.CaribbeanStudPhaseEnd {
+		resObj.DealerHand = cardsToOutputOrEmpty(cs.GetDealerHand())
+	} else {
+		resObj.DealerHand = caribbeanStudMaskDealerHand(cs.GetDealerHand())
+	}
 	resObj.Phase = cs.GetPhase()
 	resObj.Chips = cs.GetChips()
 	resObj.AnteBet = cs.GetAnteBet()
@@ -62,4 +67,18 @@ func (cp *CaribbeanStudWebPresenter) Output(cs interfaces.CaribbeanStudGame, las
 // ActionLogOutput 棋譜をJSON出力
 func (cp *CaribbeanStudWebPresenter) ActionLogOutput(cs interfaces.CaribbeanStudGame) string {
 	return actionLogOutputJSON(cs)
+}
+
+// caribbeanStudMaskDealerHand returns the dealer hand with all cards except the first masked.
+// Only the first card is revealed during the action phase; the rest have empty Design and zero Value.
+func caribbeanStudMaskDealerHand(cards []*domain.Card) []*controller.WebOutputCard {
+	if len(cards) == 0 {
+		return make([]*controller.WebOutputCard, 0)
+	}
+	result := make([]*controller.WebOutputCard, len(cards))
+	result[0] = cardToOutput(cards[0])
+	for i := 1; i < len(cards); i++ {
+		result[i] = &controller.WebOutputCard{Design: "", Value: 0}
+	}
+	return result
 }
