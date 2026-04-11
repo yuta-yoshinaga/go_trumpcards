@@ -57,6 +57,11 @@ export function CanfieldPage() {
     (col: number) => execApi('move', { zone: 'tableau', col }, { zone: 'foundation' }),
     [execApi],
   );
+  const handleMoveTableauToTableau = useCallback(
+    (fromCol: number, cardIndex: number, toCol: number) =>
+      execApi('move', { zone: 'tableau', col: fromCol, cardIndex }, { zone: 'tableau', col: toCol }),
+    [execApi],
+  );
 
   const theme = useMemo(() => gameTheme.canfield, []);
 
@@ -210,6 +215,19 @@ export function CanfieldPage() {
                   >
                     →F
                   </button>
+                  {state.tableau.map((_, j) =>
+                    j === i ? null : (
+                      <button
+                        key={`t-${i}-to-${j}`}
+                        type="button"
+                        className={`${btnOutline} ${focusRingWhite} text-xs`}
+                        onClick={() => handleMoveTableauToTableau(i, col.length - 1, j)}
+                        disabled={col.length === 0 || loading}
+                      >
+                        →T{j}
+                      </button>
+                    ),
+                  )}
                 </div>
               )}
             </div>

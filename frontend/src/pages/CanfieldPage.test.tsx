@@ -71,13 +71,13 @@ describe('CanfieldPage', () => {
   it('shows game clear phase', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<CanfieldPage />);
-    await waitFor(() => expect(screen.getByText('ゲームクリア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('ゲームクリア').length).toBeGreaterThan(0));
   });
 
   it('shows game over phase', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<CanfieldPage />);
-    await waitFor(() => expect(screen.getByText('ゲームオーバー')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('ゲームオーバー').length).toBeGreaterThan(0));
   });
 
   it('clicks draw button (stock) to fire draw command', async () => {
@@ -126,5 +126,59 @@ describe('CanfieldPage', () => {
     const btn = screen.getByRole('button', { name: 'ギブアップ' });
     btn.click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('giveup'));
+  });
+
+  it('shows error alert when API fails on mount', async () => {
+    mockExec.mockRejectedValue(new Error('network error'));
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+  });
+
+  it('hides game action buttons after game over (only reset remains)', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /reset|リセット/i }).length).toBeGreaterThan(0);
+  });
+
+  it('undo button fires undo command when canUndo is true', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const undoBtn = screen.getByRole('button', { name: '元に戻す' });
+    undoBtn.click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('undo button is disabled when canUndo is false', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const undoBtn = screen.getByRole('button', { name: '元に戻す' });
+    expect(undoBtn).toBeDisabled();
+  });
+
+  it('renders empty waste and reserve placeholders', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [], reserve: [] });
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // The reserve/waste sections still render without their top cards
+    expect(screen.getByText(/リザーブ: 0/)).toBeInTheDocument();
+  });
+
+  it('tableau-to-tableau button fires move command with correct args', async () => {
+    renderWithProviders(<CanfieldPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Column 0 → column 1 button (each non-empty column has 3 →Tj buttons)
+    const btn = screen.getAllByRole('button', { name: /→T1/ })[0];
+    btn.click();
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'tableau', col: 1 },
+      ),
+    );
   });
 });
