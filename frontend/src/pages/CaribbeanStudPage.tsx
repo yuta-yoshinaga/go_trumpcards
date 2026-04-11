@@ -28,6 +28,7 @@ import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CaribbeanStudResponse } from '../types/card';
+import { isMaskedCard } from '../types/card';
 import { CaribbeanStudPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { CARIBBEANSTUD_HELP, parseCaribbeanstudCommand } from '../utils/cli/commands/caribbeanstudCommands';
@@ -263,7 +264,7 @@ function CaribbeanStudPageContent() {
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.dealerHand.map((card, i) =>
-                    (card as { design: string }).design === '' ? (
+                    isMaskedCard(card) ? (
                       <AnimatedCardBack key={`d-back-${i}`} width={cardWidth} />
                     ) : (
                       <AnimatedCard

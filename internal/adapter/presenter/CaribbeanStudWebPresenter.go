@@ -55,6 +55,9 @@ func (cp *CaribbeanStudWebPresenter) Output(cs interfaces.CaribbeanStudGame, las
 			resObj.MessageCode = "caribbeanstud.result.push"
 		default:
 		}
+		// Dealer-not-qualified intentionally overrides any earlier win/lose/push message:
+		// the qualification status is the most useful piece of information for the player
+		// in that scenario (ante pays 1:1, play bet pushes regardless of hand strength).
 		if !cs.GetDealerQualified() && cs.GetPlayBet() > 0 {
 			resObj.Message = "Dealer does not qualify!"
 			resObj.MessageCode = "caribbeanstud.result.dealerNotQualified"

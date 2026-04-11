@@ -1,15 +1,11 @@
-import type { Card, CaribbeanStudResponse } from '../../../types/card';
+import type { Card, CaribbeanStudResponse, MaskedCard } from '../../../types/card';
+import { isMaskedCard } from '../../../types/card';
 import { formatCard, formatCardList, formatHeader, formatIndexedCards, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = { 1: 'BET', 2: 'ACTION', 3: 'END' };
 
-/** Returns true if the card is masked (face-down, not yet revealed). */
-function isMaskedCard(card: Card): boolean {
-  return (card as { design: string }).design === '';
-}
-
 /** Format the dealer's partial hand during the action phase (1 face-up + hidden). */
-function formatDealerActionHand(dealerHand: Card[]): string {
+function formatDealerActionHand(dealerHand: (Card | MaskedCard)[]): string {
   return dealerHand.map((c) => (isMaskedCard(c) ? '??' : formatCard(c))).join(', ');
 }
 
@@ -30,7 +26,8 @@ export function formatCaribbeanstudState(state: CaribbeanStudResponse): string {
   }
 
   if (state.phase === 3 && state.dealerHand.length > 0) {
-    lines.push(`Dealer: ${formatCardList(state.dealerHand)}`);
+    // At end phase the backend reveals all dealer cards, so the slice is guaranteed Card[].
+    lines.push(`Dealer: ${formatCardList(state.dealerHand as Card[])}`);
     lines.push(`Dealer qualified: ${state.dealerQualified ? 'yes' : 'no'}`);
   }
   lines.push('----------');
