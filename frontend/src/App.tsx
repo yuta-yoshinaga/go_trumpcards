@@ -10,6 +10,7 @@ import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
 import { CanastaPage } from './pages/CanastaPage';
+import { CaribbeanStudPage } from './pages/CaribbeanStudPage';
 import { ClockSolitairePage } from './pages/ClockSolitairePage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { CribbagePage } from './pages/CribbagePage';
@@ -87,6 +88,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/deuceswild': <DeucesWildPage />,
   '/jokerpoker': <JokerPokerPage />,
   '/threecard': <ThreeCardPage />,
+  '/caribbeanstud': <CaribbeanStudPage />,
   '/paigow': <PaiGowPage />,
   '/speed': <SpeedPage />,
   '/gofish': <GoFishPage />,

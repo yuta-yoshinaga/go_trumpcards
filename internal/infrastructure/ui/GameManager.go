@@ -61,6 +61,7 @@ var gameRegistry = []GameRegistryEntry{
 	{"fortythieves", "Forty Thieves (フォーティシーブス)", func() cuiGame { return NewFortyThievesCui() }},
 	{"paigow", "Pai Gow Poker (パイガオポーカー)", func() cuiGame { return NewPaiGowCui() }},
 	{"twotenjack", "Two Ten Jack (ツーテンジャック)", func() cuiGame { return NewTwoTenJackCui() }},
+	{"caribbeanstud", "Caribbean Stud Poker (カリビアンスタッドポーカー)", func() cuiGame { return NewCaribbeanStudCui() }},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -105,6 +106,8 @@ var GameAliases = map[string]string{
 	"6plus":  "shortdeck",
 	"gin":    "ginrummy",
 	"3card":  "threecard",
+	"csp":    "caribbeanstud",
+	"stud":   "caribbeanstud",
 	"40t":    "fortythieves",
 	"pgp":    "paigow",
 }

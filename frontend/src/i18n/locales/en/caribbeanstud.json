@@ -1,0 +1,78 @@
+{
+  "title": "Caribbean Stud Poker",
+  "player": "Player",
+  "dealer": "Dealer",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "jackpot": "Jackpot",
+    "play": "Play Bet",
+    "handRank": "Hand"
+  },
+  "button": {
+    "bet": "Bet",
+    "play": "Call",
+    "fold": "Fold",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Betting",
+    "action": "Call or Fold",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "You win!",
+    "dealerWins": "Dealer wins!",
+    "push": "Push!",
+    "fold": "Folded",
+    "dealerNotQualified": "Dealer does not qualify!"
+  },
+  "payout": {
+    "ante": "Ante",
+    "play": "Play",
+    "jackpot": "Jackpot",
+    "total": "Total"
+  },
+  "handRank": {
+    "0": "High Card",
+    "1": "Pair",
+    "2": "Two Pair",
+    "3": "Three of a Kind",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Full House",
+    "7": "Four of a Kind",
+    "8": "Straight Flush",
+    "9": "Royal Flush"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Set your ante and optional jackpot side bet",
+  "payoutRef": {
+    "title": "Payout Table",
+    "playHeader": "Play Bet (on Call)",
+    "payRoyalFlush": "Royal Flush: 100:1",
+    "payStraightFlush": "Straight Flush: 50:1",
+    "payFourOfAKind": "Four of a Kind: 20:1",
+    "payFullHouse": "Full House: 7:1",
+    "payFlush": "Flush: 5:1",
+    "payStraight": "Straight: 4:1",
+    "payThreeOfAKind": "Three of a Kind: 3:1",
+    "payTwoPair": "Two Pair: 2:1",
+    "payPair": "Pair or less: 1:1",
+    "jackpotHeader": "Jackpot Side Bet",
+    "jackpotRoyalFlush": "Royal Flush: 20000x",
+    "jackpotStraightFlush": "Straight Flush: 5000x",
+    "jackpotFourOfAKind": "Four of a Kind: 500x",
+    "jackpotFullHouse": "Full House: 100x",
+    "jackpotFlush": "Flush: 50x"
+  },
+  "dealerQualified": "Qualified",
+  "dealerNotQualified": "Not Qualified",
+  "tutorial": {
+    "betControls": "Set your ante and optional jackpot side bet, then press Bet.",
+    "actionButtons": "Choose Call to bet 2x your ante, or Fold to forfeit.",
+    "results": "Check your results and payouts here."
+  }
+}

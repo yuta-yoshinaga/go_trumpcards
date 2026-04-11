@@ -287,6 +287,13 @@ export const ThreeCardPhase = {
   END: 3,
 } as const;
 
+/** Caribbean Stud Poker phase constants (sync: internal/domain/CaribbeanStud.go). */
+export const CaribbeanStudPhase = {
+  BET: 1,
+  ACTION: 2,
+  END: 3,
+} as const;
+
 /** Doubt phase constants (sync: internal/domain/Doubt.go). */
 export const DoubtPhase = {
   PLAY: 0,

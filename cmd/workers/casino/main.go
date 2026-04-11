@@ -243,6 +243,22 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Caribbean Stud Poker
+	if err := worker.RegisterKV(mux, "/caribbeanstud/exec", "caribbeanstud:",
+		func() usecase.CaribbeanStudInteractorIF {
+			return usecase.NewCaribbeanStudInteractor(
+				domain.NewDefaultCaribbeanStud(),
+				new(presenter.CaribbeanStudWebPresenter),
+			)
+		},
+		func(data []byte) (usecase.CaribbeanStudInteractorIF, error) {
+			return usecase.RestoreCaribbeanStudInteractor(data, new(presenter.CaribbeanStudWebPresenter))
+		},
+		controller.NewCaribbeanStudWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

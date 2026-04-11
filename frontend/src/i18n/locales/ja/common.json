@@ -61,7 +61,8 @@
     "sevencardstud": "セブンカードスタッド",
     "clocksolitaire": "クロックソリティア",
     "fortythieves": "フォーティシーブス",
-    "paigow": "パイゴウポーカー"
+    "paigow": "パイゴウポーカー",
+    "caribbeanstud": "カリビアンスタッドポーカー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -250,6 +251,11 @@
     "threecard.result.push": "引き分け！",
     "threecard.result.fold": "フォールド",
     "threecard.result.dealerNotQualified": "ディーラー未クオリファイ！",
+    "caribbeanstud.result.playerWins": "勝利！",
+    "caribbeanstud.result.dealerWins": "ディーラー勝利！",
+    "caribbeanstud.result.push": "引き分け！",
+    "caribbeanstud.result.fold": "フォールド",
+    "caribbeanstud.result.dealerNotQualified": "ディーラー未クオリファイ！",
     "klondike.playing": "プレイ中",
     "klondike.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "klondike.gameOver": "ゲームオーバー",

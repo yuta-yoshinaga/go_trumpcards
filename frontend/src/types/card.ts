@@ -1540,6 +1540,30 @@ export interface ThreeCardResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Caribbean Stud Poker (カリビアンスタッドポーカー) ---
+
+/** Caribbean Stud Poker API response. */
+export interface CaribbeanStudResponse {
+  playerHand: Card[];
+  dealerHand: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  jackpotBet: number;
+  playBet: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  jackpotPayout: number;
+  totalPayout: number;
+  dealerQualified: boolean;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Pai Gow Poker (パイゴウポーカー) ---
 
 /** Pai Gow Poker API response. */

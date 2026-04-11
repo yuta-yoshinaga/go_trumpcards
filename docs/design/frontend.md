@@ -739,7 +739,7 @@ classDiagram
 
     PaiGowApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全43ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow)"
+    note for BlackJackApi "全44ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)

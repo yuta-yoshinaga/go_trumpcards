@@ -25,7 +25,7 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # Available games: blackjack, poker, oldmaid, daifugo, sevens, doubt, holdem, omaha,
 # shortdeck, pineapple, hearts, memory, klondike, freecell, baccarat, spades,
 # twotenjack, crazyeights, ginrummy, spider, napoleon, indianpoker, videopoker,
-# deuceswild, jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, ohhell,
+# deuceswild, jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, caribbeanstud, ohhell,
 # bridge, speed, gofish, canasta, pinochle, golf, pigtail, sevencardstud,
 # clocksolitaire, durak, fortythieves, paigow
 go run ./cmd/trumpcards games      # List all available games
@@ -128,7 +128,7 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 
 | Worker | Entry point | Games |
 |--------|-------------|-------|
-| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, sevencardstud, paigow) |
+| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, caribbeanstud, sevencardstud, paigow) |
 | **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak) |
 | **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves) |
 
