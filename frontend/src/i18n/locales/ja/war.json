@@ -16,14 +16,6 @@
     "rounds": "ラウンド",
     "maxRounds": "最大ラウンド"
   },
-  "message": {
-    "reveal": "step でカードをめくってください。",
-    "resolved.player": "あなたがラウンドに勝利！ step で回収します。",
-    "resolved.cpu": "CPU がラウンドに勝利... step で回収します。",
-    "war": "戦争発生！ step で伏せ札と新しい表札を出します。",
-    "humanWin": "あなたの勝ちです！",
-    "cpuWin": "CPU の勝ちです..."
-  },
   "settings": {
     "maxRounds": "最大ラウンド数"
   }

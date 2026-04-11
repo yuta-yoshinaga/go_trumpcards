@@ -879,6 +879,7 @@ export const deuceswildApi = createVideoPokerApi('deuceswild');
 export const jokerpokerApi = createVideoPokerApi('jokerpoker');
 
 /** API client for the War /war/exec endpoint. */
+/** API client for the War /war/exec endpoint. */
 export const warApi = {
   exec: (command: 'reset' | 'step' | 'log', config?: { maxRounds?: number }) =>
     gameExec<WarResponse>('war', { command, ...config }),

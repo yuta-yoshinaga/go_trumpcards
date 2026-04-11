@@ -2,7 +2,6 @@ package presenter
 
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
@@ -52,13 +51,10 @@ func buildWarMessage(w interfaces.WarGame, lastErr error) (string, string, map[s
 		return lastErr.Error(), "error", nil
 	}
 	if w.GetGameEndFlag() {
-		return "", "gameEnd", nil
+		if w.GetWinnerIdx() == 0 {
+			return "", "war.result.humanWin", nil
+		}
+		return "", "war.result.cpuWin", nil
 	}
-	switch w.GetPhase() {
-	case domain.WarPhaseWarBury:
-		return "", "war", nil
-	case domain.WarPhaseResolved:
-		return "", "resolved", nil
-	}
-	return "", "reveal", nil
+	return "", "", nil
 }

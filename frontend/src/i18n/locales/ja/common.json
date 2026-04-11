@@ -297,6 +297,8 @@
     "golf.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "pigtail.result.humanLose": "ゲーム終了！ あなたの負け！",
     "pigtail.result.cpuLose": "ゲーム終了！ CPU {{cpuId}}の負け！",
+    "war.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "war.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
     "clocksolitaire.playing": "プレイ中",
     "clocksolitaire.gameClear": "ゲームクリア！ ステップ数: {{stepCount}}",
     "clocksolitaire.gameOver": "ゲームオーバー"

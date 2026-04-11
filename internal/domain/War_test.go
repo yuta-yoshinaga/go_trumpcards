@@ -281,6 +281,18 @@ func TestWar_WarBury_CpuRunsOut(t *testing.T) {
 	assert.Equal(t, 0, w.GetWinnerIdx())
 }
 
+func TestWar_FinishByTotal_EqualCardsTie(t *testing.T) {
+	// Equal-card tie-breaker: default branch awards win to player 0.
+	w := setupWarWithPiles(t, []*Card{card(5)}, []*Card{card(5)})
+	w.config = WarConfig{MaxRounds: 10}
+	assert.NoError(t, w.Step()) // reveal 5=5 -> WarBury
+	assert.Equal(t, WarPhaseWarBury, w.GetPhase())
+	assert.NoError(t, w.Step()) // both piles drained -> finishByTotal with tie
+	assert.True(t, w.GetGameEndFlag())
+	assert.Equal(t, 0, w.GetWinnerIdx())
+	assert.True(t, w.GetPlayer(0).GetIsFinished())
+}
+
 func TestWar_GetPlayerCnt(t *testing.T) {
 	w := newWarForTest()
 	assert.Equal(t, WarPlayerCnt, w.GetPlayerCnt())

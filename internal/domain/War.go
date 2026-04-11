@@ -256,9 +256,7 @@ func (w *War) finishByTotal() {
 	default:
 		w.winnerIdx = 0
 	}
-	if w.winnerIdx >= 0 {
-		w.players[w.winnerIdx].SetIsFinished(true)
-	}
+	w.players[w.winnerIdx].SetIsFinished(true)
 }
 
 // appendLog 棋譜にエントリを追加する

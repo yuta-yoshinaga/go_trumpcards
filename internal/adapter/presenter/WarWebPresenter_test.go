@@ -40,7 +40,7 @@ func TestWarWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 26, resObj.Players[1].DrawPileSize)
 		assert.False(t, resObj.GameEndFlag)
 		assert.Equal(t, -1, resObj.WinnerIdx)
-		assert.Equal(t, "reveal", resObj.MessageCode)
+		assert.Empty(t, resObj.MessageCode)
 	})
 
 	t.Run("error message", func(t *testing.T) {
@@ -77,39 +77,27 @@ func TestWarWebPresenter_Output(t *testing.T) {
 		result := p.Output(w, nil)
 		var resObj controller.WarWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
-		assert.Equal(t, "gameEnd", resObj.MessageCode)
+		assert.Equal(t, "war.result.humanWin", resObj.MessageCode)
 		assert.True(t, resObj.GameEndFlag)
 	})
 
-	t.Run("war phase message", func(t *testing.T) {
+	t.Run("game end CPU win message", func(t *testing.T) {
 		w := setupWarTest()
 		data, _ := json.Marshal(w)
 		var raw map[string]json.RawMessage
 		_ = json.Unmarshal(data, &raw)
-		raw["ph"], _ = json.Marshal(domain.WarPhaseWarBury)
+		raw["ge"], _ = json.Marshal(true)
+		raw["wi"], _ = json.Marshal(1)
+		raw["ph"], _ = json.Marshal(domain.WarPhaseGameEnd)
 		newData, _ := json.Marshal(raw)
 		_ = json.Unmarshal(newData, w)
 
 		result := p.Output(w, nil)
 		var resObj controller.WarWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
-		assert.Equal(t, "war", resObj.MessageCode)
+		assert.Equal(t, "war.result.cpuWin", resObj.MessageCode)
 	})
 
-	t.Run("resolved phase message", func(t *testing.T) {
-		w := setupWarTest()
-		data, _ := json.Marshal(w)
-		var raw map[string]json.RawMessage
-		_ = json.Unmarshal(data, &raw)
-		raw["ph"], _ = json.Marshal(domain.WarPhaseResolved)
-		newData, _ := json.Marshal(raw)
-		_ = json.Unmarshal(newData, w)
-
-		result := p.Output(w, nil)
-		var resObj controller.WarWebOutput
-		_ = json.Unmarshal([]byte(result), &resObj)
-		assert.Equal(t, "resolved", resObj.MessageCode)
-	})
 }
 
 func TestWarWebPresenter_ActionLogOutput(t *testing.T) {
