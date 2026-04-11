@@ -31,6 +31,7 @@ vi.mock('../constants/cuiManualTexts', async () => {
 
 afterEach(() => {
   localStorage.clear();
+  vi.restoreAllMocks();
 });
 
 describe('ManualModal', () => {
@@ -83,7 +84,6 @@ describe('ManualModal', () => {
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
     expect(screen.getByText('BlackJack')).toBeInTheDocument();
     expect(screen.queryByText('BlackJack CUI')).not.toBeInTheDocument();
-    vi.restoreAllMocks();
   });
 
   it('renders empty content for unknown gamePath', () => {
