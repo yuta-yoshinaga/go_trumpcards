@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { Components } from 'react-markdown';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { cuiManualTexts, isCliModeEnabled } from '../constants/cuiManualTexts';
 import { manualTexts } from '../constants/manualTexts';
 import { btnSecondary } from '../styles/buttonStyles';
 import { getFocusableElements } from '../utils/dom';
@@ -89,7 +90,8 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
 
   if (!open) return null;
 
-  const markdown = manualTexts[gamePath] ?? '';
+  const cliMode = isCliModeEnabled(gamePath);
+  const markdown = (cliMode ? cuiManualTexts[gamePath] : manualTexts[gamePath]) ?? '';
 
   return createPortal(
     // biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses modal on click
