@@ -146,6 +146,15 @@ export const SpadesPhase = {
   GAME_END: 4,
 } as const;
 
+/** Two Ten Jack phase constants (sync: internal/domain/TwoTenJack.go). */
+export const TwoTenJackPhase = {
+  DECLARE: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Oh Hell phase constants (sync: internal/domain/OhHell.go). */
 export const OhHellPhase = {
   BID: 0,

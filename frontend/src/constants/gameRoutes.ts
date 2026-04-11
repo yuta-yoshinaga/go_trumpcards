@@ -48,6 +48,7 @@ export const gameCategories: readonly GameCategory[] = [
     routes: [
       { path: '/hearts', labelKey: 'nav.hearts', icon: '♥️' },
       { path: '/spades', labelKey: 'nav.spades', icon: '♠️' },
+      { path: '/twotenjack', labelKey: 'nav.twotenjack', icon: '🎯' },
       { path: '/ohhell', labelKey: 'nav.ohhell', icon: '🔔' },
       { path: '/euchre', labelKey: 'nav.euchre', icon: '🎩' },
       { path: '/bridge', labelKey: 'nav.bridge', icon: '🌉' },

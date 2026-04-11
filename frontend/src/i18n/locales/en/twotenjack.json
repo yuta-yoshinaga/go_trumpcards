@@ -1,0 +1,49 @@
+{
+  "phase": {
+    "declare": "Declare",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trump": "Trump",
+  "trumpUndeclared": "Trump undeclared",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "tricks": "Tricks: {{count}}",
+  "capturedPoints": "Points: {{count}}",
+  "currentTrick": "Current Trick",
+  "scores": "Scores",
+  "scoresTeam": "Team",
+  "scoresCaptured": "Captured",
+  "scoresTotal": "Total",
+  "team0": "Your team (0,2)",
+  "team1": "Opponents (1,3)",
+  "declarePhase": "Declare the trump suit (♠/♣/♥/♦)",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "suit": {
+    "spade": "Spade",
+    "club": "Club",
+    "heart": "Heart",
+    "diamond": "Diamond"
+  },
+  "tutorial": {
+    "declareControls": "The declarer picks one trump suit. Choosing your longest suit usually gives the best advantage.",
+    "trickDisplay": "The current trick appears here. Follow the lead suit if possible — trumps beat any non-trump card.",
+    "scoreTable": "Score table: Aces and Jacks = 1pt, Tens = 10pt, last trick = +2 (50pt total). The declaring team needs 26 or more to make the contract.",
+    "playButton": "Pick a card from your hand and press Play to play it.",
+    "resetButton": "Reset the game and start over from the beginning."
+  }
+}

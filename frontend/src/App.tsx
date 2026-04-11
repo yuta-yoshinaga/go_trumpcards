@@ -47,6 +47,7 @@ import { SpeedPage } from './pages/SpeedPage';
 import { SpiderPage } from './pages/SpiderPage';
 import { ThreeCardPage } from './pages/ThreeCardPage';
 import { TriPeaksPage } from './pages/TriPeaksPage';
+import { TwoTenJackPage } from './pages/TwoTenJackPage';
 import { VideoPokerPage } from './pages/VideoPokerPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
@@ -67,6 +68,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/shortdeck': <ShortDeckPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,
+  '/twotenjack': <TwoTenJackPage />,
   '/ohhell': <OhHellPage />,
   '/napoleon': <NapoleonPage />,
   '/memory': <MemoryPage />,

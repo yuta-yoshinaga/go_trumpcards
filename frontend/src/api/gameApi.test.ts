@@ -22,6 +22,7 @@ import {
   spadesApi,
   spiderApi,
   tripeaksApi,
+  twoTenJackApi,
 } from './gameApi';
 
 describe('gameApi', () => {
@@ -2903,6 +2904,97 @@ describe('gameApi', () => {
           body: JSON.stringify({ command: 'undo_n', col: undefined, n: 4, sessionId }),
         }),
       );
+    });
+  });
+
+  describe('twoTenJackApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      trickNumber: 1,
+      currentPlayerIdx: 0,
+      declarerIdx: 0,
+      trumpSuit: -1,
+      currentTrick: [],
+      gameEndFlag: false,
+      winnerTeam: -1,
+      leadPlayerIdx: 0,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 50 },
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await twoTenJackApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/twotenjack/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          trumpSuit: undefined,
+          cardIndex: undefined,
+          config: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with declare command and trumpSuit', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await twoTenJackApi.exec('declare', 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/twotenjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'declare',
+            trumpSuit: 3,
+            cardIndex: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with play command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await twoTenJackApi.exec('play', undefined, 2);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/twotenjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            trumpSuit: undefined,
+            cardIndex: 2,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await twoTenJackApi.exec('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 100 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/twotenjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            trumpSuit: undefined,
+            cardIndex: undefined,
+            config: { cpuDifficulty: 2, pointLimit: 100 },
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(twoTenJackApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 });

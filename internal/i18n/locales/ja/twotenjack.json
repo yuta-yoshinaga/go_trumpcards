@@ -1,0 +1,14 @@
+{
+  "helpTitle": "Two Ten Jack (ツーテンジャック)",
+  "helpDeclare": "  d <s>                declare trump (1=S, 2=C, 3=H, 4=D)",
+  "helpPlay": "  p <idx>              play a card",
+  "helpNext": "  n                    next trick",
+  "helpNextRound": "  nr                   next round",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               point limit",
+  "declarePhase": "宣言フェーズです。",
+  "playPhase.lead": "カードをリードしてください。",
+  "playPhase.follow": "リードスートに追随してください。",
+  "trickEnd": "トリック終了です。",
+  "roundEnd": "ラウンド終了です。"
+}

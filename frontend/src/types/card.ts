@@ -764,6 +764,59 @@ export interface SpadesResponse {
   hint?: SpadesHint;
 }
 
+// --- Two Ten Jack (ツーテンジャック) ---
+
+/** Two Ten Jack player data (4-player team game: seats 0,2 vs 1,3). */
+export interface TwoTenJackPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+  capturedPoints: number;
+}
+
+/** A card played in a Two Ten Jack trick. */
+export interface TwoTenJackTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Two Ten Jack game configuration. */
+export interface TwoTenJackConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Two Ten Jack. */
+export interface TwoTenJackHint {
+  cardIndex?: number;
+  trumpSuit?: number;
+  reason: string;
+}
+
+/** Full Two Ten Jack game state returned from the API. */
+export interface TwoTenJackResponse {
+  players: TwoTenJackPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  declarerIdx: number;
+  trumpSuit: number;
+  currentTrick: TwoTenJackTrickCard[];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: TwoTenJackConfig;
+  hint?: TwoTenJackHint;
+}
+
 // --- Crazy Eights (クレイジーエイト) ---
 
 /** Crazy Eights player data with scores. */

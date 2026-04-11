@@ -43,6 +43,7 @@ import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
+import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
 
 /** Map from game route path to raw Markdown manual text. */
@@ -88,5 +89,6 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/spider': spider,
   '/threecard': threecard,
   '/tripeaks': tripeaks,
+  '/twotenjack': twotenjack,
   '/videopoker': videopoker,
 };
