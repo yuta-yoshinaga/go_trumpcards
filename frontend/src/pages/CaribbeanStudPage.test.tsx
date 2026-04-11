@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { caribbeanstudApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CaribbeanStudResponse } from '../types/card';
@@ -118,6 +118,10 @@ const endPhaseWithJackpot: CaribbeanStudResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+afterEach(() => {
+  localStorage.clear();
 });
 
 describe('CaribbeanStudPage', () => {
@@ -271,5 +275,19 @@ describe('CaribbeanStudPage', () => {
     mockApi.mockResolvedValue(endPhasePlayerWins);
     renderWithProviders(<CaribbeanStudPage />);
     await waitFor(() => expect(screen.getByText(/クオリファイ/)).toBeInTheDocument());
+  });
+
+  it('renders hint toggle checkbox', async () => {
+    mockApi.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    expect(screen.getByRole('checkbox')).toBeInTheDocument();
+  });
+
+  it('shows HintTooltip when hint is enabled in action phase', async () => {
+    localStorage.setItem('hint_enabled_caribbeanstud', 'true');
+    mockApi.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 });

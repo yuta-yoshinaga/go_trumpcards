@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pinochleApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PinochleResponse } from '../types/card';
@@ -109,6 +109,10 @@ const gameEndState: PinochleResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(bidPhaseState);
+});
+
+afterEach(() => {
+  localStorage.clear();
 });
 
 describe('PinochlePage', () => {
@@ -292,5 +296,20 @@ describe('PinochlePage', () => {
     await waitFor(() => {
       expect(screen.getAllByText(/チーム 0/).length).toBeGreaterThan(0);
     });
+  });
+
+  it('renders hint toggle checkbox', async () => {
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+    expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument();
+  });
+
+  it('shows HintTooltip when hint is enabled and state has backend hint', async () => {
+    localStorage.setItem('hint_enabled_pinochle', 'true');
+    // provide a state where state.hint is set so getPinochleHint returns non-null
+    const hintState: PinochleResponse = { ...bidPhaseState, hint: { reason: 'hint_bid', cardIndex: 0 } };
+    mockExec.mockResolvedValue(hintState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 });

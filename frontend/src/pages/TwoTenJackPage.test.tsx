@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, twoTenJackApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useCliMode } from '../hooks/useCliMode';
@@ -73,6 +73,10 @@ beforeEach(() => {
     addError: vi.fn(),
     clearLog: vi.fn(),
   });
+});
+
+afterEach(() => {
+  localStorage.clear();
 });
 
 describe('TwoTenJackPage', () => {
@@ -264,5 +268,21 @@ describe('TwoTenJackPage', () => {
         pointLimit: 100,
       }),
     );
+  });
+
+  it('renders hint toggle checkbox', async () => {
+    renderWithProviders(<TwoTenJackPage />);
+    // wait for state to load (human cards appear in play phase)
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument();
+  });
+
+  it('shows HintTooltip when hint is enabled and state has backend hint', async () => {
+    localStorage.setItem('hint_enabled_twotenjack', 'true');
+    // override state to include backend hint so getTwoTenJackHint returns non-null
+    const hintState = makeTwoTenJackState({ hint: { reason: 'lead', cardIndex: 0 } });
+    mockExec.mockResolvedValue(hintState);
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 });
