@@ -50,6 +50,7 @@ import { ThreeCardPage } from './pages/ThreeCardPage';
 import { TriPeaksPage } from './pages/TriPeaksPage';
 import { TwoTenJackPage } from './pages/TwoTenJackPage';
 import { VideoPokerPage } from './pages/VideoPokerPage';
+import { WarPage } from './pages/WarPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
 const pageByPath: Record<GamePath, ReactNode> = {
@@ -95,6 +96,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/pinochle': <PinochlePage />,
   '/golf': <GolfPage />,
   '/pigtail': <PigsTailPage />,
+  '/war': <WarPage />,
   '/clocksolitaire': <ClockSolitairePage />,
   '/fortythieves': <FortyThievesPage />,
 };

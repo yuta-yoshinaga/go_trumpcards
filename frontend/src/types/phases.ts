@@ -308,6 +308,14 @@ export const SpeedPhase = {
   GAME_END: 2,
 } as const;
 
+/** War phase constants (sync: internal/domain/War.go). */
+export const WarPhase = {
+  REVEAL: 0,
+  RESOLVED: 1,
+  WAR_BURY: 2,
+  GAME_END: 3,
+} as const;
+
 /** Go Fish phase constants (sync: internal/domain/GoFish.go). */
 export const GoFishPhase = {
   PLAY: 0,

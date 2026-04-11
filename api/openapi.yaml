@@ -102,6 +102,8 @@ tags:
     description: Forty Thieves (フォーティシーブス) game
   - name: paigow
     description: Pai Gow Poker (パイゴウポーカー) game
+  - name: war
+    description: War (戦争) game
 
 paths:
   /blackjack/exec:
@@ -4243,6 +4245,141 @@ paths:
                     bet: 0
                     result: 0
                     message: "unsupported command"
+
+  /war/exec:
+    post:
+      tags:
+        - war
+      summary: Execute a War (戦争) game command
+      description: |
+        Send a command to advance the War (戦争) game session identified by
+        `sessionId`.  War is a two-player matching card game for a human vs
+        CPU, played with a standard 52-card deck split evenly (26 cards each,
+        face-down).  Each round both players reveal the top card of their
+        draw pile; the higher rank (Ace high) wins both cards into the
+        winner's discard pile.  On a tie, "war" is triggered: each player
+        buries up to 3 cards face-down and reveals a new face-up card, with
+        the higher face-up winning the entire pot.  Wars can chain if the
+        new face-ups also tie.  When a draw pile empties, the discard pile
+        is shuffled and reused.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Reveal   | `0`   | Ready to flip the next pair of cards |
+        | Resolved | `1`   | Round decided; next step awards the pot |
+        | WarBury  | `2`   | Tie triggered; next step buries face-down and reveals new face-ups |
+        | GameEnd  | `3`   | Game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game (optional `maxRounds` 10-10000) |
+        | `step`  | `s`     | Advance one step of the state machine |
+        | `log`   | `l`     | View action log |
+      operationId: warExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, step, s, log, l]
+                maxRounds:
+                  type: integer
+                  description: Round cap (10-10000). Used only with reset.
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              step:
+                summary: Flip next card / resolve round / resolve war
+                value:
+                  command: step
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        drawPileSize:
+                          type: integer
+                        discardPileSize:
+                          type: integer
+                        totalCards:
+                          type: integer
+                  phase:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerIdx:
+                    type: integer
+                  playerRevealed:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  cpuRevealed:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  warPotSize:
+                    type: integer
+                  lastWinnerIdx:
+                    type: integer
+                  lastBurialCount:
+                    type: integer
+                  roundsPlayed:
+                    type: integer
+                  config:
+                    type: object
+                    properties:
+                      maxRounds:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                  phase:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  message:
+                    type: string
 
 components:
   schemas:

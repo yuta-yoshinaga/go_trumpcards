@@ -67,6 +67,7 @@ type TrumpCardsWeb struct {
 	pgc  *controller.PaiGowWebController
 	ttjc *controller.TwoTenJackWebController
 	cspc *controller.CaribbeanStudWebController
+	warc *controller.WarWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -409,6 +410,15 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				new(presenter.CaribbeanStudWebPresenter),
 			)
 		}),
+		warc: controller.NewWarWebController(func() usecase.WarInteractorIF {
+			config := domain.DefaultWarConfig()
+			players := []*domain.WarPlayer{
+				domain.NewWarPlayer(true),
+				domain.NewWarPlayer(false),
+			}
+			war := domain.NewWar(domain.NewTrumpCards(0), players, config)
+			return usecase.NewWarInteractor(war, new(presenter.WarWebPresenter))
+		}),
 	}
 }
 
@@ -465,6 +475,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/paigow/exec", web.pgc.Exec},
 		{"/twotenjack/exec", web.ttjc.Exec},
 		{"/caribbeanstud/exec", web.cspc.Exec},
+		{"/war/exec", web.warc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)

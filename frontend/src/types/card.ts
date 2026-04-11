@@ -1633,6 +1633,38 @@ export interface SpeedConfig {
   autoFlip: boolean;
 }
 
+/** War player data with face-down pile and discard pile sizes. */
+export interface WarPlayerData {
+  id: number;
+  isHuman: boolean;
+  drawPileSize: number;
+  discardPileSize: number;
+  totalCards: number;
+}
+
+/** War game configuration. */
+export interface WarConfig {
+  maxRounds: number;
+}
+
+/** Full War game state returned from the API. */
+export interface WarResponse {
+  players: WarPlayerData[];
+  phase: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  playerRevealed: Card | null;
+  cpuRevealed: Card | null;
+  warPotSize: number;
+  lastWinnerIdx: number;
+  lastBurialCount: number;
+  roundsPlayed: number;
+  config: WarConfig;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 /** Full Speed game state returned from the API. */
 export interface SpeedResponse {
   players: SpeedPlayerData[];

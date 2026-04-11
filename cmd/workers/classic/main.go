@@ -350,6 +350,25 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// War
+	if err := worker.RegisterKV(mux, "/war/exec", "war:",
+		func() usecase.WarInteractorIF {
+			config := domain.DefaultWarConfig()
+			players := []*domain.WarPlayer{
+				domain.NewWarPlayer(true),
+				domain.NewWarPlayer(false),
+			}
+			war := domain.NewWar(domain.NewTrumpCards(0), players, config)
+			return usecase.NewWarInteractor(war, new(presenter.WarWebPresenter))
+		},
+		func(data []byte) (usecase.WarInteractorIF, error) {
+			return usecase.RestoreWarInteractor(data, new(presenter.WarWebPresenter))
+		},
+		controller.NewWarWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	// Durak
 	if err := worker.RegisterKV(mux, "/durak/exec", "durak:",
 		func() usecase.DurakInteractorIF {
