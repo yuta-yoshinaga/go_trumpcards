@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全43ゲーム)](#12-ゲームドメイン-全43ゲーム)
+  - [1.2 ゲームドメイン (全46ゲーム)](#12-ゲームドメイン-全46ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -125,7 +125,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全43ゲーム)
+### 1.2 ゲームドメイン (全46ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1248,7 +1248,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全41ゲーム共通)**
+**Interactor パターン (全46ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1388,8 +1388,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 40 controllers
-    GameManager --> "*" CuiExecer : holds 40 games
+    TrumpCardsWeb --> "*" GameWebController : holds 46 controllers
+    GameManager --> "*" CuiExecer : holds 46 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
