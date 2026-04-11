@@ -13,31 +13,12 @@ export function getGoFishHint(state: GoFishResponse): HintResult | null {
   const human = state.players[humanIdx];
   if (!human || human.cards.length === 0) return null;
 
-  const bestRank = pickBestRank(human.cards.map((c) => c.value));
-  if (bestRank === null) return null;
-
   const knownOpponentRank = findOpponentKnownRank(state, humanIdx);
   if (knownOpponentRank !== null) {
     return { targetAction: 'ask', reason: 'hint.askKnownRank', confidence: 'strong' };
   }
 
   return { targetAction: 'ask', reason: 'hint.askMostCopies', confidence: 'moderate' };
-}
-
-/** Pick the rank the player has the most copies of (ties broken by higher value). */
-function pickBestRank(values: number[]): number | null {
-  if (values.length === 0) return null;
-  const counts = new Map<number, number>();
-  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
-  let bestRank: number | null = null;
-  let bestCount = 0;
-  for (const [rank, count] of counts) {
-    if (count > bestCount || (count === bestCount && bestRank !== null && rank > bestRank)) {
-      bestRank = rank;
-      bestCount = count;
-    }
-  }
-  return bestRank;
 }
 
 /**
@@ -53,7 +34,7 @@ function findOpponentKnownRank(state: GoFishResponse, humanIdx: number): number 
 
   const knownRanks = new Set<number>();
   collectFromLastAsk(state.lastAsk, humanIdx, knownRanks);
-  for (const action of state.cpuActions ?? []) {
+  for (const action of state.cpuActions) {
     collectFromCpuAction(action, humanIdx, knownRanks);
   }
 

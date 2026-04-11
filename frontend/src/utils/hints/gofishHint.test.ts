@@ -41,6 +41,10 @@ describe('getGoFishHint', () => {
     expect(getGoFishHint(makeState({ gameEndFlag: true }))).toBeNull();
   });
 
+  it('returns null when phase is not PLAY', () => {
+    expect(getGoFishHint(makeState({ phase: GoFishPhase.GAME_END, gameEndFlag: false }))).toBeNull();
+  });
+
   it('returns null when it is not the human turn', () => {
     expect(getGoFishHint(makeState({ currentTurn: 1 }))).toBeNull();
   });
@@ -110,6 +114,23 @@ describe('getGoFishHint', () => {
           bookRank: 0,
         },
       ],
+    });
+    const hint = getGoFishHint(state);
+    expect(hint?.confidence).toBe('moderate');
+  });
+
+  it('ignores lastAsk where the human was the asker', () => {
+    const state = makeState({
+      lastAsk: {
+        playerIdx: 0, // human was the asker — collectFromLastAsk returns early
+        targetIdx: 1,
+        rank: 5,
+        success: true,
+        cardsReceived: [card('HEART', 5)],
+        drawnCard: null,
+        bookFormed: false,
+        bookRank: 0,
+      },
     });
     const hint = getGoFishHint(state);
     expect(hint?.confidence).toBe('moderate');

@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { goFishApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -68,6 +68,10 @@ const gameEndByFlagState: GoFishResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(baseState);
+});
+
+afterEach(() => {
+  localStorage.clear();
 });
 
 describe('GoFishPage', () => {
@@ -246,6 +250,22 @@ describe('GoFishPage', () => {
     expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
     resolve(baseState);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+  });
+
+  it('renders hint toggle checkbox', async () => {
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
+    expect(screen.getByRole('checkbox')).toBeInTheDocument();
+  });
+
+  it('shows HintTooltip when hint is enabled and human has a valid turn', async () => {
+    localStorage.setItem('hint_enabled_gofish', 'true');
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
+    // HintTooltip renders when hint is active (human turn, PLAY phase, cards in hand)
+    await waitFor(() => expect(screen.getByRole('checkbox')).toBeInTheDocument());
+    // Verify HintTooltip is rendered (it contains the hint reason text)
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 
   it('shows books display when human has books', async () => {
