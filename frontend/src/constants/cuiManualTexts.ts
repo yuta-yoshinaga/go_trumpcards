@@ -100,63 +100,9 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/war': war,
 };
 
-/**
- * Map from game route path to the CLI-mode localStorage key game name used by useCliMode.
- * Kept alongside cuiManualTexts so the manual modal can decide which variant to show.
- */
-export const gamePathToCliName: Readonly<Record<string, string>> = {
-  '/': 'blackjack',
-  '/baccarat': 'baccarat',
-  '/bridge': 'bridge',
-  '/canasta': 'canasta',
-  '/canfield': 'canfield',
-  '/caribbeanstud': 'caribbeanstud',
-  '/clocksolitaire': 'clocksolitaire',
-  '/crazyeights': 'crazyeights',
-  '/cribbage': 'cribbage',
-  '/daifugo': 'daifugo',
-  '/deuceswild': 'deuceswild',
-  '/doubt': 'doubt',
-  '/durak': 'durak',
-  '/fortythieves': 'fortythieves',
-  '/euchre': 'euchre',
-  '/freecell': 'freecell',
-  '/ginrummy': 'ginrummy',
-  '/gofish': 'gofish',
-  '/golf': 'golf',
-  '/hearts': 'hearts',
-  '/holdem': 'holdem',
-  '/indianpoker': 'indianpoker',
-  '/jokerpoker': 'jokerpoker',
-  '/klondike': 'klondike',
-  '/memory': 'memory',
-  '/napoleon': 'napoleon',
-  '/ohhell': 'ohhell',
-  '/oldmaid': 'oldmaid',
-  '/omaha': 'omaha',
-  '/paigow': 'paigow',
-  '/pineapple': 'pineapple',
-  '/pigtail': 'pigtail',
-  '/pinochle': 'pinochle',
-  '/poker': 'poker',
-  '/pyramid': 'pyramid',
-  '/sevencardstud': 'sevencardstud',
-  '/sevens': 'sevens',
-  '/shortdeck': 'shortdeck',
-  '/spades': 'spades',
-  '/speed': 'speed',
-  '/spider': 'spider',
-  '/threecard': 'threecard',
-  '/tripeaks': 'tripeaks',
-  '/twotenjack': 'twotenjack',
-  '/videopoker': 'videopoker',
-  '/war': 'war',
-};
-
 /** Returns true when CLI mode is enabled for the game at the given path. */
 export function isCliModeEnabled(gamePath: string): boolean {
-  const gameName = gamePathToCliName[gamePath];
-  if (!gameName) return false;
+  const gameName = gamePath === '/' ? 'blackjack' : gamePath.slice(1);
   try {
     return localStorage.getItem(`cli-mode-${gameName}`) === 'true';
   } catch {
