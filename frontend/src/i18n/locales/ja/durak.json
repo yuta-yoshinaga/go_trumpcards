@@ -44,5 +44,14 @@
     "playerHand": "あなたの手札です。カードをクリックして選択します",
     "tableCards": "テーブル上の攻撃・防御カードが表示されます",
     "actionButtons": "攻撃・防御・パス・引き取りボタンで操作します"
+  },
+  "hint": {
+    "attackLowNonTrump": "切り札以外の最弱カードで攻撃推奨",
+    "attackOnlyTrumps": "切り札しかない — 仕方なく攻撃",
+    "passBout": "攻撃継続不可 — パス推奨",
+    "defendSameSuit": "同スートの最低勝ちカードで防御推奨",
+    "defendWithTrump": "切り札で防御推奨",
+    "takeBout": "防御不能 — 引き取り推奨",
+    "takeNothingToDefend": "防御対象なし"
   }
 }

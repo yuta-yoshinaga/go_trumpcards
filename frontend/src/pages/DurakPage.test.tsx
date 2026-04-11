@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { durakApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DurakConfig, DurakResponse } from '../types/card';
@@ -71,6 +71,10 @@ const gameEndState: DurakResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(baseState);
+});
+
+afterEach(() => {
+  localStorage.clear();
 });
 
 describe('DurakPage', () => {
@@ -214,5 +218,19 @@ describe('DurakPage', () => {
     await waitFor(() => screen.getByRole('button', { name: /CLI/i }));
     fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
     expect(screen.queryByRole('button', { name: '攻撃' })).not.toBeInTheDocument();
+  });
+
+  it('renders hint toggle checkbox', async () => {
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '攻撃' })).toBeInTheDocument());
+    // The SettingsPanel renders the hint checkbox with id="frontendHint"
+    expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument();
+  });
+
+  it('shows HintTooltip when hint is enabled on attack turn', async () => {
+    localStorage.setItem('hint_enabled_durak', 'true');
+    // baseState: human is attacker (attackerIdx=0), phase=0 (ATTACK), hand has non-trump cards
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
 });

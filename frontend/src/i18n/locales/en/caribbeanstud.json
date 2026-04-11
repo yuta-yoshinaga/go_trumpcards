@@ -74,5 +74,10 @@
     "betControls": "Set your ante and optional jackpot side bet, then press Bet.",
     "actionButtons": "Choose Call to bet 2x your ante, or Fold to forfeit.",
     "results": "Check your results and payouts here."
+  },
+  "hint": {
+    "pairOrBetter": "Pair or better — call recommended",
+    "aceKingHigh": "Ace-King high — call recommended",
+    "weakHand": "Weak hand — fold recommended"
   }
 }
