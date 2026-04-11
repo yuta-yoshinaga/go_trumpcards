@@ -3,9 +3,11 @@
 package domain_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -36,7 +38,7 @@ func setupTTJPlayPhase(ttj *domain.TwoTenJack, currentIdx, leadIdx, trickNum, tr
 func TestNewTwoTenJack(t *testing.T) {
 	ttj := newTestTwoTenJack()
 	assert.Equal(t, -1, ttj.GetWinnerTeam())
-	assert.Equal(t, 0, ttj.GetRoundNumber())
+	assert.Equal(t, 1, ttj.GetRoundNumber())
 	assert.Equal(t, -1, ttj.GetTrumpSuit())
 }
 
@@ -546,4 +548,48 @@ func TestTwoTenJack_JSONRoundTrip(t *testing.T) {
 	ttj2 := &domain.TwoTenJack{}
 	err = ttj2.UnmarshalJSON(data)
 	assert.NoError(t, err)
+}
+
+func TestTwoTenJack_UnmarshalJSON_WrongPlayerCount(t *testing.T) {
+	// Fewer than TwoTenJackPlayerCnt players must be rejected.
+	ttj := newTestTwoTenJack()
+	ttj.Reset()
+	data, err := ttj.MarshalJSON()
+	require.NoError(t, err)
+
+	// Decode, remove one player, re-encode.
+	var raw map[string]interface{}
+	require.NoError(t, json.Unmarshal(data, &raw))
+	players := raw["ps"].([]interface{})
+	raw["ps"] = players[:3] // 3 instead of 4
+	badData, err := json.Marshal(raw)
+	require.NoError(t, err)
+
+	var ttj2 domain.TwoTenJack
+	err = json.Unmarshal(badData, &ttj2)
+	assert.ErrorContains(t, err, "invalid")
+}
+
+func TestTwoTenJack_UnmarshalJSON_TooManyTrickCards(t *testing.T) {
+	// More than TwoTenJackPlayerCnt trick entries must be rejected.
+	ttj := newTestTwoTenJack()
+	ttj.Reset()
+	data, err := ttj.MarshalJSON()
+	require.NoError(t, err)
+
+	var raw map[string]interface{}
+	require.NoError(t, json.Unmarshal(data, &raw))
+	raw["ct"] = []interface{}{
+		map[string]interface{}{"pi": 0, "c": map[string]interface{}{"d": 1, "v": 1, "w": false}},
+		map[string]interface{}{"pi": 1, "c": map[string]interface{}{"d": 2, "v": 2, "w": false}},
+		map[string]interface{}{"pi": 2, "c": map[string]interface{}{"d": 3, "v": 3, "w": false}},
+		map[string]interface{}{"pi": 3, "c": map[string]interface{}{"d": 4, "v": 4, "w": false}},
+		map[string]interface{}{"pi": 0, "c": map[string]interface{}{"d": 1, "v": 5, "w": false}},
+	}
+	badData, err := json.Marshal(raw)
+	require.NoError(t, err)
+
+	var ttj2 domain.TwoTenJack
+	err = json.Unmarshal(badData, &ttj2)
+	assert.ErrorContains(t, err, "invalid")
 }

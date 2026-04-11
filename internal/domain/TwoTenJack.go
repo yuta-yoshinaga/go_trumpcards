@@ -74,7 +74,7 @@ func NewTwoTenJack(trumpCards *TrumpCards, players []*TwoTenJackPlayer, config T
 		players:     players,
 		config:      config,
 		winnerTeam:  -1,
-		roundNumber: 0,
+		roundNumber: 1,
 		trumpSuit:   -1,
 		declarerIdx: 0,
 	}
@@ -958,9 +958,9 @@ func (t *TwoTenJack) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Players) > twoTenJackMaxSliceLen || len(j.CurrentTrick) > twoTenJackMaxSliceLen ||
+	if len(j.Players) != TwoTenJackPlayerCnt || len(j.CurrentTrick) > TwoTenJackPlayerCnt ||
 		len(j.ActionLog) > twoTenJackMaxSliceLen {
-		return fmt.Errorf("twotenjack: input array exceeds maximum allowed size")
+		return fmt.Errorf("twotenjack: input array size is invalid")
 	}
 	t.trumpCards = j.TrumpCards
 	if t.trumpCards == nil {
