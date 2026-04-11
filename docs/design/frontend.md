@@ -1322,9 +1322,10 @@ classDiagram
         +string gamePath
         +react-markdown レンダリング
         +remark-gfm テーブル対応
-        +bg-gray-900 不透明背景
+        +bg-ds-surface 不透明背景
         +フォーカストラップ
         +Escape キー対応
+        +isCliModeEnabled() CUI/Web切り替え
     }
 
     class MermaidBlock {
@@ -1334,8 +1335,19 @@ classDiagram
         +エラー時フォールバック表示
     }
 
+    class cuiManualTexts {
+        +Record~string,string~ CUI版マニュアルマップ
+        +isCliModeEnabled(gamePath) boolean
+    }
+
+    class manualTexts {
+        +Record~string,string~ Web版マニュアルマップ
+    }
+
     ManualButton --> ManualModal : renders
     ManualModal --> MermaidBlock : renders mermaid code blocks
+    ManualModal --> cuiManualTexts : CLIモード判定・CUIテキスト取得
+    ManualModal --> manualTexts : Webテキスト取得
 ```
 
 ### 1.6 ページコンポーネント層
