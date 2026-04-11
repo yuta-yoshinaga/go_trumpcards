@@ -196,6 +196,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Canfield
+	if err := worker.RegisterKV(mux, "/canfield/exec", "canfield:",
+		func() usecase.CanfieldInteractorIF {
+			canfield := domain.NewCanfield(domain.NewTrumpCards(0))
+			return usecase.NewCanfieldInteractor(canfield, new(presenter.CanfieldWebPresenter))
+		},
+		func(data []byte) (usecase.CanfieldInteractorIF, error) {
+			return usecase.RestoreCanfieldInteractor(data, new(presenter.CanfieldWebPresenter))
+		},
+		controller.NewCanfieldWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	// Forty Thieves
 	if err := worker.RegisterKV(mux, "/fortythieves/exec", "fortythieves:",
 		func() usecase.FortyThievesInteractorIF {

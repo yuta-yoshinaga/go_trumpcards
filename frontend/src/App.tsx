@@ -10,6 +10,7 @@ import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
 import { CanastaPage } from './pages/CanastaPage';
+import { CanfieldPage } from './pages/CanfieldPage';
 import { CaribbeanStudPage } from './pages/CaribbeanStudPage';
 import { ClockSolitairePage } from './pages/ClockSolitairePage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
@@ -99,6 +100,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/war': <WarPage />,
   '/clocksolitaire': <ClockSolitairePage />,
   '/fortythieves': <FortyThievesPage />,
+  '/canfield': <CanfieldPage />,
 };
 
 /** Root application component with router and game page routes. */

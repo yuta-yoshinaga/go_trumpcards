@@ -983,6 +983,39 @@ export interface KlondikeResponse {
   hint?: KlondikeHint;
 }
 
+// --- Canfield (キャンフィールド) ---
+
+/** A single card on a Canfield tableau column. */
+export interface CanfieldTableauCard {
+  card: Card;
+}
+
+/** A suggested move hint in Canfield. */
+export interface CanfieldHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Canfield game state returned from the API. */
+export interface CanfieldResponse {
+  tableau: CanfieldTableauCard[][];
+  reserve: Card[];
+  stockCount: number;
+  waste: Card[];
+  foundation: Card[][];
+  baseRank: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: CanfieldHint;
+}
+
 // --- FreeCell (フリーセル) ---
 
 /** A suggested move hint in FreeCell. */

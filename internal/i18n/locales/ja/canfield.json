@@ -1,0 +1,23 @@
+{
+  "helpTitle": "Canfield (キャンフィールド)",
+  "helpDraw": "  d                    ストックから3枚引く",
+  "helpMove": "  m w t <col>          ウェイストからタブローに移動",
+  "helpMoveWF": "  m w f                ウェイストからファンデーションに移動",
+  "helpMoveRT": "  m r t <col>          リザーブからタブローに移動",
+  "helpMoveRF": "  m r f                リザーブからファンデーションに移動",
+  "helpMoveTF": "  m t <col> f          タブローからファンデーションに移動",
+  "helpMoveTT": "  m t <col> <idx> t <col>  タブローからタブローに移動",
+  "helpGiveUp": "  g                    ギブアップ",
+  "helpHint": "  h                    ヒント",
+  "helpAutoComplete": "  ac                   オートコンプリート",
+  "promptSourceZone": "移動元ゾーンを入力 (w=waste, r=reserve, t=tableau)",
+  "promptToZone": "移動先ゾーンを入力 (t=tableau, f=foundation)",
+  "invalidFromZone": "無効な移動元ゾーンです: {{val}}",
+  "invalidToZone": "無効な移動先ゾーンです: {{val}}",
+  "moveUsage": "使い方: m t <col> f | m t <col> <idx> t <col>",
+  "playing": "プレイ中",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません"
+}

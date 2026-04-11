@@ -68,6 +68,7 @@ type TrumpCardsWeb struct {
 	ttjc *controller.TwoTenJackWebController
 	cspc *controller.CaribbeanStudWebController
 	warc *controller.WarWebController
+	cfc  *controller.CanfieldWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -419,6 +420,10 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			war := domain.NewWar(domain.NewTrumpCards(0), players, config)
 			return usecase.NewWarInteractor(war, new(presenter.WarWebPresenter))
 		}),
+		cfc: controller.NewCanfieldWebController(func() usecase.CanfieldInteractorIF {
+			canfield := domain.NewCanfield(domain.NewTrumpCards(0))
+			return usecase.NewCanfieldInteractor(canfield, new(presenter.CanfieldWebPresenter))
+		}),
 	}
 }
 
@@ -476,6 +481,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/twotenjack/exec", web.ttjc.Exec},
 		{"/caribbeanstud/exec", web.cspc.Exec},
 		{"/war/exec", web.warc.Exec},
+		{"/canfield/exec", web.cfc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)

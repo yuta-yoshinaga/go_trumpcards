@@ -1,0 +1,31 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Canfield",
+  "stock": "Stock",
+  "waste": "Waste",
+  "reserve": "Reserve",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "baseRank": "Base rank",
+  "moveCount": "Moves",
+  "draw": "Draw",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "autoComplete": "Auto complete",
+  "undo": "Undo",
+  "empty": "empty",
+  "gameClear": "Game cleared! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "moveReserveToFoundation": "Reserve → Foundation",
+  "moveReserveToTableau": "Reserve → Tableau",
+  "moveWasteToFoundation": "Waste → Foundation",
+  "moveWasteToTableau": "Waste → Tableau",
+  "moveTableauToFoundation": "Tableau → Foundation"
+}
