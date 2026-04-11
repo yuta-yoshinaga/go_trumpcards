@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, twoTenJackApi } from '../api/gameApi';
+import { useCliMode } from '../hooks/useCliMode';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTwoTenJackState } from '../test/stateFactories';
@@ -11,7 +12,20 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { twotenjack: vi.fn() },
 }));
 
+vi.mock('../hooks/useCliMode', () => ({
+  useCliMode: vi.fn(() => ({
+    cliEnabled: false,
+    toggleCli: vi.fn(),
+    logEntries: [],
+    addInput: vi.fn(),
+    addOutput: vi.fn(),
+    addError: vi.fn(),
+    clearLog: vi.fn(),
+  })),
+}));
+
 const mockExec = vi.mocked(twoTenJackApi.exec);
+const mockUseCliMode = vi.mocked(useCliMode);
 
 const playPhaseState = makeTwoTenJackState();
 
@@ -50,6 +64,15 @@ const cpuTurnState = makeTwoTenJackState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
+  mockUseCliMode.mockReturnValue({
+    cliEnabled: false,
+    toggleCli: vi.fn(),
+    logEntries: [],
+    addInput: vi.fn(),
+    addOutput: vi.fn(),
+    addError: vi.fn(),
+    clearLog: vi.fn(),
+  });
 });
 
 describe('TwoTenJackPage', () => {
@@ -182,5 +205,64 @@ describe('TwoTenJackPage', () => {
 
   it('ensures actionLogApi.twotenjack is registered', () => {
     expect(actionLogApi.twotenjack).toBeDefined();
+  });
+
+  it('renders CLI terminal when CLI mode is enabled', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('textbox')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: '\u51fa\u3059' })).not.toBeInTheDocument();
+  });
+
+  it('changing cpuDifficulty updates config passed to reset', async () => {
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '\u30ea\u30bb\u30c3\u30c8' })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByText('\u8a2d\u5b9a'));
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[0], { target: { value: '2' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '\u30ea\u30bb\u30c3\u30c8' }));
+    fireEvent.click(screen.getByRole('button', { name: '\u78ba\u8a8d' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 2,
+        pointLimit: 50,
+      }),
+    );
+  });
+
+  it('changing pointLimit updates config passed to reset', async () => {
+    renderWithProviders(<TwoTenJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '\u30ea\u30bb\u30c3\u30c8' })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByText('\u8a2d\u5b9a'));
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[1], { target: { value: '100' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '\u30ea\u30bb\u30c3\u30c8' }));
+    fireEvent.click(screen.getByRole('button', { name: '\u78ba\u8a8d' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 100,
+      }),
+    );
   });
 });
