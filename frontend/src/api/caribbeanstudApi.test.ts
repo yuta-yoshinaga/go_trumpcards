@@ -44,7 +44,7 @@ describe('caribbeanstudApi', () => {
 
   it('calls the correct URL with reset command', async () => {
     mockFetch.mockReturnValue(makeResponse(payload));
-    const result = await csp['exec']('reset');
+    const result = await csp.exec('reset');
     expect(mockFetch).toHaveBeenCalledWith('/caribbeanstud/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -60,7 +60,7 @@ describe('caribbeanstudApi', () => {
 
   it('calls with bet command and ante only', async () => {
     mockFetch.mockReturnValue(makeResponse(payload));
-    await csp['exec']('bet', 100);
+    await csp.exec('bet', 100);
     expect(mockFetch).toHaveBeenCalledWith(
       '/caribbeanstud/exec',
       expect.objectContaining({
@@ -76,7 +76,7 @@ describe('caribbeanstudApi', () => {
 
   it('calls with bet command and jackpot side bet', async () => {
     mockFetch.mockReturnValue(makeResponse(payload));
-    await csp['exec']('bet', 100, 10);
+    await csp.exec('bet', 100, 10);
     expect(mockFetch).toHaveBeenCalledWith(
       '/caribbeanstud/exec',
       expect.objectContaining({
@@ -92,7 +92,7 @@ describe('caribbeanstudApi', () => {
 
   it('calls with play command', async () => {
     mockFetch.mockReturnValue(makeResponse(payload));
-    await csp['exec']('play');
+    await csp.exec('play');
     expect(mockFetch).toHaveBeenCalledWith(
       '/caribbeanstud/exec',
       expect.objectContaining({
@@ -108,7 +108,7 @@ describe('caribbeanstudApi', () => {
 
   it('calls with fold command', async () => {
     mockFetch.mockReturnValue(makeResponse(payload));
-    await csp['exec']('fold');
+    await csp.exec('fold');
     expect(mockFetch).toHaveBeenCalledWith(
       '/caribbeanstud/exec',
       expect.objectContaining({
@@ -124,6 +124,6 @@ describe('caribbeanstudApi', () => {
 
   it('throws on HTTP error', async () => {
     mockFetch.mockReturnValue(makeResponse(null, false, 500));
-    await expect(csp['exec']('reset')).rejects.toThrow('HTTP error: 500');
+    await expect(csp.exec('reset')).rejects.toThrow('HTTP error: 500');
   });
 });

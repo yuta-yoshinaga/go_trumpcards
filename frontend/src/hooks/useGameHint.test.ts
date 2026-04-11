@@ -450,7 +450,17 @@ describe('useGameHint', () => {
     localStorage.setItem('hint_enabled_gofish', 'true');
     const state: GoFishResponse = {
       players: [
-        { id: 0, isHuman: true, cardCount: 2, cards: [{ design: 'HEART', value: 5 }, { design: 'SPADE', value: 5 }], bookCount: 0, books: [] },
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 2,
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'SPADE', value: 5 },
+          ],
+          bookCount: 0,
+          books: [],
+        },
         { id: 1, isHuman: false, cardCount: 5, cards: [], bookCount: 0, books: [] },
       ],
       phase: GoFishPhase.PLAY,
@@ -505,7 +515,16 @@ describe('useGameHint', () => {
     localStorage.setItem('hint_enabled_durak', 'true');
     const state: Partial<DurakResponse> = {
       players: [
-        { id: 0, isHuman: true, isFinished: false, cardCount: 2, cards: [{ design: 'SPADE', value: 6 }, { design: 'CLOVER', value: 9 }] },
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          cardCount: 2,
+          cards: [
+            { design: 'SPADE', value: 6 },
+            { design: 'CLOVER', value: 9 },
+          ],
+        },
         { id: 1, isHuman: false, isFinished: false, cardCount: 6, cards: [] },
       ],
       phase: 0,
@@ -533,9 +552,17 @@ describe('useGameHint', () => {
   it('returns canasta hint when enabled', () => {
     localStorage.setItem('hint_enabled_canasta', 'true');
     const humanPlayer = {
-      id: 0, isHuman: true, cardCount: 11, cards: [], melds: [],
-      red3Count: 0, red3s: [], roundScore: 0, cumulativeScore: 0,
-      hasCanasta: false, hasInitMeld: false,
+      id: 0,
+      isHuman: true,
+      cardCount: 11,
+      cards: [],
+      melds: [],
+      red3Count: 0,
+      red3s: [],
+      roundScore: 0,
+      cumulativeScore: 0,
+      hasCanasta: false,
+      hasInitMeld: false,
     };
     const cpuPlayer = { ...humanPlayer, id: 1, isHuman: false };
     const state: Partial<CanastaResponse> = {

@@ -33,7 +33,7 @@ describe('warApi', () => {
 
   it('reset hits /war/exec with command=reset', async () => {
     mockFetch.mockReturnValue(ok(payload));
-    const result = await warApi['exec']('reset');
+    const result = await warApi.exec('reset');
     expect(mockFetch).toHaveBeenCalledWith('/war/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -44,7 +44,7 @@ describe('warApi', () => {
 
   it('step sends command=step', async () => {
     mockFetch.mockReturnValue(ok(payload));
-    await warApi['exec']('step');
+    await warApi.exec('step');
     expect(mockFetch).toHaveBeenCalledWith(
       '/war/exec',
       expect.objectContaining({ body: JSON.stringify({ command: 'step', sessionId }) }),
@@ -53,7 +53,7 @@ describe('warApi', () => {
 
   it('reset with config includes maxRounds', async () => {
     mockFetch.mockReturnValue(ok(payload));
-    await warApi['exec']('reset', { maxRounds: 200 });
+    await warApi.exec('reset', { maxRounds: 200 });
     expect(mockFetch).toHaveBeenCalledWith(
       '/war/exec',
       expect.objectContaining({
@@ -64,6 +64,6 @@ describe('warApi', () => {
 
   it('throws on HTTP error', async () => {
     mockFetch.mockReturnValue(err());
-    await expect(warApi['exec']('reset')).rejects.toThrow('HTTP error: 500');
+    await expect(warApi.exec('reset')).rejects.toThrow('HTTP error: 500');
   });
 });
