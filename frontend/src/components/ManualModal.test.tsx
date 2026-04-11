@@ -76,6 +76,16 @@ describe('ManualModal', () => {
     expect(screen.getByText('Poker CUI')).toBeInTheDocument();
   });
 
+  it('renders web manual when localStorage.getItem throws', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('localStorage unavailable');
+    });
+    render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
+    expect(screen.getByText('BlackJack')).toBeInTheDocument();
+    expect(screen.queryByText('BlackJack CUI')).not.toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
+
   it('renders empty content for unknown gamePath', () => {
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/unknown" />);
     const dialog = screen.getByRole('dialog');
