@@ -303,7 +303,7 @@ export function CanfieldPage() {
             className={`${btnDanger} ${focusRingWhite}`}
             onClick={() => requestConfirm(handleReset)}
           >
-            {tc('reset')}
+            {tc('button.reset')}
           </button>
         </div>
       </GameFooter>
