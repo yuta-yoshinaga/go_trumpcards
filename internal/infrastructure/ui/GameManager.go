@@ -62,6 +62,7 @@ var gameRegistry = []GameRegistryEntry{
 	{"paigow", "Pai Gow Poker (パイガオポーカー)", func() cuiGame { return NewPaiGowCui() }},
 	{"twotenjack", "Two Ten Jack (ツーテンジャック)", func() cuiGame { return NewTwoTenJackCui() }},
 	{"caribbeanstud", "Caribbean Stud Poker (カリビアンスタッドポーカー)", func() cuiGame { return NewCaribbeanStudCui() }},
+	{"war", "War (戦争)", func() cuiGame { return NewWarCui() }},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

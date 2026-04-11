@@ -1,0 +1,30 @@
+{
+  "button": {
+    "step": "Flip"
+  },
+  "phase": {
+    "reveal": "Ready",
+    "resolved": "Round Over",
+    "war": "WAR!",
+    "end": "End"
+  },
+  "label": {
+    "drawPile": "Draw",
+    "discardPile": "Discard",
+    "total": "Total",
+    "potCount": "{{count}} in pot",
+    "rounds": "Rounds",
+    "maxRounds": "Max rounds"
+  },
+  "message": {
+    "reveal": "Click step to flip cards.",
+    "resolved.player": "You win this round! Click step to collect.",
+    "resolved.cpu": "CPU wins this round. Click step to collect.",
+    "war": "WAR! Click step to bury and reveal again.",
+    "humanWin": "You win!",
+    "cpuWin": "CPU wins..."
+  },
+  "settings": {
+    "maxRounds": "Max rounds"
+  }
+}

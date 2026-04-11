@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した43種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した44種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -63,6 +63,7 @@ Go + Clean Architecture で実装した43種類のトランプゲーム。CLI �
 | ドゥラーク (Durak) | `durak` | [CUI](docs/manual/cui/durak.md) / [Web](docs/manual/web/durak.md) |
 | フォーティシーブス (Forty Thieves) | `fortythieves` | [CUI](docs/manual/cui/fortythieves.md) / [Web](docs/manual/web/fortythieves.md) |
 | パイゴウポーカー (Pai Gow Poker) | `paigow` | [CUI](docs/manual/cui/paigow.md) / [Web](docs/manual/web/paigow.md) |
+| 戦争 (War) | `war` | [CUI](docs/manual/cui/war.md) / [Web](docs/manual/web/war.md) |
 
 ## Demo
 

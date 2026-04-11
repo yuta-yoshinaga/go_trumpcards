@@ -47,6 +47,7 @@ import type {
   TriPeaksResponse,
   TwoTenJackResponse,
   VideoPokerResponse,
+  WarResponse,
 } from '../types/card';
 
 /** Unique session identifier for correlating API requests. */
@@ -87,6 +88,7 @@ const workerUrl: Record<string, string> = {
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
+  war: WORKER_CLASSIC,
   gofish: WORKER_CLASSIC,
   pinochle: WORKER_CLASSIC,
   pigtail: WORKER_CLASSIC,
@@ -876,6 +878,12 @@ export const deuceswildApi = createVideoPokerApi('deuceswild');
 /** API client for the Joker Poker /jokerpoker/exec endpoint. */
 export const jokerpokerApi = createVideoPokerApi('jokerpoker');
 
+/** API client for the War /war/exec endpoint. */
+export const warApi = {
+  exec: (command: 'reset' | 'step' | 'log', config?: { maxRounds?: number }) =>
+    gameExec<WarResponse>('war', { command, ...config }),
+};
+
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {
   exec: (
@@ -969,6 +977,7 @@ const games = [
   'caribbeanstud',
   'paigow',
   'speed',
+  'war',
   'gofish',
   'pinochle',
   'golf',
