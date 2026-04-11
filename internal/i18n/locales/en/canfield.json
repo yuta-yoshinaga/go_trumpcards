@@ -1,0 +1,23 @@
+{
+  "helpTitle": "Canfield Solitaire",
+  "helpDraw": "  d                    draw 3 from stock",
+  "helpMove": "  m w t <col>          move waste to tableau",
+  "helpMoveWF": "  m w f                move waste to foundation",
+  "helpMoveRT": "  m r t <col>          move reserve to tableau",
+  "helpMoveRF": "  m r f                move reserve to foundation",
+  "helpMoveTF": "  m t <col> f          move tableau to foundation",
+  "helpMoveTT": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete",
+  "promptSourceZone": "Enter source zone (w=waste, r=reserve, t=tableau)",
+  "promptToZone": "Enter destination zone (t=tableau, f=foundation)",
+  "invalidFromZone": "invalid source zone: {{val}}",
+  "invalidToZone": "invalid destination zone: {{val}}",
+  "moveUsage": "usage: m t <col> f | m t <col> <idx> t <col>",
+  "playing": "Playing",
+  "gameClear": "Game cleared! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint"
+}

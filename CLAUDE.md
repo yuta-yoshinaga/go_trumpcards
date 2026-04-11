@@ -27,7 +27,7 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # twotenjack, crazyeights, ginrummy, spider, napoleon, indianpoker, videopoker,
 # deuceswild, jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, caribbeanstud, ohhell,
 # bridge, speed, gofish, canasta, pinochle, golf, pigtail, sevencardstud,
-# clocksolitaire, durak, fortythieves, paigow, war
+# clocksolitaire, durak, fortythieves, paigow, war, canfield
 go run ./cmd/trumpcards games      # List all available games
 go run ./cmd/trumpcards games --short  # List game names only (for scripting)
 go run ./cmd/trumpcards update     # Self-update to the latest version
@@ -130,7 +130,7 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 |--------|-------------|-------|
 | **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, caribbeanstud, sevencardstud, paigow) |
 | **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak, war) |
-| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves) |
+| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield) |
 
 **When adding/modifying a game, always update both:**
 1. The worker entry point (`cmd/workers/<worker>/main.go`) — register with `registerKV`

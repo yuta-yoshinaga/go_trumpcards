@@ -1,0 +1,31 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "キャンフィールド",
+  "stock": "山札",
+  "waste": "ウェイスト",
+  "reserve": "リザーブ",
+  "foundation": "組札",
+  "tableau": "場札",
+  "baseRank": "ベースランク",
+  "moveCount": "手数",
+  "draw": "引く",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "undo": "元に戻す",
+  "empty": "空",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "moveReserveToFoundation": "リザーブ→組札",
+  "moveReserveToTableau": "リザーブ→場札",
+  "moveWasteToFoundation": "ウェイスト→組札",
+  "moveWasteToTableau": "ウェイスト→場札",
+  "moveTableauToFoundation": "場札→組札"
+}

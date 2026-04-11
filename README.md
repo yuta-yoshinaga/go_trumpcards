@@ -64,6 +64,7 @@ Go + Clean Architecture で実装した44種類のトランプゲーム。CLI �
 | フォーティシーブス (Forty Thieves) | `fortythieves` | [CUI](docs/manual/cui/fortythieves.md) / [Web](docs/manual/web/fortythieves.md) |
 | パイゴウポーカー (Pai Gow Poker) | `paigow` | [CUI](docs/manual/cui/paigow.md) / [Web](docs/manual/web/paigow.md) |
 | 戦争 (War) | `war` | [CUI](docs/manual/cui/war.md) / [Web](docs/manual/web/war.md) |
+| キャンフィールド (Canfield) | `canfield` | [CUI](docs/manual/cui/canfield.md) / [Web](docs/manual/web/canfield.md) |
 
 ## Demo
 

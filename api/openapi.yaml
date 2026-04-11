@@ -4381,6 +4381,87 @@ paths:
                   message:
                     type: string
 
+  /canfield/exec:
+    post:
+      tags:
+        - canfield
+      summary: Execute a Canfield (キャンフィールド) game command
+      description: |
+        Send a command to advance a Canfield solitaire session identified by `sessionId`.
+        Canfield uses a 13-card reserve, 4 tableau columns, 4 foundations, and a stock
+        that draws 3 cards at a time to the waste. The foundation base rank is
+        determined by the first card dealt. Tableau sequences are built in alternating
+        colors descending with wrap-around; foundations build in same suit ascending
+        with wrap-around.
+      operationId: canfieldExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, log, l, undo, u, undo_n]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [waste, reserve, tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  reserve:
+                    type: array
+                  stockCount:
+                    type: integer
+                  waste:
+                    type: array
+                  foundation:
+                    type: array
+                  baseRank:
+                    type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
 components:
   schemas:
     # -------------------------------------------------------------------------

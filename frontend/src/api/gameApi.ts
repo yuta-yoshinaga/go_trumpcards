@@ -4,6 +4,7 @@ import type {
   BlackJackResponse,
   BridgeResponse,
   CanastaResponse,
+  CanfieldResponse,
   CaribbeanStudResponse,
   ClockSolitaireResponse,
   CrazyEightsResponse,
@@ -105,6 +106,7 @@ const workerUrl: Record<string, string> = {
   golf: WORKER_SOLO,
   clocksolitaire: WORKER_SOLO,
   fortythieves: WORKER_SOLO,
+  canfield: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -516,6 +518,29 @@ export const klondikeApi = {
       from,
       to,
       config,
+      n,
+    }),
+};
+
+/** Source or target zone for a Canfield card move. */
+export interface CanfieldMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Canfield /canfield/exec endpoint. */
+export const canfieldApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
+    from?: CanfieldMoveZone,
+    to?: CanfieldMoveZone,
+    n?: number,
+  ) =>
+    gameExec<CanfieldResponse>('canfield', {
+      command,
+      from,
+      to,
       n,
     }),
 };
@@ -984,6 +1009,7 @@ const games = [
   'pigtail',
   'clocksolitaire',
   'fortythieves',
+  'canfield',
 ] as const;
 type Game = (typeof games)[number];
 
