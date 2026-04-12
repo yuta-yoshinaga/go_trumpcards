@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { canfieldApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -180,5 +180,97 @@ describe('CanfieldPage', () => {
         { zone: 'tableau', col: 1 },
       ),
     );
+  });
+
+  describe('drag and drop', () => {
+    function buildDataTransfer() {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    }
+
+    it('waste card is draggable when playing', async () => {
+      renderWithProviders(<CanfieldPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const wasteImg = screen.getByAltText('♥ 4');
+      const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+      expect(wasteButton).toHaveAttribute('draggable', 'true');
+    });
+
+    it('reserve card is draggable when playing', async () => {
+      renderWithProviders(<CanfieldPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const reserveImg = screen.getByAltText('♠ 3');
+      const reserveButton = reserveImg.closest('button') as HTMLButtonElement;
+      expect(reserveButton).toHaveAttribute('draggable', 'true');
+    });
+
+    it('tableau card is draggable when playing', async () => {
+      renderWithProviders(<CanfieldPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const cardImg = screen.getByAltText('♠ 7');
+      const cardButton = cardImg.closest('button') as HTMLButtonElement;
+      expect(cardButton).toHaveAttribute('draggable', 'true');
+    });
+
+    it('dragging waste card to tableau dispatches move', async () => {
+      renderWithProviders(<CanfieldPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const wasteImg = screen.getByAltText('♥ 4');
+      const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+      const dataTransfer = buildDataTransfer();
+
+      fireEvent.dragStart(wasteButton, { dataTransfer });
+
+      // Drop on a tableau column DropZone (use the column header text to find it)
+      const colHeaders = screen.getAllByText(/^#\d$/);
+      const dropZone = colHeaders[1].closest('.flex.flex-col')?.querySelector('[role="presentation"]');
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.dragOver(dropZone as HTMLElement, { dataTransfer });
+      fireEvent.drop(dropZone as HTMLElement, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith(
+          'move',
+          expect.objectContaining({ zone: 'waste' }),
+          expect.objectContaining({ zone: 'tableau' }),
+        ),
+      );
+    });
+
+    it('dragging reserve card to foundation dispatches move', async () => {
+      renderWithProviders(<CanfieldPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const reserveImg = screen.getByAltText('♠ 3');
+      const reserveButton = reserveImg.closest('button') as HTMLButtonElement;
+      const dataTransfer = buildDataTransfer();
+
+      fireEvent.dragStart(reserveButton, { dataTransfer });
+
+      // Drop on foundation DropZone
+      const foundationTexts = screen.getAllByText('組札');
+      const dropZone = foundationTexts[0].closest('[role="presentation"]');
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.dragOver(dropZone as HTMLElement, { dataTransfer });
+      fireEvent.drop(dropZone as HTMLElement, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith(
+          'move',
+          expect.objectContaining({ zone: 'reserve' }),
+          expect.objectContaining({ zone: 'foundation' }),
+        ),
+      );
+    });
   });
 });

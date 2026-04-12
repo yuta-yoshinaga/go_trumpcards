@@ -58,6 +58,10 @@ func (c *KlondikeCuiController) handleMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("klondike.promptSourceZone"), "m {0}")
 	}
+	// Shorthand: m <fromCol> [<toCol>] — tableau-to-tableau top card
+	if _, err := strconv.Atoi(args[0]); err == nil {
+		return c.handleMoveShorthand(args)
+	}
 	from := args[0]
 	if from != "w" && from != "t" {
 		return i18n.Tf("klondike.invalidFromZone", "val", from)
@@ -133,4 +137,16 @@ func (c *KlondikeCuiController) handleMoveFromTableau(args []string) string {
 	}
 
 	return c.ki.MoveTableauToTableau(fromCol, cardIdx, toCol)
+}
+
+func (c *KlondikeCuiController) handleMoveShorthand(args []string) string {
+	fromCol, _ := strconv.Atoi(args[0])
+	if len(args) < 2 {
+		return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m %s {0}", args[0]))
+	}
+	toCol, err := strconv.Atoi(args[1])
+	if err != nil {
+		return i18n.Tf("invalidColumn", "val", args[1])
+	}
+	return c.ki.MoveTableauToTableau(fromCol, -1, toCol)
 }
