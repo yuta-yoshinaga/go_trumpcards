@@ -2168,3 +2168,36 @@ export interface FortyThievesMoveZone {
   col?: number;
   cardIndex?: number;
 }
+
+/** Single Fifty-one player state from the API. */
+export interface FiftyOnePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  score: number;
+}
+
+/** Fifty-one game configuration. */
+export interface FiftyOneConfig {
+  cpuDifficulty: number;
+}
+
+/** Full Fifty-one game state returned from the API. */
+export interface FiftyOneResponse {
+  players: FiftyOnePlayerData[];
+  tableCards: Card[];
+  phase: number;
+  currentTurn: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  turnNumber: number;
+  stopCallerIdx: number;
+  lastAction: string;
+  lastHandIdx: number;
+  lastTableIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: FiftyOneConfig;
+}

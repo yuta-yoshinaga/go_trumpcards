@@ -402,6 +402,16 @@ func (web *TrumpCardsWeb) registerAll() {
 		canfield := domain.NewCanfield(domain.NewTrumpCards(0))
 		return usecase.NewCanfieldInteractor(canfield, new(presenter.CanfieldWebPresenter))
 	}))
+	web.register("fiftyone", controller.NewFiftyOneWebController(func() usecase.FiftyOneInteractorIF {
+		players := []*domain.FiftyOnePlayer{
+			domain.NewFiftyOnePlayer(true),
+			domain.NewFiftyOnePlayer(false),
+			domain.NewFiftyOnePlayer(false),
+			domain.NewFiftyOnePlayer(false),
+		}
+		fo := domain.NewFiftyOne(domain.NewTrumpCards(0), players)
+		return usecase.NewFiftyOneInteractor(fo, new(presenter.FiftyOneWebPresenter))
+	}))
 }
 
 // Exec ゲーム実行

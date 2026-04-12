@@ -16,6 +16,7 @@ import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
+import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
 import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
@@ -97,4 +98,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/twotenjack': twotenjack,
   '/videopoker': videopoker,
   '/war': war,
+  '/fiftyone': fiftyone,
 };

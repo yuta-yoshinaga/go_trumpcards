@@ -20,6 +20,7 @@ import { DeucesWildPage } from './pages/DeucesWildPage';
 import { DoubtPage } from './pages/DoubtPage';
 import { DurakPage } from './pages/DurakPage';
 import { EuchrePage } from './pages/EuchrePage';
+import { FiftyOnePage } from './pages/FiftyOnePage';
 import { FortyThievesPage } from './pages/FortyThievesPage';
 import { FreeCellPage } from './pages/FreeCellPage';
 import { GinRummyPage } from './pages/GinRummyPage';
@@ -98,6 +99,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/golf': <GolfPage />,
   '/pigtail': <PigsTailPage />,
   '/war': <WarPage />,
+  '/fiftyone': <FiftyOnePage />,
   '/clocksolitaire': <ClockSolitairePage />,
   '/fortythieves': <FortyThievesPage />,
   '/canfield': <CanfieldPage />,

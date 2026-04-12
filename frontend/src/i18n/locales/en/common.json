@@ -64,6 +64,7 @@
     "paigow": "Pai Gow Poker",
     "caribbeanstud": "Caribbean Stud Poker",
     "war": "War",
+    "fiftyone": "Fifty-one",
     "canfield": "Canfield"
   },
   "sound": {
@@ -305,6 +306,8 @@
     "pigtail.result.cpuLose": "Game Over! CPU {{cpuId}} loses!",
     "war.result.humanWin": "Game Over! You win!",
     "war.result.cpuWin": "Game Over! CPU wins...",
+    "fiftyone.result.humanWin": "Game Over! You win!",
+    "fiftyone.result.cpuWin": "Game Over! CPU {{cpuId}} wins!",
     "clocksolitaire.playing": "Playing",
     "clocksolitaire.gameClear": "Game Clear! Steps: {{stepCount}}",
     "clocksolitaire.gameOver": "Game Over"

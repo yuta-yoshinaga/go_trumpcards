@@ -1,0 +1,9 @@
+{
+  "helpTitle": "Fifty-one Commands",
+  "helpPlay": "  p <handIdx> <tableIdx>  exchange 1 card",
+  "helpAll": "  a, all                 exchange all 5 cards",
+  "helpStop": "  stop                   call stop",
+  "helpSetDifficulty": "  sd <0-2>               CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "result.humanWin": "Game over! You win!",
+  "result.cpuWin": "Game over! CPU {{cpuId}} wins!"
+}

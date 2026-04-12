@@ -389,6 +389,26 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Fifty-one
+	if err := worker.RegisterKV(mux, "/fiftyone/exec", "fiftyone:",
+		func() usecase.FiftyOneInteractorIF {
+			players := []*domain.FiftyOnePlayer{
+				domain.NewFiftyOnePlayer(true),
+				domain.NewFiftyOnePlayer(false),
+				domain.NewFiftyOnePlayer(false),
+				domain.NewFiftyOnePlayer(false),
+			}
+			fo := domain.NewFiftyOne(domain.NewTrumpCards(0), players)
+			return usecase.NewFiftyOneInteractor(fo, new(presenter.FiftyOneWebPresenter))
+		},
+		func(data []byte) (usecase.FiftyOneInteractorIF, error) {
+			return usecase.RestoreFiftyOneInteractor(data, new(presenter.FiftyOneWebPresenter))
+		},
+		controller.NewFiftyOneWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)
