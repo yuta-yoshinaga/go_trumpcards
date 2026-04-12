@@ -1,0 +1,407 @@
+import { useCallback, useMemo } from 'react';
+import type { twoTenJackApi } from '../api/gameApi';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageShell } from '../components/GamePageShell';
+import { HintTooltip } from '../components/hint/HintTooltip';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { PlayerHandSection } from '../components/PlayerHandSection';
+import { ScrollFadeHint } from '../components/ScrollFadeHint';
+import { TwoTenJackSkeleton } from '../components/skeleton/TwoTenJackSkeleton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
+import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTwoTenJackGame } from '../hooks/useTwoTenJackGame';
+import { useSound } from '../providers/SoundProvider';
+import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { TwoTenJackResponse } from '../types/card';
+import { TwoTenJackPhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+import { parseTwoTenJackCommand, TWOTENJACK_HELP } from '../utils/cli/commands/twoTenJackCommands';
+import { formatTwoTenJackState } from '../utils/cli/formatters/twoTenJackFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
+
+/** Tutorial steps for Two Ten Jack. Walks the player through declare, play, and scoring elements. */
+const TTJ_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="tt-declare-controls"]',
+    messageKey: 'tutorial.declareControls',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="tt-trick-display"]',
+    messageKey: 'tutorial.trickDisplay',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="tt-score-table"]',
+    messageKey: 'tutorial.scoreTable',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="tt-play-button"]',
+    messageKey: 'tutorial.playButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="tt-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+const TWOTENJACK_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [TwoTenJackPhase.DECLARE]: 'declare',
+  [TwoTenJackPhase.PLAY]: 'play',
+  [TwoTenJackPhase.TRICK_END]: 'trickEnd',
+  [TwoTenJackPhase.ROUND_END]: 'roundEnd',
+  [TwoTenJackPhase.GAME_END]: 'gameEnd',
+};
+
+/** Suit options shown in the declare phase picker. Values match the domain CardDesign constants. */
+const SUIT_OPTIONS: Readonly<{ value: number; symbol: string; key: string }[]> = [
+  { value: 1, symbol: '\u2660', key: 'spade' },
+  { value: 2, symbol: '\u2663', key: 'club' },
+  { value: 3, symbol: '\u2665', key: 'heart' },
+  { value: 4, symbol: '\u2666', key: 'diamond' },
+];
+
+/** Returns the human-readable suit symbol for a declared trump suit value. */
+function trumpSymbol(trumpSuit: number): string {
+  return SUIT_OPTIONS.find((s) => s.value === trumpSuit)?.symbol ?? '-';
+}
+
+/** Renders the Two Ten Jack game page: declare trump, trick play, and team scoring. */
+export function TwoTenJackPage() {
+  return (
+    <TutorialWrapper gameName="twotenjack" steps={TTJ_TUTORIAL_STEPS}>
+      <TwoTenJackPageContent />
+    </TutorialWrapper>
+  );
+}
+
+/** Inner content of the Two Ten Jack page, wrapped by TutorialProvider. */
+function TwoTenJackPageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('twotenjack');
+  const { playSound } = useSound();
+  const {
+    state,
+    loading,
+    error,
+    exec: dispatch,
+    retry,
+    twoTenJackConfig,
+    selectedCardIndices,
+    toggleCard,
+    clearSelection,
+    handleConfigChange,
+    handleDeclare,
+    handlePlay,
+    handleNextTrick,
+    handleNextRound,
+  } = useTwoTenJackGame();
+  const { cardWidth, isMobile } = useCardDimensions();
+
+  // CLI mode (stub: parseCommand returns an error, help is empty).
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('twotenjack');
+  const cliConfig: CliGameConfig<TwoTenJackResponse, Parameters<typeof twoTenJackApi.exec>> = useMemo(
+    () => ({
+      gameName: 'twotenjack',
+      parseCommand: parseTwoTenJackCommand,
+      formatResponse: formatTwoTenJackState,
+      helpText: TWOTENJACK_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('twotenjack', state);
+
+  const isPlayPhaseForKbd = state?.phase === TwoTenJackPhase.PLAY;
+  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+
+  const confirmAction = useCallback(() => {
+    handlePlay();
+  }, [handlePlay]);
+
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCard,
+    onConfirm: confirmAction,
+    onClear: clearSelection,
+    enabled: !!isHumanTurnForKbd && !loading,
+  });
+
+  const phaseNames = usePhaseNames('twotenjack', TWOTENJACK_PHASE_KEYS);
+
+  if (!state) return <TwoTenJackSkeleton />;
+
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const isDeclarePhase = state.phase === TwoTenJackPhase.DECLARE;
+  const isPlayPhase = state.phase === TwoTenJackPhase.PLAY;
+  const isTrickEnd = state.phase === TwoTenJackPhase.TRICK_END;
+  const isRoundEnd = state.phase === TwoTenJackPhase.ROUND_END;
+  const isGameEnd = state.phase === TwoTenJackPhase.GAME_END || state.gameEndFlag;
+  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const isHumanDeclarer = isDeclarePhase && state.players[state.declarerIdx]?.isHuman === true;
+
+  // Team totals (team 0 = seats 0,2 ; team 1 = seats 1,3).
+  const team0Total = (state.players[0]?.cumulativeScore ?? 0) + (state.players[2]?.cumulativeScore ?? 0);
+  const team1Total = (state.players[1]?.cumulativeScore ?? 0) + (state.players[3]?.cumulativeScore ?? 0);
+  const team0Captured = (state.players[0]?.capturedPoints ?? 0) + (state.players[2]?.capturedPoints ?? 0);
+  const team1Captured = (state.players[1]?.capturedPoints ?? 0) + (state.players[3]?.capturedPoints ?? 0);
+
+  return (
+    <GamePageShell
+      title={tc('nav.twotenjack')}
+      gameThemeBg={gameTheme.twotenjack.bg}
+      phaseName={phaseNames[state.phase]}
+      isHumanTurn={isHumanDeclarer || isHumanTurn}
+      gamePath="/twotenjack"
+      gameEndFlag={!!state?.gameEndFlag}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: twoTenJackConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'pointLimit',
+                    label: t('settings.pointLimit'),
+                    value: twoTenJackConfig.pointLimit,
+                    options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('pointLimit', v),
+                  },
+                  {
+                    type: 'checkbox',
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
+
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div className="text-white text-center mb-2">
+              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+              <span>
+                {state.trumpSuit > 0 ? `${t('trump')}: ${trumpSymbol(state.trumpSuit)}` : t('trumpUndeclared')}
+              </span>
+            </div>
+
+            <div className={lgTwoColGrid}>
+              <div>
+                {isHumanDeclarer && (
+                  <div className="text-ds-warning text-center mb-2" data-tutorial="tt-declare-controls">
+                    {t('declarePhase')}
+                  </div>
+                )}
+
+                {state.currentTrick.length > 0 && (
+                  <div className="my-3 p-3 rounded bg-black/40" data-tutorial="tt-trick-display">
+                    <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
+                    <div className="flex gap-2">
+                      {state.currentTrick.map((trickCard) => (
+                        <div key={`trick-${trickCard.playerIdx}`} className="text-center">
+                          <AnimatedCard
+                            card={trickCard.card}
+                            width={cardWidth}
+                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                          />
+                          <div className="text-game-text-muted text-xs mt-1">
+                            {playerName(
+                              state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
+                              state.players[trickCard.playerIdx]?.isHuman ?? false,
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                      <div className="text-white/70 text-sm">
+                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                        {t('cumulativeScore', { score: p.cumulativeScore })} | {t('tricks', { count: p.trickCount })} |{' '}
+                        {t('capturedPoints', { count: p.capturedPoints })}
+                      </div>
+                    </div>
+                  ))}
+
+                <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="tt-score-table">
+                  <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+                  <div className="overflow-x-auto -mx-2 px-2">
+                    <table className="w-full text-sm text-white/70 min-w-[320px]">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('scoresTeam')}
+                          </th>
+                          <th scope="col">{t('scoresCaptured')}</th>
+                          <th scope="col">{t('scoresTotal')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="text-ds-accent">
+                          <td>{t('team0')}</td>
+                          <td className="text-center">{team0Captured}</td>
+                          <td className="text-center">{team0Total}</td>
+                        </tr>
+                        <tr>
+                          <td>{t('team1')}</td>
+                          <td className="text-center">{team1Captured}</td>
+                          <td className="text-center">{team1Total}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  {isMobile && <ScrollFadeHint />}
+                </div>
+              </div>
+            </div>
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
+
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          <GameFooter className={`${gameTheme.twotenjack.footer} px-4 py-2.5`}>
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="tt"
+              />
+            )}
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <div className="flex gap-2 items-center flex-wrap" data-tutorial="tt-play-button">
+              {isHumanDeclarer &&
+                SUIT_OPTIONS.map((suit) => (
+                  <button
+                    key={suit.key}
+                    type="button"
+                    className={btnPrimary}
+                    aria-label={t(`suit.${suit.key}`)}
+                    onClick={() => handleDeclare(suit.value)}
+                    disabled={loading}
+                  >
+                    {suit.symbol}
+                  </button>
+                ))}
+              {isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handlePlay}
+                  disabled={loading || selectedCardIndices.length !== 1}
+                >
+                  {t('playButton')}
+                </button>
+              )}
+              {isTrickEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                  {t('nextTrick')}
+                </button>
+              )}
+              {isRoundEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
+                </button>
+              )}
+              <button
+                type="button"
+                className={btnOutline}
+                data-tutorial="tt-reset-button"
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    return dispatch('reset', undefined, undefined, {
+                      cpuDifficulty: twoTenJackConfig.cpuDifficulty,
+                      pointLimit: twoTenJackConfig.pointLimit,
+                    });
+                  })
+                }
+                disabled={loading}
+              >
+                {tc('button.reset')}
+              </button>
+            </div>
+          </GameFooter>
+        </>
+      )}
+    </GamePageShell>
+  );
+}

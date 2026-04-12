@@ -463,4 +463,50 @@ describe('FortyThievesPage', () => {
     const drawBtn = drawBtns[drawBtns.length - 1];
     expect(drawBtn).toBeDisabled();
   });
+
+  describe('drag and drop', () => {
+    function buildDataTransfer() {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    }
+
+    it('waste card is draggable when playing', async () => {
+      renderWithProviders(<FortyThievesPage />);
+      await waitFor(() => expect(screen.getByAltText('♣ 3')).toBeInTheDocument());
+      const wasteButton = screen.getByAltText('♣ 3').closest('button') as HTMLButtonElement;
+      expect(wasteButton).toHaveAttribute('draggable', 'true');
+    });
+
+    it('dragging waste card to foundation dispatches move', async () => {
+      renderWithProviders(<FortyThievesPage />);
+      await waitFor(() => expect(screen.getByAltText('♣ 3')).toBeInTheDocument());
+
+      const wasteButton = screen.getByAltText('♣ 3').closest('button') as HTMLButtonElement;
+      const dataTransfer = buildDataTransfer();
+      fireEvent.dragStart(wasteButton, { dataTransfer });
+
+      const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
+      expect(aButtons.length).toBeGreaterThan(0);
+      const dropZone = aButtons[0].closest('div');
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.dragOver(dropZone as HTMLElement, { dataTransfer });
+      fireEvent.drop(dropZone as HTMLElement, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith(
+          'move',
+          expect.objectContaining({ zone: 'waste' }),
+          expect.objectContaining({ zone: 'foundation' }),
+        ),
+      );
+    });
+  });
 });

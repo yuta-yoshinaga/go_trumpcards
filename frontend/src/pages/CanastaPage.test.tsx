@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { canastaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CanastaPlayerData, CanastaResponse } from '../types/card';
@@ -152,5 +152,22 @@ describe('CanastaPage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<CanastaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
+  });
+
+  it('renders hint toggle checkbox', async () => {
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument();
+  });
+
+  it('shows HintTooltip when hint is enabled in draw phase', async () => {
+    localStorage.setItem('hint_enabled_canasta', 'true');
+    // drawPhaseState: human turn (currentPlayerIdx=0), DRAW phase → returns drawStock hint
+    renderWithProviders(<CanastaPage />);
+    await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+  });
+
+  afterEach(() => {
+    localStorage.clear();
   });
 });

@@ -676,4 +676,61 @@ describe('FreeCellPage', () => {
     fireEvent.click(screen.getByTestId('stalemate-escape-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 3));
   });
+
+  describe('drag and drop', () => {
+    function buildDataTransfer() {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    }
+
+    it('tableau face-up card is draggable when playing', async () => {
+      renderWithProviders(<FreeCellPage />);
+      await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+      const cardImg = screen.getByAltText('♠ K');
+      const cardButton = cardImg.closest('button') as HTMLButtonElement;
+      expect(cardButton).toHaveAttribute('draggable', 'true');
+    });
+
+    it('free cell card is draggable when playing', async () => {
+      mockExec.mockResolvedValue(withFreeCellCardState);
+      renderWithProviders(<FreeCellPage />);
+      await waitFor(() => expect(screen.getByAltText('♦ 7')).toBeInTheDocument());
+      const cardButton = screen.getByAltText('♦ 7').closest('button') as HTMLButtonElement;
+      expect(cardButton).toHaveAttribute('draggable', 'true');
+    });
+
+    it('dragging tableau card to empty tableau column dispatches move', async () => {
+      renderWithProviders(<FreeCellPage />);
+      await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+      const sourceCard = screen.getByAltText('♠ K');
+      const sourceButton = sourceCard.closest('button') as HTMLButtonElement;
+      const dataTransfer = buildDataTransfer();
+      fireEvent.dragStart(sourceButton, { dataTransfer });
+
+      // Find an empty tableau column (K placeholder)
+      const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
+      expect(kButtons.length).toBeGreaterThan(0);
+      const dropZone = kButtons[0].closest('div');
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.dragOver(dropZone as HTMLElement, { dataTransfer });
+      fireEvent.drop(dropZone as HTMLElement, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith(
+          'move',
+          expect.objectContaining({ zone: 'tableau' }),
+          expect.objectContaining({ zone: 'tableau' }),
+        ),
+      );
+    });
+  });
 });

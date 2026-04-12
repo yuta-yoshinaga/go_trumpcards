@@ -7,6 +7,18 @@ export interface Card {
   value: number;
 }
 
+/** A face-down card sentinel returned by the backend when the card must remain hidden
+ * (e.g., dealer's hole cards in Caribbean Stud during the action phase). */
+export interface MaskedCard {
+  design: '';
+  value: 0;
+}
+
+/** Type guard distinguishing a face-down `MaskedCard` from a revealed `Card`. */
+export function isMaskedCard(card: Card | MaskedCard): card is MaskedCard {
+  return card.design === '';
+}
+
 /** Bracket data for betting profile export. */
 export interface BettingProfileBracketData {
   aggressive: number;
@@ -764,6 +776,59 @@ export interface SpadesResponse {
   hint?: SpadesHint;
 }
 
+// --- Two Ten Jack (ツーテンジャック) ---
+
+/** Two Ten Jack player data (4-player team game: seats 0,2 vs 1,3). */
+export interface TwoTenJackPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+  capturedPoints: number;
+}
+
+/** A card played in a Two Ten Jack trick. */
+export interface TwoTenJackTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Two Ten Jack game configuration. */
+export interface TwoTenJackConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Two Ten Jack. */
+export interface TwoTenJackHint {
+  cardIndex?: number;
+  trumpSuit?: number;
+  reason: string;
+}
+
+/** Full Two Ten Jack game state returned from the API. */
+export interface TwoTenJackResponse {
+  players: TwoTenJackPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  declarerIdx: number;
+  trumpSuit: number;
+  currentTrick: TwoTenJackTrickCard[];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: TwoTenJackConfig;
+  hint?: TwoTenJackHint;
+}
+
 // --- Crazy Eights (クレイジーエイト) ---
 
 /** Crazy Eights player data with scores. */
@@ -916,6 +981,39 @@ export interface KlondikeResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   hint?: KlondikeHint;
+}
+
+// --- Canfield (キャンフィールド) ---
+
+/** A single card on a Canfield tableau column. */
+export interface CanfieldTableauCard {
+  card: Card;
+}
+
+/** A suggested move hint in Canfield. */
+export interface CanfieldHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Canfield game state returned from the API. */
+export interface CanfieldResponse {
+  tableau: CanfieldTableauCard[][];
+  reserve: Card[];
+  stockCount: number;
+  waste: Card[];
+  foundation: Card[][];
+  baseRank: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: CanfieldHint;
 }
 
 // --- FreeCell (フリーセル) ---
@@ -1487,6 +1585,32 @@ export interface ThreeCardResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Caribbean Stud Poker (カリビアンスタッドポーカー) ---
+
+/** Caribbean Stud Poker API response. */
+export interface CaribbeanStudResponse {
+  playerHand: Card[];
+  /** Dealer hand: during the action phase only the first card is revealed and
+   * the remaining slots are `MaskedCard`. After the end phase all 5 are real `Card`s. */
+  dealerHand: (Card | MaskedCard)[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  jackpotBet: number;
+  playBet: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  jackpotPayout: number;
+  totalPayout: number;
+  dealerQualified: boolean;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Pai Gow Poker (パイゴウポーカー) ---
 
 /** Pai Gow Poker API response. */
@@ -1539,6 +1663,39 @@ export interface SpeedHint {
 /** Speed game configuration. */
 export interface SpeedConfig {
   cpuDifficulty: number;
+  autoFlip: boolean;
+}
+
+/** War player data with face-down pile and discard pile sizes. */
+export interface WarPlayerData {
+  id: number;
+  isHuman: boolean;
+  drawPileSize: number;
+  discardPileSize: number;
+  totalCards: number;
+}
+
+/** War game configuration. */
+export interface WarConfig {
+  maxRounds: number;
+}
+
+/** Full War game state returned from the API. */
+export interface WarResponse {
+  players: WarPlayerData[];
+  phase: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  playerRevealed: Card | null;
+  cpuRevealed: Card | null;
+  warPotSize: number;
+  lastWinnerIdx: number;
+  lastBurialCount: number;
+  roundsPlayed: number;
+  config: WarConfig;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }
 
 /** Full Speed game state returned from the API. */

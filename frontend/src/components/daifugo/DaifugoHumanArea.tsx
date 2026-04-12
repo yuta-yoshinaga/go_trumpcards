@@ -13,6 +13,7 @@ interface HumanPlayerAreaProps {
   onToggle: (idx: number) => void;
   isCurrentTurn: boolean;
   onDragCard: (idx: number) => void;
+  onSwipeStart?: (idx: number) => void;
 }
 
 /** Renders the human player's hand area for Daifugo with card selection and drag support. */
@@ -22,6 +23,7 @@ export function DaifugoHumanArea({
   onToggle,
   isCurrentTurn,
   onDragCard,
+  onSwipeStart,
 }: HumanPlayerAreaProps) {
   const { t } = useTranslation('daifugo');
   const { cardWidth } = useCardDimensions();
@@ -53,11 +55,13 @@ export function DaifugoHumanArea({
           <button
             key={`${card.design}-${card.value}`}
             type="button"
+            data-card-index={i}
             aria-pressed={selectedIndices.includes(i)}
             disabled={!isCurrentTurn}
             draggable={isCurrentTurn}
-            className={focusRingCard}
+            className={`${focusRingCard} touch-none`}
             onClick={() => onToggle(i)}
+            onPointerDown={isCurrentTurn && onSwipeStart ? () => onSwipeStart(i) : undefined}
             onDragStart={(e) => {
               e.dataTransfer.setData('cardIndex', String(i));
               onDragCard(i);

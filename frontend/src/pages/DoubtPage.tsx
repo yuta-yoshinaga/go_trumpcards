@@ -22,6 +22,7 @@ import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCardSwipeSelection } from '../hooks/useCardSwipeSelection';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import {
@@ -169,6 +170,12 @@ function DoubtPageContent() {
     onToggle: toggleCard,
     onConfirm: handlePlay,
     onClear: clearSelection,
+    enabled: isHumanPlayTurn && !loading,
+  });
+
+  const { onPointerDown: handleCardSwipeStart } = useCardSwipeSelection({
+    selected: selectedCardIndices,
+    toggle: toggleCard,
     enabled: isHumanPlayTurn && !loading,
   });
 
@@ -446,6 +453,7 @@ function DoubtPageContent() {
                       selected={selectedCardIndices.includes(i)}
                       selectable={isHumanTurn && state.phase === 0 && !loading}
                       onToggle={toggleCard}
+                      onSwipeStart={handleCardSwipeStart}
                     />
                   ))}
                 </div>

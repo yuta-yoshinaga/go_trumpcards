@@ -44,6 +44,8 @@ tags:
     description: Baccarat (バカラ) game
   - name: spades
     description: Spades (スペード) game
+  - name: twotenjack
+    description: Two Ten Jack (ツーテンジャック) game
   - name: crazyeights
     description: Crazy Eights (クレイジーエイト) game
   - name: ginrummy
@@ -76,6 +78,8 @@ tags:
     description: Cribbage (クリベッジ) game
   - name: threecard
     description: Three Card Poker (スリーカードポーカー) game
+  - name: caribbeanstud
+    description: Caribbean Stud Poker (カリビアンスタッドポーカー) game
   - name: ohhell
     description: Oh Hell (オー・ヘル) game
   - name: bridge
@@ -98,6 +102,8 @@ tags:
     description: Forty Thieves (フォーティシーブス) game
   - name: paigow
     description: Pai Gow Poker (パイゴウポーカー) game
+  - name: war
+    description: War (戦争) game
 
 paths:
   /blackjack/exec:
@@ -1530,6 +1536,76 @@ paths:
               schema:
                 $ref: '#/components/schemas/SpadesResponse'
 
+  /twotenjack/exec:
+    post:
+      tags:
+        - twotenjack
+      summary: Execute a Two Ten Jack game command
+      description: |
+        Send a command to advance the Two Ten Jack (ツーテンジャック) game session
+        identified by `sessionId`.  Two Ten Jack is a 4-player team trick-taking
+        game (seats 0,2 vs 1,3).  Each player is dealt 13 cards and the declarer
+        chooses a trump suit.  Point cards: A and J = 1 pt each, 10 = 10 pt; the
+        last trick wins a +2 bonus (50 pts per round total).  The declaring team
+        must take at least 26 points to make the contract.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Declare   | `0`   | Declarer picks the trump suit |
+        | Play      | `1`   | Trick play (follow suit if possible, trump cuts) |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | Round scored; advance with `nextround` |
+        | GameEnd   | `4`   | A team reached the cumulative point limit |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `declare`   | `d`     | Declare trump suit (requires `trumpSuit`, 1=♠ 2=♣ 3=♥ 4=♦) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `log`       | `l`     | View action log |
+      operationId: twoTenJackExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwoTenJackRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              declare:
+                summary: Declare spades as trump
+                value:
+                  command: declare
+                  trumpSuit: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoTenJackResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoTenJackResponse'
+
   /crazyeights/exec:
     post:
       tags:
@@ -2745,6 +2821,103 @@ paths:
                     playPayout: 0
                     anteBonusPayout: 0
                     pairPlusPayout: 0
+                    totalPayout: 0
+                    dealerQualified: false
+                    playerHandRank: 0
+                    dealerHandRank: 0
+                    message: param error.
+
+  /caribbeanstud/exec:
+    post:
+      tags:
+        - caribbeanstud
+      summary: Execute a Caribbean Stud Poker game command
+      description: |
+        Send a command to advance the Caribbean Stud Poker (カリビアンスタッドポーカー)
+        game session identified by `sessionId`. Caribbean Stud Poker is a single-player
+        casino poker game using a standard 52-card deck. Player places an Ante bet and
+        an optional Jackpot side bet, receives 5 cards, then decides to Call (place a
+        Play bet equal to 2x Ante) or Fold (forfeit Ante). Dealer must have Ace-King
+        high or any pair to qualify. If dealer doesn't qualify, Ante pays 1:1 and Play
+        bet pushes. If dealer qualifies, the higher 5-card poker hand wins. Play bet
+        on win pays per hand: Royal Flush 100:1, Straight Flush 50:1, Four of a Kind
+        20:1, Full House 7:1, Flush 5:1, Straight 4:1, Three of a Kind 3:1, Two Pair
+        2:1, Pair or less 1:1. The Jackpot side bet pays independently of the main
+        result: Royal Flush 20000x, Straight Flush 5000x, Four of a Kind 500x, Full
+        House 100x, Flush 50x.
+
+        The game proceeds through these phases:
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `1`   | Place Ante and optional Jackpot side bet |
+        | Action | `2`   | Decide to Call or Fold |
+        | End    | `3`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `jackpotBet`) |
+        | `play`  | `p`     | Call: place Play bet (2x Ante) and reveal dealer hand |
+        | `fold`  | `f`     | Forfeit Ante bet |
+        | `log`   | `l`     | View action log |
+      operationId: caribbeanstudExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaribbeanStudRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante with 10 Jackpot
+                value:
+                  command: bet
+                  amount: 100
+                  jackpotBet: 10
+                  sessionId: my-session-001
+              play:
+                summary: Call (place Play bet)
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaribbeanStudResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaribbeanStudResponse'
+              examples:
+                paramError:
+                  value:
+                    playerHand: []
+                    dealerHand: []
+                    phase: 0
+                    chips: 0
+                    anteBet: 0
+                    jackpotBet: 0
+                    playBet: 0
+                    result: 0
+                    antePayout: 0
+                    playPayout: 0
+                    jackpotPayout: 0
                     totalPayout: 0
                     dealerQualified: false
                     playerHandRank: 0
@@ -4072,6 +4245,222 @@ paths:
                     bet: 0
                     result: 0
                     message: "unsupported command"
+
+  /war/exec:
+    post:
+      tags:
+        - war
+      summary: Execute a War (戦争) game command
+      description: |
+        Send a command to advance the War (戦争) game session identified by
+        `sessionId`.  War is a two-player matching card game for a human vs
+        CPU, played with a standard 52-card deck split evenly (26 cards each,
+        face-down).  Each round both players reveal the top card of their
+        draw pile; the higher rank (Ace high) wins both cards into the
+        winner's discard pile.  On a tie, "war" is triggered: each player
+        buries up to 3 cards face-down and reveals a new face-up card, with
+        the higher face-up winning the entire pot.  Wars can chain if the
+        new face-ups also tie.  When a draw pile empties, the discard pile
+        is shuffled and reused.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Reveal   | `0`   | Ready to flip the next pair of cards |
+        | Resolved | `1`   | Round decided; next step awards the pot |
+        | WarBury  | `2`   | Tie triggered; next step buries face-down and reveals new face-ups |
+        | GameEnd  | `3`   | Game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game (optional `maxRounds` 10-10000) |
+        | `step`  | `s`     | Advance one step of the state machine |
+        | `log`   | `l`     | View action log |
+      operationId: warExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, step, s, log, l]
+                maxRounds:
+                  type: integer
+                  description: Round cap (10-10000). Used only with reset.
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              step:
+                summary: Flip next card / resolve round / resolve war
+                value:
+                  command: step
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        drawPileSize:
+                          type: integer
+                        discardPileSize:
+                          type: integer
+                        totalCards:
+                          type: integer
+                  phase:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerIdx:
+                    type: integer
+                  playerRevealed:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  cpuRevealed:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  warPotSize:
+                    type: integer
+                  lastWinnerIdx:
+                    type: integer
+                  lastBurialCount:
+                    type: integer
+                  roundsPlayed:
+                    type: integer
+                  config:
+                    type: object
+                    properties:
+                      maxRounds:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                  phase:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  message:
+                    type: string
+
+  /canfield/exec:
+    post:
+      tags:
+        - canfield
+      summary: Execute a Canfield (キャンフィールド) game command
+      description: |
+        Send a command to advance a Canfield solitaire session identified by `sessionId`.
+        Canfield uses a 13-card reserve, 4 tableau columns, 4 foundations, and a stock
+        that draws 3 cards at a time to the waste. The foundation base rank is
+        determined by the first card dealt. Tableau sequences are built in alternating
+        colors descending with wrap-around; foundations build in same suit ascending
+        with wrap-around.
+      operationId: canfieldExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, log, l, undo, u, undo_n]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [waste, reserve, tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  reserve:
+                    type: array
+                  stockCount:
+                    type: integer
+                  waste:
+                    type: array
+                  foundation:
+                    type: array
+                  baseRank:
+                    type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
 
 components:
   schemas:
@@ -7736,6 +8125,146 @@ components:
               description: Machine-readable reason key for the hint
 
     # -------------------------------------------------------------------------
+    # Two Ten Jack
+    # -------------------------------------------------------------------------
+    TwoTenJackRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `declare` (`d`),
+            `play` (`p`), `next` (`n`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, declare, d, play, p, next, n, nextround, nr, log, l]
+          example: reset
+        trumpSuit:
+          type: integer
+          description: "Trump suit to declare (1=♠, 2=♣, 3=♥, 4=♦). Required for `declare`."
+          minimum: 1
+          maximum: 4
+          example: 1
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    TwoTenJackResponse:
+      type: object
+      description: Current state of the Two Ten Jack game
+      properties:
+        players:
+          type: array
+          description: Array of player objects (4 seats; teams are 0,2 vs 1,3)
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+              capturedPoints:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Declare, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+          description: Index of the declarer for the current round
+        trumpSuit:
+          type: integer
+          description: "Declared trump suit (1=♠, 2=♣, 3=♥, 4=♦; -1 if not yet declared)"
+        currentTrick:
+          type: array
+          description: Cards played in the current trick
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+          description: "Winning team index (0 = seats 0,2; 1 = seats 1,3; -1 if not ended)"
+        leadPlayerIdx:
+          type: integer
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play or trump suit hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index (null during declare phase)
+            trumpSuit:
+              type: integer
+              nullable: true
+              description: Recommended trump suit (null during play phase)
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
     # Crazy Eights
     # -------------------------------------------------------------------------
     CrazyEightsRequest:
@@ -9592,6 +10121,139 @@ components:
         dealerHandRank:
           type: integer
           description: Dealer's hand rank (1=High Card, 2=Pair, 3=Flush, 4=Straight, 5=Three of a Kind, 6=Straight Flush)
+          example: 1
+        message:
+          type: string
+          description: Game result or error message. Empty during bet/action phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Caribbean Stud Poker
+    # -------------------------------------------------------------------------
+    CaribbeanStudRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `play` (`p`), `fold` (`f`), `log` (`l`).
+          enum: [r, reset, b, bet, p, play, f, fold, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Ante bet amount. Required for `bet` command (minimum 10, must be a
+            multiple of 10). Ignored for other commands.
+          minimum: 10
+          example: 100
+        jackpotBet:
+          type: integer
+          description: |
+            Jackpot side bet amount. Optional; used with the `bet` command.
+            0 or omitted means no side bet.
+          minimum: 0
+          example: 10
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CaribbeanStudResponse:
+      type: object
+      description: Current state of the Caribbean Stud Poker game
+      required:
+        - playerHand
+        - dealerHand
+        - phase
+        - chips
+        - anteBet
+        - jackpotBet
+        - playBet
+        - result
+        - antePayout
+        - playPayout
+        - jackpotPayout
+        - totalPayout
+        - dealerQualified
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand (5 cards)
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Cards in the dealer's hand (5 cards; hidden until End phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Action, 3 = End"
+          enum: [1, 2, 3]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Current Ante bet amount
+          example: 100
+        jackpotBet:
+          type: integer
+          description: Current Jackpot side bet amount
+          example: 10
+        playBet:
+          type: integer
+          description: Current Play bet amount (2x Ante on Call)
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Dealer wins, 0 = Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          description: Payout from the Ante bet
+          example: 0
+        playPayout:
+          type: integer
+          description: Payout from the Play bet
+          example: 0
+        jackpotPayout:
+          type: integer
+          description: Jackpot side bet payout
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the current round (sum of all payouts)
+          example: 0
+        dealerQualified:
+          type: boolean
+          description: Whether the dealer qualified (Ace-King high or any pair)
+          example: false
+        playerHandRank:
+          type: integer
+          description: Player's 5-card hand rank (0=High Card, 1=One Pair, 2=Two Pair, 3=Three of a Kind, 4=Straight, 5=Flush, 6=Full House, 7=Four of a Kind, 8=Straight Flush, 9=Royal Flush)
+          example: 1
+        dealerHandRank:
+          type: integer
+          description: Dealer's 5-card hand rank (same encoding as `playerHandRank`)
           example: 1
         message:
           type: string

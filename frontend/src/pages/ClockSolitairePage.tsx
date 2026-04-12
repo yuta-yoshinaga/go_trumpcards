@@ -74,7 +74,6 @@ function ClockSolitairePageContent() {
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   const handleAutoPlay = useCallback(() => execApi('autoplay'), [execApi]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: initial load
   useEffect(() => {
     execApi('reset');
   }, [execApi]);

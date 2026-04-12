@@ -348,7 +348,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全39ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全46ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -631,7 +631,40 @@ classDiagram
         REBUY = 8
     }
 
-    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase, FortyThievesPhase は、\nそれぞれ同一の値を持つ別定数です"
+    class CanfieldPhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
+    class TwoTenJackPhase {
+        <<enumeration>>
+        DECLARE = 0
+        PLAY = 1
+        TRICK_END = 2
+        ROUND_END = 3
+        GAME_END = 4
+    }
+
+    class CaribbeanStudPhase {
+        <<enumeration>>
+        BET = 1
+        ACTION = 2
+        END = 3
+    }
+
+    class WarPhase {
+        <<enumeration>>
+        REVEAL = 0
+        RESOLVED = 1
+        WAR_BURY = 2
+        GAME_END = 3
+    }
+
+    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase, FortyThievesPhase, CanfieldPhase は、\nそれぞれ同一の値を持つ別定数です"
+
+    note for DurakPhase "DurakPhase の定数は src/pages/DurakPage.tsx 内にローカル定義 (PHASE_ATTACK/DEFEND/BOUT_END)。\nPigsTailPhase の定数は src/pages/PigsTailPage.tsx 内にローカル定義 (PIGTAIL_PHASE_PLAY/END)。\nDaifugoPage は数値 Phase を持たず gameEndFlag と t('phase.play'/'phase.end') を使用する"
 ```
 
 ### 1.2 API クライアント層
@@ -739,7 +772,7 @@ classDiagram
 
     PaiGowApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全42ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow)"
+    note for BlackJackApi "全46ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1118,7 +1151,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全42ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全43ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1289,9 +1322,10 @@ classDiagram
         +string gamePath
         +react-markdown レンダリング
         +remark-gfm テーブル対応
-        +bg-gray-900 不透明背景
+        +bg-ds-surface 不透明背景
         +フォーカストラップ
         +Escape キー対応
+        +isCliModeEnabled() CUI/Web切り替え
     }
 
     class MermaidBlock {
@@ -1301,8 +1335,19 @@ classDiagram
         +エラー時フォールバック表示
     }
 
+    class cuiManualTexts {
+        +Record~string,string~ CUI版マニュアルマップ
+        +isCliModeEnabled(gamePath) boolean
+    }
+
+    class manualTexts {
+        +Record~string,string~ Web版マニュアルマップ
+    }
+
     ManualButton --> ManualModal : renders
     ManualModal --> MermaidBlock : renders mermaid code blocks
+    ManualModal --> cuiManualTexts : CLIモード判定・CUIテキスト取得
+    ManualModal --> manualTexts : Webテキスト取得
 ```
 
 ### 1.6 ページコンポーネント層
@@ -1613,7 +1658,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全42ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全43ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1636,7 +1681,7 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (42ゲーム)
+        +Routes (43ゲーム)
     }
 
     class gameCategories {
@@ -1663,7 +1708,7 @@ classDiagram
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "44名前空間: common + 42ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "45名前空間: common + 43ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---

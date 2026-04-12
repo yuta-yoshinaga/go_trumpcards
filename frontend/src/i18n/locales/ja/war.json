@@ -1,0 +1,22 @@
+{
+  "button": {
+    "step": "めくる"
+  },
+  "phase": {
+    "reveal": "めくり待ち",
+    "resolved": "ラウンド決着",
+    "war": "戦争！",
+    "end": "終了"
+  },
+  "label": {
+    "drawPile": "山札",
+    "discardPile": "捨札",
+    "total": "合計",
+    "potCount": "場に{{count}}枚",
+    "rounds": "ラウンド",
+    "maxRounds": "最大ラウンド"
+  },
+  "settings": {
+    "maxRounds": "最大ラウンド数"
+  }
+}

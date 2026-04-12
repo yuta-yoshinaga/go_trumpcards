@@ -4,6 +4,8 @@ import type {
   BlackJackResponse,
   BridgeResponse,
   CanastaResponse,
+  CanfieldResponse,
+  CaribbeanStudResponse,
   ClockSolitaireResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -44,7 +46,9 @@ import type {
   SpiderResponse,
   ThreeCardResponse,
   TriPeaksResponse,
+  TwoTenJackResponse,
   VideoPokerResponse,
+  WarResponse,
 } from '../types/card';
 
 /** Unique session identifier for correlating API requests. */
@@ -68,6 +72,7 @@ const workerUrl: Record<string, string> = {
   deuceswild: WORKER_CASINO,
   jokerpoker: WORKER_CASINO,
   threecard: WORKER_CASINO,
+  caribbeanstud: WORKER_CASINO,
   paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
@@ -84,9 +89,11 @@ const workerUrl: Record<string, string> = {
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
+  war: WORKER_CLASSIC,
   gofish: WORKER_CLASSIC,
   pinochle: WORKER_CLASSIC,
   pigtail: WORKER_CLASSIC,
+  twotenjack: WORKER_CLASSIC,
   klondike: WORKER_SOLO,
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
@@ -99,6 +106,7 @@ const workerUrl: Record<string, string> = {
   golf: WORKER_SOLO,
   clocksolitaire: WORKER_SOLO,
   fortythieves: WORKER_SOLO,
+  canfield: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -430,6 +438,33 @@ function createBidPlayApi<T, C>(game: string) {
 /** API client for the Spades /spades/exec endpoint. */
 export const spadesApi = createBidPlayApi<SpadesResponse, SpadesConfigInput>('spades');
 
+/** Configuration options for Two Ten Jack game settings. */
+export interface TwoTenJackConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Two Ten Jack /twotenjack/exec endpoint.
+ *
+ * Argument order mirrors {@link spadesApi}: command, trumpSuit, cardIndex, config.
+ * This keeps compatibility with {@link useTrickGameBase} which invokes play as
+ * `(command, undefined, cardIndex)`.
+ */
+export const twoTenJackApi = {
+  exec: (
+    command: 'reset' | 'declare' | 'play' | 'next' | 'nextround' | 'hint',
+    trumpSuit?: number,
+    cardIndex?: number,
+    config?: TwoTenJackConfigInput,
+  ) =>
+    gameExec<TwoTenJackResponse>('twotenjack', {
+      command,
+      trumpSuit,
+      cardIndex,
+      config,
+    }),
+};
+
 /** Configuration options for Oh Hell game settings. */
 export interface OhHellConfigInput {
   cpuDifficulty?: number;
@@ -483,6 +518,29 @@ export const klondikeApi = {
       from,
       to,
       config,
+      n,
+    }),
+};
+
+/** Source or target zone for a Canfield card move. */
+export interface CanfieldMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Canfield /canfield/exec endpoint. */
+export const canfieldApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
+    from?: CanfieldMoveZone,
+    to?: CanfieldMoveZone,
+    n?: number,
+  ) =>
+    gameExec<CanfieldResponse>('canfield', {
+      command,
+      from,
+      to,
       n,
     }),
 };
@@ -640,6 +698,12 @@ export const baccaratApi = {
 export const threecardApi = {
   exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, pairPlusBet?: number) =>
     gameExec<ThreeCardResponse>('threecard', { command, amount, pairPlusBet }),
+};
+
+/** API client for the Caribbean Stud Poker /caribbeanstud/exec endpoint. */
+export const caribbeanstudApi = {
+  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'log', amount?: number, jackpotBet?: number) =>
+    gameExec<CaribbeanStudResponse>('caribbeanstud', { command, amount, jackpotBet }),
 };
 
 /** API client for the Pai Gow Poker /paigow/exec endpoint. */
@@ -839,6 +903,12 @@ export const deuceswildApi = createVideoPokerApi('deuceswild');
 /** API client for the Joker Poker /jokerpoker/exec endpoint. */
 export const jokerpokerApi = createVideoPokerApi('jokerpoker');
 
+/** API client for the War /war/exec endpoint. */
+export const warApi = {
+  exec: (command: 'reset' | 'step' | 'log', config?: { maxRounds?: number }) =>
+    gameExec<WarResponse>('war', { command, ...config }),
+};
+
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {
   exec: (
@@ -908,6 +978,7 @@ const games = [
   'sevencardstud',
   'hearts',
   'spades',
+  'twotenjack',
   'napoleon',
   'ohhell',
   'memory',
@@ -928,14 +999,17 @@ const games = [
   'tripeaks',
   'cribbage',
   'threecard',
+  'caribbeanstud',
   'paigow',
   'speed',
+  'war',
   'gofish',
   'pinochle',
   'golf',
   'pigtail',
   'clocksolitaire',
   'fortythieves',
+  'canfield',
 ] as const;
 type Game = (typeof games)[number];
 

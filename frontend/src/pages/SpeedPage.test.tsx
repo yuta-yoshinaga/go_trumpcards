@@ -1,5 +1,5 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { speedApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SpeedResponse } from '../types/card';
@@ -35,7 +35,7 @@ const playState: SpeedResponse = {
   phase: 0,
   gameEndFlag: false,
   winnerIdx: -1,
-  config: { cpuDifficulty: 1 },
+  config: { cpuDifficulty: 1, autoFlip: true },
   message: '',
 };
 
@@ -78,7 +78,7 @@ describe('SpeedPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => {
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1 });
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, autoFlip: true });
     });
   });
 
@@ -239,5 +239,76 @@ describe('SpeedPage', () => {
     const flipPileBtns = screen.getAllByRole('button', { name: 'めくる' });
     // Center pile buttons (first two) should have animate-pulse
     expect(flipPileBtns[0]).toHaveClass('animate-pulse');
+  });
+
+  it('renders the auto-flip settings toggle', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    expect(screen.getByLabelText('膠着時に自動でめくる')).toBeInTheDocument();
+  });
+});
+
+describe('SpeedPage auto-flip timer', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    mockExec.mockResolvedValue(stuckState);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('automatically calls flip after the delay when stuck and auto-flip enabled', async () => {
+    renderWithProviders(<SpeedPage />);
+    // Wait until the stuck state is rendered
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    mockExec.mockClear();
+    // Advance past the 2.5s auto-flip delay
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2600);
+    });
+    expect(mockExec).toHaveBeenCalledWith('flip');
+  });
+
+  it('does not auto-flip before the delay elapses', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    mockExec.mockClear();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+    expect(mockExec).not.toHaveBeenCalledWith('flip');
+  });
+
+  it('does not auto-flip while a manual flip request is in flight', async () => {
+    // First render resolves to stuckState; subsequent calls hang so loading stays true
+    mockExec.mockResolvedValueOnce(stuckState).mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    // Manual click sets loading=true for the pending mutation; wait for the
+    // loading state (disabled button) to propagate through react-query before
+    // advancing fake timers, otherwise the pre-click timer can still fire.
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('flip-button'));
+    });
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeDisabled());
+    mockExec.mockClear();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+    expect(mockExec).not.toHaveBeenCalledWith('flip');
+  });
+
+  it('does not auto-flip when disabled via the settings toggle', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    // Turn auto-flip off before the timer fires
+    fireEvent.click(screen.getByLabelText('膠着時に自動でめくる'));
+    mockExec.mockClear();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+    expect(mockExec).not.toHaveBeenCalledWith('flip');
   });
 });

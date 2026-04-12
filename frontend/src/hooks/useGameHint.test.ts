@@ -4,19 +4,26 @@ import { BJ_SUGGEST_HIT, BJ_SUGGEST_NONE } from '../components/blackjack/bjConst
 import type {
   BaccaratResponse,
   BlackJackResponse,
+  CanastaResponse,
+  CaribbeanStudResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoResponse,
   DoubtResponse,
+  DurakResponse,
   EuchreResponse,
   GinRummyResponse,
+  GoFishResponse,
   NapoleonResponse,
   OhHellResponse,
   OldMaidResponse,
+  PinochleResponse,
   SevensResponse,
   SpeedResponse,
   ThreeCardResponse,
+  TwoTenJackResponse,
 } from '../types/card';
+import { CanastaPhase, CaribbeanStudPhase, GoFishPhase } from '../types/phases';
 import { useGameHint } from './useGameHint';
 
 function makeBjState(overrides: Partial<BlackJackResponse> = {}): BlackJackResponse {
@@ -437,6 +444,195 @@ describe('useGameHint', () => {
     const { result } = renderHook(() => useGameHint('ginrummy', state as GinRummyResponse));
     expect(result.current.hint).not.toBeNull();
     expect(result.current.hint?.targetAction).toBe('discard');
+  });
+
+  it('returns gofish hint when enabled', () => {
+    localStorage.setItem('hint_enabled_gofish', 'true');
+    const state: GoFishResponse = {
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 2,
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'SPADE', value: 5 },
+          ],
+          bookCount: 0,
+          books: [],
+        },
+        { id: 1, isHuman: false, cardCount: 5, cards: [], bookCount: 0, books: [] },
+      ],
+      phase: GoFishPhase.PLAY,
+      currentTurn: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      turnNumber: 0,
+      deckRemaining: 20,
+      lastAsk: null,
+      cpuActions: [],
+      humanAction: null,
+      message: '',
+      config: { cpuDifficulty: 0 },
+    };
+    const { result } = renderHook(() => useGameHint('gofish', state));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('ask');
+  });
+
+  it('returns caribbeanstud hint when enabled', () => {
+    localStorage.setItem('hint_enabled_caribbeanstud', 'true');
+    const state: Partial<CaribbeanStudResponse> = {
+      phase: CaribbeanStudPhase.ACTION,
+      playerHand: [
+        { design: 'HEART', value: 1 },
+        { design: 'SPADE', value: 13 },
+        { design: 'DIAMOND', value: 7 },
+        { design: 'CLOVER', value: 4 },
+        { design: 'HEART', value: 3 },
+      ],
+      playerHandRank: 0,
+      dealerHand: [],
+      chips: 1000,
+      anteBet: 100,
+      jackpotBet: 0,
+      playBet: 0,
+      result: 0,
+      antePayout: 0,
+      playPayout: 0,
+      jackpotPayout: 0,
+      totalPayout: 0,
+      dealerQualified: false,
+      dealerHandRank: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('caribbeanstud', state as CaribbeanStudResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('play');
+  });
+
+  it('returns durak hint when enabled', () => {
+    localStorage.setItem('hint_enabled_durak', 'true');
+    const state: Partial<DurakResponse> = {
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          cardCount: 2,
+          cards: [
+            { design: 'SPADE', value: 6 },
+            { design: 'CLOVER', value: 9 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: false, cardCount: 6, cards: [] },
+      ],
+      phase: 0,
+      attackerIdx: 0,
+      defenderIdx: 1,
+      tablePairs: [],
+      trumpSuit: 'H',
+      trumpCard: { design: 'HEART', value: 10 },
+      stockCount: 12,
+      loserIdx: -1,
+      gameEndFlag: false,
+      cpuActions: [],
+      humanAction: null,
+      boutNumber: 1,
+      sortMode: 0,
+      currentTurn: 0,
+      message: '',
+      config: { playerCount: 2, cpuDifficulty: 0, transferEnabled: false },
+    };
+    const { result } = renderHook(() => useGameHint('durak', state as DurakResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('attack');
+  });
+
+  it('returns canasta hint when enabled', () => {
+    localStorage.setItem('hint_enabled_canasta', 'true');
+    const humanPlayer = {
+      id: 0,
+      isHuman: true,
+      cardCount: 11,
+      cards: [],
+      melds: [],
+      red3Count: 0,
+      red3s: [],
+      roundScore: 0,
+      cumulativeScore: 0,
+      hasCanasta: false,
+      hasInitMeld: false,
+    };
+    const cpuPlayer = { ...humanPlayer, id: 1, isHuman: false };
+    const state: Partial<CanastaResponse> = {
+      players: [humanPlayer, cpuPlayer],
+      phase: CanastaPhase.DRAW,
+      roundNumber: 1,
+      currentPlayerIdx: 0,
+      discardTop: null,
+      drawPileCount: 40,
+      discardPileCount: 0,
+      isFrozen: false,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      message: '',
+      config: { cpuDifficulty: 0, pointLimit: 5000 },
+    };
+    const { result } = renderHook(() => useGameHint('canasta', state as CanastaResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('draw');
+  });
+
+  it('returns pinochle hint when enabled', () => {
+    localStorage.setItem('hint_enabled_pinochle', 'true');
+    const state: Partial<PinochleResponse> = {
+      gameEndFlag: false,
+      hint: { reason: 'hint_play', cardIndex: 0 },
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      trickNumber: 1,
+      currentPlayerIdx: 0,
+      bidPlayerIdx: 0,
+      dealerIdx: 0,
+      trumpSuit: 0,
+      highestBid: 0,
+      highestBidder: 0,
+      currentTrick: [],
+      teamScores: [0, 0],
+      winnerTeam: -1,
+      leadPlayerIdx: 0,
+      playerMelds: [],
+      message: '',
+      config: { cpuDifficulty: 0, pointLimit: 1500 },
+    };
+    const { result } = renderHook(() => useGameHint('pinochle', state as PinochleResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('play');
+  });
+
+  it('returns twotenjack hint when enabled', () => {
+    localStorage.setItem('hint_enabled_twotenjack', 'true');
+    const state: Partial<TwoTenJackResponse> = {
+      gameEndFlag: false,
+      hint: { reason: 'lead', cardIndex: 0 },
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      trickNumber: 1,
+      currentPlayerIdx: 0,
+      declarerIdx: 0,
+      trumpSuit: 0,
+      currentTrick: [],
+      winnerTeam: -1,
+      leadPlayerIdx: 0,
+      message: '',
+      config: { cpuDifficulty: 0, pointLimit: 500 },
+    };
+    const { result } = renderHook(() => useGameHint('twotenjack', state as TwoTenJackResponse));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.targetAction).toBe('play');
   });
 
   it('returns cribbage hint when enabled', () => {

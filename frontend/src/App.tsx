@@ -10,6 +10,8 @@ import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
 import { CanastaPage } from './pages/CanastaPage';
+import { CanfieldPage } from './pages/CanfieldPage';
+import { CaribbeanStudPage } from './pages/CaribbeanStudPage';
 import { ClockSolitairePage } from './pages/ClockSolitairePage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { CribbagePage } from './pages/CribbagePage';
@@ -47,7 +49,9 @@ import { SpeedPage } from './pages/SpeedPage';
 import { SpiderPage } from './pages/SpiderPage';
 import { ThreeCardPage } from './pages/ThreeCardPage';
 import { TriPeaksPage } from './pages/TriPeaksPage';
+import { TwoTenJackPage } from './pages/TwoTenJackPage';
 import { VideoPokerPage } from './pages/VideoPokerPage';
+import { WarPage } from './pages/WarPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
 const pageByPath: Record<GamePath, ReactNode> = {
@@ -67,6 +71,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/shortdeck': <ShortDeckPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,
+  '/twotenjack': <TwoTenJackPage />,
   '/ohhell': <OhHellPage />,
   '/napoleon': <NapoleonPage />,
   '/memory': <MemoryPage />,
@@ -85,14 +90,17 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/deuceswild': <DeucesWildPage />,
   '/jokerpoker': <JokerPokerPage />,
   '/threecard': <ThreeCardPage />,
+  '/caribbeanstud': <CaribbeanStudPage />,
   '/paigow': <PaiGowPage />,
   '/speed': <SpeedPage />,
   '/gofish': <GoFishPage />,
   '/pinochle': <PinochlePage />,
   '/golf': <GolfPage />,
   '/pigtail': <PigsTailPage />,
+  '/war': <WarPage />,
   '/clocksolitaire': <ClockSolitairePage />,
   '/fortythieves': <FortyThievesPage />,
+  '/canfield': <CanfieldPage />,
 };
 
 /** Root application component with router and game page routes. */

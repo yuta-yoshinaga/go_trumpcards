@@ -1,0 +1,6 @@
+{
+  "helpTitle": "Caribbean Stud Poker (カリビアンスタッドポーカー)",
+  "helpBet": "  b <ante> [jackpot]   ベット (アンテ必須、ジャックポット任意)",
+  "helpPlay": "  p                    コール (アンテの2倍のプレイベット)",
+  "helpFold": "  f                    フォールド (アンテ没収)"
+}

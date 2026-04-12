@@ -130,6 +130,13 @@ export const KlondikeScoringMode = {
   VEGAS: 1,
 } as const;
 
+/** Canfield phase constants (sync: internal/domain/Canfield.go). */
+export const CanfieldPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** FreeCell phase constants (sync: internal/domain/FreeCell.go). */
 export const FreeCellPhase = {
   PLAYING: 0,
@@ -140,6 +147,15 @@ export const FreeCellPhase = {
 /** Spades phase constants (sync: internal/domain/Spades.go). */
 export const SpadesPhase = {
   BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+/** Two Ten Jack phase constants (sync: internal/domain/TwoTenJack.go). */
+export const TwoTenJackPhase = {
+  DECLARE: 0,
   PLAY: 1,
   TRICK_END: 2,
   ROUND_END: 3,
@@ -278,6 +294,13 @@ export const ThreeCardPhase = {
   END: 3,
 } as const;
 
+/** Caribbean Stud Poker phase constants (sync: internal/domain/CaribbeanStud.go). */
+export const CaribbeanStudPhase = {
+  BET: 1,
+  ACTION: 2,
+  END: 3,
+} as const;
+
 /** Doubt phase constants (sync: internal/domain/Doubt.go). */
 export const DoubtPhase = {
   PLAY: 0,
@@ -290,6 +313,14 @@ export const SpeedPhase = {
   PLAY: 0,
   STUCK: 1,
   GAME_END: 2,
+} as const;
+
+/** War phase constants (sync: internal/domain/War.go). */
+export const WarPhase = {
+  REVEAL: 0,
+  RESOLVED: 1,
+  WAR_BURY: 2,
+  GAME_END: 3,
 } as const;
 
 /** Go Fish phase constants (sync: internal/domain/GoFish.go). */

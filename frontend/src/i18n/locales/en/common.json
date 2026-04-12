@@ -30,6 +30,7 @@
     "omaha": "Omaha Hold'em",
     "hearts": "Hearts",
     "spades": "Spades",
+    "twotenjack": "Two Ten Jack",
     "memory": "Memory",
     "klondike": "Klondike",
     "freecell": "FreeCell",
@@ -60,7 +61,10 @@
     "sevencardstud": "Seven Card Stud",
     "clocksolitaire": "Clock Solitaire",
     "fortythieves": "Forty Thieves",
-    "paigow": "Pai Gow Poker"
+    "paigow": "Pai Gow Poker",
+    "caribbeanstud": "Caribbean Stud Poker",
+    "war": "War",
+    "canfield": "Canfield"
   },
   "sound": {
     "mute": "Mute sound",
@@ -91,7 +95,12 @@
     "fixed": "Fixed",
     "potLimit": "Pot Limit",
     "noLimit": "No Limit",
-    "rangeHint": "Enter a value between {{min}} and {{max}}"
+    "rangeHint": "Enter a value between {{min}} and {{max}}",
+    "preset": {
+      "halfPot": "1/2 Pot",
+      "pot": "Pot",
+      "max": "Max"
+    }
   },
   "button": {
     "reset": "Reset",
@@ -182,6 +191,13 @@
     "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "spades.result.humanWin": "Game over! You win!",
     "spades.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "twotenjack.result.humanWin": "Game over! Your team wins!",
+    "twotenjack.result.cpuWin": "Game over! Opponent team wins!",
+    "twotenjack.declarePhase": "Declare the trump suit",
+    "twotenjack.playPhase.lead": "Lead a card",
+    "twotenjack.playPhase.follow": "Play a card",
+    "twotenjack.trickEnd": "Trick complete",
+    "twotenjack.roundEnd": "Round complete",
     "ohhell.result.humanWin": "Game over! You win!",
     "ohhell.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "ohhell.bidPhase": "Place your bid",
@@ -237,6 +253,11 @@
     "threecard.result.push": "Push!",
     "threecard.result.fold": "Folded",
     "threecard.result.dealerNotQualified": "Dealer does not qualify!",
+    "caribbeanstud.result.playerWins": "You win!",
+    "caribbeanstud.result.dealerWins": "Dealer wins!",
+    "caribbeanstud.result.push": "Push!",
+    "caribbeanstud.result.fold": "Folded",
+    "caribbeanstud.result.dealerNotQualified": "Dealer does not qualify!",
     "klondike.playing": "Playing",
     "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
     "klondike.gameOver": "Game Over",
@@ -277,6 +298,8 @@
     "golf.stalemate": "No moves can lead to a win. Please undo or give up.",
     "pigtail.result.humanLose": "Game Over! You lose!",
     "pigtail.result.cpuLose": "Game Over! CPU {{cpuId}} loses!",
+    "war.result.humanWin": "Game Over! You win!",
+    "war.result.cpuWin": "Game Over! CPU wins...",
     "clocksolitaire.playing": "Playing",
     "clocksolitaire.gameClear": "Game Clear! Steps: {{stepCount}}",
     "clocksolitaire.gameOver": "Game Over"

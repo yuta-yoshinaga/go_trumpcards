@@ -514,6 +514,7 @@ function HoldemPageContent() {
                   onBetAmountChange={setBetAmount}
                   minRaise={minRaise}
                   maxBetAmount={state?.maxBetAmount}
+                  potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
                   loading={loading}
                   onCall={() => exec('call', undefined, undefined, getElapsed())}

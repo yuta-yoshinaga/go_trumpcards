@@ -511,6 +511,7 @@ function ShortDeckPageContent() {
                   onBetAmountChange={setBetAmount}
                   minRaise={minRaise}
                   maxBetAmount={state?.maxBetAmount}
+                  potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
                   loading={loading}
                   onCall={() => execApi('call', undefined, undefined, getElapsed())}

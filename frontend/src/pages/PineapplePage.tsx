@@ -560,6 +560,7 @@ function PineapplePageContent() {
                   onBetAmountChange={setBetAmount}
                   minRaise={minRaise}
                   maxBetAmount={state?.maxBetAmount}
+                  potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
                   loading={loading}
                   onCall={() => apiExec('call', undefined, undefined, getElapsed())}

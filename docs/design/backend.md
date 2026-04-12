@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全42ゲーム)](#12-ゲームドメイン-全42ゲーム)
+  - [1.2 ゲームドメイン (全46ゲーム)](#12-ゲームドメイン-全46ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -32,6 +32,7 @@
   - [3.3 Texas Hold'em フェーズ遷移](#33-texas-holdem-フェーズ遷移)
   - [3.4 Hearts フェーズ遷移](#34-hearts-フェーズ遷移)
   - [3.5 Spades フェーズ遷移](#35-spades-フェーズ遷移)
+  - [3.5.1 TwoTenJack フェーズ遷移](#351-twotenjack-フェーズ遷移)
   - [3.6 Doubt フェーズ遷移](#36-doubt-フェーズ遷移)
   - [3.7 Memory フェーズ遷移](#37-memory-フェーズ遷移)
   - [3.8 Klondike / FreeCell / Spider / Pyramid / TriPeaks / Golf / ClockSolitaire フェーズ遷移](#38-klondike--freecell--spider--pyramid--tripeaks--golf--clocksolitaire-フェーズ遷移)
@@ -124,7 +125,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全42ゲーム)
+### 1.2 ゲームドメイン (全46ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -244,6 +245,25 @@ classDiagram
         +Phase() int
         +ActionLog() []*ActionLogEntry
     }
+
+    class CaribbeanStud {
+        -trumpCards *TrumpCards
+        -playerHand []*Card
+        -dealerHand []*Card
+        -phase int
+        -anteBet int
+        -jackpotBet int
+        -playBet int
+        +Reset()
+        +Bet(ante int, jackpot int) error
+        +Play() error
+        +Fold() error
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
+    }
+
+    CaribbeanStud --> "1" TrumpCards
+    CaribbeanStud --> "1" ChipHolder
 
     class PaiGow {
         -trumpCards *TrumpCards
@@ -415,6 +435,30 @@ classDiagram
         +*Card Card
     }
 
+    class TwoTenJack {
+        -trumpCards *TrumpCards
+        -players []*TwoTenJackPlayer
+        -config TwoTenJackConfig
+        -phase TwoTenJackPhase
+        -currentTrick []*TwoTenJackTrickCard
+        -declarerIdx int
+        -trumpSuit int
+        +Reset()
+        +PlayerDeclareTrump(suit int) error
+        +CpuDeclareTrump()
+        +PlayerPlay(cardIndex int) error
+        +ResolveTrick()
+        +NextTrick()
+        +ScoreRound()
+        +GetHint() *TwoTenJackHint
+        +GetPhase() TwoTenJackPhase
+    }
+
+    class TwoTenJackTrickCard {
+        +int PlayerIdx
+        +*Card Card
+    }
+
     Hearts --> "4" HeartsPlayer
     Hearts --> "*" HeartsTrickCard
     Spades --> "4" SpadesPlayer
@@ -427,12 +471,15 @@ classDiagram
     OhHell --> "*" OhHellTrickCard
     Bridge --> "4" BridgePlayer
     Bridge --> "*" BridgeTrickCard
+    TwoTenJack --> "4" TwoTenJackPlayer
+    TwoTenJack --> "*" TwoTenJackTrickCard
     HeartsPlayer --|> GamePlayer
     SpadesPlayer --|> GamePlayer
     NapoleonPlayer --|> GamePlayer
     EuchrePlayer --|> GamePlayer
     OhHellPlayer --|> GamePlayer
     BridgePlayer --|> GamePlayer
+    TwoTenJackPlayer --|> GamePlayer
 ```
 
 #### ホールデム系ゲーム
@@ -1201,7 +1248,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全41ゲーム共通)**
+**Interactor パターン (全46ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1341,8 +1388,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 40 controllers
-    GameManager --> "*" CuiExecer : holds 40 games
+    TrumpCardsWeb --> "*" GameWebController : holds 46 controllers
+    GameManager --> "*" CuiExecer : holds 46 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1891,6 +1938,20 @@ stateDiagram-v2
     TrickEnd --> RoundEnd : 13トリック完了
     RoundEnd --> Bid : 次ラウンド開始
     RoundEnd --> GameEnd : 目標点到達
+    GameEnd --> [*]
+```
+
+### 3.5.1 TwoTenJack フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Declare : Reset()
+    Declare --> Play : 親が切り札スート宣言
+    Play --> TrickEnd : 4人全員カード出し完了
+    TrickEnd --> Play : 次トリック開始
+    TrickEnd --> RoundEnd : 13トリック完了
+    RoundEnd --> Declare : 次ラウンド開始 (親=次の席)
+    RoundEnd --> GameEnd : 目標点到達 (チーム累計 ≥ PointLimit)
     GameEnd --> [*]
 ```
 

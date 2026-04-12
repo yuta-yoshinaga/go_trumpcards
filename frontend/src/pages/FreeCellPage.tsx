@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
-import type { freecellApi } from '../api/gameApi';
+import { useCallback, useMemo } from 'react';
+import type { FreeCellMoveZone, freecellApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
+import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -26,6 +27,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -127,6 +129,18 @@ function FreeCellPageContent() {
 
   const isPlayingForKbd = state?.phase === FreeCellPhase.PLAYING;
 
+  const dispatchMove = useCallback(
+    (source: FreeCellMoveZone, target: FreeCellMoveZone) => {
+      void exec('move', source, target);
+    },
+    [exec],
+  );
+  const dnd = useSolitaireDragDrop<FreeCellMoveZone>({
+    onMove: dispatchMove,
+    isPlaying: !!isPlayingForKbd,
+    disabled: loading,
+  });
+
   const actionBindings = useMemo(
     () => [
       { key: 'h', action: handleHint },
@@ -181,145 +195,192 @@ function FreeCellPageContent() {
             <div className="flex gap-2 mb-3 items-start flex-wrap">
               {/* Free cells */}
               <div className="flex gap-2" data-tutorial="fc-free-cells">
-                {state.freeCells.map((card: Card | null, idx: number) => (
-                  <div key={`fc-${idx.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">
-                      <span className="hidden sm:inline">
-                        {t('freecell')} {idx}
-                      </span>
-                      <span className="sm:hidden">
-                        {t('freecellShort')}
-                        {idx}
-                      </span>
+                {state.freeCells.map((card: Card | null, idx: number) => {
+                  const freeCellZone: FreeCellMoveZone = { zone: 'freecell', cell: idx };
+                  return (
+                    <div key={`fc-${idx.toString()}`} className="text-center">
+                      <div className="text-game-text-muted text-xs mb-1">
+                        <span className="hidden sm:inline">
+                          {t('freecell')} {idx}
+                        </span>
+                        <span className="sm:hidden">
+                          {t('freecellShort')}
+                          {idx}
+                        </span>
+                      </div>
+                      <DropZone
+                        isDropTarget={dnd.isDropTarget(freeCellZone)}
+                        onDragOver={dnd.handleDragOver(freeCellZone)}
+                        onDrop={dnd.handleDrop(freeCellZone)}
+                        onDragLeave={dnd.handleDragLeave}
+                      >
+                        {card ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectSource(freeCellZone)}
+                            disabled={!isPlaying || loading}
+                            aria-label={cardAlt(card)}
+                            aria-pressed={isSourceSelected('freecell', undefined, idx)}
+                            draggable={isPlaying && !loading}
+                            onDragStart={dnd.handleDragStart(freeCellZone)}
+                            onDragEnd={dnd.handleDragEnd}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
+                          >
+                            <AnimatedCard
+                              card={card}
+                              width={cardWidth}
+                              draggable={false}
+                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTarget(freeCellZone)}
+                            disabled={!isPlaying || loading || !selectedSource}
+                            aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
+                            style={{ width: cardWidth, height: cardHeight }}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                          >
+                            {t('empty')}
+                          </button>
+                        )}
+                      </DropZone>
                     </div>
-                    {card ? (
-                      <button
-                        type="button"
-                        onClick={() => handleSelectSource({ zone: 'freecell', cell: idx })}
-                        disabled={!isPlaying || loading}
-                        aria-label={cardAlt(card)}
-                        aria-pressed={isSourceSelected('freecell', undefined, idx)}
-                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-yellow-400' : ''}`}
-                      >
-                        <AnimatedCard
-                          card={card}
-                          width={cardWidth}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleSelectTarget({ zone: 'freecell', cell: idx })}
-                        disabled={!isPlaying || loading || !selectedSource}
-                        aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
-                        style={{ width: cardWidth, height: cardHeight }}
-                        className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                      >
-                        {t('empty')}
-                      </button>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="w-4" />
 
               {/* Foundation piles */}
               <div className="flex gap-2" data-tutorial="fc-foundation">
-                {state.foundation.map((pile: Card[], idx: number) => (
-                  <div key={`f-${idx.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                    {pile.length > 0 ? (
-                      <button
-                        type="button"
-                        onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
-                        disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
-                        aria-label={t('foundationAriaLabel', {
-                          suit: FOUNDATION_SUITS[idx],
-                          cardCount: String(pile.length),
-                        })}
-                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                {state.foundation.map((pile: Card[], idx: number) => {
+                  const foundationZone: FreeCellMoveZone = { zone: 'foundation', col: idx };
+                  return (
+                    <div key={`f-${idx.toString()}`} className="text-center">
+                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                      <DropZone
+                        isDropTarget={dnd.isDropTarget(foundationZone)}
+                        onDragOver={dnd.handleDragOver(foundationZone)}
+                        onDrop={dnd.handleDrop(foundationZone)}
+                        onDragLeave={dnd.handleDragLeave}
                       >
-                        <AnimatedCard
-                          card={pile[pile.length - 1]}
-                          width={cardWidth}
-                          dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                          onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                        />
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
-                        disabled={!isPlaying || loading || !selectedSource}
-                        aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                        style={{ width: cardWidth, height: cardHeight }}
-                        className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                      >
-                        A
-                      </button>
-                    )}
-                  </div>
-                ))}
+                        {pile.length > 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTarget(foundationZone)}
+                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            aria-label={t('foundationAriaLabel', {
+                              suit: FOUNDATION_SUITS[idx],
+                              cardCount: String(pile.length),
+                            })}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                          >
+                            <AnimatedCard
+                              card={pile[pile.length - 1]}
+                              width={cardWidth}
+                              draggable={false}
+                              dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                              onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                            />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectTarget(foundationZone)}
+                            disabled={!isPlaying || loading || !selectedSource}
+                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            style={{ width: cardWidth, height: cardHeight }}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                          >
+                            A
+                          </button>
+                        )}
+                      </DropZone>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             {/* Tableau */}
             <div className="relative">
               <div className="flex gap-0.5 sm:gap-2 mb-3" data-tutorial="fc-tableau">
-                {state.tableau.map((col: (Card | null)[], colIdx: number) => (
-                  <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
-                    <div className="relative" style={{ minHeight: cardHeight }}>
-                      {col.length === 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
-                          disabled={!isPlaying || loading || !selectedSource}
-                          style={{ height: cardHeight }}
-                          className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                        >
-                          K
-                        </button>
-                      ) : (
-                        col.map((card: Card | null, cardIdx: number) => (
-                          <div
-                            key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                            className="absolute left-0 right-0"
-                            style={{ top: cardIdx * cardOverlap }}
-                          >
-                            {card ? (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (selectedSource) {
-                                    handleSelectTarget({ zone: 'tableau', col: colIdx });
-                                  } else {
-                                    handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
-                                  }
-                                }}
-                                disabled={!isPlaying || loading}
-                                aria-label={cardAlt(card)}
-                                aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
-                                className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
-                              >
-                                <AnimatedCard
-                                  card={card}
-                                  width={cardWidth}
-                                  style={{ width: '100%' }}
-                                  onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                                />
-                              </button>
-                            ) : (
-                              <div style={{ width: cardWidth, height: cardHeight }} />
-                            )}
-                          </div>
-                        ))
-                      )}
-                      {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                {state.tableau.map((col: (Card | null)[], colIdx: number) => {
+                  const tableauColZone: FreeCellMoveZone = { zone: 'tableau', col: colIdx };
+                  return (
+                    <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                      <DropZone
+                        isDropTarget={dnd.isDropTarget(tableauColZone)}
+                        onDragOver={dnd.handleDragOver(tableauColZone)}
+                        onDrop={dnd.handleDrop(tableauColZone)}
+                        onDragLeave={dnd.handleDragLeave}
+                        className="relative block"
+                      >
+                        <div className="relative" style={{ minHeight: cardHeight }}>
+                          {col.length === 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectTarget(tableauColZone)}
+                              disabled={!isPlaying || loading || !selectedSource}
+                              style={{ height: cardHeight }}
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            >
+                              K
+                            </button>
+                          ) : (
+                            col.map((card: Card | null, cardIdx: number) => {
+                              const cardZone: FreeCellMoveZone = {
+                                zone: 'tableau',
+                                col: colIdx,
+                                cardIndex: cardIdx,
+                              };
+                              return (
+                                <div
+                                  key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                                  className="absolute left-0 right-0"
+                                  style={{ top: cardIdx * cardOverlap }}
+                                >
+                                  {card ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (selectedSource) {
+                                          handleSelectTarget(tableauColZone);
+                                        } else {
+                                          handleSelectSource(cardZone);
+                                        }
+                                      }}
+                                      disabled={!isPlaying || loading}
+                                      aria-label={cardAlt(card)}
+                                      aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
+                                      draggable={isPlaying && !loading}
+                                      onDragStart={dnd.handleDragStart(cardZone)}
+                                      onDragEnd={dnd.handleDragEnd}
+                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    >
+                                      <AnimatedCard
+                                        card={card}
+                                        width={cardWidth}
+                                        draggable={false}
+                                        style={{ width: '100%' }}
+                                        onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                                      />
+                                    </button>
+                                  ) : (
+                                    <div style={{ width: cardWidth, height: cardHeight }} />
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                          {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                        </div>
+                      </DropZone>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

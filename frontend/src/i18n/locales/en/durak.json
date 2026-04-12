@@ -44,5 +44,14 @@
     "playerHand": "Your hand. Click cards to select them",
     "tableCards": "Attack and defense cards on the table",
     "actionButtons": "Use Attack, Defend, Pass, or Take buttons"
+  },
+  "hint": {
+    "attackLowNonTrump": "Attack with your lowest non-trump card",
+    "attackOnlyTrumps": "Only trumps left — attack with your lowest trump",
+    "passBout": "No matching value — pass the bout",
+    "defendSameSuit": "Defend with the lowest higher same-suit card",
+    "defendWithTrump": "Defend with a trump card",
+    "takeBout": "Cannot defend — take the cards",
+    "takeNothingToDefend": "Nothing to defend"
   }
 }

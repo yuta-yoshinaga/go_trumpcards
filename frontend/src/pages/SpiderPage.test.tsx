@@ -543,4 +543,54 @@ describe('SpiderPage', () => {
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
   });
+
+  describe('drag and drop', () => {
+    function buildDataTransfer() {
+      const store: Record<string, string> = {};
+      return {
+        setData: (type: string, val: string) => {
+          store[type] = val;
+        },
+        getData: (type: string) => store[type] ?? '',
+        effectAllowed: '',
+        dropEffect: '',
+      };
+    }
+
+    it('tableau face-up card is draggable when playing', async () => {
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+      const cardButton = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
+      expect(cardButton).toHaveAttribute('draggable', 'true');
+    });
+
+    it('dragging a tableau card to another column dispatches move', async () => {
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      const sourceButton = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
+      const dataTransfer = buildDataTransfer();
+      fireEvent.dragStart(sourceButton, { dataTransfer });
+
+      // Find an empty column via the empty placeholder
+      const emptyButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'なし');
+      if (emptyButtons.length === 0) {
+        // Skip if no empty column in this layout
+        return;
+      }
+      const dropZone = emptyButtons[0].closest('div');
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(playingState);
+      fireEvent.dragOver(dropZone as HTMLElement, { dataTransfer });
+      fireEvent.drop(dropZone as HTMLElement, { dataTransfer });
+
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith(
+          'move',
+          expect.objectContaining({ zone: 'tableau' }),
+          expect.objectContaining({ zone: 'tableau' }),
+        ),
+      );
+    });
+  });
 });

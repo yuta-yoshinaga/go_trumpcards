@@ -65,6 +65,10 @@ type TrumpCardsWeb struct {
 	drc  *controller.DurakWebController
 	ftc  *controller.FortyThievesWebController
 	pgc  *controller.PaiGowWebController
+	ttjc *controller.TwoTenJackWebController
+	cspc *controller.CaribbeanStudWebController
+	warc *controller.WarWebController
+	cfc  *controller.CanfieldWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -390,6 +394,36 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				new(presenter.PaiGowWebPresenter),
 			)
 		}),
+		ttjc: controller.NewTwoTenJackWebController(func() usecase.TwoTenJackInteractorIF {
+			config := domain.DefaultTwoTenJackConfig()
+			players := []*domain.TwoTenJackPlayer{
+				domain.NewTwoTenJackPlayer(true),
+				domain.NewTwoTenJackPlayer(false),
+				domain.NewTwoTenJackPlayer(false),
+				domain.NewTwoTenJackPlayer(false),
+			}
+			ttj := domain.NewTwoTenJack(domain.NewTrumpCards(0), players, config)
+			return usecase.NewTwoTenJackInteractor(ttj, new(presenter.TwoTenJackWebPresenter))
+		}),
+		cspc: controller.NewCaribbeanStudWebController(func() usecase.CaribbeanStudInteractorIF {
+			return usecase.NewCaribbeanStudInteractor(
+				domain.NewDefaultCaribbeanStud(),
+				new(presenter.CaribbeanStudWebPresenter),
+			)
+		}),
+		warc: controller.NewWarWebController(func() usecase.WarInteractorIF {
+			config := domain.DefaultWarConfig()
+			players := []*domain.WarPlayer{
+				domain.NewWarPlayer(true),
+				domain.NewWarPlayer(false),
+			}
+			war := domain.NewWar(domain.NewTrumpCards(0), players, config)
+			return usecase.NewWarInteractor(war, new(presenter.WarWebPresenter))
+		}),
+		cfc: controller.NewCanfieldWebController(func() usecase.CanfieldInteractorIF {
+			canfield := domain.NewCanfield(domain.NewTrumpCards(0))
+			return usecase.NewCanfieldInteractor(canfield, new(presenter.CanfieldWebPresenter))
+		}),
 	}
 }
 
@@ -444,6 +478,10 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/durak/exec", web.drc.Exec},
 		{"/fortythieves/exec", web.ftc.Exec},
 		{"/paigow/exec", web.pgc.Exec},
+		{"/twotenjack/exec", web.ttjc.Exec},
+		{"/caribbeanstud/exec", web.cspc.Exec},
+		{"/war/exec", web.warc.Exec},
+		{"/canfield/exec", web.cfc.Exec},
 	}
 	for _, r := range routes {
 		mux.HandleFunc("POST "+r.path, r.handler)
@@ -547,6 +585,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.csc.Stop()
 	web.drc.Stop()
 	web.ftc.Stop()
+	web.cspc.Stop()
 	fmt.Println(i18n.T("webServerStopped"))
 	slog.Info("server stopped")
 	return runErr

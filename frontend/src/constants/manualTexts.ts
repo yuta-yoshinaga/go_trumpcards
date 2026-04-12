@@ -6,6 +6,8 @@ import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
+import canfield from '../../../docs/manual/web/canfield.md?raw';
+import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
@@ -43,7 +45,9 @@ import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
+import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
+import war from '../../../docs/manual/web/war.md?raw';
 
 /** Map from game route path to raw Markdown manual text. */
 export const manualTexts: Readonly<Record<string, string>> = {
@@ -51,6 +55,8 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/baccarat': baccarat,
   '/bridge': bridge,
   '/canasta': canasta,
+  '/canfield': canfield,
+  '/caribbeanstud': caribbeanstud,
   '/clocksolitaire': clocksolitaire,
   '/crazyeights': crazyeights,
   '/cribbage': cribbage,
@@ -88,5 +94,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/spider': spider,
   '/threecard': threecard,
   '/tripeaks': tripeaks,
+  '/twotenjack': twotenjack,
   '/videopoker': videopoker,
+  '/war': war,
 };

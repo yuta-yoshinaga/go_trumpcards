@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ManualModal } from './ManualModal';
 
 vi.mock('mermaid', () => ({
@@ -17,6 +17,22 @@ vi.mock('../constants/manualTexts', () => ({
     '/code': '# Code\n\n```js\nconsole.log("hello");\n```',
   },
 }));
+
+vi.mock('../constants/cuiManualTexts', async () => {
+  const actual = await vi.importActual<typeof import('../constants/cuiManualTexts')>('../constants/cuiManualTexts');
+  return {
+    ...actual,
+    cuiManualTexts: {
+      '/': '# BlackJack CUI\n\nCUI manual text',
+      '/poker': '# Poker CUI\n\nCUI poker manual',
+    },
+  };
+});
+
+afterEach(() => {
+  localStorage.clear();
+  vi.restoreAllMocks();
+});
 
 describe('ManualModal', () => {
   it('renders nothing when closed', () => {
@@ -39,6 +55,35 @@ describe('ManualModal', () => {
   it('renders different manual for different gamePath', () => {
     render(<ManualModal open={true} onClose={vi.fn()} gamePath="/poker" />);
     expect(screen.getByText('Poker')).toBeInTheDocument();
+  });
+
+  it('renders CUI manual when CLI mode is enabled for the game', () => {
+    localStorage.setItem('cli-mode-blackjack', 'true');
+    render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
+    expect(screen.getByText('BlackJack CUI')).toBeInTheDocument();
+    expect(screen.queryByText('BlackJack')).not.toBeInTheDocument();
+  });
+
+  it('renders web manual when CLI mode is disabled', () => {
+    localStorage.setItem('cli-mode-blackjack', 'false');
+    render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
+    expect(screen.getByText('BlackJack')).toBeInTheDocument();
+    expect(screen.queryByText('BlackJack CUI')).not.toBeInTheDocument();
+  });
+
+  it('renders CUI manual for /poker when CLI mode is enabled for poker', () => {
+    localStorage.setItem('cli-mode-poker', 'true');
+    render(<ManualModal open={true} onClose={vi.fn()} gamePath="/poker" />);
+    expect(screen.getByText('Poker CUI')).toBeInTheDocument();
+  });
+
+  it('renders web manual when localStorage.getItem throws', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('localStorage unavailable');
+    });
+    render(<ManualModal open={true} onClose={vi.fn()} gamePath="/" />);
+    expect(screen.getByText('BlackJack')).toBeInTheDocument();
+    expect(screen.queryByText('BlackJack CUI')).not.toBeInTheDocument();
   });
 
   it('renders empty content for unknown gamePath', () => {

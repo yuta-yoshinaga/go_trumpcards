@@ -19,7 +19,8 @@
     "cpuDifficulty": "CPU難易度",
     "easy": "イージー",
     "normal": "ノーマル",
-    "hard": "ハード"
+    "hard": "ハード",
+    "autoFlip": "膠着時に自動でめくる"
   },
   "hint": {
     "play": "カード{{cardIndex}}を台札{{pileIndex}}に出せます",
