@@ -110,7 +110,12 @@
     "confirmResetMessage": "Are you sure you want to reset the game?",
     "confirm": "Confirm",
     "hint": "Hint",
-    "retry": "Retry"
+    "retry": "Retry",
+    "dismiss": "Dismiss"
+  },
+  "roundScoreAnnouncement": {
+    "message": "Round complete. {{details}}",
+    "entry": "{{name}}: +{{round}} (total {{total}})"
   },
   "stalemateEscape": "Escape (undo {{count}} moves)",
   "status": {

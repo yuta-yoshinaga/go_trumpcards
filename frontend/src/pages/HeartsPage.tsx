@@ -11,6 +11,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -325,6 +326,14 @@ function HeartsPageContent() {
                     </tbody>
                   </table>
                 </div>
+                <RoundScoreAnnouncement
+                  active={isRoundEnd || isGameEnd}
+                  entries={state.players.map((p) => ({
+                    name: playerName(p.id, p.isHuman),
+                    roundScore: p.roundScore,
+                    cumulativeScore: p.cumulativeScore,
+                  }))}
+                />
               </div>
             </div>
 

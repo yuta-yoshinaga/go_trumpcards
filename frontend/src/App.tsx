@@ -109,7 +109,7 @@ export default function App() {
   return (
     <HashRouter>
       <ErrorBoundary>
-        <div className="flex flex-col h-full lg:flex-row">
+        <div className="flex flex-col h-full pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] lg:flex-row">
           <SkipNavLink targetId="main-content" label={t('nav.skipToContent')} />
           <DesktopSidebar />
           <div className="flex flex-col flex-1 min-w-0">

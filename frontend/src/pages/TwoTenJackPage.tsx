@@ -11,6 +11,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { TwoTenJackSkeleton } from '../components/skeleton/TwoTenJackSkeleton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
@@ -312,6 +313,13 @@ function TwoTenJackPageContent() {
                   </div>
                   {isMobile && <ScrollFadeHint />}
                 </div>
+                <RoundScoreAnnouncement
+                  active={isRoundEnd || isGameEnd}
+                  entries={[
+                    { name: t('team0'), roundScore: team0Captured, cumulativeScore: team0Total },
+                    { name: t('team1'), roundScore: team1Captured, cumulativeScore: team1Total },
+                  ]}
+                />
               </div>
             </div>
 
