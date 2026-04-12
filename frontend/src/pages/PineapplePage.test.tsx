@@ -244,4 +244,13 @@ describe('PineapplePage', () => {
     fireEvent.click(resetBtn);
     expect(screen.getByText('本当にゲームをリセットしますか？')).toBeInTheDocument();
   });
+
+  it('wraps settings in collapsible details element', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    const { container } = renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    const allSummaries = container.querySelectorAll('details summary');
+    const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
+    expect(settingsSummary).toBeTruthy();
+  });
 });

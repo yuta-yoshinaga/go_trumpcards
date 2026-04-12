@@ -54,7 +54,7 @@ export function PlayerHandSection({
   }
 
   return (
-    <div className="flex flex-wrap gap-1 mb-2" data-tutorial={dataTutorial}>
+    <div className="flex flex-wrap lg:flex-nowrap lg:overflow-x-auto gap-1 mb-2" data-tutorial={dataTutorial}>
       {humanPlayer.cards.map((card, idx) => {
         const isSelected = selectedCardIndices.includes(idx);
         return (

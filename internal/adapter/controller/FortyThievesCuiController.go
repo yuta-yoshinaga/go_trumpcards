@@ -51,6 +51,10 @@ func (c *FortyThievesCuiController) handleMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("fortythieves.promptSourceZone"), "m {0}")
 	}
+	// Shorthand: m <fromCol> [<toCol>] — tableau-to-tableau top card
+	if _, err := strconv.Atoi(args[0]); err == nil {
+		return c.handleMoveShorthand(args)
+	}
 	from := args[0]
 	if from != "w" && from != "t" {
 		return i18n.Tf("fortythieves.invalidFromZone", "val", from)
@@ -125,4 +129,16 @@ func (c *FortyThievesCuiController) handleMoveFromTableau(args []string) string 
 	}
 
 	return c.fi.MoveTableauToTableau(fromCol, cardIdx, toCol)
+}
+
+func (c *FortyThievesCuiController) handleMoveShorthand(args []string) string {
+	fromCol, _ := strconv.Atoi(args[0])
+	if len(args) < 2 {
+		return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m %s {0}", args[0]))
+	}
+	toCol, err := strconv.Atoi(args[1])
+	if err != nil {
+		return i18n.Tf("invalidColumn", "val", args[1])
+	}
+	return c.fi.MoveTableauToTableau(fromCol, -1, toCol)
 }

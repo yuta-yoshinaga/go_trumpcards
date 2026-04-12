@@ -110,7 +110,12 @@
     "confirmResetMessage": "本当にゲームをリセットしますか？",
     "confirm": "確認",
     "hint": "ヒント",
-    "retry": "再試行"
+    "retry": "再試行",
+    "dismiss": "閉じる"
+  },
+  "roundScoreAnnouncement": {
+    "message": "ラウンド終了。{{details}}",
+    "entry": "{{name}}: +{{round}} (合計 {{total}})"
   },
   "stalemateEscape": "脱出する ({{count}}手戻る)",
   "status": {

@@ -76,48 +76,55 @@ import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
-/** Supported game names for the hint system. */
-type HintGameName =
-  | 'baccarat'
-  | 'blackjack'
-  | 'poker'
-  | 'hearts'
-  | 'spades'
-  | 'holdem'
-  | 'omaha'
-  | 'shortdeck'
-  | 'pineapple'
-  | 'videopoker'
-  | 'deuceswild'
-  | 'jokerpoker'
-  | 'indianpoker'
-  | 'threecard'
-  | 'euchre'
-  | 'napoleon'
-  | 'ohhell'
-  | 'oldmaid'
-  | 'doubt'
-  | 'daifugo'
-  | 'sevens'
-  | 'crazyeights'
-  | 'speed'
-  | 'ginrummy'
-  | 'cribbage'
-  | 'klondike'
-  | 'freecell'
-  | 'spider'
-  | 'pyramid'
-  | 'tripeaks'
-  | 'memory'
-  | 'sevencardstud'
-  | 'fortythieves'
-  | 'paigow'
-  | 'gofish'
-  | 'caribbeanstud'
-  | 'durak'
-  | 'canasta'
-  | 'pinochle'
-  | 'twotenjack';
+/** Hint function that takes game state and returns a hint result or null. */
+type HintFn = (state: unknown) => HintResult | null;
+
+/** Registry mapping game names to their hint functions. */
+const hintFactories = {
+  baccarat: (s) => getBaccaratHint(s as BaccaratResponse),
+  blackjack: (s) => getBlackjackHint(s as BlackJackResponse),
+  poker: (s) => getPokerHint(s as PokerResponse),
+  hearts: (s) => getHeartsHint(s as HeartsResponse),
+  spades: (s) => getSpadesHint(s as SpadesResponse),
+  holdem: (s) => getHoldemHint(s as HoldemResponse),
+  omaha: (s) => getOmahaHint(s as OmahaResponse),
+  shortdeck: (s) => getShortDeckHint(s as ShortDeckResponse),
+  pineapple: (s) => getPineappleHint(s as PineappleResponse),
+  videopoker: (s) => getVideoPokerHint(s as VideoPokerResponse),
+  deuceswild: (s) => getDeucesWildHint(s as VideoPokerResponse),
+  jokerpoker: (s) => getJokerPokerHint(s as VideoPokerResponse),
+  indianpoker: (s) => getIndianPokerHint(s as IndianPokerResponse),
+  threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
+  euchre: (s) => getEuchreHint(s as EuchreResponse),
+  napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
+  ohhell: (s) => getOhHellHint(s as OhHellResponse),
+  oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
+  doubt: (s) => getDoubtHint(s as DoubtResponse),
+  daifugo: (s) => getDaifugoHint(s as DaifugoResponse),
+  sevens: (s) => getSevensHint(s as SevensResponse),
+  crazyeights: (s) => getCrazyEightsHint(s as CrazyEightsResponse),
+  speed: (s) => getSpeedHint(s as SpeedResponse),
+  klondike: (s) => getKlondikeHint(s as KlondikeResponse),
+  freecell: (s) => getFreeCellHint(s as FreeCellResponse),
+  spider: (s) => getSpiderHint(s as SpiderResponse),
+  pyramid: (s) => getPyramidHint(s as PyramidResponse),
+  tripeaks: (s) => getTriPeaksHint(s as TriPeaksResponse),
+  memory: (s) => getMemoryHint(s as MemoryResponse),
+  ginrummy: (s) => getGinRummyHint(s as GinRummyResponse),
+  cribbage: (s) => getCribbageHint(s as CribbageResponse),
+  gofish: (s) => getGoFishHint(s as GoFishResponse),
+  caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
+  durak: (s) => getDurakHint(s as DurakResponse),
+  canasta: (s) => getCanastaHint(s as CanastaResponse),
+  pinochle: (s) => getPinochleHint(s as PinochleResponse),
+  twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
+  sevencardstud: () => null,
+  fortythieves: () => null,
+  paigow: () => null,
+} satisfies Record<string, HintFn>;
+
+/** Supported game names for the hint system, derived from the registry. */
+export type HintGameName = keyof typeof hintFactories;
 
 /** Return type of the useGameHint hook. */
 export interface UseGameHintReturn {
@@ -135,84 +142,7 @@ export function useGameHint(gameName: HintGameName, state: unknown): UseGameHint
 
   const hint = useMemo(() => {
     if (!hintEnabled || !state) return null;
-    switch (gameName) {
-      case 'baccarat':
-        return getBaccaratHint(state as BaccaratResponse);
-      case 'blackjack':
-        return getBlackjackHint(state as BlackJackResponse);
-      case 'poker':
-        return getPokerHint(state as PokerResponse);
-      case 'hearts':
-        return getHeartsHint(state as HeartsResponse);
-      case 'spades':
-        return getSpadesHint(state as SpadesResponse);
-      case 'holdem':
-        return getHoldemHint(state as HoldemResponse);
-      case 'omaha':
-        return getOmahaHint(state as OmahaResponse);
-      case 'shortdeck':
-        return getShortDeckHint(state as ShortDeckResponse);
-      case 'pineapple':
-        return getPineappleHint(state as PineappleResponse);
-      case 'videopoker':
-        return getVideoPokerHint(state as VideoPokerResponse);
-      case 'deuceswild':
-        return getDeucesWildHint(state as VideoPokerResponse);
-      case 'jokerpoker':
-        return getJokerPokerHint(state as VideoPokerResponse);
-      case 'indianpoker':
-        return getIndianPokerHint(state as IndianPokerResponse);
-      case 'threecard':
-        return getThreeCardHint(state as ThreeCardResponse);
-      case 'euchre':
-        return getEuchreHint(state as EuchreResponse);
-      case 'napoleon':
-        return getNapoleonHint(state as NapoleonResponse);
-      case 'ohhell':
-        return getOhHellHint(state as OhHellResponse);
-      case 'oldmaid':
-        return getOldMaidHint(state as OldMaidResponse);
-      case 'doubt':
-        return getDoubtHint(state as DoubtResponse);
-      case 'daifugo':
-        return getDaifugoHint(state as DaifugoResponse);
-      case 'sevens':
-        return getSevensHint(state as SevensResponse);
-      case 'crazyeights':
-        return getCrazyEightsHint(state as CrazyEightsResponse);
-      case 'speed':
-        return getSpeedHint(state as SpeedResponse);
-      case 'klondike':
-        return getKlondikeHint(state as KlondikeResponse);
-      case 'freecell':
-        return getFreeCellHint(state as FreeCellResponse);
-      case 'spider':
-        return getSpiderHint(state as SpiderResponse);
-      case 'pyramid':
-        return getPyramidHint(state as PyramidResponse);
-      case 'tripeaks':
-        return getTriPeaksHint(state as TriPeaksResponse);
-      case 'memory':
-        return getMemoryHint(state as MemoryResponse);
-      case 'ginrummy':
-        return getGinRummyHint(state as GinRummyResponse);
-      case 'cribbage':
-        return getCribbageHint(state as CribbageResponse);
-      case 'gofish':
-        return getGoFishHint(state as GoFishResponse);
-      case 'caribbeanstud':
-        return getCaribbeanStudHint(state as CaribbeanStudResponse);
-      case 'durak':
-        return getDurakHint(state as DurakResponse);
-      case 'canasta':
-        return getCanastaHint(state as CanastaResponse);
-      case 'pinochle':
-        return getPinochleHint(state as PinochleResponse);
-      case 'twotenjack':
-        return getTwoTenJackHint(state as TwoTenJackResponse);
-      default:
-        return null;
-    }
+    return hintFactories[gameName]?.(state) ?? null;
   }, [gameName, hintEnabled, state]);
 
   return { hintEnabled, setHintEnabled, hint };

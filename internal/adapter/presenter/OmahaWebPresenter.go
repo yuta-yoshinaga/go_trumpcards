@@ -74,7 +74,7 @@ func (owp *OmahaWebPresenter) buildOutput(o interfaces.OmahaGame, lastErr error)
 		resObj.PotOdds = &potOdds
 	}
 
-	resObj.Message, resObj.MessageCode = owp.buildMessage(o, lastErr)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = owp.buildMessage(o, lastErr)
 
 	// メタAI情報
 	if profile := o.GetHumanProfile(); profile != nil {
@@ -174,17 +174,18 @@ func (owp *OmahaWebPresenter) buildRoundResultsOutput(o interfaces.OmahaGame) []
 	return out
 }
 
-func (owp *OmahaWebPresenter) buildMessage(o interfaces.OmahaGame, lastErr error) (string, string) {
+func (owp *OmahaWebPresenter) buildMessage(o interfaces.OmahaGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
-		return lastErr.Error(), ""
+		return lastErr.Error(), "", nil
 	}
 	if o.IsMuckAvailable() {
-		return "Muck or show your hand.", "omaha.muck.prompt"
+		return "Muck or show your hand.", "omaha.muck.prompt", nil
 	}
 	if o.GetGameEndFlag() {
-		return owp.buildResultMessage(o)
+		msg, code := owp.buildResultMessage(o)
+		return msg, code, nil
 	}
-	return "", ""
+	return "", "", nil
 }
 
 func (owp *OmahaWebPresenter) buildResultMessage(o interfaces.OmahaGame) (string, string) {

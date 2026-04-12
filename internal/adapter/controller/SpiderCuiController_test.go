@@ -183,6 +183,52 @@ func TestSpiderCuiControllerUndo(t *testing.T) {
 	assert.Equal(t, "undo_output", c.Exec("undo"))
 }
 
+func TestSpiderCuiControllerMoveShorthand(t *testing.T) {
+	t.Run("m <from> <to> moves top card", func(t *testing.T) {
+		si := newMockSpiderInteractor()
+		c := NewSpiderCuiController(si)
+		si.On("MoveTableauToTableau", 0, -1, 1).Return("move_output")
+		assert.Equal(t, "move_output", c.Exec("m 0 1"))
+	})
+
+	t.Run("m <from> <idx> <to> moves with card index", func(t *testing.T) {
+		si := newMockSpiderInteractor()
+		c := NewSpiderCuiController(si)
+		si.On("MoveTableauToTableau", 0, 2, 1).Return("move_output")
+		assert.Equal(t, "move_output", c.Exec("m 0 2 1"))
+	})
+
+	t.Run("m <from> prompts for destination", func(t *testing.T) {
+		si := newMockSpiderInteractor()
+		c := NewSpiderCuiController(si)
+		result := c.Exec("m 0")
+		assert.True(t, cuiutil.IsPromptRequest(result))
+		_, tmpl := cuiutil.ParsePromptRequest(result)
+		assert.Equal(t, "m 0 {0}", tmpl)
+	})
+
+	t.Run("m <from> <invalid> returns error", func(t *testing.T) {
+		si := newMockSpiderInteractor()
+		c := NewSpiderCuiController(si)
+		result := c.Exec("m 0 abc")
+		assert.Contains(t, result, "abc")
+	})
+
+	t.Run("m <from> <idx> <invalid> returns error", func(t *testing.T) {
+		si := newMockSpiderInteractor()
+		c := NewSpiderCuiController(si)
+		result := c.Exec("m 0 2 abc")
+		assert.Contains(t, result, "abc")
+	})
+
+	t.Run("m <from> <invalidIdx> <to> returns error", func(t *testing.T) {
+		si := newMockSpiderInteractor()
+		c := NewSpiderCuiController(si)
+		result := c.Exec("m 0 abc 1")
+		assert.Contains(t, result, "abc")
+	})
+}
+
 func TestSpiderCuiControllerUnknown(t *testing.T) {
 	si := newMockSpiderInteractor()
 	c := NewSpiderCuiController(si)

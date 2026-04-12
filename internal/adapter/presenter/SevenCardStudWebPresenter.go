@@ -59,7 +59,7 @@ func (p *SevenCardStudWebPresenter) buildOutput(s interfaces.SevenCardStudGame, 
 	resObj.CpuActions = p.buildCpuActionsOutput(s)
 	resObj.RoundResults = p.buildRoundResultsOutput(s)
 
-	resObj.Message, resObj.MessageCode = p.buildMessage(s, lastErr)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, lastErr)
 
 	// メタAI情報
 	if profile := s.GetHumanProfile(); profile != nil {
@@ -174,17 +174,18 @@ func (p *SevenCardStudWebPresenter) buildRoundResultsOutput(s interfaces.SevenCa
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *SevenCardStudWebPresenter) buildMessage(s interfaces.SevenCardStudGame, lastErr error) (string, string) {
+func (p *SevenCardStudWebPresenter) buildMessage(s interfaces.SevenCardStudGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
-		return lastErr.Error(), ""
+		return lastErr.Error(), "", nil
 	}
 	if s.IsMuckAvailable() {
-		return "Muck or show your hand.", "sevencardstud.muck.prompt"
+		return "Muck or show your hand.", "sevencardstud.muck.prompt", nil
 	}
 	if s.GetGameEndFlag() {
-		return p.buildResultMessage(s)
+		msg, code := p.buildResultMessage(s)
+		return msg, code, nil
 	}
-	return "", ""
+	return "", "", nil
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code

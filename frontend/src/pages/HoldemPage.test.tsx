@@ -1468,4 +1468,13 @@ describe('HoldemPage', () => {
       expect(stickyDiv).toHaveClass('sticky');
     });
   });
+
+  it('wraps settings in collapsible details element', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    const { container } = renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    const allSummaries = container.querySelectorAll('details summary');
+    const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
+    expect(settingsSummary).toBeTruthy();
+  });
 });

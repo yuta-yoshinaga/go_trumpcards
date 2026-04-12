@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CpuActionToast } from './CpuActionToast';
 
@@ -8,10 +8,16 @@ vi.mock('react-i18next', async () => ({
   useTranslation: () => ({ t: mockT }),
 }));
 
+const mockReduced = vi.fn(() => false);
+vi.mock('../hooks/useReducedMotion', () => ({
+  useReducedMotion: () => mockReduced(),
+}));
+
 describe('CpuActionToast', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mockT.mockClear();
+    mockReduced.mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -35,15 +41,19 @@ describe('CpuActionToast', () => {
     expect(mockT).toHaveBeenCalledWith('player.player', { idx: 1 });
   });
 
-  it('auto-dismisses after 3 seconds', () => {
+  it('auto-dismisses after 5 seconds', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
     expect(screen.getByRole('status')).toBeInTheDocument();
 
     act(() => {
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(4999);
     });
+    expect(screen.getByRole('status')).toBeInTheDocument();
 
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(screen.queryByRole('status')).toBeNull();
   });
 
@@ -52,9 +62,8 @@ describe('CpuActionToast', () => {
     const { rerender } = render(<CpuActionToast actions={actions1} />);
     expect(screen.getByRole('status')).toBeInTheDocument();
 
-    // Advance 2s, then new actions arrive
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(3000);
     });
 
     const actions2 = [
@@ -63,15 +72,15 @@ describe('CpuActionToast', () => {
     ];
     rerender(<CpuActionToast actions={actions2} />);
 
-    // After another 2s (total 4s), toast should still be visible because timer reset
+    // 4 more seconds (7s total) — still visible because timer reset
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(4000);
     });
     expect(screen.getByRole('status')).toBeInTheDocument();
 
-    // After 3s from last update, toast disappears
+    // Past the 5s window since last update
     act(() => {
-      vi.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1001);
     });
     expect(screen.queryByRole('status')).toBeNull();
   });
@@ -86,5 +95,35 @@ describe('CpuActionToast', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
     expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('dismisses when the close button is clicked', () => {
+    const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
+    render(<CpuActionToast actions={actions} />);
+    fireEvent.click(screen.getByRole('button', { name: 'button.dismiss' }));
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('dismisses when Escape is pressed', () => {
+    const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
+    render(<CpuActionToast actions={actions} />);
+    act(() => {
+      fireEvent.keyDown(window, { key: 'Escape' });
+    });
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('omits the slide-down animation when prefers-reduced-motion is set', () => {
+    mockReduced.mockReturnValue(true);
+    const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
+    render(<CpuActionToast actions={actions} />);
+    expect(screen.getByRole('status').className).not.toContain('slideDown');
+  });
+
+  it('applies the slide-down animation when reduced motion is off', () => {
+    mockReduced.mockReturnValue(false);
+    const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
+    render(<CpuActionToast actions={actions} />);
+    expect(screen.getByRole('status').className).toContain('slideDown');
   });
 });

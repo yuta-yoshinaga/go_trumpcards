@@ -55,10 +55,15 @@ func (c *SpiderCuiController) Exec(command string) string {
 
 // handleMove 移動コマンドを処理
 // Format: m t <fromCol> <cardIdx> t <toCol>
+// Shorthand: m <fromCol> <toCol> (top card) or m <fromCol> <cardIdx> <toCol>
 func (c *SpiderCuiController) handleMove(args []string) string {
 	// Wizard-style prompts for missing arguments
 	if len(args) == 0 {
-		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
+		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m {0}")
+	}
+	// Shorthand: numeric first arg means tableau shorthand
+	if _, err := strconv.Atoi(args[0]); err == nil {
+		return c.handleMoveShorthand(args)
 	}
 	if args[0] != "t" {
 		return i18n.T("spider.moveUsage")
@@ -86,6 +91,31 @@ func (c *SpiderCuiController) handleMove(args []string) string {
 	toCol, err := strconv.Atoi(args[4])
 	if err != nil {
 		return i18n.Tf("invalidColumn", "val", args[4])
+	}
+	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
+}
+
+func (c *SpiderCuiController) handleMoveShorthand(args []string) string {
+	fromCol, _ := strconv.Atoi(args[0])
+	if len(args) < 2 {
+		return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m %s {0}", args[0]))
+	}
+	// m <fromCol> <toCol> — top card move
+	if len(args) == 2 {
+		toCol, err := strconv.Atoi(args[1])
+		if err != nil {
+			return i18n.Tf("invalidColumn", "val", args[1])
+		}
+		return c.si.MoveTableauToTableau(fromCol, -1, toCol)
+	}
+	// m <fromCol> <cardIdx> <toCol>
+	cardIdx, err := strconv.Atoi(args[1])
+	if err != nil {
+		return i18n.Tf("invalidCardIndex", "val", args[1])
+	}
+	toCol, err := strconv.Atoi(args[2])
+	if err != nil {
+		return i18n.Tf("invalidColumn", "val", args[2])
 	}
 	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
 }
