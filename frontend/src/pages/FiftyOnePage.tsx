@@ -135,7 +135,7 @@ export function FiftyOnePage() {
             )}
 
             {/* CPU players */}
-            <div className="flex justify-center gap-6 flex-wrap" data-tutorial="fo-cpu">
+            <div className="flex justify-center gap-6 flex-wrap">
               {state.players
                 .filter((p) => !p.isHuman)
                 .map((p) => (
@@ -155,7 +155,7 @@ export function FiftyOnePage() {
             </div>
 
             {/* Table cards */}
-            <div className="py-3 bg-black/20 rounded-lg" data-tutorial="fo-table">
+            <div className="py-3 bg-black/20 rounded-lg">
               <div className="text-center text-xs text-white/70 mb-2">{t('label.tableCards')}</div>
               <div className="flex justify-center gap-2">
                 {state.tableCards.map((c, i) => (
@@ -180,7 +180,7 @@ export function FiftyOnePage() {
             )}
 
             {/* Human hand */}
-            <div className="text-center" data-tutorial="fo-hand">
+            <div className="text-center">
               <div className="text-xs text-white/70 mb-1">
                 {tc('player.you')} — {t('label.score')}: {human.score}
               </div>

@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全46ゲーム)](#12-ゲームドメイン-全46ゲーム)
+  - [1.2 ゲームドメイン (全47ゲーム)](#12-ゲームドメイン-全47ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -22,10 +22,11 @@
   - [2.9 Speed プレイフロー](#29-speed-プレイフロー)
   - [2.10 GoFish 要求フロー](#210-gofish-要求フロ���)
   - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
-  - [2.12 SevenCardStud ベッティングフロー](#212-sevencardstud-ベッティングフロー)
-  - [2.13 Durak アタック・ディフェンスフロー](#213-durak-アタックディフェンスフロー)
-  - [2.14 FortyThieves ドロー・ムーブフロー](#214-fortythieves-ドロームーブフロー)
-  - [2.15 PaiGow ベット・セットフロー](#215-paigow-ベットセットフロー)
+  - [2.12 FiftyOne 交換フロー](#212-fiftyone-交換フロー)
+  - [2.13 SevenCardStud ベッティングフロー](#213-sevencardstud-ベッティングフロー)
+  - [2.14 Durak アタック・ディフェンスフロー](#214-durak-アタックディフェンスフロー)
+  - [2.15 FortyThieves ドロー・ムーブフロー](#215-fortythieves-ドロームーブフロー)
+  - [2.16 PaiGow ベット・セットフロー](#216-paigow-ベットセットフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -58,6 +59,7 @@
   - [3.28 Durak フェーズ遷移](#328-durak-フェーズ遷移)
   - [3.29 FortyThieves フェーズ遷移](#329-fortythieves-フェーズ遷移)
   - [3.30 PaiGow フェーズ遷移](#330-paigow-フェーズ遷移)
+  - [3.31 FiftyOne フェーズ遷移](#331-fiftyone-フェーズ遷移)
 
 ---
 
@@ -125,7 +127,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全46ゲーム)
+### 1.2 ゲームドメイン (全47ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -885,6 +887,37 @@ classDiagram
 
     PigsTail --> "4" PigsTailPlayer
     PigsTailPlayer --|> GamePlayer
+
+    class FiftyOne {
+        -trumpCards *TrumpCards
+        -players []*FiftyOnePlayer
+        -tableCards []*Card
+        -currentTurn int
+        -phase FiftyOnePhase
+        -stopCallerIdx int
+        -config FiftyOneConfig
+        +Reset()
+        +ExchangeOne(handIdx int, tableIdx int) error
+        +ExchangeAll() error
+        +Stop() error
+        +CpuPlay() error
+        +GetGameEndFlag() bool
+        +ActionLog() []*ActionLogEntry
+    }
+
+    class FiftyOnePlayer {
+        +BestSuitScore() int
+        +BestSuit() int
+        +SuitScores() map[int]int
+    }
+
+    class FiftyOneConfig {
+        +FiftyOneCpuDifficulty CpuDifficulty
+    }
+
+    FiftyOne --> "4" FiftyOnePlayer
+    FiftyOne --> "1" FiftyOneConfig
+    FiftyOnePlayer --|> GamePlayer
 ```
 
 #### セブンカード・スタッド
@@ -1248,7 +1281,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全46ゲーム共通)**
+**Interactor パターン (全47ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1723,7 +1756,45 @@ sequenceDiagram
     Pres-->>User: ドロー結果・手札枚数更新表示
 ```
 
-### 2.12 SevenCardStud ベッティングフロー
+### 2.12 FiftyOne 交換フロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as FiftyOneInteractor
+    participant Domain as FiftyOne
+    participant Pres as Presenter
+
+    Note over User,Pres: 1枚交換フロー
+    User->>Ctrl: play 2 0
+    Ctrl->>Interactor: ExchangeOne(2, 0)
+    Interactor->>Domain: ExchangeOne(2, 0)
+    Domain->>Domain: 手札[2]と場札[0]を交換 → CPUターン自動実行
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 交換結果・手札更新表示
+
+    Note over User,Pres: 全交換フロー
+    User->>Ctrl: exchangeall
+    Ctrl->>Interactor: ExchangeAll()
+    Interactor->>Domain: ExchangeAll()
+    Domain->>Domain: 手札5枚と場札5枚を交換 → CPUターン自動実行
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 全交換結果表示
+
+    Note over User,Pres: ストップ宣言
+    User->>Ctrl: stop
+    Ctrl->>Interactor: Stop()
+    Interactor->>Domain: Stop()
+    Domain->>Domain: ストップ宣言 → 残り3ターン → CPUターン自動実行 → ゲーム終了
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ゲーム終了・スコア表示
+```
+
+### 2.13 SevenCardStud ベッティングフロー
 
 ```mermaid
 sequenceDiagram
@@ -1743,7 +1814,7 @@ sequenceDiagram
     Pres-->>User: ベッティング結果・カード更新表示
 ```
 
-### 2.13 Durak アタック・ディフェンスフロー
+### 2.14 Durak アタック・ディフェンスフロー
 
 ```mermaid
 sequenceDiagram
@@ -1781,7 +1852,7 @@ sequenceDiagram
     Pres-->>User: 手札枚数・次アタッカー表示
 ```
 
-### 2.14 FortyThieves ドロー・ムーブフロー
+### 2.15 FortyThieves ドロー・ムーブフロー
 
 ```mermaid
 sequenceDiagram
@@ -1819,7 +1890,7 @@ sequenceDiagram
     Pres-->>User: 組札更新表示
 ```
 
-### 2.15 PaiGow ベット・セットフロー
+### 2.16 PaiGow ベット・セットフロー
 
 ```mermaid
 sequenceDiagram
@@ -2412,6 +2483,20 @@ stateDiagram-v2
     note right of Bet : PaiGowPhaseBet = 1
     note right of Set : PaiGowPhaseSet = 2
     note right of End : PaiGowPhaseEnd = 3
+```
+
+### 3.31 FiftyOne フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : ExchangeOne / ExchangeAll → CPUターン自動実行
+    Play --> Play : Stop → 残りプレイヤー各1回プレイ
+    Play --> GameEnd : ストップ後の残りターン完了
+    GameEnd --> [*]
+
+    note right of Play : FiftyOnePhasePlay = 0
+    note right of GameEnd : FiftyOnePhaseGameEnd = 1
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

@@ -213,6 +213,21 @@ classDiagram
         +object messageParams
     }
 
+    class FiftyOneResponse {
+        +FiftyOnePlayerData[] players
+        +Card[] tableCards
+        +number phase
+        +number currentTurn
+        +boolean gameEndFlag
+        +number winnerIdx
+        +number stopCallerIdx
+        +string lastAction
+        +FiftyOneConfig config
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
     class CanastaResponse {
         +CanastaPlayerData[] players
         +number phase
@@ -348,7 +363,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全46ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全47ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -662,6 +677,12 @@ classDiagram
         GAME_END = 3
     }
 
+    class FiftyOnePhase {
+        <<enumeration>>
+        PLAY = 0
+        GAME_END = 1
+    }
+
     note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase, FortyThievesPhase, CanfieldPhase は、\nそれぞれ同一の値を持つ別定数です"
 
     note for DurakPhase "DurakPhase の定数は src/pages/DurakPage.tsx 内にローカル定義 (PHASE_ATTACK/DEFEND/BOUT_END)。\nPigsTailPhase の定数は src/pages/PigsTailPage.tsx 内にローカル定義 (PIGTAIL_PHASE_PLAY/END)。\nDaifugoPage は数値 Phase を持たず gameEndFlag と t('phase.play'/'phase.end') を使用する"
@@ -772,7 +793,7 @@ classDiagram
 
     PaiGowApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全46ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield)"
+    note for BlackJackApi "全47ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)

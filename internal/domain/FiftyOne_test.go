@@ -177,6 +177,12 @@ func TestFiftyOne_ExchangeAll_NotHumanTurn(t *testing.T) {
 	assert.ErrorIs(t, fo.ExchangeAll(), ErrNotHumanTurn)
 }
 
+func TestFiftyOne_ExchangeAll_GameEnded(t *testing.T) {
+	fo := setupManualGame()
+	fo.gameEndFlag = true
+	assert.ErrorIs(t, fo.ExchangeAll(), ErrGameEnded)
+}
+
 func TestFiftyOne_Stop(t *testing.T) {
 	fo := setupManualGame()
 

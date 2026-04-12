@@ -113,4 +113,13 @@ describe('FiftyOnePage', () => {
     await waitFor(() => expect(screen.getByTestId('exchange-all-button')).toBeDisabled());
     expect(screen.getByTestId('stop-button')).toBeDisabled();
   });
+
+  it('exchange button is disabled until both hand and table cards are selected', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const exchangeBtn = screen.getByTestId('exchange-button');
+    expect(exchangeBtn).toBeDisabled();
+  });
 });
