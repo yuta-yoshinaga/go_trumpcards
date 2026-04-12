@@ -533,4 +533,37 @@ describe('OhHellPage', () => {
       expect(screen.getByText(/CPU 1.*\u672a\u30d3\u30c3\u30c9/)).toBeInTheDocument();
     });
   });
+
+  it('renders CPU info as collapsible details on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(playPhaseState);
+      const { container } = renderWithProviders(<OhHellPage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      const allDetails = container.querySelectorAll('details');
+      const cpuDetails = Array.from(allDetails).find((d) =>
+        d.querySelector('summary')?.textContent?.includes('CPU対戦相手'),
+      );
+      expect(cpuDetails).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('renders score table as collapsible details on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(playPhaseState);
+      const { container } = renderWithProviders(<OhHellPage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      const scoreDetails = container.querySelector('details[data-tutorial="oh-score-table"]');
+      expect(scoreDetails).toBeInTheDocument();
+      const summary = scoreDetails?.querySelector('summary');
+      expect(summary).toHaveTextContent('スコア');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
 });

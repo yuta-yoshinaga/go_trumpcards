@@ -506,7 +506,7 @@ function HoldemPageContent() {
             )}
 
             {/* Settings + Reset */}
-            <details className="mb-1" data-tutorial="he-learning-mode">
+            <details className="mb-1" data-tutorial="he-learning-mode" open={learningMode || undefined}>
               <summary className="cursor-pointer select-none text-white text-sm font-bold py-1">
                 {tc('settings.title')}
               </summary>

@@ -504,7 +504,7 @@ function OmahaPageContent() {
             )}
 
             {/* Settings + Reset */}
-            <details className="mb-1">
+            <details className="mb-1" open={learningMode || undefined}>
               <summary className="cursor-pointer select-none text-white text-sm font-bold py-1">
                 {tc('settings.title')}
               </summary>

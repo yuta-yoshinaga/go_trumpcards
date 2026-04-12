@@ -427,4 +427,37 @@ describe('BridgePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
+
+  it('renders CPU info as collapsible details on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(playPhaseState);
+      const { container } = renderWithProviders(<BridgePage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      const allDetails = container.querySelectorAll('details');
+      const cpuDetails = Array.from(allDetails).find((d) =>
+        d.querySelector('summary')?.textContent?.includes('CPU対戦相手'),
+      );
+      expect(cpuDetails).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('renders score table as collapsible details on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(playPhaseState);
+      const { container } = renderWithProviders(<BridgePage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      const scoreDetails = container.querySelector('details[data-tutorial="br-team-scores"]');
+      expect(scoreDetails).toBeInTheDocument();
+      const summary = scoreDetails?.querySelector('summary');
+      expect(summary).toHaveTextContent('チームスコア');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
 });

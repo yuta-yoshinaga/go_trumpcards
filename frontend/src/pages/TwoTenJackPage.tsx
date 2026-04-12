@@ -276,7 +276,7 @@ function TwoTenJackPageContent() {
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
                     <summary className="cursor-pointer select-none text-white/70 text-sm">
-                      {tc('game.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+                      {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
                     </summary>
                     <div className="mt-1">
                       {state.players

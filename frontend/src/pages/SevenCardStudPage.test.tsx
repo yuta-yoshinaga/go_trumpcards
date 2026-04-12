@@ -719,4 +719,13 @@ describe('SevenCardStudPage', () => {
     renderWithProviders(<SevenCardStudPage />);
     await waitFor(() => expect(screen.getByText('[オールイン]')).toBeInTheDocument());
   });
+
+  it('wraps settings in collapsible details element', async () => {
+    mockExec.mockResolvedValue(initState);
+    const { container } = renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    const allSummaries = container.querySelectorAll('details summary');
+    const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
+    expect(settingsSummary).toBeTruthy();
+  });
 });

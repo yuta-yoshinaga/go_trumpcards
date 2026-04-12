@@ -503,7 +503,7 @@ function ShortDeckPageContent() {
             )}
 
             {/* Settings + Reset */}
-            <details className="mb-1" data-tutorial="sd-learning-mode">
+            <details className="mb-1" data-tutorial="sd-learning-mode" open={learningMode || undefined}>
               <summary className="cursor-pointer select-none text-white text-sm font-bold py-1">
                 {tc('settings.title')}
               </summary>
