@@ -15,6 +15,7 @@ import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { OhHellSkeleton } from '../components/skeleton/OhHellSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
@@ -367,6 +368,14 @@ function OhHellPageContent() {
                   </div>
                   {isMobile && <ScrollFadeHint />}
                 </div>
+                <RoundScoreAnnouncement
+                  active={isRoundEnd || isGameEnd}
+                  entries={state.players.map((p) => ({
+                    name: playerName(p.id, p.isHuman),
+                    roundScore: p.roundScore,
+                    cumulativeScore: p.cumulativeScore,
+                  }))}
+                />
               </div>
             </div>
 
