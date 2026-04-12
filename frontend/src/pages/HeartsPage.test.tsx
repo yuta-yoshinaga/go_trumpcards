@@ -772,4 +772,40 @@ describe('HeartsPage', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
   });
+
+  it('renders CPU info as collapsible details on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue(playPhaseState);
+      const { container } = renderWithProviders(<HeartsPage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      await waitFor(() => {
+        const allDetails = container.querySelectorAll('details');
+        const cpuDetails = Array.from(allDetails).find((d) =>
+          d.querySelector('summary')?.textContent?.includes('CPU対戦相手'),
+        );
+        expect(cpuDetails).toBeTruthy();
+      });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('renders score table as collapsible details on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(playPhaseState);
+      const { container } = renderWithProviders(<HeartsPage />);
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+      const scoreDetails = container.querySelector('details[data-tutorial="ht-score-table"]');
+      expect(scoreDetails).toBeInTheDocument();
+      const summary = scoreDetails?.querySelector('summary');
+      expect(summary).toHaveTextContent('スコア');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
 });

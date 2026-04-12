@@ -274,52 +274,110 @@ function SpadesPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-white/70 text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                        {t('roundScore', { score: p.roundScore })} |{' '}
-                        {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')} | {t('bags', { count: p.bags })}
-                      </div>
+                {isMobile ? (
+                  <details className="mb-2 p-2 rounded bg-black/30">
+                    <summary className="cursor-pointer select-none text-white/70 text-sm">
+                      {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+                    </summary>
+                    <div className="mt-1">
+                      {state.players
+                        .filter((p) => !p.isHuman)
+                        .map((p) => (
+                          <div key={p.id} className="text-white/70 text-sm py-0.5">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                            {t('roundScore', { score: p.roundScore })} |{' '}
+                            {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')} | {t('bags', { count: p.bags })}
+                          </div>
+                        ))}
                     </div>
-                  ))}
+                  </details>
+                ) : (
+                  state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                        <div className="text-white/70 text-sm">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                          {t('roundScore', { score: p.roundScore })} |{' '}
+                          {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')} | {t('bags', { count: p.bags })}
+                        </div>
+                      </div>
+                    ))
+                )}
 
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="sp-score-table">
-                  <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-                  <div className="overflow-x-auto -mx-2 px-2">
-                    <table className="w-full text-sm text-white/70 min-w-[360px]">
-                      <thead>
-                        <tr>
-                          <th scope="col" className="text-left">
-                            {t('scoresPlayer')}
-                          </th>
-                          <th scope="col">{t('scoresBid')}</th>
-                          <th scope="col">{t('scoresTricks')}</th>
-                          <th scope="col">{t('scoresBags')}</th>
-                          <th scope="col">{t('scoresRound')}</th>
-                          <th scope="col">{t('scoresTotal')}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {state.players.map((p) => (
-                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                            <td>{playerName(p.id, p.isHuman)}</td>
-                            <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
-                            <td className="text-center">{p.trickCount}</td>
-                            <td className="text-center">{p.bags}</td>
-                            <td className="text-center">{p.roundScore}</td>
-                            <td className="text-center">{p.cumulativeScore}</td>
+                {isMobile ? (
+                  <details
+                    className="my-3 p-2 rounded bg-black/30 relative"
+                    data-tutorial="sp-score-table"
+                    open={isRoundEnd || isGameEnd || undefined}
+                  >
+                    <summary className="cursor-pointer select-none text-white/70 text-sm">{t('scores')}</summary>
+                    <div className="overflow-x-auto -mx-2 px-2">
+                      <table className="w-full text-sm text-white/70 min-w-[360px] mt-1">
+                        <thead>
+                          <tr>
+                            <th scope="col" className="text-left">
+                              {t('scoresPlayer')}
+                            </th>
+                            <th scope="col">{t('scoresBid')}</th>
+                            <th scope="col">{t('scoresTricks')}</th>
+                            <th scope="col">{t('scoresBags')}</th>
+                            <th scope="col">{t('scoresRound')}</th>
+                            <th scope="col">{t('scoresTotal')}</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {state.players.map((p) => (
+                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                              <td>{playerName(p.id, p.isHuman)}</td>
+                              <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
+                              <td className="text-center">{p.trickCount}</td>
+                              <td className="text-center">{p.bags}</td>
+                              <td className="text-center">{p.roundScore}</td>
+                              <td className="text-center">{p.cumulativeScore}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <ScrollFadeHint />
+                  </details>
+                ) : (
+                  <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="sp-score-table">
+                    <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+                    <div className="overflow-x-auto -mx-2 px-2">
+                      <table className="w-full text-sm text-white/70 min-w-[360px]">
+                        <thead>
+                          <tr>
+                            <th scope="col" className="text-left">
+                              {t('scoresPlayer')}
+                            </th>
+                            <th scope="col">{t('scoresBid')}</th>
+                            <th scope="col">{t('scoresTricks')}</th>
+                            <th scope="col">{t('scoresBags')}</th>
+                            <th scope="col">{t('scoresRound')}</th>
+                            <th scope="col">{t('scoresTotal')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {state.players.map((p) => (
+                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                              <td>{playerName(p.id, p.isHuman)}</td>
+                              <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
+                              <td className="text-center">{p.trickCount}</td>
+                              <td className="text-center">{p.bags}</td>
+                              <td className="text-center">{p.roundScore}</td>
+                              <td className="text-center">{p.cumulativeScore}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  {isMobile && <ScrollFadeHint />}
-                </div>
+                )}
                 <RoundScoreAnnouncement
                   active={isRoundEnd || isGameEnd}
                   entries={state.players.map((p) => ({

@@ -50,6 +50,13 @@ describe('PlayerHandSection (desktop)', () => {
     const { container } = render(<PlayerHandSection {...baseProps} isMobile={false} dataTutorialPrefix="sp" />);
     expect(container.querySelector('[data-tutorial="sp-player-hand"]')).toBeInTheDocument();
   });
+
+  it('applies lg:flex-nowrap and lg:overflow-x-auto classes for desktop single-row layout', () => {
+    const { container } = render(<PlayerHandSection {...baseProps} isMobile={false} />);
+    const hand = container.querySelector('[data-tutorial="ht-player-hand"]');
+    expect(hand).toHaveClass('lg:flex-nowrap');
+    expect(hand).toHaveClass('lg:overflow-x-auto');
+  });
 });
 
 describe('PlayerHandSection (mobile)', () => {
