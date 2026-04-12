@@ -46,7 +46,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.PerfectPairsBet = bj.GetPerfectPairsBet()
 	resObj.TwentyOnePlus3Bet = bj.Get21Plus3Bet()
 
-	resObj.Message, resObj.MessageCode = bjp.buildMessage(bj, lastErr)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = bjp.buildMessage(bj, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -138,21 +138,21 @@ func (bjp *BlackJackWebPresenter) buildSideBetsOutput(bj interfaces.BlackJackGam
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (bjp *BlackJackWebPresenter) buildMessage(bj interfaces.BlackJackGame, lastErr error) (string, string) {
+func (bjp *BlackJackWebPresenter) buildMessage(bj interfaces.BlackJackGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
-		return lastErr.Error(), ""
+		return lastErr.Error(), "", nil
 	}
 	if bj.GetGameEndFlag() {
 		switch bj.GameJudgment() {
 		case domain.GameResultDraw:
-			return "It is a draw.", "blackjack.result.draw"
+			return "It is a draw.", "blackjack.result.draw", nil
 		case domain.GameResultWin:
-			return "You are the winner.", "blackjack.result.win"
+			return "You are the winner.", "blackjack.result.win", nil
 		case domain.GameResultLose:
-			return "It is your loss.", "blackjack.result.lose"
+			return "It is your loss.", "blackjack.result.lose", nil
 		}
 	}
-	return "", ""
+	return "", "", nil
 }
 
 // ActionLogOutput 棋譜をJSON出力

@@ -38,7 +38,7 @@ func (iwp *IndianPokerWebPresenter) buildOutput(ip interfaces.IndianPokerGame, l
 	resObj.CpuActions = iwp.buildCpuActionsOutput(ip)
 	resObj.RoundResults = iwp.buildRoundResultsOutput(ip)
 
-	resObj.Message, resObj.MessageCode = iwp.buildMessage(ip, lastErr)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = iwp.buildMessage(ip, lastErr)
 
 	// メタAI情報
 	if profile := ip.GetHumanProfile(); profile != nil {
@@ -134,14 +134,15 @@ func (iwp *IndianPokerWebPresenter) buildRoundResultsOutput(ip interfaces.Indian
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (iwp *IndianPokerWebPresenter) buildMessage(ip interfaces.IndianPokerGame, lastErr error) (string, string) {
+func (iwp *IndianPokerWebPresenter) buildMessage(ip interfaces.IndianPokerGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
-		return lastErr.Error(), ""
+		return lastErr.Error(), "", nil
 	}
 	if ip.GetGameEndFlag() {
-		return iwp.buildResultMessage(ip)
+		msg, code := iwp.buildResultMessage(ip)
+		return msg, code, nil
 	}
-	return "", ""
+	return "", "", nil
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code

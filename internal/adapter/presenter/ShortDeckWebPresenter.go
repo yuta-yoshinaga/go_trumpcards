@@ -74,7 +74,7 @@ func (owp *ShortDeckWebPresenter) buildOutput(o interfaces.ShortDeckGame, lastEr
 		resObj.PotOdds = &potOdds
 	}
 
-	resObj.Message, resObj.MessageCode = owp.buildMessage(o, lastErr)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = owp.buildMessage(o, lastErr)
 
 	// メタAI情報
 	if profile := o.GetHumanProfile(); profile != nil {
@@ -174,17 +174,18 @@ func (owp *ShortDeckWebPresenter) buildRoundResultsOutput(o interfaces.ShortDeck
 	return out
 }
 
-func (owp *ShortDeckWebPresenter) buildMessage(o interfaces.ShortDeckGame, lastErr error) (string, string) {
+func (owp *ShortDeckWebPresenter) buildMessage(o interfaces.ShortDeckGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
-		return lastErr.Error(), ""
+		return lastErr.Error(), "", nil
 	}
 	if o.IsMuckAvailable() {
-		return "Muck or show your hand.", "shortdeck.muck.prompt"
+		return "Muck or show your hand.", "shortdeck.muck.prompt", nil
 	}
 	if o.GetGameEndFlag() {
-		return owp.buildResultMessage(o)
+		msg, code := owp.buildResultMessage(o)
+		return msg, code, nil
 	}
-	return "", ""
+	return "", "", nil
 }
 
 func (owp *ShortDeckWebPresenter) buildResultMessage(o interfaces.ShortDeckGame) (string, string) {
