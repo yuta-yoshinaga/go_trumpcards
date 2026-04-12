@@ -92,13 +92,12 @@ func run() int {
 	commands := buildGameCommands()
 	commands["games"] = func() int {
 		var short bool
-		fs, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
+		_, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
 		})
 		if !ok {
 			return code
 		}
-		_ = fs
 		// Build reverse alias map: canonical name -> sorted list of aliases.
 		reverseAliases := make(map[string][]string)
 		for alias, canonical := range ui.GameAliases {
