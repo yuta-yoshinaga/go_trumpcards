@@ -4,10 +4,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"golang.org/x/term"
 
@@ -61,24 +64,30 @@ func run() int {
 		return 0
 	}
 
-	// Language detection: --lang > LANG env > default "ja"
+	// Language detection: --lang > LANG env > default "ja".
+	// An explicit --lang with an unsupported value is a hard error (exit 2);
+	// LANG env values silently fall back to "ja" for backwards compatibility.
+	supportedLangs := map[string]bool{"ja": true, "en": true}
 	detectedLang := "ja"
 	if envLang := os.Getenv("LANG"); envLang != "" {
 		prefix := envLang
 		if idx := strings.IndexAny(envLang, "_-."); idx >= 0 {
 			prefix = envLang[:idx]
 		}
-		if prefix == "en" || prefix == "ja" {
+		if supportedLangs[prefix] {
 			detectedLang = prefix
 		}
 	}
 	if *lang != "" {
+		if !supportedLangs[*lang] {
+			i18n.SetLang(detectedLang)
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliUnsupportedLang", "lang", *lang))
+			fmt.Fprintln(os.Stderr, i18n.T("cliSupportedLangs"))
+			return 2
+		}
 		detectedLang = *lang
 	}
 	i18n.SetLang(detectedLang)
-	if i18n.Lang() != detectedLang && detectedLang != "" {
-		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnsupportedLang", "lang", detectedLang))
-	}
 	// Build game commands from the registry (single source of truth).
 	commands := buildGameCommands()
 	commands["games"] = func() int {
@@ -117,6 +126,9 @@ func run() int {
 	}
 	commands["completion"] = func() int {
 		return runCompletion(flag.Args()[1:])
+	}
+	commands["help"] = func() int {
+		return runHelpCommand(flag.Args()[1:], helpText, os.Stdout, os.Stderr)
 	}
 	commands["update"] = func() int {
 		updateFlags := flag.NewFlagSet("update", flag.ContinueOnError)
@@ -158,14 +170,17 @@ func run() int {
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()
 		if err := w.Exec(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliWebStartFailed", "err", err.Error()))
+			if errors.Is(err, syscall.EADDRINUSE) {
+				fmt.Fprintln(os.Stderr, i18n.T("cliWebPortInUseHint"))
+			}
 			return 1
 		}
 		return 0
 	}
 
 	// Commands that parse their own sub-flags; skip the extra-args warning for these.
-	subFlagCommands := map[string]bool{"web": true, "completion": true, "games": true, "update": true}
+	subFlagCommands := map[string]bool{"web": true, "completion": true, "games": true, "update": true, "help": true}
 
 	arg := strings.ToLower(flag.Arg(0))
 	// Resolve game name aliases (e.g., "gin" -> "ginrummy", "7stud" -> "sevencardstud").
@@ -196,6 +211,49 @@ func run() int {
 	return 0
 }
 
+// builtinHelpCommands lists CLI subcommands that are not games. Used by
+// runHelpCommand to give a clearer error than "unknown game" when a user
+// runs e.g. `trumpcards help web`.
+var builtinHelpCommands = []string{"completion", "games", "help", "update", "web"}
+
+// runHelpCommand implements the `trumpcards help [game]` subcommand.
+// With no args, it writes helpText to stdout. With one arg, it writes the
+// HelpLines() of the matching game (resolving aliases) to stdout, or an
+// "unknown game" error with a Did-you-mean suggestion to stderr. Extra
+// positional arguments after the game name are warned about and ignored,
+// matching the behavior of other subcommands.
+func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) int {
+	if len(args) > 1 {
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(args[1:], " ")))
+	}
+	if len(args) == 0 {
+		_, _ = fmt.Fprint(stdout, helpText)
+		return 0
+	}
+	target := strings.ToLower(args[0])
+	if canonical, ok := ui.GameAliases[target]; ok {
+		target = canonical
+	}
+	for _, entry := range ui.GameRegistry() {
+		if entry.Name == target {
+			g := entry.NewCui()
+			for _, line := range g.HelpLines() {
+				_, _ = fmt.Fprintln(stdout, line)
+			}
+			return 0
+		}
+	}
+	if slices.Contains(builtinHelpCommands, target) {
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliHelpNotAGame", "name", target))
+		return 1
+	}
+	_, _ = fmt.Fprintln(stderr, i18n.Tf("cliHelpUnknownGame", "name", target))
+	if suggestion := cuiutil.SuggestCommand(target, ui.GameNames(), 2); suggestion != "" {
+		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
+	}
+	return 1
+}
+
 func mapKeys(m map[string]func() int) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
@@ -219,6 +277,7 @@ GAMES:
 	sb.WriteString(`
 COMMANDS:
   games        List all available games (--short for names only)
+  help [game]  Show this help, or a specific game's help text
   completion   Generate shell completion script (bash, zsh, fish)
   update       Self-update to the latest version
   web          Start REST API + web GUI server

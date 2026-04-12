@@ -157,6 +157,8 @@ trumpcards --lang en blackjack   # ブラックジャック CLI (英語)
 trumpcards web                   # REST API + Web GUI サーバー起動
 trumpcards web --port 3000       # カスタムポートで起動 (--port フラグ)
 trumpcards update                # 最新版にセルフアップデート
+trumpcards help                  # ヘルプを表示
+trumpcards help blackjack        # 特定ゲームの操作方法を表示
 PORT=3000 trumpcards web         # カスタムポートで起動 (環境変数)
 source <(trumpcards completion bash)  # Bash 補完を有効化
 ```

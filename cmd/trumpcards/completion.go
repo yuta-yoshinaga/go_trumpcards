@@ -7,18 +7,23 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 )
+
+// supportedCompletionShells is the canonical list of shells supported by `trumpcards completion`.
+var supportedCompletionShells = []string{"bash", "zsh", "fish"}
 
 // completionSubcommands returns the sorted list of all subcommands for shell completion,
 // derived from the game registry and aliases.
 func completionSubcommands() []string {
-	names := make([]string, 0, len(ui.GameNames())+len(ui.GameAliases)+4)
+	names := make([]string, 0, len(ui.GameNames())+len(ui.GameAliases)+5)
 	names = append(names, ui.GameNames()...)
 	for alias := range ui.GameAliases {
 		names = append(names, alias)
 	}
-	names = append(names, "completion", "games", "update", "web")
+	names = append(names, "completion", "games", "help", "update", "web")
 	sort.Strings(names)
 	return names
 }
@@ -26,28 +31,37 @@ func completionSubcommands() []string {
 // runCompletion outputs a shell completion script for the given shell name.
 // Returns 0 on success, 1 on error.
 func runCompletion(args []string) int {
+	return runCompletionTo(args, os.Stdout, os.Stderr)
+}
+
+// runCompletionTo is the testable core of runCompletion: it writes the script
+// to stdout and any diagnostic messages to stderr.
+func runCompletionTo(args []string, stdout, stderr io.Writer) int {
 	if len(args) != 1 {
-		fmt.Fprintln(os.Stderr, "Usage: trumpcards completion <bash|zsh|fish>")
+		_, _ = fmt.Fprintln(stderr, i18n.T("cliCompletionUsage"))
 		return 1
 	}
 	shell := args[0]
 	var err error
 	switch shell {
 	case "bash":
-		writeInstallHint(os.Stdout, shell)
-		err = writeBashCompletion(os.Stdout)
+		writeInstallHint(stdout, shell)
+		err = writeBashCompletion(stdout)
 	case "zsh":
-		writeInstallHint(os.Stdout, shell)
-		err = writeZshCompletion(os.Stdout)
+		writeInstallHint(stdout, shell)
+		err = writeZshCompletion(stdout)
 	case "fish":
-		writeInstallHint(os.Stdout, shell)
-		err = writeFishCompletion(os.Stdout)
+		writeInstallHint(stdout, shell)
+		err = writeFishCompletion(stdout)
 	default:
-		fmt.Fprintf(os.Stderr, "Error: unsupported shell %q (supported: bash, zsh, fish)\n", shell)
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliCompletionUnsupportedShell", "shell", shell))
+		if suggestion := cuiutil.SuggestCommand(shell, supportedCompletionShells, 2); suggestion != "" {
+			_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
+		}
 		return 1
 	}
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliCompletionWriteError", "err", err.Error()))
 		return 1
 	}
 	return 0
@@ -234,6 +248,7 @@ func buildCompletionEntries() []completionEntry {
 	entries = append(entries,
 		completionEntry{"completion", "Generate shell completion script"},
 		completionEntry{"games", "List available games"},
+		completionEntry{"help", "Show help, optionally for a specific game"},
 		completionEntry{"update", "Self-update to the latest version"},
 		completionEntry{"web", "Start REST API + web GUI server"},
 	)
