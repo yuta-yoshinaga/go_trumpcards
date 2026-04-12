@@ -59,7 +59,7 @@ func (c *SpiderCuiController) Exec(command string) string {
 func (c *SpiderCuiController) handleMove(args []string) string {
 	// Wizard-style prompts for missing arguments
 	if len(args) == 0 {
-		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m t {0}")
+		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "m {0}")
 	}
 	// Shorthand: numeric first arg means tableau shorthand
 	if _, err := strconv.Atoi(args[0]); err == nil {
