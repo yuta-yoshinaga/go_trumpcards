@@ -32,9 +32,9 @@ const (
 
 // CPU ストップ閾値
 const (
-	fiftyOneCpuStopThresholdEasy   = 45
-	fiftyOneCpuStopThresholdNormal = 38
-	fiftyOneCpuStopThresholdHard   = 35
+	fiftyOneCpuStopThresholdEasy   = 35
+	fiftyOneCpuStopThresholdNormal = 40
+	fiftyOneCpuStopThresholdHard   = 45
 )
 
 // エラー定義
@@ -412,12 +412,8 @@ func (fo *FiftyOne) findBestSingleExchange(p *FiftyOnePlayer, targetSuit int) *e
 		if tc.GetDesign() != targetSuit {
 			continue
 		}
-		// 非ターゲットスートの手札で最も弱いものと交換
+		// 全手札との交換を評価（同スート内のアップグレードも含む）
 		for hi := range p.GetCardsSize() {
-			hc := p.GetCard(hi)
-			if hc.GetDesign() == targetSuit {
-				continue // ターゲットスートのカードは交換しない
-			}
 			score := fo.evaluateSingleExchange(p, hi, ti)
 			if score > currentScore && (best == nil || score > best.score) {
 				best = &exchangeCandidate{handIdx: hi, tableIdx: ti, score: score}

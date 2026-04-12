@@ -23,7 +23,11 @@ func (p *FiftyOneCuiPresenter) Output(fo interfaces.FiftyOneGame, lastErr error)
 				b.WriteString(cuiIndexedCardListStr(player))
 				b.WriteString("\n")
 			} else {
-				fmt.Fprintf(b, ": %d枚 (スコア: %d)\n", player.GetCardsSize(), score)
+				scoreStr := "?"
+				if fo.GetGameEndFlag() {
+					scoreStr = fmt.Sprintf("%d", score)
+				}
+				fmt.Fprintf(b, ": %d枚 (スコア: %s)\n", player.GetCardsSize(), scoreStr)
 			}
 		}
 

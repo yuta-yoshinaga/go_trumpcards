@@ -53,12 +53,14 @@ func (p *FiftyOnePlayer) BestSuitScore() int {
 	return best
 }
 
-// BestSuit 最高得点のスートを返す
+// BestSuit 最高得点のスートを返す (決定論的順序で走査)
 func (p *FiftyOnePlayer) BestSuit() int {
 	best := 0
 	bestDesign := CardDesignSpade
-	for design, s := range p.SuitScores() {
-		if s > best {
+	scores := p.SuitScores()
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	for _, design := range suits {
+		if s := scores[design]; s > best {
 			best = s
 			bestDesign = design
 		}
