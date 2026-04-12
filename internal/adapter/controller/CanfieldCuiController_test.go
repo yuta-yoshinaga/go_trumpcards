@@ -206,6 +206,31 @@ func TestCanfieldCuiControllerMoveErrors(t *testing.T) {
 	})
 }
 
+func TestCanfieldCuiControllerMoveShorthand(t *testing.T) {
+	t.Run("m <from> <to> moves top card", func(t *testing.T) {
+		ci := newMockCanfieldInteractor()
+		c := NewCanfieldCuiController(ci)
+		ci.On("MoveTableauToTableau", 0, -1, 1).Return("move_output")
+		assert.Equal(t, "move_output", c.Exec("m 0 1"))
+	})
+
+	t.Run("m <from> prompts for destination", func(t *testing.T) {
+		ci := newMockCanfieldInteractor()
+		c := NewCanfieldCuiController(ci)
+		result := c.Exec("m 0")
+		assert.True(t, cuiutil.IsPromptRequest(result))
+		_, tmpl := cuiutil.ParsePromptRequest(result)
+		assert.Equal(t, "m 0 {0}", tmpl)
+	})
+
+	t.Run("m <from> <invalid> returns error", func(t *testing.T) {
+		ci := newMockCanfieldInteractor()
+		c := NewCanfieldCuiController(ci)
+		result := c.Exec("m 0 abc")
+		assert.Contains(t, result, "abc")
+	})
+}
+
 func TestCanfieldCuiControllerUnknown(t *testing.T) {
 	ci := newMockCanfieldInteractor()
 	c := NewCanfieldCuiController(ci)

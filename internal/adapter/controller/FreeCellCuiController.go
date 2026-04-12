@@ -49,6 +49,10 @@ func (c *FreeCellCuiController) handleMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("freecell.promptSourceZone"), "m {0}")
 	}
+	// Shorthand: m <fromCol> [<toCol>] — tableau-to-tableau top card
+	if _, err := strconv.Atoi(args[0]); err == nil {
+		return c.handleMoveShorthand(args)
+	}
 	from := args[0]
 	if from != "t" && from != "c" {
 		return i18n.Tf("freecell.invalidFromZone", "val", from)
@@ -156,4 +160,16 @@ func (c *FreeCellCuiController) handleMoveFromFreeCell(args []string) string {
 	default:
 		return i18n.Tf("freecell.invalidToZone", "val", args[1])
 	}
+}
+
+func (c *FreeCellCuiController) handleMoveShorthand(args []string) string {
+	fromCol, _ := strconv.Atoi(args[0])
+	if len(args) < 2 {
+		return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m %s {0}", args[0]))
+	}
+	toCol, err := strconv.Atoi(args[1])
+	if err != nil {
+		return i18n.Tf("invalidColumn", "val", args[1])
+	}
+	return c.fi.MoveTableauToTableau(fromCol, -1, toCol)
 }
