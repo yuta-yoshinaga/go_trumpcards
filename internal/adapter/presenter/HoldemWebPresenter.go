@@ -75,7 +75,7 @@ func (hwp *HoldemWebPresenter) buildOutput(h interfaces.HoldemGame, lastErr erro
 		resObj.PotOdds = &potOdds
 	}
 
-	resObj.Message, resObj.MessageCode = hwp.buildMessage(h, lastErr)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = hwp.buildMessage(h, lastErr)
 
 	// メタAI情報
 	if profile := h.GetHumanProfile(); profile != nil {
@@ -182,17 +182,18 @@ func (hwp *HoldemWebPresenter) buildRoundResultsOutput(h interfaces.HoldemGame) 
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (hwp *HoldemWebPresenter) buildMessage(h interfaces.HoldemGame, lastErr error) (string, string) {
+func (hwp *HoldemWebPresenter) buildMessage(h interfaces.HoldemGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
-		return lastErr.Error(), ""
+		return lastErr.Error(), "", nil
 	}
 	if h.IsMuckAvailable() {
-		return "Muck or show your hand.", "holdem.muck.prompt"
+		return "Muck or show your hand.", "holdem.muck.prompt", nil
 	}
 	if h.GetGameEndFlag() {
-		return hwp.buildResultMessage(h)
+		msg, code := hwp.buildResultMessage(h)
+		return msg, code, nil
 	}
-	return "", ""
+	return "", "", nil
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code

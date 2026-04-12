@@ -77,7 +77,7 @@ func (pp *PineappleWebPresenter) buildOutput(p interfaces.PineappleGame, lastErr
 		resObj.PotOdds = &potOdds
 	}
 
-	resObj.Message, resObj.MessageCode = pp.buildMessage(p, lastErr)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = pp.buildMessage(p, lastErr)
 
 	// メタAI情報
 	if profile := p.GetHumanProfile(); profile != nil {
@@ -184,20 +184,21 @@ func (pp *PineappleWebPresenter) buildRoundResultsOutput(p interfaces.PineappleG
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (pp *PineappleWebPresenter) buildMessage(p interfaces.PineappleGame, lastErr error) (string, string) {
+func (pp *PineappleWebPresenter) buildMessage(p interfaces.PineappleGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
-		return lastErr.Error(), ""
+		return lastErr.Error(), "", nil
 	}
 	if p.IsDiscardPhase() {
-		return "Select a card to discard.", "pineapple.discard.prompt"
+		return "Select a card to discard.", "pineapple.discard.prompt", nil
 	}
 	if p.IsMuckAvailable() {
-		return "Muck or show your hand.", "pineapple.muck.prompt"
+		return "Muck or show your hand.", "pineapple.muck.prompt", nil
 	}
 	if p.GetGameEndFlag() {
-		return pp.buildResultMessage(p)
+		msg, code := pp.buildResultMessage(p)
+		return msg, code, nil
 	}
-	return "", ""
+	return "", "", nil
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code
