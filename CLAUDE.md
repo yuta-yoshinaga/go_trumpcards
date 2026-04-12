@@ -31,6 +31,8 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 go run ./cmd/trumpcards games      # List all available games
 go run ./cmd/trumpcards games --short  # List game names only (for scripting)
 go run ./cmd/trumpcards update     # Self-update to the latest version
+go run ./cmd/trumpcards help       # Show top-level help
+go run ./cmd/trumpcards help blackjack  # Show help text for a specific game
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/trumpcards web --port 3000  # Start web server on custom port
 go run ./cmd/trumpcards completion bash  # Generate shell completion script (bash/zsh/fish)

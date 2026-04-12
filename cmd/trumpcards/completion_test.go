@@ -80,27 +80,109 @@ func TestWriteInstallHint_UnsupportedShell(t *testing.T) {
 }
 
 func TestRunCompletion_NoArgs(t *testing.T) {
-	code := runCompletion(nil)
+	var stdout, stderr bytes.Buffer
+	code := runCompletionTo(nil, &stdout, &stderr)
 	assert.Equal(t, 1, code)
+	assert.Contains(t, stderr.String(), "trumpcards completion")
 }
 
 func TestRunCompletion_ExtraArgs(t *testing.T) {
-	code := runCompletion([]string{"bash", "extra"})
+	var stdout, stderr bytes.Buffer
+	code := runCompletionTo([]string{"bash", "extra"}, &stdout, &stderr)
 	assert.Equal(t, 1, code)
 }
 
 func TestRunCompletion_UnsupportedShell(t *testing.T) {
-	code := runCompletion([]string{"powershell"})
+	var stdout, stderr bytes.Buffer
+	code := runCompletionTo([]string{"powershell"}, &stdout, &stderr)
 	assert.Equal(t, 1, code)
+	assert.Contains(t, stderr.String(), "powershell")
+}
+
+func TestRunCompletion_UnsupportedShell_DidYouMean(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"bashh", "bash"},
+		{"fsh", "zsh"}, // fsh is closer to zsh than to fish (distance 2 vs 2 — first match wins)
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			code := runCompletionTo([]string{tt.input}, &stdout, &stderr)
+			assert.Equal(t, 1, code)
+			assert.Contains(t, stderr.String(), tt.want, "expected suggestion %q for input %q", tt.want, tt.input)
+		})
+	}
+}
+
+func TestRunCompletion_UnsupportedShell_NoSuggestion(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := runCompletionTo([]string{"powershell"}, &stdout, &stderr)
+	assert.Equal(t, 1, code)
+	// "powershell" is too far from any supported shell — no Did-you-mean line.
+	assert.NotContains(t, stderr.String(), "Did you mean")
+	assert.NotContains(t, stderr.String(), "もしかして")
 }
 
 func TestRunCompletion_ValidShells(t *testing.T) {
 	for _, shell := range []string{"bash", "zsh", "fish"} {
 		t.Run(shell, func(t *testing.T) {
-			code := runCompletion([]string{shell})
+			var stdout, stderr bytes.Buffer
+			code := runCompletionTo([]string{shell}, &stdout, &stderr)
 			assert.Equal(t, 0, code)
+			assert.NotEmpty(t, stdout.String())
+			assert.Empty(t, stderr.String())
 		})
 	}
+}
+
+func TestRunHelpCommand_NoArgs_PrintsHelpText(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := runHelpCommand(nil, "HELP_TEXT_FIXTURE", &stdout, &stderr)
+	assert.Equal(t, 0, code)
+	assert.Equal(t, "HELP_TEXT_FIXTURE", stdout.String())
+	assert.Empty(t, stderr.String())
+}
+
+func TestRunHelpCommand_KnownGame(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := runHelpCommand([]string{"blackjack"}, "", &stdout, &stderr)
+	assert.Equal(t, 0, code)
+	assert.NotEmpty(t, stdout.String(), "should print game help lines")
+	assert.Empty(t, stderr.String())
+}
+
+func TestRunHelpCommand_AliasResolved(t *testing.T) {
+	// "gin" is an alias for "ginrummy"
+	var stdout, stderr bytes.Buffer
+	code := runHelpCommand([]string{"gin"}, "", &stdout, &stderr)
+	assert.Equal(t, 0, code)
+	assert.NotEmpty(t, stdout.String())
+}
+
+func TestRunHelpCommand_CaseInsensitive(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := runHelpCommand([]string{"BlackJack"}, "", &stdout, &stderr)
+	assert.Equal(t, 0, code)
+	assert.NotEmpty(t, stdout.String())
+}
+
+func TestRunHelpCommand_UnknownGame(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := runHelpCommand([]string{"nosuchgame"}, "", &stdout, &stderr)
+	assert.Equal(t, 1, code)
+	assert.Empty(t, stdout.String())
+	assert.Contains(t, stderr.String(), "nosuchgame")
+}
+
+func TestRunHelpCommand_UnknownGame_DidYouMean(t *testing.T) {
+	// "blackjac" → distance 1 from "blackjack"
+	var stdout, stderr bytes.Buffer
+	code := runHelpCommand([]string{"blackjac"}, "", &stdout, &stderr)
+	assert.Equal(t, 1, code)
+	assert.Contains(t, stderr.String(), "blackjack")
 }
 
 func TestCompletionSubcommands_ContainsAllGames(t *testing.T) {
