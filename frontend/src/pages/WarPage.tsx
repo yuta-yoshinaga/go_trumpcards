@@ -38,7 +38,6 @@ export function WarPage() {
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   const handleReset = useCallback(() => execApi('reset', { maxRounds }), [execApi, maxRounds]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: initial load
   useEffect(() => {
     execApi('reset');
   }, [execApi]);

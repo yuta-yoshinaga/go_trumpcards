@@ -81,7 +81,6 @@ function PigsTailPageContent() {
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: initial load
   useEffect(() => {
     execApi('reset');
   }, [execApi]);
