@@ -80,7 +80,7 @@ func NewFiftyOne(trumpCards *TrumpCards, players []*FiftyOnePlayer) *FiftyOne {
 func (fo *FiftyOne) Reset() {
 	// カードリセット
 	for _, p := range fo.players {
-		p.Player.Reset()
+		p.Reset()
 	}
 	fo.tableCards = make([]*Card, 0, FiftyOneTableSize)
 
@@ -215,7 +215,7 @@ func (fo *FiftyOne) exchangeAll(playerIdx int) error {
 	copy(oldTable, fo.tableCards)
 
 	// 手札をリセットして場札を入れる
-	p.Player.Reset()
+	p.Reset()
 	for _, c := range oldTable {
 		p.AddCard(c)
 	}
