@@ -1,0 +1,23 @@
+{
+  "button": {
+    "exchange": "Exchange",
+    "exchangeAll": "Exchange All",
+    "stop": "Stop"
+  },
+  "phase": {
+    "play": "Playing",
+    "end": "End"
+  },
+  "label": {
+    "tableCards": "Table Cards",
+    "score": "Score",
+    "hand": "Hand",
+    "selectCard": "Select a card",
+    "stopCalled": "Stop called",
+    "yourTurn": "Your turn",
+    "cpuTurn": "CPU {{id}}'s turn"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU Difficulty"
+  }
+}

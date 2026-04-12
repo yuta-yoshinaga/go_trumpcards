@@ -104,6 +104,8 @@ tags:
     description: Pai Gow Poker (パイゴウポーカー) game
   - name: war
     description: War (戦争) game
+  - name: fiftyone
+    description: Fifty-one (フィフティワン) game
 
 paths:
   /blackjack/exec:
@@ -4455,6 +4457,103 @@ paths:
                     type: integer
                   canUndo:
                     type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /fiftyone/exec:
+    post:
+      tags:
+        - fiftyone
+      summary: Execute a Fifty-one (フィフティワン) game command
+      description: |
+        4-player card exchange game. Players swap cards between their hand and face-up table cards,
+        aiming to maximize the sum of same-suit cards (A=11, J/Q/K=10, 2-10=face value, max=51).
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | 0     | Active play |
+        | GameEnd | 1     | Game over   |
+
+        | Command     | Description                              |
+        |-------------|------------------------------------------|
+        | reset / r   | Start new game                           |
+        | play        | Exchange 1 card (requires handIdx, tableIdx) |
+        | exchangeall | Exchange all 5 cards                     |
+        | stop        | Call stop                                |
+        | log / l     | View action log                          |
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, exchangeall, stop, log, l]
+                handIdx:
+                  type: integer
+                  description: Hand card index (0-4, required for play)
+                tableIdx:
+                  type: integer
+                  description: Table card index (0-4, required for play)
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      enum: [0, 1, 2]
+                      description: "0=Easy, 1=Normal, 2=Hard"
+                sessionId:
+                  type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        score:
+                          type: integer
+                  tableCards:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  phase:
+                    type: integer
+                  currentTurn:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerIdx:
+                    type: integer
+                  turnNumber:
+                    type: integer
+                  stopCallerIdx:
+                    type: integer
+                  lastAction:
+                    type: string
                   message:
                     type: string
                   messageCode:

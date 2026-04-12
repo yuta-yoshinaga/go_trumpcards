@@ -396,3 +396,9 @@ export const FortyThievesPhase = {
   GAME_CLEAR: 1,
   GAME_OVER: 2,
 } as const;
+
+/** Fifty-one phase constants (sync: internal/domain/FiftyOne.go). */
+export const FiftyOnePhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;

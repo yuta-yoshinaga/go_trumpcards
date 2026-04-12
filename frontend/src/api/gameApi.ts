@@ -16,6 +16,7 @@ import type {
   DurakConfigInput,
   DurakResponse,
   EuchreResponse,
+  FiftyOneResponse,
   FortyThievesMoveZone,
   FortyThievesResponse,
   FreeCellResponse,
@@ -90,6 +91,7 @@ const workerUrl: Record<string, string> = {
   crazyeights: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
   war: WORKER_CLASSIC,
+  fiftyone: WORKER_CLASSIC,
   gofish: WORKER_CLASSIC,
   pinochle: WORKER_CLASSIC,
   pigtail: WORKER_CLASSIC,
@@ -909,6 +911,14 @@ export const warApi = {
     gameExec<WarResponse>('war', { command, ...config }),
 };
 
+/** API client for the Fifty-one /fiftyone/exec endpoint. */
+export const fiftyoneApi = {
+  exec: (
+    command: 'reset' | 'play' | 'exchangeall' | 'stop' | 'log',
+    opts?: { handIdx?: number; tableIdx?: number; config?: { cpuDifficulty?: number } },
+  ) => gameExec<FiftyOneResponse>('fiftyone', { command, ...opts }),
+};
+
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {
   exec: (
@@ -1003,6 +1013,7 @@ const games = [
   'paigow',
   'speed',
   'war',
+  'fiftyone',
   'gofish',
   'pinochle',
   'golf',

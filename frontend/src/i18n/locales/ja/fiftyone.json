@@ -1,0 +1,23 @@
+{
+  "button": {
+    "exchange": "交換",
+    "exchangeAll": "全交換",
+    "stop": "ストップ"
+  },
+  "phase": {
+    "play": "プレイ中",
+    "end": "終了"
+  },
+  "label": {
+    "tableCards": "場札",
+    "score": "スコア",
+    "hand": "手札",
+    "selectCard": "カードを選択",
+    "stopCalled": "ストップ宣言済み",
+    "yourTurn": "あなたのターン",
+    "cpuTurn": "CPU{{id}}のターン"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU難易度"
+  }
+}

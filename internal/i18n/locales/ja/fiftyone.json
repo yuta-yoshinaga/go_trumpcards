@@ -1,0 +1,9 @@
+{
+  "helpTitle": "Fifty-one (フィフティワン) コマンド",
+  "helpPlay": "  p <手札番号> <場札番号>  カード1枚交換",
+  "helpAll": "  a, all               全5枚を交換",
+  "helpStop": "  stop                 ストップを宣言",
+  "helpSetDifficulty": "  sd <0-2>             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "result.humanWin": "ゲーム終了！ あなたの勝ち！",
+  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+}
