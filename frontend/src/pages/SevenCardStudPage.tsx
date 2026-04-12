@@ -531,15 +531,22 @@ function SevenCardStudPageContent() {
             )}
 
             {/* Settings + Reset */}
-            <div className="text-center flex items-center justify-center gap-3" data-tutorial="scs-reset-button">
-              <label className="text-white text-sm flex items-center gap-1">
-                <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-                {tc('hint.toggle', { ns: 'tutorial' })}
-              </label>
-              <label className="text-white text-sm flex items-center gap-1">
-                <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-                {t('settings.cpuMetaAI')}
-              </label>
+            <details className="mb-1">
+              <summary className="cursor-pointer select-none text-white text-sm font-bold py-1">
+                {tc('settings.title')}
+              </summary>
+              <div className="flex items-center gap-3 py-1">
+                <label className="text-white text-sm flex items-center gap-1">
+                  <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                  {tc('hint.toggle', { ns: 'tutorial' })}
+                </label>
+                <label className="text-white text-sm flex items-center gap-1">
+                  <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                  {t('settings.cpuMetaAI')}
+                </label>
+              </div>
+            </details>
+            <div className="text-center" data-tutorial="scs-reset-button">
               <button
                 type="button"
                 className={`${btnOutline} min-w-[90px]`}

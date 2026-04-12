@@ -470,4 +470,14 @@ describe('BaccaratPage', () => {
     fireEvent.click(checkbox);
     expect(mockSetHintEnabled).toHaveBeenCalledWith(true);
   });
+
+  it('payout table is rendered as a collapsible details element in bet phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    const { container } = renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('配当表')).toBeInTheDocument());
+    const details = container.querySelector('details');
+    expect(details).toBeInTheDocument();
+    const summary = details?.querySelector('summary');
+    expect(summary).toHaveTextContent('配当表');
+  });
 });

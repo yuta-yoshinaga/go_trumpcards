@@ -345,28 +345,6 @@ function ShortDeckPageContent() {
 
           {/* Sticky footer: player hand + buttons */}
           <GameFooter className={`${gameTheme.shortdeck.footer} px-5 py-3`}>
-            {/* Learning mode toggle */}
-            <div
-              className="flex items-center gap-2 mb-2"
-              data-testid="learning-mode-toggle"
-              data-tutorial="sd-learning-mode"
-            >
-              <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
-                {t('learning.toggle')}
-              </label>
-              <input
-                id="learningModeCheckbox"
-                type="checkbox"
-                checked={learningMode}
-                onChange={(e) => setLearningMode(e.target.checked)}
-              />
-            </div>
-
-            {/* Equity display */}
-            {learningMode && state?.equity && state.potOdds != null && (
-              <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-            )}
-
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="sd-player-hand">
@@ -525,15 +503,38 @@ function ShortDeckPageContent() {
             )}
 
             {/* Settings + Reset */}
-            <div className="text-center flex items-center justify-center gap-3" data-tutorial="sd-reset-button">
-              <label className="text-white text-sm flex items-center gap-1">
-                <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-                {tc('hint.toggle', { ns: 'tutorial' })}
-              </label>
-              <label className="text-white text-sm flex items-center gap-1">
-                <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-                {t('settings.cpuMetaAI')}
-              </label>
+            <details className="mb-1" data-tutorial="sd-learning-mode">
+              <summary className="cursor-pointer select-none text-white text-sm font-bold py-1">
+                {tc('settings.title')}
+              </summary>
+              <div className="flex flex-col gap-2 py-1">
+                <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
+                  <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
+                    {t('learning.toggle')}
+                  </label>
+                  <input
+                    id="learningModeCheckbox"
+                    type="checkbox"
+                    checked={learningMode}
+                    onChange={(e) => setLearningMode(e.target.checked)}
+                  />
+                </div>
+                {learningMode && state?.equity && state.potOdds != null && (
+                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                )}
+                <div className="flex items-center gap-3">
+                  <label className="text-white text-sm flex items-center gap-1">
+                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                    {tc('hint.toggle', { ns: 'tutorial' })}
+                  </label>
+                  <label className="text-white text-sm flex items-center gap-1">
+                    <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                    {t('settings.cpuMetaAI')}
+                  </label>
+                </div>
+              </div>
+            </details>
+            <div className="text-center" data-tutorial="sd-reset-button">
               <button
                 type="button"
                 className={`${btnOutline} min-w-[90px]`}

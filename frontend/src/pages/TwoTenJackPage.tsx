@@ -272,47 +272,103 @@ function TwoTenJackPageContent() {
               </div>
 
               <div>
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-white/70 text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })} | {t('tricks', { count: p.trickCount })} |{' '}
-                        {t('capturedPoints', { count: p.capturedPoints })}
-                      </div>
+                {/* CPU players */}
+                {isMobile ? (
+                  <details className="mb-2 p-2 rounded bg-black/30">
+                    <summary className="cursor-pointer select-none text-white/70 text-sm">
+                      {tc('game.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+                    </summary>
+                    <div className="mt-1">
+                      {state.players
+                        .filter((p) => !p.isHuman)
+                        .map((p) => (
+                          <div key={p.id} className="text-white/70 text-sm py-0.5">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                            {t('tricks', { count: p.trickCount })} | {t('capturedPoints', { count: p.capturedPoints })}
+                          </div>
+                        ))}
                     </div>
-                  ))}
+                  </details>
+                ) : (
+                  state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                        <div className="text-white/70 text-sm">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('cumulativeScore', { score: p.cumulativeScore })} | {t('tricks', { count: p.trickCount })}{' '}
+                          | {t('capturedPoints', { count: p.capturedPoints })}
+                        </div>
+                      </div>
+                    ))
+                )}
 
-                <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="tt-score-table">
-                  <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-                  <div className="overflow-x-auto -mx-2 px-2">
-                    <table className="w-full text-sm text-white/70 min-w-[320px]">
-                      <thead>
-                        <tr>
-                          <th scope="col" className="text-left">
-                            {t('scoresTeam')}
-                          </th>
-                          <th scope="col">{t('scoresCaptured')}</th>
-                          <th scope="col">{t('scoresTotal')}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className="text-ds-accent">
-                          <td>{t('team0')}</td>
-                          <td className="text-center">{team0Captured}</td>
-                          <td className="text-center">{team0Total}</td>
-                        </tr>
-                        <tr>
-                          <td>{t('team1')}</td>
-                          <td className="text-center">{team1Captured}</td>
-                          <td className="text-center">{team1Total}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                {/* Score table */}
+                {isMobile ? (
+                  <details
+                    className="my-3 p-2 rounded bg-black/30 relative"
+                    data-tutorial="tt-score-table"
+                    open={isRoundEnd || isGameEnd || undefined}
+                  >
+                    <summary className="cursor-pointer select-none text-white/70 text-sm">{t('scores')}</summary>
+                    <div className="overflow-x-auto -mx-2 px-2">
+                      <table className="w-full text-sm text-white/70 min-w-[320px] mt-1">
+                        <thead>
+                          <tr>
+                            <th scope="col" className="text-left">
+                              {t('scoresTeam')}
+                            </th>
+                            <th scope="col">{t('scoresCaptured')}</th>
+                            <th scope="col">{t('scoresTotal')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="text-ds-accent">
+                            <td>{t('team0')}</td>
+                            <td className="text-center">{team0Captured}</td>
+                            <td className="text-center">{team0Total}</td>
+                          </tr>
+                          <tr>
+                            <td>{t('team1')}</td>
+                            <td className="text-center">{team1Captured}</td>
+                            <td className="text-center">{team1Total}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <ScrollFadeHint />
+                  </details>
+                ) : (
+                  <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="tt-score-table">
+                    <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+                    <div className="overflow-x-auto -mx-2 px-2">
+                      <table className="w-full text-sm text-white/70 min-w-[320px]">
+                        <thead>
+                          <tr>
+                            <th scope="col" className="text-left">
+                              {t('scoresTeam')}
+                            </th>
+                            <th scope="col">{t('scoresCaptured')}</th>
+                            <th scope="col">{t('scoresTotal')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="text-ds-accent">
+                            <td>{t('team0')}</td>
+                            <td className="text-center">{team0Captured}</td>
+                            <td className="text-center">{team0Total}</td>
+                          </tr>
+                          <tr>
+                            <td>{t('team1')}</td>
+                            <td className="text-center">{team1Captured}</td>
+                            <td className="text-center">{team1Total}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  {isMobile && <ScrollFadeHint />}
-                </div>
+                )}
                 <RoundScoreAnnouncement
                   active={isRoundEnd || isGameEnd}
                   entries={[

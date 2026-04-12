@@ -343,40 +343,87 @@ function EuchrePageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-white/70 text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('team', { n: p.team })}{' '}
-                        | {t('trickCount', { count: p.trickCount })}
-                        {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
-                      </div>
+                {isMobile ? (
+                  <details className="mb-2 p-2 rounded bg-black/30">
+                    <summary className="cursor-pointer select-none text-white/70 text-sm">
+                      {tc('game.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+                    </summary>
+                    <div className="mt-1">
+                      {state.players
+                        .filter((p) => !p.isHuman)
+                        .map((p) => (
+                          <div key={p.id} className="text-white/70 text-sm py-0.5">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
+                            {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+                          </div>
+                        ))}
                     </div>
-                  ))}
+                  </details>
+                ) : (
+                  state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                        <div className="text-white/70 text-sm">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
+                          {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+                        </div>
+                      </div>
+                    ))
+                )}
 
                 {/* Team scores */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="eu-score-table">
-                  <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
-                  <table className="w-full text-sm text-white/70">
-                    <thead>
-                      <tr>
-                        <th scope="col" className="text-left">
-                          {t('team', { n: '' })}
-                        </th>
-                        <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {state.teamScores.map((score, idx) => (
-                        <tr key={idx} className={idx === humanTeam ? 'text-ds-accent' : ''}>
-                          <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
-                          <td className="text-center">{score}</td>
+                {isMobile ? (
+                  <details
+                    className="my-3 p-2 rounded bg-black/30"
+                    data-tutorial="eu-score-table"
+                    open={isRoundEnd || isGameEnd || undefined}
+                  >
+                    <summary className="cursor-pointer select-none text-white/70 text-sm">{t('teamScores')}</summary>
+                    <table className="w-full text-sm text-white/70 mt-1">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('team', { n: '' })}
+                          </th>
+                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {state.teamScores.map((score, idx) => (
+                          <tr key={idx} className={idx === humanTeam ? 'text-ds-accent' : ''}>
+                            <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
+                            <td className="text-center">{score}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </details>
+                ) : (
+                  <div className="my-3 p-2 rounded bg-black/30" data-tutorial="eu-score-table">
+                    <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
+                    <table className="w-full text-sm text-white/70">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('team', { n: '' })}
+                          </th>
+                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {state.teamScores.map((score, idx) => (
+                          <tr key={idx} className={idx === humanTeam ? 'text-ds-accent' : ''}>
+                            <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
+                            <td className="text-center">{score}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
 

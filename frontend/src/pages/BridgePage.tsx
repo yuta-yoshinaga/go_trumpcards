@@ -376,46 +376,99 @@ function BridgePageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-white/70 text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('team', { n: p.team })}{' '}
-                        | {t('trickCount', { count: p.trickCount })}
-                        {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
-                        {state.declarerIdx === p.id ? ` | ${t('declarer')}` : ''}
-                        {state.dummyIdx === p.id ? ` | ${t('dummy')}` : ''}
-                      </div>
+                {isMobile ? (
+                  <details className="mb-2 p-2 rounded bg-black/30">
+                    <summary className="cursor-pointer select-none text-white/70 text-sm">
+                      {tc('game.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+                    </summary>
+                    <div className="mt-1">
+                      {state.players
+                        .filter((p) => !p.isHuman)
+                        .map((p) => (
+                          <div key={p.id} className="text-white/70 text-sm py-0.5">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
+                            {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+                            {state.declarerIdx === p.id ? ` | ${t('declarer')}` : ''}
+                            {state.dummyIdx === p.id ? ` | ${t('dummy')}` : ''}
+                          </div>
+                        ))}
                     </div>
-                  ))}
+                  </details>
+                ) : (
+                  state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                        <div className="text-white/70 text-sm">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
+                          {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
+                          {state.declarerIdx === p.id ? ` | ${t('declarer')}` : ''}
+                          {state.dummyIdx === p.id ? ` | ${t('dummy')}` : ''}
+                        </div>
+                      </div>
+                    ))
+                )}
 
                 {/* Team scores */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="br-team-scores">
-                  <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
-                  <table className="w-full text-sm text-white/70">
-                    <thead>
-                      <tr>
-                        <th scope="col" className="text-left">
-                          {t('team', { n: '' })}
-                        </th>
-                        <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
-                        <th scope="col">{t('gamesWon')}</th>
-                        <th scope="col">{t('belowLine')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {state.teamScores.map((score, idx) => (
-                        <tr key={idx} className={idx === humanTeam ? 'text-ds-accent' : ''}>
-                          <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
-                          <td className="text-center">{score}</td>
-                          <td className="text-center">{state.gamesWon[idx]}</td>
-                          <td className="text-center">{state.belowLine[idx]}</td>
+                {isMobile ? (
+                  <details
+                    className="my-3 p-2 rounded bg-black/30"
+                    data-tutorial="br-team-scores"
+                    open={isRoundEnd || isGameEnd || undefined}
+                  >
+                    <summary className="cursor-pointer select-none text-white/70 text-sm">{t('teamScores')}</summary>
+                    <table className="w-full text-sm text-white/70 mt-1">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('team', { n: '' })}
+                          </th>
+                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
+                          <th scope="col">{t('gamesWon')}</th>
+                          <th scope="col">{t('belowLine')}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {state.teamScores.map((score, idx) => (
+                          <tr key={idx} className={idx === humanTeam ? 'text-ds-accent' : ''}>
+                            <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
+                            <td className="text-center">{score}</td>
+                            <td className="text-center">{state.gamesWon[idx]}</td>
+                            <td className="text-center">{state.belowLine[idx]}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </details>
+                ) : (
+                  <div className="my-3 p-2 rounded bg-black/30" data-tutorial="br-team-scores">
+                    <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
+                    <table className="w-full text-sm text-white/70">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('team', { n: '' })}
+                          </th>
+                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
+                          <th scope="col">{t('gamesWon')}</th>
+                          <th scope="col">{t('belowLine')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {state.teamScores.map((score, idx) => (
+                          <tr key={idx} className={idx === humanTeam ? 'text-ds-accent' : ''}>
+                            <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
+                            <td className="text-center">{score}</td>
+                            <td className="text-center">{state.gamesWon[idx]}</td>
+                            <td className="text-center">{state.belowLine[idx]}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -480,7 +533,7 @@ function BridgePageContent() {
               </div>
             )}
 
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="br-play-button">
+            <div className="flex gap-1 items-center flex-wrap" data-tutorial="br-play-button">
               {(isHumanBidTurn || isHumanTurn) && (
                 <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
                   {tc('button.hint')}
@@ -489,9 +542,9 @@ function BridgePageContent() {
 
               {/* Bid phase controls */}
               {isHumanBidTurn && (
-                <span data-tutorial="br-bid-controls" className="flex gap-2 items-center flex-wrap">
+                <span data-tutorial="br-bid-controls" className="flex gap-1 items-center flex-wrap">
                   <select
-                    className="text-sm rounded bg-black/50 text-white px-2 py-1"
+                    className="text-xs rounded bg-black/50 text-white px-1.5 py-0.5"
                     value={bidLevel}
                     onChange={(e) => setBidLevel(Number(e.target.value))}
                     aria-label={t('bidLevel')}
@@ -503,7 +556,7 @@ function BridgePageContent() {
                     ))}
                   </select>
                   <select
-                    className="text-sm rounded bg-black/50 text-white px-2 py-1"
+                    className="text-xs rounded bg-black/50 text-white px-1.5 py-0.5"
                     value={bidSuit}
                     onChange={(e) => setBidSuit(Number(e.target.value))}
                     aria-label={t('bidSuit')}
