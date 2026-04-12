@@ -177,6 +177,28 @@ func TestRunHelpCommand_UnknownGame(t *testing.T) {
 	assert.Contains(t, stderr.String(), "nosuchgame")
 }
 
+func TestRunHelpCommand_ExtraArgs_Warns(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	code := runHelpCommand([]string{"blackjack", "foo", "bar"}, "", &stdout, &stderr)
+	assert.Equal(t, 0, code)
+	assert.NotEmpty(t, stdout.String(), "should still print game help")
+	assert.Contains(t, stderr.String(), "foo bar", "should warn about extra args")
+}
+
+func TestRunHelpCommand_BuiltinSubcommand(t *testing.T) {
+	for _, name := range []string{"web", "completion", "games", "update", "help"} {
+		t.Run(name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			code := runHelpCommand([]string{name}, "", &stdout, &stderr)
+			assert.Equal(t, 1, code)
+			assert.Contains(t, stderr.String(), name)
+			// Should NOT use the misleading "unknown game" wording.
+			assert.NotContains(t, stderr.String(), "不明なゲーム")
+			assert.NotContains(t, stderr.String(), "Unknown game")
+		})
+	}
+}
+
 func TestRunHelpCommand_UnknownGame_DidYouMean(t *testing.T) {
 	// "blackjac" → distance 1 from "blackjack"
 	var stdout, stderr bytes.Buffer

@@ -44,6 +44,7 @@
   "cliWebPortInUseHint": "Hint: try a different port (e.g. trumpcards web --port 3000)",
   "cliSupportedLangs": "Supported languages: ja, en",
   "cliHelpUnknownGame": "Unknown game: \"{{name}}\". Run 'trumpcards games' to see available games.",
+  "cliHelpNotAGame": "\"{{name}}\" is a CLI command, not a game. Run 'trumpcards help' for full usage.",
   "metaAIRequired": "Meta-AI setting is required (0=off, 1=on).",
   "invalidMetaAI": "Invalid value: {{val}}. Please enter 0 or 1.",
   "cancelled": "Cancelled.",

@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"golang.org/x/term"
 
@@ -169,7 +171,7 @@ func run() int {
 		w := web.NewTrumpCardsWeb()
 		if err := w.Exec(); err != nil {
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliWebStartFailed", "err", err.Error()))
-			if strings.Contains(err.Error(), "address already in use") {
+			if errors.Is(err, syscall.EADDRINUSE) {
 				fmt.Fprintln(os.Stderr, i18n.T("cliWebPortInUseHint"))
 			}
 			return 1
@@ -209,11 +211,21 @@ func run() int {
 	return 0
 }
 
+// builtinHelpCommands lists CLI subcommands that are not games. Used by
+// runHelpCommand to give a clearer error than "unknown game" when a user
+// runs e.g. `trumpcards help web`.
+var builtinHelpCommands = []string{"completion", "games", "help", "update", "web"}
+
 // runHelpCommand implements the `trumpcards help [game]` subcommand.
 // With no args, it writes helpText to stdout. With one arg, it writes the
 // HelpLines() of the matching game (resolving aliases) to stdout, or an
-// "unknown game" error with a Did-you-mean suggestion to stderr.
+// "unknown game" error with a Did-you-mean suggestion to stderr. Extra
+// positional arguments after the game name are warned about and ignored,
+// matching the behavior of other subcommands.
 func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) int {
+	if len(args) > 1 {
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(args[1:], " ")))
+	}
 	if len(args) == 0 {
 		_, _ = fmt.Fprint(stdout, helpText)
 		return 0
@@ -230,6 +242,10 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 			}
 			return 0
 		}
+	}
+	if slices.Contains(builtinHelpCommands, target) {
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliHelpNotAGame", "name", target))
+		return 1
 	}
 	_, _ = fmt.Fprintln(stderr, i18n.Tf("cliHelpUnknownGame", "name", target))
 	if suggestion := cuiutil.SuggestCommand(target, ui.GameNames(), 2); suggestion != "" {
