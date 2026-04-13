@@ -121,7 +121,11 @@ func writeBashCompletion(w io.Writer) error {
         --port|-p|--host)
             return
             ;;
-        games)
+        web)
+            COMPREPLY=( $(compgen -W "--port -p --host" -- "$cur") )
+            return
+            ;;
+        games|--short|--aliases)
             COMPREPLY=( $(compgen -W "--short --aliases" -- "$cur") )
             return
             ;;

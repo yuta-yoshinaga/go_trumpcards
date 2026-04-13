@@ -299,7 +299,7 @@ GAMES:
 	}
 	sb.WriteString(`
 COMMANDS:
-  games        List all available games (--short for names only, --aliases to include aliases)
+  games        List all available games (--short for names only, --aliases to include aliases with --short)
   help [game]  Show this help, or a specific game's help text
   completion   Generate shell completion script (bash, zsh, fish)
   update       Self-update to the latest version
