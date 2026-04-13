@@ -50,6 +50,7 @@ import type {
   TwoTenJackResponse,
   VideoPokerResponse,
   WarResponse,
+  YukonResponse,
 } from '../types/card';
 
 /** Unique session identifier for correlating API requests. */
@@ -109,6 +110,7 @@ const workerUrl: Record<string, string> = {
   clocksolitaire: WORKER_SOLO,
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
+  yukon: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -919,6 +921,29 @@ export const fiftyoneApi = {
   ) => gameExec<FiftyOneResponse>('fiftyone', { command, ...opts }),
 };
 
+/** Source or target zone for a Yukon card move. */
+export interface YukonMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Yukon /yukon/exec endpoint. */
+export const yukonApi = {
+  exec: (
+    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
+    from?: YukonMoveZone,
+    to?: YukonMoveZone,
+    n?: number,
+  ) =>
+    gameExec<YukonResponse>('yukon', {
+      command,
+      from,
+      to,
+      n,
+    }),
+};
+
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {
   exec: (
@@ -1021,6 +1046,7 @@ const games = [
   'clocksolitaire',
   'fortythieves',
   'canfield',
+  'yukon',
 ] as const;
 type Game = (typeof games)[number];
 

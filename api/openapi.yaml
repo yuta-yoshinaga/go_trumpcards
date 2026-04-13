@@ -106,6 +106,8 @@ tags:
     description: War (戦争) game
   - name: fiftyone
     description: Fifty-one (フィフティワン) game
+  - name: yukon
+    description: Yukon (ユーコン) game
 
 paths:
   /blackjack/exec:
@@ -4554,6 +4556,109 @@ paths:
                     type: integer
                   lastAction:
                     type: string
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /yukon/exec:
+    post:
+      tags:
+        - yukon
+      summary: Execute a Yukon (ユーコン) game command
+      description: |
+        Send a command to advance a Yukon solitaire session identified by `sessionId`.
+        Yukon is a Klondike variant with no stock/waste pile -- all 52 cards are dealt
+        to 7 tableau columns. Cards can be moved in groups regardless of sequence order.
+        Build foundations by suit Ace to King.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All foundations complete |
+        | GameOver  | 2     | Player gave up or stalemate |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `move`           | `m`     | Move card(s) between zones (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-complete to foundations |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: yukonExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  foundation:
+                    type: array
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
                   message:
                     type: string
                   messageCode:

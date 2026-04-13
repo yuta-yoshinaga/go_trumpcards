@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全47ゲーム)](#12-ゲームドメイン-全47ゲーム)
+  - [1.2 ゲームドメイン (全48ゲーム)](#12-ゲームドメイン-全48ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -23,6 +23,7 @@
   - [2.10 GoFish 要求フロー](#210-gofish-要求フロ���)
   - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
   - [2.12 FiftyOne 交換フロー](#212-fiftyone-交換フロー)
+  - [2.17 Yukon ムーブフロー](#217-yukon-ムーブフロー)
   - [2.13 SevenCardStud ベッティングフロー](#213-sevencardstud-ベッティングフロー)
   - [2.14 Durak アタック・ディフェンスフロー](#214-durak-アタックディフェンスフロー)
   - [2.15 FortyThieves ドロー・ムーブフロー](#215-fortythieves-ドロームーブフロー)
@@ -60,6 +61,7 @@
   - [3.29 FortyThieves フェーズ遷移](#329-fortythieves-フェーズ遷移)
   - [3.30 PaiGow フェーズ遷移](#330-paigow-フェーズ遷移)
   - [3.31 FiftyOne フェーズ遷移](#331-fiftyone-フェーズ遷移)
+  - [3.32 Yukon フェーズ遷移](#332-yukon-フェーズ遷移)
 
 ---
 
@@ -127,7 +129,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全47ゲーム)
+### 1.2 ゲームドメイン (全48ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1228,6 +1230,28 @@ classDiagram
     Durak --> "1" DurakConfig
     DurakPlayer --|> GamePlayer
     FortyThieves --> "*" Card
+
+    class Yukon {
+        -trumpCards *TrumpCards
+        -tableau [7][]*KlondikeTableauCard
+        -foundation [4][]*Card
+        -phase YukonPhase
+        -moveCount int
+        -history []*yukonSnapshot
+        -isStalemate bool
+        +Reset()
+        +MoveTableauToTableau(fromCol int, fromIdx int, toCol int) error
+        +MoveTableauToFoundation(fromCol int) error
+        +Hint() *YukonHint
+        +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
+        +AutoComplete() error
+        +GiveUp()
+        +GetPhase() YukonPhase
+    }
+
+    Yukon --> "*" KlondikeTableauCard
 ```
 
 ### 1.3 ユースケース層 (Interactor・Presenter)
@@ -1281,7 +1305,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全47ゲーム共通)**
+**Interactor パターン (全48ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1927,6 +1951,44 @@ sequenceDiagram
     Pres-->>User: 両ハンド・結果・配当表示
 ```
 
+### 2.17 Yukon ムーブフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as YukonInteractor
+    participant Domain as Yukon
+    participant Pres as Presenter
+
+    Note over User,Pres: タブロー間移動フロー
+    User->>Ctrl: move (from=tableau col=2 cardIndex=1, to=tableau col=5)
+    Ctrl->>Interactor: MoveTableauToTableau(2, 1, 5)
+    Interactor->>Domain: MoveTableauToTableau(2, 1, 5)
+    Domain->>Domain: カード群を列2から列5へ移動 → 裏向きカード表返し
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: タブロー更新表示
+
+    Note over User,Pres: ファウンデーション移動フロー
+    User->>Ctrl: move (from=tableau col=3, to=foundation)
+    Ctrl->>Interactor: MoveTableauToFoundation(3)
+    Interactor->>Domain: MoveTableauToFoundation(3)
+    Domain->>Domain: 列3の末尾カードをファウンデーションに積む → クリア判定
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ファウンデーション・タブロー更新表示
+
+    Note over User,Pres: オートコンプリートフロー
+    User->>Ctrl: autocomplete
+    Ctrl->>Interactor: AutoComplete()
+    Interactor->>Domain: AutoComplete()
+    Domain->>Domain: 全表向きカードをファウンデーションに自動積み → phase=GameClear
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ゲームクリア表示
+```
+
 ---
 
 ## 3. ステートマシン図
@@ -2497,6 +2559,25 @@ stateDiagram-v2
 
     note right of Play : FiftyOnePhasePlay = 0
     note right of GameEnd : FiftyOnePhaseGameEnd = 1
+```
+
+### 3.32 Yukon フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : MoveTableauToTableau / MoveTableauToFoundation
+    Playing --> Playing : Undo / UndoN / Hint
+    Playing --> GameClear : 全カードがファウンデーションに積まれた
+    Playing --> GameClear : AutoComplete()
+    Playing --> GameOver : GiveUp()
+    Playing --> GameOver : 手詰まり検出 (isStalemate)
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : YukonPhasePlaying = 0
+    note right of GameClear : YukonPhaseGameClear = 1
+    note right of GameOver : YukonPhaseGameOver = 2
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

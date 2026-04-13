@@ -402,3 +402,10 @@ export const FiftyOnePhase = {
   PLAY: 0,
   GAME_END: 1,
 } as const;
+
+/** Yukon phase constants (sync: internal/domain/Yukon.go). */
+export const YukonPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;

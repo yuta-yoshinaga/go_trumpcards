@@ -53,6 +53,7 @@ import { TriPeaksPage } from './pages/TriPeaksPage';
 import { TwoTenJackPage } from './pages/TwoTenJackPage';
 import { VideoPokerPage } from './pages/VideoPokerPage';
 import { WarPage } from './pages/WarPage';
+import { YukonPage } from './pages/YukonPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
 const pageByPath: Record<GamePath, ReactNode> = {
@@ -103,6 +104,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/clocksolitaire': <ClockSolitairePage />,
   '/fortythieves': <FortyThievesPage />,
   '/canfield': <CanfieldPage />,
+  '/yukon': <YukonPage />,
 };
 
 /** Root application component with router and game page routes. */

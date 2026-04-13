@@ -412,6 +412,10 @@ func (web *TrumpCardsWeb) registerAll() {
 		fo := domain.NewFiftyOne(domain.NewTrumpCards(0), players)
 		return usecase.NewFiftyOneInteractor(fo, new(presenter.FiftyOneWebPresenter))
 	}))
+	web.register("yukon", controller.NewYukonWebController(func() usecase.YukonInteractorIF {
+		yukon := domain.NewYukon(domain.NewTrumpCards(0))
+		return usecase.NewYukonInteractor(yukon, new(presenter.YukonWebPresenter))
+	}))
 }
 
 // Exec ゲーム実行

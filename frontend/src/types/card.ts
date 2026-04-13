@@ -2201,3 +2201,28 @@ export interface FiftyOneResponse {
   messageParams?: Record<string, string>;
   config: FiftyOneConfig;
 }
+
+// --- Yukon (ユーコン) ---
+
+/** A suggested move hint in Yukon. */
+export interface YukonHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** API response shape for a Yukon game. */
+export interface YukonResponse {
+  tableau: KlondikeTableauCard[][];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: YukonHint;
+}
