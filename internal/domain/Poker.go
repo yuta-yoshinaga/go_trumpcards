@@ -273,11 +273,8 @@ func (p *Poker) PlayerAction(action, amount, humanPlayMs int) error {
 	p.runCpuActions()
 
 	// ベッティングラウンド完了で交換フェーズに移行した場合、CPU交換を実行
-	if p.round.phase == PokerPhaseExchange && !p.round.gameEndFlag {
-		p.runCpuExchanges()
-		if p.isExchangeComplete() {
-			p.startSecondBettingRound()
-		}
+	if p.round.phase == PokerPhaseExchange {
+		p.advanceExchangePhase()
 	}
 	return nil
 }
@@ -304,12 +301,7 @@ func (p *Poker) PlayerExchange(indices []int) error {
 
 	// 残りのCPU交換を実行
 	p.advanceTurn()
-	p.runCpuExchanges()
-
-	// 交換フェーズ完了判定
-	if p.isExchangeComplete() {
-		p.startSecondBettingRound()
-	}
+	p.advanceExchangePhase()
 
 	return nil
 }
@@ -329,12 +321,7 @@ func (p *Poker) PlayerStand() error {
 
 	// 残りのCPU交換を実行
 	p.advanceTurn()
-	p.runCpuExchanges()
-
-	// 交換フェーズ完了判定
-	if p.isExchangeComplete() {
-		p.startSecondBettingRound()
-	}
+	p.advanceExchangePhase()
 
 	return nil
 }
@@ -612,6 +599,18 @@ func (p *Poker) runCpuActions() {
 			return
 		}
 		p.advanceTurn()
+	}
+}
+
+// advanceExchangePhase runs remaining CPU exchanges and, if all players have
+// exchanged, starts the second betting round.
+func (p *Poker) advanceExchangePhase() {
+	if p.round.gameEndFlag {
+		return
+	}
+	p.runCpuExchanges()
+	if p.isExchangeComplete() {
+		p.startSecondBettingRound()
 	}
 }
 

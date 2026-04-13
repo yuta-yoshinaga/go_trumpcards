@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // ---------------------------------------------------------------------------
@@ -3384,17 +3385,26 @@ func TestPoker_PlayerAction_TransitionsToExchangeAndRunsCpuExchanges(t *testing.
 	}
 
 	err := pk.PlayerAction(PokerActionCheck, 0, 0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	if pk.GetGameEndFlag() {
 		return
 	}
 
-	// After the check completes the first betting round, phase should be
-	// Exchange or SecondBet (if all CPUs exchanged and phase auto-advanced).
-	// Critically, if phase is Exchange, currentTurn must be the human.
-	if pk.GetPhase() == PokerPhaseExchange {
-		assert.True(t, players[pk.GetCurrentTurn()].GetIsHuman(),
-			"currentTurn should be the human player in exchange phase, got %d", pk.GetCurrentTurn())
+	// After the check completes the first betting round, the phase must have
+	// advanced out of Deal — either Exchange (waiting for human to exchange)
+	// or SecondBet (all players exchanged and auto-advanced).
+	phase := pk.GetPhase()
+	assert.True(t,
+		phase == PokerPhaseExchange || phase == PokerPhaseSecondBet,
+		"expected phase to advance past Deal, got %d", phase,
+	)
+
+	if phase == PokerPhaseExchange {
+		assert.True(t,
+			players[pk.GetCurrentTurn()].GetIsHuman(),
+			"currentTurn should be the human player in exchange phase, got %d",
+			pk.GetCurrentTurn(),
+		)
 	}
 }
