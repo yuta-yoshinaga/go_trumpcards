@@ -99,6 +99,9 @@ func run() int {
 		if !ok {
 			return code
 		}
+		if aliases && !short {
+			fmt.Fprintln(os.Stderr, i18n.T("cliAliasesWithoutShort"))
+		}
 		// Build reverse alias map: canonical name -> sorted list of aliases.
 		reverseAliases := make(map[string][]string)
 		for alias, canonical := range ui.GameAliases {
@@ -118,8 +121,8 @@ func run() int {
 				}
 			} else {
 				line := fmt.Sprintf("  %-16s %s", name, descs[name])
-				if aliases := reverseAliases[name]; len(aliases) > 0 {
-					line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliases, ", "))
+				if aliasList := reverseAliases[name]; len(aliasList) > 0 {
+					line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
 				}
 				fmt.Println(line)
 			}

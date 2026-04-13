@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -470,8 +469,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		slog.Error("server listen error", "error", err)
 		return fmt.Errorf("failed to listen on %s: %w", srv.Addr, err)
 	}
-	port := ln.Addr().(*net.TCPAddr).Port
-	fmt.Fprintln(os.Stderr, i18n.Tf("webServerRunning", "port", strconv.Itoa(port)))
+	fmt.Fprintln(os.Stderr, i18n.Tf("webServerRunning", "addr", ln.Addr().String()))
 	fmt.Fprintln(os.Stderr, i18n.T("webServerStop"))
 
 	errCh := make(chan error, 1)
