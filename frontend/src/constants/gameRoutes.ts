@@ -88,6 +88,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/clocksolitaire', labelKey: 'nav.clocksolitaire', icon: '🕐' },
       { path: '/fortythieves', labelKey: 'nav.fortythieves', icon: '🏰' },
       { path: '/canfield', labelKey: 'nav.canfield', icon: '🎩' },
+      { path: '/yukon', labelKey: 'nav.yukon', icon: '🏔️' },
     ],
   },
   {

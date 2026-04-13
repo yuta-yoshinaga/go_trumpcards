@@ -49,6 +49,7 @@ import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
 import war from '../../../docs/manual/web/war.md?raw';
+import yukon from '../../../docs/manual/web/yukon.md?raw';
 
 /** Map from game route path to raw Markdown manual text. */
 export const manualTexts: Readonly<Record<string, string>> = {
@@ -99,4 +100,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/videopoker': videopoker,
   '/war': war,
   '/fiftyone': fiftyone,
+  '/yukon': yukon,
 };

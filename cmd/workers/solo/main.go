@@ -224,6 +224,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Yukon
+	if err := worker.RegisterKV(mux, "/yukon/exec", "yukon:",
+		func() usecase.YukonInteractorIF {
+			yukon := domain.NewYukon(domain.NewTrumpCards(0))
+			return usecase.NewYukonInteractor(yukon, new(presenter.YukonWebPresenter))
+		},
+		func(data []byte) (usecase.YukonInteractorIF, error) {
+			return usecase.RestoreYukonInteractor(data, new(presenter.YukonWebPresenter))
+		},
+		controller.NewYukonWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)
