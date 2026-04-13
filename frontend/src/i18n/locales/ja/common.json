@@ -312,7 +312,13 @@
     "fiftyone.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "clocksolitaire.playing": "プレイ中",
     "clocksolitaire.gameClear": "ゲームクリア！ ステップ数: {{stepCount}}",
-    "clocksolitaire.gameOver": "ゲームオーバー"
+    "clocksolitaire.gameOver": "ゲームオーバー",
+    "whist.result.team0Win": "ゲーム終了！チーム0の勝利！",
+    "whist.result.team1Win": "ゲーム終了！チーム1の勝利！",
+    "whist.playPhase.lead": "リードしてください",
+    "whist.playPhase.follow": "カードを出してください",
+    "whist.trickEnd": "トリック終了",
+    "whist.roundEnd": "ラウンド終了"
   },
   "manual": {
     "ariaLabel": "ゲームマニュアル",

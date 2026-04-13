@@ -61,6 +61,10 @@ func (wi *WhistInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return wi.wp.Output(wi.Game, err)
 	}
+	// 人間が最後のカードを出してトリック完了した場合、即座に解決
+	if wi.Game.GetPhase() == domain.WhistPhaseTrickEnd {
+		wi.Game.ResolveTrick()
+	}
 	wi.runCpuTurns()
 	return wi.wp.Output(wi.Game, nil)
 }

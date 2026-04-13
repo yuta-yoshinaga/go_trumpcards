@@ -127,6 +127,23 @@ func TestWhistInteractor_Play(t *testing.T) {
 		assert.Equal(t, "ended", result)
 		gameMock.AssertNotCalled(t, "PlayerPlay")
 	})
+
+	t.Run("human completes trick calls ResolveTrick", func(t *testing.T) {
+		wpMock := new(presenter.MockWhistPresenter)
+		wpMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+		gameMock := new(interfaces.MockWhistGame)
+		gameMock.On("GetGameEndFlag").Return(false)
+		gameMock.On("IsHumanTurn").Return(true)
+		gameMock.On("PlayerPlay", 1).Return(nil)
+		// Phase is TrickEnd after PlayerPlay (human played last card of trick)
+		gameMock.On("GetPhase").Return(domain.WhistPhaseTrickEnd)
+		gameMock.On("ResolveTrick").Return()
+
+		wi := usecase.NewWhistInteractor(gameMock, wpMock)
+		result := wi.Play(1)
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertCalled(t, "ResolveTrick")
+	})
 }
 
 func TestWhistInteractor_NextTrick(t *testing.T) {

@@ -306,7 +306,7 @@ function WhistPageContent() {
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
-                              {t('teamScores')}
+                              {t('team', { n: '' }).trim()}
                             </th>
                             <th scope="col">{t('teamScores')}</th>
                           </tr>
@@ -333,7 +333,7 @@ function WhistPageContent() {
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
-                              {t('teamScores')}
+                              {t('team', { n: '' }).trim()}
                             </th>
                             <th scope="col">{t('teamScores')}</th>
                           </tr>
