@@ -8,19 +8,24 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { FiftyOneSkeleton } from '../components/skeleton/FiftyOneSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import type { FiftyOneResponse } from '../types/card';
 import { FiftyOnePhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 
 type FiftyOneArgs = Parameters<typeof fiftyoneApi.exec>;
@@ -31,8 +36,46 @@ const DIFFICULTY_OPTIONS = [
   { value: '2', label: 'Hard' },
 ];
 
+/** Tutorial steps for the Fifty-one game. */
+const FO_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="fo-cpu-area"]', messageKey: 'tutorial.cpuArea', placement: 'bottom', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="fo-table-cards"]',
+    messageKey: 'tutorial.tableCards',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="fo-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="fo-action-buttons"]',
+    messageKey: 'tutorial.actionButtons',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="fo-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
 /** Renders the Fifty-one (フィフティワン) game page. */
 export function FiftyOnePage() {
+  return (
+    <TutorialWrapper gameName="fiftyone" steps={FO_TUTORIAL_STEPS}>
+      <FiftyOnePageContent />
+    </TutorialWrapper>
+  );
+}
+
+/** Inner content of the Fifty-one page. */
+function FiftyOnePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fiftyone');
   const { state, loading, error, exec: execApi, retry } = useGameApi(fiftyoneApi.exec);
@@ -40,6 +83,11 @@ export function FiftyOnePage() {
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [selectedHandIdx, setSelectedHandIdx] = useState<number | null>(null);
   const [selectedTableIdx, setSelectedTableIdx] = useState<number | null>(null);
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('fiftyone', state);
 
   const handleReset = useCallback(() => execApi('reset', { config: { cpuDifficulty } }), [execApi, cpuDifficulty]);
 
@@ -120,6 +168,7 @@ export function FiftyOnePage() {
       <GamePageHeading title={tc('nav.fiftyone')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        <TutorialButton />
         <ManualButton gamePath="/fiftyone" />
       </PhaseIndicator>
 
@@ -135,7 +184,7 @@ export function FiftyOnePage() {
             )}
 
             {/* CPU players */}
-            <div className="flex justify-center gap-6 flex-wrap">
+            <div className="flex justify-center gap-6 flex-wrap" data-tutorial="fo-cpu-area">
               {state.players
                 .filter((p) => !p.isHuman)
                 .map((p) => (
@@ -155,7 +204,7 @@ export function FiftyOnePage() {
             </div>
 
             {/* Table cards */}
-            <div className="py-3 bg-black/20 rounded-lg">
+            <div className="py-3 bg-black/20 rounded-lg" data-tutorial="fo-table-cards">
               <div className="text-center text-xs text-white/70 mb-2">{t('label.tableCards')}</div>
               <div className="flex justify-center gap-2">
                 {state.tableCards.map((c, i) => (
@@ -180,7 +229,7 @@ export function FiftyOnePage() {
             )}
 
             {/* Human hand */}
-            <div className="text-center">
+            <div className="text-center" data-tutorial="fo-player-hand">
               <div className="text-xs text-white/70 mb-1">
                 {tc('player.you')} — {t('label.score')}: {human.score}
               </div>
@@ -206,6 +255,9 @@ export function FiftyOnePage() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
           </div>
 
           <SettingsPanel
@@ -221,13 +273,20 @@ export function FiftyOnePage() {
                     options: DIFFICULTY_OPTIONS,
                     onSelect: (v: string) => setCpuDifficulty(Number.parseInt(v, 10)),
                   },
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
                 ],
               },
             ]}
           />
 
           <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
-            <div className="flex gap-2 justify-center flex-wrap">
+            <div className="flex gap-2 justify-center flex-wrap" data-tutorial="fo-action-buttons">
               <button
                 type="button"
                 onClick={handleExchange}
@@ -259,6 +318,7 @@ export function FiftyOnePage() {
                 type="button"
                 onClick={() => requestConfirm(handleReset)}
                 className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white text-sm"
+                data-tutorial="fo-reset-button"
               >
                 {tc('button.reset')}
               </button>
