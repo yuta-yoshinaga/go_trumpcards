@@ -550,3 +550,130 @@ func TestWhist_GetValidPlayIndices(t *testing.T) {
 	indices := w.GetValidPlayIndices(0)
 	assert.Equal(t, 13, len(indices)) // All cards playable on lead
 }
+
+func TestWhist_FullRound_Hard(t *testing.T) {
+	// Hard difficulty でフルラウンドを複数回実行してCPU AIの全分岐をカバー
+	for iter := 0; iter < 50; iter++ {
+		w := newTestWhist()
+		cfg := domain.DefaultWhistConfig()
+		cfg.CpuDifficulty = domain.WhistCpuDifficultyHard
+		w.SetConfig(cfg)
+		w.Reset()
+
+		for trick := 0; trick < 13; trick++ {
+			for player := 0; player < 4; player++ {
+				if w.GetPhase() != domain.WhistPhasePlay {
+					break
+				}
+				if w.GetPlayer(w.GetCurrentPlayerIdx()).GetIsHuman() {
+					for ci := 0; ci < w.GetPlayer(0).GetCardsSize(); ci++ {
+						if w.PlayerPlay(ci) == nil {
+							break
+						}
+					}
+				} else {
+					w.CpuPlay()
+				}
+			}
+			if w.GetPhase() == domain.WhistPhaseTrickEnd {
+				w.ResolveTrick()
+				if w.GetPhase() == domain.WhistPhaseRoundEnd {
+					break
+				}
+				w.NextTrick()
+			}
+		}
+
+		assert.Equal(t, domain.WhistPhaseRoundEnd, w.GetPhase())
+	}
+}
+
+func TestWhist_CpuPlayHard_FollowWithPartnerWinning(t *testing.T) {
+	w := newTestWhist()
+	cfg := domain.DefaultWhistConfig()
+	cfg.CpuDifficulty = domain.WhistCpuDifficultyHard
+	w.SetConfig(cfg)
+	w.Reset()
+	w.SetTrumpSuit(domain.CardDesignSpade)
+	setupWhistPlayPhase(w, 2, 1, 2)
+
+	// Player 1 leads heart 5, player 2 (team 0, partner of 0) has hearts
+	// Player 2's partner (player 0) is not in the trick yet
+	w.SetCurrentTrick([]*domain.WhistTrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
+	})
+
+	// Give player 2 some hearts and other suits
+	p2 := w.GetPlayer(2)
+	p2.Reset()
+	p2.AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+	p2.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	p2.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+
+	w.CpuPlay()
+	assert.Equal(t, 2, p2.GetCardsSize())
+}
+
+func TestWhist_CpuPlayHard_VoidTrumpCut(t *testing.T) {
+	w := newTestWhist()
+	cfg := domain.DefaultWhistConfig()
+	cfg.CpuDifficulty = domain.WhistCpuDifficultyHard
+	w.SetConfig(cfg)
+	w.Reset()
+	w.SetTrumpSuit(domain.CardDesignSpade)
+	setupWhistPlayPhase(w, 1, 0, 2)
+
+	// Player 0 leads heart, player 1 has no hearts but has trump
+	w.SetCurrentTrick([]*domain.WhistTrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 10, false)},
+	})
+
+	p1 := w.GetPlayer(1)
+	p1.Reset()
+	p1.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	p1.AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+
+	w.CpuPlay()
+	assert.Equal(t, 1, p1.GetCardsSize())
+}
+
+func TestWhist_CpuPlayHard_PartnerWinningDiscard(t *testing.T) {
+	w := newTestWhist()
+	cfg := domain.DefaultWhistConfig()
+	cfg.CpuDifficulty = domain.WhistCpuDifficultyHard
+	w.SetConfig(cfg)
+	w.Reset()
+	w.SetTrumpSuit(domain.CardDesignSpade)
+	setupWhistPlayPhase(w, 3, 1, 2)
+
+	// Player 1 (team 1) leads heart 5, player 2 (team 0) plays heart K (winning)
+	// Player 3 (team 1) should see partner is NOT winning (team 0 is winning)
+	w.SetCurrentTrick([]*domain.WhistTrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
+	})
+
+	p3 := w.GetPlayer(3)
+	p3.Reset()
+	p3.AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+	p3.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+
+	w.CpuPlay()
+	assert.Equal(t, 1, p3.GetCardsSize())
+}
+
+func TestWhist_CpuPlayHard_LeadLow(t *testing.T) {
+	// Hard CPU lead when partner doesn't need tricks — leads strategically
+	for iter := 0; iter < 20; iter++ {
+		w := newTestWhist()
+		cfg := domain.DefaultWhistConfig()
+		cfg.CpuDifficulty = domain.WhistCpuDifficultyHard
+		w.SetConfig(cfg)
+		w.Reset()
+		setupWhistPlayPhase(w, 1, 1, 5) // CPU leads mid-game
+
+		initialCards := w.GetPlayer(1).GetCardsSize()
+		w.CpuPlay()
+		assert.Equal(t, initialCards-1, w.GetPlayer(1).GetCardsSize())
+	}
+}
