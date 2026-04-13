@@ -3359,3 +3359,42 @@ func TestPoker_MetaAI_PlayerActionRecordsAction(t *testing.T) {
 		assert.Nil(t, pk.GetHumanProfile())
 	})
 }
+
+// ---------------------------------------------------------------------------
+// PlayerAction transitions to exchange phase and runs CPU exchanges
+// ---------------------------------------------------------------------------
+
+func TestPoker_PlayerAction_TransitionsToExchangeAndRunsCpuExchanges(t *testing.T) {
+	// Human is dealer (index 0). After first betting round completes,
+	// exchange phase should start and CPU exchanges should run automatically
+	// so that currentTurn ends up on the human for card exchange.
+	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
+	pk.SetDealerIdx(0) // human is dealer
+	// All CPUs have already acted; only human is unacted
+	pk.setActedFlags([]bool{false, true, true, true})
+	// Give CPUs two-pair+ hands so they exchange fewer cards (deterministic)
+	for i := 1; i < 4; i++ {
+		givePlayerHand(players[i], []*Card{
+			NewCard(CardDesignSpade, 10, false),
+			NewCard(CardDesignHeart, 10, false),
+			NewCard(CardDesignDiamond, 8, false),
+			NewCard(CardDesignClover, 8, false),
+			NewCard(CardDesignSpade, 14, false),
+		})
+	}
+
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
+	assert.NoError(t, err)
+
+	if pk.GetGameEndFlag() {
+		return
+	}
+
+	// After the check completes the first betting round, phase should be
+	// Exchange or SecondBet (if all CPUs exchanged and phase auto-advanced).
+	// Critically, if phase is Exchange, currentTurn must be the human.
+	if pk.GetPhase() == PokerPhaseExchange {
+		assert.True(t, players[pk.GetCurrentTurn()].GetIsHuman(),
+			"currentTurn should be the human player in exchange phase, got %d", pk.GetCurrentTurn())
+	}
+}

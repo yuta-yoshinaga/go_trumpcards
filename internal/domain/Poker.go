@@ -271,6 +271,14 @@ func (p *Poker) PlayerAction(action, amount, humanPlayMs int) error {
 
 	p.advanceTurn()
 	p.runCpuActions()
+
+	// ベッティングラウンド完了で交換フェーズに移行した場合、CPU交換を実行
+	if p.round.phase == PokerPhaseExchange && !p.round.gameEndFlag {
+		p.runCpuExchanges()
+		if p.isExchangeComplete() {
+			p.startSecondBettingRound()
+		}
+	}
 	return nil
 }
 
