@@ -125,6 +125,7 @@ func TestYukonWebPresenter_HintOutput(t *testing.T) {
 		yg.On("GetPhase").Return(domain.YukonPhasePlaying).Maybe()
 		yg.On("GetMoveCount").Return(0).Maybe()
 		yg.On("CanUndo").Return(false).Maybe()
+		yg.On("IsStalemate").Return(false).Maybe()
 		yg.On("UndoToEscape").Return(0).Maybe()
 		yg.On("GetHint").Return(&domain.YukonHint{
 			FromCol:   0,
@@ -144,6 +145,7 @@ func TestYukonWebPresenter_HintOutput(t *testing.T) {
 		yg.On("GetPhase").Return(domain.YukonPhasePlaying).Maybe()
 		yg.On("GetMoveCount").Return(0).Maybe()
 		yg.On("CanUndo").Return(false).Maybe()
+		yg.On("IsStalemate").Return(false).Maybe()
 		yg.On("UndoToEscape").Return(0).Maybe()
 		yg.On("GetHint").Return((*domain.YukonHint)(nil))
 

@@ -152,6 +152,7 @@ function YukonPageContent() {
   const { playSound } = useSound();
   const {
     state,
+    setState,
     loading,
     error,
     exec: apiExec,
@@ -218,9 +219,10 @@ function YukonPageContent() {
     void apiExec('giveup');
   }, [apiExec]);
 
-  const handleHint = useCallback(() => {
-    void apiExec('hint');
-  }, [apiExec]);
+  const handleHint = useCallback(async () => {
+    const res = await yukonApi.exec('hint');
+    setState((prev) => (prev ? { ...prev, hint: res.hint } : prev));
+  }, [setState]);
 
   const handleAutoComplete = useCallback(() => {
     void apiExec('autocomplete');

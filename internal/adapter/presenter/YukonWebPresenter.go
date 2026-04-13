@@ -78,6 +78,7 @@ func (p *YukonWebPresenter) HintOutput(y interfaces.YukonGame) string {
 	resObj.Phase = int(y.GetPhase())
 	resObj.MoveCount = y.GetMoveCount()
 	resObj.CanUndo = y.CanUndo()
+	resObj.IsStalemate = y.IsStalemate()
 	resObj.UndoToEscape = y.UndoToEscape()
 	resObj.Tableau = make([][]*controller.KlondikeWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
