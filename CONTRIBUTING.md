@@ -97,10 +97,10 @@ infrastructure → adapter → usecase → domain
 
 ### GitHub Pages (Repomix)
 
-`master` ブランチへのマージ時に、GitHub Actions が [repomix](https://github.com/yamadashy/repomix) を実行し、リポジトリスナップショットを GitHub Pages にデプロイします:
+`develop` ブランチへのマージ時に、GitHub Actions が [repomix](https://github.com/yamadashy/repomix) を実行し、リポジトリスナップショットを GitHub Pages にデプロイします（NotebookLMインポート用に500KB以下に分割）:
 
 ```
-https://yuta-yoshinaga.github.io/go_trumpcards/repomix-output.txt
+https://yuta-yoshinaga.github.io/go_trumpcards/repomix/
 ```
 
 **初回セットアップ（リポジトリ管理者向け）:** Settings > Pages で Source を **GitHub Actions** に設定してください。
