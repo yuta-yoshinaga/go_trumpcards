@@ -306,9 +306,9 @@ function WhistPageContent() {
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
-                              {t('team', { n: '' }).trim()}
+                              {t('scoreHeaderTeam')}
                             </th>
-                            <th scope="col">{t('teamScores')}</th>
+                            <th scope="col">{t('scoreHeaderPoints')}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -333,9 +333,9 @@ function WhistPageContent() {
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
-                              {t('team', { n: '' }).trim()}
+                              {t('scoreHeaderTeam')}
                             </th>
-                            <th scope="col">{t('teamScores')}</th>
+                            <th scope="col">{t('scoreHeaderPoints')}</th>
                           </tr>
                         </thead>
                         <tbody>

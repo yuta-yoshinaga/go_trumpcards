@@ -21,6 +21,8 @@
   "roundScore": "Round: {{score}}",
   "currentTrick": "Current Trick",
   "teamScores": "Team Scores",
+  "scoreHeaderTeam": "Team",
+  "scoreHeaderPoints": "Score",
   "team": "Team {{n}}",
   "playButton": "Play",
   "nextTrick": "Next Trick",
