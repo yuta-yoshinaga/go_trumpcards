@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // ---------------------------------------------------------------------------
@@ -3358,4 +3359,52 @@ func TestPoker_MetaAI_PlayerActionRecordsAction(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Nil(t, pk.GetHumanProfile())
 	})
+}
+
+// ---------------------------------------------------------------------------
+// PlayerAction transitions to exchange phase and runs CPU exchanges
+// ---------------------------------------------------------------------------
+
+func TestPoker_PlayerAction_TransitionsToExchangeAndRunsCpuExchanges(t *testing.T) {
+	// Human is dealer (index 0). After first betting round completes,
+	// exchange phase should start and CPU exchanges should run automatically
+	// so that currentTurn ends up on the human for card exchange.
+	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
+	pk.SetDealerIdx(0) // human is dealer
+	// All CPUs have already acted; only human is unacted
+	pk.setActedFlags([]bool{false, true, true, true})
+	// Give CPUs two-pair+ hands so they exchange fewer cards (deterministic)
+	for i := 1; i < 4; i++ {
+		givePlayerHand(players[i], []*Card{
+			NewCard(CardDesignSpade, 10, false),
+			NewCard(CardDesignHeart, 10, false),
+			NewCard(CardDesignDiamond, 8, false),
+			NewCard(CardDesignClover, 8, false),
+			NewCard(CardDesignSpade, 14, false),
+		})
+	}
+
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
+	require.NoError(t, err)
+
+	if pk.GetGameEndFlag() {
+		return
+	}
+
+	// After the check completes the first betting round, the phase must have
+	// advanced out of Deal — either Exchange (waiting for human to exchange)
+	// or SecondBet (all players exchanged and auto-advanced).
+	phase := pk.GetPhase()
+	assert.True(t,
+		phase == PokerPhaseExchange || phase == PokerPhaseSecondBet,
+		"expected phase to advance past Deal, got %d", phase,
+	)
+
+	if phase == PokerPhaseExchange {
+		assert.True(t,
+			players[pk.GetCurrentTurn()].GetIsHuman(),
+			"currentTurn should be the human player in exchange phase, got %d",
+			pk.GetCurrentTurn(),
+		)
+	}
 }
