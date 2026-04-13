@@ -4666,6 +4666,113 @@ paths:
         '400':
           description: Bad request
 
+  /whist/exec:
+    post:
+      tags:
+        - whist
+      summary: Execute a Whist (ホイスト) game command
+      description: |
+        4-player 2v2 partnership trick-taking game. No bidding phase.
+        Trump suit is determined by the last card dealt to the dealer.
+        Teams score 1 point per trick above 6. First team to point limit wins.
+        Commands: reset, play, next, nextround, hint, log.
+      operationId: whistExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                  enum: [reset, play, next, nextround, hint, log, quit]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+      responses:
+        '200':
+          description: Game state after executing the command
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                          items:
+                            type: object
+                        roundScore:
+                          type: integer
+                        cumulativeScore:
+                          type: integer
+                        trickCount:
+                          type: integer
+                        team:
+                          type: integer
+                  phase:
+                    type: integer
+                  roundNumber:
+                    type: integer
+                  trickNumber:
+                    type: integer
+                  currentPlayerIdx:
+                    type: integer
+                  currentTrick:
+                    type: array
+                    items:
+                      type: object
+                  trumpSuit:
+                    type: integer
+                  dealerIdx:
+                    type: integer
+                  teamScores:
+                    type: array
+                    items:
+                      type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerTeam:
+                    type: integer
+                  leadPlayerIdx:
+                    type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  config:
+                    type: object
+                    properties:
+                      cpuDifficulty:
+                        type: integer
+                      pointLimit:
+                        type: integer
+        '400':
+          description: Bad request
+
 components:
   schemas:
     # -------------------------------------------------------------------------

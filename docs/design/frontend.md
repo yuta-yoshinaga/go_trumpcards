@@ -31,7 +31,8 @@
   - [2.16 FortyThievesPage フェーズ別レンダリングフロー](#216-fortythievespage-フェーズ別レンダリングフロー)
   - [2.17 PaiGowPage フェーズ別レンダリングフロー](#217-paigowpage-フェーズ別レンダリングフロー)
   - [2.18 YukonPage フェーズ別レンダリングフロー](#218-yukonpage-フェーズ別レンダリングフロー)
-  - [2.19 CLIモード コマンド実行フロー](#219-cliモード-コマンド実行フロー)
+  - [2.19 WhistPage フェーズ別レンダリングフロー](#219-whistpage-フェーズ別レンダリングフロー)
+  - [2.20 CLIモード コマンド実行フロー](#220-cliモード-コマンド実行フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -2403,7 +2404,46 @@ sequenceDiagram
     Page-->>User: ゲームオーバーメッセージ表示
 ```
 
-### 2.19 CLIモード コマンド実行フロー
+### 2.19 WhistPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant WP as WhistPage
+    participant H as useWhistGame
+    participant API as whistApi
+
+    U->>WP: ページ表示
+    WP->>H: useWhistGame()
+    H->>API: dispatch('reset')
+    API-->>H: WhistResponse (phase=Play)
+    H-->>WP: state更新
+
+    alt phase = Play (人間の手番)
+        U->>WP: カード選択 + 出すボタン
+        WP->>H: handlePlay(cardIndex)
+        H->>API: dispatch('play', cardIndex)
+        API-->>H: WhistResponse
+    end
+
+    alt phase = TrickEnd
+        U->>WP: 次のトリックボタン
+        WP->>H: handleNextTrick()
+        H->>API: dispatch('next')
+    end
+
+    alt phase = RoundEnd
+        U->>WP: 次のラウンドボタン
+        WP->>H: handleNextRound()
+        H->>API: dispatch('nextround')
+    end
+
+    alt phase = GameEnd
+        WP->>WP: 勝利チーム表示
+    end
+```
+
+### 2.20 CLIモード コマンド実行フロー
 
 ```mermaid
 sequenceDiagram

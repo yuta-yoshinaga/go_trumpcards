@@ -416,6 +416,17 @@ func (web *TrumpCardsWeb) registerAll() {
 		yukon := domain.NewYukon(domain.NewTrumpCards(0))
 		return usecase.NewYukonInteractor(yukon, new(presenter.YukonWebPresenter))
 	}))
+	web.register("whist", controller.NewWhistWebController(func() usecase.WhistInteractorIF {
+		config := domain.DefaultWhistConfig()
+		players := []*domain.WhistPlayer{
+			domain.NewWhistPlayer(true, 0),
+			domain.NewWhistPlayer(false, 1),
+			domain.NewWhistPlayer(false, 0),
+			domain.NewWhistPlayer(false, 1),
+		}
+		whist := domain.NewWhist(domain.NewTrumpCards(0), players, config)
+		return usecase.NewWhistInteractor(whist, new(presenter.WhistWebPresenter))
+	}))
 }
 
 // Exec ゲーム実行

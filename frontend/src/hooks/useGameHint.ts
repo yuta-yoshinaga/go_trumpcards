@@ -121,6 +121,7 @@ const hintFactories = {
   sevencardstud: () => null,
   fortythieves: () => null,
   paigow: () => null,
+  whist: () => null,
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

@@ -409,3 +409,11 @@ export const YukonPhase = {
   GAME_CLEAR: 1,
   GAME_OVER: 2,
 } as const;
+
+/** Whist phase constants (sync: internal/domain/Whist.go). */
+export const WhistPhase = {
+  PLAY: 0,
+  TRICK_END: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
