@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- Baccarat, BlackJack, Canasta, Canfield, Caribbean Stud Poker, Clock Solitaire, Contract Bridge, Crazy Eights, Cribbage, Daifugo, Deuces Wild, Doubt, Durak, Euchre, Fifty-one, Forty Thieves, FreeCell, Gin Rummy, Go Fish, Golf, Hearts, Indian Poker, Joker Poker, Klondike, Memory, Napoleon, Oh Hell, Old Maid, Omaha Hold'em, Pai Gow Poker, Pig's Tail, Pineapple Poker, Pinochle, Poker, Pyramid, Seven Card Stud, Sevens, Short Deck Hold'em, Spades, Speed, Spider Solitaire, Texas Hold'em, Three Card Poker, TriPeaks, Two Ten Jack, Video Poker, War, Yukon. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go trump card game algorithms -- Baccarat, BlackJack, Canasta, Canfield, Caribbean Stud Poker, Clock Solitaire, Contract Bridge, Crazy Eights, Cribbage, Daifugo, Deuces Wild, Doubt, Durak, Euchre, Fifty-one, Forty Thieves, FreeCell, Gin Rummy, Go Fish, Golf, Hearts, Indian Poker, Joker Poker, Klondike, Memory, Napoleon, Oh Hell, Old Maid, Omaha Hold'em, Pai Gow Poker, Pig's Tail, Pineapple Poker, Pinochle, Poker, Pyramid, Seven Card Stud, Sevens, Short Deck Hold'em, Spades, Speed, Spider Solitaire, Texas Hold'em, Three Card Poker, TriPeaks, Two Ten Jack, Video Poker, War, Whist, Yukon. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -27,7 +27,7 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # twotenjack, crazyeights, ginrummy, spider, napoleon, indianpoker, videopoker,
 # deuceswild, jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, caribbeanstud, ohhell,
 # bridge, speed, gofish, canasta, pinochle, golf, pigtail, sevencardstud,
-# clocksolitaire, durak, fortythieves, paigow, war, canfield, fiftyone, yukon
+# clocksolitaire, durak, fortythieves, paigow, war, canfield, fiftyone, yukon, whist
 go run ./cmd/trumpcards games      # List all available games
 go run ./cmd/trumpcards games --short  # List game names only (for scripting)
 go run ./cmd/trumpcards update     # Self-update to the latest version
@@ -131,7 +131,7 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 | Worker | Entry point | Games |
 |--------|-------------|-------|
 | **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, caribbeanstud, sevencardstud, paigow) |
-| **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak, war, fiftyone) |
+| **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist) |
 | **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon) |
 
 **When adding/modifying a game, always update both:**

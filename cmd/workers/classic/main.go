@@ -409,6 +409,27 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Whist
+	if err := worker.RegisterKV(mux, "/whist/exec", "whist:",
+		func() usecase.WhistInteractorIF {
+			config := domain.DefaultWhistConfig()
+			players := []*domain.WhistPlayer{
+				domain.NewWhistPlayer(true, 0),
+				domain.NewWhistPlayer(false, 1),
+				domain.NewWhistPlayer(false, 0),
+				domain.NewWhistPlayer(false, 1),
+			}
+			whist := domain.NewWhist(domain.NewTrumpCards(0), players, config)
+			return usecase.NewWhistInteractor(whist, new(presenter.WhistWebPresenter))
+		},
+		func(data []byte) (usecase.WhistInteractorIF, error) {
+			return usecase.RestoreWhistInteractor(data, new(presenter.WhistWebPresenter))
+		},
+		controller.NewWhistWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

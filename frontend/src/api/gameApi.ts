@@ -50,6 +50,8 @@ import type {
   TwoTenJackResponse,
   VideoPokerResponse,
   WarResponse,
+  WhistConfig,
+  WhistResponse,
   YukonResponse,
 } from '../types/card';
 
@@ -111,6 +113,7 @@ const workerUrl: Record<string, string> = {
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
   yukon: WORKER_SOLO,
+  whist: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -998,6 +1001,15 @@ export const fortyThievesApi = {
 
 export type { FortyThievesMoveZone };
 
+/** API client for the Whist /whist/exec endpoint. */
+export const whistApi = {
+  exec: (
+    command: 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    cardIndex?: number,
+    config?: Partial<WhistConfig>,
+  ) => gameExec<WhistResponse>('whist', { command, cardIndex, config }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1047,6 +1059,7 @@ const games = [
   'fortythieves',
   'canfield',
   'yukon',
+  'whist',
 ] as const;
 type Game = (typeof games)[number];
 

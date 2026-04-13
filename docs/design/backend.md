@@ -62,6 +62,7 @@
   - [3.30 PaiGow フェーズ遷移](#330-paigow-フェーズ遷移)
   - [3.31 FiftyOne フェーズ遷移](#331-fiftyone-フェーズ遷移)
   - [3.32 Yukon フェーズ遷移](#332-yukon-フェーズ遷移)
+  - [3.33 Whist フェーズ遷移](#333-whist-フェーズ遷移)
 
 ---
 
@@ -2578,6 +2579,25 @@ stateDiagram-v2
     note right of Playing : YukonPhasePlaying = 0
     note right of GameClear : YukonPhaseGameClear = 1
     note right of GameOver : YukonPhaseGameOver = 2
+```
+
+### 3.33 Whist フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : CpuPlay() / PlayerPlay()
+    Play --> TrickEnd : 4人全員プレイ完了
+    TrickEnd --> Play : NextTrick() (トリック < 13)
+    TrickEnd --> RoundEnd : ResolveTrick() (トリック = 13)
+    RoundEnd --> Play : ScoreRound() + NextRound() (目標未到達)
+    RoundEnd --> GameEnd : ScoreRound() (目標到達)
+    GameEnd --> [*]
+
+    note right of Play : WhistPhasePlay = 0
+    note right of TrickEnd : WhistPhaseTrickEnd = 1
+    note right of RoundEnd : WhistPhaseRoundEnd = 2
+    note right of GameEnd : WhistPhaseGameEnd = 3
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

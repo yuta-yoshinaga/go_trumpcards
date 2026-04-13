@@ -66,7 +66,8 @@
     "war": "War",
     "fiftyone": "Fifty-one",
     "canfield": "Canfield",
-    "yukon": "Yukon"
+    "yukon": "Yukon",
+    "whist": "Whist"
   },
   "sound": {
     "mute": "Mute sound",
@@ -311,7 +312,13 @@
     "fiftyone.result.cpuWin": "Game Over! CPU {{cpuId}} wins!",
     "clocksolitaire.playing": "Playing",
     "clocksolitaire.gameClear": "Game Clear! Steps: {{stepCount}}",
-    "clocksolitaire.gameOver": "Game Over"
+    "clocksolitaire.gameOver": "Game Over",
+    "whist.result.team0Win": "Game Over! Team 0 wins!",
+    "whist.result.team1Win": "Game Over! Team 1 wins!",
+    "whist.playPhase.lead": "Lead a card",
+    "whist.playPhase.follow": "Play a card",
+    "whist.trickEnd": "Trick ended",
+    "whist.roundEnd": "Round ended"
   },
   "manual": {
     "ariaLabel": "Game Manual",

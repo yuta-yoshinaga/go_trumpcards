@@ -67,6 +67,7 @@ Go + Clean Architecture で実装した48種類のトランプゲーム。CLI �
 | キャンフィールド (Canfield) | `canfield` | [CUI](docs/manual/cui/canfield.md) / [Web](docs/manual/web/canfield.md) |
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
 | ユーコン (Yukon) | `yukon` | [CUI](docs/manual/cui/yukon.md) / [Web](docs/manual/web/yukon.md) |
+| ホイスト (Whist) | `whist` | [CUI](docs/manual/cui/whist.md) / [Web](docs/manual/web/whist.md) |
 
 ## Demo
 
