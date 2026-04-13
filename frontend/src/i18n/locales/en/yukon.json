@@ -21,6 +21,10 @@
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "stalemate": "Stalemate",
+  "frontendHint": {
+    "moveToFoundation": "A card can be moved to the foundation",
+    "moveToTableau": "A card can be moved between tableau columns"
+  },
   "tutorial": {
     "foundation": "Build up cards A→K by suit here.",
     "tableau": "Cards are dealt here. Click or drag face-up cards to move them.",

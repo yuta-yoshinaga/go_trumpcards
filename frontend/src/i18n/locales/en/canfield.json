@@ -27,5 +27,17 @@
   "moveReserveToTableau": "Reserve → Tableau",
   "moveWasteToFoundation": "Waste → Foundation",
   "moveWasteToTableau": "Waste → Tableau",
-  "moveTableauToFoundation": "Tableau → Foundation"
+  "moveTableauToFoundation": "Tableau → Foundation",
+  "frontendHint": {
+    "moveToFoundation": "A card can be moved to the foundation",
+    "moveToTableau": "A card can be moved between tableau columns"
+  },
+  "tutorial": {
+    "foundation": "Build up cards from the base rank by suit here.",
+    "stockWaste": "Click the stock to draw cards. Use waste cards for moves.",
+    "reserve": "Reserve cards. Move them to foundation or tableau.",
+    "tableau": "Tableau columns. Drag and drop cards to rearrange.",
+    "actionButtons": "Action buttons: hint, auto-complete, undo, give up.",
+    "resetButton": "Start a new game."
+  }
 }

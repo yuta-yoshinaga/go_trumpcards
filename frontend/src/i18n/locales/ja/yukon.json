@@ -21,6 +21,10 @@
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "stalemate": "手詰まりです",
+  "frontendHint": {
+    "moveToFoundation": "組札へ移動できるカードがあります",
+    "moveToTableau": "場札間で移動可能なカードがあります"
+  },
   "tutorial": {
     "foundation": "ここにA→Kの順でスート別にカードを積み上げます。",
     "tableau": "ここにカードが並んでいます。表向きのカードをクリック/ドラッグして移動できます。",

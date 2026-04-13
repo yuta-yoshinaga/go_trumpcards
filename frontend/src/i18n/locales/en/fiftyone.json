@@ -19,5 +19,17 @@
   },
   "settings": {
     "cpuDifficulty": "CPU Difficulty"
+  },
+  "hint": {
+    "exchangeStrong": "A card exchange can greatly improve your score",
+    "exchangeModerate": "A card exchange can slightly improve your score",
+    "stopHigh": "Your score is high — consider calling stop"
+  },
+  "tutorial": {
+    "cpuArea": "CPU players' info. Their cards are revealed at game end.",
+    "tableCards": "Table cards. Pick one to exchange with a card from your hand.",
+    "playerHand": "Your hand. Try to get the highest total of one suit (up to 51).",
+    "actionButtons": "Action buttons: Exchange, Exchange All, or Stop.",
+    "resetButton": "Start a new game."
   }
 }
