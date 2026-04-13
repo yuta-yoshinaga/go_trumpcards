@@ -122,6 +122,27 @@ func TestYukon_MoveTableauToTableau(t *testing.T) {
 		assert.Equal(t, 4, len(y.GetTableau()[1]))
 	})
 
+	t.Run("cardIndex -1 shorthand moves top card", func(t *testing.T) {
+		y := newTestYukon()
+		y.Reset()
+		clearYukonTableau(y)
+
+		var tab [domain.YukonTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{
+			makeTableauCard(domain.CardDesignSpade, 6, true),
+			makeTableauCard(domain.CardDesignHeart, 5, true),
+		}
+		tab[1] = []*domain.KlondikeTableauCard{
+			makeTableauCard(domain.CardDesignClover, 6, true),
+		}
+		y.SetTableau(tab)
+
+		err := y.MoveTableauToTableau(0, -1, 1)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(y.GetTableau()[0]))
+		assert.Equal(t, 2, len(y.GetTableau()[1]))
+	})
+
 	t.Run("King to empty column", func(t *testing.T) {
 		y := newTestYukon()
 		y.Reset()

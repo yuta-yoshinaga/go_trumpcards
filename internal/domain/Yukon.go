@@ -115,6 +115,9 @@ func (y *Yukon) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 		return errors.New("from and to columns are the same")
 	}
 	fromCards := y.tableau[fromCol]
+	if cardIndex == -1 {
+		cardIndex = len(fromCards) - 1
+	}
 	if cardIndex < 0 || cardIndex >= len(fromCards) {
 		return errors.New("invalid card index")
 	}
