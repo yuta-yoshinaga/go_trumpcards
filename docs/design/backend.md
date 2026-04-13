@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全48ゲーム)](#12-ゲームドメイン-全48ゲーム)
+  - [1.2 ゲームドメイン (全50ゲーム)](#12-ゲームドメイン-全50ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -63,6 +63,9 @@
   - [3.31 FiftyOne フェーズ遷移](#331-fiftyone-フェーズ遷移)
   - [3.32 Yukon フェーズ遷移](#332-yukon-フェーズ遷移)
   - [3.33 Whist フェーズ遷移](#333-whist-フェーズ遷移)
+  - [3.34 Canfield フェーズ遷移](#334-canfield-フェーズ遷移)
+  - [3.35 CaribbeanStud フェーズ遷移](#335-caribbeanstud-フェーズ遷移)
+  - [3.36 War フェーズ遷移](#336-war-フェーズ遷移)
 
 ---
 
@@ -130,7 +133,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全48ゲーム)
+### 1.2 ゲームドメイン (全50ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1253,6 +1256,82 @@ classDiagram
     }
 
     Yukon --> "*" KlondikeTableauCard
+
+    class Canfield {
+        -trumpCards *TrumpCards
+        -tableau [4][]*CanfieldTableauCard
+        -reserve []*Card
+        -stock []*Card
+        -waste []*Card
+        -foundation [4][]*Card
+        -baseRank int
+        -phase CanfieldPhase
+        -moveCount int
+        -history []*canfieldSnapshot
+        +Reset()
+        +Draw() error
+        +MoveWasteToTableau(col int) error
+        +MoveWasteToFoundation() error
+        +MoveTableauToTableau(fromCol int, cardIndex int, toCol int) error
+        +MoveTableauToFoundation(col int) error
+        +MoveReserveToTableau(col int) error
+        +MoveReserveToFoundation() error
+        +GiveUp()
+        +GetHint() *CanfieldHint
+        +AutoComplete() error
+        +Undo() error
+        +UndoN(n int) error
+        +GetPhase() CanfieldPhase
+    }
+
+    class War {
+        -trumpCards *TrumpCards
+        -players [2]*WarPlayer
+        -config WarConfig
+        -phase WarPhase
+        -warPot []*Card
+        -playerRevealed *Card
+        -cpuRevealed *Card
+        -lastWinnerIdx int
+        -roundsPlayed int
+        -gameEndFlag bool
+        -winnerIdx int
+        +Reset()
+        +Step() error
+        +GetPhase() WarPhase
+    }
+
+    class Whist {
+        -trumpCards *TrumpCards
+        -players []*WhistPlayer
+        -config WhistConfig
+        -phase WhistPhase
+        -roundNumber int
+        -trickNumber int
+        -currentPlayerIdx int
+        -currentTrick []*WhistTrickCard
+        -trumpSuit int
+        -leadPlayerIdx int
+        -dealerIdx int
+        -teamScores [2]int
+        -gameEndFlag bool
+        -winnerTeam int
+        +Reset()
+        +PlayerPlay(cardIdx int) error
+        +CpuPlay()
+        +NextTrick() error
+        +ResolveTrick() error
+        +ScoreRound()
+        +NextRound()
+        +GetHint() *WhistHint
+        +GetPhase() WhistPhase
+    }
+
+    Canfield --> "1" TrumpCards
+    War --> "1" TrumpCards
+    War --> "2" WarPlayer
+    Whist --> "1" TrumpCards
+    Whist --> "4" WhistPlayer
 ```
 
 ### 1.3 ユースケース層 (Interactor・Presenter)
@@ -1306,7 +1385,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全48ゲーム共通)**
+**Interactor パターン (全50ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -2598,6 +2677,63 @@ stateDiagram-v2
     note right of TrickEnd : WhistPhaseTrickEnd = 1
     note right of RoundEnd : WhistPhaseRoundEnd = 2
     note right of GameEnd : WhistPhaseGameEnd = 3
+```
+
+### 3.34 Canfield フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : Draw() / MoveWasteToTableau() / MoveWasteToFoundation()
+    Playing --> Playing : MoveTableauToTableau() / MoveTableauToFoundation()
+    Playing --> Playing : MoveReserveToTableau() / MoveReserveToFoundation()
+    Playing --> Playing : Undo() / UndoN() / GetHint()
+    Playing --> GameClear : 全カードがファンデーションに積まれた
+    Playing --> GameClear : AutoComplete()
+    Playing --> GameOver : GiveUp()
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : CanfieldPhasePlaying = 0
+    note right of GameClear : CanfieldPhaseGameClear = 1
+    note right of GameOver : CanfieldPhaseGameOver = 2
+```
+
+### 3.35 CaribbeanStud フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> Action : Bet() (アンテ＋配布)
+    Action --> End : Play() (コール＝勝負)
+    Action --> End : Fold() (フォールド＝アンテ没収)
+    End --> Bet : Reset() (次ラウンド)
+    End --> [*]
+
+    note right of Bet : CaribbeanStudPhaseBet = 1
+    note right of Action : CaribbeanStudPhaseAction = 2
+    note right of End : CaribbeanStudPhaseEnd = 3
+```
+
+### 3.36 War フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Reveal : Reset()
+    Reveal --> Resolved : Step() (勝者確定)
+    Reveal --> WarBury : Step() (同ランク＝戦争発生)
+    Reveal --> GameEnd : Step() (カード切れ)
+    WarBury --> Resolved : Step() (伏せ札＋新表札で勝者確定)
+    WarBury --> WarBury : Step() (再び同ランク＝再戦争)
+    WarBury --> GameEnd : Step() (カード切れ)
+    Resolved --> Reveal : Step() (場札回収＋次ラウンド)
+    Resolved --> GameEnd : Step() (最大ラウンド到達 or カード切れ)
+    GameEnd --> [*]
+
+    note right of Reveal : WarPhaseReveal = 0
+    note right of Resolved : WarPhaseResolved = 1
+    note right of WarBury : WarPhaseWarBury = 2
+    note right of GameEnd : WarPhaseGameEnd = 3
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。
