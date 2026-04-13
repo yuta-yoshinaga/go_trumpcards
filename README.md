@@ -223,7 +223,7 @@ public/               # ビルド済みアセット
 ## Documentation
 
 - [API Documentation](https://yuta-yoshinaga.github.io/go_trumpcards/) — Go / TypeScript 自動生成ドキュメント
-- [Repomix Output](https://yuta-yoshinaga.github.io/go_trumpcards/repomix-output.txt) — AIコンテキスト用リポジトリスナップショット（master マージ時に自動生成）
+- [Repomix Output](https://yuta-yoshinaga.github.io/go_trumpcards/repomix/) — AIコンテキスト用リポジトリスナップショット（develop マージ時に自動生成、NotebookLMインポート用に分割）
 - [OpenAPI Spec](api/openapi.yaml)
 - [Architecture](docs/architecture.md)
 - [Backend Design (UML)](docs/design/backend.md) — クラス図・シーケンス図・状態遷移図

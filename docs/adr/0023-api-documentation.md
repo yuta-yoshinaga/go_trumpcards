@@ -31,7 +31,7 @@ Accepted
 ```
 _site/
   index.html          # リンク付きランディングページ
-  repomix-output.txt  # 圧縮リポジトリスナップショット
+  repomix/             # リポジトリスナップショット（NotebookLM用に分割）
   go/                  # Go APIドキュメント（パッケージごとのHTML）
   ts/                  # TypeScript APIドキュメント（HTML）
 ```
