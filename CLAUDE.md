@@ -35,6 +35,7 @@ go run ./cmd/trumpcards help       # Show top-level help
 go run ./cmd/trumpcards help blackjack  # Show help text for a specific game
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/trumpcards web --port 3000  # Start web server on custom port
+go run ./cmd/trumpcards web --host 127.0.0.1  # Bind to localhost only
 go run ./cmd/trumpcards completion bash  # Generate shell completion script (bash/zsh/fish)
 go run ./cmd/server                # Start REST API + web GUI server (direct)
 

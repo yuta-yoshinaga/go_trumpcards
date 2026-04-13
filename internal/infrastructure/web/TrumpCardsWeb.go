@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -455,7 +454,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		shutdownTimeout = 30 * time.Second
 	)
 	srv := &http.Server{
-		Addr:         getListenPort(),
+		Addr:         getListenAddr(),
 		Handler:      handler,
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
@@ -470,9 +469,8 @@ func (web *TrumpCardsWeb) Exec() error {
 		slog.Error("server listen error", "error", err)
 		return fmt.Errorf("failed to listen on %s: %w", srv.Addr, err)
 	}
-	port := ln.Addr().(*net.TCPAddr).Port
-	fmt.Println(i18n.Tf("webServerRunning", "port", strconv.Itoa(port)))
-	fmt.Println(i18n.T("webServerStop"))
+	fmt.Fprintln(os.Stderr, i18n.Tf("webServerRunning", "addr", ln.Addr().String()))
+	fmt.Fprintln(os.Stderr, i18n.T("webServerStop"))
 
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.Serve(ln) }()
@@ -485,7 +483,7 @@ func (web *TrumpCardsWeb) Exec() error {
 			runErr = fmt.Errorf("server error: %w", err)
 		}
 	case <-ctx.Done():
-		fmt.Println("\n" + i18n.T("webServerShutdown"))
+		fmt.Fprintln(os.Stderr, "\n"+i18n.T("webServerShutdown"))
 		slog.Info("shutting down server")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
@@ -497,15 +495,16 @@ func (web *TrumpCardsWeb) Exec() error {
 	for _, g := range web.games {
 		g.controller.Stop()
 	}
-	fmt.Println(i18n.T("webServerStopped"))
+	fmt.Fprintln(os.Stderr, i18n.T("webServerStopped"))
 	slog.Info("server stopped")
 	return runErr
 }
 
-func getListenPort() string {
+func getListenAddr() string {
+	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
-	if port != "" {
-		return ":" + port
+	if port == "" {
+		port = "8080"
 	}
-	return ":8080"
+	return net.JoinHostPort(host, port)
 }
