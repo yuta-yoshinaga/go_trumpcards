@@ -429,17 +429,6 @@ func (w *Whist) playerHasSuit(playerIdx int, design int) bool {
 	return false
 }
 
-// playerHasNonTrump プレイヤーがトランプ以外のカードを持っているか
-func (w *Whist) playerHasNonTrump(playerIdx int) bool {
-	p := w.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() != w.trumpSuit {
-			return true
-		}
-	}
-	return false
-}
-
 // trickWinner トリックの勝者を決定する
 func (w *Whist) trickWinner() int {
 	if len(w.currentTrick) == 0 {
