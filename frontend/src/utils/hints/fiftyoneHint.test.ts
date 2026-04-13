@@ -102,5 +102,6 @@ describe('getFiftyOneHint', () => {
     const hint = getFiftyOneHint(state);
     expect(hint).not.toBeNull();
     expect(hint?.targetAction).toBe('exchange');
+    expect(hint?.confidence).toBe('moderate');
   });
 });

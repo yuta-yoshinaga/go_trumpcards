@@ -16,7 +16,7 @@ const DESIGN_TO_SUIT: Record<Card['design'], string> = {
   JOKER: '',
 };
 
-/** Card face value for scoring (Ace = 1, J/Q/K = 10+). */
+/** Card face value for scoring (Ace = 11, J/Q/K = 10). */
 function cardScore(value: number): number {
   if (value === 1) return 11;
   if (value >= 10) return 10;

@@ -319,27 +319,26 @@ function YukonPageContent() {
         <ManualButton gamePath="/yukon" />
       </PhaseIndicator>
 
-      <SettingsPanel
-        title={tc('settings.title', { ns: 'common' })}
-        groups={[
-          {
-            items: [
-              {
-                type: 'checkbox' as const,
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
-              },
-            ],
-          },
-        ]}
-      />
-
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <SettingsPanel
+            title={tc('settings.title', { ns: 'common' })}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
