@@ -23,10 +23,10 @@ const FALLBACK_IVORY = '#E8E0D4';
 
 /** Reads design-system CSS variables at runtime so theme changes propagate to particles. */
 function getTokenColors(): string[] {
-  const style = getComputedStyle(document.documentElement);
-  const accent = style.getPropertyValue('--color-ds-accent').trim() || FALLBACK_ACCENT;
-  const success = style.getPropertyValue('--color-ds-success').trim() || FALLBACK_SUCCESS;
-  const ivory = style.getPropertyValue('--color-ds-text-primary').trim() || FALLBACK_IVORY;
+  const style = typeof document !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+  const accent = style?.getPropertyValue('--color-ds-accent').trim() || FALLBACK_ACCENT;
+  const success = style?.getPropertyValue('--color-ds-success').trim() || FALLBACK_SUCCESS;
+  const ivory = style?.getPropertyValue('--color-ds-text-primary').trim() || FALLBACK_IVORY;
   // 60% accent, 20% success, 20% ivory
   return [
     accent,
