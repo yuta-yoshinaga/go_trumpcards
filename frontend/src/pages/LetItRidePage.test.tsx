@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { letitrideApi } from '../api/gameApi';
+import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, LetItRideResponse, MaskedCard } from '../types/card';
 import { LetItRidePhase } from '../types/phases';
@@ -11,7 +12,20 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { letitride: vi.fn() },
 }));
 
+vi.mock('../hooks/useCliMode', () => ({
+  useCliMode: vi.fn(() => ({
+    cliEnabled: false,
+    toggleCli: vi.fn(),
+    logEntries: [],
+    addInput: vi.fn(),
+    addOutput: vi.fn(),
+    addError: vi.fn(),
+    clearLog: vi.fn(),
+  })),
+}));
+
 const mockApi = vi.mocked(letitrideApi.exec);
+const mockUseCliMode = vi.mocked(useCliMode);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 const maskedCard: MaskedCard = { design: '', value: 0 };
@@ -84,6 +98,15 @@ const endPhaseLoss: LetItRideResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockUseCliMode.mockReturnValue({
+    cliEnabled: false,
+    toggleCli: vi.fn(),
+    logEntries: [],
+    addInput: vi.fn(),
+    addOutput: vi.fn(),
+    addError: vi.fn(),
+    clearLog: vi.fn(),
+  });
 });
 
 afterEach(() => {
@@ -289,5 +312,30 @@ describe('LetItRidePage', () => {
     mockApi.mockResolvedValue(firstDecisionState);
     renderWithProviders(<LetItRidePage />);
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
+  });
+
+  it('renders CLI terminal when CLI mode is enabled', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    // CLI terminal uses role="log" and an input with aria-label for command prompt
+    await waitFor(() => expect(screen.getByRole('log')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
+  });
+
+  it('shows view action log button in END phase', async () => {
+    mockApi.mockResolvedValue(endPhaseWin);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    // The "view log" button (棋譜を見る) should also be present in END phase
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });
