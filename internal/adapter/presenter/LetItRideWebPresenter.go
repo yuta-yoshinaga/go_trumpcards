@@ -19,14 +19,17 @@ func (lp *LetItRideWebPresenter) Output(lir interfaces.LetItRideGame, lastErr er
 	resObj.Phase = lir.GetPhase()
 	resObj.Chips = lir.GetChips()
 	resObj.BetAmount = lir.GetBetAmount()
-	resObj.Bet1Active = lir.GetBet1Active()
+	// API convention: Bet 1 is pulled first (first decision), Bet 3 is always active.
+	// Domain convention is reversed (bet1Active = always active, bet3Active = pulled first),
+	// so we swap bet1↔bet3 here to produce the correct wire format.
+	resObj.Bet1Active = lir.GetBet3Active()
 	resObj.Bet2Active = lir.GetBet2Active()
-	resObj.Bet3Active = lir.GetBet3Active()
+	resObj.Bet3Active = lir.GetBet1Active()
 	resObj.Result = int(lir.GetResult())
 	resObj.HandRank = lir.GetHandRank()
-	resObj.Bet1Payout = lir.GetBet1Payout()
+	resObj.Bet1Payout = lir.GetBet3Payout()
 	resObj.Bet2Payout = lir.GetBet2Payout()
-	resObj.Bet3Payout = lir.GetBet3Payout()
+	resObj.Bet3Payout = lir.GetBet1Payout()
 	resObj.TotalPayout = lir.GetTotalPayout()
 
 	if lastErr != nil {
@@ -52,8 +55,8 @@ func (lp *LetItRideWebPresenter) ActionLogOutput(lir interfaces.LetItRideGame) s
 }
 
 // letItRideMaskCommunity returns community cards with appropriate masking.
-// BET phase: both masked. FIRST_DECISION: first revealed, second masked.
-// SECOND_DECISION and END: both revealed.
+// BET and FIRST_DECISION phases: both masked. SECOND_DECISION: first revealed, second masked.
+// END: both revealed.
 func letItRideMaskCommunity(lir interfaces.LetItRideGame) []*controller.WebOutputCard {
 	cards := lir.GetCommunityCards()
 	if len(cards) == 0 {

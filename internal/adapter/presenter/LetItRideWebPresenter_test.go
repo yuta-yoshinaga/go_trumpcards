@@ -124,6 +124,49 @@ func TestLetItRideWebPresenter_Output_SecondDecision_FirstRevealed(t *testing.T)
 	assert.NotEqual(t, "", result.CommunityCards[0].Design)
 	// Second still masked
 	assert.Equal(t, "", result.CommunityCards[1].Design)
+	// Bet mapping: API bet1 = domain bet3 (pulled in first decision) → false
+	assert.False(t, result.Bet1Active)
+	// API bet2 = domain bet2 → true
+	assert.True(t, result.Bet2Active)
+	// API bet3 = domain bet1 (always active) → true
+	assert.True(t, result.Bet3Active)
+}
+
+// TestLetItRideWebPresenter_Output_BetPayoutMapping verifies that the bet1↔bet3
+// swap is applied consistently to payout fields.
+func TestLetItRideWebPresenter_Output_BetPayoutMapping(t *testing.T) {
+	p := new(LetItRideWebPresenter)
+	m := new(interfaces.MockLetItRideGame)
+
+	m.On("GetChips").Return(2100)
+	m.On("GetPhase").Return(domain.LetItRidePhaseEnd)
+	m.On("GetPlayerHand").Return(([]*domain.Card)(nil))
+	m.On("GetCommunityCards").Return(([]*domain.Card)(nil))
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetBetAmount").Return(100)
+	// domain bet1 = always-active → maps to API bet3
+	m.On("GetBet1Active").Return(true)
+	m.On("GetBet1Payout").Return(300) // domain's always-active payout
+	// domain bet2 = second-decision → maps to API bet2
+	m.On("GetBet2Active").Return(false)
+	m.On("GetBet2Payout").Return(0) // pulled in second decision
+	// domain bet3 = first-decision → maps to API bet1
+	m.On("GetBet3Active").Return(false)
+	m.On("GetBet3Payout").Return(0) // pulled in first decision
+	m.On("GetResult").Return(domain.GameResultWin)
+	m.On("GetHandRank").Return(domain.PokerHandTwoPair)
+	m.On("GetTotalPayout").Return(300)
+
+	result := parseLetItRideOutput(t, p.Output(m, nil))
+	// API bet1 (= domain bet3, pulled first) → inactive, no payout
+	assert.False(t, result.Bet1Active)
+	assert.Equal(t, 0, result.Bet1Payout)
+	// API bet2 (= domain bet2, pulled second) → inactive, no payout
+	assert.False(t, result.Bet2Active)
+	assert.Equal(t, 0, result.Bet2Payout)
+	// API bet3 (= domain bet1, always active) → active, has payout
+	assert.True(t, result.Bet3Active)
+	assert.Equal(t, 300, result.Bet3Payout)
 }
 
 func TestLetItRideWebPresenter_Output_EndPhase_AllRevealed(t *testing.T) {

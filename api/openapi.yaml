@@ -12388,11 +12388,11 @@ components:
           example: 100
         bet1Active:
           type: boolean
-          description: Whether Bet 1 is still active (not pulled)
+          description: Whether Bet 1 is still active (can be pulled in the first decision phase)
           example: true
         bet2Active:
           type: boolean
-          description: Whether Bet 2 is still active (not pulled)
+          description: Whether Bet 2 is still active (can be pulled in the second decision phase)
           example: true
         bet3Active:
           type: boolean

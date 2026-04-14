@@ -166,7 +166,7 @@ function LetItRidePageContent() {
         : t('phase.end');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.threecard.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.letitride.bg}`} aria-busy={loading} aria-live="polite">
       <GamePageHeading title={tc('nav.letitride')} />
       <PhaseIndicator phaseName={phaseName}>
         <span>
@@ -322,7 +322,7 @@ function LetItRidePageContent() {
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 
-          <GameFooter className={`${gameTheme.threecard.footer} px-4 pt-3`}>
+          <GameFooter className={`${gameTheme.letitride.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel title={t('settings.title')} groups={[]} />
             {isBetPhase && (
