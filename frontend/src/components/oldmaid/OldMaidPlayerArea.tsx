@@ -168,10 +168,10 @@ export function OldMaidPlayerArea({
                 border: isHighlighted ? '2px solid #D4A853' : '2px solid transparent',
                 borderRadius: 4,
                 cursor: 'pointer',
+                transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
                 ...(isHighlighted
                   ? {
                       transform: 'translateY(-8px)',
-                      transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
                       boxShadow: '0 0 10px rgba(212, 168, 83, 0.6)',
                     }
                   : {}),

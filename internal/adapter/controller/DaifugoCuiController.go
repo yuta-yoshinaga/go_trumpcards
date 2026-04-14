@@ -190,7 +190,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return "Rules:\n" + formatDaifugoRuleList(&cfg), true
 				}
 				if len(args) < 2 {
-					return "Usage: sr <rule> <0|1> | sr list\nRules: 8cut, 11back, seq, exchange, 5skip, 7pass, 10discard, spade3, capital, 9reverse, coupdetat, numberlock, sandstorm, emperor, seqrev, seqlock, illegal, 12bomber, blindexchange.\nUse 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.", true
+					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(daifugoRuleKeys, ", ") + ".\nUse 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.", true
 				}
 				if !setDaifugoRule(nil, args[0], false) {
 					return fmt.Sprintf("Unknown rule: %s.", args[0]), true
