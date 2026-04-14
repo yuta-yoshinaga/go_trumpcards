@@ -29,15 +29,6 @@ const (
 	OmahaActionAllIn = HoldemActionAllIn
 )
 
-// OmahaSidePot サイドポット (共通SidePot型のエイリアス)
-type OmahaSidePot = SidePot
-
-// OmahaResult ショーダウン結果
-type OmahaResult = HoldemResult
-
-// OmahaCpuAction CPU行動記録
-type OmahaCpuAction = HoldemCpuAction
-
 // リバイフェーズ種別定数 (Holdemと共通)
 const (
 	OmahaRebuyPhaseNone  = HoldemRebuyPhaseNone
@@ -47,22 +38,17 @@ const (
 
 // Omaha オマハホールデムクラス
 type Omaha struct {
+	communityCardBettingBase
 	trumpCards      *TrumpCards
 	players         []*OmahaPlayer
 	communityCards  []*Card
-	pot             int
-	sidePots        []OmahaSidePot
+	sidePots        []SidePot
 	dealerIdx       int
 	currentTurn     int
 	phase           int
 	config          OmahaConfig
-	gameEndFlag     bool
-	lastBet         int
-	minRaise        int
-	raiseCount      int
-	actedFlags      []bool
-	roundResults    []OmahaResult
-	cpuActions      []OmahaCpuAction
+	roundResults    []HoldemResult
+	cpuActions      []HoldemCpuAction
 	startingChips   []int
 	vpipTracked     []bool
 	pfrTracked      []bool
@@ -80,13 +66,15 @@ type Omaha struct {
 // NewOmaha コンストラクタ
 func NewOmaha(trumpCards *TrumpCards, players []*OmahaPlayer, config OmahaConfig) *Omaha {
 	return &Omaha{
+		communityCardBettingBase: communityCardBettingBase{
+			actedFlags: make([]bool, len(players)),
+		},
 		trumpCards:      trumpCards,
 		players:         players,
 		communityCards:  make([]*Card, 0),
-		sidePots:        make([]OmahaSidePot, 0),
-		actedFlags:      make([]bool, len(players)),
-		roundResults:    make([]OmahaResult, 0),
-		cpuActions:      make([]OmahaCpuAction, 0),
+		sidePots:        make([]SidePot, 0),
+		roundResults:    make([]HoldemResult, 0),
+		cpuActions:      make([]HoldemCpuAction, 0),
 		startingChips:   make([]int, len(players)),
 		vpipTracked:     make([]bool, len(players)),
 		pfrTracked:      make([]bool, len(players)),
@@ -102,15 +90,15 @@ func NewOmaha(trumpCards *TrumpCards, players []*OmahaPlayer, config OmahaConfig
 func (o *Omaha) Reset() error {
 	o.phase = OmahaPhaseInit
 	o.pot = 0
-	o.sidePots = make([]OmahaSidePot, 0)
+	o.sidePots = make([]SidePot, 0)
 	o.communityCards = make([]*Card, 0)
 	o.gameEndFlag = false
 	o.lastBet = 0
 	o.minRaise = o.config.BigBlind
 	o.raiseCount = 0
 	o.actedFlags = make([]bool, len(o.players))
-	o.roundResults = make([]OmahaResult, 0)
-	o.cpuActions = make([]OmahaCpuAction, 0)
+	o.roundResults = make([]HoldemResult, 0)
+	o.cpuActions = make([]HoldemCpuAction, 0)
 	o.rebuyPhaseType = OmahaRebuyPhaseNone
 	o.actionLog = nil
 	o.lastHumanPlayMs = 0
@@ -328,31 +316,16 @@ func (o *Omaha) trackPostFlopStats(playerIdx, action int) {
 	}
 }
 
-// bettingPlayers BettingPlayerスライスを生成
-func (o *Omaha) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(o.players))
-	for i, pl := range o.players {
-		bp[i] = pl
-	}
-	return bp
-}
-
 // executeAction 指定プレイヤーのアクション実行
 func (o *Omaha) executeAction(playerIdx, action, amount int) error {
 	o.trackPreFlopStats(playerIdx, action)
 	o.trackPostFlopStats(playerIdx, action)
 
-	bp := o.bettingPlayers()
-	state := &BettingState{
-		Pot: o.pot, LastBet: o.lastBet, MinRaise: o.minRaise,
-		RaiseCount: o.raiseCount, ActedFlags: o.actedFlags,
-	}
+	bp := toBettingPlayers(o.players)
+	state := o.bettingState()
 	maxRaises, maxBetAmount := o.bettingLimits()
 	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, o.config.BigBlind, maxRaises, maxBetAmount)
-	o.pot = state.Pot
-	o.lastBet = state.LastBet
-	o.minRaise = state.MinRaise
-	o.raiseCount = state.RaiseCount
+	o.syncBettingState(state)
 	if err != nil {
 		return err
 	}
@@ -371,33 +344,18 @@ func (o *Omaha) advanceTurn() {
 		return
 	}
 
-	if o.isBettingRoundComplete() {
+	bp := toBettingPlayers(o.players)
+	if o.isBettingRoundComplete(bp) {
 		o.advancePhase()
 		return
 	}
 
-	for i := 1; i <= len(o.players); i++ {
-		next := (o.currentTurn + i) % len(o.players)
-		if !o.players[next].GetFolded() && !o.players[next].GetAllIn() && !o.actedFlags[next] {
-			o.currentTurn = next
-			return
-		}
+	if next := o.findNextActiveTurn(o.currentTurn, bp); next >= 0 {
+		o.currentTurn = next
+		return
 	}
 
 	o.advancePhase()
-}
-
-// isBettingRoundComplete ベッティングラウンドが完了したかチェック
-func (o *Omaha) isBettingRoundComplete() bool {
-	for i, p := range o.players {
-		if p.GetFolded() || p.GetAllIn() {
-			continue
-		}
-		if !o.actedFlags[i] {
-			return false
-		}
-	}
-	return true
 }
 
 // advancePhase 次のフェーズに進める
@@ -500,7 +458,7 @@ func (o *Omaha) resolveLastPlayer() {
 	for i, p := range o.players {
 		if !p.GetFolded() {
 			p.AddChips(o.pot)
-			o.roundResults = []OmahaResult{{
+			o.roundResults = []HoldemResult{{
 				PlayerIdx: i,
 				WonAmount: o.pot,
 			}}
@@ -521,17 +479,17 @@ func (o *Omaha) resolveShowdown() {
 		}
 	}
 
-	bp := o.bettingPlayers()
+	bp := toBettingPlayers(o.players)
 	o.sidePots = CalculateSidePots(bp, o.pot, o.startingChips)
 	wonAmounts := DistributePots(bp, o.sidePots)
 
-	o.roundResults = make([]OmahaResult, 0)
+	o.roundResults = make([]HoldemResult, 0)
 	humanLost := false
 	for i, p := range o.players {
 		if p.GetFolded() {
 			continue
 		}
-		result := OmahaResult{
+		result := HoldemResult{
 			PlayerIdx: i,
 			HandRank:  p.GetHandRank(),
 			HandName:  o.getHandName(p.GetHandRank()),
@@ -624,7 +582,7 @@ func (o *Omaha) runCpuActions() error {
 			continue
 		}
 		action, amount := o.cpuDecide(o.currentTurn)
-		o.cpuActions = append(o.cpuActions, OmahaCpuAction{
+		o.cpuActions = append(o.cpuActions, HoldemCpuAction{
 			PlayerIdx: o.currentTurn,
 			Action:    action,
 			Amount:    amount,
@@ -1195,7 +1153,7 @@ func (o *Omaha) GetCommunityCards() []*Card { return o.communityCards }
 func (o *Omaha) GetPot() int { return o.pot }
 
 // GetSidePots サイドポット取得
-func (o *Omaha) GetSidePots() []OmahaSidePot { return o.sidePots }
+func (o *Omaha) GetSidePots() []SidePot { return o.sidePots }
 
 // GetDealerIdx ディーラーインデックス取得
 func (o *Omaha) GetDealerIdx() int { return o.dealerIdx }
@@ -1216,10 +1174,10 @@ func (o *Omaha) GetMinRaise() int { return o.minRaise }
 func (o *Omaha) GetRaiseCount() int { return o.raiseCount }
 
 // GetRoundResults ラウンド結果取得
-func (o *Omaha) GetRoundResults() []OmahaResult { return o.roundResults }
+func (o *Omaha) GetRoundResults() []HoldemResult { return o.roundResults }
 
 // GetCpuActions CPU行動記録取得
-func (o *Omaha) GetCpuActions() []OmahaCpuAction { return o.cpuActions }
+func (o *Omaha) GetCpuActions() []HoldemCpuAction { return o.cpuActions }
 
 // GetLastCpuError 最後のCPUアクションエラー取得
 func (o *Omaha) GetLastCpuError() error { return o.lastCpuError }
@@ -1315,7 +1273,7 @@ type omahaJSON struct {
 	Players         []*OmahaPlayer           `json:"pl"`
 	CommunityCards  []*Card                  `json:"cc"`
 	Pot             int                      `json:"pt"`
-	SidePots        []OmahaSidePot           `json:"sp"`
+	SidePots        []SidePot                `json:"sp"`
 	DealerIdx       int                      `json:"di"`
 	CurrentTurn     int                      `json:"ct"`
 	Phase           int                      `json:"ph"`
@@ -1325,8 +1283,8 @@ type omahaJSON struct {
 	MinRaise        int                      `json:"mr"`
 	RaiseCount      int                      `json:"rc"`
 	ActedFlags      []bool                   `json:"af"`
-	RoundResults    []OmahaResult            `json:"rr"`
-	CpuActions      []OmahaCpuAction         `json:"ca"`
+	RoundResults    []HoldemResult           `json:"rr"`
+	CpuActions      []HoldemCpuAction        `json:"ca"`
 	StartingChips   []int                    `json:"sc"`
 	VPIPTracked     []bool                   `json:"vt"`
 	PFRTracked      []bool                   `json:"ft"`
@@ -1407,7 +1365,7 @@ func (o *Omaha) UnmarshalJSON(data []byte) error {
 	o.pot = j.Pot
 	o.sidePots = j.SidePots
 	if o.sidePots == nil {
-		o.sidePots = make([]OmahaSidePot, 0)
+		o.sidePots = make([]SidePot, 0)
 	}
 	o.dealerIdx = j.DealerIdx
 	o.currentTurn = j.CurrentTurn
@@ -1423,11 +1381,11 @@ func (o *Omaha) UnmarshalJSON(data []byte) error {
 	}
 	o.roundResults = j.RoundResults
 	if o.roundResults == nil {
-		o.roundResults = make([]OmahaResult, 0)
+		o.roundResults = make([]HoldemResult, 0)
 	}
 	o.cpuActions = j.CpuActions
 	if o.cpuActions == nil {
-		o.cpuActions = make([]OmahaCpuAction, 0)
+		o.cpuActions = make([]HoldemCpuAction, 0)
 	}
 	o.startingChips = j.StartingChips
 	if o.startingChips == nil {

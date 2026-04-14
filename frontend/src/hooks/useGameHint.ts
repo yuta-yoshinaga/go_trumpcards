@@ -3,6 +3,7 @@ import type {
   BaccaratResponse,
   BlackJackResponse,
   CanastaResponse,
+  CanfieldResponse,
   CaribbeanStudResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -10,6 +11,7 @@ import type {
   DoubtResponse,
   DurakResponse,
   EuchreResponse,
+  FiftyOneResponse,
   FreeCellResponse,
   GinRummyResponse,
   GoFishResponse,
@@ -35,11 +37,15 @@ import type {
   TriPeaksResponse,
   TwoTenJackResponse,
   VideoPokerResponse,
+  WarResponse,
+  WhistResponse,
+  YukonResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
+import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
@@ -48,6 +54,7 @@ import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDurakHint } from '../utils/hints/durakHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
+import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
 import { getGinRummyHint } from '../utils/hints/ginrummyHint';
 import { getGoFishHint } from '../utils/hints/gofishHint';
@@ -74,6 +81,9 @@ import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
+import { getWarHint } from '../utils/hints/warHint';
+import { getWhistHint } from '../utils/hints/whistHint';
+import { getYukonHint } from '../utils/hints/yukonHint';
 import { useLocalStorageToggle } from './useLocalStorageToggle';
 
 /** Hint function that takes game state and returns a hint result or null. */
@@ -96,6 +106,7 @@ const hintFactories = {
   indianpoker: (s) => getIndianPokerHint(s as IndianPokerResponse),
   threecard: (s) => getThreeCardHint(s as ThreeCardResponse),
   euchre: (s) => getEuchreHint(s as EuchreResponse),
+  fiftyone: (s) => getFiftyOneHint(s as FiftyOneResponse),
   napoleon: (s) => getNapoleonHint(s as NapoleonResponse),
   ohhell: (s) => getOhHellHint(s as OhHellResponse),
   oldmaid: (s) => getOldMaidHint(s as OldMaidResponse),
@@ -116,11 +127,15 @@ const hintFactories = {
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
+  canfield: (s) => getCanfieldHint(s as CanfieldResponse),
   pinochle: (s) => getPinochleHint(s as PinochleResponse),
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
   sevencardstud: () => null,
   fortythieves: () => null,
   paigow: () => null,
+  war: (s) => getWarHint(s as WarResponse),
+  whist: (s) => getWhistHint(s as WhistResponse),
+  yukon: (s) => getYukonHint(s as YukonResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

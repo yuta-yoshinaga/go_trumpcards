@@ -56,6 +56,31 @@ describe('OldMaidPlayerArea compactNonTarget', () => {
   });
 });
 
+describe('OldMaidPlayerArea CPU highlight', () => {
+  const selectableProps = { ...defaultProps, isTarget: true, isHumanTurn: true };
+
+  it('applies gold border and glow to highlighted card', () => {
+    render(<OldMaidPlayerArea {...selectableProps} player={makeCpuPlayer(3)} highlightedCardIdx={1} />);
+    // Selectable cards are rendered as buttons; style is on the img inside
+    const buttons = screen.getAllByRole('button');
+    const imgs = buttons.map((btn) => btn.querySelector('img')!);
+    // Highlighted card (index 1) should have gold border and box-shadow
+    expect(imgs[1]).toHaveStyle({ border: '2px solid #D4A853' });
+    expect(imgs[1]).toHaveStyle({ boxShadow: '0 0 10px rgba(212, 168, 83, 0.6)' });
+    // Non-highlighted card (index 0) should have transparent border
+    expect(imgs[0]).toHaveStyle({ border: '2px solid transparent' });
+  });
+
+  it('does not highlight when highlightedCardIdx is -1', () => {
+    render(<OldMaidPlayerArea {...selectableProps} player={makeCpuPlayer(3)} highlightedCardIdx={-1} />);
+    const buttons = screen.getAllByRole('button');
+    for (const btn of buttons) {
+      const img = btn.querySelector('img')!;
+      expect(img).toHaveStyle({ border: '2px solid transparent' });
+    }
+  });
+});
+
 describe('OldMaidPlayerArea keyboard reordering', () => {
   const threeCards = [makeCard('SPADE', 1), makeCard('HEART', 5), makeCard('DIAMOND', 10)];
 

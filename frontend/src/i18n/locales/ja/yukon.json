@@ -1,0 +1,37 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "ユーコン",
+  "foundation": "組札",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "undo": "元に戻す",
+  "empty": "空",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "stalemate": "手詰まりです",
+  "frontendHint": {
+    "moveToFoundation": "組札へ移動できるカードがあります",
+    "moveToTableau": "場札間で移動可能なカードがあります"
+  },
+  "tutorial": {
+    "foundation": "ここにA→Kの順でスート別にカードを積み上げます。",
+    "tableau": "ここにカードが並んでいます。表向きのカードをクリック/ドラッグして移動できます。",
+    "controls": "ヒント・ギブアップ・元に戻すなどの操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "yukon": "ユーコン"
+  }
+}

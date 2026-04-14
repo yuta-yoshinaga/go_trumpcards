@@ -1,0 +1,48 @@
+import { whistApi } from '../api/gameApi';
+import type { WhistConfig } from '../types/card';
+import { useTrickGameBase } from './useTrickGameBase';
+
+/** Default Whist game configuration. */
+export const DEFAULT_WHIST_CONFIG: WhistConfig = {
+  cpuDifficulty: 1,
+  pointLimit: 5,
+};
+
+/** CPU difficulty level options for Whist. */
+export const CPU_DIFFICULTY_OPTIONS = [
+  { value: 0, label: 'Easy' },
+  { value: 1, label: 'Normal' },
+  { value: 2, label: 'Hard' },
+] as const;
+
+/** Available point limit options for Whist. */
+export const POINT_LIMIT_OPTIONS = [3, 5, 7, 10] as const;
+
+/** Hook that manages Whist game state and player actions. */
+export function useWhistGame() {
+  const base = useTrickGameBase({
+    apiFn: whistApi.exec,
+    defaultConfig: DEFAULT_WHIST_CONFIG,
+    getHint: (state) => state.hint ?? null,
+  });
+
+  return {
+    state: base.state,
+    loading: base.loading,
+    error: base.error,
+    hint: base.hint,
+    hintError: base.hintError,
+    hintLoading: base.hintLoading,
+    exec: base.exec,
+    whistConfig: base.config,
+    selectedCardIndices: base.selectedCardIndices,
+    toggleCard: base.toggleCard,
+    clearSelection: base.clearSelection,
+    handleConfigChange: base.handleConfigChange,
+    handlePlay: base.handlePlay,
+    handleNextTrick: base.handleNextTrick,
+    handleNextRound: base.handleNextRound,
+    handleHint: base.handleHint,
+    retry: base.retry,
+  };
+}

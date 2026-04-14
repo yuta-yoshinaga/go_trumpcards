@@ -93,9 +93,9 @@ func (u *Updater) Exec() error {
 
 	// Prompt for confirmation (skipped with --yes).
 	if u.autoConfirm {
-		_, _ = fmt.Fprintln(u.writer, i18n.Tf("updateAutoConfirm", "version", release.TagName))
+		_, _ = fmt.Fprintln(u.writer, i18n.Tf("updateAutoConfirm", "current", u.currentVersion, "version", release.TagName))
 	} else {
-		_, _ = fmt.Fprint(u.writer, i18n.Tf("updateAvailable", "version", release.TagName)+" ")
+		_, _ = fmt.Fprint(u.writer, i18n.Tf("updateAvailable", "current", u.currentVersion, "version", release.TagName)+" ")
 		var answer string
 		_, _ = fmt.Fscanln(u.reader, &answer)
 		ans := strings.ToLower(strings.TrimSpace(answer))

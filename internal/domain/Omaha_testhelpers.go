@@ -31,13 +31,13 @@ func (o *Omaha) SetLastBet(bet int) { o.lastBet = bet }
 func (o *Omaha) SetMinRaise(raise int) { o.minRaise = raise }
 
 // SetRoundResults ラウンド結果設定（テスト用）
-func (o *Omaha) SetRoundResults(results []OmahaResult) { o.roundResults = results }
+func (o *Omaha) SetRoundResults(results []HoldemResult) { o.roundResults = results }
 
 // SetCpuActions CPU行動記録設定（テスト用）
-func (o *Omaha) SetCpuActions(actions []OmahaCpuAction) { o.cpuActions = actions }
+func (o *Omaha) SetCpuActions(actions []HoldemCpuAction) { o.cpuActions = actions }
 
 // SetSidePots サイドポット設定（テスト用）
-func (o *Omaha) SetSidePots(pots []OmahaSidePot) { o.sidePots = pots }
+func (o *Omaha) SetSidePots(pots []SidePot) { o.sidePots = pots }
 
 // SetHandCount ハンド数設定（テスト用）
 func (o *Omaha) SetHandCount(count int) { o.handCount = count }

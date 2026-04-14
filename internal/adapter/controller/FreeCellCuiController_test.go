@@ -211,6 +211,31 @@ func TestFreeCellCuiController_MoveShorthand(t *testing.T) {
 	})
 }
 
+func TestFreeCellCuiController_FoundationShorthand(t *testing.T) {
+	t.Run("f <col> moves tableau to foundation", func(t *testing.T) {
+		m := newMockFreeCellInteractor()
+		c := NewFreeCellCuiController(m)
+		m.On("MoveTableauToFoundation", 2).Return("tf_output")
+		assert.Equal(t, "tf_output", c.Exec("f 2"))
+	})
+
+	t.Run("f with no args prompts for column", func(t *testing.T) {
+		m := newMockFreeCellInteractor()
+		c := NewFreeCellCuiController(m)
+		result := c.Exec("f")
+		assert.True(t, cuiutil.IsPromptRequest(result))
+		_, tmpl := cuiutil.ParsePromptRequest(result)
+		assert.Equal(t, "f {0}", tmpl)
+	})
+
+	t.Run("f <invalid> returns error", func(t *testing.T) {
+		m := newMockFreeCellInteractor()
+		c := NewFreeCellCuiController(m)
+		result := c.Exec("f abc")
+		assert.Contains(t, result, "abc")
+	})
+}
+
 func TestFreeCellCuiController_UnknownCommand(t *testing.T) {
 	m := newMockFreeCellInteractor()
 	c := NewFreeCellCuiController(m)

@@ -2168,3 +2168,114 @@ export interface FortyThievesMoveZone {
   col?: number;
   cardIndex?: number;
 }
+
+/** Single Fifty-one player state from the API. */
+export interface FiftyOnePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  score: number;
+}
+
+/** Fifty-one game configuration. */
+export interface FiftyOneConfig {
+  cpuDifficulty: number;
+}
+
+/** Full Fifty-one game state returned from the API. */
+export interface FiftyOneResponse {
+  players: FiftyOnePlayerData[];
+  tableCards: Card[];
+  phase: number;
+  currentTurn: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  turnNumber: number;
+  stopCallerIdx: number;
+  lastAction: string;
+  lastHandIdx: number;
+  lastTableIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: FiftyOneConfig;
+}
+
+// --- Yukon (ユーコン) ---
+
+/** A suggested move hint in Yukon. */
+export interface YukonHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** API response shape for a Yukon game. */
+export interface YukonResponse {
+  tableau: KlondikeTableauCard[][];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: YukonHint;
+}
+
+// --- Whist (ホイスト) ---
+
+/** Whist player data with team, scores, and trick count. */
+export interface WhistPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+  team: number;
+}
+
+/** A card played in a Whist trick. */
+export interface WhistTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Whist game configuration. */
+export interface WhistConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Whist. */
+export interface WhistHint {
+  cardIndex?: number;
+  reason: string;
+}
+
+/** Full Whist game state returned from the API. */
+export interface WhistResponse {
+  players: WhistPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: WhistTrickCard[];
+  trumpSuit: number;
+  dealerIdx: number;
+  teamScores: [number, number];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: WhistConfig;
+  hint?: WhistHint;
+}

@@ -83,9 +83,9 @@ func (_m *MockPineappleGame) GetPot() int {
 }
 
 // GetSidePots モック
-func (_m *MockPineappleGame) GetSidePots() []domain.PineappleSidePot {
+func (_m *MockPineappleGame) GetSidePots() []domain.SidePot {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.PineappleSidePot); ok {
+	if val, ok := ret.Get(0).([]domain.SidePot); ok {
 		return val
 	}
 	return nil
@@ -128,18 +128,18 @@ func (_m *MockPineappleGame) GetRaiseCount() int {
 }
 
 // GetRoundResults モック
-func (_m *MockPineappleGame) GetRoundResults() []domain.PineappleResult {
+func (_m *MockPineappleGame) GetRoundResults() []domain.HoldemResult {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.PineappleResult); ok {
+	if val, ok := ret.Get(0).([]domain.HoldemResult); ok {
 		return val
 	}
 	return nil
 }
 
 // GetCpuActions モック
-func (_m *MockPineappleGame) GetCpuActions() []domain.PineappleCpuAction {
+func (_m *MockPineappleGame) GetCpuActions() []domain.HoldemCpuAction {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.PineappleCpuAction); ok {
+	if val, ok := ret.Get(0).([]domain.HoldemCpuAction); ok {
 		return val
 	}
 	return nil

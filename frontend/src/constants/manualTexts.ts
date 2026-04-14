@@ -16,6 +16,7 @@ import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
+import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
 import freecell from '../../../docs/manual/web/freecell.md?raw';
 import ginrummy from '../../../docs/manual/web/ginrummy.md?raw';
@@ -48,6 +49,8 @@ import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
 import videopoker from '../../../docs/manual/web/videopoker.md?raw';
 import war from '../../../docs/manual/web/war.md?raw';
+import whist from '../../../docs/manual/web/whist.md?raw';
+import yukon from '../../../docs/manual/web/yukon.md?raw';
 
 /** Map from game route path to raw Markdown manual text. */
 export const manualTexts: Readonly<Record<string, string>> = {
@@ -97,4 +100,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/twotenjack': twotenjack,
   '/videopoker': videopoker,
   '/war': war,
+  '/fiftyone': fiftyone,
+  '/whist': whist,
+  '/yukon': yukon,
 };

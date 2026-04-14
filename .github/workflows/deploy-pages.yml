@@ -3,7 +3,7 @@ name: Deploy Docs to GitHub Pages
 on:
   push:
     branches:
-      - master
+      - develop
 
 # Allow only one concurrent deployment, skipping runs queued between the
 # run in-progress and latest queued. However, do NOT cancel in-progress runs
@@ -105,10 +105,40 @@ jobs:
           cp -r frontend/docs/* _site/ts/
 
       - name: Run repomix
-        run: bunx repomix --output repomix-output.txt --style xml --compress --remove-empty-lines
+        run: bunx repomix --output repomix-output.txt --style xml --remove-empty-lines
 
-      - name: Copy repomix output
-        run: cp repomix-output.txt _site/repomix-output.txt
+      - name: Split repomix output for NotebookLM
+        run: |
+          mkdir -p _site/repomix
+          # NotebookLM limit is 500,000 characters (~500KB) per source.
+          # Split into 490KB chunks to stay safely under the limit.
+          split -b 490K -d --additional-suffix=.txt repomix-output.txt _site/repomix/repomix-part-
+          # Generate an index page listing all parts
+          cat > _site/repomix/index.html <<'REPOMIX_INDEX'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Repomix Output (split for NotebookLM)</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css">
+          </head>
+          <body>
+          <h1>Repomix Output</h1>
+          <p>Split into chunks under 500KB for <a href="https://notebooklm.google.com/">NotebookLM</a> import.</p>
+          <p><a href="../">← Back to top</a></p>
+          <ul>
+          REPOMIX_INDEX
+          for f in _site/repomix/repomix-part-*.txt; do
+            name="$(basename "$f")"
+            size="$(du -h "$f" | cut -f1)"
+            echo "<li><a href=\"$name\">$name</a> ($size)</li>" >> _site/repomix/index.html
+          done
+          cat >> _site/repomix/index.html <<'REPOMIX_INDEX'
+          </ul>
+          </body>
+          </html>
+          REPOMIX_INDEX
 
       - name: Copy landing page
         run: cp docs/pages/index.html _site/index.html

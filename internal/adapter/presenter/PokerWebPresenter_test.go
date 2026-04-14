@@ -207,7 +207,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 	t.Run("side pots", func(t *testing.T) {
 		p, _ := makePokerForPresenter()
 		p.SetPhase(domain.PokerPhaseEnd)
-		p.SetSidePots([]domain.PokerSidePot{
+		p.SetSidePots([]domain.SidePot{
 			{Amount: 100, EligiblePlayers: []int{0, 1}},
 			{Amount: 50, EligiblePlayers: []int{0}},
 		})
@@ -419,7 +419,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 	t.Run("empty side pots and cpu actions", func(t *testing.T) {
 		p, _ := makePokerForPresenter()
 		p.SetPhase(domain.PokerPhaseDeal)
-		p.SetSidePots([]domain.PokerSidePot{})
+		p.SetSidePots([]domain.SidePot{})
 		p.SetCpuActions([]domain.PokerCpuAction{})
 		p.SetCpuExchanges([]domain.PokerCpuExchange{})
 

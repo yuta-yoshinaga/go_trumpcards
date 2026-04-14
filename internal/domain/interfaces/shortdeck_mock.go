@@ -71,9 +71,9 @@ func (_m *MockShortDeckGame) GetPot() int {
 }
 
 // GetSidePots モック
-func (_m *MockShortDeckGame) GetSidePots() []domain.ShortDeckSidePot {
+func (_m *MockShortDeckGame) GetSidePots() []domain.SidePot {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.ShortDeckSidePot); ok {
+	if val, ok := ret.Get(0).([]domain.SidePot); ok {
 		return val
 	}
 	return nil
@@ -116,18 +116,18 @@ func (_m *MockShortDeckGame) GetRaiseCount() int {
 }
 
 // GetRoundResults モック
-func (_m *MockShortDeckGame) GetRoundResults() []domain.ShortDeckResult {
+func (_m *MockShortDeckGame) GetRoundResults() []domain.HoldemResult {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.ShortDeckResult); ok {
+	if val, ok := ret.Get(0).([]domain.HoldemResult); ok {
 		return val
 	}
 	return nil
 }
 
 // GetCpuActions モック
-func (_m *MockShortDeckGame) GetCpuActions() []domain.ShortDeckCpuAction {
+func (_m *MockShortDeckGame) GetCpuActions() []domain.HoldemCpuAction {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.ShortDeckCpuAction); ok {
+	if val, ok := ret.Get(0).([]domain.HoldemCpuAction); ok {
 		return val
 	}
 	return nil

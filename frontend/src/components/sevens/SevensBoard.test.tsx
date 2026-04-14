@@ -125,14 +125,14 @@ describe('SevensBoard', () => {
     const cells = screen.getAllByTestId('board-cell');
     // Value 6 (index 5) is placed and non-center
     expect(cells[5].style.background).toBe('var(--color-game-status-active)');
-    expect(cells[5].style.color).toBe('black');
+    expect(cells[5].style.color).toBe('var(--color-game-text-strong)');
   });
 
   it('center cell (7) has waiting background color and black text', () => {
     render(<SevensBoard {...defaultProps} />);
     const cells = screen.getAllByTestId('board-cell');
     expect(cells[6].style.background).toBe('var(--color-game-status-waiting)');
-    expect(cells[6].style.color).toBe('black');
+    expect(cells[6].style.color).toBe('var(--color-game-text-strong)');
   });
 
   it('empty cell has transparent background', () => {

@@ -23,7 +23,7 @@ type ShortDeckGame interface {
 	// GetPot ポット額を取得する
 	GetPot() int
 	// GetSidePots サイドポット一覧を取得する
-	GetSidePots() []domain.ShortDeckSidePot
+	GetSidePots() []domain.SidePot
 	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
 	// GetCurrentTurn 現在のターンを取得する
@@ -37,9 +37,9 @@ type ShortDeckGame interface {
 	// GetRaiseCount 現在のレイズ回数を取得する
 	GetRaiseCount() int
 	// GetRoundResults ラウンド結果を取得する
-	GetRoundResults() []domain.ShortDeckResult
+	GetRoundResults() []domain.HoldemResult
 	// GetCpuActions CPU行動記録を取得する
-	GetCpuActions() []domain.ShortDeckCpuAction
+	GetCpuActions() []domain.HoldemCpuAction
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.ShortDeckConfig
 	// SetConfig ゲーム設定を変更する

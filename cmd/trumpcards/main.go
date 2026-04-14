@@ -91,12 +91,16 @@ func run() int {
 	// Build game commands from the registry (single source of truth).
 	commands := buildGameCommands()
 	commands["games"] = func() int {
-		var short bool
+		var short, aliases bool
 		_, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
+			f.BoolVar(&aliases, "aliases", false, "Include aliases in output (with --short)")
 		})
 		if !ok {
 			return code
+		}
+		if aliases && !short {
+			fmt.Fprintln(os.Stderr, i18n.T("cliAliasesWithoutShort"))
 		}
 		// Build reverse alias map: canonical name -> sorted list of aliases.
 		reverseAliases := make(map[string][]string)
@@ -110,10 +114,15 @@ func run() int {
 		for _, name := range ui.GameNames() {
 			if short {
 				fmt.Println(name)
+				if aliases {
+					for _, alias := range reverseAliases[name] {
+						fmt.Println(alias)
+					}
+				}
 			} else {
 				line := fmt.Sprintf("  %-16s %s", name, descs[name])
-				if aliases := reverseAliases[name]; len(aliases) > 0 {
-					line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliases, ", "))
+				if aliasList := reverseAliases[name]; len(aliasList) > 0 {
+					line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
 				}
 				fmt.Println(line)
 			}
@@ -144,9 +153,11 @@ func run() int {
 	}
 	commands["web"] = func() int {
 		var port int
+		var host string
 		_, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
 			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080)")
 			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
+			f.StringVar(&host, "host", "", "Bind address for the web server (default: all interfaces)")
 		})
 		if !ok {
 			return code
@@ -157,6 +168,9 @@ func run() int {
 				return 1
 			}
 			_ = os.Setenv("PORT", strconv.Itoa(port))
+		}
+		if host != "" {
+			_ = os.Setenv("HOST", host)
 		}
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()
@@ -197,8 +211,10 @@ func run() int {
 	}
 
 	// No argument: start interactive multi-game mode (defaults to blackjack).
+	startGame := "blackjack"
 	fmt.Println(i18n.Tf("cliStartupBanner", "version", version))
-	manager := ui.NewGameManager("blackjack")
+	fmt.Println(i18n.Tf("cliStartupGame", "game", startGame))
+	manager := ui.NewGameManager(startGame)
 	ui.RunInteractiveCuiLoop(manager)
 	return 0
 }
@@ -286,7 +302,7 @@ GAMES:
 	}
 	sb.WriteString(`
 COMMANDS:
-  games        List all available games (--short for names only)
+  games        List all available games (--short for names only, --aliases to include aliases with --short)
   help [game]  Show this help, or a specific game's help text
   completion   Generate shell completion script (bash, zsh, fish)
   update       Self-update to the latest version
@@ -306,16 +322,20 @@ EXAMPLES:
   trumpcards --lang en poker     Play Poker in English
   trumpcards games               List all available games
   trumpcards games --short       List game names only (for scripting)
+  trumpcards games --short --aliases  List game names including aliases
   trumpcards update              Self-update to the latest version
   trumpcards update --yes        Update without confirmation prompt
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
   trumpcards web                 Start the web GUI server
   trumpcards web --port 3000     Start the web GUI on port 3000
+  trumpcards web --host 127.0.0.1  Bind to localhost only
   source <(trumpcards completion bash)   Enable bash completion
 
 ENVIRONMENT VARIABLES:
   NO_COLOR          Disable color output when set (see https://no-color.org/)
                     Example: NO_COLOR=1 trumpcards blackjack
+  HOST              Bind address for the web server (default: all interfaces)
+                    Example: HOST=127.0.0.1 trumpcards web
   PORT              Port number for the web server (default: 8080)
                     Example: PORT=3000 trumpcards web
 `)

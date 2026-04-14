@@ -20,6 +20,7 @@ import { DeucesWildPage } from './pages/DeucesWildPage';
 import { DoubtPage } from './pages/DoubtPage';
 import { DurakPage } from './pages/DurakPage';
 import { EuchrePage } from './pages/EuchrePage';
+import { FiftyOnePage } from './pages/FiftyOnePage';
 import { FortyThievesPage } from './pages/FortyThievesPage';
 import { FreeCellPage } from './pages/FreeCellPage';
 import { GinRummyPage } from './pages/GinRummyPage';
@@ -52,6 +53,8 @@ import { TriPeaksPage } from './pages/TriPeaksPage';
 import { TwoTenJackPage } from './pages/TwoTenJackPage';
 import { VideoPokerPage } from './pages/VideoPokerPage';
 import { WarPage } from './pages/WarPage';
+import { WhistPage } from './pages/WhistPage';
+import { YukonPage } from './pages/YukonPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
 const pageByPath: Record<GamePath, ReactNode> = {
@@ -98,9 +101,12 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/golf': <GolfPage />,
   '/pigtail': <PigsTailPage />,
   '/war': <WarPage />,
+  '/fiftyone': <FiftyOnePage />,
   '/clocksolitaire': <ClockSolitairePage />,
   '/fortythieves': <FortyThievesPage />,
   '/canfield': <CanfieldPage />,
+  '/yukon': <YukonPage />,
+  '/whist': <WhistPage />,
 };
 
 /** Root application component with router and game page routes. */

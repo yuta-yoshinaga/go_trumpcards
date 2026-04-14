@@ -37,7 +37,7 @@ func (p *Poker) SetCpuActions(actions []PokerCpuAction) { p.round.cpuActions = a
 func (p *Poker) SetCpuExchanges(exchanges []PokerCpuExchange) { p.round.cpuExchanges = exchanges }
 
 // SetSidePots サイドポット設定（テスト用）
-func (p *Poker) SetSidePots(pots []PokerSidePot) { p.round.sidePots = pots }
+func (p *Poker) SetSidePots(pots []SidePot) { p.round.sidePots = pots }
 
 // SetHumanProfile メタAIプロファイル設定（テスト用）
 func (p *Poker) SetHumanProfile(profile *BettingHumanProfile) { p.humanProfile = profile }

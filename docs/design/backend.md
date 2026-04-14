@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全46ゲーム)](#12-ゲームドメイン-全46ゲーム)
+  - [1.2 ゲームドメイン (全50ゲーム)](#12-ゲームドメイン-全50ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -22,10 +22,12 @@
   - [2.9 Speed プレイフロー](#29-speed-プレイフロー)
   - [2.10 GoFish 要求フロー](#210-gofish-要求フロ���)
   - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
-  - [2.12 SevenCardStud ベッティングフロー](#212-sevencardstud-ベッティングフロー)
-  - [2.13 Durak アタック・ディフェンスフロー](#213-durak-アタックディフェンスフロー)
-  - [2.14 FortyThieves ドロー・ムーブフロー](#214-fortythieves-ドロームーブフロー)
-  - [2.15 PaiGow ベット・セットフロー](#215-paigow-ベットセットフロー)
+  - [2.12 FiftyOne 交換フロー](#212-fiftyone-交換フロー)
+  - [2.17 Yukon ムーブフロー](#217-yukon-ムーブフロー)
+  - [2.13 SevenCardStud ベッティングフロー](#213-sevencardstud-ベッティングフロー)
+  - [2.14 Durak アタック・ディフェンスフロー](#214-durak-アタックディフェンスフロー)
+  - [2.15 FortyThieves ドロー・ムーブフロー](#215-fortythieves-ドロームーブフロー)
+  - [2.16 PaiGow ベット・セットフロー](#216-paigow-ベットセットフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -58,6 +60,12 @@
   - [3.28 Durak フェーズ遷移](#328-durak-フェーズ遷移)
   - [3.29 FortyThieves フェーズ遷移](#329-fortythieves-フェーズ遷移)
   - [3.30 PaiGow フェーズ遷移](#330-paigow-フェーズ遷移)
+  - [3.31 FiftyOne フェーズ遷移](#331-fiftyone-フェーズ遷移)
+  - [3.32 Yukon フェーズ遷移](#332-yukon-フェーズ遷移)
+  - [3.33 Whist フェーズ遷移](#333-whist-フェーズ遷移)
+  - [3.34 Canfield フェーズ遷移](#334-canfield-フェーズ遷移)
+  - [3.35 CaribbeanStud フェーズ遷移](#335-caribbeanstud-フェーズ遷移)
+  - [3.36 War フェーズ遷移](#336-war-フェーズ遷移)
 
 ---
 
@@ -125,7 +133,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全46ゲーム)
+### 1.2 ゲームドメイン (全50ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -885,6 +893,37 @@ classDiagram
 
     PigsTail --> "4" PigsTailPlayer
     PigsTailPlayer --|> GamePlayer
+
+    class FiftyOne {
+        -trumpCards *TrumpCards
+        -players []*FiftyOnePlayer
+        -tableCards []*Card
+        -currentTurn int
+        -phase FiftyOnePhase
+        -stopCallerIdx int
+        -config FiftyOneConfig
+        +Reset()
+        +ExchangeOne(handIdx int, tableIdx int) error
+        +ExchangeAll() error
+        +Stop() error
+        +CpuPlay() error
+        +GetGameEndFlag() bool
+        +ActionLog() []*ActionLogEntry
+    }
+
+    class FiftyOnePlayer {
+        +BestSuitScore() int
+        +BestSuit() int
+        +SuitScores() map[int]int
+    }
+
+    class FiftyOneConfig {
+        +FiftyOneCpuDifficulty CpuDifficulty
+    }
+
+    FiftyOne --> "4" FiftyOnePlayer
+    FiftyOne --> "1" FiftyOneConfig
+    FiftyOnePlayer --|> GamePlayer
 ```
 
 #### セブンカード・スタッド
@@ -1195,6 +1234,104 @@ classDiagram
     Durak --> "1" DurakConfig
     DurakPlayer --|> GamePlayer
     FortyThieves --> "*" Card
+
+    class Yukon {
+        -trumpCards *TrumpCards
+        -tableau [7][]*KlondikeTableauCard
+        -foundation [4][]*Card
+        -phase YukonPhase
+        -moveCount int
+        -history []*yukonSnapshot
+        -isStalemate bool
+        +Reset()
+        +MoveTableauToTableau(fromCol int, fromIdx int, toCol int) error
+        +MoveTableauToFoundation(fromCol int) error
+        +Hint() *YukonHint
+        +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
+        +AutoComplete() error
+        +GiveUp()
+        +GetPhase() YukonPhase
+    }
+
+    Yukon --> "*" KlondikeTableauCard
+
+    class Canfield {
+        -trumpCards *TrumpCards
+        -tableau [4][]*CanfieldTableauCard
+        -reserve []*Card
+        -stock []*Card
+        -waste []*Card
+        -foundation [4][]*Card
+        -baseRank int
+        -phase CanfieldPhase
+        -moveCount int
+        -history []*canfieldSnapshot
+        +Reset()
+        +Draw() error
+        +MoveWasteToTableau(col int) error
+        +MoveWasteToFoundation() error
+        +MoveTableauToTableau(fromCol int, cardIndex int, toCol int) error
+        +MoveTableauToFoundation(col int) error
+        +MoveReserveToTableau(col int) error
+        +MoveReserveToFoundation() error
+        +GiveUp()
+        +GetHint() *CanfieldHint
+        +AutoComplete() error
+        +Undo() error
+        +UndoN(n int) error
+        +GetPhase() CanfieldPhase
+    }
+
+    class War {
+        -trumpCards *TrumpCards
+        -players [2]*WarPlayer
+        -config WarConfig
+        -phase WarPhase
+        -warPot []*Card
+        -playerRevealed *Card
+        -cpuRevealed *Card
+        -lastWinnerIdx int
+        -roundsPlayed int
+        -gameEndFlag bool
+        -winnerIdx int
+        +Reset()
+        +Step() error
+        +GetPhase() WarPhase
+    }
+
+    class Whist {
+        -trumpCards *TrumpCards
+        -players []*WhistPlayer
+        -config WhistConfig
+        -phase WhistPhase
+        -roundNumber int
+        -trickNumber int
+        -currentPlayerIdx int
+        -currentTrick []*WhistTrickCard
+        -trumpSuit int
+        -leadPlayerIdx int
+        -dealerIdx int
+        -teamScores [2]int
+        -gameEndFlag bool
+        -winnerTeam int
+        +Reset()
+        +PlayerPlay(cardIdx int) error
+        +CpuPlay()
+        +NextTrick() error
+        +ResolveTrick() error
+        +ScoreRound()
+        +NextRound()
+        +GetHint() *WhistHint
+        +GetPhase() WhistPhase
+    }
+
+    Canfield --> "1" TrumpCards
+    War --> "1" TrumpCards
+    War --> "2" WarPlayer
+    Whist --> "1" TrumpCards
+    Whist --> "4" WhistPlayer
 ```
 
 ### 1.3 ユースケース層 (Interactor・Presenter)
@@ -1248,7 +1385,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全46ゲーム共通)**
+**Interactor パターン (全50ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1723,7 +1860,45 @@ sequenceDiagram
     Pres-->>User: ドロー結果・手札枚数更新表示
 ```
 
-### 2.12 SevenCardStud ベッティングフロー
+### 2.12 FiftyOne 交換フロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as FiftyOneInteractor
+    participant Domain as FiftyOne
+    participant Pres as Presenter
+
+    Note over User,Pres: 1枚交換フロー
+    User->>Ctrl: play 2 0
+    Ctrl->>Interactor: ExchangeOne(2, 0)
+    Interactor->>Domain: ExchangeOne(2, 0)
+    Domain->>Domain: 手札[2]と場札[0]を交換 → CPUターン自動実行
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 交換結果・手札更新表示
+
+    Note over User,Pres: 全交換フロー
+    User->>Ctrl: exchangeall
+    Ctrl->>Interactor: ExchangeAll()
+    Interactor->>Domain: ExchangeAll()
+    Domain->>Domain: 手札5枚と場札5枚を交換 → CPUターン自動実行
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 全交換結果表示
+
+    Note over User,Pres: ストップ宣言
+    User->>Ctrl: stop
+    Ctrl->>Interactor: Stop()
+    Interactor->>Domain: Stop()
+    Domain->>Domain: ストップ宣言 → 残り3ターン → CPUターン自動実行 → ゲーム終了
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ゲーム終了・スコア表示
+```
+
+### 2.13 SevenCardStud ベッティングフロー
 
 ```mermaid
 sequenceDiagram
@@ -1743,7 +1918,7 @@ sequenceDiagram
     Pres-->>User: ベッティング結果・カード更新表示
 ```
 
-### 2.13 Durak アタック・ディフェンスフロー
+### 2.14 Durak アタック・ディフェンスフロー
 
 ```mermaid
 sequenceDiagram
@@ -1781,7 +1956,7 @@ sequenceDiagram
     Pres-->>User: 手札枚数・次アタッカー表示
 ```
 
-### 2.14 FortyThieves ドロー・ムーブフロー
+### 2.15 FortyThieves ドロー・ムーブフロー
 
 ```mermaid
 sequenceDiagram
@@ -1819,7 +1994,7 @@ sequenceDiagram
     Pres-->>User: 組札更新表示
 ```
 
-### 2.15 PaiGow ベット・セットフロー
+### 2.16 PaiGow ベット・セットフロー
 
 ```mermaid
 sequenceDiagram
@@ -1854,6 +2029,44 @@ sequenceDiagram
     Domain-->>Interactor: nil
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: 両ハンド・結果・配当表示
+```
+
+### 2.17 Yukon ムーブフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as YukonInteractor
+    participant Domain as Yukon
+    participant Pres as Presenter
+
+    Note over User,Pres: タブロー間移動フロー
+    User->>Ctrl: move (from=tableau col=2 cardIndex=1, to=tableau col=5)
+    Ctrl->>Interactor: MoveTableauToTableau(2, 1, 5)
+    Interactor->>Domain: MoveTableauToTableau(2, 1, 5)
+    Domain->>Domain: カード群を列2から列5へ移動 → 裏向きカード表返し
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: タブロー更新表示
+
+    Note over User,Pres: ファウンデーション移動フロー
+    User->>Ctrl: move (from=tableau col=3, to=foundation)
+    Ctrl->>Interactor: MoveTableauToFoundation(3)
+    Interactor->>Domain: MoveTableauToFoundation(3)
+    Domain->>Domain: 列3の末尾カードをファウンデーションに積む → クリア判定
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ファウンデーション・タブロー更新表示
+
+    Note over User,Pres: オートコンプリートフロー
+    User->>Ctrl: autocomplete
+    Ctrl->>Interactor: AutoComplete()
+    Interactor->>Domain: AutoComplete()
+    Domain->>Domain: 全表向きカードをファウンデーションに自動積み → phase=GameClear
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ゲームクリア表示
 ```
 
 ---
@@ -2412,6 +2625,115 @@ stateDiagram-v2
     note right of Bet : PaiGowPhaseBet = 1
     note right of Set : PaiGowPhaseSet = 2
     note right of End : PaiGowPhaseEnd = 3
+```
+
+### 3.31 FiftyOne フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : ExchangeOne / ExchangeAll → CPUターン自動実行
+    Play --> Play : Stop → 残りプレイヤー各1回プレイ
+    Play --> GameEnd : ストップ後の残りターン完了
+    GameEnd --> [*]
+
+    note right of Play : FiftyOnePhasePlay = 0
+    note right of GameEnd : FiftyOnePhaseGameEnd = 1
+```
+
+### 3.32 Yukon フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : MoveTableauToTableau / MoveTableauToFoundation
+    Playing --> Playing : Undo / UndoN / Hint
+    Playing --> GameClear : 全カードがファウンデーションに積まれた
+    Playing --> GameClear : AutoComplete()
+    Playing --> GameOver : GiveUp()
+    Playing --> GameOver : 手詰まり検出 (isStalemate)
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : YukonPhasePlaying = 0
+    note right of GameClear : YukonPhaseGameClear = 1
+    note right of GameOver : YukonPhaseGameOver = 2
+```
+
+### 3.33 Whist フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : CpuPlay() / PlayerPlay()
+    Play --> TrickEnd : 4人全員プレイ完了
+    TrickEnd --> Play : NextTrick() (トリック < 13)
+    TrickEnd --> RoundEnd : ResolveTrick() (トリック = 13)
+    RoundEnd --> Play : ScoreRound() + NextRound() (目標未到達)
+    RoundEnd --> GameEnd : ScoreRound() (目標到達)
+    GameEnd --> [*]
+
+    note right of Play : WhistPhasePlay = 0
+    note right of TrickEnd : WhistPhaseTrickEnd = 1
+    note right of RoundEnd : WhistPhaseRoundEnd = 2
+    note right of GameEnd : WhistPhaseGameEnd = 3
+```
+
+### 3.34 Canfield フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : Draw() / MoveWasteToTableau() / MoveWasteToFoundation()
+    Playing --> Playing : MoveTableauToTableau() / MoveTableauToFoundation()
+    Playing --> Playing : MoveReserveToTableau() / MoveReserveToFoundation()
+    Playing --> Playing : Undo() / UndoN() / GetHint()
+    Playing --> GameClear : 全カードがファンデーションに積まれた
+    Playing --> GameClear : AutoComplete()
+    Playing --> GameOver : GiveUp()
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : CanfieldPhasePlaying = 0
+    note right of GameClear : CanfieldPhaseGameClear = 1
+    note right of GameOver : CanfieldPhaseGameOver = 2
+```
+
+### 3.35 CaribbeanStud フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> Action : Bet() (アンテ＋配布)
+    Action --> End : Play() (コール＝勝負)
+    Action --> End : Fold() (フォールド＝アンテ没収)
+    End --> Bet : Reset() (次ラウンド)
+    End --> [*]
+
+    note right of Bet : CaribbeanStudPhaseBet = 1
+    note right of Action : CaribbeanStudPhaseAction = 2
+    note right of End : CaribbeanStudPhaseEnd = 3
+```
+
+### 3.36 War フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Reveal : Reset()
+    Reveal --> Resolved : Step() (勝者確定)
+    Reveal --> WarBury : Step() (同ランク＝戦争発生)
+    Reveal --> GameEnd : Step() (カード切れ)
+    WarBury --> Resolved : Step() (伏せ札＋新表札で勝者確定)
+    WarBury --> WarBury : Step() (再び同ランク＝再戦争)
+    WarBury --> GameEnd : Step() (カード切れ)
+    Resolved --> Reveal : Step() (場札回収＋次ラウンド)
+    Resolved --> GameEnd : Step() (最大ラウンド到達 or カード切れ)
+    GameEnd --> [*]
+
+    note right of Reveal : WarPhaseReveal = 0
+    note right of Resolved : WarPhaseResolved = 1
+    note right of WarBury : WarPhaseWarBury = 2
+    note right of GameEnd : WarPhaseGameEnd = 3
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

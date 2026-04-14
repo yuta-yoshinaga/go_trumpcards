@@ -1,0 +1,67 @@
+{
+  "phase": {
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "trumpSuit": "Trump Suit",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "currentTrick": "Current Trick",
+  "teamScores": "Team Scores",
+  "scoreHeaderTeam": "Team",
+  "scoreHeaderPoints": "Score",
+  "team": "Team {{n}}",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "playPhase": {
+    "lead": "Lead a card",
+    "follow": "Play a card"
+  },
+  "trickEnd": "Trick ended",
+  "roundEnd": "Round ended",
+  "result": {
+    "team0Win": "Team 0 wins!",
+    "team1Win": "Team 1 wins!"
+  },
+  "hintPlay": "Recommended card",
+  "hintReason": {
+    "lead_strong": "Lead with a strong card",
+    "follow_suit": "Follow the lead suit",
+    "trump_cut": "Cut with trump",
+    "discard_high": "Discard a high card"
+  },
+  "suitNames": {
+    "1": "♠ Spades",
+    "2": "♣ Clubs",
+    "3": "♥ Hearts",
+    "4": "♦ Diamonds"
+  },
+  "tutorial": {
+    "trickDisplay": "The current trick. The trump suit changes each round.",
+    "playerHand": "Your hand. You must follow the lead suit if you can.",
+    "playButton": "Select a card and press this button to play it.",
+    "teamScores": "Team scores. Points are earned for each trick over 6.",
+    "trumpInfo": "The last card dealt to the dealer determines the trump suit.",
+    "resetButton": "Press reset to start a new game."
+  },
+  "hint": {
+    "leadStrategic": "Strategic lead recommended",
+    "followSuit": "Follow the lead suit",
+    "trumpCut": "Opportunity to cut with trump",
+    "discardLowest": "Discard your lowest card"
+  }
+}

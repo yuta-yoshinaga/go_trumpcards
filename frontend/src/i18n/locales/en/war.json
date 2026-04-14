@@ -18,5 +18,16 @@
   },
   "settings": {
     "maxRounds": "Max rounds"
+  },
+  "hint": {
+    "flipCard": "Flip the next card",
+    "resolveRound": "Flip to resolve this round"
+  },
+  "tutorial": {
+    "cpuPile": "CPU's card pile. Shows remaining card count.",
+    "arena": "Battle arena. Revealed cards and pot size shown here.",
+    "playerPile": "Your card pile. You lose when you run out of cards.",
+    "stepButton": "Press this button to flip the next card.",
+    "resetButton": "Start a new game."
   }
 }

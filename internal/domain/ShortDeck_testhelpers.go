@@ -31,13 +31,13 @@ func (sd *ShortDeck) SetLastBet(bet int) { sd.lastBet = bet }
 func (sd *ShortDeck) SetMinRaise(raise int) { sd.minRaise = raise }
 
 // SetRoundResults ラウンド結果設定（テスト用）
-func (sd *ShortDeck) SetRoundResults(results []ShortDeckResult) { sd.roundResults = results }
+func (sd *ShortDeck) SetRoundResults(results []HoldemResult) { sd.roundResults = results }
 
 // SetCpuActions CPU行動記録設定（テスト用）
-func (sd *ShortDeck) SetCpuActions(actions []ShortDeckCpuAction) { sd.cpuActions = actions }
+func (sd *ShortDeck) SetCpuActions(actions []HoldemCpuAction) { sd.cpuActions = actions }
 
 // SetSidePots サイドポット設定（テスト用）
-func (sd *ShortDeck) SetSidePots(pots []ShortDeckSidePot) { sd.sidePots = pots }
+func (sd *ShortDeck) SetSidePots(pots []SidePot) { sd.sidePots = pots }
 
 // SetHandCount ハンド数設定（テスト用）
 func (sd *ShortDeck) SetHandCount(count int) { sd.handCount = count }

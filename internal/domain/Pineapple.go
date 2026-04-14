@@ -28,15 +28,6 @@ const (
 	PineappleActionAllIn = HoldemActionAllIn
 )
 
-// PineappleSidePot サイドポット (共通SidePot型のエイリアス)
-type PineappleSidePot = SidePot
-
-// PineappleResult ショーダウン結果
-type PineappleResult = HoldemResult
-
-// PineappleCpuAction CPU行動記録
-type PineappleCpuAction = HoldemCpuAction
-
 // リバイフェーズ種別定数 (Holdemと共通)
 const (
 	PineappleRebuyPhaseNone  = HoldemRebuyPhaseNone
@@ -47,22 +38,17 @@ const (
 // Pineapple パイナップルポーカー (Crazy Pineapple) クラス
 // ホールカード3枚を配り、フロップ後に1枚をディスカードする
 type Pineapple struct {
+	communityCardBettingBase
 	trumpCards      *TrumpCards
 	players         []*PineapplePlayer
 	communityCards  []*Card
-	pot             int
-	sidePots        []PineappleSidePot
+	sidePots        []SidePot
 	dealerIdx       int
 	currentTurn     int
 	phase           int
 	config          PineappleConfig
-	gameEndFlag     bool
-	lastBet         int
-	minRaise        int
-	raiseCount      int
-	actedFlags      []bool
-	roundResults    []PineappleResult
-	cpuActions      []PineappleCpuAction
+	roundResults    []HoldemResult
+	cpuActions      []HoldemCpuAction
 	startingChips   []int
 	vpipTracked     []bool
 	pfrTracked      []bool
@@ -81,13 +67,15 @@ type Pineapple struct {
 // NewPineapple コンストラクタ
 func NewPineapple(trumpCards *TrumpCards, players []*PineapplePlayer, config PineappleConfig) *Pineapple {
 	return &Pineapple{
+		communityCardBettingBase: communityCardBettingBase{
+			actedFlags: make([]bool, len(players)),
+		},
 		trumpCards:      trumpCards,
 		players:         players,
 		communityCards:  make([]*Card, 0),
-		sidePots:        make([]PineappleSidePot, 0),
-		actedFlags:      make([]bool, len(players)),
-		roundResults:    make([]PineappleResult, 0),
-		cpuActions:      make([]PineappleCpuAction, 0),
+		sidePots:        make([]SidePot, 0),
+		roundResults:    make([]HoldemResult, 0),
+		cpuActions:      make([]HoldemCpuAction, 0),
 		startingChips:   make([]int, len(players)),
 		vpipTracked:     make([]bool, len(players)),
 		pfrTracked:      make([]bool, len(players)),
@@ -104,15 +92,15 @@ func NewPineapple(trumpCards *TrumpCards, players []*PineapplePlayer, config Pin
 func (p *Pineapple) Reset() error {
 	p.phase = PineapplePhaseInit
 	p.pot = 0
-	p.sidePots = make([]PineappleSidePot, 0)
+	p.sidePots = make([]SidePot, 0)
 	p.communityCards = make([]*Card, 0)
 	p.gameEndFlag = false
 	p.lastBet = 0
 	p.minRaise = p.config.BigBlind
 	p.raiseCount = 0
 	p.actedFlags = make([]bool, len(p.players))
-	p.roundResults = make([]PineappleResult, 0)
-	p.cpuActions = make([]PineappleCpuAction, 0)
+	p.roundResults = make([]HoldemResult, 0)
+	p.cpuActions = make([]HoldemCpuAction, 0)
 	p.rebuyPhaseType = PineappleRebuyPhaseNone
 	p.actionLog = nil
 	p.lastHumanPlayMs = 0
@@ -427,31 +415,16 @@ func (p *Pineapple) trackPostFlopStats(playerIdx, action int) {
 	}
 }
 
-// bettingPlayers BettingPlayerスライスを生成
-func (p *Pineapple) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(p.players))
-	for i, pl := range p.players {
-		bp[i] = pl
-	}
-	return bp
-}
-
 // executeAction 指定プレイヤーのアクション実行
 func (p *Pineapple) executeAction(playerIdx, action, amount int) error {
 	p.trackPreFlopStats(playerIdx, action)
 	p.trackPostFlopStats(playerIdx, action)
 
-	bp := p.bettingPlayers()
-	state := &BettingState{
-		Pot: p.pot, LastBet: p.lastBet, MinRaise: p.minRaise,
-		RaiseCount: p.raiseCount, ActedFlags: p.actedFlags,
-	}
+	bp := toBettingPlayers(p.players)
+	state := p.bettingState()
 	maxRaises, maxBetAmount := p.bettingLimits()
 	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, p.config.BigBlind, maxRaises, maxBetAmount)
-	p.pot = state.Pot
-	p.lastBet = state.LastBet
-	p.minRaise = state.MinRaise
-	p.raiseCount = state.RaiseCount
+	p.syncBettingState(state)
 	if err != nil {
 		return err
 	}
@@ -470,33 +443,18 @@ func (p *Pineapple) advanceTurn() {
 		return
 	}
 
-	if p.isBettingRoundComplete() {
+	bp := toBettingPlayers(p.players)
+	if p.isBettingRoundComplete(bp) {
 		p.advancePhase()
 		return
 	}
 
-	for i := 1; i <= len(p.players); i++ {
-		next := (p.currentTurn + i) % len(p.players)
-		if !p.players[next].GetFolded() && !p.players[next].GetAllIn() && !p.actedFlags[next] {
-			p.currentTurn = next
-			return
-		}
+	if next := p.findNextActiveTurn(p.currentTurn, bp); next >= 0 {
+		p.currentTurn = next
+		return
 	}
 
 	p.advancePhase()
-}
-
-// isBettingRoundComplete ベッティングラウンドが完了したかチェック
-func (p *Pineapple) isBettingRoundComplete() bool {
-	for i, pl := range p.players {
-		if pl.GetFolded() || pl.GetAllIn() {
-			continue
-		}
-		if !p.actedFlags[i] {
-			return false
-		}
-	}
-	return true
 }
 
 // advancePhase 次のフェーズに進める
@@ -647,7 +605,7 @@ func (p *Pineapple) resolveLastPlayer() {
 	for i, pl := range p.players {
 		if !pl.GetFolded() {
 			pl.AddChips(p.pot)
-			p.roundResults = []PineappleResult{{
+			p.roundResults = []HoldemResult{{
 				PlayerIdx: i,
 				WonAmount: p.pot,
 			}}
@@ -668,17 +626,17 @@ func (p *Pineapple) resolveShowdown() {
 		}
 	}
 
-	bp := p.bettingPlayers()
+	bp := toBettingPlayers(p.players)
 	p.sidePots = CalculateSidePots(bp, p.pot, p.startingChips)
 	wonAmounts := DistributePots(bp, p.sidePots)
 
-	p.roundResults = make([]PineappleResult, 0)
+	p.roundResults = make([]HoldemResult, 0)
 	humanLost := false
 	for i, pl := range p.players {
 		if pl.GetFolded() {
 			continue
 		}
-		result := PineappleResult{
+		result := HoldemResult{
 			PlayerIdx: i,
 			HandRank:  pl.GetHandRank(),
 			HandName:  p.getHandName(pl.GetHandRank()),
@@ -961,7 +919,7 @@ func (p *Pineapple) GetCommunityCards() []*Card { return p.communityCards }
 func (p *Pineapple) GetPot() int { return p.pot }
 
 // GetSidePots サイドポット取得
-func (p *Pineapple) GetSidePots() []PineappleSidePot { return p.sidePots }
+func (p *Pineapple) GetSidePots() []SidePot { return p.sidePots }
 
 // GetDealerIdx ディーラーインデックス取得
 func (p *Pineapple) GetDealerIdx() int { return p.dealerIdx }
@@ -982,10 +940,10 @@ func (p *Pineapple) GetMinRaise() int { return p.minRaise }
 func (p *Pineapple) GetRaiseCount() int { return p.raiseCount }
 
 // GetRoundResults ラウンド結果取得
-func (p *Pineapple) GetRoundResults() []PineappleResult { return p.roundResults }
+func (p *Pineapple) GetRoundResults() []HoldemResult { return p.roundResults }
 
 // GetCpuActions CPU行動記録取得
-func (p *Pineapple) GetCpuActions() []PineappleCpuAction { return p.cpuActions }
+func (p *Pineapple) GetCpuActions() []HoldemCpuAction { return p.cpuActions }
 
 // GetLastCpuError 最後のCPUアクションエラー取得
 func (p *Pineapple) GetLastCpuError() error { return p.lastCpuError }
@@ -1088,7 +1046,7 @@ type pineappleJSON struct {
 	Players         []*PineapplePlayer       `json:"pl"`
 	CommunityCards  []*Card                  `json:"cc"`
 	Pot             int                      `json:"pt"`
-	SidePots        []PineappleSidePot       `json:"sp"`
+	SidePots        []SidePot                `json:"sp"`
 	DealerIdx       int                      `json:"di"`
 	CurrentTurn     int                      `json:"ct"`
 	Phase           int                      `json:"ph"`
@@ -1098,8 +1056,8 @@ type pineappleJSON struct {
 	MinRaise        int                      `json:"mr"`
 	RaiseCount      int                      `json:"rc"`
 	ActedFlags      []bool                   `json:"af"`
-	RoundResults    []PineappleResult        `json:"rr"`
-	CpuActions      []PineappleCpuAction     `json:"ca"`
+	RoundResults    []HoldemResult           `json:"rr"`
+	CpuActions      []HoldemCpuAction        `json:"ca"`
 	StartingChips   []int                    `json:"sc"`
 	VPIPTracked     []bool                   `json:"vt"`
 	PFRTracked      []bool                   `json:"ft"`
@@ -1182,7 +1140,7 @@ func (p *Pineapple) UnmarshalJSON(data []byte) error {
 	p.pot = j.Pot
 	p.sidePots = j.SidePots
 	if p.sidePots == nil {
-		p.sidePots = make([]PineappleSidePot, 0)
+		p.sidePots = make([]SidePot, 0)
 	}
 	p.dealerIdx = j.DealerIdx
 	p.currentTurn = j.CurrentTurn
@@ -1198,11 +1156,11 @@ func (p *Pineapple) UnmarshalJSON(data []byte) error {
 	}
 	p.roundResults = j.RoundResults
 	if p.roundResults == nil {
-		p.roundResults = make([]PineappleResult, 0)
+		p.roundResults = make([]HoldemResult, 0)
 	}
 	p.cpuActions = j.CpuActions
 	if p.cpuActions == nil {
-		p.cpuActions = make([]PineappleCpuAction, 0)
+		p.cpuActions = make([]HoldemCpuAction, 0)
 	}
 	p.startingChips = j.StartingChips
 	if p.startingChips == nil {

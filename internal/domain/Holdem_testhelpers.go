@@ -37,7 +37,7 @@ func (h *Holdem) SetRoundResults(results []HoldemResult) { h.roundResults = resu
 func (h *Holdem) SetCpuActions(actions []HoldemCpuAction) { h.cpuActions = actions }
 
 // SetSidePots サイドポット設定（テスト用）
-func (h *Holdem) SetSidePots(pots []HoldemSidePot) { h.sidePots = pots }
+func (h *Holdem) SetSidePots(pots []SidePot) { h.sidePots = pots }
 
 // SetHandCount ハンド数設定（テスト用）
 func (h *Holdem) SetHandCount(count int) { h.handCount = count }

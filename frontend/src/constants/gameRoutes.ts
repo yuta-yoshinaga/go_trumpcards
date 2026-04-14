@@ -54,6 +54,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/euchre', labelKey: 'nav.euchre', icon: '🎩' },
       { path: '/bridge', labelKey: 'nav.bridge', icon: '🌉' },
       { path: '/napoleon', labelKey: 'nav.napoleon', icon: '👑' },
+      { path: '/whist', labelKey: 'nav.whist', icon: '🎴' },
     ],
   },
   {
@@ -71,6 +72,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/pinochle', labelKey: 'nav.pinochle', icon: '🎯' },
       { path: '/pigtail', labelKey: 'nav.pigtail', icon: '🐷' },
       { path: '/war', labelKey: 'nav.war', icon: '⚔️' },
+      { path: '/fiftyone', labelKey: 'nav.fiftyone', icon: '5️⃣' },
     ],
   },
   {
@@ -87,6 +89,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/clocksolitaire', labelKey: 'nav.clocksolitaire', icon: '🕐' },
       { path: '/fortythieves', labelKey: 'nav.fortythieves', icon: '🏰' },
       { path: '/canfield', labelKey: 'nav.canfield', icon: '🎩' },
+      { path: '/yukon', labelKey: 'nav.yukon', icon: '🏔️' },
     ],
   },
   {

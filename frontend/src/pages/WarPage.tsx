@@ -8,32 +8,75 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { WarSkeleton } from '../components/skeleton/WarSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import type { WarResponse } from '../types/card';
 import { WarPhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 
 type WarArgs = Parameters<typeof warApi.exec>;
 
 const DEFAULT_MAX_ROUNDS = 500;
 
+/** Tutorial steps for the War game. */
+const WR_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="wr-cpu-pile"]', messageKey: 'tutorial.cpuPile', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="wr-arena"]', messageKey: 'tutorial.arena', placement: 'bottom', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="wr-player-pile"]',
+    messageKey: 'tutorial.playerPile',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="wr-step-button"]',
+    messageKey: 'tutorial.stepButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="wr-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
 /** Renders the War (戦争) game page. */
 export function WarPage() {
+  return (
+    <TutorialWrapper gameName="war" steps={WR_TUTORIAL_STEPS}>
+      <WarPageContent />
+    </TutorialWrapper>
+  );
+}
+
+/** Inner content of the War page. */
+function WarPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('war');
   const { state, loading, error, exec: execApi, retry } = useGameApi(warApi.exec);
   const { cardWidth } = useCardDimensions();
   const [maxRounds, setMaxRounds] = useState(DEFAULT_MAX_ROUNDS);
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('war', state);
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   const handleReset = useCallback(() => execApi('reset', { maxRounds }), [execApi, maxRounds]);
@@ -91,6 +134,7 @@ export function WarPage() {
       <GamePageHeading title={tc('nav.war')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={!isGameEnd}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        <TutorialButton />
         <ManualButton gamePath="/war" />
       </PhaseIndicator>
 
@@ -183,6 +227,9 @@ export function WarPage() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
           </div>
 
           <SettingsPanel
@@ -204,6 +251,13 @@ export function WarPage() {
                     ],
                     onSelect: (v: string) => setMaxRounds(Number.parseInt(v, 10)),
                   },
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
                 ],
               },
             ]}
@@ -217,12 +271,14 @@ export function WarPage() {
                 disabled={loading || isGameEnd}
                 className="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="step-button"
+                data-tutorial="wr-step-button"
               >
                 {t('button.step')}
               </button>
               <button
                 type="button"
                 onClick={() => requestConfirm(handleReset)}
+                data-tutorial="wr-reset-button"
                 className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white text-sm"
               >
                 {tc('button.reset')}

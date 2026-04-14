@@ -104,6 +104,10 @@ tags:
     description: Pai Gow Poker (パイゴウポーカー) game
   - name: war
     description: War (戦争) game
+  - name: fiftyone
+    description: Fifty-one (フィフティワン) game
+  - name: yukon
+    description: Yukon (ユーコン) game
 
 paths:
   /blackjack/exec:
@@ -4459,6 +4463,313 @@ paths:
                     type: string
                   messageCode:
                     type: string
+        '400':
+          description: Bad request
+
+  /fiftyone/exec:
+    post:
+      tags:
+        - fiftyone
+      summary: Execute a Fifty-one (フィフティワン) game command
+      description: |
+        4-player card exchange game. Players swap cards between their hand and face-up table cards,
+        aiming to maximize the sum of same-suit cards (A=11, J/Q/K=10, 2-10=face value, max=51).
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Play    | 0     | Active play |
+        | GameEnd | 1     | Game over   |
+
+        | Command     | Description                              |
+        |-------------|------------------------------------------|
+        | reset / r   | Start new game                           |
+        | play        | Exchange 1 card (requires handIdx, tableIdx) |
+        | exchangeall | Exchange all 5 cards                     |
+        | stop        | Call stop                                |
+        | log / l     | View action log                          |
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, exchangeall, stop, log, l]
+                handIdx:
+                  type: integer
+                  description: Hand card index (0-4, required for play)
+                tableIdx:
+                  type: integer
+                  description: Table card index (0-4, required for play)
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      enum: [0, 1, 2]
+                      description: "0=Easy, 1=Normal, 2=Hard"
+                sessionId:
+                  type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        score:
+                          type: integer
+                  tableCards:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  phase:
+                    type: integer
+                  currentTurn:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerIdx:
+                    type: integer
+                  turnNumber:
+                    type: integer
+                  stopCallerIdx:
+                    type: integer
+                  lastAction:
+                    type: string
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /yukon/exec:
+    post:
+      tags:
+        - yukon
+      summary: Execute a Yukon (ユーコン) game command
+      description: |
+        Send a command to advance a Yukon solitaire session identified by `sessionId`.
+        Yukon is a Klondike variant with no stock/waste pile -- all 52 cards are dealt
+        to 7 tableau columns. Cards can be moved in groups regardless of sequence order.
+        Build foundations by suit Ace to King.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All foundations complete |
+        | GameOver  | 2     | Player gave up or stalemate |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `move`           | `m`     | Move card(s) between zones (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-complete to foundations |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: yukonExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  foundation:
+                    type: array
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /whist/exec:
+    post:
+      tags:
+        - whist
+      summary: Execute a Whist (ホイスト) game command
+      description: |
+        4-player 2v2 partnership trick-taking game. No bidding phase.
+        Trump suit is determined by the last card dealt to the dealer.
+        Teams score 1 point per trick above 6. First team to point limit wins.
+        Commands: reset, play, next, nextround, hint, log.
+      operationId: whistExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                  enum: [reset, play, next, nextround, hint, log, quit]
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+      responses:
+        '200':
+          description: Game state after executing the command
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                          items:
+                            type: object
+                        roundScore:
+                          type: integer
+                        cumulativeScore:
+                          type: integer
+                        trickCount:
+                          type: integer
+                        team:
+                          type: integer
+                  phase:
+                    type: integer
+                  roundNumber:
+                    type: integer
+                  trickNumber:
+                    type: integer
+                  currentPlayerIdx:
+                    type: integer
+                  currentTrick:
+                    type: array
+                    items:
+                      type: object
+                  trumpSuit:
+                    type: integer
+                  dealerIdx:
+                    type: integer
+                  teamScores:
+                    type: array
+                    items:
+                      type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerTeam:
+                    type: integer
+                  leadPlayerIdx:
+                    type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  config:
+                    type: object
+                    properties:
+                      cpuDifficulty:
+                        type: integer
+                      pointLimit:
+                        type: integer
         '400':
           description: Bad request
 

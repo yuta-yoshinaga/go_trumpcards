@@ -249,13 +249,36 @@ func TestDaifugoCuiController_SetRule_LongCommand(t *testing.T) {
 func TestDaifugoCuiController_SetRule_NoArgs(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sr"), "Usage: sr <rule> <0|1>")
+	result := c.Exec("sr")
+	assert.Contains(t, result, "Usage: sr <rule> <0|1> | sr list")
+	assert.Contains(t, result, "8cut")
+}
+
+func TestDaifugoCuiController_SetRule_List(t *testing.T) {
+	mi := new(mockUsecases.MockDaifugoInteractor)
+	c := controller.NewDaifugoCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+	result := c.Exec("sr list")
+	assert.Contains(t, result, "Rules:")
+	// Default config: 8cut ON, 5skip OFF
+	assert.Contains(t, result, "8cut")
+	assert.Contains(t, result, "ON")
+	assert.Contains(t, result, "5skip")
+	assert.Contains(t, result, "OFF")
+}
+
+func TestDaifugoCuiController_SetRule_List_LongCommand(t *testing.T) {
+	mi := new(mockUsecases.MockDaifugoInteractor)
+	c := controller.NewDaifugoCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+	result := c.Exec("setrule list")
+	assert.Contains(t, result, "Rules:")
 }
 
 func TestDaifugoCuiController_SetRule_OneArg(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sr 8cut"), "Usage: sr <rule> <0|1>")
+	assert.Contains(t, c.Exec("sr 8cut"), "Usage: sr <rule> <0|1> | sr list")
 }
 
 func TestDaifugoCuiController_SetRule_UnknownRule(t *testing.T) {

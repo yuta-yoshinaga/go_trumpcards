@@ -1,0 +1,35 @@
+{
+  "button": {
+    "exchange": "交換",
+    "exchangeAll": "全交換",
+    "stop": "ストップ"
+  },
+  "phase": {
+    "play": "プレイ中",
+    "end": "終了"
+  },
+  "label": {
+    "tableCards": "場札",
+    "score": "スコア",
+    "hand": "手札",
+    "selectCard": "カードを選択",
+    "stopCalled": "ストップ宣言済み",
+    "yourTurn": "あなたのターン",
+    "cpuTurn": "CPU{{id}}のターン"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU難易度"
+  },
+  "hint": {
+    "exchangeStrong": "スコアを大幅に改善できる交換があります",
+    "exchangeModerate": "スコアを少し改善できる交換があります",
+    "stopHigh": "スコアが高いのでストップ推奨"
+  },
+  "tutorial": {
+    "cpuArea": "CPU プレイヤーの情報です。ゲーム終了時にカードが公開されます。",
+    "tableCards": "場のカードです。手札と交換するカードをここから選びます。",
+    "playerHand": "あなたの手札です。同じスートの合計を51に近づけましょう。",
+    "actionButtons": "交換・全交換・ストップのアクションボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  }
+}

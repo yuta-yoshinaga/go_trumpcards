@@ -225,6 +225,29 @@ func TestKlondikeCuiControllerMoveShorthand(t *testing.T) {
 	})
 }
 
+func TestKlondikeCuiControllerFoundationShorthand(t *testing.T) {
+	t.Run("f with no args moves waste to foundation", func(t *testing.T) {
+		ki := newMockKlondikeInteractor()
+		c := NewKlondikeCuiController(ki)
+		ki.On("MoveWasteToFoundation").Return("wf_output")
+		assert.Equal(t, "wf_output", c.Exec("f"))
+	})
+
+	t.Run("f <col> moves tableau to foundation", func(t *testing.T) {
+		ki := newMockKlondikeInteractor()
+		c := NewKlondikeCuiController(ki)
+		ki.On("MoveTableauToFoundation", 3).Return("tf_output")
+		assert.Equal(t, "tf_output", c.Exec("f 3"))
+	})
+
+	t.Run("f <invalid> returns error", func(t *testing.T) {
+		ki := newMockKlondikeInteractor()
+		c := NewKlondikeCuiController(ki)
+		result := c.Exec("f abc")
+		assert.Contains(t, result, "abc")
+	})
+}
+
 func TestKlondikeCuiControllerUnknown(t *testing.T) {
 	ki := newMockKlondikeInteractor()
 	c := NewKlondikeCuiController(ki)

@@ -27,5 +27,17 @@
   "moveReserveToTableau": "リザーブ→場札",
   "moveWasteToFoundation": "ウェイスト→組札",
   "moveWasteToTableau": "ウェイスト→場札",
-  "moveTableauToFoundation": "場札→組札"
+  "moveTableauToFoundation": "場札→組札",
+  "frontendHint": {
+    "moveToFoundation": "組札へ移動できるカードがあります",
+    "moveToTableau": "場札間で移動可能なカードがあります"
+  },
+  "tutorial": {
+    "foundation": "ここにベースランクから順にスート別にカードを積み上げます。",
+    "stockWaste": "山札をクリックしてカードをめくります。ウェイストのカードを使えます。",
+    "reserve": "リザーブのカードです。組札や場札に移動できます。",
+    "tableau": "場札です。カードをドラッグ＆ドロップで移動できます。",
+    "actionButtons": "ヒント・自動完成・元に戻すなどの操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  }
 }

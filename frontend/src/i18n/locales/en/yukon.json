@@ -1,0 +1,37 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Yukon",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "undo": "Undo",
+  "empty": "Empty",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "stalemate": "Stalemate",
+  "frontendHint": {
+    "moveToFoundation": "A card can be moved to the foundation",
+    "moveToTableau": "A card can be moved between tableau columns"
+  },
+  "tutorial": {
+    "foundation": "Build up cards A→K by suit here.",
+    "tableau": "Cards are dealt here. Click or drag face-up cards to move them.",
+    "controls": "Action buttons: hint, give up, undo.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "yukon": "Yukon"
+  }
+}

@@ -118,7 +118,15 @@ func writeBashCompletion(w io.Writer) error {
             COMPREPLY=( $(compgen -W "--yes -y" -- "$cur") )
             return
             ;;
-        --port|-p)
+        --port|-p|--host)
+            return
+            ;;
+        web)
+            COMPREPLY=( $(compgen -W "--port -p --host" -- "$cur") )
+            return
+            ;;
+        games|--short|--aliases)
+            COMPREPLY=( $(compgen -W "--short --aliases" -- "$cur") )
             return
             ;;
     esac
@@ -173,9 +181,15 @@ _trumpcards() {
                     _arguments \
                         '(-y --yes)'{-y,--yes}'[Skip confirmation prompt]'
                     ;;
+                games)
+                    _arguments \
+                        '--short[Print game names only]' \
+                        '--aliases[Include aliases in output]'
+                    ;;
                 web)
                     _arguments \
-                        '(-p --port)'{-p,--port}'[Port number]:port:'
+                        '(-p --port)'{-p,--port}'[Port number]:port:' \
+                        '--host[Bind address]:host:'
                     ;;
             esac
             ;;
@@ -213,8 +227,13 @@ complete -c trumpcards -n '__fish_seen_subcommand_from completion' -a 'bash zsh 
 # update subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from update' -l yes -s y -d 'Skip confirmation prompt'
 
+# games subcommand
+complete -c trumpcards -n '__fish_seen_subcommand_from games' -l short -d 'Print game names only'
+complete -c trumpcards -n '__fish_seen_subcommand_from games' -l aliases -d 'Include aliases in output'
+
 # web subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from web' -l port -s p -d 'Port number' -x
+complete -c trumpcards -n '__fish_seen_subcommand_from web' -l host -d 'Bind address' -x
 `, sb.String())
 	_, err := fmt.Fprint(w, script)
 	return err

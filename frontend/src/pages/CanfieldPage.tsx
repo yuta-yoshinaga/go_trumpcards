@@ -1,32 +1,82 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { type CanfieldMoveZone, canfieldApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { CanfieldPhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+
+/** Tutorial steps for the Canfield solitaire game. */
+const CF_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="cf-foundation"]',
+    messageKey: 'tutorial.foundation',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cf-stock-waste"]',
+    messageKey: 'tutorial.stockWaste',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  { target: '[data-tutorial="cf-reserve"]', messageKey: 'tutorial.reserve', placement: 'bottom', advanceOn: 'next' },
+  { target: '[data-tutorial="cf-tableau"]', messageKey: 'tutorial.tableau', placement: 'bottom', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="cf-action-buttons"]',
+    messageKey: 'tutorial.actionButtons',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="cf-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
 
 /** Renders the Canfield solitaire game page. */
 export function CanfieldPage() {
+  return (
+    <TutorialWrapper gameName="canfield" steps={CF_TUTORIAL_STEPS}>
+      <CanfieldPageContent />
+    </TutorialWrapper>
+  );
+}
+
+/** Inner content of the Canfield page. */
+function CanfieldPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('canfield');
   const { state, loading, error, exec: execApi, retry } = useGameApi(canfieldApi.exec);
   const { cardWidth, cardHeight } = useCardDimensions();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('canfield', state);
 
   useEffect(() => {
     execApi('reset');
@@ -107,14 +157,32 @@ export function CanfieldPage() {
         <span className="text-sm text-white/70">
           {t('moveCount')}: {state.moveCount}
         </span>
+        <TutorialButton />
         <ManualButton gamePath="/canfield" />
       </PhaseIndicator>
+
+      <SettingsPanel
+        title={tc('settings.title', { ns: 'common' })}
+        groups={[
+          {
+            items: [
+              {
+                type: 'checkbox' as const,
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
+              },
+            ],
+          },
+        ]}
+      />
 
       <LandscapeBanner message={phaseName} />
 
       <div className="flex-1 overflow-y-auto px-4 pt-3 lg:px-8">
         {/* Foundation */}
-        <div className="mb-3 flex gap-2">
+        <div className="mb-3 flex gap-2" data-tutorial="cf-foundation">
           {state.foundation.map((pile, i) => {
             const fZone: CanfieldMoveZone = { zone: 'foundation', col: i };
             return (
@@ -143,7 +211,7 @@ export function CanfieldPage() {
         </div>
 
         {/* Stock / Waste / Reserve */}
-        <div className="mb-3 flex gap-3">
+        <div className="mb-3 flex gap-3" data-tutorial="cf-stock-waste">
           <div className="flex flex-col items-center">
             <button
               type="button"
@@ -186,7 +254,7 @@ export function CanfieldPage() {
             <span className="mt-1 text-xs text-white/70">{t('waste')}</span>
           </div>
 
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" data-tutorial="cf-reserve">
             <div style={{ width: cardWidth, height: cardHeight }}>
               {topReserve ? (
                 <button
@@ -212,7 +280,7 @@ export function CanfieldPage() {
         </div>
 
         {/* Tableau */}
-        <div className="mb-3 flex gap-2">
+        <div className="mb-3 flex gap-2" data-tutorial="cf-tableau">
           {state.tableau.map((col, i) => {
             const tZone: CanfieldMoveZone = { zone: 'tableau', col: i };
             return (
@@ -297,6 +365,9 @@ export function CanfieldPage() {
         </div>
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+        )}
 
         <ActionLogSection
           isEndPhase={isEnded}
@@ -307,7 +378,7 @@ export function CanfieldPage() {
       </div>
 
       <GameFooter className={`${theme.footer} px-4 py-2.5`}>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2" data-tutorial="cf-action-buttons">
           {isPlaying && (
             <>
               <button
@@ -364,6 +435,7 @@ export function CanfieldPage() {
             type="button"
             className={`${btnDanger} ${focusRingWhite}`}
             onClick={() => requestConfirm(handleReset)}
+            data-tutorial="cf-reset-button"
           >
             {tc('button.reset')}
           </button>

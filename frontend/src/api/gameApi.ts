@@ -16,6 +16,7 @@ import type {
   DurakConfigInput,
   DurakResponse,
   EuchreResponse,
+  FiftyOneResponse,
   FortyThievesMoveZone,
   FortyThievesResponse,
   FreeCellResponse,
@@ -49,6 +50,9 @@ import type {
   TwoTenJackResponse,
   VideoPokerResponse,
   WarResponse,
+  WhistConfig,
+  WhistResponse,
+  YukonResponse,
 } from '../types/card';
 
 /** Unique session identifier for correlating API requests. */
@@ -90,6 +94,7 @@ const workerUrl: Record<string, string> = {
   crazyeights: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
   war: WORKER_CLASSIC,
+  fiftyone: WORKER_CLASSIC,
   gofish: WORKER_CLASSIC,
   pinochle: WORKER_CLASSIC,
   pigtail: WORKER_CLASSIC,
@@ -107,6 +112,8 @@ const workerUrl: Record<string, string> = {
   clocksolitaire: WORKER_SOLO,
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
+  yukon: WORKER_SOLO,
+  whist: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -909,6 +916,37 @@ export const warApi = {
     gameExec<WarResponse>('war', { command, ...config }),
 };
 
+/** API client for the Fifty-one /fiftyone/exec endpoint. */
+export const fiftyoneApi = {
+  exec: (
+    command: 'reset' | 'play' | 'exchangeall' | 'stop' | 'log',
+    opts?: { handIdx?: number; tableIdx?: number; config?: { cpuDifficulty?: number } },
+  ) => gameExec<FiftyOneResponse>('fiftyone', { command, ...opts }),
+};
+
+/** Source or target zone for a Yukon card move. */
+export interface YukonMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Yukon /yukon/exec endpoint. */
+export const yukonApi = {
+  exec: (
+    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
+    from?: YukonMoveZone,
+    to?: YukonMoveZone,
+    n?: number,
+  ) =>
+    gameExec<YukonResponse>('yukon', {
+      command,
+      from,
+      to,
+      n,
+    }),
+};
+
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {
   exec: (
@@ -963,6 +1001,15 @@ export const fortyThievesApi = {
 
 export type { FortyThievesMoveZone };
 
+/** API client for the Whist /whist/exec endpoint. */
+export const whistApi = {
+  exec: (
+    command: 'reset' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    cardIndex?: number,
+    config?: Partial<WhistConfig>,
+  ) => gameExec<WhistResponse>('whist', { command, cardIndex, config }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1003,6 +1050,7 @@ const games = [
   'paigow',
   'speed',
   'war',
+  'fiftyone',
   'gofish',
   'pinochle',
   'golf',
@@ -1010,6 +1058,8 @@ const games = [
   'clocksolitaire',
   'fortythieves',
   'canfield',
+  'yukon',
+  'whist',
 ] as const;
 type Game = (typeof games)[number];
 

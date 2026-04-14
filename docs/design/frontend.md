@@ -30,7 +30,9 @@
   - [2.15 DurakPage フェーズ別レンダリングフロー](#215-durakpage-フェーズ別レンダリングフロー)
   - [2.16 FortyThievesPage フェーズ別レンダリングフロー](#216-fortythievespage-フェーズ別レンダリングフロー)
   - [2.17 PaiGowPage フェーズ別レンダリングフロー](#217-paigowpage-フェーズ別レンダリングフロー)
-  - [2.18 CLIモード コマンド実行フロー](#218-cliモード-コマンド実行フロー)
+  - [2.18 YukonPage フェーズ別レンダリングフロー](#218-yukonpage-フェーズ別レンダリングフロー)
+  - [2.19 WhistPage フェーズ別レンダリングフロー](#219-whistpage-フェーズ別レンダリングフロー)
+  - [2.20 CLIモード コマンド実行フロー](#220-cliモード-コマンド実行フロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -213,6 +215,35 @@ classDiagram
         +object messageParams
     }
 
+    class FiftyOneResponse {
+        +FiftyOnePlayerData[] players
+        +Card[] tableCards
+        +number phase
+        +number currentTurn
+        +boolean gameEndFlag
+        +number winnerIdx
+        +number stopCallerIdx
+        +string lastAction
+        +FiftyOneConfig config
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    class YukonResponse {
+        +KlondikeTableauCard[][] tableau
+        +Card[][] foundation
+        +number phase
+        +number moveCount
+        +boolean canUndo
+        +boolean isStalemate
+        +number undoToEscape
+        +YukonHint hint
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
     class CanastaResponse {
         +CanastaPlayerData[] players
         +number phase
@@ -348,7 +379,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全46ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全50ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -662,7 +693,20 @@ classDiagram
         GAME_END = 3
     }
 
-    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase, FortyThievesPhase, CanfieldPhase は、\nそれぞれ同一の値を持つ別定数です"
+    class FiftyOnePhase {
+        <<enumeration>>
+        PLAY = 0
+        GAME_END = 1
+    }
+
+    class YukonPhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
+    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase, FortyThievesPhase, CanfieldPhase, YukonPhase は、\nそれぞれ同一の値を持つ別定数です"
 
     note for DurakPhase "DurakPhase の定数は src/pages/DurakPage.tsx 内にローカル定義 (PHASE_ATTACK/DEFEND/BOUT_END)。\nPigsTailPhase の定数は src/pages/PigsTailPage.tsx 内にローカル定義 (PIGTAIL_PHASE_PLAY/END)。\nDaifugoPage は数値 Phase を持たず gameEndFlag と t('phase.play'/'phase.end') を使用する"
 ```
@@ -716,7 +760,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全39ゲーム()
+        ...全50ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -772,7 +816,7 @@ classDiagram
 
     PaiGowApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全46ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield)"
+    note for BlackJackApi "全50ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, whist)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1151,7 +1195,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全43ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全50ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1645,6 +1689,16 @@ classDiagram
 
     FortyThievesPage --|> GamePage : follows pattern
 
+    class YukonPage {
+        +7列タブロー表示 (表向き/伏せカード)
+        +4組札表示
+        +手数カウンター
+        +元に戻す/ヒント/オートコンプリートボタン
+        +ギブアップ/リセットボタン
+    }
+
+    YukonPage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -1658,7 +1712,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全43ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全50ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -2309,7 +2363,87 @@ sequenceDiagram
     Hook-->>Page: 再レンダリング → ベットフェーズUI
 ```
 
-### 2.18 CLIモード コマンド実行フロー
+### 2.18 YukonPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as YukonPage
+    participant Hook as useYukonGame
+    participant API as gameApi
+
+    Note over User,API: プレイフェーズ (phase=0)
+    User->>Page: タブローカード選択 → 移動先クリック
+    Page->>Hook: handleMove(src, dst)
+    Hook->>API: gameExec("move", {from, to})
+    API-->>Hook: YukonResponse (phase=0)
+    Hook-->>Page: 再レンダリング → タブロー・組札更新
+
+    User->>Page: ヒントボタンクリック
+    Page->>Hook: handleHint()
+    Hook->>API: gameExec("hint")
+    API-->>Hook: YukonResponse (hint付き)
+    Hook-->>Page: 再レンダリング → ヒントハイライト表示
+
+    User->>Page: オートコンプリートボタンクリック
+    Page->>Hook: handleAutoComplete()
+    Hook->>API: gameExec("autocomplete")
+    API-->>Hook: YukonResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → 組札更新
+
+    User->>Page: 元に戻すボタンクリック
+    Page->>Hook: handleUndo()
+    Hook->>API: gameExec("undo")
+    API-->>Hook: YukonResponse (phase=0)
+    Hook-->>Page: 再レンダリング → 前の状態に復元
+
+    Note over User,API: ゲームクリア (phase=1)
+    Page-->>User: クリアメッセージ表示
+
+    Note over User,API: ゲームオーバー (phase=2)
+    Page-->>User: ゲームオーバーメッセージ表示
+```
+
+### 2.19 WhistPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant WP as WhistPage
+    participant H as useWhistGame
+    participant API as whistApi
+
+    U->>WP: ページ表示
+    WP->>H: useWhistGame()
+    H->>API: dispatch('reset')
+    API-->>H: WhistResponse (phase=Play)
+    H-->>WP: state更新
+
+    alt phase = Play (人間の手番)
+        U->>WP: カード選択 + 出すボタン
+        WP->>H: handlePlay(cardIndex)
+        H->>API: dispatch('play', cardIndex)
+        API-->>H: WhistResponse
+    end
+
+    alt phase = TrickEnd
+        U->>WP: 次のトリックボタン
+        WP->>H: handleNextTrick()
+        H->>API: dispatch('next')
+    end
+
+    alt phase = RoundEnd
+        U->>WP: 次のラウンドボタン
+        WP->>H: handleNextRound()
+        H->>API: dispatch('nextround')
+    end
+
+    alt phase = GameEnd
+        WP->>WP: 勝利チーム表示
+    end
+```
+
+### 2.20 CLIモード コマンド実行フロー
 
 ```mermaid
 sequenceDiagram

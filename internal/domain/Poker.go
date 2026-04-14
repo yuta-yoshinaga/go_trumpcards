@@ -30,9 +30,6 @@ const (
 // pokerDefaultMaxRaises Fixed/PotLimit時のデフォルト最大レイズ回数
 const pokerDefaultMaxRaises = bettingMaxRaisesPerRound
 
-// PokerSidePot サイドポット (共通SidePot型のエイリアス)
-type PokerSidePot = SidePot
-
 // PokerResult ショーダウン結果
 type PokerResult struct {
 	PlayerIdx int    // プレイヤーインデックス
@@ -96,7 +93,7 @@ type pokerRoundState struct {
 	minRaise        int
 	raiseCount      int
 	actedFlags      []bool
-	sidePots        []PokerSidePot
+	sidePots        []SidePot
 	startingChips   []int
 	roundResults    []PokerResult
 	cpuActions      []PokerCpuAction
@@ -125,7 +122,7 @@ func NewPoker(trumpCards *TrumpCards, players []*PokerPlayer, config PokerConfig
 		config:     config,
 		round: pokerRoundState{
 			phase:         PokerPhaseInit,
-			sidePots:      make([]PokerSidePot, 0),
+			sidePots:      make([]SidePot, 0),
 			actedFlags:    make([]bool, len(players)),
 			roundResults:  make([]PokerResult, 0),
 			cpuActions:    make([]PokerCpuAction, 0),
@@ -140,7 +137,7 @@ func (p *Poker) Reset() error {
 	p.round = pokerRoundState{
 		phase:         PokerPhaseInit,
 		minRaise:      p.config.MinBet,
-		sidePots:      make([]PokerSidePot, 0),
+		sidePots:      make([]SidePot, 0),
 		actedFlags:    make([]bool, len(p.players)),
 		roundResults:  make([]PokerResult, 0),
 		cpuActions:    make([]PokerCpuAction, 0),
@@ -271,6 +268,11 @@ func (p *Poker) PlayerAction(action, amount, humanPlayMs int) error {
 
 	p.advanceTurn()
 	p.runCpuActions()
+
+	// ベッティングラウンド完了で交換フェーズに移行した場合、CPU交換を実行
+	if p.round.phase == PokerPhaseExchange {
+		p.advanceExchangePhase()
+	}
 	return nil
 }
 
@@ -296,12 +298,7 @@ func (p *Poker) PlayerExchange(indices []int) error {
 
 	// 残りのCPU交換を実行
 	p.advanceTurn()
-	p.runCpuExchanges()
-
-	// 交換フェーズ完了判定
-	if p.isExchangeComplete() {
-		p.startSecondBettingRound()
-	}
+	p.advanceExchangePhase()
 
 	return nil
 }
@@ -321,12 +318,7 @@ func (p *Poker) PlayerStand() error {
 
 	// 残りのCPU交換を実行
 	p.advanceTurn()
-	p.runCpuExchanges()
-
-	// 交換フェーズ完了判定
-	if p.isExchangeComplete() {
-		p.startSecondBettingRound()
-	}
+	p.advanceExchangePhase()
 
 	return nil
 }
@@ -604,6 +596,18 @@ func (p *Poker) runCpuActions() {
 			return
 		}
 		p.advanceTurn()
+	}
+}
+
+// advanceExchangePhase runs remaining CPU exchanges and, if all players have
+// exchanged, starts the second betting round.
+func (p *Poker) advanceExchangePhase() {
+	if p.round.gameEndFlag {
+		return
+	}
+	p.runCpuExchanges()
+	if p.isExchangeComplete() {
+		p.startSecondBettingRound()
 	}
 }
 
@@ -1025,7 +1029,7 @@ func (p *Poker) GetPlayers() []*PokerPlayer { return p.players }
 func (p *Poker) GetPot() int { return p.round.pot }
 
 // GetSidePots サイドポット取得
-func (p *Poker) GetSidePots() []PokerSidePot { return p.round.sidePots }
+func (p *Poker) GetSidePots() []SidePot { return p.round.sidePots }
 
 // GetDealerIdx ディーラーインデックス取得
 func (p *Poker) GetDealerIdx() int { return p.dealerIdx }
@@ -1118,7 +1122,7 @@ type pokerRoundStateJSON struct {
 	MinRaise        int                `json:"mr"`
 	RaiseCount      int                `json:"rc"`
 	ActedFlags      []bool             `json:"af"`
-	SidePots        []PokerSidePot     `json:"sp"`
+	SidePots        []SidePot          `json:"sp"`
 	StartingChips   []int              `json:"sc"`
 	RoundResults    []PokerResult      `json:"rr"`
 	CpuActions      []PokerCpuAction   `json:"ca"`
@@ -1221,7 +1225,7 @@ func (p *Poker) UnmarshalJSON(data []byte) error {
 		p.round.actedFlags = make([]bool, 0)
 	}
 	if p.round.sidePots == nil {
-		p.round.sidePots = make([]PokerSidePot, 0)
+		p.round.sidePots = make([]SidePot, 0)
 	}
 	if p.round.startingChips == nil {
 		p.round.startingChips = make([]int, 0)
