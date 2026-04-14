@@ -26,9 +26,11 @@ func (c *FreeCellCuiController) Exec(command string) string {
 		func(args []string) string {
 			return c.fi.Reset()
 		},
-		[]string{"m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
+		[]string{"m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
+			case "f":
+				return c.handleFoundationShorthand(args), true
 			case "m", "move":
 				return c.handleMove(args), true
 			case "g", "giveup":
@@ -160,6 +162,18 @@ func (c *FreeCellCuiController) handleMoveFromFreeCell(args []string) string {
 	default:
 		return i18n.Tf("freecell.invalidToZone", "val", args[1])
 	}
+}
+
+// handleFoundationShorthand handles `f <col>` (tableau-to-foundation).
+func (c *FreeCellCuiController) handleFoundationShorthand(args []string) string {
+	if len(args) == 0 {
+		return cuiutil.PromptRequest(i18n.T("promptFromColumn"), "f {0}")
+	}
+	col, err := strconv.Atoi(args[0])
+	if err != nil {
+		return i18n.Tf("invalidColumn", "val", args[0])
+	}
+	return c.fi.MoveTableauToFoundation(col)
 }
 
 func (c *FreeCellCuiController) handleMoveShorthand(args []string) string {

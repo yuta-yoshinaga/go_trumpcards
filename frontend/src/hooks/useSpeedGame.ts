@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { speedApi } from '../api/gameApi';
-import type { SpeedConfig } from '../types/card';
+import type { Card, SpeedConfig } from '../types/card';
 import { SpeedPhase } from '../types/phases';
+import { isAdjacentRank } from '../utils/speedUtils';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
@@ -46,6 +47,26 @@ export function useSpeedGame() {
     [gameExec, selectedCardIndices],
   );
 
+  /** Smart-click: select a card and auto-play if only one valid pile exists. */
+  const handleSmartClick = useCallback(
+    (cardIdx: number, handCards: Card[], centerPiles: Card[]) => {
+      const card = handCards[cardIdx];
+      if (!card) {
+        toggleCard(cardIdx);
+        return;
+      }
+      const validPiles = centerPiles
+        .map((pile, i) => (pile && isAdjacentRank(card.value, pile.value) ? i : -1))
+        .filter((i) => i >= 0);
+      if (validPiles.length === 1) {
+        gameExec('play', cardIdx, validPiles[0]);
+      } else {
+        toggleCard(cardIdx);
+      }
+    },
+    [gameExec, toggleCard],
+  );
+
   const handleFlip = useCallback(() => {
     gameExec('flip');
   }, [gameExec]);
@@ -83,6 +104,7 @@ export function useSpeedGame() {
     handleConfigChange,
     handleToggle,
     handlePlay,
+    handleSmartClick,
     handleFlip,
     handleHint,
     retry,

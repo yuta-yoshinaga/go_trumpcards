@@ -33,11 +33,13 @@ func (c *KlondikeCuiController) Exec(command string) string {
 			}
 			return c.ki.Reset()
 		},
-		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
+		[]string{"d", "draw", "m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "draw":
 				return c.ki.Draw(), true
+			case "f":
+				return c.handleFoundationShorthand(args), true
 			case "m", "move":
 				return c.handleMove(args), true
 			case "g", "giveup":
@@ -137,6 +139,18 @@ func (c *KlondikeCuiController) handleMoveFromTableau(args []string) string {
 	}
 
 	return c.ki.MoveTableauToTableau(fromCol, cardIdx, toCol)
+}
+
+// handleFoundationShorthand handles `f` (waste-to-foundation) and `f <col>` (tableau-to-foundation).
+func (c *KlondikeCuiController) handleFoundationShorthand(args []string) string {
+	if len(args) == 0 {
+		return c.ki.MoveWasteToFoundation()
+	}
+	col, err := strconv.Atoi(args[0])
+	if err != nil {
+		return i18n.Tf("invalidColumn", "val", args[0])
+	}
+	return c.ki.MoveTableauToFoundation(col)
 }
 
 func (c *KlondikeCuiController) handleMoveShorthand(args []string) string {

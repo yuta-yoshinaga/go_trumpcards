@@ -5,6 +5,8 @@
   "helpMoveWF": "  m w f                move waste to foundation",
   "helpMoveTF": "  m t <col> f          move tableau to foundation",
   "helpMoveTT": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "helpMoveShorthand": "  m <col> <col>        move tableau top card (shorthand)",
+  "helpFoundation": "  f [<col>]            move to foundation (waste or tableau)",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete"
