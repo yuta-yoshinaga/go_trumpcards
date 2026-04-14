@@ -99,6 +99,26 @@ func TestPokerSquares_UndoRestoresState(t *testing.T) {
 	assert.Equal(t, first, g.GetCurrentCard())
 }
 
+func TestPokerSquares_UndoRestoresDeckAndActionLog(t *testing.T) {
+	g := newPokerSquaresForTest()
+	g.Reset()
+
+	// Place all 25 cards with an undo+replace partway through.
+	// Without the deckDrawCnt fix, the extra undo would eventually exhaust the deck.
+	for i := 0; i < PokerSquaresTotalCells; i++ {
+		r, c := i/PokerSquaresGridSize, i%PokerSquaresGridSize
+		if i == 10 {
+			assert.NoError(t, g.Undo())
+			assert.Equal(t, 9, len(g.GetActionLog()), "actionLog must be trimmed on undo")
+			// Re-place the cell that was undone.
+			prevR, prevC := 9/PokerSquaresGridSize, 9%PokerSquaresGridSize
+			assert.NoError(t, g.Place(prevR, prevC))
+		}
+		assert.NoError(t, g.Place(r, c), "place %d at (%d,%d) must not exhaust deck", i, r, c)
+	}
+	assert.True(t, g.IsComplete())
+}
+
 func TestPokerSquares_UndoNoHistory(t *testing.T) {
 	g := newPokerSquaresForTest()
 	g.Reset()

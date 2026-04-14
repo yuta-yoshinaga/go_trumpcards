@@ -37,8 +37,8 @@ func (pr *PokerSquaresWebPresenter) Output(p interfaces.PokerSquaresGame, lastEr
 	for i := range domain.PokerSquaresGridSize {
 		resObj.RowScores[i] = p.RowScore(i)
 		resObj.ColScores[i] = p.ColScore(i)
+		resObj.TotalScore += resObj.RowScores[i] + resObj.ColScores[i]
 	}
-	resObj.TotalScore = p.TotalScore()
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

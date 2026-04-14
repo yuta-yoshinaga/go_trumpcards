@@ -55,6 +55,8 @@ type pokerSquaresSnapshot struct {
 	currentCard *Card
 	placedCount int
 	phase       PokerSquaresPhase
+	deckDrawCnt int
+	actionLogLn int
 }
 
 // NewPokerSquares はコンストラクタ。
@@ -108,10 +110,17 @@ func (p *PokerSquares) Undo() error {
 	}
 	snap := p.history[len(p.history)-1]
 	p.history = p.history[:len(p.history)-1]
+	for i := snap.deckDrawCnt; i < p.trumpCards.deckDrawCnt; i++ {
+		p.trumpCards.deck[i].SetDraw(false)
+	}
+	p.trumpCards.deckDrawCnt = snap.deckDrawCnt
 	p.board = snap.board
 	p.currentCard = snap.currentCard
 	p.placedCount = snap.placedCount
 	p.phase = snap.phase
+	if len(p.actionLog) > snap.actionLogLn {
+		p.actionLog = p.actionLog[:snap.actionLogLn]
+	}
 	return nil
 }
 
@@ -244,6 +253,8 @@ func (p *PokerSquares) takeSnapshot() {
 		currentCard: p.currentCard,
 		placedCount: p.placedCount,
 		phase:       p.phase,
+		deckDrawCnt: p.trumpCards.deckDrawCnt,
+		actionLogLn: len(p.actionLog),
 	})
 }
 
