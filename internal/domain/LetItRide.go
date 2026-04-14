@@ -141,7 +141,9 @@ func (lir *LetItRide) Pull() error {
 	}
 }
 
-// LetItRideAction ベットをそのままにする（Let It Ride）
+// LetItRideAction ベットをそのままにする（Let It Ride）。
+// Named "Action" to avoid a name collision with the LetItRide type itself;
+// the use-case layer exposes this as LetItRide() in its public interface.
 func (lir *LetItRide) LetItRideAction() error {
 	switch lir.phase {
 	case LetItRidePhaseFirstDecision:

@@ -4,6 +4,7 @@ import { LetItRidePhase } from '../../types/phases';
 import { getLetitrideHint } from './letitrideHint';
 
 const card = (design: Card['design'], value: number): Card => ({ design, value });
+const masked = (): { design: ''; value: 0 } => ({ design: '', value: 0 });
 
 function makeState(overrides: Partial<LetItRideResponse> = {}): LetItRideResponse {
   return {
@@ -39,15 +40,20 @@ describe('getLetitrideHint', () => {
     expect(getLetitrideHint(makeState({ playerHand: [] }))).toBeNull();
   });
 
-  it('recommends letitride (strong) for three of a kind or better', () => {
-    const hint = getLetitrideHint(makeState({ handRank: 3 }));
+  it('recommends letitride (strong) for three of a kind in player hand', () => {
+    const hint = getLetitrideHint(
+      makeState({ playerHand: [card('SPADE', 7), card('HEART', 7), card('DIAMOND', 7)] }),
+    );
     expect(hint?.targetAction).toBe('letitride');
     expect(hint?.confidence).toBe('strong');
     expect(hint?.reason).toBe('hint.strongHand');
   });
 
-  it('recommends letitride (strong) for high hand ranks (e.g. royal flush = 9)', () => {
-    const hint = getLetitrideHint(makeState({ handRank: 9 }));
+  it('recommends letitride (strong) for three of a kind regardless of handRank value', () => {
+    // handRank is always 0 during decision phases; the hint evaluates cards directly
+    const hint = getLetitrideHint(
+      makeState({ playerHand: [card('SPADE', 1), card('HEART', 1), card('DIAMOND', 1)] }),
+    );
     expect(hint?.targetAction).toBe('letitride');
     expect(hint?.confidence).toBe('strong');
   });
@@ -137,20 +143,89 @@ describe('getLetitrideHint', () => {
     expect(hint?.reason).toBe('hint.weakHand');
   });
 
-  it('also works in SECOND_DECISION phase', () => {
-    const hint = getLetitrideHint(makeState({ phase: LetItRidePhase.SECOND_DECISION, handRank: 3 }));
+  it('also works in SECOND_DECISION phase (three of a kind via player cards)', () => {
+    const hint = getLetitrideHint(
+      makeState({
+        phase: LetItRidePhase.SECOND_DECISION,
+        playerHand: [card('SPADE', 7), card('HEART', 7), card('DIAMOND', 7)],
+      }),
+    );
     expect(hint?.targetAction).toBe('letitride');
     expect(hint?.confidence).toBe('strong');
   });
 
-  it('returns pull when hand has fewer than 3 cards and handRank=0', () => {
+  it('returns pull when fewer than 3 royal-suit cards available', () => {
     const hint = getLetitrideHint(
       makeState({
         handRank: 0,
         playerHand: [card('SPADE', 1), card('SPADE', 10)],
       }),
     );
-    // cards.length < 3 → hasThreeToRoyalFlush returns false → pull
+    // only 2 royal cards of the same suit → hasRoyalFlushDraw returns false → pull
+    expect(hint?.targetAction).toBe('pull');
+  });
+
+  // SECOND_DECISION community card tests
+  it('SECOND_DECISION: community card completes three of a kind', () => {
+    const hint = getLetitrideHint(
+      makeState({
+        phase: LetItRidePhase.SECOND_DECISION,
+        playerHand: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 3)],
+        communityCards: [card('CLUB', 5), masked()],
+      }),
+    );
+    expect(hint?.targetAction).toBe('letitride');
+    expect(hint?.confidence).toBe('strong');
+    expect(hint?.reason).toBe('hint.strongHand');
+  });
+
+  it('SECOND_DECISION: community card creates pair of tens', () => {
+    const hint = getLetitrideHint(
+      makeState({
+        phase: LetItRidePhase.SECOND_DECISION,
+        playerHand: [card('SPADE', 10), card('HEART', 3), card('DIAMOND', 7)],
+        communityCards: [card('CLUB', 10), masked()],
+      }),
+    );
+    expect(hint?.targetAction).toBe('letitride');
+    expect(hint?.confidence).toBe('moderate');
+    expect(hint?.reason).toBe('hint.pairTensOrBetter');
+  });
+
+  it('SECOND_DECISION: community card completes royal flush draw', () => {
+    const hint = getLetitrideHint(
+      makeState({
+        phase: LetItRidePhase.SECOND_DECISION,
+        // Player has only 2 spade royals — not enough alone
+        playerHand: [card('SPADE', 1), card('SPADE', 13), card('DIAMOND', 4)],
+        // Community reveals Q♠ → three spade royals (A, K, Q) total
+        communityCards: [card('SPADE', 12), masked()],
+      }),
+    );
+    expect(hint?.targetAction).toBe('letitride');
+    expect(hint?.confidence).toBe('moderate');
+    expect(hint?.reason).toBe('hint.threeToRoyalFlush');
+  });
+
+  it('SECOND_DECISION: masked community card is ignored', () => {
+    const hint = getLetitrideHint(
+      makeState({
+        phase: LetItRidePhase.SECOND_DECISION,
+        playerHand: [card('SPADE', 5), card('HEART', 8), card('DIAMOND', 3)],
+        communityCards: [masked(), masked()],
+      }),
+    );
+    expect(hint?.targetAction).toBe('pull');
+  });
+
+  it('SECOND_DECISION: weak hand with revealed community card → pull', () => {
+    const hint = getLetitrideHint(
+      makeState({
+        phase: LetItRidePhase.SECOND_DECISION,
+        playerHand: [card('SPADE', 2), card('HEART', 6), card('DIAMOND', 9)],
+        communityCards: [card('CLUB', 4), masked()],
+      }),
+    );
     expect(hint?.targetAction).toBe('pull');
   });
 });
