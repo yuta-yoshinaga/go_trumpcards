@@ -30,7 +30,6 @@ const (
 // pokerDefaultMaxRaises Fixed/PotLimit時のデフォルト最大レイズ回数
 const pokerDefaultMaxRaises = bettingMaxRaisesPerRound
 
-
 // PokerResult ショーダウン結果
 type PokerResult struct {
 	PlayerIdx int    // プレイヤーインデックス
@@ -1123,7 +1122,7 @@ type pokerRoundStateJSON struct {
 	MinRaise        int                `json:"mr"`
 	RaiseCount      int                `json:"rc"`
 	ActedFlags      []bool             `json:"af"`
-	SidePots        []SidePot     `json:"sp"`
+	SidePots        []SidePot          `json:"sp"`
 	StartingChips   []int              `json:"sc"`
 	RoundResults    []PokerResult      `json:"rr"`
 	CpuActions      []PokerCpuAction   `json:"ca"`

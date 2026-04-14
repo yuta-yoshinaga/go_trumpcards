@@ -345,7 +345,7 @@ func (o *Omaha) advanceTurn() {
 	}
 
 	bp := toBettingPlayers(o.players)
-	if o.communityCardBettingBase.isBettingRoundComplete(bp) {
+	if o.isBettingRoundComplete(bp) {
 		o.advancePhase()
 		return
 	}

@@ -28,7 +28,6 @@ const (
 	SevenCardStudActionAllIn = bettingActionAllIn
 )
 
-
 // SevenCardStudResult ショーダウン結果
 type SevenCardStudResult struct {
 	PlayerIdx int     // プレイヤーインデックス
@@ -910,7 +909,7 @@ type sevenCardStudJSON struct {
 	Players          []*SevenCardStudPlayer   `json:"pl"`
 	CommunityCard    *Card                    `json:"cc,omitempty"`
 	Pot              int                      `json:"pt"`
-	SidePots         []SidePot   `json:"sp"`
+	SidePots         []SidePot                `json:"sp"`
 	DealerIdx        int                      `json:"di"`
 	CurrentTurn      int                      `json:"ct"`
 	Phase            int                      `json:"ph"`

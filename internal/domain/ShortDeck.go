@@ -345,7 +345,7 @@ func (sd *ShortDeck) advanceTurn() {
 	}
 
 	bp := toBettingPlayers(sd.players)
-	if sd.communityCardBettingBase.isBettingRoundComplete(bp) {
+	if sd.isBettingRoundComplete(bp) {
 		sd.advancePhase()
 		return
 	}

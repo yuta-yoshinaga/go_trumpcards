@@ -444,7 +444,7 @@ func (p *Pineapple) advanceTurn() {
 	}
 
 	bp := toBettingPlayers(p.players)
-	if p.communityCardBettingBase.isBettingRoundComplete(bp) {
+	if p.isBettingRoundComplete(bp) {
 		p.advancePhase()
 		return
 	}

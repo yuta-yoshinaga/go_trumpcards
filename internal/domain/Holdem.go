@@ -325,7 +325,7 @@ func (h *Holdem) advanceTurn() {
 	}
 
 	bp := toBettingPlayers(h.players)
-	if h.communityCardBettingBase.isBettingRoundComplete(bp) {
+	if h.isBettingRoundComplete(bp) {
 		h.advancePhase()
 		return
 	}

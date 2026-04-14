@@ -26,7 +26,6 @@ const (
 	IndianPokerActionAllIn = bettingActionAllIn // オールイン
 )
 
-
 // IndianPokerResult ショーダウン結果
 type IndianPokerResult struct {
 	PlayerIdx int   // プレイヤーインデックス
@@ -776,7 +775,7 @@ type indianPokerJSON struct {
 	TrumpCards      *TrumpCards                  `json:"tc"`
 	Players         []*IndianPokerPlayer         `json:"pl"`
 	Pot             int                          `json:"pt"`
-	SidePots        []SidePot         `json:"sp"`
+	SidePots        []SidePot                    `json:"sp"`
 	DealerIdx       int                          `json:"di"`
 	CurrentTurn     int                          `json:"ct"`
 	Phase           int                          `json:"ph"`
