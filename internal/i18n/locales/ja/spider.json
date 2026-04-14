@@ -2,6 +2,7 @@
   "helpTitle": "Spider Solitaire (スパイダーソリティア)",
   "helpDeal": "  d                    deal from stock",
   "helpMove": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "helpMoveShorthand": "  m <col> <col>        最上段移動 (省略形)",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete"

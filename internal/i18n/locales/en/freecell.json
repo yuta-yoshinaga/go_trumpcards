@@ -6,6 +6,8 @@
   "helpMoveTC": "  m t <col> c <cell>   move tableau to free cell",
   "helpMoveCT": "  m c <cell> t <col>   move free cell to tableau",
   "helpMoveCF": "  m c <cell> f         move free cell to foundation",
+  "helpMoveShorthand": "  m <col> <col>        move tableau top card (shorthand)",
+  "helpFoundation": "  f <col>              move tableau to foundation (shorthand)",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete"

@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -17,6 +18,73 @@ type DaifugoCuiController struct {
 // NewDaifugoCuiController コンストラクタ
 func NewDaifugoCuiController(dgi usecase.DaifugoInteractorIF) *DaifugoCuiController {
 	return &DaifugoCuiController{dgi: dgi}
+}
+
+// daifugoRuleKeys is the ordered list of all boolean rule keys for sr commands.
+var daifugoRuleKeys = []string{
+	"8cut", "11back", "seq", "exchange", "5skip", "7pass", "10discard",
+	"spade3", "capital", "9reverse", "coupdetat", "numberlock", "sandstorm",
+	"emperor", "seqrev", "seqlock", "illegal", "12bomber", "blindexchange",
+}
+
+// getDaifugoRule returns the current value of a boolean rule flag. Returns (false, false) if unknown.
+func getDaifugoRule(cfg *domain.DaifugoConfig, key string) (value bool, ok bool) {
+	switch key {
+	case "8cut":
+		return cfg.EightCutEnabled, true
+	case "11back":
+		return cfg.ElevenBackEnabled, true
+	case "seq":
+		return cfg.SequenceEnabled, true
+	case "exchange":
+		return cfg.CardExchangeEnabled, true
+	case "5skip":
+		return cfg.FiveSkipEnabled, true
+	case "7pass":
+		return cfg.SevenPassEnabled, true
+	case "10discard":
+		return cfg.TenDiscardEnabled, true
+	case "spade3":
+		return cfg.SpadeThreeEnabled, true
+	case "capital":
+		return cfg.CapitalFallEnabled, true
+	case "9reverse":
+		return cfg.NineReverseEnabled, true
+	case "coupdetat":
+		return cfg.CoupDetatEnabled, true
+	case "numberlock":
+		return cfg.NumberLockEnabled, true
+	case "sandstorm":
+		return cfg.SandstormEnabled, true
+	case "emperor":
+		return cfg.EmperorEnabled, true
+	case "seqrev":
+		return cfg.SequenceRevolutionEnabled, true
+	case "seqlock":
+		return cfg.SequenceLockEnabled, true
+	case "illegal":
+		return cfg.IllegalFinishEnabled, true
+	case "12bomber":
+		return cfg.QueenBomberEnabled, true
+	case "blindexchange":
+		return cfg.BlindExchangeEnabled, true
+	default:
+		return false, false
+	}
+}
+
+// formatDaifugoRuleList returns a formatted string showing all rules with their current ON/OFF status.
+func formatDaifugoRuleList(cfg *domain.DaifugoConfig) string {
+	var b strings.Builder
+	for _, key := range daifugoRuleKeys {
+		val, _ := getDaifugoRule(cfg, key)
+		status := "OFF"
+		if val {
+			status = "ON"
+		}
+		fmt.Fprintf(&b, "  %-16s %s\n", key, status)
+	}
+	return b.String()
 }
 
 // setDaifugoRule sets a boolean rule flag on the config by key. Returns false if the key is unknown.
@@ -117,8 +185,12 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return c.dgi.ResetWithConfig(cfg)
 				})
 			case "sr", "setrule":
+				if len(args) >= 1 && args[0] == "list" {
+					cfg := c.dgi.GetConfig()
+					return "Rules:\n" + formatDaifugoRuleList(&cfg), true
+				}
 				if len(args) < 2 {
-					return "Usage: sr <rule> <0|1>. Rules: 8cut, 11back, seq, exchange, 5skip, 7pass, 10discard, spade3, capital, 9reverse, coupdetat, numberlock, sandstorm, emperor, seqrev, seqlock, illegal, 12bomber, blindexchange. Use 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.", true
+					return "Usage: sr <rule> <0|1> | sr list\nRules: " + strings.Join(daifugoRuleKeys, ", ") + ".\nUse 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.", true
 				}
 				if !setDaifugoRule(nil, args[0], false) {
 					return fmt.Sprintf("Unknown rule: %s.", args[0]), true

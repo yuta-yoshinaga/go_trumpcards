@@ -5,6 +5,8 @@
   "helpMoveWF": "  m w f                move waste to foundation",
   "helpMoveTF": "  m t <col> f          move tableau to foundation",
   "helpMoveTT": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "helpMoveShorthand": "  m <col> <col>        タブロー間移動 (省略形)",
+  "helpFoundation": "  f [<col>]            組札へ移動 (山札またはタブロー)",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete"

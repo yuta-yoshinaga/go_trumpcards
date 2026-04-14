@@ -177,25 +177,34 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(screen.getByText('ゲーム終了')).toBeInTheDocument());
   });
 
-  it('selects and deselects a hand card on click', async () => {
+  it('selects and deselects a hand card on click when no single valid pile', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
-    const cardBtn = screen.getByRole('button', { name: 'SPADE 4' });
+    // DIAMOND 2 is not adjacent to either center pile (5 or 9), so it toggles normally
+    const cardBtn = screen.getByRole('button', { name: 'DIAMOND 2' });
     fireEvent.click(cardBtn);
     expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(cardBtn);
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('auto-plays a card via smart-click when only one valid pile exists', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    // SPADE 4 is adjacent to pile 0 (value 5) only → smart-click auto-plays
+    fireEvent.click(screen.getByRole('button', { name: 'SPADE 4' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
+  });
+
   it('plays a card to a center pile when a card is selected', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
-    // Select a hand card
-    fireEvent.click(screen.getByRole('button', { name: 'SPADE 4' }));
-    // Click first center pile
+    // DIAMOND 2 has no valid piles, so it toggles selection first
+    fireEvent.click(screen.getByRole('button', { name: 'DIAMOND 2' }));
+    // Then click first center pile manually
     const pileBtns = screen.getAllByRole('button', { name: /台札/ });
     fireEvent.click(pileBtns[0]);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 3, 0));
   });
 
   it('clicking hint button calls hint command', async () => {

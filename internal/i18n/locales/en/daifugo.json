@@ -4,5 +4,5 @@
   "helpSort": "  sort [0-2]           sort hand (0=strength, 1=suit, 2=number)",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Normal, 1=Easy, 2=Hard)",
   "helpSetJoker": "  sj [0-2]             joker count",
-  "helpSetRule": "  sr <rule> <0|1>      toggle local rule"
+  "helpSetRule": "  sr <rule> <0|1>      toggle local rule (sr list to show all)"
 }

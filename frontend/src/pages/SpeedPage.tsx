@@ -69,8 +69,8 @@ function SpeedPageContent() {
     retry,
     speedConfig,
     selectedCardIndices,
-    toggleCard,
     handlePlay,
+    handleSmartClick,
     handleFlip,
     handleHint,
     handleConfigChange,
@@ -177,7 +177,7 @@ function SpeedPageContent() {
                   <button
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
+                    onClick={() => handleSmartClick(idx, humanPlayer.cards, state.centerPiles)}
                     disabled={!isPlayPhase || loading}
                     aria-label={`${card.design} ${card.value}`}
                     aria-pressed={selectedCardIndices.includes(idx)}

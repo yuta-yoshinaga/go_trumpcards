@@ -165,10 +165,16 @@ export function OldMaidPlayerArea({
             {Array.from({ length: showCount }, (_, i) => {
               const isHighlighted = isTarget && !player.isHuman && i === highlightedCardIdx;
               const cardStyle: React.CSSProperties = {
-                border: '2px solid transparent',
+                border: isHighlighted ? '2px solid #D4A853' : '2px solid transparent',
                 borderRadius: 4,
                 cursor: 'pointer',
-                ...(isHighlighted ? { transform: 'translateY(-8px)', transition: 'transform 0.2s' } : {}),
+                transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
+                ...(isHighlighted
+                  ? {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 0 10px rgba(212, 168, 83, 0.6)',
+                    }
+                  : {}),
               };
               return (
                 <CardBack
