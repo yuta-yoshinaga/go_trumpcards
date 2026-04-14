@@ -426,6 +426,12 @@ func (web *TrumpCardsWeb) registerAll() {
 		whist := domain.NewWhist(domain.NewTrumpCards(0), players, config)
 		return usecase.NewWhistInteractor(whist, new(presenter.WhistWebPresenter))
 	}))
+	web.register("letitride", controller.NewLetItRideWebController(func() usecase.LetItRideInteractorIF {
+		return usecase.NewLetItRideInteractor(
+			domain.NewDefaultLetItRide(),
+			new(presenter.LetItRideWebPresenter),
+		)
+	}))
 }
 
 // Exec ゲーム実行

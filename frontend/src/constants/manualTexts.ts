@@ -27,6 +27,7 @@ import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
+import letitride from '../../../docs/manual/web/letitride.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
@@ -78,6 +79,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/indianpoker': indianpoker,
   '/jokerpoker': jokerpoker,
   '/klondike': klondike,
+  '/letitride': letitride,
   '/memory': memory,
   '/napoleon': napoleon,
   '/ohhell': ohhell,

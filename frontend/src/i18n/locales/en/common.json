@@ -67,7 +67,8 @@
     "fiftyone": "Fifty-one",
     "canfield": "Canfield",
     "yukon": "Yukon",
-    "whist": "Whist"
+    "whist": "Whist",
+    "letitride": "Let It Ride"
   },
   "sound": {
     "mute": "Mute sound",
@@ -266,6 +267,8 @@
     "caribbeanstud.result.push": "Push!",
     "caribbeanstud.result.fold": "Folded",
     "caribbeanstud.result.dealerNotQualified": "Dealer does not qualify!",
+    "letitride.result.win": "You win!",
+    "letitride.result.lose": "No winning hand",
     "klondike.playing": "Playing",
     "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
     "klondike.gameOver": "Game Over",

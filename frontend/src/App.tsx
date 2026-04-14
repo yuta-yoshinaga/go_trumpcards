@@ -31,6 +31,7 @@ import { HoldemPage } from './pages/HoldemPage';
 import { IndianPokerPage } from './pages/IndianPokerPage';
 import { JokerPokerPage } from './pages/JokerPokerPage';
 import { KlondikePage } from './pages/KlondikePage';
+import { LetItRidePage } from './pages/LetItRidePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { NapoleonPage } from './pages/NapoleonPage';
 import { OhHellPage } from './pages/OhHellPage';
@@ -95,6 +96,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/threecard': <ThreeCardPage />,
   '/caribbeanstud': <CaribbeanStudPage />,
   '/paigow': <PaiGowPage />,
+  '/letitride': <LetItRidePage />,
   '/speed': <SpeedPage />,
   '/gofish': <GoFishPage />,
   '/pinochle': <PinochlePage />,

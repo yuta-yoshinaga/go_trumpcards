@@ -19,6 +19,7 @@ import type {
   HoldemResponse,
   IndianPokerResponse,
   KlondikeResponse,
+  LetItRideResponse,
   MemoryResponse,
   NapoleonResponse,
   OhHellResponse,
@@ -63,6 +64,7 @@ import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
+import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
@@ -133,6 +135,7 @@ const hintFactories = {
   sevencardstud: () => null,
   fortythieves: () => null,
   paigow: () => null,
+  letitride: (s) => getLetitrideHint(s as LetItRideResponse),
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),

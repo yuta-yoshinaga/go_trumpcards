@@ -2279,3 +2279,27 @@ export interface WhistResponse {
   config: WhistConfig;
   hint?: WhistHint;
 }
+
+// --- Let It Ride (レット・イット・ライド) ---
+
+/** Let It Ride API response. */
+export interface LetItRideResponse {
+  playerHand: Card[];
+  /** Community cards: masked as `MaskedCard` until revealed by phase progression. */
+  communityCards: (Card | MaskedCard)[];
+  phase: number;
+  chips: number;
+  betAmount: number;
+  bet1Active: boolean;
+  bet2Active: boolean;
+  bet3Active: boolean;
+  result: number;
+  handRank: number;
+  bet1Payout: number;
+  bet2Payout: number;
+  bet3Payout: number;
+  totalPayout: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
