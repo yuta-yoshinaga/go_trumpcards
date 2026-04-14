@@ -41,9 +41,7 @@ describe('getLetitrideHint', () => {
   });
 
   it('recommends letitride (strong) for three of a kind in player hand', () => {
-    const hint = getLetitrideHint(
-      makeState({ playerHand: [card('SPADE', 7), card('HEART', 7), card('DIAMOND', 7)] }),
-    );
+    const hint = getLetitrideHint(makeState({ playerHand: [card('SPADE', 7), card('HEART', 7), card('DIAMOND', 7)] }));
     expect(hint?.targetAction).toBe('letitride');
     expect(hint?.confidence).toBe('strong');
     expect(hint?.reason).toBe('hint.strongHand');
@@ -51,9 +49,7 @@ describe('getLetitrideHint', () => {
 
   it('recommends letitride (strong) for three of a kind regardless of handRank value', () => {
     // handRank is always 0 during decision phases; the hint evaluates cards directly
-    const hint = getLetitrideHint(
-      makeState({ playerHand: [card('SPADE', 1), card('HEART', 1), card('DIAMOND', 1)] }),
-    );
+    const hint = getLetitrideHint(makeState({ playerHand: [card('SPADE', 1), card('HEART', 1), card('DIAMOND', 1)] }));
     expect(hint?.targetAction).toBe('letitride');
     expect(hint?.confidence).toBe('strong');
   });
@@ -171,7 +167,7 @@ describe('getLetitrideHint', () => {
       makeState({
         phase: LetItRidePhase.SECOND_DECISION,
         playerHand: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 3)],
-        communityCards: [card('CLUB', 5), masked()],
+        communityCards: [card('CLOVER', 5), masked()],
       }),
     );
     expect(hint?.targetAction).toBe('letitride');
@@ -184,7 +180,7 @@ describe('getLetitrideHint', () => {
       makeState({
         phase: LetItRidePhase.SECOND_DECISION,
         playerHand: [card('SPADE', 10), card('HEART', 3), card('DIAMOND', 7)],
-        communityCards: [card('CLUB', 10), masked()],
+        communityCards: [card('CLOVER', 10), masked()],
       }),
     );
     expect(hint?.targetAction).toBe('letitride');
@@ -223,7 +219,7 @@ describe('getLetitrideHint', () => {
       makeState({
         phase: LetItRidePhase.SECOND_DECISION,
         playerHand: [card('SPADE', 2), card('HEART', 6), card('DIAMOND', 9)],
-        communityCards: [card('CLUB', 4), masked()],
+        communityCards: [card('CLOVER', 4), masked()],
       }),
     );
     expect(hint?.targetAction).toBe('pull');
