@@ -34,49 +34,11 @@ type PineappleWebInput struct {
 }
 
 // PineappleWebOutput パイナップルポーカーWebアウトプット
+// HoldemWebOutput を埋め込み、Pineapple 固有フィールドのみ追加する。
 type PineappleWebOutput struct {
-	Players          []*HoldemWebOutputPlayer        `json:"players"`
-	CommunityCards   []*WebOutputCard                `json:"communityCards"`
-	Pot              int                             `json:"pot"`
-	SidePots         []*HoldemWebOutputSidePot       `json:"sidePots"`
-	DealerIdx        int                             `json:"dealerIdx"`
-	CurrentTurn      int                             `json:"currentTurn"`
-	Phase            int                             `json:"phase"`
-	GameEndFlag      bool                            `json:"gameEndFlag"`
-	LastBet          int                             `json:"lastBet"`
-	MinRaise         int                             `json:"minRaise"`
-	BettingLimit     int                             `json:"bettingLimit"`
-	RaiseCount       int                             `json:"raiseCount"`
-	MaxBetAmount     int                             `json:"maxBetAmount"`
-	RoundResults     []*HoldemWebOutputResult        `json:"roundResults"`
-	CpuActions       []*HoldemWebOutputCpuAction     `json:"cpuActions"`
-	HandCount        int                             `json:"handCount"`
-	SmallBlind       int                             `json:"smallBlind"`
-	BigBlind         int                             `json:"bigBlind"`
-	TournamentMode   bool                            `json:"tournamentMode"`
-	BlindLevelHands  int                             `json:"blindLevelHands"`
-	BlindMultiplier  int                             `json:"blindMultiplier"`
-	TableSize        int                             `json:"tableSize"`
-	RebuyAvailable   bool                            `json:"rebuyAvailable"`
-	AddonAvailable   bool                            `json:"addonAvailable"`
-	RebuyCounts      []int                           `json:"rebuyCounts"`
-	AddonUsed        []bool                          `json:"addonUsed"`
-	RebuyEnabled     bool                            `json:"rebuyEnabled"`
-	AddonEnabled     bool                            `json:"addonEnabled"`
-	RebuyMaxCount    int                             `json:"rebuyMaxCount"`
-	RebuyChips       int                             `json:"rebuyChips"`
-	AddonChips       int                             `json:"addonChips"`
-	RebuyPeriodHands int                             `json:"rebuyPeriodHands"`
-	AddonAfterHand   int                             `json:"addonAfterHand"`
-	RebuyPhaseType   int                             `json:"rebuyPhaseType"`
-	MuckAvailable    bool                            `json:"muckAvailable"`
-	IsDiscardPhase   bool                            `json:"isDiscardPhase"`
-	DiscardDone      []bool                          `json:"discardDone"`
-	Equity           *HoldemWebOutputEquity          `json:"equity,omitempty"`
-	PotOdds          *float64                        `json:"potOdds,omitempty"`
-	MetaAI           *HoldemWebOutputMetaAI          `json:"metaAI,omitempty"`
-	Profile          *domain.BettingHumanProfileData `json:"profile,omitempty"`
-	WebOutputBase
+	HoldemWebOutput
+	IsDiscardPhase bool   `json:"isDiscardPhase"`
+	DiscardDone    []bool `json:"discardDone"`
 }
 
 // ToConfig builds a PineappleConfig from the web input.
@@ -115,12 +77,14 @@ var NewPineappleWebController, NewPineappleWebControllerWithProvider = webContro
 
 func newPineappleDefaultOutput(msg string) *PineappleWebOutput {
 	return &PineappleWebOutput{
-		Players:        make([]*HoldemWebOutputPlayer, 0),
-		CommunityCards: make([]*WebOutputCard, 0),
-		SidePots:       make([]*HoldemWebOutputSidePot, 0),
-		RoundResults:   make([]*HoldemWebOutputResult, 0),
-		CpuActions:     make([]*HoldemWebOutputCpuAction, 0),
-		WebOutputBase:  WebOutputBase{Message: msg},
+		HoldemWebOutput: HoldemWebOutput{
+			Players:        make([]*HoldemWebOutputPlayer, 0),
+			CommunityCards: make([]*WebOutputCard, 0),
+			SidePots:       make([]*HoldemWebOutputSidePot, 0),
+			RoundResults:   make([]*HoldemWebOutputResult, 0),
+			CpuActions:     make([]*HoldemWebOutputCpuAction, 0),
+			WebOutputBase:  WebOutputBase{Message: msg},
+		},
 	}
 }
 

@@ -17,55 +17,14 @@ func (pp *PineappleWebPresenter) Output(p interfaces.PineappleGame, lastErr erro
 
 // buildOutput ゲーム状態をPineappleWebOutputに変換
 func (pp *PineappleWebPresenter) buildOutput(p interfaces.PineappleGame, lastErr error) *controller.PineappleWebOutput {
-	// 共通フィールドを HoldemWebOutput として構築し、Pineapple固有フィールドを追加
 	base := buildCommunityCardBaseOutput(p)
-	resObj := &controller.PineappleWebOutput{
-		Players:          buildPokerPlayersOutput(p.GetPhase(), p.GetPlayerCnt(), func(i int) communityCardPresenterPlayer { return p.GetPlayer(i) }, domain.PineapplePhaseShowdown, domain.PineapplePhaseEnd, pokerHandName),
-		CommunityCards:   base.CommunityCards,
-		Pot:              base.Pot,
-		SidePots:         base.SidePots,
-		DealerIdx:        base.DealerIdx,
-		CurrentTurn:      base.CurrentTurn,
-		Phase:            base.Phase,
-		GameEndFlag:      base.GameEndFlag,
-		LastBet:          base.LastBet,
-		MinRaise:         base.MinRaise,
-		BettingLimit:     base.BettingLimit,
-		RaiseCount:       base.RaiseCount,
-		MaxBetAmount:     base.MaxBetAmount,
-		RoundResults:     base.RoundResults,
-		CpuActions:       base.CpuActions,
-		HandCount:        base.HandCount,
-		SmallBlind:       base.SmallBlind,
-		BigBlind:         base.BigBlind,
-		TournamentMode:   base.TournamentMode,
-		BlindLevelHands:  base.BlindLevelHands,
-		BlindMultiplier:  base.BlindMultiplier,
-		TableSize:        base.TableSize,
-		RebuyAvailable:   base.RebuyAvailable,
-		AddonAvailable:   base.AddonAvailable,
-		RebuyCounts:      base.RebuyCounts,
-		AddonUsed:        base.AddonUsed,
-		RebuyEnabled:     base.RebuyEnabled,
-		AddonEnabled:     base.AddonEnabled,
-		RebuyMaxCount:    base.RebuyMaxCount,
-		RebuyChips:       base.RebuyChips,
-		AddonChips:       base.AddonChips,
-		RebuyPeriodHands: base.RebuyPeriodHands,
-		AddonAfterHand:   base.AddonAfterHand,
-		RebuyPhaseType:   base.RebuyPhaseType,
-		MuckAvailable:    base.MuckAvailable,
-		Equity:           base.Equity,
-		PotOdds:          base.PotOdds,
-		MetaAI:           base.MetaAI,
-		Profile:          base.Profile,
-		// Pineapple 固有フィールド
-		IsDiscardPhase: p.IsDiscardPhase(),
-		DiscardDone:    p.GetDiscardDone(),
+	base.Players = buildPokerPlayersOutput(p.GetPhase(), p.GetPlayerCnt(), func(i int) communityCardPresenterPlayer { return p.GetPlayer(i) }, domain.PineapplePhaseShowdown, domain.PineapplePhaseEnd, pokerHandName)
+	base.Message, base.MessageCode, base.MessageParams = pp.buildMessage(p, lastErr)
+	return &controller.PineappleWebOutput{
+		HoldemWebOutput: *base,
+		IsDiscardPhase:  p.IsDiscardPhase(),
+		DiscardDone:     p.GetDiscardDone(),
 	}
-
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = pp.buildMessage(p, lastErr)
-	return resObj
 }
 
 // buildMessage ゲーム結果メッセージを構築
