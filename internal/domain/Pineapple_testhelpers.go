@@ -31,13 +31,13 @@ func (p *Pineapple) SetLastBet(bet int) { p.lastBet = bet }
 func (p *Pineapple) SetMinRaise(raise int) { p.minRaise = raise }
 
 // SetRoundResults ラウンド結果設定（テスト用）
-func (p *Pineapple) SetRoundResults(results []PineappleResult) { p.roundResults = results }
+func (p *Pineapple) SetRoundResults(results []HoldemResult) { p.roundResults = results }
 
 // SetCpuActions CPU行動記録設定（テスト用）
-func (p *Pineapple) SetCpuActions(actions []PineappleCpuAction) { p.cpuActions = actions }
+func (p *Pineapple) SetCpuActions(actions []HoldemCpuAction) { p.cpuActions = actions }
 
 // SetSidePots サイドポット設定（テスト用）
-func (p *Pineapple) SetSidePots(pots []PineappleSidePot) { p.sidePots = pots }
+func (p *Pineapple) SetSidePots(pots []SidePot) { p.sidePots = pots }
 
 // SetHandCount ハンド数設定（テスト用）
 func (p *Pineapple) SetHandCount(count int) { p.handCount = count }

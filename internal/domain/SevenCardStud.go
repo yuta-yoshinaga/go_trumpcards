@@ -28,9 +28,6 @@ const (
 	SevenCardStudActionAllIn = bettingActionAllIn
 )
 
-// SevenCardStudSidePot サイドポット (共通SidePot型のエイリアス)
-type SevenCardStudSidePot = SidePot
-
 // SevenCardStudResult ショーダウン結果
 type SevenCardStudResult struct {
 	PlayerIdx int     // プレイヤーインデックス
@@ -62,7 +59,7 @@ type SevenCardStud struct {
 	players          []*SevenCardStudPlayer
 	communityCard    *Card // カード不足時の共有カード
 	pot              int
-	sidePots         []SevenCardStudSidePot
+	sidePots         []SidePot
 	dealerIdx        int
 	currentTurn      int
 	phase            int
@@ -95,7 +92,7 @@ func NewSevenCardStud(trumpCards *TrumpCards, players []*SevenCardStudPlayer, co
 	return &SevenCardStud{
 		trumpCards:       trumpCards,
 		players:          players,
-		sidePots:         make([]SevenCardStudSidePot, 0),
+		sidePots:         make([]SidePot, 0),
 		actedFlags:       make([]bool, n),
 		roundResults:     make([]SevenCardStudResult, 0),
 		cpuActions:       make([]SevenCardStudCpuAction, 0),
@@ -115,7 +112,7 @@ func NewSevenCardStud(trumpCards *TrumpCards, players []*SevenCardStudPlayer, co
 func (s *SevenCardStud) Reset() error {
 	s.phase = SevenCardStudPhaseInit
 	s.pot = 0
-	s.sidePots = make([]SevenCardStudSidePot, 0)
+	s.sidePots = make([]SidePot, 0)
 	s.communityCard = nil
 	s.gameEndFlag = false
 	s.lastBet = 0
@@ -802,7 +799,7 @@ func (s *SevenCardStud) GetCommunityCard() *Card { return s.communityCard }
 func (s *SevenCardStud) GetPot() int { return s.pot }
 
 // GetSidePots サイドポット取得
-func (s *SevenCardStud) GetSidePots() []SevenCardStudSidePot { return s.sidePots }
+func (s *SevenCardStud) GetSidePots() []SidePot { return s.sidePots }
 
 // GetDealerIdx ディーラーインデックス取得
 func (s *SevenCardStud) GetDealerIdx() int { return s.dealerIdx }
@@ -912,7 +909,7 @@ type sevenCardStudJSON struct {
 	Players          []*SevenCardStudPlayer   `json:"pl"`
 	CommunityCard    *Card                    `json:"cc,omitempty"`
 	Pot              int                      `json:"pt"`
-	SidePots         []SevenCardStudSidePot   `json:"sp"`
+	SidePots         []SidePot                `json:"sp"`
 	DealerIdx        int                      `json:"di"`
 	CurrentTurn      int                      `json:"ct"`
 	Phase            int                      `json:"ph"`
@@ -1002,7 +999,7 @@ func (s *SevenCardStud) UnmarshalJSON(data []byte) error {
 	s.pot = j.Pot
 	s.sidePots = j.SidePots
 	if s.sidePots == nil {
-		s.sidePots = make([]SevenCardStudSidePot, 0)
+		s.sidePots = make([]SidePot, 0)
 	}
 	s.dealerIdx = j.DealerIdx
 	s.currentTurn = j.CurrentTurn

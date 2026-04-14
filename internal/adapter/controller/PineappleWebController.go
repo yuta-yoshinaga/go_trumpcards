@@ -33,68 +33,12 @@ type PineappleWebInput struct {
 	Profile          json.RawMessage `json:"profile,omitempty"`
 }
 
-// PineappleWebOutputPlayer パイナップルポーカーWebアウトプットプレイヤー
-type PineappleWebOutputPlayer = HoldemWebOutputPlayer
-
-// PineappleWebOutputCpuAction パイナップルポーカーCPU行動記録
-type PineappleWebOutputCpuAction = HoldemWebOutputCpuAction
-
-// PineappleWebOutputResult パイナップルポーカーショーダウン結果
-type PineappleWebOutputResult = HoldemWebOutputResult
-
-// PineappleWebOutputSidePot パイナップルポーカーサイドポット
-type PineappleWebOutputSidePot = HoldemWebOutputSidePot
-
-// PineappleWebOutputEquity パイナップルポーカーエクイティ情報
-type PineappleWebOutputEquity = HoldemWebOutputEquity
-
-// PineappleWebOutputMetaAI メタAI情報
-type PineappleWebOutputMetaAI = HoldemWebOutputMetaAI
-
 // PineappleWebOutput パイナップルポーカーWebアウトプット
+// HoldemWebOutput を埋め込み、Pineapple 固有フィールドのみ追加する。
 type PineappleWebOutput struct {
-	Players          []*PineappleWebOutputPlayer     `json:"players"`
-	CommunityCards   []*WebOutputCard                `json:"communityCards"`
-	Pot              int                             `json:"pot"`
-	SidePots         []*PineappleWebOutputSidePot    `json:"sidePots"`
-	DealerIdx        int                             `json:"dealerIdx"`
-	CurrentTurn      int                             `json:"currentTurn"`
-	Phase            int                             `json:"phase"`
-	GameEndFlag      bool                            `json:"gameEndFlag"`
-	LastBet          int                             `json:"lastBet"`
-	MinRaise         int                             `json:"minRaise"`
-	BettingLimit     int                             `json:"bettingLimit"`
-	RaiseCount       int                             `json:"raiseCount"`
-	MaxBetAmount     int                             `json:"maxBetAmount"`
-	RoundResults     []*PineappleWebOutputResult     `json:"roundResults"`
-	CpuActions       []*PineappleWebOutputCpuAction  `json:"cpuActions"`
-	HandCount        int                             `json:"handCount"`
-	SmallBlind       int                             `json:"smallBlind"`
-	BigBlind         int                             `json:"bigBlind"`
-	TournamentMode   bool                            `json:"tournamentMode"`
-	BlindLevelHands  int                             `json:"blindLevelHands"`
-	BlindMultiplier  int                             `json:"blindMultiplier"`
-	TableSize        int                             `json:"tableSize"`
-	RebuyAvailable   bool                            `json:"rebuyAvailable"`
-	AddonAvailable   bool                            `json:"addonAvailable"`
-	RebuyCounts      []int                           `json:"rebuyCounts"`
-	AddonUsed        []bool                          `json:"addonUsed"`
-	RebuyEnabled     bool                            `json:"rebuyEnabled"`
-	AddonEnabled     bool                            `json:"addonEnabled"`
-	RebuyMaxCount    int                             `json:"rebuyMaxCount"`
-	RebuyChips       int                             `json:"rebuyChips"`
-	AddonChips       int                             `json:"addonChips"`
-	RebuyPeriodHands int                             `json:"rebuyPeriodHands"`
-	AddonAfterHand   int                             `json:"addonAfterHand"`
-	RebuyPhaseType   int                             `json:"rebuyPhaseType"`
-	MuckAvailable    bool                            `json:"muckAvailable"`
-	IsDiscardPhase   bool                            `json:"isDiscardPhase"`
-	DiscardDone      []bool                          `json:"discardDone"`
-	Equity           *PineappleWebOutputEquity       `json:"equity,omitempty"`
-	PotOdds          *float64                        `json:"potOdds,omitempty"`
-	MetaAI           *PineappleWebOutputMetaAI       `json:"metaAI,omitempty"`
-	Profile          *domain.BettingHumanProfileData `json:"profile,omitempty"`
-	WebOutputBase
+	HoldemWebOutput
+	IsDiscardPhase bool   `json:"isDiscardPhase"`
+	DiscardDone    []bool `json:"discardDone"`
 }
 
 // ToConfig builds a PineappleConfig from the web input.
@@ -133,12 +77,14 @@ var NewPineappleWebController, NewPineappleWebControllerWithProvider = webContro
 
 func newPineappleDefaultOutput(msg string) *PineappleWebOutput {
 	return &PineappleWebOutput{
-		Players:        make([]*PineappleWebOutputPlayer, 0),
-		CommunityCards: make([]*WebOutputCard, 0),
-		SidePots:       make([]*PineappleWebOutputSidePot, 0),
-		RoundResults:   make([]*PineappleWebOutputResult, 0),
-		CpuActions:     make([]*PineappleWebOutputCpuAction, 0),
-		WebOutputBase:  WebOutputBase{Message: msg},
+		HoldemWebOutput: HoldemWebOutput{
+			Players:        make([]*HoldemWebOutputPlayer, 0),
+			CommunityCards: make([]*WebOutputCard, 0),
+			SidePots:       make([]*HoldemWebOutputSidePot, 0),
+			RoundResults:   make([]*HoldemWebOutputResult, 0),
+			CpuActions:     make([]*HoldemWebOutputCpuAction, 0),
+			WebOutputBase:  WebOutputBase{Message: msg},
+		},
 	}
 }
 

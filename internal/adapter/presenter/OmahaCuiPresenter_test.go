@@ -155,7 +155,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("CPU actions displayed", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhasePreFlop)
-		h.SetCpuActions([]domain.OmahaCpuAction{
+		h.SetCpuActions([]domain.HoldemCpuAction{
 			{PlayerIdx: 1, Action: domain.OmahaActionCall, Amount: 0},
 			{PlayerIdx: 2, Action: domain.OmahaActionRaise, Amount: 30},
 		})
@@ -170,7 +170,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("CPU action without amount", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhasePreFlop)
-		h.SetCpuActions([]domain.OmahaCpuAction{
+		h.SetCpuActions([]domain.HoldemCpuAction{
 			{PlayerIdx: 1, Action: domain.OmahaActionFold, Amount: 0},
 		})
 
@@ -182,7 +182,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("no CPU actions hides section", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhasePreFlop)
-		h.SetCpuActions([]domain.OmahaCpuAction{})
+		h.SetCpuActions([]domain.HoldemCpuAction{})
 
 		result := p.Output(h, nil)
 		assert.NotContains(t, result, "[CPU行動]")
@@ -191,7 +191,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results with human winner", func(t *testing.T) {
 		h, players := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseEnd)
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
@@ -205,7 +205,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results with kickers", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseEnd)
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 12, 10}, WonAmount: 100, BestHand: nil},
 		})
 
@@ -217,7 +217,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results without kickers", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseEnd)
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", Kickers: nil, WonAmount: 100, BestHand: nil},
 		})
 
@@ -229,7 +229,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results with CPU winner", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseEnd)
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 1, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{13, 12, 11}, WonAmount: 50, BestHand: nil},
 		})
 
@@ -241,7 +241,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results with empty hand name", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseEnd)
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 1, HandName: "", WonAmount: 0, BestHand: nil},
 		})
 
@@ -253,7 +253,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results with zero won amount", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseEnd)
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 1, HandName: "High Card", WonAmount: 0, BestHand: nil},
 		})
 
@@ -264,7 +264,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("results not shown in non-end phase", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseFlop)
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
@@ -320,7 +320,7 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	t.Run("all action names", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhasePreFlop)
-		h.SetCpuActions([]domain.OmahaCpuAction{
+		h.SetCpuActions([]domain.HoldemCpuAction{
 			{PlayerIdx: 1, Action: domain.OmahaActionFold, Amount: 0},
 			{PlayerIdx: 1, Action: domain.OmahaActionCheck, Amount: 0},
 			{PlayerIdx: 1, Action: domain.OmahaActionCall, Amount: 0},
@@ -576,7 +576,7 @@ func TestOmahaCuiPresenter_Output_Muck(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseShowdown)
 		// IsMuckAvailable returns true when phase=SHOWDOWN and human has wonAmount=0
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
 			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
@@ -588,7 +588,7 @@ func TestOmahaCuiPresenter_Output_Muck(t *testing.T) {
 	t.Run("muck prompt not displayed when not available", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseEnd)
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
@@ -599,7 +599,7 @@ func TestOmahaCuiPresenter_Output_Muck(t *testing.T) {
 	t.Run("mucked result displayed as マック", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseEnd)
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
 			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
@@ -612,7 +612,7 @@ func TestOmahaCuiPresenter_Output_Muck(t *testing.T) {
 	t.Run("results shown in showdown phase", func(t *testing.T) {
 		h, _ := makeOmahaForPresenter()
 		h.SetPhase(domain.OmahaPhaseShowdown)
-		h.SetRoundResults([]domain.OmahaResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 

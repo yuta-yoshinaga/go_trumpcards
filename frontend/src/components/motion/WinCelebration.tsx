@@ -15,23 +15,37 @@ interface WinCelebrationProps {
 const PARTICLE_COUNT = 15;
 
 // Design system tokens: accent gold (60%), success green (20%), warm ivory (20%)
-const COLORS = [
-  '#D4A853',
-  '#D4A853',
-  '#D4A853',
-  '#D4A853',
-  '#D4A853',
-  '#D4A853',
-  '#D4A853',
-  '#D4A853',
-  '#D4A853',
-  '#4CAF7D',
-  '#4CAF7D',
-  '#4CAF7D',
-  '#E8E0D4',
-  '#E8E0D4',
-  '#E8E0D4',
-];
+// Fallbacks match the current CSS variable values so particles render correctly
+// even if getComputedStyle returns empty (e.g., in tests or SSR).
+const FALLBACK_ACCENT = '#D4A853';
+const FALLBACK_SUCCESS = '#4CAF7D';
+const FALLBACK_IVORY = '#E8E0D4';
+
+/** Reads design-system CSS variables at runtime so theme changes propagate to particles. */
+function getTokenColors(): string[] {
+  const style = typeof document !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+  const accent = style?.getPropertyValue('--color-ds-accent').trim() || FALLBACK_ACCENT;
+  const success = style?.getPropertyValue('--color-ds-success').trim() || FALLBACK_SUCCESS;
+  const ivory = style?.getPropertyValue('--color-ds-text-primary').trim() || FALLBACK_IVORY;
+  // 60% accent, 20% success, 20% ivory
+  return [
+    accent,
+    accent,
+    accent,
+    accent,
+    accent,
+    accent,
+    accent,
+    accent,
+    accent,
+    success,
+    success,
+    success,
+    ivory,
+    ivory,
+    ivory,
+  ];
+}
 
 interface Particle {
   id: number;
@@ -43,11 +57,12 @@ interface Particle {
 }
 
 function generateParticles(): Particle[] {
+  const colors = getTokenColors();
   return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
     id: i,
     x: (Math.random() - 0.5) * 300,
     y: -(Math.random() * 200 + 50),
-    color: COLORS[i % COLORS.length],
+    color: colors[i % colors.length],
     size: Math.random() * 8 + 4,
     delay: Math.random() * 0.3,
   }));

@@ -4,15 +4,7 @@ import { useIsMobile } from '../../hooks/useCardDimensions';
 import type { DaifugoResponse } from '../../types/card';
 import { getFocusableElements } from '../../utils/dom';
 
-const badgeStyle: React.CSSProperties = {
-  display: 'inline-block',
-  borderRadius: 6,
-  padding: '2px 10px',
-  marginRight: 6,
-  marginBottom: 4,
-  fontSize: '0.8em',
-  fontWeight: 'bold',
-};
+const badgeClass = 'inline-block rounded-[6px] px-2.5 py-0.5 mr-1.5 mb-1 text-xs font-bold';
 
 interface BadgeData {
   label: string;
@@ -231,8 +223,8 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
         <button
           key={b.label}
           type="button"
-          className="relative group/badge inline-block cursor-help"
-          style={{ ...badgeStyle, background: b.bg, color: b.color, border: 'none' }}
+          className={`${badgeClass} relative group/badge cursor-help border-none`}
+          style={{ background: b.bg, color: b.color }}
           aria-label={`${b.label}: ${b.description}`}
         >
           {b.label}

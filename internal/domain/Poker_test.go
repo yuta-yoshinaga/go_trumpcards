@@ -1836,7 +1836,7 @@ func TestPoker_GettersSetters(t *testing.T) {
 	pk.SetCpuExchanges(exchanges)
 	assert.Equal(t, 1, len(pk.GetCpuExchanges()))
 
-	pots := []PokerSidePot{{Amount: 100, EligiblePlayers: []int{0, 1}}}
+	pots := []SidePot{{Amount: 100, EligiblePlayers: []int{0, 1}}}
 	pk.SetSidePots(pots)
 	assert.Equal(t, 1, len(pk.GetSidePots()))
 
@@ -2079,11 +2079,11 @@ func TestPokerPlayStyleNames(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// PokerSidePot struct
+// SidePot struct
 // ---------------------------------------------------------------------------
 
 func TestPokerSidePot(t *testing.T) {
-	sp := PokerSidePot{Amount: 100, EligiblePlayers: []int{0, 1}}
+	sp := SidePot{Amount: 100, EligiblePlayers: []int{0, 1}}
 	assert.Equal(t, 100, sp.Amount)
 	assert.Equal(t, []int{0, 1}, sp.EligiblePlayers)
 }

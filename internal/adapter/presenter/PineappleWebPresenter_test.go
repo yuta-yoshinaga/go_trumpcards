@@ -70,7 +70,7 @@ func TestPineappleWebPresenter_Output(t *testing.T) {
 		game, players := setup()
 		game.SetPhase(domain.PineapplePhaseShowdown)
 		// IsMuckAvailable returns true when phase==Showdown and human has WonAmount==0
-		game.SetRoundResults([]domain.PineappleResult{
+		game.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, WonAmount: 0},
 		})
 		_ = players // players[0] is human (IsHuman=true)
@@ -88,7 +88,7 @@ func TestPineappleWebPresenter_Output(t *testing.T) {
 		game, _ := setup()
 		game.SetPhase(domain.PineapplePhaseEnd)
 		game.SetGameEndFlag(true)
-		game.SetRoundResults([]domain.PineappleResult{
+		game.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, WonAmount: 100},
 		})
 

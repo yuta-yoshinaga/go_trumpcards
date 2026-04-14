@@ -177,7 +177,7 @@ func TestSevenCardStudWebPresenter_Output(t *testing.T) {
 	t.Run("side pots", func(t *testing.T) {
 		s, _ := setup()
 		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
-		s.SetSidePots([]domain.SevenCardStudSidePot{
+		s.SetSidePots([]domain.SidePot{
 			{Amount: 100, EligiblePlayers: []int{0, 1}},
 			{Amount: 50, EligiblePlayers: []int{0}},
 		})

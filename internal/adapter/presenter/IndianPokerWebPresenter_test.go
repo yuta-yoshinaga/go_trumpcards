@@ -138,7 +138,7 @@ func TestIndianPokerWebPresenter_Output(t *testing.T) {
 	t.Run("side pots", func(t *testing.T) {
 		ip, _ := setup()
 		ip.SetPhase(domain.IndianPokerPhaseBetting)
-		ip.SetSidePots([]domain.IndianPokerSidePot{
+		ip.SetSidePots([]domain.SidePot{
 			{Amount: 100, EligiblePlayers: []int{0, 1}},
 			{Amount: 50, EligiblePlayers: []int{0}},
 		})

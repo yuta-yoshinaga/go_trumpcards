@@ -26,7 +26,7 @@ func (p *Pineapple) runCpuActions() error {
 			continue
 		}
 		action, amount := p.cpuDecide(p.currentTurn)
-		p.cpuActions = append(p.cpuActions, PineappleCpuAction{
+		p.cpuActions = append(p.cpuActions, HoldemCpuAction{
 			PlayerIdx: p.currentTurn,
 			Action:    action,
 			Amount:    amount,

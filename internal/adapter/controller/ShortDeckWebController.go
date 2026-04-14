@@ -6,23 +6,17 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// ShortDeckWebInput ショートデックホールデムWebインプット (HoldemWebInputと同一構造)
-type ShortDeckWebInput = HoldemWebInput
-
-// ShortDeckWebOutput ショートデックホールデムWebアウトプット (HoldemWebOutputと同一構造)
-type ShortDeckWebOutput = HoldemWebOutput
-
 // ShortDeckWebController ショートデックホールデムWebコントローラークラス
-type ShortDeckWebController = GameWebController[usecase.ShortDeckInteractorIF, ShortDeckWebInput, *ShortDeckWebOutput]
+type ShortDeckWebController = GameWebController[usecase.ShortDeckInteractorIF, HoldemWebInput, *HoldemWebOutput]
 
 // NewShortDeckWebController and NewShortDeckWebControllerWithProvider are
 // the standard and provider-backed constructors for ShortDeckWebController.
-var NewShortDeckWebController, NewShortDeckWebControllerWithProvider = webControllerPair[usecase.ShortDeckInteractorIF, ShortDeckWebInput, *ShortDeckWebOutput](
+var NewShortDeckWebController, NewShortDeckWebControllerWithProvider = webControllerPair[usecase.ShortDeckInteractorIF, HoldemWebInput, *HoldemWebOutput](
 	newShortDeckDefaultOutput, shortDeckDispatch,
 )
 
-func newShortDeckDefaultOutput(msg string) *ShortDeckWebOutput {
-	return &ShortDeckWebOutput{
+func newShortDeckDefaultOutput(msg string) *HoldemWebOutput {
+	return &HoldemWebOutput{
 		Players:        make([]*HoldemWebOutputPlayer, 0),
 		CommunityCards: make([]*WebOutputCard, 0),
 		SidePots:       make([]*HoldemWebOutputSidePot, 0),
@@ -32,7 +26,7 @@ func newShortDeckDefaultOutput(msg string) *ShortDeckWebOutput {
 	}
 }
 
-func shortDeckDispatch(bc *baseController, w http.ResponseWriter, ogi usecase.ShortDeckInteractorIF, param ShortDeckWebInput, newDefault func(string) *ShortDeckWebOutput) bool {
+func shortDeckDispatch(bc *baseController, w http.ResponseWriter, ogi usecase.ShortDeckInteractorIF, param HoldemWebInput, newDefault func(string) *HoldemWebOutput) bool {
 	if dispatchPokerAction(bc, w, ogi, param.Command, param.Amount, param.HumanPlayMs) {
 		return true
 	}

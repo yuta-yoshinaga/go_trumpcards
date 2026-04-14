@@ -29,15 +29,6 @@ const (
 	ShortDeckActionAllIn = HoldemActionAllIn
 )
 
-// ShortDeckSidePot サイドポット (共通SidePot型のエイリアス)
-type ShortDeckSidePot = SidePot
-
-// ShortDeckResult ショーダウン結果
-type ShortDeckResult = HoldemResult
-
-// ShortDeckCpuAction CPU行動記録
-type ShortDeckCpuAction = HoldemCpuAction
-
 // リバイフェーズ種別定数 (Holdemと共通)
 const (
 	ShortDeckRebuyPhaseNone  = HoldemRebuyPhaseNone
@@ -47,22 +38,17 @@ const (
 
 // ShortDeck ショートデックホールデムクラス
 type ShortDeck struct {
+	communityCardBettingBase
 	trumpCards      *TrumpCards
 	players         []*ShortDeckPlayer
 	communityCards  []*Card
-	pot             int
-	sidePots        []ShortDeckSidePot
+	sidePots        []SidePot
 	dealerIdx       int
 	currentTurn     int
 	phase           int
 	config          ShortDeckConfig
-	gameEndFlag     bool
-	lastBet         int
-	minRaise        int
-	raiseCount      int
-	actedFlags      []bool
-	roundResults    []ShortDeckResult
-	cpuActions      []ShortDeckCpuAction
+	roundResults    []HoldemResult
+	cpuActions      []HoldemCpuAction
 	startingChips   []int
 	vpipTracked     []bool
 	pfrTracked      []bool
@@ -80,13 +66,15 @@ type ShortDeck struct {
 // NewShortDeck コンストラクタ
 func NewShortDeck(trumpCards *TrumpCards, players []*ShortDeckPlayer, config ShortDeckConfig) *ShortDeck {
 	return &ShortDeck{
+		communityCardBettingBase: communityCardBettingBase{
+			actedFlags: make([]bool, len(players)),
+		},
 		trumpCards:      trumpCards,
 		players:         players,
 		communityCards:  make([]*Card, 0),
-		sidePots:        make([]ShortDeckSidePot, 0),
-		actedFlags:      make([]bool, len(players)),
-		roundResults:    make([]ShortDeckResult, 0),
-		cpuActions:      make([]ShortDeckCpuAction, 0),
+		sidePots:        make([]SidePot, 0),
+		roundResults:    make([]HoldemResult, 0),
+		cpuActions:      make([]HoldemCpuAction, 0),
 		startingChips:   make([]int, len(players)),
 		vpipTracked:     make([]bool, len(players)),
 		pfrTracked:      make([]bool, len(players)),
@@ -102,15 +90,15 @@ func NewShortDeck(trumpCards *TrumpCards, players []*ShortDeckPlayer, config Sho
 func (sd *ShortDeck) Reset() error {
 	sd.phase = ShortDeckPhaseInit
 	sd.pot = 0
-	sd.sidePots = make([]ShortDeckSidePot, 0)
+	sd.sidePots = make([]SidePot, 0)
 	sd.communityCards = make([]*Card, 0)
 	sd.gameEndFlag = false
 	sd.lastBet = 0
 	sd.minRaise = sd.config.BigBlind
 	sd.raiseCount = 0
 	sd.actedFlags = make([]bool, len(sd.players))
-	sd.roundResults = make([]ShortDeckResult, 0)
-	sd.cpuActions = make([]ShortDeckCpuAction, 0)
+	sd.roundResults = make([]HoldemResult, 0)
+	sd.cpuActions = make([]HoldemCpuAction, 0)
 	sd.rebuyPhaseType = ShortDeckRebuyPhaseNone
 	sd.actionLog = nil
 	sd.lastHumanPlayMs = 0
@@ -328,31 +316,16 @@ func (sd *ShortDeck) trackPostFlopStats(playerIdx, action int) {
 	}
 }
 
-// bettingPlayers BettingPlayerスライスを生成
-func (sd *ShortDeck) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(sd.players))
-	for i, pl := range sd.players {
-		bp[i] = pl
-	}
-	return bp
-}
-
 // executeAction 指定プレイヤーのアクション実行
 func (sd *ShortDeck) executeAction(playerIdx, action, amount int) error {
 	sd.trackPreFlopStats(playerIdx, action)
 	sd.trackPostFlopStats(playerIdx, action)
 
-	bp := sd.bettingPlayers()
-	state := &BettingState{
-		Pot: sd.pot, LastBet: sd.lastBet, MinRaise: sd.minRaise,
-		RaiseCount: sd.raiseCount, ActedFlags: sd.actedFlags,
-	}
+	bp := toBettingPlayers(sd.players)
+	state := sd.bettingState()
 	maxRaises, maxBetAmount := sd.bettingLimits()
 	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, sd.config.BigBlind, maxRaises, maxBetAmount)
-	sd.pot = state.Pot
-	sd.lastBet = state.LastBet
-	sd.minRaise = state.MinRaise
-	sd.raiseCount = state.RaiseCount
+	sd.syncBettingState(state)
 	if err != nil {
 		return err
 	}
@@ -371,33 +344,18 @@ func (sd *ShortDeck) advanceTurn() {
 		return
 	}
 
-	if sd.isBettingRoundComplete() {
+	bp := toBettingPlayers(sd.players)
+	if sd.isBettingRoundComplete(bp) {
 		sd.advancePhase()
 		return
 	}
 
-	for i := 1; i <= len(sd.players); i++ {
-		next := (sd.currentTurn + i) % len(sd.players)
-		if !sd.players[next].GetFolded() && !sd.players[next].GetAllIn() && !sd.actedFlags[next] {
-			sd.currentTurn = next
-			return
-		}
+	if next := sd.findNextActiveTurn(sd.currentTurn, bp); next >= 0 {
+		sd.currentTurn = next
+		return
 	}
 
 	sd.advancePhase()
-}
-
-// isBettingRoundComplete ベッティングラウンドが完了したかチェック
-func (sd *ShortDeck) isBettingRoundComplete() bool {
-	for i, p := range sd.players {
-		if p.GetFolded() || p.GetAllIn() {
-			continue
-		}
-		if !sd.actedFlags[i] {
-			return false
-		}
-	}
-	return true
 }
 
 // advancePhase 次のフェーズに進める
@@ -500,7 +458,7 @@ func (sd *ShortDeck) resolveLastPlayer() {
 	for i, p := range sd.players {
 		if !p.GetFolded() {
 			p.AddChips(sd.pot)
-			sd.roundResults = []ShortDeckResult{{
+			sd.roundResults = []HoldemResult{{
 				PlayerIdx: i,
 				WonAmount: sd.pot,
 			}}
@@ -521,17 +479,17 @@ func (sd *ShortDeck) resolveShowdown() {
 		}
 	}
 
-	bp := sd.bettingPlayers()
+	bp := toBettingPlayers(sd.players)
 	sd.sidePots = CalculateSidePots(bp, sd.pot, sd.startingChips)
 	wonAmounts := DistributePots(bp, sd.sidePots)
 
-	sd.roundResults = make([]ShortDeckResult, 0)
+	sd.roundResults = make([]HoldemResult, 0)
 	humanLost := false
 	for i, p := range sd.players {
 		if p.GetFolded() {
 			continue
 		}
-		result := ShortDeckResult{
+		result := HoldemResult{
 			PlayerIdx: i,
 			HandRank:  p.GetHandRank(),
 			HandName:  sd.getHandName(p.GetHandRank()),
@@ -624,7 +582,7 @@ func (sd *ShortDeck) runCpuActions() error {
 			continue
 		}
 		action, amount := sd.cpuDecide(sd.currentTurn)
-		sd.cpuActions = append(sd.cpuActions, ShortDeckCpuAction{
+		sd.cpuActions = append(sd.cpuActions, HoldemCpuAction{
 			PlayerIdx: sd.currentTurn,
 			Action:    action,
 			Amount:    amount,
@@ -1160,7 +1118,7 @@ func (sd *ShortDeck) GetCommunityCards() []*Card { return sd.communityCards }
 func (sd *ShortDeck) GetPot() int { return sd.pot }
 
 // GetSidePots サイドポット取得
-func (sd *ShortDeck) GetSidePots() []ShortDeckSidePot { return sd.sidePots }
+func (sd *ShortDeck) GetSidePots() []SidePot { return sd.sidePots }
 
 // GetDealerIdx ディーラーインデックス取得
 func (sd *ShortDeck) GetDealerIdx() int { return sd.dealerIdx }
@@ -1181,10 +1139,10 @@ func (sd *ShortDeck) GetMinRaise() int { return sd.minRaise }
 func (sd *ShortDeck) GetRaiseCount() int { return sd.raiseCount }
 
 // GetRoundResults ラウンド結果取得
-func (sd *ShortDeck) GetRoundResults() []ShortDeckResult { return sd.roundResults }
+func (sd *ShortDeck) GetRoundResults() []HoldemResult { return sd.roundResults }
 
 // GetCpuActions CPU行動記録取得
-func (sd *ShortDeck) GetCpuActions() []ShortDeckCpuAction { return sd.cpuActions }
+func (sd *ShortDeck) GetCpuActions() []HoldemCpuAction { return sd.cpuActions }
 
 // GetLastCpuError 最後のCPUアクションエラー取得
 func (sd *ShortDeck) GetLastCpuError() error { return sd.lastCpuError }
@@ -1280,7 +1238,7 @@ type shortDeckJSON struct {
 	Players         []*ShortDeckPlayer       `json:"pl"`
 	CommunityCards  []*Card                  `json:"cc"`
 	Pot             int                      `json:"pt"`
-	SidePots        []ShortDeckSidePot       `json:"sp"`
+	SidePots        []SidePot                `json:"sp"`
 	DealerIdx       int                      `json:"di"`
 	CurrentTurn     int                      `json:"ct"`
 	Phase           int                      `json:"ph"`
@@ -1290,8 +1248,8 @@ type shortDeckJSON struct {
 	MinRaise        int                      `json:"mr"`
 	RaiseCount      int                      `json:"rc"`
 	ActedFlags      []bool                   `json:"af"`
-	RoundResults    []ShortDeckResult        `json:"rr"`
-	CpuActions      []ShortDeckCpuAction     `json:"ca"`
+	RoundResults    []HoldemResult           `json:"rr"`
+	CpuActions      []HoldemCpuAction        `json:"ca"`
 	StartingChips   []int                    `json:"sc"`
 	VPIPTracked     []bool                   `json:"vt"`
 	PFRTracked      []bool                   `json:"ft"`
@@ -1372,7 +1330,7 @@ func (sd *ShortDeck) UnmarshalJSON(data []byte) error {
 	sd.pot = j.Pot
 	sd.sidePots = j.SidePots
 	if sd.sidePots == nil {
-		sd.sidePots = make([]ShortDeckSidePot, 0)
+		sd.sidePots = make([]SidePot, 0)
 	}
 	sd.dealerIdx = j.DealerIdx
 	sd.currentTurn = j.CurrentTurn
@@ -1388,11 +1346,11 @@ func (sd *ShortDeck) UnmarshalJSON(data []byte) error {
 	}
 	sd.roundResults = j.RoundResults
 	if sd.roundResults == nil {
-		sd.roundResults = make([]ShortDeckResult, 0)
+		sd.roundResults = make([]HoldemResult, 0)
 	}
 	sd.cpuActions = j.CpuActions
 	if sd.cpuActions == nil {
-		sd.cpuActions = make([]ShortDeckCpuAction, 0)
+		sd.cpuActions = make([]HoldemCpuAction, 0)
 	}
 	sd.startingChips = j.StartingChips
 	if sd.startingChips == nil {

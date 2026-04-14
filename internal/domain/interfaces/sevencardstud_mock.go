@@ -62,9 +62,9 @@ func (_m *MockSevenCardStudGame) GetPot() int {
 	return ret.Int(0)
 }
 
-func (_m *MockSevenCardStudGame) GetSidePots() []domain.SevenCardStudSidePot {
+func (_m *MockSevenCardStudGame) GetSidePots() []domain.SidePot {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.SevenCardStudSidePot); ok {
+	if val, ok := ret.Get(0).([]domain.SidePot); ok {
 		return val
 	}
 	return nil

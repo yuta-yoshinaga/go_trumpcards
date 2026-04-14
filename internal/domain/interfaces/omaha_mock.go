@@ -71,9 +71,9 @@ func (_m *MockOmahaGame) GetPot() int {
 }
 
 // GetSidePots モック
-func (_m *MockOmahaGame) GetSidePots() []domain.OmahaSidePot {
+func (_m *MockOmahaGame) GetSidePots() []domain.SidePot {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.OmahaSidePot); ok {
+	if val, ok := ret.Get(0).([]domain.SidePot); ok {
 		return val
 	}
 	return nil
@@ -116,18 +116,18 @@ func (_m *MockOmahaGame) GetRaiseCount() int {
 }
 
 // GetRoundResults モック
-func (_m *MockOmahaGame) GetRoundResults() []domain.OmahaResult {
+func (_m *MockOmahaGame) GetRoundResults() []domain.HoldemResult {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.OmahaResult); ok {
+	if val, ok := ret.Get(0).([]domain.HoldemResult); ok {
 		return val
 	}
 	return nil
 }
 
 // GetCpuActions モック
-func (_m *MockOmahaGame) GetCpuActions() []domain.OmahaCpuAction {
+func (_m *MockOmahaGame) GetCpuActions() []domain.HoldemCpuAction {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.OmahaCpuAction); ok {
+	if val, ok := ret.Get(0).([]domain.HoldemCpuAction); ok {
 		return val
 	}
 	return nil

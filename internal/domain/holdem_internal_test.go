@@ -111,17 +111,17 @@ func TestAdvanceTurn_GameEnded(t *testing.T) {
 func TestIsBettingRoundComplete(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.actedFlags = []bool{true, true, true, true}
-	assert.True(t, h.isBettingRoundComplete())
+	assert.True(t, h.isBettingRoundComplete(toBettingPlayers(h.players)))
 
 	h.actedFlags = []bool{true, false, true, true}
-	assert.False(t, h.isBettingRoundComplete())
+	assert.False(t, h.isBettingRoundComplete(toBettingPlayers(h.players)))
 }
 
 func TestIsBettingRoundComplete_FoldedPlayersIgnored(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.actedFlags = []bool{true, false, true, true}
 	h.players[1].SetFolded(true)
-	assert.True(t, h.isBettingRoundComplete())
+	assert.True(t, h.isBettingRoundComplete(toBettingPlayers(h.players)))
 }
 
 func TestAdvancePhase_PreFlopToFlop(t *testing.T) {

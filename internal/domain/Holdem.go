@@ -30,9 +30,6 @@ const (
 // holdemDefaultMaxRaises Fixed/PotLimit時のデフォルト最大レイズ回数
 const holdemDefaultMaxRaises = bettingMaxRaisesPerRound
 
-// HoldemSidePot サイドポット (共通SidePot型のエイリアス)
-type HoldemSidePot = SidePot
-
 // HoldemResult ショーダウン結果
 type HoldemResult struct {
 	PlayerIdx int     // プレイヤーインデックス
@@ -60,20 +57,15 @@ const (
 
 // Holdem テキサスホールデムクラス
 type Holdem struct {
+	communityCardBettingBase
 	trumpCards      *TrumpCards
 	players         []*HoldemPlayer
 	communityCards  []*Card
-	pot             int
-	sidePots        []HoldemSidePot
+	sidePots        []SidePot
 	dealerIdx       int
 	currentTurn     int
 	phase           int
 	config          HoldemConfig
-	gameEndFlag     bool
-	lastBet         int
-	minRaise        int
-	raiseCount      int
-	actedFlags      []bool
 	roundResults    []HoldemResult
 	cpuActions      []HoldemCpuAction
 	startingChips   []int
@@ -93,11 +85,13 @@ type Holdem struct {
 // NewHoldem コンストラクタ
 func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemConfig) *Holdem {
 	return &Holdem{
+		communityCardBettingBase: communityCardBettingBase{
+			actedFlags: make([]bool, len(players)),
+		},
 		trumpCards:      trumpCards,
 		players:         players,
 		communityCards:  make([]*Card, 0),
-		sidePots:        make([]HoldemSidePot, 0),
-		actedFlags:      make([]bool, len(players)),
+		sidePots:        make([]SidePot, 0),
 		roundResults:    make([]HoldemResult, 0),
 		cpuActions:      make([]HoldemCpuAction, 0),
 		startingChips:   make([]int, len(players)),
@@ -115,7 +109,7 @@ func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemCon
 func (h *Holdem) Reset() error {
 	h.phase = HoldemPhaseInit
 	h.pot = 0
-	h.sidePots = make([]HoldemSidePot, 0)
+	h.sidePots = make([]SidePot, 0)
 	h.communityCards = make([]*Card, 0)
 	h.gameEndFlag = false
 	h.lastBet = 0
@@ -301,41 +295,23 @@ func (h *Holdem) PlayerAction(action, amount, humanPlayMs int) error {
 	return h.runCpuActions()
 }
 
-// bettingPlayers BettingPlayerスライスを生成
-func (h *Holdem) bettingPlayers() []BettingPlayer {
-	bp := make([]BettingPlayer, len(h.players))
-	for i, pl := range h.players {
-		bp[i] = pl
-	}
-	return bp
-}
-
 // executeAction 指定プレイヤーのアクション実行
 func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 	// HUDスタッツ追跡 (Holdem固有)
 	h.trackPreFlopStats(playerIdx, action)
 	h.trackPostFlopStats(playerIdx, action)
 
-	bp := h.bettingPlayers()
-	// ActedFlags はスライス参照を共有: ExecuteBettingAction 内の変更が h.actedFlags に直接反映される
-	state := &BettingState{
-		Pot: h.pot, LastBet: h.lastBet, MinRaise: h.minRaise,
-		RaiseCount: h.raiseCount, ActedFlags: h.actedFlags,
-	}
+	bp := toBettingPlayers(h.players)
+	state := h.bettingState()
 	maxRaises, maxBetAmount := h.bettingLimits()
 	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, h.config.BigBlind, maxRaises, maxBetAmount)
-	h.pot = state.Pot
-	h.lastBet = state.LastBet
-	h.minRaise = state.MinRaise
-	h.raiseCount = state.RaiseCount
+	h.syncBettingState(state)
 	if err != nil {
 		return err
 	}
 
-	// 棋譜記録
 	h.logAction(playerIdx, action, amount)
 
-	// フォールドでアクティブプレイヤーが1人になったらチェック
 	if h.countActivePlayers() == 1 {
 		h.resolveLastPlayer()
 	}
@@ -348,36 +324,18 @@ func (h *Holdem) advanceTurn() {
 		return
 	}
 
-	// ベッティングラウンド終了チェック
-	if h.isBettingRoundComplete() {
+	bp := toBettingPlayers(h.players)
+	if h.isBettingRoundComplete(bp) {
 		h.advancePhase()
 		return
 	}
 
-	// 次のアクティブプレイヤーを探す
-	for i := 1; i <= len(h.players); i++ {
-		next := (h.currentTurn + i) % len(h.players)
-		if !h.players[next].GetFolded() && !h.players[next].GetAllIn() && !h.actedFlags[next] {
-			h.currentTurn = next
-			return
-		}
+	if next := h.findNextActiveTurn(h.currentTurn, bp); next >= 0 {
+		h.currentTurn = next
+		return
 	}
 
-	// 全員行動済みならフェーズ進行
 	h.advancePhase()
-}
-
-// isBettingRoundComplete ベッティングラウンドが完了したかチェック
-func (h *Holdem) isBettingRoundComplete() bool {
-	for i, p := range h.players {
-		if p.GetFolded() || p.GetAllIn() {
-			continue
-		}
-		if !h.actedFlags[i] {
-			return false
-		}
-	}
-	return true
 }
 
 // advancePhase 次のフェーズに進める
@@ -646,7 +604,7 @@ func (h *Holdem) GetCommunityCards() []*Card { return h.communityCards }
 func (h *Holdem) GetPot() int { return h.pot }
 
 // GetSidePots サイドポット取得
-func (h *Holdem) GetSidePots() []HoldemSidePot { return h.sidePots }
+func (h *Holdem) GetSidePots() []SidePot { return h.sidePots }
 
 // GetDealerIdx ディーラーインデックス取得
 func (h *Holdem) GetDealerIdx() int { return h.dealerIdx }
@@ -766,7 +724,7 @@ type holdemJSON struct {
 	Players         []*HoldemPlayer          `json:"pl"`
 	CommunityCards  []*Card                  `json:"cc"`
 	Pot             int                      `json:"pt"`
-	SidePots        []HoldemSidePot          `json:"sp"`
+	SidePots        []SidePot                `json:"sp"`
 	DealerIdx       int                      `json:"di"`
 	CurrentTurn     int                      `json:"ct"`
 	Phase           int                      `json:"ph"`
@@ -858,7 +816,7 @@ func (h *Holdem) UnmarshalJSON(data []byte) error {
 	h.pot = j.Pot
 	h.sidePots = j.SidePots
 	if h.sidePots == nil {
-		h.sidePots = make([]HoldemSidePot, 0)
+		h.sidePots = make([]SidePot, 0)
 	}
 	h.dealerIdx = j.DealerIdx
 	h.currentTurn = j.CurrentTurn

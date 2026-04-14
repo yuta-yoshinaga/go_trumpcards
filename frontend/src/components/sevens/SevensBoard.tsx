@@ -15,11 +15,11 @@ interface BoardProps {
 
 /** Cell background and text color style based on card placement state. */
 function cellColors(placed: boolean, isCenter: boolean, canPlace: boolean): React.CSSProperties {
-  if (canPlace) return { background: 'var(--color-blue-500, #3b82f6)', color: 'white' };
+  if (canPlace) return { background: 'var(--color-game-card-selected)', color: 'white' };
   if (placed)
     return isCenter
-      ? { background: 'var(--color-game-status-waiting)', color: 'black' }
-      : { background: 'var(--color-game-status-active)', color: 'black' };
+      ? { background: 'var(--color-game-status-waiting)', color: 'var(--color-game-text-strong)' }
+      : { background: 'var(--color-game-status-active)', color: 'var(--color-game-text-strong)' };
   return { background: 'rgba(255,255,255,0.1)', color: 'var(--color-board-cell-empty-text)' };
 }
 

@@ -207,7 +207,7 @@ func TestShortDeck_Muck(t *testing.T) {
 	t.Run("showdown phase", func(t *testing.T) {
 		sd := newTestShortDeck()
 		sd.SetPhase(domain.ShortDeckPhaseShowdown)
-		sd.SetRoundResults([]domain.ShortDeckResult{
+		sd.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, WonAmount: 0},
 		})
 		err := sd.Muck()
@@ -240,7 +240,7 @@ func TestShortDeck_IsMuckAvailable(t *testing.T) {
 	t.Run("human lost", func(t *testing.T) {
 		sd := newTestShortDeck()
 		sd.SetPhase(domain.ShortDeckPhaseShowdown)
-		sd.SetRoundResults([]domain.ShortDeckResult{
+		sd.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, WonAmount: 0},
 		})
 		assert.True(t, sd.IsMuckAvailable())
@@ -248,7 +248,7 @@ func TestShortDeck_IsMuckAvailable(t *testing.T) {
 	t.Run("human won", func(t *testing.T) {
 		sd := newTestShortDeck()
 		sd.SetPhase(domain.ShortDeckPhaseShowdown)
-		sd.SetRoundResults([]domain.ShortDeckResult{
+		sd.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, WonAmount: 100},
 		})
 		assert.False(t, sd.IsMuckAvailable())

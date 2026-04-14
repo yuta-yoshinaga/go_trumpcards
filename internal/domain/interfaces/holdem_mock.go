@@ -71,9 +71,9 @@ func (_m *MockHoldemGame) GetPot() int {
 }
 
 // GetSidePots モック
-func (_m *MockHoldemGame) GetSidePots() []domain.HoldemSidePot {
+func (_m *MockHoldemGame) GetSidePots() []domain.SidePot {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.HoldemSidePot); ok {
+	if val, ok := ret.Get(0).([]domain.SidePot); ok {
 		return val
 	}
 	return nil
