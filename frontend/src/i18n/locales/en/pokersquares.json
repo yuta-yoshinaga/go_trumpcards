@@ -1,0 +1,23 @@
+{
+  "title": "Poker Squares",
+  "phase": {
+    "playing": "Playing",
+    "complete": "Complete"
+  },
+  "label": {
+    "currentCard": "Next card",
+    "totalScore": "Total score",
+    "placedCount": "Placed",
+    "row": "Row",
+    "col": "Col",
+    "empty": "Empty"
+  },
+  "button": {
+    "reset": "Reset",
+    "undo": "Undo",
+    "giveup": "Give up"
+  },
+  "settings": {
+    "title": "Settings"
+  }
+}

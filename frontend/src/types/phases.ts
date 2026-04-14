@@ -420,6 +420,12 @@ export const WhistPhase = {
 } as const;
 
 /** Let It Ride phase constants (sync: internal/domain/LetItRide.go). */
+/** Poker Squares phase constants (sync: internal/domain/PokerSquares.go). */
+export const PokerSquaresPhase = {
+  PLAYING: 0,
+  COMPLETE: 1,
+} as const;
+
 export const LetItRidePhase = {
   BET: 1,
   FIRST_DECISION: 2,

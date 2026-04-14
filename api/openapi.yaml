@@ -110,6 +110,8 @@ tags:
     description: Yukon (ユーコン) game
   - name: letitride
     description: Let It Ride (レットイットライド) game
+  - name: pokersquares
+    description: Poker Squares (ポーカー・スクエア) game
 
 paths:
   /blackjack/exec:
@@ -4867,6 +4869,93 @@ paths:
                     bet3Payout: 0
                     totalPayout: 0
                     message: param error.
+
+  /pokersquares/exec:
+    post:
+      tags:
+        - pokersquares
+      summary: Execute a Poker Squares game command
+      description: |
+        Send a command to advance the Poker Squares (ポーカー・スクエア)
+        game session identified by `sessionId`. Poker Squares is a
+        single-player solitaire puzzle using a standard 52-card deck.
+        Cards are drawn one at a time from a shuffled deck and must be
+        placed on an empty cell of a 5x5 grid (25 cells). Once placed, a
+        card cannot be moved. After all 25 cells are filled, the 5 rows
+        and 5 columns form 10 five-card poker hands, each scored via the
+        American scoring system: Royal Flush 100, Straight Flush 75,
+        Four of a Kind 50, Full House 25, Flush 20, Straight 15,
+        Three of a Kind 10, Two Pair 5, One Pair 2, High Card 0.
+        The total score is the sum of all 10 hand scores.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress (placing cards) |
+        | Complete  | `1`   | All 25 cells filled; final score shown |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`  | `r`  | Start / restart a game |
+        | `place`  | `p`  | Place the current card on cell (`row`, `col`) (0-4) |
+        | `undo`   | `u`  | Undo the last placement |
+        | `giveup` | `g`  | Give up the current game |
+        | `log`    | `l`  | View action log |
+      operationId: pokersquaresExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PokerSquaresRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              place:
+                summary: Place the current card on row 2, col 3
+                value:
+                  command: place
+                  row: 2
+                  col: 3
+                  sessionId: my-session-001
+              undo:
+                summary: Undo the last placement
+                value:
+                  command: undo
+                  sessionId: my-session-001
+              giveup:
+                summary: Give up the current game
+                value:
+                  command: giveup
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PokerSquaresResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PokerSquaresResponse'
+              examples:
+                paramError:
+                  value:
+                    board: []
+                    placedCount: 0
+                    phase: 0
+                    canUndo: false
+                    rowScores: []
+                    colScores: []
+                    totalScore: 0
+                    message: "param error: row and col are required."
 
 components:
   schemas:
@@ -12426,6 +12515,114 @@ components:
         message:
           type: string
           description: Game result or error message. Empty during bet/decision phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Poker Squares
+    # -------------------------------------------------------------------------
+    PokerSquaresRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `place` (`p`),
+            `undo` (`u`), `giveup` (`g`), `log` (`l`).
+          enum: [r, reset, p, place, u, undo, g, giveup, log, l]
+          example: place
+        row:
+          type: integer
+          description: Row index (0-4) for the `place` command.
+          minimum: 0
+          maximum: 4
+          example: 2
+        col:
+          type: integer
+          description: Column index (0-4) for the `place` command.
+          minimum: 0
+          maximum: 4
+          example: 3
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PokerSquaresOutputCard:
+      type: object
+      description: A single cell in the 5x5 Poker Squares board (empty when `card` is null).
+      properties:
+        card:
+          description: Card placed on this cell, or null if the cell is empty.
+          $ref: '#/components/schemas/Card'
+
+    PokerSquaresResponse:
+      type: object
+      description: Current state of the Poker Squares game
+      required:
+        - board
+        - placedCount
+        - phase
+        - canUndo
+        - rowScores
+        - colScores
+        - totalScore
+        - message
+      properties:
+        board:
+          type: array
+          description: 5x5 grid of cells (row-major). Each cell contains the placed card or null.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/PokerSquaresOutputCard'
+        currentCard:
+          description: The current card that must be placed next. Omitted when the game is complete.
+          $ref: '#/components/schemas/Card'
+        placedCount:
+          type: integer
+          description: Number of cards already placed on the board (0-25).
+          minimum: 0
+          maximum: 25
+          example: 0
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = Complete"
+          enum: [0, 1]
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        rowScores:
+          type: array
+          description: Score of each row (5 entries, one per row). Only rows with all 5 cards placed contribute to the total.
+          items:
+            type: integer
+          example: [0, 0, 0, 0, 0]
+        colScores:
+          type: array
+          description: Score of each column (5 entries, one per column). Only fully-filled columns contribute to the total.
+          items:
+            type: integer
+          example: [0, 0, 0, 0, 0]
+        totalScore:
+          type: integer
+          description: Sum of all 10 row + column hand scores (American scoring system).
+          example: 0
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
           example: ""
         messageCode:
           type: string

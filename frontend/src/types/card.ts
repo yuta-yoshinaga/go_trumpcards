@@ -2280,6 +2280,37 @@ export interface WhistResponse {
   hint?: WhistHint;
 }
 
+// --- Poker Squares (ポーカー・スクエア) ---
+
+/** Single cell of the 5x5 Poker Squares board. */
+export interface PokerSquaresBoardCell {
+  /** Placed card, or `null` when the cell is empty. */
+  card: Card | null;
+}
+
+/** Poker Squares API response. */
+export interface PokerSquaresResponse {
+  /** 5x5 board. Empty cells have `card === null`. */
+  board: PokerSquaresBoardCell[][];
+  /** Next card to place, or `null` once all 25 cards have been placed. */
+  currentCard: Card | null;
+  /** Number of cards placed so far (0..25). */
+  placedCount: number;
+  /** 0 = playing, 1 = complete. */
+  phase: number;
+  /** Whether the last action can be undone. */
+  canUndo: boolean;
+  /** Score per row (length 5). */
+  rowScores: number[];
+  /** Score per column (length 5). */
+  colScores: number[];
+  /** Sum of all row and column scores. */
+  totalScore: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Let It Ride (レット・イット・ライド) ---
 
 /** Let It Ride API response. */

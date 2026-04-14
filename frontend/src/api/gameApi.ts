@@ -38,6 +38,7 @@ import type {
   PineappleResponse,
   PinochleResponse,
   PokerResponse,
+  PokerSquaresResponse,
   PyramidResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -104,6 +105,7 @@ const workerUrl: Record<string, string> = {
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
   pyramid: WORKER_SOLO,
+  pokersquares: WORKER_SOLO,
   tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
@@ -1012,6 +1014,12 @@ export const whistApi = {
   ) => gameExec<WhistResponse>('whist', { command, cardIndex, config }),
 };
 
+/** API client for the Poker Squares /pokersquares/exec endpoint. */
+export const pokersquaresApi = {
+  exec: (command: 'reset' | 'place' | 'undo' | 'giveup' | 'log', row?: number, col?: number) =>
+    gameExec<PokerSquaresResponse>('pokersquares', { command, row, col }),
+};
+
 /** API client for the Let It Ride /letitride/exec endpoint. */
 export const letitrideApi = {
   exec: (command: 'reset' | 'bet' | 'pull' | 'letitride' | 'log', amount?: number) =>
@@ -1069,6 +1077,7 @@ const games = [
   'yukon',
   'whist',
   'letitride',
+  'pokersquares',
 ] as const;
 type Game = (typeof games)[number];
 

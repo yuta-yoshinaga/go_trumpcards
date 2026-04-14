@@ -38,6 +38,7 @@ import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
+import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
@@ -90,6 +91,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/poker': poker,
+  '/poker-squares': pokersquares,
   '/pyramid': pyramid,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,

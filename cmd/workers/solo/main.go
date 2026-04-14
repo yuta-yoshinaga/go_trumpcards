@@ -224,6 +224,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Poker Squares
+	if err := worker.RegisterKV(mux, "/pokersquares/exec", "pokersquares:",
+		func() usecase.PokerSquaresInteractorIF {
+			ps := domain.NewPokerSquares(domain.NewTrumpCards(0))
+			return usecase.NewPokerSquaresInteractor(ps, new(presenter.PokerSquaresWebPresenter))
+		},
+		func(data []byte) (usecase.PokerSquaresInteractorIF, error) {
+			return usecase.RestorePokerSquaresInteractor(data, new(presenter.PokerSquaresWebPresenter))
+		},
+		controller.NewPokerSquaresWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	// Yukon
 	if err := worker.RegisterKV(mux, "/yukon/exec", "yukon:",
 		func() usecase.YukonInteractorIF {
