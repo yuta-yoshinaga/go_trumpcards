@@ -33,7 +33,7 @@ func (s *SevenCardStud) SetRoundResults(results []SevenCardStudResult) { s.round
 func (s *SevenCardStud) SetCpuActions(actions []SevenCardStudCpuAction) { s.cpuActions = actions }
 
 // SetSidePots サイドポット設定（テスト用）
-func (s *SevenCardStud) SetSidePots(pots []SevenCardStudSidePot) { s.sidePots = pots }
+func (s *SevenCardStud) SetSidePots(pots []SidePot) { s.sidePots = pots }
 
 // SetHandCount ハンド数設定（テスト用）
 func (s *SevenCardStud) SetHandCount(count int) { s.handCount = count }

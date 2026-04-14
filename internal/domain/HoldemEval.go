@@ -79,7 +79,7 @@ func (h *Holdem) resolveShowdown() {
 	}
 
 	// サイドポット計算・配分
-	bp := h.bettingPlayers()
+	bp := toBettingPlayers(h.players)
 	h.sidePots = CalculateSidePots(bp, h.pot, h.startingChips)
 	wonAmounts := DistributePots(bp, h.sidePots)
 

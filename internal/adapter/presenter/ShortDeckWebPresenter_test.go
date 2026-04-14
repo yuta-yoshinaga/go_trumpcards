@@ -35,7 +35,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		err := json.Unmarshal([]byte(result), &out)
 		assert.NoError(t, err)
 		assert.Equal(t, domain.ShortDeckPhasePreFlop, out.Phase)
@@ -55,7 +55,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		human := out.Players[0]
@@ -73,7 +73,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		cpu := out.Players[1]
@@ -88,7 +88,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[1].SetHandRank(domain.PokerHandOnePair)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		cpu := out.Players[1]
@@ -104,7 +104,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		cpu := out.Players[1]
@@ -118,7 +118,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[1].SetFolded(true)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		cpu := out.Players[1]
@@ -137,7 +137,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Len(t, out.CommunityCards, 3)
@@ -149,13 +149,13 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 	t.Run("side pots", func(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseFlop)
-		h.SetSidePots([]domain.ShortDeckSidePot{
+		h.SetSidePots([]domain.SidePot{
 			{Amount: 100, EligiblePlayers: []int{0, 1}},
 			{Amount: 50, EligiblePlayers: []int{0}},
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Len(t, out.SidePots, 2)
@@ -175,7 +175,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[3].SetAllIn(true)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, 0, out.Players[0].ID)
@@ -192,13 +192,13 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 	t.Run("CPU actions", func(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
-		h.SetCpuActions([]domain.ShortDeckCpuAction{
+		h.SetCpuActions([]domain.HoldemCpuAction{
 			{PlayerIdx: 1, Action: domain.ShortDeckActionCall, Amount: 10},
 			{PlayerIdx: 2, Action: domain.ShortDeckActionFold, Amount: 0},
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Len(t, out.CpuActions, 2)
@@ -211,7 +211,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 	t.Run("round results with best hand", func(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{
 				PlayerIdx: 0,
 				HandRank:  domain.ShortDeckHandFlush,
@@ -225,7 +225,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Len(t, out.RoundResults, 1)
@@ -241,7 +241,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 	t.Run("round results with kickers", func(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{
 				PlayerIdx: 0,
 				HandRank:  domain.PokerHandOnePair,
@@ -253,7 +253,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Len(t, out.RoundResults, 1)
@@ -271,7 +271,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		cpu := out.Players[1]
@@ -285,7 +285,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[1].SetHandRank(domain.ShortDeckHandFlush)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		cpu := out.Players[1]
@@ -298,7 +298,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
 
 		result := p.Output(h, errors.New("invalid action"))
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "invalid action", out.Message)
@@ -309,7 +309,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h.SetGameEndFlag(true)
 
 		result := p.Output(h, errors.New("some error"))
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "some error", out.Message)
@@ -319,12 +319,12 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetGameEndFlag(true)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Contains(t, out.Message, "You are the winner.")
@@ -335,13 +335,13 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetGameEndFlag(true)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, WonAmount: 0, BestHand: nil},
 			{PlayerIdx: 1, WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Contains(t, out.Message, "You lose.")
@@ -353,12 +353,12 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetGameEndFlag(true)
 		players[0].SetFolded(true)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 1, WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Contains(t, out.Message, "You folded.")
@@ -368,10 +368,10 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 	t.Run("game end message - no results", func(t *testing.T) {
 		h, _ := setup()
 		h.SetGameEndFlag(true)
-		h.SetRoundResults([]domain.ShortDeckResult{})
+		h.SetRoundResults([]domain.HoldemResult{})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "Game over.", out.Message)
@@ -388,7 +388,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h.SetMinRaise(100)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, 300, out.Pot)
@@ -409,9 +409,9 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetMinRaise").Return(0)
 		gameMock.On("GetRaiseCount").Return(0)
 		gameMock.On("GetCommunityCards").Return([]*domain.Card{})
-		gameMock.On("GetSidePots").Return([]domain.ShortDeckSidePot{})
-		gameMock.On("GetCpuActions").Return([]domain.ShortDeckCpuAction{})
-		gameMock.On("GetRoundResults").Return([]domain.ShortDeckResult{})
+		gameMock.On("GetSidePots").Return([]domain.SidePot{})
+		gameMock.On("GetCpuActions").Return([]domain.HoldemCpuAction{})
+		gameMock.On("GetRoundResults").Return([]domain.HoldemResult{})
 		gameMock.On("GetPlayerCnt").Return(1)
 		gameMock.On("GetConfig").Return(domain.DefaultShortDeckConfig())
 		gameMock.On("GetHandCount").Return(0)
@@ -430,7 +430,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetPlayer", 0).Return(player)
 
 		result := p.Output(gameMock, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "Unknown", out.Players[0].HandName)
@@ -447,9 +447,9 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetMinRaise").Return(0)
 		gameMock.On("GetRaiseCount").Return(0)
 		gameMock.On("GetCommunityCards").Return([]*domain.Card{})
-		gameMock.On("GetSidePots").Return([]domain.ShortDeckSidePot{})
-		gameMock.On("GetCpuActions").Return([]domain.ShortDeckCpuAction{})
-		gameMock.On("GetRoundResults").Return([]domain.ShortDeckResult{})
+		gameMock.On("GetSidePots").Return([]domain.SidePot{})
+		gameMock.On("GetCpuActions").Return([]domain.HoldemCpuAction{})
+		gameMock.On("GetRoundResults").Return([]domain.HoldemResult{})
 		gameMock.On("GetPlayerCnt").Return(1)
 		gameMock.On("GetConfig").Return(domain.DefaultShortDeckConfig())
 		gameMock.On("GetHandCount").Return(0)
@@ -468,7 +468,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetPlayer", 0).Return(player)
 
 		result := p.Output(gameMock, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "Unknown", out.Players[0].HandName)
@@ -479,7 +479,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.NotEmpty(t, out.Players[1].PlayStyleName)
@@ -494,7 +494,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[0].IncrementPFR()
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, 2, out.Players[0].TotalHands)
@@ -509,7 +509,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, 0, out.Players[0].TotalHands)
@@ -532,7 +532,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[0].IncrementPostFlopCall()
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, 50, out.Players[0].ThreeBet) // 1*100/2=50
@@ -546,7 +546,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		players[0].IncrementPostFlopBetRaise()
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "∞", out.Players[0].AF)
@@ -567,7 +567,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h.SetHandCount(3)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, 3, out.HandCount)
@@ -583,7 +583,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, 0, out.HandCount)
@@ -615,7 +615,7 @@ func TestShortDeckWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		err := json.Unmarshal([]byte(result), &out)
 		assert.NoError(t, err)
 		assert.False(t, out.RebuyAvailable)
@@ -656,7 +656,7 @@ func TestShortDeckWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 		h.SetRebuyPhaseType(1)
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		err := json.Unmarshal([]byte(result), &out)
 		assert.NoError(t, err)
 		assert.True(t, out.RebuyEnabled)
@@ -694,7 +694,7 @@ func TestShortDeckWebPresenter_Output_BettingLimitFields(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		err := json.Unmarshal([]byte(result), &out)
 		assert.NoError(t, err)
 		assert.Equal(t, 0, out.BettingLimit)
@@ -709,7 +709,7 @@ func TestShortDeckWebPresenter_Output_BettingLimitFields(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		err := json.Unmarshal([]byte(result), &out)
 		assert.NoError(t, err)
 		assert.Equal(t, 4, out.TableSize)
@@ -728,7 +728,7 @@ func TestShortDeckWebPresenter_Output_BettingLimitFields(t *testing.T) {
 		players6[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 
 		result := p.Output(h6, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		err := json.Unmarshal([]byte(result), &out)
 		assert.NoError(t, err)
 		assert.Equal(t, 6, out.TableSize)
@@ -754,13 +754,13 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	t.Run("muckAvailable true when showdown and human lost", func(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
 			{PlayerIdx: 1, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.True(t, out.MuckAvailable)
@@ -769,12 +769,12 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	t.Run("muckAvailable false when not showdown", func(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.False(t, out.MuckAvailable)
@@ -783,7 +783,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	t.Run("mucked result: handRank=0 handName empty bestHand empty mucked=true", func(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 13}, WonAmount: 0, Mucked: true, BestHand: []*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 8, false),
 			}},
@@ -791,7 +791,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, 0, out.RoundResults[0].HandRank)
@@ -807,13 +807,13 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	t.Run("muck prompt message when IsMuckAvailable", func(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
 			{PlayerIdx: 1, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "Muck or show your hand.", out.Message)
@@ -823,12 +823,12 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	t.Run("error takes priority over muck prompt", func(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
 		})
 
 		result := p.Output(h, errors.New("some error"))
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "some error", out.Message)
@@ -839,13 +839,13 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetGameEndFlag(true)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
 			{PlayerIdx: 1, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "You mucked.", out.Message)
@@ -915,7 +915,7 @@ func TestShortDeckWebPresenter_Equity(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		err := json.Unmarshal([]byte(result), &out)
 		assert.NoError(t, err)
 		assert.NotNil(t, out.Equity)
@@ -931,7 +931,7 @@ func TestShortDeckWebPresenter_Equity(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		err := json.Unmarshal([]byte(result), &out)
 		assert.NoError(t, err)
 		assert.Nil(t, out.Equity)
@@ -942,10 +942,10 @@ func TestShortDeckWebPresenter_Equity(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetGameEndFlag(true)
-		h.SetRoundResults([]domain.ShortDeckResult{})
+		h.SetRoundResults([]domain.HoldemResult{})
 
 		result := p.Output(h, nil)
-		var out controller.ShortDeckWebOutput
+		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 		assert.Nil(t, out.Equity)
 		assert.Nil(t, out.PotOdds)
@@ -970,7 +970,7 @@ func TestShortDeckWebPresenter_Output_WithMetaAIProfile(t *testing.T) {
 	_ = o.Reset()
 
 	result := p.Output(o, nil)
-	var out controller.ShortDeckWebOutput
+	var out controller.HoldemWebOutput
 	err := json.Unmarshal([]byte(result), &out)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.MetaAI)

@@ -56,9 +56,9 @@ func (_m *MockPokerGame) GetPot() int {
 }
 
 // GetSidePots モック
-func (_m *MockPokerGame) GetSidePots() []domain.PokerSidePot {
+func (_m *MockPokerGame) GetSidePots() []domain.SidePot {
 	ret := _m.Called()
-	return ret.Get(0).([]domain.PokerSidePot)
+	return ret.Get(0).([]domain.SidePot)
 }
 
 // GetDealerIdx モック

@@ -33,30 +33,12 @@ type PineappleWebInput struct {
 	Profile          json.RawMessage `json:"profile,omitempty"`
 }
 
-// PineappleWebOutputPlayer パイナップルポーカーWebアウトプットプレイヤー
-type PineappleWebOutputPlayer = HoldemWebOutputPlayer
-
-// PineappleWebOutputCpuAction パイナップルポーカーCPU行動記録
-type PineappleWebOutputCpuAction = HoldemWebOutputCpuAction
-
-// PineappleWebOutputResult パイナップルポーカーショーダウン結果
-type PineappleWebOutputResult = HoldemWebOutputResult
-
-// PineappleWebOutputSidePot パイナップルポーカーサイドポット
-type PineappleWebOutputSidePot = HoldemWebOutputSidePot
-
-// PineappleWebOutputEquity パイナップルポーカーエクイティ情報
-type PineappleWebOutputEquity = HoldemWebOutputEquity
-
-// PineappleWebOutputMetaAI メタAI情報
-type PineappleWebOutputMetaAI = HoldemWebOutputMetaAI
-
 // PineappleWebOutput パイナップルポーカーWebアウトプット
 type PineappleWebOutput struct {
-	Players          []*PineappleWebOutputPlayer     `json:"players"`
+	Players          []*HoldemWebOutputPlayer        `json:"players"`
 	CommunityCards   []*WebOutputCard                `json:"communityCards"`
 	Pot              int                             `json:"pot"`
-	SidePots         []*PineappleWebOutputSidePot    `json:"sidePots"`
+	SidePots         []*HoldemWebOutputSidePot       `json:"sidePots"`
 	DealerIdx        int                             `json:"dealerIdx"`
 	CurrentTurn      int                             `json:"currentTurn"`
 	Phase            int                             `json:"phase"`
@@ -66,8 +48,8 @@ type PineappleWebOutput struct {
 	BettingLimit     int                             `json:"bettingLimit"`
 	RaiseCount       int                             `json:"raiseCount"`
 	MaxBetAmount     int                             `json:"maxBetAmount"`
-	RoundResults     []*PineappleWebOutputResult     `json:"roundResults"`
-	CpuActions       []*PineappleWebOutputCpuAction  `json:"cpuActions"`
+	RoundResults     []*HoldemWebOutputResult        `json:"roundResults"`
+	CpuActions       []*HoldemWebOutputCpuAction     `json:"cpuActions"`
 	HandCount        int                             `json:"handCount"`
 	SmallBlind       int                             `json:"smallBlind"`
 	BigBlind         int                             `json:"bigBlind"`
@@ -90,9 +72,9 @@ type PineappleWebOutput struct {
 	MuckAvailable    bool                            `json:"muckAvailable"`
 	IsDiscardPhase   bool                            `json:"isDiscardPhase"`
 	DiscardDone      []bool                          `json:"discardDone"`
-	Equity           *PineappleWebOutputEquity       `json:"equity,omitempty"`
+	Equity           *HoldemWebOutputEquity          `json:"equity,omitempty"`
 	PotOdds          *float64                        `json:"potOdds,omitempty"`
-	MetaAI           *PineappleWebOutputMetaAI       `json:"metaAI,omitempty"`
+	MetaAI           *HoldemWebOutputMetaAI          `json:"metaAI,omitempty"`
 	Profile          *domain.BettingHumanProfileData `json:"profile,omitempty"`
 	WebOutputBase
 }
@@ -133,11 +115,11 @@ var NewPineappleWebController, NewPineappleWebControllerWithProvider = webContro
 
 func newPineappleDefaultOutput(msg string) *PineappleWebOutput {
 	return &PineappleWebOutput{
-		Players:        make([]*PineappleWebOutputPlayer, 0),
+		Players:        make([]*HoldemWebOutputPlayer, 0),
 		CommunityCards: make([]*WebOutputCard, 0),
-		SidePots:       make([]*PineappleWebOutputSidePot, 0),
-		RoundResults:   make([]*PineappleWebOutputResult, 0),
-		CpuActions:     make([]*PineappleWebOutputCpuAction, 0),
+		SidePots:       make([]*HoldemWebOutputSidePot, 0),
+		RoundResults:   make([]*HoldemWebOutputResult, 0),
+		CpuActions:     make([]*HoldemWebOutputCpuAction, 0),
 		WebOutputBase:  WebOutputBase{Message: msg},
 	}
 }

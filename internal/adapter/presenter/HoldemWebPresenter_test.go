@@ -149,7 +149,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 	t.Run("side pots", func(t *testing.T) {
 		h, _ := setup()
 		h.SetPhase(domain.HoldemPhaseFlop)
-		h.SetSidePots([]domain.HoldemSidePot{
+		h.SetSidePots([]domain.SidePot{
 			{Amount: 100, EligiblePlayers: []int{0, 1}},
 			{Amount: 50, EligiblePlayers: []int{0}},
 		})
@@ -409,7 +409,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetMinRaise").Return(0)
 		gameMock.On("GetRaiseCount").Return(0)
 		gameMock.On("GetCommunityCards").Return([]*domain.Card{})
-		gameMock.On("GetSidePots").Return([]domain.HoldemSidePot{})
+		gameMock.On("GetSidePots").Return([]domain.SidePot{})
 		gameMock.On("GetCpuActions").Return([]domain.HoldemCpuAction{})
 		gameMock.On("GetRoundResults").Return([]domain.HoldemResult{})
 		gameMock.On("GetPlayerCnt").Return(1)
@@ -447,7 +447,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetMinRaise").Return(0)
 		gameMock.On("GetRaiseCount").Return(0)
 		gameMock.On("GetCommunityCards").Return([]*domain.Card{})
-		gameMock.On("GetSidePots").Return([]domain.HoldemSidePot{})
+		gameMock.On("GetSidePots").Return([]domain.SidePot{})
 		gameMock.On("GetCpuActions").Return([]domain.HoldemCpuAction{})
 		gameMock.On("GetRoundResults").Return([]domain.HoldemResult{})
 		gameMock.On("GetPlayerCnt").Return(1)

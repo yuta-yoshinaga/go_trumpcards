@@ -24,7 +24,7 @@ type PokerGame interface {
 	// GetPot ポット額を取得する
 	GetPot() int
 	// GetSidePots サイドポット一覧を取得する
-	GetSidePots() []domain.PokerSidePot
+	GetSidePots() []domain.SidePot
 	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
 	// GetCurrentTurn 現在のターンを取得する

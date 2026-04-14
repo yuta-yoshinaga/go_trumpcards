@@ -62,9 +62,9 @@ func (_m *MockIndianPokerGame) GetPot() int {
 }
 
 // GetSidePots モック
-func (_m *MockIndianPokerGame) GetSidePots() []domain.IndianPokerSidePot {
+func (_m *MockIndianPokerGame) GetSidePots() []domain.SidePot {
 	ret := _m.Called()
-	if val, ok := ret.Get(0).([]domain.IndianPokerSidePot); ok {
+	if val, ok := ret.Get(0).([]domain.SidePot); ok {
 		return val
 	}
 	return nil

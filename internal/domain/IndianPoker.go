@@ -26,8 +26,6 @@ const (
 	IndianPokerActionAllIn = bettingActionAllIn // オールイン
 )
 
-// IndianPokerSidePot サイドポット (共通SidePot型のエイリアス)
-type IndianPokerSidePot = SidePot
 
 // IndianPokerResult ショーダウン結果
 type IndianPokerResult struct {
@@ -49,7 +47,7 @@ type IndianPoker struct {
 	trumpCards      *TrumpCards
 	players         []*IndianPokerPlayer
 	pot             int
-	sidePots        []IndianPokerSidePot
+	sidePots        []SidePot
 	dealerIdx       int
 	currentTurn     int
 	phase           int
@@ -74,7 +72,7 @@ func NewIndianPoker(trumpCards *TrumpCards, players []*IndianPokerPlayer, config
 	return &IndianPoker{
 		trumpCards:    trumpCards,
 		players:       players,
-		sidePots:      make([]IndianPokerSidePot, 0),
+		sidePots:      make([]SidePot, 0),
 		actedFlags:    make([]bool, len(players)),
 		roundResults:  make([]IndianPokerResult, 0),
 		cpuActions:    make([]IndianPokerCpuAction, 0),
@@ -88,7 +86,7 @@ func NewIndianPoker(trumpCards *TrumpCards, players []*IndianPokerPlayer, config
 func (ip *IndianPoker) Reset() error {
 	ip.phase = IndianPokerPhaseInit
 	ip.pot = 0
-	ip.sidePots = make([]IndianPokerSidePot, 0)
+	ip.sidePots = make([]SidePot, 0)
 	ip.gameEndFlag = false
 	ip.lastBet = 0
 	ip.minRaise = ip.config.Ante
@@ -659,7 +657,7 @@ func (ip *IndianPoker) GetPlayerCnt() int { return len(ip.players) }
 func (ip *IndianPoker) GetPot() int { return ip.pot }
 
 // GetSidePots サイドポット取得
-func (ip *IndianPoker) GetSidePots() []IndianPokerSidePot { return ip.sidePots }
+func (ip *IndianPoker) GetSidePots() []SidePot { return ip.sidePots }
 
 // GetDealerIdx ディーラーインデックス取得
 func (ip *IndianPoker) GetDealerIdx() int { return ip.dealerIdx }
@@ -778,7 +776,7 @@ type indianPokerJSON struct {
 	TrumpCards      *TrumpCards                  `json:"tc"`
 	Players         []*IndianPokerPlayer         `json:"pl"`
 	Pot             int                          `json:"pt"`
-	SidePots        []IndianPokerSidePot         `json:"sp"`
+	SidePots        []SidePot         `json:"sp"`
 	DealerIdx       int                          `json:"di"`
 	CurrentTurn     int                          `json:"ct"`
 	Phase           int                          `json:"ph"`
@@ -853,7 +851,7 @@ func (ip *IndianPoker) UnmarshalJSON(data []byte) error {
 	ip.pot = j.Pot
 	ip.sidePots = j.SidePots
 	if ip.sidePots == nil {
-		ip.sidePots = make([]IndianPokerSidePot, 0)
+		ip.sidePots = make([]SidePot, 0)
 	}
 	ip.dealerIdx = j.DealerIdx
 	ip.currentTurn = j.CurrentTurn
@@ -931,7 +929,7 @@ func (ip *IndianPoker) SetRaiseCount(rc int) { ip.raiseCount = rc }
 func (ip *IndianPoker) SetStartingChips(chips []int) { ip.startingChips = chips }
 
 // SetSidePots サイドポット設定 (テスト用)
-func (ip *IndianPoker) SetSidePots(pots []IndianPokerSidePot) { ip.sidePots = pots }
+func (ip *IndianPoker) SetSidePots(pots []SidePot) { ip.sidePots = pots }
 
 // SetHandCount ハンド数設定 (テスト用)
 func (ip *IndianPoker) SetHandCount(count int) { ip.handCount = count }

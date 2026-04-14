@@ -155,7 +155,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("CPU actions displayed", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
-		h.SetCpuActions([]domain.ShortDeckCpuAction{
+		h.SetCpuActions([]domain.HoldemCpuAction{
 			{PlayerIdx: 1, Action: domain.ShortDeckActionCall, Amount: 0},
 			{PlayerIdx: 2, Action: domain.ShortDeckActionRaise, Amount: 30},
 		})
@@ -170,7 +170,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("CPU action without amount", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
-		h.SetCpuActions([]domain.ShortDeckCpuAction{
+		h.SetCpuActions([]domain.HoldemCpuAction{
 			{PlayerIdx: 1, Action: domain.ShortDeckActionFold, Amount: 0},
 		})
 
@@ -182,7 +182,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("no CPU actions hides section", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
-		h.SetCpuActions([]domain.ShortDeckCpuAction{})
+		h.SetCpuActions([]domain.HoldemCpuAction{})
 
 		result := p.Output(h, nil)
 		assert.NotContains(t, result, "[CPU行動]")
@@ -191,7 +191,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results with human winner", func(t *testing.T) {
 		h, players := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
@@ -205,7 +205,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results with kickers", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 12, 10}, WonAmount: 100, BestHand: nil},
 		})
 
@@ -217,7 +217,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results without kickers", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", Kickers: nil, WonAmount: 100, BestHand: nil},
 		})
 
@@ -229,7 +229,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results with CPU winner", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 1, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{13, 12, 11}, WonAmount: 50, BestHand: nil},
 		})
 
@@ -241,7 +241,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results with empty hand name", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 1, HandName: "", WonAmount: 0, BestHand: nil},
 		})
 
@@ -253,7 +253,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("showdown results with zero won amount", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 1, HandName: "High Card", WonAmount: 0, BestHand: nil},
 		})
 
@@ -264,7 +264,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("results not shown in non-end phase", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseFlop)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
@@ -317,7 +317,7 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 	t.Run("all action names", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
-		h.SetCpuActions([]domain.ShortDeckCpuAction{
+		h.SetCpuActions([]domain.HoldemCpuAction{
 			{PlayerIdx: 1, Action: domain.ShortDeckActionFold, Amount: 0},
 			{PlayerIdx: 1, Action: domain.ShortDeckActionCheck, Amount: 0},
 			{PlayerIdx: 1, Action: domain.ShortDeckActionCall, Amount: 0},
@@ -572,7 +572,7 @@ func TestShortDeckCuiPresenter_Output_Muck(t *testing.T) {
 	t.Run("muck prompt displayed during showdown when IsMuckAvailable", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
 			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
@@ -584,7 +584,7 @@ func TestShortDeckCuiPresenter_Output_Muck(t *testing.T) {
 	t.Run("muck prompt not displayed when not available", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 
@@ -595,7 +595,7 @@ func TestShortDeckCuiPresenter_Output_Muck(t *testing.T) {
 	t.Run("mucked result displayed as マック", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
 			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
@@ -608,7 +608,7 @@ func TestShortDeckCuiPresenter_Output_Muck(t *testing.T) {
 	t.Run("results shown in showdown phase", func(t *testing.T) {
 		h, _ := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
-		h.SetRoundResults([]domain.ShortDeckResult{
+		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
 		})
 

@@ -209,7 +209,7 @@ func TestOmaha_Muck(t *testing.T) {
 	t.Run("showdown phase", func(t *testing.T) {
 		o := newTestOmaha()
 		o.phase = OmahaPhaseShowdown
-		o.roundResults = []OmahaResult{
+		o.roundResults = []HoldemResult{
 			{PlayerIdx: 0, WonAmount: 0},
 		}
 		err := o.Muck()
@@ -242,7 +242,7 @@ func TestOmaha_IsMuckAvailable(t *testing.T) {
 	t.Run("human lost", func(t *testing.T) {
 		o := newTestOmaha()
 		o.phase = OmahaPhaseShowdown
-		o.roundResults = []OmahaResult{
+		o.roundResults = []HoldemResult{
 			{PlayerIdx: 0, WonAmount: 0},
 		}
 		assert.True(t, o.IsMuckAvailable())
@@ -250,7 +250,7 @@ func TestOmaha_IsMuckAvailable(t *testing.T) {
 	t.Run("human won", func(t *testing.T) {
 		o := newTestOmaha()
 		o.phase = OmahaPhaseShowdown
-		o.roundResults = []OmahaResult{
+		o.roundResults = []HoldemResult{
 			{PlayerIdx: 0, WonAmount: 100},
 		}
 		assert.False(t, o.IsMuckAvailable())

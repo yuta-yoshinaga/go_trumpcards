@@ -6,23 +6,17 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// OmahaWebInput オマハホールデムWebインプット (HoldemWebInputと同一構造)
-type OmahaWebInput = HoldemWebInput
-
-// OmahaWebOutput オマハホールデムWebアウトプット (HoldemWebOutputと同一構造)
-type OmahaWebOutput = HoldemWebOutput
-
 // OmahaWebController オマハホールデムWebコントローラークラス
-type OmahaWebController = GameWebController[usecase.OmahaInteractorIF, OmahaWebInput, *OmahaWebOutput]
+type OmahaWebController = GameWebController[usecase.OmahaInteractorIF, HoldemWebInput, *HoldemWebOutput]
 
 // NewOmahaWebController and NewOmahaWebControllerWithProvider are
 // the standard and provider-backed constructors for OmahaWebController.
-var NewOmahaWebController, NewOmahaWebControllerWithProvider = webControllerPair[usecase.OmahaInteractorIF, OmahaWebInput, *OmahaWebOutput](
+var NewOmahaWebController, NewOmahaWebControllerWithProvider = webControllerPair[usecase.OmahaInteractorIF, HoldemWebInput, *HoldemWebOutput](
 	newOmahaDefaultOutput, omahaDispatch,
 )
 
-func newOmahaDefaultOutput(msg string) *OmahaWebOutput {
-	return &OmahaWebOutput{
+func newOmahaDefaultOutput(msg string) *HoldemWebOutput {
+	return &HoldemWebOutput{
 		Players:        make([]*HoldemWebOutputPlayer, 0),
 		CommunityCards: make([]*WebOutputCard, 0),
 		SidePots:       make([]*HoldemWebOutputSidePot, 0),
@@ -32,7 +26,7 @@ func newOmahaDefaultOutput(msg string) *OmahaWebOutput {
 	}
 }
 
-func omahaDispatch(bc *baseController, w http.ResponseWriter, ogi usecase.OmahaInteractorIF, param OmahaWebInput, newDefault func(string) *OmahaWebOutput) bool {
+func omahaDispatch(bc *baseController, w http.ResponseWriter, ogi usecase.OmahaInteractorIF, param HoldemWebInput, newDefault func(string) *HoldemWebOutput) bool {
 	if dispatchPokerAction(bc, w, ogi, param.Command, param.Amount, param.HumanPlayMs) {
 		return true
 	}

@@ -547,7 +547,7 @@ func TestHoldem_GettersSetters(t *testing.T) {
 	h.SetCpuActions(actions)
 	assert.Equal(t, 1, len(h.GetCpuActions()))
 
-	pots := []HoldemSidePot{{Amount: 100, EligiblePlayers: []int{0, 1}}}
+	pots := []SidePot{{Amount: 100, EligiblePlayers: []int{0, 1}}}
 	h.SetSidePots(pots)
 	assert.Equal(t, 1, len(h.GetSidePots()))
 
