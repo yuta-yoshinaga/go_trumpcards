@@ -67,7 +67,8 @@
     "fiftyone": "フィフティワン",
     "canfield": "キャンフィールド",
     "yukon": "ユーコン",
-    "whist": "ホイスト"
+    "whist": "ホイスト",
+    "letitride": "レットイットライド"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -266,6 +267,8 @@
     "caribbeanstud.result.push": "引き分け！",
     "caribbeanstud.result.fold": "フォールド",
     "caribbeanstud.result.dealerNotQualified": "ディーラー未クオリファイ！",
+    "letitride.result.win": "勝利！",
+    "letitride.result.lose": "役なし",
     "klondike.playing": "プレイ中",
     "klondike.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "klondike.gameOver": "ゲームオーバー",

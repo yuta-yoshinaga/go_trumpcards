@@ -1,0 +1,77 @@
+{
+  "title": "レットイットライド",
+  "player": "プレイヤー",
+  "label": {
+    "chips": "チップ",
+    "bet": "ベット",
+    "bet1": "ベット1",
+    "bet2": "ベット2",
+    "bet3": "ベット3",
+    "active": "有効",
+    "pulled": "引き戻し",
+    "community": "コミュニティカード"
+  },
+  "button": {
+    "bet": "ベット",
+    "pull": "プル",
+    "letitride": "レットイットライド",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "firstDecision": "第1判断",
+    "secondDecision": "第2判断",
+    "end": "結果"
+  },
+  "result": {
+    "win": "勝利！",
+    "lose": "役なし",
+    "push": "引き分け！"
+  },
+  "payout": {
+    "bet1": "ベット1",
+    "bet2": "ベット2",
+    "bet3": "ベット3",
+    "total": "合計"
+  },
+  "handRank": {
+    "0": "ハイカード",
+    "1": "ワンペア",
+    "2": "ツーペア",
+    "3": "スリーカード",
+    "4": "ストレート",
+    "5": "フラッシュ",
+    "6": "フルハウス",
+    "7": "フォーカード",
+    "8": "ストレートフラッシュ",
+    "9": "ロイヤルフラッシュ"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "ベット額を設定 — 3つの同額ベットが置かれます",
+  "payoutRef": {
+    "title": "配当表",
+    "header": "配当（有効ベットごと）",
+    "payRoyalFlush": "ロイヤルフラッシュ: 1000:1",
+    "payStraightFlush": "ストレートフラッシュ: 200:1",
+    "payFourOfAKind": "フォーカード: 50:1",
+    "payFullHouse": "フルハウス: 11:1",
+    "payFlush": "フラッシュ: 8:1",
+    "payStraight": "ストレート: 5:1",
+    "payThreeOfAKind": "スリーカード: 3:1",
+    "payTwoPair": "ツーペア: 2:1",
+    "payPairTensOrBetter": "ペア（10以上）: 1:1"
+  },
+  "tutorial": {
+    "betControls": "ベット額を設定してください。3つの同額ベットが自動的に置かれます。",
+    "actionButtons": "プルでベットを引き戻すか、レットイットライドでベットを維持するか選択してください。",
+    "results": "手札、コミュニティカード、配当を確認してください。"
+  },
+  "hint": {
+    "strongHand": "強い手札 — レットイットライド推奨",
+    "pairTensOrBetter": "10以上のペア — レットイットライド推奨",
+    "threeToRoyalFlush": "ロイヤルフラッシュまで3枚 — レットイットライド推奨",
+    "weakHand": "弱い手札 — プル推奨"
+  }
+}

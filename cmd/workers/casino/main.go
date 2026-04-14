@@ -259,6 +259,22 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Let It Ride
+	if err := worker.RegisterKV(mux, "/letitride/exec", "letitride:",
+		func() usecase.LetItRideInteractorIF {
+			return usecase.NewLetItRideInteractor(
+				domain.NewDefaultLetItRide(),
+				new(presenter.LetItRideWebPresenter),
+			)
+		},
+		func(data []byte) (usecase.LetItRideInteractorIF, error) {
+			return usecase.RestoreLetItRideInteractor(data, new(presenter.LetItRideWebPresenter))
+		},
+		controller.NewLetItRideWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

@@ -27,6 +27,7 @@ import type {
   HoldemResponse,
   IndianPokerResponse,
   KlondikeResponse,
+  LetItRideResponse,
   MemoryResponse,
   NapoleonResponse,
   OhHellResponse,
@@ -114,6 +115,7 @@ const workerUrl: Record<string, string> = {
   canfield: WORKER_SOLO,
   yukon: WORKER_SOLO,
   whist: WORKER_CLASSIC,
+  letitride: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1010,6 +1012,12 @@ export const whistApi = {
   ) => gameExec<WhistResponse>('whist', { command, cardIndex, config }),
 };
 
+/** API client for the Let It Ride /letitride/exec endpoint. */
+export const letitrideApi = {
+  exec: (command: 'reset' | 'bet' | 'pull' | 'letitride' | 'log', amount?: number) =>
+    gameExec<LetItRideResponse>('letitride', { command, amount }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1060,6 +1068,7 @@ const games = [
   'canfield',
   'yukon',
   'whist',
+  'letitride',
 ] as const;
 type Game = (typeof games)[number];
 

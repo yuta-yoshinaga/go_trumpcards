@@ -108,6 +108,8 @@ tags:
     description: Fifty-one (フィフティワン) game
   - name: yukon
     description: Yukon (ユーコン) game
+  - name: letitride
+    description: Let It Ride (レットイットライド) game
 
 paths:
   /blackjack/exec:
@@ -4772,6 +4774,99 @@ paths:
                         type: integer
         '400':
           description: Bad request
+
+  /letitride/exec:
+    post:
+      tags:
+        - letitride
+      summary: Execute a Let It Ride game command
+      description: |
+        Send a command to advance the Let It Ride (レットイットライド)
+        game session identified by `sessionId`. Let It Ride is a single-player
+        casino poker game using a standard 52-card deck. Player places 3 equal
+        bets, receives 3 cards plus 2 face-down community cards. Before each
+        community card is revealed, the player can Pull (withdraw) that bet or
+        Let It Ride (keep it). Final 5-card hand is evaluated. Pays on a pair
+        of 10s or better. Payout table: Royal Flush 1000:1, Straight Flush
+        200:1, Four of a Kind 50:1, Full House 11:1, Flush 8:1, Straight 5:1,
+        Three of a Kind 3:1, Two Pair 2:1, Pair of 10s or Better 1:1.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Bet        | `1`   | Place 3 equal bets |
+        | Decision1  | `2`   | First community card decision (Pull or Let It Ride) |
+        | Decision2  | `3`   | Second community card decision (Pull or Let It Ride) |
+        | End        | `4`   | Round complete; shows result and payout |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bet`       | `b`     | Place 3 equal bets (requires `amount`) |
+        | `pull`      | `p`     | Pull (withdraw) the current bet |
+        | `letitride` | `l`     | Let It Ride (keep the current bet) |
+        | `log`       | `lg`    | View action log |
+      operationId: letitrideExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LetItRideRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 on each of the 3 spots
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              pull:
+                summary: Pull (withdraw) the current bet
+                value:
+                  command: pull
+                  sessionId: my-session-001
+              letitride:
+                summary: Let It Ride (keep the current bet)
+                value:
+                  command: letitride
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LetItRideResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LetItRideResponse'
+              examples:
+                paramError:
+                  value:
+                    playerHand: []
+                    communityCards: []
+                    phase: 0
+                    chips: 0
+                    betAmount: 0
+                    bet1Active: false
+                    bet2Active: false
+                    bet3Active: false
+                    result: 0
+                    handRank: 0
+                    bet1Payout: 0
+                    bet2Payout: 0
+                    bet3Payout: 0
+                    totalPayout: 0
+                    message: param error.
 
 components:
   schemas:
@@ -12209,6 +12304,128 @@ components:
         message:
           type: string
           description: Game result or error message. Empty during bet/set phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Let It Ride
+    # -------------------------------------------------------------------------
+    LetItRideRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `pull` (`p`), `letitride` (`l`), `log` (`lg`).
+          enum: [r, reset, b, bet, p, pull, l, letitride, log, lg]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Bet amount per spot. Required for `bet` command (minimum 10, must be
+            a multiple of 10). The same amount is placed on all 3 spots.
+            Ignored for other commands.
+          minimum: 10
+          example: 100
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    LetItRideResponse:
+      type: object
+      description: Current state of the Let It Ride game
+      required:
+        - playerHand
+        - communityCards
+        - phase
+        - chips
+        - betAmount
+        - bet1Active
+        - bet2Active
+        - bet3Active
+        - result
+        - handRank
+        - bet1Payout
+        - bet2Payout
+        - bet3Payout
+        - totalPayout
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand (3 cards)
+          items:
+            $ref: '#/components/schemas/Card'
+        communityCards:
+          type: array
+          description: Community cards (2 cards; revealed progressively)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Decision1, 3 = Decision2, 4 = End"
+          enum: [1, 2, 3, 4]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        betAmount:
+          type: integer
+          description: Bet amount per spot
+          example: 100
+        bet1Active:
+          type: boolean
+          description: Whether Bet 1 is still active (can be pulled in the first decision phase)
+          example: true
+        bet2Active:
+          type: boolean
+          description: Whether Bet 2 is still active (can be pulled in the second decision phase)
+          example: true
+        bet3Active:
+          type: boolean
+          description: Whether Bet 3 is still active (always active, cannot be pulled)
+          example: true
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Player loses, 0 = Not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        handRank:
+          type: integer
+          description: Player's 5-card hand rank (0=High Card, 1=One Pair, 2=Two Pair, 3=Three of a Kind, 4=Straight, 5=Flush, 6=Full House, 7=Four of a Kind, 8=Straight Flush, 9=Royal Flush)
+          example: 0
+        bet1Payout:
+          type: integer
+          description: Payout from Bet 1 (0 if pulled)
+          example: 0
+        bet2Payout:
+          type: integer
+          description: Payout from Bet 2 (0 if pulled)
+          example: 0
+        bet3Payout:
+          type: integer
+          description: Payout from Bet 3
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the current round (sum of all active bet payouts)
+          example: 0
+        message:
+          type: string
+          description: Game result or error message. Empty during bet/decision phase.
           example: ""
         messageCode:
           type: string
