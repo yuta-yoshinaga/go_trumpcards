@@ -11,14 +11,14 @@ test.describe('Let It Ride E2E', () => {
     await betButton.click();
     await waitForLoaded(page);
 
-    // FIRST DECISION phase: click レット・イット・ライド
-    const rideButton1 = page.getByRole('button', { name: 'レット・イット・ライド' });
+    // FIRST DECISION phase: click レットイットライド
+    const rideButton1 = page.getByRole('button', { name: 'レットイットライド' });
     await expect(rideButton1).toBeVisible({ timeout: 10_000 });
     await rideButton1.click();
     await waitForLoaded(page);
 
-    // SECOND DECISION phase: click レット・イット・ライド
-    const rideButton2 = page.getByRole('button', { name: 'レット・イット・ライド' });
+    // SECOND DECISION phase: click レットイットライド
+    const rideButton2 = page.getByRole('button', { name: 'レットイットライド' });
     await expect(rideButton2).toBeVisible({ timeout: 10_000 });
     await rideButton2.click();
     await waitForLoaded(page);
