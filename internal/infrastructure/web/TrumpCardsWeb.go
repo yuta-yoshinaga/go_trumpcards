@@ -426,6 +426,27 @@ func (web *TrumpCardsWeb) registerAll() {
 		whist := domain.NewWhist(domain.NewTrumpCards(0), players, config)
 		return usecase.NewWhistInteractor(whist, new(presenter.WhistWebPresenter))
 	}))
+	web.register("letitride", controller.NewLetItRideWebController(func() usecase.LetItRideInteractorIF {
+		return usecase.NewLetItRideInteractor(
+			domain.NewDefaultLetItRide(),
+			new(presenter.LetItRideWebPresenter),
+		)
+	}))
+	web.register("pokersquares", controller.NewPokerSquaresWebController(func() usecase.PokerSquaresInteractorIF {
+		ps := domain.NewPokerSquares(domain.NewTrumpCards(0))
+		return usecase.NewPokerSquaresInteractor(ps, new(presenter.PokerSquaresWebPresenter))
+	}))
+	web.register("pageone", controller.NewPageOneWebController(func() usecase.PageOneInteractorIF {
+		config := domain.DefaultPageOneConfig()
+		players := []*domain.PageOnePlayer{
+			domain.NewPageOnePlayer(true),
+			domain.NewPageOnePlayer(false),
+			domain.NewPageOnePlayer(false),
+			domain.NewPageOnePlayer(false),
+		}
+		po := domain.NewPageOne(domain.NewTrumpCards(0), players, config)
+		return usecase.NewPageOneInteractor(po, new(presenter.PageOneWebPresenter))
+	}))
 }
 
 // Exec ゲーム実行

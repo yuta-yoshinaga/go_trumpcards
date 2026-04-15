@@ -101,29 +101,33 @@ export function useTrickGameBase<TState, TArgs extends unknown[], TConfig extend
 
   const defaultConfigRef = useRef(defaultConfig);
 
-  type ExecAny = (...args: unknown[]) => Promise<void>;
+  // Trick-taking APIs all share the shape (command, arg1?, arg2?, config?).
+  // The generic TArgs tuple prevents a direct call, so each dispatch casts
+  // through this widened command signature. Casts are compile-time only.
+  type ExecCmd = (command: string, ...rest: unknown[]) => Promise<void>;
+  type ApiCmd = (command: string, ...rest: unknown[]) => Promise<TState>;
 
   useEffect(() => {
-    (exec as unknown as ExecAny)('reset', undefined, undefined, defaultConfigRef.current);
+    (exec as unknown as ExecCmd)('reset', undefined, undefined, defaultConfigRef.current);
   }, [exec]);
 
   const handlePlay = useCallback(() => {
     if (selectedCardIndices.length !== 1) return;
-    (exec as unknown as ExecAny)('play', undefined, selectedCardIndices[0]);
+    (exec as unknown as ExecCmd)('play', undefined, selectedCardIndices[0]);
   }, [exec, selectedCardIndices]);
 
   const handleNextTrick = useCallback(() => {
-    (exec as unknown as ExecAny)('next');
+    (exec as unknown as ExecCmd)('next');
   }, [exec]);
 
   const handleNextRound = useCallback(() => {
-    (exec as unknown as ExecAny)('nextround');
+    (exec as unknown as ExecCmd)('nextround');
   }, [exec]);
 
   const handleHint = useCallback(async () => {
     setHintLoading(true);
     try {
-      const res = await (apiFn as unknown as (...args: unknown[]) => Promise<TState>)('hint');
+      const res = await (apiFn as unknown as ApiCmd)('hint');
       setHint(getHint(res) ?? null);
       setHintError(null);
     } catch {

@@ -27,16 +27,19 @@ import holdem from '../../../docs/manual/web/holdem.md?raw';
 import indianpoker from '../../../docs/manual/web/indianpoker.md?raw';
 import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
+import letitride from '../../../docs/manual/web/letitride.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
+import pageone from '../../../docs/manual/web/pageone.md?raw';
 import paigow from '../../../docs/manual/web/paigow.md?raw';
 import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
+import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
@@ -78,16 +81,19 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/indianpoker': indianpoker,
   '/jokerpoker': jokerpoker,
   '/klondike': klondike,
+  '/letitride': letitride,
   '/memory': memory,
   '/napoleon': napoleon,
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,
   '/omaha': omaha,
+  '/pageone': pageone,
   '/paigow': paigow,
   '/pineapple': pineapple,
   '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/poker': poker,
+  '/poker-squares': pokersquares,
   '/pyramid': pyramid,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,

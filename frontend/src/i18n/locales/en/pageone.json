@@ -1,0 +1,52 @@
+{
+  "phase": {
+    "play": "Play",
+    "mustDeclare": "Declare",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "drawPile": "Draw pile: {{count}}",
+  "discardTop": "Discard",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "playButton": "Play",
+  "drawButton": "Draw",
+  "declareButton": "Page One!",
+  "skipButton": "Skip (Penalty)",
+  "nextRound": "Next Round",
+  "declaredBadge": "PAGE ONE!",
+  "playPhase": "Play a card or draw from the pile",
+  "mustDeclarePhase": "Only 1 card left! Declare Page One!",
+  "roundEnd": "Round over",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "tutorial": {
+    "discardPile": "Top of the discard pile. Play a card with matching suit or rank.",
+    "playerHand": "Your hand. Click a card to select it.",
+    "playDraw": "Play a card or draw one from the pile.",
+    "declare": "When down to 1 card, you must declare 'Page One!' or take a penalty.",
+    "resetButton": "The reset button starts a new game."
+  },
+  "hint": {
+    "playHighValue": "High-value cards (J/Q/K/10) — play now to avoid end-of-round points",
+    "playMatching": "A card with matching suit or rank is playable",
+    "drawCard": "No playable card — draw one from the pile",
+    "declare": "Only 1 card left — declare 'Page One!' to avoid the 2-card penalty"
+  }
+}

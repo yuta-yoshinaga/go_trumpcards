@@ -32,6 +32,7 @@
  *   - PigsTail:    internal/domain/PigsTail.go    (gameEndFlag bool; local constants PIGTAIL_PHASE_PLAY/END in PigsTailPage.tsx)
  *   - SevenCardStud: internal/domain/SevenCardStud.go (SevenCardStudPhaseInit, SevenCardStudPhaseThirdStreet, ..., SevenCardStudPhaseEnd, SevenCardStudPhaseRebuy)
  *   - ClockSolitaire: internal/domain/ClockSolitaire.go (ClockSolitairePhasePlaying, ClockSolitairePhaseGameClear, ClockSolitairePhaseGameOver)
+ *   - LetItRide:  internal/domain/LetItRide.go (LetItRidePhaseBet, LetItRidePhaseFirstDecision, LetItRidePhaseSecondDecision, LetItRidePhaseEnd)
  */
 
 /** BlackJack phase constants (sync: internal/domain/BlackJack.go). */
@@ -175,6 +176,14 @@ export const OhHellPhase = {
 export const CrazyEightsPhase = {
   PLAY: 0,
   CHOOSE_SUIT: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Page One phase constants (sync: internal/domain/PageOne.go). */
+export const PageOnePhase = {
+  PLAY: 0,
+  MUST_DECLARE: 1,
   ROUND_END: 2,
   GAME_END: 3,
 } as const;
@@ -416,4 +425,18 @@ export const WhistPhase = {
   TRICK_END: 1,
   ROUND_END: 2,
   GAME_END: 3,
+} as const;
+
+/** Let It Ride phase constants (sync: internal/domain/LetItRide.go). */
+/** Poker Squares phase constants (sync: internal/domain/PokerSquares.go). */
+export const PokerSquaresPhase = {
+  PLAYING: 0,
+  COMPLETE: 1,
+} as const;
+
+export const LetItRidePhase = {
+  BET: 1,
+  FIRST_DECISION: 2,
+  SECOND_DECISION: 3,
+  END: 4,
 } as const;

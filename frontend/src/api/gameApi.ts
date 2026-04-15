@@ -27,16 +27,19 @@ import type {
   HoldemResponse,
   IndianPokerResponse,
   KlondikeResponse,
+  LetItRideResponse,
   MemoryResponse,
   NapoleonResponse,
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  PageOneResponse,
   PaiGowResponse,
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
   PokerResponse,
+  PokerSquaresResponse,
   PyramidResponse,
   SevenCardStudResponse,
   SevensResponse,
@@ -92,6 +95,7 @@ const workerUrl: Record<string, string> = {
   daifugo: WORKER_CLASSIC,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
+  pageone: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
   war: WORKER_CLASSIC,
   fiftyone: WORKER_CLASSIC,
@@ -103,6 +107,7 @@ const workerUrl: Record<string, string> = {
   freecell: WORKER_SOLO,
   spider: WORKER_SOLO,
   pyramid: WORKER_SOLO,
+  pokersquares: WORKER_SOLO,
   tripeaks: WORKER_SOLO,
   memory: WORKER_SOLO,
   ginrummy: WORKER_SOLO,
@@ -114,6 +119,7 @@ const workerUrl: Record<string, string> = {
   canfield: WORKER_SOLO,
   yukon: WORKER_SOLO,
   whist: WORKER_CLASSIC,
+  letitride: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -598,6 +604,26 @@ export const crazyeightsApi = {
     }),
 };
 
+/** Configuration options for Page One game settings. */
+export interface PageOneConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Page One /pageone/exec endpoint. */
+export const pageoneApi = {
+  exec: (
+    command: 'reset' | 'play' | 'draw' | 'declare' | 'skip' | 'nextround',
+    cardIndex?: number,
+    config?: PageOneConfigInput,
+  ) =>
+    gameExec<PageOneResponse>('pageone', {
+      command,
+      cardIndex,
+      config,
+    }),
+};
+
 /** Configuration options for Gin Rummy game settings. */
 export interface GinRummyConfigInput {
   cpuDifficulty?: number;
@@ -1010,6 +1036,18 @@ export const whistApi = {
   ) => gameExec<WhistResponse>('whist', { command, cardIndex, config }),
 };
 
+/** API client for the Poker Squares /pokersquares/exec endpoint. */
+export const pokersquaresApi = {
+  exec: (command: 'reset' | 'place' | 'undo' | 'giveup' | 'log', row?: number, col?: number) =>
+    gameExec<PokerSquaresResponse>('pokersquares', { command, row, col }),
+};
+
+/** API client for the Let It Ride /letitride/exec endpoint. */
+export const letitrideApi = {
+  exec: (command: 'reset' | 'bet' | 'pull' | 'letitride' | 'log', amount?: number) =>
+    gameExec<LetItRideResponse>('letitride', { command, amount }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1060,6 +1098,9 @@ const games = [
   'canfield',
   'yukon',
   'whist',
+  'letitride',
+  'pokersquares',
+  'pageone',
 ] as const;
 type Game = (typeof games)[number];
 

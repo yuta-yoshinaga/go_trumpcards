@@ -864,6 +864,41 @@ export interface CrazyEightsResponse {
   config: CrazyEightsConfig;
 }
 
+// --- Page One (ページワン) ---
+
+/** Page One player data with scores. */
+export interface PageOnePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  hasDeclared: boolean;
+}
+
+/** Page One game configuration. */
+export interface PageOneConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** Full Page One game state returned from the API. */
+export interface PageOneResponse {
+  players: PageOnePlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: PageOneConfig;
+}
+
 // --- Gin Rummy (ジンラミー) ---
 
 /** Gin Rummy player data with scores. */
@@ -2278,4 +2313,59 @@ export interface WhistResponse {
   messageParams?: Record<string, string>;
   config: WhistConfig;
   hint?: WhistHint;
+}
+
+// --- Poker Squares (ポーカー・スクエア) ---
+
+/** Single cell of the 5x5 Poker Squares board. */
+export interface PokerSquaresBoardCell {
+  /** Placed card, or `null` when the cell is empty. */
+  card: Card | null;
+}
+
+/** Poker Squares API response. */
+export interface PokerSquaresResponse {
+  /** 5x5 board. Empty cells have `card === null`. */
+  board: PokerSquaresBoardCell[][];
+  /** Next card to place, or `null` once all 25 cards have been placed. */
+  currentCard: Card | null;
+  /** Number of cards placed so far (0..25). */
+  placedCount: number;
+  /** 0 = playing, 1 = complete. */
+  phase: number;
+  /** Whether the last action can be undone. */
+  canUndo: boolean;
+  /** Score per row (length 5). */
+  rowScores: number[];
+  /** Score per column (length 5). */
+  colScores: number[];
+  /** Sum of all row and column scores. */
+  totalScore: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Let It Ride (レット・イット・ライド) ---
+
+/** Let It Ride API response. */
+export interface LetItRideResponse {
+  playerHand: Card[];
+  /** Community cards: masked as `MaskedCard` until revealed by phase progression. */
+  communityCards: (Card | MaskedCard)[];
+  phase: number;
+  chips: number;
+  betAmount: number;
+  bet1Active: boolean;
+  bet2Active: boolean;
+  bet3Active: boolean;
+  result: number;
+  handRank: number;
+  bet1Payout: number;
+  bet2Payout: number;
+  bet3Payout: number;
+  totalPayout: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }

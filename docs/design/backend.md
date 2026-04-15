@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全50ゲーム)](#12-ゲームドメイン-全50ゲーム)
+  - [1.2 ゲームドメイン (全52ゲーム)](#12-ゲームドメイン-全52ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -66,6 +66,8 @@
   - [3.34 Canfield フェーズ遷移](#334-canfield-フェーズ遷移)
   - [3.35 CaribbeanStud フェーズ遷移](#335-caribbeanstud-フェーズ遷移)
   - [3.36 War フェーズ遷移](#336-war-フェーズ遷移)
+  - [3.37 LetItRide フェーズ遷移](#337-letitride-フェーズ遷移)
+  - [3.38 PokerSquares フェーズ遷移](#338-pokersquares-フェーズ遷移)
 
 ---
 
@@ -133,7 +135,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全50ゲーム)
+### 1.2 ゲームドメイン (全52ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -272,6 +274,49 @@ classDiagram
 
     CaribbeanStud --> "1" TrumpCards
     CaribbeanStud --> "1" ChipHolder
+
+    class LetItRide {
+        -trumpCards *TrumpCards
+        -playerHand []*Card
+        -communityCards []*Card
+        -phase int
+        -betAmount int
+        -bet1Active bool
+        -bet2Active bool
+        -bet3Active bool
+        +Reset()
+        +Bet(amount int) error
+        +Pull() error
+        +LetItRide() error
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
+    }
+
+    LetItRide --> "1" TrumpCards
+    LetItRide --> "1" ChipHolder
+
+    class PokerSquares {
+        -trumpCards *TrumpCards
+        -board [5][5]*Card
+        -currentCard *Card
+        -placedCount int
+        -phase PokerSquaresPhase
+        -history []PokerSquaresMove
+        +Reset()
+        +Place(row int, col int) error
+        +Undo() error
+        +GiveUp()
+        +GetBoard() [5][5]*Card
+        +GetCurrentCard() *Card
+        +GetPhase() PokerSquaresPhase
+        +RowScore(row int) int
+        +ColScore(col int) int
+        +TotalScore() int
+        +CanUndo() bool
+        +GetActionLog() []*ActionLogEntry
+    }
+
+    PokerSquares --> "1" TrumpCards
 
     class PaiGow {
         -trumpCards *TrumpCards
@@ -1385,7 +1430,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全50ゲーム共通)**
+**Interactor パターン (全51ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -2623,7 +2668,7 @@ stateDiagram-v2
     End --> [*] : チップ0 (ゲーム終了)
 
     note right of Bet : PaiGowPhaseBet = 1
-    note right of Set : PaiGowPhaseSet = 2
+    note right of Set : PaiGowPhaseSetHands = 2
     note right of End : PaiGowPhaseEnd = 3
 ```
 
@@ -2735,5 +2780,39 @@ stateDiagram-v2
     note right of WarBury : WarPhaseWarBury = 2
     note right of GameEnd : WarPhaseGameEnd = 3
 ```
+
+### 3.37 LetItRide フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> Decision1 : Bet() (3等分ベット＋配布)
+    Decision1 --> Decision2 : Pull() or LetItRide() (1枚目コミュニティ公開)
+    Decision2 --> End : Pull() or LetItRide() (2枚目コミュニティ公開＋判定)
+    End --> Bet : Reset() (次ラウンド)
+    End --> [*]
+
+    note right of Bet : LetItRidePhaseBet = 1
+    note right of Decision1 : LetItRidePhaseDecision1 = 2
+    note right of Decision2 : LetItRidePhaseDecision2 = 3
+    note right of End : LetItRidePhaseEnd = 4
+```
+
+### 3.38 PokerSquares フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : Place(row, col) / Undo() (25枚未満)
+    Playing --> Complete : Place() で25枚目を配置
+    Playing --> Complete : GiveUp()
+    Complete --> Playing : Reset() (次ゲーム)
+    Complete --> [*]
+
+    note right of Playing : PokerSquaresPhasePlaying = 0
+    note right of Complete : PokerSquaresPhaseComplete = 1
+```
+
+PokerSquares 固有のアクション: `Place(row, col)` / `Undo` / `GiveUp`。5x5 グリッドに 25 枚のカードを 1 枚ずつ配置し、全配置完了時に 5 行 + 5 列 = 10 手のポーカー役を American 採点法で評価して合計スコアを算出する。
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

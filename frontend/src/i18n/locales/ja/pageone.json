@@ -1,0 +1,52 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "mustDeclare": "宣言",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardTop": "捨て札",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "playButton": "出す",
+  "drawButton": "引く",
+  "declareButton": "ページワン！",
+  "skipButton": "スキップ（ペナルティ）",
+  "nextRound": "次のラウンド",
+  "declaredBadge": "PAGE ONE!",
+  "playPhase": "カードを出すか、山札から引いてください",
+  "mustDeclarePhase": "手札が残り1枚です！「ページワン！」と宣言してください",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "tutorial": {
+    "discardPile": "捨て札の一番上のカードです。同じスートか同じ数字のカードを出せます。",
+    "playerHand": "あなたの手札です。出すカードをクリックして選びます。",
+    "playDraw": "カードを出すか、山札から1枚引きます。",
+    "declare": "手札が残り1枚になったら「ページワン！」と宣言します。忘れるとペナルティです。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "playHighValue": "高得点カード（J/Q/K/10）は早めに処理 — 出すことを推奨",
+    "playMatching": "スートか数字が一致するカードを出せます",
+    "drawCard": "出せるカードがないため、山札から1枚引きます",
+    "declare": "手札が残り1枚 — 「ページワン！」宣言を推奨（忘れると2枚引くペナルティ）"
+  }
+}

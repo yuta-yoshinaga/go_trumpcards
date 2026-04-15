@@ -31,16 +31,19 @@ import { HoldemPage } from './pages/HoldemPage';
 import { IndianPokerPage } from './pages/IndianPokerPage';
 import { JokerPokerPage } from './pages/JokerPokerPage';
 import { KlondikePage } from './pages/KlondikePage';
+import { LetItRidePage } from './pages/LetItRidePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { NapoleonPage } from './pages/NapoleonPage';
 import { OhHellPage } from './pages/OhHellPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
+import { PageOnePage } from './pages/PageOnePage';
 import { PaiGowPage } from './pages/PaiGowPage';
 import { PigsTailPage } from './pages/PigsTailPage';
 import { PineapplePage } from './pages/PineapplePage';
 import { PinochlePage } from './pages/PinochlePage';
 import { PokerPage } from './pages/PokerPage';
+import { PokerSquaresPage } from './pages/PokerSquaresPage';
 import { PyramidPage } from './pages/PyramidPage';
 import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
@@ -95,6 +98,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/threecard': <ThreeCardPage />,
   '/caribbeanstud': <CaribbeanStudPage />,
   '/paigow': <PaiGowPage />,
+  '/letitride': <LetItRidePage />,
   '/speed': <SpeedPage />,
   '/gofish': <GoFishPage />,
   '/pinochle': <PinochlePage />,
@@ -107,6 +111,8 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/canfield': <CanfieldPage />,
   '/yukon': <YukonPage />,
   '/whist': <WhistPage />,
+  '/poker-squares': <PokerSquaresPage />,
+  '/pageone': <PageOnePage />,
 };
 
 /** Root application component with router and game page routes. */

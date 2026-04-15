@@ -19,14 +19,17 @@ import type {
   HoldemResponse,
   IndianPokerResponse,
   KlondikeResponse,
+  LetItRideResponse,
   MemoryResponse,
   NapoleonResponse,
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  PageOneResponse,
   PineappleResponse,
   PinochleResponse,
   PokerResponse,
+  PokerSquaresResponse,
   PyramidResponse,
   SevensResponse,
   ShortDeckResponse,
@@ -63,14 +66,17 @@ import { getHoldemHint } from '../utils/hints/holdemHint';
 import { getIndianPokerHint } from '../utils/hints/indianpokerHint';
 import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
+import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
+import { getPageOneHint } from '../utils/hints/pageoneHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
+import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
@@ -133,6 +139,9 @@ const hintFactories = {
   sevencardstud: () => null,
   fortythieves: () => null,
   paigow: () => null,
+  pageone: (s) => getPageOneHint(s as PageOneResponse),
+  pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
+  letitride: (s) => getLetitrideHint(s as LetItRideResponse),
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),

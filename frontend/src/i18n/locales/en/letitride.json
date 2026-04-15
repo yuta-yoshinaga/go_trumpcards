@@ -1,0 +1,77 @@
+{
+  "title": "Let It Ride",
+  "player": "Player",
+  "label": {
+    "chips": "Chips",
+    "bet": "Bet",
+    "bet1": "Bet 1",
+    "bet2": "Bet 2",
+    "bet3": "Bet 3",
+    "active": "Active",
+    "pulled": "Pulled",
+    "community": "Community Cards"
+  },
+  "button": {
+    "bet": "Bet",
+    "pull": "Pull",
+    "letitride": "Let It Ride",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Betting",
+    "firstDecision": "First Decision",
+    "secondDecision": "Second Decision",
+    "end": "Result"
+  },
+  "result": {
+    "win": "You win!",
+    "lose": "No winning hand",
+    "push": "Push!"
+  },
+  "payout": {
+    "bet1": "Bet 1",
+    "bet2": "Bet 2",
+    "bet3": "Bet 3",
+    "total": "Total"
+  },
+  "handRank": {
+    "0": "High Card",
+    "1": "Pair",
+    "2": "Two Pair",
+    "3": "Three of a Kind",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Full House",
+    "7": "Four of a Kind",
+    "8": "Straight Flush",
+    "9": "Royal Flush"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Place your bet — 3 equal bets will be placed",
+  "payoutRef": {
+    "title": "Payout Table",
+    "header": "Payouts (per active bet)",
+    "payRoyalFlush": "Royal Flush: 1000:1",
+    "payStraightFlush": "Straight Flush: 200:1",
+    "payFourOfAKind": "Four of a Kind: 50:1",
+    "payFullHouse": "Full House: 11:1",
+    "payFlush": "Flush: 8:1",
+    "payStraight": "Straight: 5:1",
+    "payThreeOfAKind": "Three of a Kind: 3:1",
+    "payTwoPair": "Two Pair: 2:1",
+    "payPairTensOrBetter": "Pair (10s or better): 1:1"
+  },
+  "tutorial": {
+    "betControls": "Set your bet amount. Three equal bets will be placed automatically.",
+    "actionButtons": "Choose Pull to withdraw a bet, or Let It Ride to keep it.",
+    "results": "Check your hand, community cards, and payouts here."
+  },
+  "hint": {
+    "strongHand": "Strong hand — Let It Ride recommended",
+    "pairTensOrBetter": "Pair of 10s or better — Let It Ride recommended",
+    "threeToRoyalFlush": "Three to a Royal Flush — Let It Ride recommended",
+    "weakHand": "Weak hand — Pull recommended"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "title": "Poker Squares",
+  "phase": {
+    "playing": "Playing",
+    "complete": "Complete"
+  },
+  "label": {
+    "currentCard": "Next card",
+    "totalScore": "Total score",
+    "placedCount": "Placed",
+    "row": "Row",
+    "col": "Col",
+    "empty": "Empty"
+  },
+  "button": {
+    "reset": "Reset",
+    "undo": "Undo",
+    "giveup": "Give up"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "tutorial": {
+    "currentCard": "The next card to place is shown here.",
+    "board": "Click any empty cell in the 5x5 grid to place the current card. Placed cards cannot be moved.",
+    "scores": "Row and column poker hand scores are shown live.",
+    "controls": "'Undo' reverts the last placement; 'Give up' ends the game."
+  },
+  "hint": {
+    "placeSynergy": "Place here to build toward a stronger poker hand",
+    "placeAny": "Place in any empty cell"
+  }
+}

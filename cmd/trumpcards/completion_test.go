@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"strings"
 	"testing"
 
@@ -190,12 +191,51 @@ func TestRunHelpCommand_BuiltinSubcommand(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
 			code := runHelpCommand([]string{name}, "", &stdout, &stderr)
-			assert.Equal(t, 1, code)
-			assert.Contains(t, stderr.String(), name)
+			assert.Equal(t, 0, code)
+			assert.Contains(t, stdout.String(), "USAGE:")
+			assert.Contains(t, stdout.String(), "trumpcards "+name)
 			// Should NOT use the misleading "unknown game" wording.
 			assert.NotContains(t, stderr.String(), "不明なゲーム")
 			assert.NotContains(t, stderr.String(), "Unknown game")
+			assert.NotContains(t, stderr.String(), "not a game")
 		})
+	}
+}
+
+func TestParseSubFlagsTo_HelpFlag_WritesHelpToStdoutAndExitsZero(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	_, code, ok := parseSubFlagsTo("web", []string{"--help"}, func(fs *flag.FlagSet) {
+		fs.String("port", "", "port")
+	}, &stdout, &stderr)
+	assert.False(t, ok)
+	assert.Equal(t, 0, code)
+	assert.Contains(t, stdout.String(), "USAGE:")
+	assert.Contains(t, stdout.String(), "trumpcards web")
+	assert.Empty(t, stderr.String())
+}
+
+func TestParseSubFlagsTo_UnknownFlag_WritesI18nErrorAndExit2(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	_, code, ok := parseSubFlagsTo("web", []string{"--nope"}, func(fs *flag.FlagSet) {
+		fs.String("port", "", "port")
+	}, &stdout, &stderr)
+	assert.False(t, ok)
+	assert.Equal(t, 2, code)
+	// Must not leak Go's raw "flag provided but not defined" line to either stream
+	// without being wrapped in our i18n envelope.
+	assert.NotContains(t, stdout.String(), "flag provided but not defined")
+	assert.Contains(t, stderr.String(), "web")
+	assert.Contains(t, stderr.String(), "help web")
+}
+
+func TestBuiltinSubcommandHelp_CoversAllNonGameSubcommands(t *testing.T) {
+	expected := []string{"web", "completion", "games", "update", "help"}
+	for _, cmd := range expected {
+		lines, ok := builtinSubcommandHelp[cmd]
+		assert.True(t, ok, "builtinSubcommandHelp missing entry for %q", cmd)
+		assert.NotEmpty(t, lines, "help lines for %q must not be empty", cmd)
+		joined := strings.Join(lines, "\n")
+		assert.Contains(t, joined, "USAGE:", "%q help must include USAGE: section", cmd)
 	}
 }
 

@@ -10,6 +10,7 @@ import { useGameApi } from './useGameApi';
 export function usePokerGame() {
   const { selected, setSelected, clear: clearSelection } = useCardSelection();
   const [odds, setOdds] = useState<PokerOdds[] | null>(null);
+  const [oddsError, setOddsError] = useState<string | null>(null);
   const oddsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const oddsGenRef = useRef(0);
   const mountedRef = useRef(true);
@@ -17,6 +18,7 @@ export function usePokerGame() {
   const onSuccess = useCallback(() => {
     clearSelection();
     setOdds(null);
+    setOddsError(null);
     oddsGenRef.current++;
   }, [clearSelection]);
 
@@ -41,31 +43,46 @@ export function usePokerGame() {
   const canExchangeRef = useRef(canExchange);
   canExchangeRef.current = canExchange;
 
+  const fetchOdds = useCallback((cardIndices: number[]) => {
+    if (oddsTimerRef.current !== null) clearTimeout(oddsTimerRef.current);
+    if (cardIndices.length === 0) {
+      setOdds(null);
+      setOddsError(null);
+      return;
+    }
+    oddsTimerRef.current = setTimeout(() => {
+      if (!mountedRef.current) return;
+      const gen = ++oddsGenRef.current;
+      pokerApi
+        .exec('odds', cardIndices)
+        .then((res) => {
+          if (gen !== oddsGenRef.current) return;
+          setOdds(res.odds ?? null);
+          setOddsError(null);
+        })
+        .catch((err) => {
+          if (gen !== oddsGenRef.current) return;
+          setOddsError('oddsFetchFailed');
+          console.error('Poker odds fetch error:', err);
+        });
+    }, 300);
+  }, []);
+
   const toggleCard = useCallback(
     (idx: number) => {
       if (!canExchangeRef.current) return;
       setSelected((prev) => {
         const next = toggleArrayItem(prev, idx);
-        if (oddsTimerRef.current !== null) clearTimeout(oddsTimerRef.current);
-        if (next.length === 0) {
-          setOdds(null);
-        } else {
-          oddsTimerRef.current = setTimeout(() => {
-            if (!mountedRef.current) return;
-            const gen = ++oddsGenRef.current;
-            pokerApi
-              .exec('odds', next)
-              .then((res) => {
-                if (gen === oddsGenRef.current) setOdds(res.odds ?? null);
-              })
-              .catch((err) => console.error('Failed to fetch poker odds:', err));
-          }, 300);
-        }
+        fetchOdds(next);
         return next;
       });
     },
-    [setSelected],
+    [setSelected, fetchOdds],
   );
+
+  const retryOdds = useCallback(() => {
+    fetchOdds(selected);
+  }, [fetchOdds, selected]);
 
   return {
     state,
@@ -76,6 +93,8 @@ export function usePokerGame() {
     toggleCard,
     clearSelection,
     odds,
+    oddsError,
+    retryOdds,
     canExchange,
     retry,
   };

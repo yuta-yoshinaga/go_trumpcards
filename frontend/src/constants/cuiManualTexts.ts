@@ -17,6 +17,7 @@ import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
 import durak from '../../../docs/manual/cui/durak.md?raw';
 import euchre from '../../../docs/manual/cui/euchre.md?raw';
+import fiftyone from '../../../docs/manual/cui/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/cui/fortythieves.md?raw';
 import freecell from '../../../docs/manual/cui/freecell.md?raw';
 import ginrummy from '../../../docs/manual/cui/ginrummy.md?raw';
@@ -27,16 +28,19 @@ import holdem from '../../../docs/manual/cui/holdem.md?raw';
 import indianpoker from '../../../docs/manual/cui/indianpoker.md?raw';
 import jokerpoker from '../../../docs/manual/cui/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/cui/klondike.md?raw';
+import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import memory from '../../../docs/manual/cui/memory.md?raw';
 import napoleon from '../../../docs/manual/cui/napoleon.md?raw';
 import ohhell from '../../../docs/manual/cui/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/cui/oldmaid.md?raw';
 import omaha from '../../../docs/manual/cui/omaha.md?raw';
+import pageone from '../../../docs/manual/cui/pageone.md?raw';
 import paigow from '../../../docs/manual/cui/paigow.md?raw';
 import pigtail from '../../../docs/manual/cui/pigtail.md?raw';
 import pineapple from '../../../docs/manual/cui/pineapple.md?raw';
 import pinochle from '../../../docs/manual/cui/pinochle.md?raw';
 import poker from '../../../docs/manual/cui/poker.md?raw';
+import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
 import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
@@ -49,6 +53,8 @@ import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
 import war from '../../../docs/manual/cui/war.md?raw';
+import whist from '../../../docs/manual/cui/whist.md?raw';
+import yukon from '../../../docs/manual/cui/yukon.md?raw';
 
 /** Map from game route path to raw CUI Markdown manual text. */
 export const cuiManualTexts: Readonly<Record<string, string>> = {
@@ -65,6 +71,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/deuceswild': deuceswild,
   '/doubt': doubt,
   '/durak': durak,
+  '/fiftyone': fiftyone,
   '/fortythieves': fortythieves,
   '/euchre': euchre,
   '/freecell': freecell,
@@ -76,16 +83,19 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/indianpoker': indianpoker,
   '/jokerpoker': jokerpoker,
   '/klondike': klondike,
+  '/letitride': letitride,
   '/memory': memory,
   '/napoleon': napoleon,
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,
   '/omaha': omaha,
+  '/pageone': pageone,
   '/paigow': paigow,
   '/pineapple': pineapple,
   '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/poker': poker,
+  '/poker-squares': pokersquares,
   '/pyramid': pyramid,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,
@@ -98,6 +108,8 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/twotenjack': twotenjack,
   '/videopoker': videopoker,
   '/war': war,
+  '/whist': whist,
+  '/yukon': yukon,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

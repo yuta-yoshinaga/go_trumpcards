@@ -12,6 +12,7 @@ import {
   holdemApi,
   indianpokerApi,
   klondikeApi,
+  letitrideApi,
   memoryApi,
   oldmaidApi,
   omahaApi,
@@ -2995,6 +2996,35 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(twoTenJackApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('letitrideApi.exec', () => {
+    it('sends reset command', async () => {
+      const mockResponse = { phase: 0, chips: 1000 };
+      mockFetch.mockReturnValue(makeResponse(mockResponse));
+      const result = await letitrideApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/letitride/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', amount: undefined, sessionId }),
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('sends bet command with amount', async () => {
+      mockFetch.mockReturnValue(makeResponse({ phase: 1 }));
+      await letitrideApi.exec('bet', 100);
+      expect(mockFetch).toHaveBeenCalledWith('/letitride/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'bet', amount: 100, sessionId }),
+      });
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(letitrideApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 });

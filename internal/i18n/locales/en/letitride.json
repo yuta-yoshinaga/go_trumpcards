@@ -1,0 +1,6 @@
+{
+  "helpTitle": "Let It Ride",
+  "helpBet": "  b <amount>           bet (places 3 equal bets)",
+  "helpPull": "  p                    pull (withdraw current bet)",
+  "helpLetItRide": "  l                    let it ride (keep current bet)"
+}

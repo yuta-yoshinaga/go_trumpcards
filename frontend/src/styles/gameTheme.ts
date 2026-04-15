@@ -5,6 +5,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   baccarat: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   threecard: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   paigow: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  letitride: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   // Poker
   poker: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
   holdem: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
@@ -32,6 +33,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   daifugo: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   sevens: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   crazyeights: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  pageone: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   gofish: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   // Solitaire — unified to casino
   klondike: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
@@ -44,6 +46,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   clocksolitaire: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   fortythieves: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   canfield: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  pokersquares: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   // Counting/Rummy — unified to blue
   ginrummy: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   canasta: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },

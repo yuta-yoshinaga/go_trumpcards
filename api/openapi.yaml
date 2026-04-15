@@ -48,6 +48,8 @@ tags:
     description: Two Ten Jack (ツーテンジャック) game
   - name: crazyeights
     description: Crazy Eights (クレイジーエイト) game
+  - name: pageone
+    description: Page One (ページワン) game
   - name: ginrummy
     description: Gin Rummy (ジンラミー) game
   - name: canasta
@@ -108,6 +110,10 @@ tags:
     description: Fifty-one (フィフティワン) game
   - name: yukon
     description: Yukon (ユーコン) game
+  - name: letitride
+    description: Let It Ride (レットイットライド) game
+  - name: pokersquares
+    description: Poker Squares (ポーカー・スクエア) game
 
 paths:
   /blackjack/exec:
@@ -1683,6 +1689,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CrazyEightsResponse'
+
+  /pageone/exec:
+    post:
+      tags:
+        - pageone
+      summary: Execute a Page One game command
+      description: |
+        Send a command to advance the Page One (ページワン) game session
+        identified by `sessionId`.  Page One is a 4-player Japanese shedding
+        card game similar to the UNO predecessor.  Match the top discard's
+        suit or rank.  When your hand drops to 1 card you must `declare`
+        "Page One!" or `skip` to take a 2-card penalty.
+
+        Phases: 0 = Play, 1 = MustDeclare, 2 = RoundEnd, 3 = GameEnd
+      operationId: pageoneExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PageOneRequest'
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageOneResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageOneResponse'
 
   /ginrummy/exec:
     post:
@@ -4772,6 +4812,186 @@ paths:
                         type: integer
         '400':
           description: Bad request
+
+  /letitride/exec:
+    post:
+      tags:
+        - letitride
+      summary: Execute a Let It Ride game command
+      description: |
+        Send a command to advance the Let It Ride (レットイットライド)
+        game session identified by `sessionId`. Let It Ride is a single-player
+        casino poker game using a standard 52-card deck. Player places 3 equal
+        bets, receives 3 cards plus 2 face-down community cards. Before each
+        community card is revealed, the player can Pull (withdraw) that bet or
+        Let It Ride (keep it). Final 5-card hand is evaluated. Pays on a pair
+        of 10s or better. Payout table: Royal Flush 1000:1, Straight Flush
+        200:1, Four of a Kind 50:1, Full House 11:1, Flush 8:1, Straight 5:1,
+        Three of a Kind 3:1, Two Pair 2:1, Pair of 10s or Better 1:1.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Bet        | `1`   | Place 3 equal bets |
+        | Decision1  | `2`   | First community card decision (Pull or Let It Ride) |
+        | Decision2  | `3`   | Second community card decision (Pull or Let It Ride) |
+        | End        | `4`   | Round complete; shows result and payout |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bet`       | `b`     | Place 3 equal bets (requires `amount`) |
+        | `pull`      | `p`     | Pull (withdraw) the current bet |
+        | `letitride` | `l`     | Let It Ride (keep the current bet) |
+        | `log`       | `lg`    | View action log |
+      operationId: letitrideExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LetItRideRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 on each of the 3 spots
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              pull:
+                summary: Pull (withdraw) the current bet
+                value:
+                  command: pull
+                  sessionId: my-session-001
+              letitride:
+                summary: Let It Ride (keep the current bet)
+                value:
+                  command: letitride
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LetItRideResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LetItRideResponse'
+              examples:
+                paramError:
+                  value:
+                    playerHand: []
+                    communityCards: []
+                    phase: 0
+                    chips: 0
+                    betAmount: 0
+                    bet1Active: false
+                    bet2Active: false
+                    bet3Active: false
+                    result: 0
+                    handRank: 0
+                    bet1Payout: 0
+                    bet2Payout: 0
+                    bet3Payout: 0
+                    totalPayout: 0
+                    message: param error.
+
+  /pokersquares/exec:
+    post:
+      tags:
+        - pokersquares
+      summary: Execute a Poker Squares game command
+      description: |
+        Send a command to advance the Poker Squares (ポーカー・スクエア)
+        game session identified by `sessionId`. Poker Squares is a
+        single-player solitaire puzzle using a standard 52-card deck.
+        Cards are drawn one at a time from a shuffled deck and must be
+        placed on an empty cell of a 5x5 grid (25 cells). Once placed, a
+        card cannot be moved. After all 25 cells are filled, the 5 rows
+        and 5 columns form 10 five-card poker hands, each scored via the
+        American scoring system: Royal Flush 100, Straight Flush 75,
+        Four of a Kind 50, Full House 25, Flush 20, Straight 15,
+        Three of a Kind 10, Two Pair 5, One Pair 2, High Card 0.
+        The total score is the sum of all 10 hand scores.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress (placing cards) |
+        | Complete  | `1`   | All 25 cells filled; final score shown |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`  | `r`  | Start / restart a game |
+        | `place`  | `p`  | Place the current card on cell (`row`, `col`) (0-4) |
+        | `undo`   | `u`  | Undo the last placement |
+        | `giveup` | `g`  | Give up the current game |
+        | `log`    | `l`  | View action log |
+      operationId: pokersquaresExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PokerSquaresRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              place:
+                summary: Place the current card on row 2, col 3
+                value:
+                  command: place
+                  row: 2
+                  col: 3
+                  sessionId: my-session-001
+              undo:
+                summary: Undo the last placement
+                value:
+                  command: undo
+                  sessionId: my-session-001
+              giveup:
+                summary: Give up the current game
+                value:
+                  command: giveup
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PokerSquaresResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PokerSquaresResponse'
+              examples:
+                paramError:
+                  value:
+                    board: []
+                    placedCount: 0
+                    phase: 0
+                    canUndo: false
+                    rowScores: []
+                    colScores: []
+                    totalScore: 0
+                    message: "param error: row and col are required."
 
 components:
   schemas:
@@ -8689,6 +8909,104 @@ components:
           description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
+    # Page One
+    # -------------------------------------------------------------------------
+    PageOneRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `play` (`p`),
+            `draw` (`d`), `declare` (`dc`), `skip` (`sk`),
+            `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, play, p, draw, d, declare, dc, skip, sk, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PageOneResponse:
+      type: object
+      description: Current state of the Page One game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              hasDeclared:
+                type: boolean
+                description: Whether the player has declared "Page One!"
+        phase:
+          type: integer
+          description: "Game phase: 0 = Play, 1 = MustDeclare, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
     # Gin Rummy
     # -------------------------------------------------------------------------
     GinRummyRequest:
@@ -12209,6 +12527,236 @@ components:
         message:
           type: string
           description: Game result or error message. Empty during bet/set phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Let It Ride
+    # -------------------------------------------------------------------------
+    LetItRideRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `pull` (`p`), `letitride` (`l`), `log` (`lg`).
+          enum: [r, reset, b, bet, p, pull, l, letitride, log, lg]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Bet amount per spot. Required for `bet` command (minimum 10, must be
+            a multiple of 10). The same amount is placed on all 3 spots.
+            Ignored for other commands.
+          minimum: 10
+          example: 100
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    LetItRideResponse:
+      type: object
+      description: Current state of the Let It Ride game
+      required:
+        - playerHand
+        - communityCards
+        - phase
+        - chips
+        - betAmount
+        - bet1Active
+        - bet2Active
+        - bet3Active
+        - result
+        - handRank
+        - bet1Payout
+        - bet2Payout
+        - bet3Payout
+        - totalPayout
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand (3 cards)
+          items:
+            $ref: '#/components/schemas/Card'
+        communityCards:
+          type: array
+          description: Community cards (2 cards; revealed progressively)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Decision1, 3 = Decision2, 4 = End"
+          enum: [1, 2, 3, 4]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        betAmount:
+          type: integer
+          description: Bet amount per spot
+          example: 100
+        bet1Active:
+          type: boolean
+          description: Whether Bet 1 is still active (can be pulled in the first decision phase)
+          example: true
+        bet2Active:
+          type: boolean
+          description: Whether Bet 2 is still active (can be pulled in the second decision phase)
+          example: true
+        bet3Active:
+          type: boolean
+          description: Whether Bet 3 is still active (always active, cannot be pulled)
+          example: true
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Player loses, 0 = Not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        handRank:
+          type: integer
+          description: Player's 5-card hand rank (0=High Card, 1=One Pair, 2=Two Pair, 3=Three of a Kind, 4=Straight, 5=Flush, 6=Full House, 7=Four of a Kind, 8=Straight Flush, 9=Royal Flush)
+          example: 0
+        bet1Payout:
+          type: integer
+          description: Payout from Bet 1 (0 if pulled)
+          example: 0
+        bet2Payout:
+          type: integer
+          description: Payout from Bet 2 (0 if pulled)
+          example: 0
+        bet3Payout:
+          type: integer
+          description: Payout from Bet 3
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the current round (sum of all active bet payouts)
+          example: 0
+        message:
+          type: string
+          description: Game result or error message. Empty during bet/decision phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Poker Squares
+    # -------------------------------------------------------------------------
+    PokerSquaresRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `place` (`p`),
+            `undo` (`u`), `giveup` (`g`), `log` (`l`).
+          enum: [r, reset, p, place, u, undo, g, giveup, log, l]
+          example: place
+        row:
+          type: integer
+          description: Row index (0-4) for the `place` command.
+          minimum: 0
+          maximum: 4
+          example: 2
+        col:
+          type: integer
+          description: Column index (0-4) for the `place` command.
+          minimum: 0
+          maximum: 4
+          example: 3
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PokerSquaresOutputCard:
+      type: object
+      description: A single cell in the 5x5 Poker Squares board (empty when `card` is null).
+      properties:
+        card:
+          description: Card placed on this cell, or null if the cell is empty.
+          $ref: '#/components/schemas/Card'
+
+    PokerSquaresResponse:
+      type: object
+      description: Current state of the Poker Squares game
+      required:
+        - board
+        - placedCount
+        - phase
+        - canUndo
+        - rowScores
+        - colScores
+        - totalScore
+        - message
+      properties:
+        board:
+          type: array
+          description: 5x5 grid of cells (row-major). Each cell contains the placed card or null.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/PokerSquaresOutputCard'
+        currentCard:
+          description: The current card that must be placed next. Omitted when the game is complete.
+          $ref: '#/components/schemas/Card'
+        placedCount:
+          type: integer
+          description: Number of cards already placed on the board (0-25).
+          minimum: 0
+          maximum: 25
+          example: 0
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = Complete"
+          enum: [0, 1]
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        rowScores:
+          type: array
+          description: Score of each row (5 entries, one per row). Only rows with all 5 cards placed contribute to the total.
+          items:
+            type: integer
+          example: [0, 0, 0, 0, 0]
+        colScores:
+          type: array
+          description: Score of each column (5 entries, one per column). Only fully-filled columns contribute to the total.
+          items:
+            type: integer
+          example: [0, 0, 0, 0, 0]
+        totalScore:
+          type: integer
+          description: Sum of all 10 row + column hand scores (American scoring system).
+          example: 0
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
           example: ""
         messageCode:
           type: string

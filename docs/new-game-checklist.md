@@ -19,24 +19,44 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 9. **Page**: `frontend/src/pages/<Game>Page.tsx` with test file, reuse `useGamePageSetup` hook, `usePhaseNames`, `gameReplay`, `useCardDimensions`, `gameExec` API helper
 10. **Shared components**: Use `PhaseIndicator`, `SettingsPanel`, `ConfirmDialog`, `ActionLogSection`, `GameFooter`, `GameMessageBox`, `AnimatedCardBack`, `ErrorBoundary`
 11. **CLI mode**: Wire `useCliMode`, `useCliGame`, `CliToggle`, and `CliTerminal` in the page. At minimum add a stub config (`parseCommand` returns error, empty `helpText`). Place `CliToggle` inside `PhaseIndicator` and wrap GUI content with `{cliEnabled ? <CliTerminal .../> : <>{/* GUI */}</>}`
-12. **i18n**: Add `frontend/src/i18n/locales/{ja,en}/<game>.json` translation files
-13. **Router**: Add route in `frontend/src/App.tsx` and NavBar entry
-14. **Run `bun run build && bun run check && bun run test`**
+12. **i18n**: Add `frontend/src/i18n/locales/{ja,en}/<game>.json` translation files (include `tutorial` keys if tutorial is added)
+13. **Router**: Add route in `frontend/src/App.tsx` and NavBar entry in `frontend/src/constants/gameRoutes.ts`
+14. **Hint system**: Create `frontend/src/utils/hints/<game>Hint.ts` returning `HintResult | null` (or `null` stub if the game has no decisional hint), and register it in `frontend/src/hooks/useGameHint.ts` `hintFactories`. Add the matching `<game>Hint.test.ts` with 80%+ branch coverage. Wire `useGameHint` + `HintToggle` into the page.
+15. **Tutorial**: Wrap `<Game>Page.tsx` content with `<TutorialWrapper gameName="<game>" steps={steps}>`, import `TutorialButton`, add `data-tutorial` attributes to key UI elements, and add `tutorial` keys to the i18n JSON files.
+16. **Run `bun run build && bun run check && bun run test`**
 
 ## Documentation (same commit)
 
-15. **`README.md`**: Add game description and CLI command
-16. **`CLAUDE.md`**: Add game name to available games list in Commands section
-17. **`docs/games.md`**: Add game entity description
-18. **`docs/architecture.md`**: Update endpoint count and list
-19. **`api/openapi.yaml`**: Add endpoint path, tag definition, and request/response schemas in components
-20. **`docs/manual/cui/<game>.md`** and **`docs/manual/web/<game>.md`**: Add game manuals
-21. **`frontend/src/constants/manualTexts.ts`**: Import the web manual and add route mapping entry
+17. **`README.md`**: Add game description and CLI command
+18. **`CLAUDE.md`**: Add game name to available games list in Commands section
+19. **`docs/games.md`**: Add game entity description
+20. **`docs/architecture.md`**: Update endpoint count and list
+21. **`api/openapi.yaml`**: Add endpoint path, tag definition, and request/response schemas in components
+22. **`docs/manual/cui/<game>.md`** and **`docs/manual/web/<game>.md`**: Create from the templates below and **include every required section**:
+    - CUI (`docs/manual/cui_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## コマンド一覧` / `## 画面の見方` / `## 遊び方のコツ`
+    - Web (`docs/manual/web_template.md`): `## ゲーム概要` / `## 起動方法` / `## ルール` / `## ゲームの流れ` (Mermaid flowchart — **mandatory**) / `## 画面の操作方法` / `## 画面構成` / `## 遊び方のコツ`
+    - Do not skip sections even if short; a brief stub is preferable to a missing section so future readers can rely on a consistent structure.
+23. **`frontend/src/constants/manualTexts.ts`**: Import the **Web** manual and add route mapping entry
+24. **`frontend/src/constants/cuiManualTexts.ts`**: Import the **CUI** manual and add route mapping entry (this is the manual displayed when CLI mode is active — easy to forget)
 
 ## Final verification
 
-22. `go test -tags test ./...` -- all tests pass
-23. `golangci-lint run ./...` -- no warnings
-24. `cd frontend && bun run build && bun run check && bun run test` -- all pass
-25. **E2E test**: Create `frontend/e2e/<game>.spec.ts` with basic game flow test
-26. `cd frontend && bun run e2e` -- all E2E tests pass
+25. `go test -tags test ./...` -- all tests pass
+26. `golangci-lint run ./...` -- no warnings
+27. `cd frontend && bun run build && bun run check && bun run test` -- all pass
+28. **E2E test**: Create `frontend/e2e/<game>.spec.ts` with basic game flow test
+29. `cd frontend && bun run e2e` -- all E2E tests pass
+
+## Self-audit (perform before marking PR ready)
+
+Run through this cross-check for the new `<game>`:
+
+- [ ] `docs/manual/cui/<game>.md` exists and contains every section listed in item 22 (including the Mermaid flowchart)
+- [ ] `docs/manual/web/<game>.md` exists and contains every section listed in item 22 (including the Mermaid flowchart)
+- [ ] `frontend/src/constants/manualTexts.ts` has both the `import` and the route mapping for `<game>`
+- [ ] `frontend/src/constants/cuiManualTexts.ts` has both the `import` and the route mapping for `<game>`
+- [ ] `frontend/src/utils/hints/<game>Hint.ts` exists (real implementation or documented `null` stub)
+- [ ] `frontend/src/hooks/useGameHint.ts` registers `<game>` in `hintFactories`
+- [ ] `<Game>Page.tsx` is wrapped in `<TutorialWrapper>` and surfaces `TutorialButton` + `HintToggle`
+- [ ] `cmd/workers/{casino,classic,solo}/main.go` registers `<game>` in exactly one worker
+- [ ] `frontend/src/api/gameApi.ts` `workerUrl` maps `<game>` to that same worker

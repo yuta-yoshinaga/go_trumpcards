@@ -67,6 +67,9 @@ var gameRegistry = []GameRegistryEntry{
 	{"fiftyone", "Fifty-one (フィフティワン)", func() cuiGame { return NewFiftyOneCui() }},
 	{"yukon", "Yukon Solitaire (ユーコン)", func() cuiGame { return NewYukonCui() }},
 	{"whist", "Whist (ホイスト)", func() cuiGame { return NewWhistCui() }},
+	{"letitride", "Let It Ride (レット・イット・ライド)", func() cuiGame { return NewLetItRideCui() }},
+	{"pokersquares", "Poker Squares (ポーカー・スクエアズ)", func() cuiGame { return NewPokerSquaresCui() }},
+	{"pageone", "Page One (ページワン)", func() cuiGame { return NewPageOneCui() }},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -115,6 +118,8 @@ var GameAliases = map[string]string{
 	"stud":   "caribbeanstud",
 	"40t":    "fortythieves",
 	"pgp":    "paigow",
+	"lir":    "letitride",
+	"ride":   "letitride",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

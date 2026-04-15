@@ -379,7 +379,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全50ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全51ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -597,7 +597,7 @@ classDiagram
     class PaiGowPhase {
         <<enumeration>>
         BET = 1
-        SET = 2
+        SET_HANDS = 2
         END = 3
     }
 
@@ -685,6 +685,20 @@ classDiagram
         END = 3
     }
 
+    class LetItRidePhase {
+        <<enumeration>>
+        BET = 1
+        DECISION1 = 2
+        DECISION2 = 3
+        END = 4
+    }
+
+    class PokerSquaresPhase {
+        <<enumeration>>
+        PLAYING = 0
+        COMPLETE = 1
+    }
+
     class WarPhase {
         <<enumeration>>
         REVEAL = 0
@@ -760,7 +774,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全50ゲーム()
+        ...全51ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -816,7 +830,7 @@ classDiagram
 
     PaiGowApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全50ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, whist)"
+    note for BlackJackApi "全51ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, whist,\nletitride)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1195,7 +1209,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全50ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全51ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1699,6 +1713,31 @@ classDiagram
 
     YukonPage --|> GamePage : follows pattern
 
+    class LetItRidePage {
+        +チップ表示
+        +ベット額入力
+        +プレイヤー3枚カード表示
+        +コミュニティカード2枚表示
+        +Pull/Let It Rideボタン
+        +ベット状態表示(Bet1/Bet2/Bet3)
+        +配当詳細表示(Bet1/Bet2/Bet3/合計)
+    }
+
+    LetItRidePage --|> GamePage : follows pattern
+
+    class PokerSquaresPage {
+        +5x5グリッド表示(25セル)
+        +現在のカード表示
+        +配置済みカード数表示
+        +行スコアバッジ(5行)
+        +列スコアバッジ(5列)
+        +合計得点表示
+        +元に戻すボタン
+        +ギブアップ/リセットボタン
+    }
+
+    PokerSquaresPage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -1712,7 +1751,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全50ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全51ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
