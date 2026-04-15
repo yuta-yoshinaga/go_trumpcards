@@ -693,6 +693,12 @@ classDiagram
         END = 4
     }
 
+    class PokerSquaresPhase {
+        <<enumeration>>
+        PLAYING = 0
+        COMPLETE = 1
+    }
+
     class WarPhase {
         <<enumeration>>
         REVEAL = 0
@@ -1718,6 +1724,19 @@ classDiagram
     }
 
     LetItRidePage --|> GamePage : follows pattern
+
+    class PokerSquaresPage {
+        +5x5グリッド表示(25セル)
+        +現在のカード表示
+        +配置済みカード数表示
+        +行スコアバッジ(5行)
+        +列スコアバッジ(5列)
+        +合計得点表示
+        +元に戻すボタン
+        +ギブアップ/リセットボタン
+    }
+
+    PokerSquaresPage --|> GamePage : follows pattern
 
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders

@@ -1,0 +1,23 @@
+{
+  "title": "ポーカー・スクエア",
+  "phase": {
+    "playing": "プレイ中",
+    "complete": "完了"
+  },
+  "label": {
+    "currentCard": "次に置くカード",
+    "totalScore": "合計スコア",
+    "placedCount": "配置済み",
+    "row": "行",
+    "col": "列",
+    "empty": "空"
+  },
+  "button": {
+    "reset": "リセット",
+    "undo": "元に戻す",
+    "giveup": "ギブアップ"
+  },
+  "settings": {
+    "title": "設定"
+  }
+}

@@ -1,5 +1,5 @@
-import { isMaskedCard } from '../../types/card';
 import type { Card, LetItRideResponse } from '../../types/card';
+import { isMaskedCard } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { LetItRidePhase } from '../../types/phases';
 

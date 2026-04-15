@@ -432,6 +432,10 @@ func (web *TrumpCardsWeb) registerAll() {
 			new(presenter.LetItRideWebPresenter),
 		)
 	}))
+	web.register("pokersquares", controller.NewPokerSquaresWebController(func() usecase.PokerSquaresInteractorIF {
+		ps := domain.NewPokerSquares(domain.NewTrumpCards(0))
+		return usecase.NewPokerSquaresInteractor(ps, new(presenter.PokerSquaresWebPresenter))
+	}))
 }
 
 // Exec ゲーム実行
