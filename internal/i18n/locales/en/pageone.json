@@ -1,0 +1,10 @@
+{
+  "helpTitle": "Page One",
+  "helpPlay": "  p <idx>              play a card",
+  "helpDraw": "  d                    draw a card",
+  "helpDeclare": "  dc / declare         declare Page One",
+  "helpSkip": "  sk / skip            skip declaration (penalty: draw 2 cards)",
+  "helpNextRound": "  nr                   next round",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               point limit"
+}

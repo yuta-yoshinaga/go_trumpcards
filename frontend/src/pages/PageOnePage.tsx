@@ -1,0 +1,348 @@
+import { useCallback, useMemo } from 'react';
+import type { pageoneApi } from '../api/gameApi';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetDialog } from '../components/GameResetDialog';
+import { ManualButton } from '../components/ManualButton';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
+import { PhaseIndicator } from '../components/PhaseIndicator';
+import { PageOneSkeleton } from '../components/skeleton/PageOneSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePageOneGame } from '../hooks/usePageOneGame';
+import { usePhaseNames } from '../hooks/usePhaseNames';
+import { useSound } from '../providers/SoundProvider';
+import { btnOutline, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
+import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { PageOneResponse } from '../types/card';
+import { PageOnePhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+import { PAGEONE_HELP, parsePageoneCommand } from '../utils/cli/commands/pageoneCommands';
+import { formatPageoneState } from '../utils/cli/formatters/pageoneFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
+
+const PAGEONE_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [PageOnePhase.PLAY]: 'play',
+  [PageOnePhase.MUST_DECLARE]: 'mustDeclare',
+  [PageOnePhase.ROUND_END]: 'roundEnd',
+  [PageOnePhase.GAME_END]: 'gameEnd',
+};
+
+/** Page One tutorial step definitions. */
+const PAGEONE_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="po-discard-pile"]',
+    messageKey: 'tutorial.discardPile',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="po-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  { target: '[data-tutorial="po-play-draw"]', messageKey: 'tutorial.playDraw', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="po-declare"]', messageKey: 'tutorial.declare', placement: 'top', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="po-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Renders the Page One game page with card play and declaration mechanic. */
+export function PageOnePage() {
+  return (
+    <TutorialWrapper gameName="pageone" steps={PAGEONE_TUTORIAL_STEPS}>
+      <PageOnePageContent />
+    </TutorialWrapper>
+  );
+}
+
+/** Inner content of the Page One page, wrapped by TutorialProvider. */
+function PageOnePageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('pageone');
+  const {
+    state,
+    loading,
+    error,
+    exec: gameCall,
+    retry,
+    pageOneConfig,
+    selectedCardIndices,
+    toggleCard,
+    clearSelection,
+    handleConfigChange,
+    handlePlay,
+    handleDraw,
+    handleDeclare,
+    handleSkipDeclare,
+    handleNextRound,
+  } = usePageOneGame();
+  const { cardWidth } = useCardDimensions();
+  const { playSound } = useSound();
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pageone');
+  const cliConfig: CliGameConfig<PageOneResponse, Parameters<typeof pageoneApi.exec>> = useMemo(
+    () => ({
+      gameName: 'pageone',
+      parseCommand: parsePageoneCommand,
+      formatResponse: formatPageoneState,
+      helpText: PAGEONE_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(gameCall, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const isPlayPhaseForKbd = state?.phase === PageOnePhase.PLAY;
+  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+
+  const confirmAction = useCallback(() => {
+    handlePlay();
+  }, [handlePlay]);
+
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCard,
+    onConfirm: confirmAction,
+    onClear: clearSelection,
+    enabled: !!isHumanTurnForKbd && !loading,
+  });
+
+  const phaseNames = usePhaseNames('pageone', PAGEONE_PHASE_KEYS);
+
+  if (!state) return <PageOneSkeleton />;
+
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const isPlayPhase = state.phase === PageOnePhase.PLAY;
+  const isMustDeclare = state.phase === PageOnePhase.MUST_DECLARE;
+  const isRoundEnd = state.phase === PageOnePhase.ROUND_END;
+  const isGameEnd = state.phase === PageOnePhase.GAME_END || state.gameEndFlag;
+  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const isHumanMustDeclare = isMustDeclare && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  return (
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pageone.bg}`} aria-busy={loading} aria-live="polite">
+      <GamePageHeading title={tc('nav.pageone')} />
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn || isHumanMustDeclare}>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        <TutorialButton />
+        <ManualButton gamePath="/pageone" />
+      </PhaseIndicator>
+
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={t('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select',
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: pageOneConfig.cpuDifficulty,
+                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.${o.label.toLowerCase()}`),
+                    })),
+                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'pointLimit',
+                    label: t('settings.pointLimit'),
+                    value: pageOneConfig.pointLimit,
+                    options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    onSelect: (v) => handleConfigChange('pointLimit', v),
+                  },
+                ],
+              },
+            ]}
+          />
+
+          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div className="text-white text-center mb-2">
+              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+              <span>{t('drawPile', { count: state.drawPileCount })}</span>
+            </div>
+
+            <div className={lgTwoColGrid}>
+              <div>
+                {state.discardTop && (
+                  <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="po-discard-pile">
+                    <AnimatedCard
+                      card={state.discardTop}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                    <div className="text-white/70 text-sm">
+                      <div>{t('discardTop')}</div>
+                    </div>
+                  </div>
+                )}
+
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+
+                <ActionLogSection
+                  isEndPhase={isGameEnd}
+                  actionLog={actionLog}
+                  showActionLog={showActionLog}
+                  hideActionLog={hideActionLog}
+                />
+              </div>
+
+              <div>
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                      <div className="text-white/70 text-sm">
+                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                        {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                        {t('roundScore', { score: p.roundScore })}
+                        {p.hasDeclared ? ` • ${t('declaredBadge')}` : ''}
+                      </div>
+                    </div>
+                  ))}
+
+                <div className="my-3 p-2 rounded bg-black/30">
+                  <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+                  <table className="w-full text-sm text-white/70">
+                    <thead>
+                      <tr>
+                        <th scope="col" className="text-left">
+                          {t('scoresPlayer')}
+                        </th>
+                        <th scope="col">{t('scoresRound')}</th>
+                        <th scope="col">{t('scoresTotal')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.players.map((p) => (
+                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                          <td>{playerName(p.id, p.isHuman)}</td>
+                          <td className="text-center">{p.roundScore}</td>
+                          <td className="text-center">{p.cumulativeScore}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <GameFooter className={`${gameTheme.pageone.footer} px-4 py-2.5`}>
+            {humanPlayer && (
+              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="po-player-hand">
+                {humanPlayer.cards.map((card, idx) => (
+                  <button
+                    type="button"
+                    key={`${card.design}-${card.value}-${idx}`}
+                    onClick={() => toggleCard(idx)}
+                    aria-label={cardAlt(card)}
+                    aria-pressed={selectedCardIndices.includes(idx)}
+                    className={`transition-transform ${focusRingCard}`}
+                    style={{
+                      background: 'none',
+                      padding: 0,
+                      borderRadius: 8,
+                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <AnimatedCard
+                      card={card}
+                      width={cardWidth}
+                      onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <div className="flex gap-2 items-center flex-wrap">
+              {isHumanTurn && (
+                <div className="flex gap-2" data-tutorial="po-play-draw">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePlay}
+                    disabled={loading || selectedCardIndices.length !== 1}
+                  >
+                    {t('playButton')}
+                  </button>
+                  <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
+                    {t('drawButton')}
+                  </button>
+                </div>
+              )}
+              {isHumanMustDeclare && (
+                <div className="flex gap-2" data-tutorial="po-declare">
+                  <button type="button" className={btnSuccess} onClick={handleDeclare} disabled={loading}>
+                    {t('declareButton')}
+                  </button>
+                  <button type="button" className={btnWarning} onClick={handleSkipDeclare} disabled={loading}>
+                    {t('skipButton')}
+                  </button>
+                </div>
+              )}
+              {isRoundEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
+                </button>
+              )}
+              <button
+                type="button"
+                className={btnOutline}
+                data-tutorial="po-reset-button"
+                onClick={() =>
+                  requestConfirm(() => {
+                    hideActionLog();
+                    return gameCall('reset', undefined, {
+                      cpuDifficulty: pageOneConfig.cpuDifficulty,
+                      pointLimit: pageOneConfig.pointLimit,
+                    });
+                  })
+                }
+                disabled={loading}
+              >
+                {tc('button.reset')}
+              </button>
+            </div>
+          </GameFooter>
+        </>
+      )}
+      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
+      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
+    </div>
+  );
+}

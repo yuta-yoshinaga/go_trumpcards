@@ -69,7 +69,8 @@
     "yukon": "Yukon",
     "whist": "Whist",
     "letitride": "Let It Ride",
-    "pokersquares": "Poker Squares"
+    "pokersquares": "Poker Squares",
+    "pageone": "Page One"
   },
   "sound": {
     "mute": "Mute sound",
@@ -220,6 +221,11 @@
     "crazyeights.playPhase": "Play a card or draw from the pile",
     "crazyeights.chooseSuitPhase": "Choose the next suit",
     "crazyeights.roundEnd": "Round over",
+    "pageone.result.humanWin": "Game over! You win!",
+    "pageone.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "pageone.playPhase": "Play a card or draw from the pile",
+    "pageone.mustDeclarePhase": "Only 1 card left! Declare Page One!",
+    "pageone.roundEnd": "Round over",
     "ginrummy.result.humanWin": "Game over! You win!",
     "ginrummy.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "ginrummy.drawPhase": "Draw a card from the stock or discard pile",

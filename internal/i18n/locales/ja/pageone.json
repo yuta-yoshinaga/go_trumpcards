@@ -1,0 +1,10 @@
+{
+  "helpTitle": "Page One (ページワン)",
+  "helpPlay": "  p <idx>              カードを出す",
+  "helpDraw": "  d                    カードを引く",
+  "helpDeclare": "  dc / declare         「ページワン！」と宣言する",
+  "helpSkip": "  sk / skip            宣言をスキップ（ペナルティで2枚引く）",
+  "helpNextRound": "  nr                   次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               ポイント上限"
+}
