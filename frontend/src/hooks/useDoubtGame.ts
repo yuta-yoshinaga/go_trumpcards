@@ -17,7 +17,7 @@ export const DEFAULT_DOUBT_CONFIG: DoubtConfig = {
 };
 
 /** Available doubt window duration options in seconds. */
-export const DOUBT_WINDOW_OPTIONS = [3, 5, 10] as const;
+export const DOUBT_WINDOW_OPTIONS = [3, 5, 10, 15, 30, 60] as const;
 
 /** CPU memory level options for Doubt. */
 export const CPU_MEMORY_OPTIONS = [
