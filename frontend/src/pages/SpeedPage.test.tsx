@@ -267,6 +267,41 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 3, 1));
   });
 
+  it('keyboard shortcut: ArrowLeft plays the selected card to left pile', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'DIAMOND 2' }));
+    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 3, 0));
+  });
+
+  it('keyboard shortcut: arrow keys are ignored when no card is selected', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('keyboard shortcut: digit beyond hand size is ignored', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(window, { key: '5' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('keyboard shortcut: modifier keys (Ctrl/Alt/Meta) bypass the handler', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(window, { key: '1', ctrlKey: true });
+    fireEvent.keyDown(window, { key: 'ArrowLeft', altKey: true });
+    fireEvent.keyDown(window, { key: '2', metaKey: true });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('renders the auto-flip settings toggle', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
