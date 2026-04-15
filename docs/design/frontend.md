@@ -597,7 +597,7 @@ classDiagram
     class PaiGowPhase {
         <<enumeration>>
         BET = 1
-        SET = 2
+        SET_HANDS = 2
         END = 3
     }
 
