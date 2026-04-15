@@ -47,7 +47,11 @@ export function ChipBetInput({
         max={max}
         step={step}
         value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        onChange={(e) => {
+          const parsed = Number(e.target.value);
+          if (Number.isNaN(parsed)) return;
+          onChange(Math.max(min, Math.min(parsed, max)));
+        }}
         disabled={disabled}
         className={`${widthClass} px-2 py-1 rounded text-sm`}
       />
