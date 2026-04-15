@@ -22,7 +22,9 @@ interface DropZoneProps {
   ariaLabel?: string;
   /**
    * Optional click handler that commits a move using the caller's currently-selected card.
-   * When provided, a keyboard-focusable button appears (visually hidden until focused).
+   * When provided together with `ariaLabel`, a keyboard-focusable button appears (visually
+   * hidden until focused). The wrapper gains `position: relative` automatically so the
+   * focus overlay stays contained; callers do not need to add it to `className`.
    */
   onKeyboardDrop?: () => void;
   /** When true, the keyboard-drop button is rendered disabled (e.g., no card selected). */
@@ -52,9 +54,10 @@ export function DropZone({
   keyboardDropDisabled,
   keyboardDropLabel,
 }: DropZoneProps) {
+  const keyboardAffordance = onKeyboardDrop !== undefined && !!ariaLabel;
   const highlightClass = isDropTarget ? 'ring-2 ring-blue-400 rounded' : '';
-  const combinedClass = [highlightClass, className].filter(Boolean).join(' ');
-  const keyboardAffordance = onKeyboardDrop !== undefined;
+  const positionClass = keyboardAffordance ? 'relative' : '';
+  const combinedClass = [positionClass, highlightClass, className].filter(Boolean).join(' ');
   const label = keyboardDropLabel ?? ariaLabel;
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop is a progressive enhancement; the keyboard affordance below is the accessible path.
@@ -68,7 +71,7 @@ export function DropZone({
       aria-label={keyboardAffordance ? ariaLabel : undefined}
     >
       {children}
-      {keyboardAffordance && label && (
+      {keyboardAffordance && (
         <button
           type="button"
           onClick={onKeyboardDrop}

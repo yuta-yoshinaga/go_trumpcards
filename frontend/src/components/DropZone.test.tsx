@@ -108,6 +108,33 @@ describe('DropZone', () => {
     expect(wrapper.getAttribute('aria-label')).toBe('ファウンデーション');
   });
 
+  it('does not use role="region" when ariaLabel is absent even if onKeyboardDrop is provided', () => {
+    const { container } = render(
+      <DropZone isDropTarget={false} onDragOver={vi.fn()} onDrop={vi.fn()} onKeyboardDrop={vi.fn()}>
+        <span>child</span>
+      </DropZone>,
+    );
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.getAttribute('role')).toBe('presentation');
+    expect(wrapper.getAttribute('aria-label')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('adds position:relative when keyboard affordance is enabled', () => {
+    const { container } = render(
+      <DropZone
+        isDropTarget={false}
+        onDragOver={vi.fn()}
+        onDrop={vi.fn()}
+        ariaLabel="foundation"
+        onKeyboardDrop={vi.fn()}
+      >
+        <span>child</span>
+      </DropZone>,
+    );
+    expect((container.firstChild as HTMLElement).className).toContain('relative');
+  });
+
   it('does not render a keyboard-drop button when onKeyboardDrop is omitted', () => {
     render(
       <DropZone isDropTarget={false} onDragOver={vi.fn()} onDrop={vi.fn()} ariaLabel="foundation">

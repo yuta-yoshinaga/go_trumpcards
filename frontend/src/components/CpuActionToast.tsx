@@ -26,8 +26,10 @@ export function CpuActionToast({ actions }: CpuActionToastProps) {
 
   useEffect(() => {
     if (len > 0 && len !== prevLenRef.current) {
-      triggerRef.current = document.activeElement;
-      setVisible(true);
+      setVisible((prev) => {
+        if (!prev) triggerRef.current = document.activeElement;
+        return true;
+      });
       clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => setVisible(false), DISMISS_MS);
     }
@@ -37,7 +39,11 @@ export function CpuActionToast({ actions }: CpuActionToastProps) {
 
   useEffect(() => {
     if (!visible) {
-      if (triggerRef.current instanceof HTMLElement && document.contains(triggerRef.current)) {
+      if (
+        document.activeElement === document.body &&
+        triggerRef.current instanceof HTMLElement &&
+        document.contains(triggerRef.current)
+      ) {
         triggerRef.current.focus();
       }
       triggerRef.current = null;
