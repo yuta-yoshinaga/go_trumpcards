@@ -12,6 +12,8 @@
   "exchangeLabel": "交換",
   "standLabel": "スタンド",
   "drawOdds": "ドローオッズ:",
+  "oddsFetchFailed": "オッズの取得に失敗しました。",
+  "oddsRetry": "再試行",
   "cpuExchange": "CPU交換:",
   "cpuExchangeEntry": "Player {{idx}}: {{count}}枚交換",
   "exchangeCount": "交換: {{count}}枚",
