@@ -58,7 +58,7 @@ func TestOldMaidCuiController_Method(t *testing.T) {
 		omiMock.AssertCalled(t, "Shuffle")
 	})
 	t.Run("success Exec other", func(t *testing.T) {
-		assert.Equal(t, "コマンドが不明です: other", tomc.Exec("other"))
+		assert.Equal(t, "\x1eERR\x1eコマンドが不明です: other", tomc.Exec("other"))
 	})
 	t.Run("success Exec empty", func(t *testing.T) {
 		assert.Equal(t, "'help' でコマンド一覧を表示します。", tomc.Exec(""))

@@ -10,16 +10,16 @@ import (
 
 func TestUnknownCommandMessage(t *testing.T) {
 	t.Run("no suggestion", func(t *testing.T) {
-		assert.Equal(t, "コマンドが不明です: foo", unknownCommandMessage("foo", nil))
+		assert.Equal(t, "\x1eERR\x1eコマンドが不明です: foo", unknownCommandMessage("foo", nil))
 	})
 	t.Run("empty command", func(t *testing.T) {
-		assert.Equal(t, "コマンドが不明です: ", unknownCommandMessage("", nil))
+		assert.Equal(t, "\x1eERR\x1eコマンドが不明です: ", unknownCommandMessage("", nil))
 	})
 	t.Run("with suggestion", func(t *testing.T) {
-		assert.Equal(t, "コマンドが不明です: hti。もしかして 'hit' ですか？", unknownCommandMessage("hti", []string{"hit", "stand"}))
+		assert.Equal(t, "\x1eERR\x1eコマンドが不明です: hti。もしかして 'hit' ですか？", unknownCommandMessage("hti", []string{"hit", "stand"}))
 	})
 	t.Run("no close match", func(t *testing.T) {
-		assert.Equal(t, "コマンドが不明です: zzzzzzz", unknownCommandMessage("zzzzzzz", []string{"hit", "stand"}))
+		assert.Equal(t, "\x1eERR\x1eコマンドが不明です: zzzzzzz", unknownCommandMessage("zzzzzzz", []string{"hit", "stand"}))
 	})
 }
 
@@ -78,11 +78,11 @@ func TestExecCuiCommand(t *testing.T) {
 
 	t.Run("unhandled game command with suggestion", func(t *testing.T) {
 		result := execCuiCommand("gam", resetFn, validCmds, gameHandler)
-		assert.Equal(t, "コマンドが不明です: gam。もしかして 'game' ですか？", result)
+		assert.Equal(t, "\x1eERR\x1eコマンドが不明です: gam。もしかして 'game' ですか？", result)
 	})
 
 	t.Run("unhandled game command no suggestion", func(t *testing.T) {
 		result := execCuiCommand("zzzzzzz", resetFn, validCmds, gameHandler)
-		assert.Equal(t, "コマンドが不明です: zzzzzzz", result)
+		assert.Equal(t, "\x1eERR\x1eコマンドが不明です: zzzzzzz", result)
 	})
 }

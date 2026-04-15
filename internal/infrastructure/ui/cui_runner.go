@@ -63,8 +63,17 @@ func RunInteractiveCuiLoop(manager *GameManager) {
 			fmt.Println(i18n.T("bye"))
 			break
 		}
-		fmt.Println(res)
+		printResult(res)
 	}
+}
+
+// printResult writes res to stdout, or to stderr when marked as an error.
+func printResult(res string) {
+	if body, isErr := i18n.StripErrorPrefix(res); isErr {
+		fmt.Fprintln(os.Stderr, body)
+		return
+	}
+	fmt.Println(res)
 }
 
 // RunCuiLoop 標準CUIゲームループを実行する
@@ -92,7 +101,7 @@ func RunCuiLoop(controller CuiExecer, helpLines []string) {
 			fmt.Println(i18n.T("bye"))
 			break
 		}
-		fmt.Println(res)
+		printResult(res)
 	}
 }
 
