@@ -430,6 +430,27 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Page One
+	if err := worker.RegisterKV(mux, "/pageone/exec", "pageone:",
+		func() usecase.PageOneInteractorIF {
+			config := domain.DefaultPageOneConfig()
+			players := []*domain.PageOnePlayer{
+				domain.NewPageOnePlayer(true),
+				domain.NewPageOnePlayer(false),
+				domain.NewPageOnePlayer(false),
+				domain.NewPageOnePlayer(false),
+			}
+			po := domain.NewPageOne(domain.NewTrumpCards(0), players, config)
+			return usecase.NewPageOneInteractor(po, new(presenter.PageOneWebPresenter))
+		},
+		func(data []byte) (usecase.PageOneInteractorIF, error) {
+			return usecase.RestorePageOneInteractor(data, new(presenter.PageOneWebPresenter))
+		},
+		controller.NewPageOneWebControllerWithProvider,
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

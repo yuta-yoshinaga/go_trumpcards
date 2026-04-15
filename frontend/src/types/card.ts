@@ -864,6 +864,41 @@ export interface CrazyEightsResponse {
   config: CrazyEightsConfig;
 }
 
+// --- Page One (ページワン) ---
+
+/** Page One player data with scores. */
+export interface PageOnePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  hasDeclared: boolean;
+}
+
+/** Page One game configuration. */
+export interface PageOneConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** Full Page One game state returned from the API. */
+export interface PageOneResponse {
+  players: PageOnePlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: PageOneConfig;
+}
+
 // --- Gin Rummy (ジンラミー) ---
 
 /** Gin Rummy player data with scores. */

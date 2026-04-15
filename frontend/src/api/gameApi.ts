@@ -33,6 +33,7 @@ import type {
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
+  PageOneResponse,
   PaiGowResponse,
   PigsTailResponse,
   PineappleResponse,
@@ -94,6 +95,7 @@ const workerUrl: Record<string, string> = {
   daifugo: WORKER_CLASSIC,
   sevens: WORKER_CLASSIC,
   crazyeights: WORKER_CLASSIC,
+  pageone: WORKER_CLASSIC,
   speed: WORKER_CLASSIC,
   war: WORKER_CLASSIC,
   fiftyone: WORKER_CLASSIC,
@@ -602,6 +604,26 @@ export const crazyeightsApi = {
     }),
 };
 
+/** Configuration options for Page One game settings. */
+export interface PageOneConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Page One /pageone/exec endpoint. */
+export const pageoneApi = {
+  exec: (
+    command: 'reset' | 'play' | 'draw' | 'declare' | 'skip' | 'nextround',
+    cardIndex?: number,
+    config?: PageOneConfigInput,
+  ) =>
+    gameExec<PageOneResponse>('pageone', {
+      command,
+      cardIndex,
+      config,
+    }),
+};
+
 /** Configuration options for Gin Rummy game settings. */
 export interface GinRummyConfigInput {
   cpuDifficulty?: number;
@@ -1078,6 +1100,7 @@ const games = [
   'whist',
   'letitride',
   'pokersquares',
+  'pageone',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -69,7 +69,8 @@
     "yukon": "ユーコン",
     "whist": "ホイスト",
     "letitride": "レットイットライド",
-    "pokersquares": "ポーカー・スクエア"
+    "pokersquares": "ポーカー・スクエア",
+    "pageone": "ページワン"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -220,6 +221,11 @@
     "crazyeights.playPhase": "カードを出すか、山札から引いてください",
     "crazyeights.chooseSuitPhase": "スートを選択してください",
     "crazyeights.roundEnd": "ラウンド終了",
+    "pageone.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "pageone.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "pageone.playPhase": "カードを出すか、山札から引いてください",
+    "pageone.mustDeclarePhase": "手札が残り1枚です！「ページワン！」と宣言してください",
+    "pageone.roundEnd": "ラウンド終了",
     "ginrummy.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "ginrummy.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "ginrummy.drawPhase": "山札または捨て札から1枚引いてください",

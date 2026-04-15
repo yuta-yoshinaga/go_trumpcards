@@ -180,6 +180,14 @@ export const CrazyEightsPhase = {
   GAME_END: 3,
 } as const;
 
+/** Page One phase constants (sync: internal/domain/PageOne.go). */
+export const PageOnePhase = {
+  PLAY: 0,
+  MUST_DECLARE: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Crazy Eights suit constants (sync: internal/domain/Card.go). */
 export const CrazyEightsSuit = {
   SPADE: 1,
