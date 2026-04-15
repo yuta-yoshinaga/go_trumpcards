@@ -8,6 +8,7 @@ import (
 
 	mockUsecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // --- quit ---
@@ -233,7 +234,7 @@ func TestPokerCuiController_Empty(t *testing.T) {
 func TestPokerCuiController_Unknown(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Equal(t, "コマンドが不明です: xyz", c.Exec("xyz"))
+	assert.Equal(t, i18n.ErrorPrefix+"コマンドが不明です: xyz", c.Exec("xyz"))
 }
 
 // --- betting limit ---

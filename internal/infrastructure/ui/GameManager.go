@@ -218,7 +218,7 @@ func (m *GameManager) switchGame(name string) string {
 		if suggestion := cuiutil.SuggestCommand(name, m.gameOrder, 2); suggestion != "" {
 			msg += "\n  " + i18n.Tf("didYouMean", "name", suggestion)
 		}
-		return msg
+		return i18n.MarkError(msg)
 	}
 	if name == m.currentGame {
 		return i18n.Tf("alreadyPlaying", "name", name)

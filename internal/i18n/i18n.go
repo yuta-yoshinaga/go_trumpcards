@@ -14,6 +14,28 @@ var localesFS embed.FS
 // QuitSentinel is the internal protocol value returned by controllers on quit.
 const QuitSentinel = "bye."
 
+// ErrorPrefix marks a CUI result as an error to be routed to stderr.
+// The prefix itself is stripped before display. Using ASCII Record Separator (0x1E)
+// keeps it invisible to users and unlikely to collide with any real content.
+const ErrorPrefix = "\x1eERR\x1e"
+
+// MarkError prefixes msg so the CUI runner routes it to stderr.
+// Returns msg unchanged if it is empty or already marked.
+func MarkError(msg string) string {
+	if msg == "" || strings.HasPrefix(msg, ErrorPrefix) {
+		return msg
+	}
+	return ErrorPrefix + msg
+}
+
+// StripErrorPrefix removes ErrorPrefix from msg and reports whether it was present.
+func StripErrorPrefix(msg string) (body string, isError bool) {
+	if strings.HasPrefix(msg, ErrorPrefix) {
+		return msg[len(ErrorPrefix):], true
+	}
+	return msg, false
+}
+
 var currentLang = "ja"
 var translations = map[string]string{}
 

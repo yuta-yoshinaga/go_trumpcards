@@ -14,9 +14,9 @@ const suggestMaxDistance = 2
 // validCommands が指定されている場合、Levenshtein距離に基づく提案を含める。
 func unknownCommandMessage(command string, validCommands []string) string {
 	if suggestion := cuiutil.SuggestCommand(command, validCommands, suggestMaxDistance); suggestion != "" {
-		return i18n.Tf("unknownCommandWithSuggestion", "cmd", command, "suggestion", suggestion)
+		return i18n.MarkError(i18n.Tf("unknownCommandWithSuggestion", "cmd", command, "suggestion", suggestion))
 	}
-	return i18n.Tf("unknownCommand", "cmd", command)
+	return i18n.MarkError(i18n.Tf("unknownCommand", "cmd", command))
 }
 
 // commonCommands は全CUIコントローラーで共通のコマンド。
