@@ -110,6 +110,13 @@ func (u *Updater) Exec() error {
 			_, _ = fmt.Fprintln(u.errWriter, i18n.T("updateNonInteractive"))
 			return errors.New("non-interactive stdin: --yes required")
 		}
+		// Fscanln returns a non-EOF error when it reads a blank line (no token)
+		// or only whitespace; treat that as the empty-input default path (cancel).
+		// Any other unexpected I/O failure should surface to the user.
+		if scanErr != nil && !isBlankLineScanErr(scanErr) {
+			_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("inputReadError", "error", scanErr.Error()))
+			return scanErr
+		}
 		ans := strings.ToLower(strings.TrimSpace(answer))
 		if ans != "y" && ans != "yes" {
 			_, _ = fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
@@ -134,6 +141,13 @@ func (u *Updater) Exec() error {
 
 	_, _ = fmt.Fprintln(u.writer, i18n.Tf("updateSuccess", "version", release.TagName))
 	return nil
+}
+
+// isBlankLineScanErr reports whether err is the "unexpected newline" error
+// returned by fmt.Fscanln when the user presses Enter with no input — we want
+// to treat that as the default-no path, not a hard I/O failure.
+func isBlankLineScanErr(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "unexpected newline")
 }
 
 // progressReader wraps an io.Reader to display download progress.

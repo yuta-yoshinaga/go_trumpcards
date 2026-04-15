@@ -3,6 +3,7 @@ package update
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -173,6 +174,35 @@ func TestExec_NonInteractiveEOF_ReturnsErrorWithHint(t *testing.T) {
 	assert.Contains(t, errOut.String(), "--yes", "should hint at --yes")
 	assert.NotContains(t, out.String(), "cancelled", "must not print the 'cancelled' path on EOF")
 	assert.NotContains(t, out.String(), "キャンセル", "must not print the 'cancelled' path on EOF")
+}
+
+type errReader struct{ err error }
+
+func (r *errReader) Read(p []byte) (int, error) { return 0, r.err }
+
+func TestExec_ScanIOError_Surfaces(t *testing.T) {
+	release := ghRelease{TagName: "v2.0.0"}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	errOut := &bytes.Buffer{}
+	ioErr := errors.New("stdin broken pipe")
+	u := &Updater{
+		currentVersion: "1.0.0",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         &errReader{err: ioErr},
+		writer:         &bytes.Buffer{},
+		errWriter:      errOut,
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+	}
+
+	err := u.Exec()
+	require.Error(t, err)
+	assert.Contains(t, errOut.String(), "stdin broken pipe", "unexpected scan I/O error must be surfaced")
 }
 
 func TestProgressReader_NonTTY_DoesNotWriteCarriageReturns(t *testing.T) {

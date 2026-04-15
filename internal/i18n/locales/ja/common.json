@@ -46,7 +46,6 @@
   "cliWebPortInUseHint": "ヒント: 別のポートを指定してください (例: trumpcards web --port 3000)",
   "cliSupportedLangs": "対応している言語: ja, en",
   "cliHelpUnknownGame": "不明なゲームです: \"{{name}}\"。'trumpcards games' でゲーム一覧を確認できます。",
-  "cliHelpNotAGame": "\"{{name}}\" は CLI コマンドであり、ゲームではありません。'trumpcards help' で全体のヘルプを確認できます。",
   "updateNonInteractive": "標準入力が非対話モードです: --yes を付けて再実行してください。",
   "cliLangEnvFallback": "注意: LANG=\"{{lang}}\" はサポートされていない言語です。ja をデフォルトとして使用します (TRUMPCARDS_QUIET=1 で抑止可能)",
   "cliSubcommandFlagError": "エラー: trumpcards {{cmd}}: {{err}}",

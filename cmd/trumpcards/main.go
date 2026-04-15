@@ -78,7 +78,7 @@ func run() int {
 		if supportedLangs[prefix] {
 			detectedLang = prefix
 		} else if os.Getenv("TRUMPCARDS_QUIET") == "" {
-			langEnvWarn = prefix
+			langEnvWarn = envLang
 		}
 	}
 	if *lang != "" {
@@ -331,28 +331,35 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 // warns about extra positional arguments. Returns (fs, exitCode, ok). If ok is
 // false, the caller should return exitCode immediately.
 func parseSubFlags(name string, setup func(*flag.FlagSet)) (*flag.FlagSet, int, bool) {
+	return parseSubFlagsTo(name, flag.Args()[1:], setup, os.Stdout, os.Stderr)
+}
+
+// parseSubFlagsTo is the testable core of parseSubFlags: it parses args with a
+// subcommand FlagSet, wires the shared builtin help text as the usage, and
+// writes help/diagnostics to the given streams.
+func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdout, stderr io.Writer) (*flag.FlagSet, int, bool) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(io.Discard) // suppress Go's raw English error/usage text
 	setup(fs)
 	printHelp := func() {
 		if lines, ok := builtinSubcommandHelp[name]; ok {
 			for _, line := range lines {
-				_, _ = fmt.Fprintln(os.Stdout, line)
+				_, _ = fmt.Fprintln(stdout, line)
 			}
 		}
 	}
 	fs.Usage = printHelp
-	if err := fs.Parse(flag.Args()[1:]); err != nil {
+	if err := fs.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			printHelp()
 			return nil, 0, false
 		}
-		fmt.Fprintln(os.Stderr, i18n.Tf("cliSubcommandFlagError", "cmd", name, "err", err.Error()))
-		fmt.Fprintln(os.Stderr, i18n.Tf("cliTryHelp", "cmd", name))
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliSubcommandFlagError", "cmd", name, "err", err.Error()))
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliTryHelp", "cmd", name))
 		return nil, 2, false
 	}
 	if fs.NArg() > 0 {
-		fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(fs.Args(), " ")))
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(fs.Args(), " ")))
 	}
 	return fs, 0, true
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"strings"
 	"testing"
 
@@ -199,6 +200,32 @@ func TestRunHelpCommand_BuiltinSubcommand(t *testing.T) {
 			assert.NotContains(t, stderr.String(), "not a game")
 		})
 	}
+}
+
+func TestParseSubFlagsTo_HelpFlag_WritesHelpToStdoutAndExitsZero(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	_, code, ok := parseSubFlagsTo("web", []string{"--help"}, func(fs *flag.FlagSet) {
+		fs.String("port", "", "port")
+	}, &stdout, &stderr)
+	assert.False(t, ok)
+	assert.Equal(t, 0, code)
+	assert.Contains(t, stdout.String(), "USAGE:")
+	assert.Contains(t, stdout.String(), "trumpcards web")
+	assert.Empty(t, stderr.String())
+}
+
+func TestParseSubFlagsTo_UnknownFlag_WritesI18nErrorAndExit2(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	_, code, ok := parseSubFlagsTo("web", []string{"--nope"}, func(fs *flag.FlagSet) {
+		fs.String("port", "", "port")
+	}, &stdout, &stderr)
+	assert.False(t, ok)
+	assert.Equal(t, 2, code)
+	// Must not leak Go's raw "flag provided but not defined" line to either stream
+	// without being wrapped in our i18n envelope.
+	assert.NotContains(t, stdout.String(), "flag provided but not defined")
+	assert.Contains(t, stderr.String(), "web")
+	assert.Contains(t, stderr.String(), "help web")
 }
 
 func TestBuiltinSubcommandHelp_CoversAllNonGameSubcommands(t *testing.T) {
