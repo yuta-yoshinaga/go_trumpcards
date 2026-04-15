@@ -198,10 +198,10 @@ function MemoryPageContent() {
 
             {/* Board: responsive grid (4/8/13 columns); on lg fills remaining height */}
             <div
-              className="my-3 lg:my-1 p-2 lg:p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
+              className="my-3 lg:my-1 p-1 rounded bg-black/40 lg:flex-1 lg:min-h-0 lg:overflow-hidden"
               data-tutorial="mem-board"
             >
-              <div className="grid grid-cols-4 gap-1 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13 lg:grid-rows-4 lg:h-full">
+              <div className="grid grid-cols-7 gap-0.5 sm:gap-1 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 lg:grid-rows-4 lg:h-full">
                 {state.board.map((bc, idx) => (
                   <button
                     type="button"
