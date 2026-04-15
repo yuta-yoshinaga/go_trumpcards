@@ -24,22 +24,14 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PokerSquaresResponse } from '../types/card';
 import { PokerSquaresPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
+import { POKERSQUARES_HELP, parsePokerSquaresCommand } from '../utils/cli/commands/pokersquaresCommands';
+import { formatPokerSquaresState } from '../utils/cli/formatters/pokersquaresFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
 const POKER_SQUARES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PokerSquaresPhase.PLAYING]: 'playing',
   [PokerSquaresPhase.COMPLETE]: 'complete',
 };
-
-/** CLI parser stub: Poker Squares does not yet support CLI commands. */
-function parsePokerSquaresCommand(): { error: string } {
-  return { error: 'CLI not implemented' };
-}
-
-/** CLI formatter stub: returns an empty string since CLI is not implemented. */
-function formatPokerSquaresState(): string {
-  return '';
-}
 
 /** Renders the Poker Squares game page with a 5x5 placement grid and per-row/column scores. */
 export function PokerSquaresPage() {
@@ -55,7 +47,7 @@ export function PokerSquaresPage() {
       gameName: 'pokersquares',
       parseCommand: parsePokerSquaresCommand,
       formatResponse: formatPokerSquaresState,
-      helpText: [],
+      helpText: POKERSQUARES_HELP,
     }),
     [],
   );
