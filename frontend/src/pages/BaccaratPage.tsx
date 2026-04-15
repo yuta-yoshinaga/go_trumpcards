@@ -3,6 +3,7 @@ import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -385,21 +386,13 @@ function BaccaratPageContent() {
             />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="bac-bet-controls">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="baccarat-bet-amount" className="text-white text-sm">
-                    {t('label.betAmount')}
-                  </label>
-                  <input
-                    id="baccarat-bet-amount"
-                    type="number"
-                    min={10}
-                    max={state.chips}
-                    step={10}
-                    value={betAmount}
-                    onChange={(e) => setBetAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
+                <ChipBetInput
+                  id="baccarat-bet-amount"
+                  label={t('label.betAmount')}
+                  value={betAmount}
+                  onChange={setBetAmount}
+                  max={state.chips}
+                />
                 <div className="flex items-center gap-2">
                   <label htmlFor="baccarat-bet-type" className="text-white text-sm">
                     {t('label.betTarget')}
@@ -416,36 +409,24 @@ function BaccaratPageContent() {
                   </select>
                 </div>
                 {/* Side bet inputs */}
-                <div className="flex items-center gap-2">
-                  <label htmlFor="baccarat-pp-bet" className="text-white text-sm">
-                    {t('sideBet.playerPair')}
-                  </label>
-                  <input
-                    id="baccarat-pp-bet"
-                    type="number"
-                    min={0}
-                    max={state.chips}
-                    step={10}
-                    value={playerPairBet}
-                    onChange={(e) => setPlayerPairBet(Number(e.target.value))}
-                    className="w-20 px-2 py-1 rounded text-sm"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="baccarat-bp-bet" className="text-white text-sm">
-                    {t('sideBet.bankerPair')}
-                  </label>
-                  <input
-                    id="baccarat-bp-bet"
-                    type="number"
-                    min={0}
-                    max={state.chips}
-                    step={10}
-                    value={bankerPairBet}
-                    onChange={(e) => setBankerPairBet(Number(e.target.value))}
-                    className="w-20 px-2 py-1 rounded text-sm"
-                  />
-                </div>
+                <ChipBetInput
+                  id="baccarat-pp-bet"
+                  label={t('sideBet.playerPair')}
+                  value={playerPairBet}
+                  onChange={setPlayerPairBet}
+                  max={state.chips}
+                  min={0}
+                  widthClass="w-20"
+                />
+                <ChipBetInput
+                  id="baccarat-bp-bet"
+                  label={t('sideBet.bankerPair')}
+                  value={bankerPairBet}
+                  onChange={setBankerPairBet}
+                  max={state.chips}
+                  min={0}
+                  widthClass="w-20"
+                />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
                 </button>
