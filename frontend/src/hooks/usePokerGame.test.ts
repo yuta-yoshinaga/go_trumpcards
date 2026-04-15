@@ -272,6 +272,36 @@ describe('usePokerGame', () => {
     expect(result.current.odds).toBeNull();
   });
 
+  it('sets oddsError when API rejects, clears it on next success via retryOdds', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    const { result } = renderHook(() => usePokerGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.canExchange).toBe(true));
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockRejectedValueOnce(new Error('network down'));
+
+    act(() => result.current.toggleCard(0));
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    vi.useRealTimers();
+    await waitFor(() => expect(result.current.oddsError).toBe('oddsFetchFailed'));
+    expect(result.current.odds).toBeNull();
+
+    // Retry succeeds → error cleared
+    const oddsData = [{ handRank: 1, handName: 'ワンペア', probability: 0.4, count: 4, total: 10 }];
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockResolvedValue({ ...exchangeState, odds: oddsData });
+    act(() => result.current.retryOdds());
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    vi.useRealTimers();
+
+    await waitFor(() => expect(result.current.odds).toEqual(oddsData));
+    expect(result.current.oddsError).toBeNull();
+  });
+
   it('cancels pending debounce timer on unmount (clearTimeout branch)', async () => {
     mockExec.mockResolvedValue(exchangeState);
     const { result, unmount } = renderHook(() => usePokerGame(), { wrapper: createWrapper() });

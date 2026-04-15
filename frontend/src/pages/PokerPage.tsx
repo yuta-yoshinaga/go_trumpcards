@@ -104,8 +104,20 @@ function PokerPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec, retry, selected, toggleCard, clearSelection, odds, canExchange } =
-    usePokerGame();
+  const {
+    state,
+    loading,
+    error,
+    exec,
+    retry,
+    selected,
+    toggleCard,
+    clearSelection,
+    odds,
+    oddsError,
+    retryOdds,
+    canExchange,
+  } = usePokerGame();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('poker', state);
 
   // CLI mode
@@ -354,6 +366,22 @@ function PokerPageContent() {
                       <span>{(o.probability * 100).toFixed(1)}%</span>
                     </div>
                   ))}
+              </div>
+            )}
+            {canExchange && oddsError && (
+              <div
+                role="alert"
+                className="bg-ds-error/20 border border-ds-error rounded-lg px-4 py-2 mb-2 text-white text-xs flex items-center justify-between gap-2"
+                data-testid="odds-error"
+              >
+                <span>{t('oddsFetchFailed')}</span>
+                <button
+                  type="button"
+                  onClick={retryOdds}
+                  className="underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
+                >
+                  {t('oddsRetry')}
+                </button>
               </div>
             )}
 

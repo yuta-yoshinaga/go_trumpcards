@@ -120,6 +120,41 @@ describe('CpuActionToast', () => {
     expect(screen.getByRole('status').className).not.toContain('slideDown');
   });
 
+  it('does not dismiss on Escape while an aria-modal dialog is open', () => {
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    document.body.appendChild(dialog);
+
+    const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
+    render(<CpuActionToast actions={actions} />);
+    act(() => {
+      fireEvent.keyDown(window, { key: 'Escape' });
+    });
+    expect(screen.getByRole('status')).toBeInTheDocument();
+
+    document.body.removeChild(dialog);
+  });
+
+  it('restores focus to the trigger element when dismissed', () => {
+    const trigger = document.createElement('button');
+    trigger.textContent = 'trigger';
+    document.body.appendChild(trigger);
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
+
+    const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
+    const { rerender } = render(<CpuActionToast actions={undefined} />);
+    rerender(<CpuActionToast actions={actions} />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+
+    act(() => {
+      fireEvent.keyDown(window, { key: 'Escape' });
+    });
+    expect(document.activeElement).toBe(trigger);
+    document.body.removeChild(trigger);
+  });
+
   it('applies the slide-down animation when reduced motion is off', () => {
     mockReduced.mockReturnValue(false);
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];

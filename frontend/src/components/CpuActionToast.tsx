@@ -20,11 +20,13 @@ export function CpuActionToast({ actions }: CpuActionToastProps) {
   const [visible, setVisible] = useState(false);
   const prevLenRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const triggerRef = useRef<Element | null>(null);
 
   const len = actions?.length ?? 0;
 
   useEffect(() => {
     if (len > 0 && len !== prevLenRef.current) {
+      triggerRef.current = document.activeElement;
       setVisible(true);
       clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => setVisible(false), DISMISS_MS);
@@ -34,9 +36,17 @@ export function CpuActionToast({ actions }: CpuActionToastProps) {
   }, [len]);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      if (triggerRef.current instanceof HTMLElement && document.contains(triggerRef.current)) {
+        triggerRef.current.focus();
+      }
+      triggerRef.current = null;
+      return;
+    }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setVisible(false);
+      if (e.key !== 'Escape') return;
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+      setVisible(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -62,7 +72,7 @@ export function CpuActionToast({ actions }: CpuActionToastProps) {
         type="button"
         onClick={() => setVisible(false)}
         aria-label={t('button.dismiss')}
-        className="absolute top-0 right-1 px-2 py-0.5 text-white/70 hover:text-white focus:outline-none focus:ring-2 focus:ring-ds-accent"
+        className="absolute top-0 right-1 px-2 py-0.5 text-white/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
       >
         ×
       </button>
