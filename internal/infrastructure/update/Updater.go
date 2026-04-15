@@ -29,12 +29,20 @@ type Updater struct {
 	errWriter      io.Writer
 	httpClient     *http.Client
 	autoConfirm    bool
+	progressIsTTY  bool
 }
 
 // SetAutoConfirm enables or disables the automatic confirmation of updates,
 // skipping the interactive prompt. Useful for CI/CD and scripted environments.
 func (u *Updater) SetAutoConfirm(v bool) {
 	u.autoConfirm = v
+}
+
+// SetProgressIsTTY tells the Updater whether the progress-output stream is a
+// TTY. When false, the download progress is not rendered with carriage returns
+// so that logs captured via tee/redirect remain readable.
+func (u *Updater) SetProgressIsTTY(v bool) {
+	u.progressIsTTY = v
 }
 
 // NewUpdater creates a new Updater.
@@ -97,7 +105,18 @@ func (u *Updater) Exec() error {
 	} else {
 		_, _ = fmt.Fprint(u.writer, i18n.Tf("updateAvailable", "current", u.currentVersion, "version", release.TagName)+" ")
 		var answer string
-		_, _ = fmt.Fscanln(u.reader, &answer)
+		_, scanErr := fmt.Fscanln(u.reader, &answer)
+		if errors.Is(scanErr, io.EOF) {
+			_, _ = fmt.Fprintln(u.errWriter, i18n.T("updateNonInteractive"))
+			return errors.New("non-interactive stdin: --yes required")
+		}
+		// Fscanln returns a non-EOF error when it reads a blank line (no token)
+		// or only whitespace; treat that as the empty-input default path (cancel).
+		// Any other unexpected I/O failure should surface to the user.
+		if scanErr != nil && !isBlankLineScanErr(scanErr) {
+			_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("inputReadError", "error", scanErr.Error()))
+			return scanErr
+		}
 		ans := strings.ToLower(strings.TrimSpace(answer))
 		if ans != "y" && ans != "yes" {
 			_, _ = fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
@@ -124,17 +143,28 @@ func (u *Updater) Exec() error {
 	return nil
 }
 
+// isBlankLineScanErr reports whether err is the "unexpected newline" error
+// returned by fmt.Fscanln when the user presses Enter with no input — we want
+// to treat that as the default-no path, not a hard I/O failure.
+func isBlankLineScanErr(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "unexpected newline")
+}
+
 // progressReader wraps an io.Reader to display download progress.
 type progressReader struct {
 	reader  io.Reader
 	total   int64
 	current int64
 	writer  io.Writer
+	isTTY   bool
 }
 
 func (pr *progressReader) Read(p []byte) (int, error) {
 	n, err := pr.reader.Read(p)
 	pr.current += int64(n)
+	if !pr.isTTY {
+		return n, err
+	}
 	if pr.total > 0 {
 		pct := min(100, pr.current*100/pr.total)
 		_, _ = fmt.Fprintf(pr.writer, "\r  %d%% (%s / %s)", pct, formatBytes(pr.current), formatBytes(pr.total))
@@ -175,26 +205,32 @@ func (u *Updater) downloadAndApply(assetName, assetURL string) error {
 		reader: assetResp.Body,
 		total:  assetResp.ContentLength,
 		writer: u.writer,
+		isTTY:  u.progressIsTTY,
+	}
+	endProgress := func() {
+		if u.progressIsTTY {
+			_, _ = fmt.Fprintln(u.writer)
+		}
 	}
 
 	// For tar.gz, stream directly without buffering the entire archive in memory.
 	if strings.HasSuffix(strings.ToLower(assetName), ".tar.gz") {
 		binaryReader, err := u.extractFromTarGzStream(body)
 		if err != nil {
-			_, _ = fmt.Fprintln(u.writer)
+			endProgress()
 			return err
 		}
-		_, _ = fmt.Fprintln(u.writer)
+		endProgress()
 		return selfupdate.Apply(binaryReader, selfupdate.Options{})
 	}
 
 	// For zip, we need io.ReaderAt so we must read the entire archive into memory.
 	assetData, err := io.ReadAll(body)
 	if err != nil {
-		_, _ = fmt.Fprintln(u.writer)
+		endProgress()
 		return err
 	}
-	_, _ = fmt.Fprintln(u.writer)
+	endProgress()
 
 	binaryName := "trumpcards.exe"
 	binaryReader, err := u.extractFromZip(assetData, binaryName)
