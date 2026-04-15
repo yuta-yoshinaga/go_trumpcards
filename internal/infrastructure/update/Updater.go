@@ -29,12 +29,20 @@ type Updater struct {
 	errWriter      io.Writer
 	httpClient     *http.Client
 	autoConfirm    bool
+	progressIsTTY  bool
 }
 
 // SetAutoConfirm enables or disables the automatic confirmation of updates,
 // skipping the interactive prompt. Useful for CI/CD and scripted environments.
 func (u *Updater) SetAutoConfirm(v bool) {
 	u.autoConfirm = v
+}
+
+// SetProgressIsTTY tells the Updater whether the progress-output stream is a
+// TTY. When false, the download progress is not rendered with carriage returns
+// so that logs captured via tee/redirect remain readable.
+func (u *Updater) SetProgressIsTTY(v bool) {
+	u.progressIsTTY = v
 }
 
 // NewUpdater creates a new Updater.
@@ -97,7 +105,11 @@ func (u *Updater) Exec() error {
 	} else {
 		_, _ = fmt.Fprint(u.writer, i18n.Tf("updateAvailable", "current", u.currentVersion, "version", release.TagName)+" ")
 		var answer string
-		_, _ = fmt.Fscanln(u.reader, &answer)
+		_, scanErr := fmt.Fscanln(u.reader, &answer)
+		if errors.Is(scanErr, io.EOF) {
+			_, _ = fmt.Fprintln(u.errWriter, i18n.T("updateNonInteractive"))
+			return errors.New("non-interactive stdin: --yes required")
+		}
 		ans := strings.ToLower(strings.TrimSpace(answer))
 		if ans != "y" && ans != "yes" {
 			_, _ = fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
@@ -130,11 +142,15 @@ type progressReader struct {
 	total   int64
 	current int64
 	writer  io.Writer
+	isTTY   bool
 }
 
 func (pr *progressReader) Read(p []byte) (int, error) {
 	n, err := pr.reader.Read(p)
 	pr.current += int64(n)
+	if !pr.isTTY {
+		return n, err
+	}
 	if pr.total > 0 {
 		pct := min(100, pr.current*100/pr.total)
 		_, _ = fmt.Fprintf(pr.writer, "\r  %d%% (%s / %s)", pct, formatBytes(pr.current), formatBytes(pr.total))
@@ -175,26 +191,32 @@ func (u *Updater) downloadAndApply(assetName, assetURL string) error {
 		reader: assetResp.Body,
 		total:  assetResp.ContentLength,
 		writer: u.writer,
+		isTTY:  u.progressIsTTY,
+	}
+	endProgress := func() {
+		if u.progressIsTTY {
+			_, _ = fmt.Fprintln(u.writer)
+		}
 	}
 
 	// For tar.gz, stream directly without buffering the entire archive in memory.
 	if strings.HasSuffix(strings.ToLower(assetName), ".tar.gz") {
 		binaryReader, err := u.extractFromTarGzStream(body)
 		if err != nil {
-			_, _ = fmt.Fprintln(u.writer)
+			endProgress()
 			return err
 		}
-		_, _ = fmt.Fprintln(u.writer)
+		endProgress()
 		return selfupdate.Apply(binaryReader, selfupdate.Options{})
 	}
 
 	// For zip, we need io.ReaderAt so we must read the entire archive into memory.
 	assetData, err := io.ReadAll(body)
 	if err != nil {
-		_, _ = fmt.Fprintln(u.writer)
+		endProgress()
 		return err
 	}
-	_, _ = fmt.Fprintln(u.writer)
+	endProgress()
 
 	binaryName := "trumpcards.exe"
 	binaryReader, err := u.extractFromZip(assetData, binaryName)

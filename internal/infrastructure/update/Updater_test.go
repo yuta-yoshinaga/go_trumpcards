@@ -148,6 +148,59 @@ func TestExec_FetchError(t *testing.T) {
 	assert.Contains(t, err.Error(), "500")
 }
 
+func TestExec_NonInteractiveEOF_ReturnsErrorWithHint(t *testing.T) {
+	release := ghRelease{TagName: "v2.0.0"}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	out := &bytes.Buffer{}
+	errOut := &bytes.Buffer{}
+	u := &Updater{
+		currentVersion: "1.0.0",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         strings.NewReader(""), // immediate EOF, no newline
+		writer:         out,
+		errWriter:      errOut,
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+	}
+
+	err := u.Exec()
+	require.Error(t, err, "EOF on stdin must be a hard error, not a silent cancel")
+	assert.Contains(t, errOut.String(), "--yes", "should hint at --yes")
+	assert.NotContains(t, out.String(), "cancelled", "must not print the 'cancelled' path on EOF")
+	assert.NotContains(t, out.String(), "キャンセル", "must not print the 'cancelled' path on EOF")
+}
+
+func TestProgressReader_NonTTY_DoesNotWriteCarriageReturns(t *testing.T) {
+	src := strings.NewReader("hello world")
+	out := &bytes.Buffer{}
+	pr := &progressReader{reader: src, total: 11, writer: out, isTTY: false}
+	buf := make([]byte, 4)
+	for {
+		if _, err := pr.Read(buf); err != nil {
+			break
+		}
+	}
+	assert.Empty(t, out.String(), "non-TTY progress reader must not write progress output")
+}
+
+func TestProgressReader_TTY_WritesCarriageReturns(t *testing.T) {
+	src := strings.NewReader("hello world")
+	out := &bytes.Buffer{}
+	pr := &progressReader{reader: src, total: 11, writer: out, isTTY: true}
+	buf := make([]byte, 4)
+	for {
+		if _, err := pr.Read(buf); err != nil {
+			break
+		}
+	}
+	assert.Contains(t, out.String(), "\r")
+}
+
 func TestFindAsset(t *testing.T) {
 	u := NewUpdater("1.0.0", nil, &bytes.Buffer{}, &bytes.Buffer{})
 

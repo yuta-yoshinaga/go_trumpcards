@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -66,9 +65,11 @@ func run() int {
 
 	// Language detection: --lang > LANG env > default "ja".
 	// An explicit --lang with an unsupported value is a hard error (exit 2);
-	// LANG env values silently fall back to "ja" for backwards compatibility.
+	// an unsupported LANG env value emits a one-line warning and falls back to "ja"
+	// (suppress with TRUMPCARDS_QUIET=1).
 	supportedLangs := map[string]bool{"ja": true, "en": true}
 	detectedLang := "ja"
+	var langEnvWarn string // deferred until SetLang is called so i18n resolves
 	if envLang := os.Getenv("LANG"); envLang != "" {
 		prefix := envLang
 		if idx := strings.IndexAny(envLang, "_-."); idx >= 0 {
@@ -76,6 +77,8 @@ func run() int {
 		}
 		if supportedLangs[prefix] {
 			detectedLang = prefix
+		} else if os.Getenv("TRUMPCARDS_QUIET") == "" {
+			langEnvWarn = prefix
 		}
 	}
 	if *lang != "" {
@@ -88,6 +91,9 @@ func run() int {
 		detectedLang = *lang
 	}
 	i18n.SetLang(detectedLang)
+	if langEnvWarn != "" {
+		fmt.Fprintln(os.Stderr, i18n.Tf("cliLangEnvFallback", "lang", langEnvWarn))
+	}
 	// Build game commands from the registry (single source of truth).
 	commands := buildGameCommands()
 	commands["games"] = func() int {
@@ -146,6 +152,7 @@ func run() int {
 		}
 		updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 		updater.SetAutoConfirm(yes)
+		updater.SetProgressIsTTY(term.IsTerminal(int(os.Stderr.Fd())))
 		if err := updater.Exec(); err != nil {
 			return 1
 		}
@@ -219,10 +226,66 @@ func run() int {
 	return 0
 }
 
-// builtinHelpCommands lists CLI subcommands that are not games. Used by
-// runHelpCommand to give a clearer error than "unknown game" when a user
-// runs e.g. `trumpcards help web`.
-var builtinHelpCommands = []string{"completion", "games", "help", "update", "web"}
+// builtinSubcommandHelp maps non-game subcommand names to their Usage/Flags/Examples
+// help text. Used by both `trumpcards help <cmd>` and `trumpcards <cmd> --help`.
+var builtinSubcommandHelp = map[string][]string{
+	"web": {
+		"USAGE:",
+		"  trumpcards web [--port PORT] [--host HOST]",
+		"",
+		"FLAGS:",
+		"  -p, --port PORT   Port number (default: 8080; env PORT)",
+		"      --host HOST   Bind address (default: all interfaces; env HOST)",
+		"",
+		"EXAMPLES:",
+		"  trumpcards web",
+		"  trumpcards web --port 3000",
+		"  trumpcards web --host 127.0.0.1",
+		"  HOST=127.0.0.1 PORT=3000 trumpcards web",
+	},
+	"update": {
+		"USAGE:",
+		"  trumpcards update [--yes]",
+		"",
+		"FLAGS:",
+		"  -y, --yes   Skip confirmation prompt (required for non-interactive stdin)",
+		"",
+		"EXAMPLES:",
+		"  trumpcards update",
+		"  trumpcards update --yes",
+	},
+	"completion": {
+		"USAGE:",
+		"  trumpcards completion <bash|zsh|fish>",
+		"",
+		"EXAMPLES:",
+		"  source <(trumpcards completion bash)",
+		"  trumpcards completion zsh > \"${fpath[1]}/_trumpcards\"",
+		"  trumpcards completion fish > ~/.config/fish/completions/trumpcards.fish",
+	},
+	"games": {
+		"USAGE:",
+		"  trumpcards games [--short] [--aliases]",
+		"",
+		"FLAGS:",
+		"      --short     Print game names only (for scripting)",
+		"      --aliases   Include aliases (requires --short)",
+		"",
+		"EXAMPLES:",
+		"  trumpcards games",
+		"  trumpcards games --short",
+		"  trumpcards games --short --aliases",
+	},
+	"help": {
+		"USAGE:",
+		"  trumpcards help [game|command]",
+		"",
+		"EXAMPLES:",
+		"  trumpcards help",
+		"  trumpcards help blackjack",
+		"  trumpcards help web",
+	},
+}
 
 // runHelpCommand implements the `trumpcards help [game]` subcommand.
 // With no args, it writes helpText to stdout. With one arg, it writes the
@@ -251,9 +314,11 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 			return 0
 		}
 	}
-	if slices.Contains(builtinHelpCommands, target) {
-		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliHelpNotAGame", "name", target))
-		return 1
+	if lines, ok := builtinSubcommandHelp[target]; ok {
+		for _, line := range lines {
+			_, _ = fmt.Fprintln(stdout, line)
+		}
+		return 0
 	}
 	_, _ = fmt.Fprintln(stderr, i18n.Tf("cliHelpUnknownGame", "name", target))
 	if suggestion := cuiutil.SuggestCommand(target, ui.GameNames(), 2); suggestion != "" {
@@ -267,12 +332,24 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 // false, the caller should return exitCode immediately.
 func parseSubFlags(name string, setup func(*flag.FlagSet)) (*flag.FlagSet, int, bool) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
+	fs.SetOutput(io.Discard) // suppress Go's raw English error/usage text
 	setup(fs)
+	printHelp := func() {
+		if lines, ok := builtinSubcommandHelp[name]; ok {
+			for _, line := range lines {
+				_, _ = fmt.Fprintln(os.Stdout, line)
+			}
+		}
+	}
+	fs.Usage = printHelp
 	if err := fs.Parse(flag.Args()[1:]); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
+			printHelp()
 			return nil, 0, false
 		}
-		return nil, 1, false
+		fmt.Fprintln(os.Stderr, i18n.Tf("cliSubcommandFlagError", "cmd", name, "err", err.Error()))
+		fmt.Fprintln(os.Stderr, i18n.Tf("cliTryHelp", "cmd", name))
+		return nil, 2, false
 	}
 	if fs.NArg() > 0 {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(fs.Args(), " ")))
