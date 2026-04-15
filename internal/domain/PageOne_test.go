@@ -364,7 +364,7 @@ func TestPageOne_CpuDeclare_Easy_CanForget(t *testing.T) {
 	// With Easy difficulty there's a 25% chance of forgetting. Run many iterations.
 	forgot := false
 	declared := false
-	for i := 0; i < 1000 && !(forgot && declared); i++ {
+	for i := 0; i < 1000 && (!forgot || !declared); i++ {
 		g := newTestPageOneWithDifficulty(domain.PageOneCpuDifficultyEasy)
 		g.Reset()
 		g.GetPlayer(1).Reset()
