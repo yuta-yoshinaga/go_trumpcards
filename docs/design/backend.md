@@ -2668,7 +2668,7 @@ stateDiagram-v2
     End --> [*] : チップ0 (ゲーム終了)
 
     note right of Bet : PaiGowPhaseBet = 1
-    note right of Set : PaiGowPhaseSet = 2
+    note right of Set : PaiGowPhaseSetHands = 2
     note right of End : PaiGowPhaseEnd = 3
 ```
 
