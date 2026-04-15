@@ -7,6 +7,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // pageOnePlayerStr returns the display string for a single PageOne player.
@@ -15,14 +16,16 @@ func pageOnePlayerStr(player *domain.PageOnePlayer, i int) string {
 	name := cuiPlayerName(player, i)
 	declared := ""
 	if player.GetHasDeclared() {
-		declared = " [PAGE ONE!]"
+		declared = " " + i18n.T("pageone.declaredBadge")
 	}
-	fmt.Fprintf(&b, "%s: 累積%d点 ラウンド%d点 %d枚%s\n",
-		name,
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-		declared,
+	fmt.Fprintf(&b, "%s\n",
+		i18n.Tf("pageone.playerLine",
+			"name", name,
+			"cumulative", fmt.Sprintf("%d", player.GetCumulativeScore()),
+			"round", fmt.Sprintf("%d", player.GetRoundScore()),
+			"cards", fmt.Sprintf("%d", player.GetCardsSize()),
+			"declared", declared,
+		),
 	)
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player))
@@ -36,12 +39,15 @@ type PageOneCuiPresenter struct{}
 
 // Output ゲーム状態を文字列出力
 func (p *PageOneCuiPresenter) Output(g interfaces.PageOneGame, lastErr error) string {
-	return buildCuiOutput("Page One (ページワン)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  山札: %d枚\n", g.GetRoundNumber(), g.GetDrawPileCount())
+	return buildCuiOutput(i18n.T("pageone.helpTitle"), func(b *strings.Builder) {
+		fmt.Fprintf(b, "%s\n", i18n.Tf("pageone.header",
+			"round", fmt.Sprintf("%d", g.GetRoundNumber()),
+			"drawPile", fmt.Sprintf("%d", g.GetDrawPileCount()),
+		))
 
 		top := g.GetDiscardTop()
 		if top != nil {
-			fmt.Fprintf(b, "捨て札: %s\n", cuiCardStr(top))
+			fmt.Fprintf(b, "%s\n", i18n.Tf("pageone.discardLine", "card", cuiCardStr(top)))
 		}
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
@@ -57,23 +63,23 @@ func (p *PageOneCuiPresenter) Output(g interfaces.PageOneGame, lastErr error) st
 		if g.GetGameEndFlag() {
 			winnerIdx := g.GetWinnerIdx()
 			player := g.GetPlayer(winnerIdx)
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(player, winnerIdx)+"の勝利です！"))
+			fmt.Fprintf(b, "%s\n", color.Green(i18n.Tf("pageone.gameEnd", "name", cuiPlayerName(player, winnerIdx))))
 		} else {
 			phase := g.GetPhase()
 			switch phase {
 			case domain.PageOnePhasePlay:
 				currentIdx := g.GetCurrentPlayerIdx()
 				player := g.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("play <idx>・・・カードを出す\n")
-				b.WriteString("draw・・・カードを引く\n")
+				fmt.Fprintf(b, "%s\n", i18n.Tf("pageone.turnLine", "name", cuiPlayerName(player, currentIdx)))
+				b.WriteString(i18n.T("pageone.cmdPlay") + "\n")
+				b.WriteString(i18n.T("pageone.cmdDraw") + "\n")
 			case domain.PageOnePhaseMustDeclare:
-				b.WriteString("宣言フェーズ: 手札が残り1枚です！\n")
-				b.WriteString("declare・・・「ページワン！」と宣言する\n")
-				b.WriteString("skip・・・宣言をスキップ（ペナルティ: 2枚引く）\n")
+				b.WriteString(i18n.T("pageone.declarePhase") + "\n")
+				b.WriteString(i18n.T("pageone.cmdDeclare") + "\n")
+				b.WriteString(i18n.T("pageone.cmdSkip") + "\n")
 			case domain.PageOnePhaseRoundEnd:
-				b.WriteString("ラウンド終了\n")
-				b.WriteString("nr / nextround・・・次のラウンドへ\n")
+				b.WriteString(i18n.T("pageone.roundEnd") + "\n")
+				b.WriteString(i18n.T("pageone.cmdNextRound") + "\n")
 			}
 		}
 	})

@@ -19,7 +19,7 @@ export const CPU_DIFFICULTY_OPTIONS = [
 ] as const;
 
 /** Available point limit options for Page One. */
-export const POINT_LIMIT_OPTIONS = [100, 200, 300, 500] as const;
+export const POINT_LIMIT_OPTIONS = [100, 200, 300, 500, 1000] as const;
 
 /** Hook that manages Page One game state and player actions. */
 export function usePageOneGame() {

@@ -485,6 +485,53 @@ func TestPageOne_UnmarshalJSON_RejectsOversized(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestPageOne_PlayerDraw_BlockedWhenPlayableExists(t *testing.T) {
+	g := newTestPageOne()
+	g.Reset()
+	top := domain.NewCard(domain.CardDesignSpade, 5, false)
+	setupPageOnePlayPhase(g, 0, top)
+	p := g.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false)) // playable
+	err := g.PlayerDraw()
+	assert.Error(t, err)
+}
+
+func TestPageOne_DrawEmptyPilesRecyclesThenPasses(t *testing.T) {
+	g := newTestPageOne()
+	g.Reset()
+	top := domain.NewCard(domain.CardDesignSpade, 5, false)
+	setupPageOnePlayPhase(g, 0, top)
+	g.SetDrawPile([]*domain.Card{})       // empty
+	g.SetDiscardPile([]*domain.Card{top}) // only top card → cannot recycle
+
+	p := g.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false)) // unplayable
+	err := g.PlayerDraw()
+	assert.NoError(t, err)
+	// Turn should advance since no card could be drawn
+	assert.Equal(t, 1, g.GetCurrentPlayerIdx())
+}
+
+func TestPageOne_RecycleDrawPileFromDiscard(t *testing.T) {
+	g := newTestPageOne()
+	g.Reset()
+	top := domain.NewCard(domain.CardDesignSpade, 5, false)
+	older := domain.NewCard(domain.CardDesignHeart, 2, false)
+	setupPageOnePlayPhase(g, 0, top)
+	g.SetDrawPile([]*domain.Card{})
+	g.SetDiscardPile([]*domain.Card{older, top})
+
+	p := g.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 9, false)) // unplayable
+	err := g.PlayerDraw()
+	assert.NoError(t, err)
+	// Drew the recycled card and advanced turn
+	assert.Equal(t, 1, g.GetCurrentPlayerIdx())
+}
+
 func TestPageOne_UnmarshalJSON_Invalid(t *testing.T) {
 	g := domain.NewPageOne(nil, nil, domain.DefaultPageOneConfig())
 	err := json.Unmarshal([]byte("not-json"), g)

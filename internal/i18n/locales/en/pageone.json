@@ -6,5 +6,18 @@
   "helpSkip": "  sk / skip            skip declaration (penalty: draw 2 cards)",
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetLimit": "  sl <n>               point limit"
+  "helpSetLimit": "  sl <n>               point limit",
+  "header": "Round: {{round}}  Draw pile: {{drawPile}}",
+  "discardLine": "Discard: {{card}}",
+  "playerLine": "{{name}}: total={{cumulative}} round={{round}} cards={{cards}}{{declared}}",
+  "declaredBadge": "[PAGE ONE!]",
+  "turnLine": "Turn: {{name}}",
+  "cmdPlay": "play <idx>  ... play a card",
+  "cmdDraw": "draw        ... draw a card",
+  "declarePhase": "Declaration phase: only 1 card left!",
+  "cmdDeclare": "declare     ... declare Page One!",
+  "cmdSkip": "skip        ... skip declaration (penalty: draw 2)",
+  "roundEnd": "Round over",
+  "cmdNextRound": "nr / nextround ... advance to next round",
+  "gameEnd": "Game over! {{name}} wins!"
 }

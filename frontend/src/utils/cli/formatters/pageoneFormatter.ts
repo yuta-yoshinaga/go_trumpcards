@@ -1,4 +1,5 @@
 import type { PageOneResponse } from '../../../types/card';
+import { PageOnePhase } from '../../../types/phases';
 import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 /** Format a Page One game state as terminal text. */
@@ -20,7 +21,7 @@ export function formatPageoneState(state: PageOneResponse): string {
   }
   lines.push('----------');
 
-  if (state.phase === 1) lines.push('Declare Page One (dc) or skip (sk) to take penalty.');
+  if (state.phase === PageOnePhase.MUST_DECLARE) lines.push('Declare Page One (dc) or skip (sk) to take penalty.');
 
   if (!state.gameEndFlag) {
     const current = formatPlayerName(state.currentPlayerIdx, state.players[state.currentPlayerIdx]?.isHuman ?? false);

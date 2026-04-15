@@ -115,10 +115,6 @@ func (g *PageOne) dealInitialCards() {
 		g.drawPile = append(g.drawPile, card)
 	}
 
-	rand.Shuffle(len(g.drawPile), func(i, j int) {
-		g.drawPile[i], g.drawPile[j] = g.drawPile[j], g.drawPile[i]
-	})
-
 	for i := 0; i < PageOneHandSize; i++ {
 		for j := 0; j < PageOnePlayerCnt; j++ {
 			if len(g.drawPile) > 0 {
@@ -173,6 +169,9 @@ func (g *PageOne) PlayerDraw() error {
 	}
 	if !g.players[g.currentPlayerIdx].GetIsHuman() {
 		return ErrNotHumanTurn
+	}
+	if g.hasPlayableCard(g.currentPlayerIdx) {
+		return NewDomainError(ErrInvalidPlay, "出せるカードがあるときは引けません")
 	}
 
 	return g.drawCard(g.currentPlayerIdx)
