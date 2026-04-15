@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
@@ -101,29 +101,33 @@ export function useTrickGameBase<TState, TArgs extends unknown[], TConfig extend
 
   const defaultConfigRef = useRef(defaultConfig);
 
-  type ExecAny = (...args: unknown[]) => Promise<void>;
+  // Trick-taking APIs all share the shape (command, arg1?, arg2?, config?). We
+  // widen once here so the command dispatch below stays type-safe and avoids
+  // scattering `as unknown as` casts across every handler.
+  const execCmd = useMemo(() => exec as unknown as (command: string, ...rest: unknown[]) => Promise<void>, [exec]);
+  const apiCmd = useMemo(() => apiFn as unknown as (command: string, ...rest: unknown[]) => Promise<TState>, [apiFn]);
 
   useEffect(() => {
-    (exec as unknown as ExecAny)('reset', undefined, undefined, defaultConfigRef.current);
-  }, [exec]);
+    execCmd('reset', undefined, undefined, defaultConfigRef.current);
+  }, [execCmd]);
 
   const handlePlay = useCallback(() => {
     if (selectedCardIndices.length !== 1) return;
-    (exec as unknown as ExecAny)('play', undefined, selectedCardIndices[0]);
-  }, [exec, selectedCardIndices]);
+    execCmd('play', undefined, selectedCardIndices[0]);
+  }, [execCmd, selectedCardIndices]);
 
   const handleNextTrick = useCallback(() => {
-    (exec as unknown as ExecAny)('next');
-  }, [exec]);
+    execCmd('next');
+  }, [execCmd]);
 
   const handleNextRound = useCallback(() => {
-    (exec as unknown as ExecAny)('nextround');
-  }, [exec]);
+    execCmd('nextround');
+  }, [execCmd]);
 
   const handleHint = useCallback(async () => {
     setHintLoading(true);
     try {
-      const res = await (apiFn as unknown as (...args: unknown[]) => Promise<TState>)('hint');
+      const res = await apiCmd('hint');
       setHint(getHint(res) ?? null);
       setHintError(null);
     } catch {
@@ -131,7 +135,7 @@ export function useTrickGameBase<TState, TArgs extends unknown[], TConfig extend
     } finally {
       setHintLoading(false);
     }
-  }, [apiFn, getHint]);
+  }, [apiCmd, getHint]);
 
   return {
     state,
