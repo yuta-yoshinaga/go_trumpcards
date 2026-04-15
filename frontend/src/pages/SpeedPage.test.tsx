@@ -250,6 +250,23 @@ describe('SpeedPage', () => {
     expect(flipPileBtns[0]).toHaveClass('animate-pulse');
   });
 
+  it('keyboard shortcut: digit key smart-plays the matching hand card', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    // Hand index 0 is SPADE 4 (single-valid-pile → smart-click auto-plays to pile 0)
+    fireEvent.keyDown(window, { key: '1' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
+  });
+
+  it('keyboard shortcut: ArrowRight plays the selected card to right pile', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    // Select a card with no auto-pile so it stays selected
+    fireEvent.click(screen.getByRole('button', { name: 'DIAMOND 2' }));
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 3, 1));
+  });
+
   it('renders the auto-flip settings toggle', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());

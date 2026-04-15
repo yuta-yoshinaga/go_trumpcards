@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { speedApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -95,6 +95,43 @@ function SpeedPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  // Keyboard shortcuts: 1..N select a hand card; ←/→ play selected card to left/right center pile.
+  // Active only when CLI mode is off and a play phase is in progress. Respects input focus.
+  const isPlayPhaseForKeys = state?.phase === SpeedPhase.PLAY;
+  const handCardCount = state?.players?.[0]?.cards.length ?? 0;
+  useEffect(() => {
+    if (cliEnabled || !isPlayPhaseForKeys || loading) return;
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      if (e.key >= '1' && e.key <= '9') {
+        const idx = Number.parseInt(e.key, 10) - 1;
+        if (idx < handCardCount && state) {
+          e.preventDefault();
+          handleSmartClick(idx, state.players[0].cards, state.centerPiles);
+        }
+        return;
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        if (selectedCardIndices.length === 1) {
+          e.preventDefault();
+          handlePlay(e.key === 'ArrowLeft' ? 0 : 1);
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [
+    cliEnabled,
+    isPlayPhaseForKeys,
+    loading,
+    handCardCount,
+    state,
+    handleSmartClick,
+    handlePlay,
+    selectedCardIndices,
+  ]);
 
   if (!state || state.players.length < 2) return <SpeedSkeleton />;
 
