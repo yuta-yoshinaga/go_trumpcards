@@ -1105,3 +1105,121 @@ func TestDistributePotsWithWinnerFunc_MatchesDistributePots(t *testing.T) {
 	assert.Equal(t, playersA[0].GetChips(), playersB[0].GetChips())
 	assert.Equal(t, playersA[1].GetChips(), playersB[1].GetChips())
 }
+
+// --- FindPotWinnersRazz tests (A-5 lowball: Ace=1) ---
+
+func TestFindPotWinnersRazz_HighCardBeatsOnePair(t *testing.T) {
+	p0 := &mockBettingPlayer{handRank: PokerHandHighCard, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: PokerHandOnePair, cards: []*Card{
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignClover, 6, false),
+		NewCard(CardDesignDiamond, 8, false),
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignHeart, 10, false),
+	}}
+	players := []BettingPlayer{p0, p1}
+
+	winners := FindPotWinnersRazz(players, []int{0, 1})
+	assert.Equal(t, []int{0}, winners)
+}
+
+func TestFindPotWinnersRazz_AceIsLow(t *testing.T) {
+	// In Razz (A-5), Ace=1 (low, good). Wheel A-2-3-4-5 beats 2-3-4-5-7.
+	p0 := &mockBettingPlayer{handRank: PokerHandHighCard, cards: []*Card{
+		NewCard(CardDesignSpade, 1, false), // Ace = 1 in Razz
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: PokerHandHighCard, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignHeart, 7, false),
+	}}
+	players := []BettingPlayer{p0, p1}
+
+	winners := FindPotWinnersRazz(players, []int{0, 1})
+	assert.Equal(t, []int{0}, winners, "Wheel (A-2-3-4-5) should beat 7-5-4-3-2 in Razz")
+}
+
+func TestFindPotWinnersRazz_SplitPotIdenticalCards(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+	}
+	p0 := &mockBettingPlayer{handRank: PokerHandHighCard, cards: cards}
+	p1 := &mockBettingPlayer{handRank: PokerHandHighCard, cards: cards}
+	players := []BettingPlayer{p0, p1}
+
+	winners := FindPotWinnersRazz(players, []int{0, 1})
+	assert.Equal(t, []int{0, 1}, winners)
+}
+
+func TestFindPotWinnersRazz_FoldedPlayerExcluded(t *testing.T) {
+	p0 := &mockBettingPlayer{handRank: PokerHandHighCard, folded: true, cards: []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: PokerHandOnePair, cards: []*Card{
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignClover, 6, false),
+		NewCard(CardDesignDiamond, 8, false),
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignHeart, 10, false),
+	}}
+	players := []BettingPlayer{p0, p1}
+
+	winners := FindPotWinnersRazz(players, []int{0, 1})
+	assert.Equal(t, []int{1}, winners)
+}
+
+func TestFindPotWinnersRazz_LowerHighCardWins(t *testing.T) {
+	// Both HighCard, but 8-low vs 7-low
+	p0 := &mockBettingPlayer{handRank: PokerHandHighCard, cards: []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignSpade, 8, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: PokerHandHighCard, cards: []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignHeart, 7, false),
+	}}
+	players := []BettingPlayer{p0, p1}
+
+	winners := FindPotWinnersRazz(players, []int{0, 1})
+	assert.Equal(t, []int{1}, winners, "7-low should beat 8-low")
+}
+
+func TestFindPotWinnersRazz_SingleEligible(t *testing.T) {
+	p0 := &mockBettingPlayer{handRank: PokerHandOnePair, cards: []*Card{
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignClover, 6, false),
+		NewCard(CardDesignDiamond, 8, false),
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignHeart, 10, false),
+	}}
+	players := []BettingPlayer{p0}
+
+	winners := FindPotWinnersRazz(players, []int{0})
+	assert.Equal(t, []int{0}, winners)
+}

@@ -139,6 +139,7 @@ const hintFactories = {
   pinochle: (s) => getPinochleHint(s as PinochleResponse),
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
   sevencardstud: () => null,
+  razz: () => null,
   fortythieves: () => null,
   paigow: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),

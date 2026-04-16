@@ -347,6 +347,11 @@ func (web *TrumpCardsWeb) registerAll() {
 		scs := domain.NewSevenCardStud(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
 		return usecase.NewSevenCardStudInteractor(scs, new(presenter.SevenCardStudWebPresenter))
 	}))
+	web.register("razz", controller.NewSevenCardStudWebController(func() usecase.SevenCardStudInteractorIF {
+		cfg := domain.DefaultRazzConfig()
+		r := domain.NewRazz(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+		return usecase.NewSevenCardStudInteractor(r, new(presenter.SevenCardStudWebPresenter))
+	}))
 	web.register("clocksolitaire", controller.NewClockSolitaireWebController(func() usecase.ClockSolitaireInteractorIF {
 		cs := domain.NewClockSolitaire(domain.NewTrumpCards(0))
 		return usecase.NewClockSolitaireInteractor(cs, new(presenter.ClockSolitaireWebPresenter))

@@ -193,6 +193,35 @@ func (p *SevenCardStudPlayer) EvalBestHand() int {
 	return p.handRank
 }
 
+// EvalBestHandRazz 全7枚からA-5ローボール(ラズ)用ベスト5枚を評価
+// ストレート・フラッシュは無視し、最も低いハンドを選択する
+func (p *SevenCardStudPlayer) EvalBestHandRazz() int {
+	all := p.GetAllCards()
+
+	if len(all) < 5 {
+		p.handRank = PokerHandHighCard
+		p.bestHand = nil
+		return p.handRank
+	}
+
+	combos := combinations(all, 5)
+	bestRank := -1
+	var bestCards []*Card
+
+	for _, combo := range combos {
+		rank := evalRazzHand(combo)
+		if bestRank == -1 || rank < bestRank || (rank == bestRank && compareRazzCards(combo, bestCards) < 0) {
+			bestRank = rank
+			bestCards = make([]*Card, 5)
+			copy(bestCards, combo)
+		}
+	}
+
+	p.handRank = bestRank
+	p.bestHand = bestCards
+	return p.handRank
+}
+
 // EvalVisibleHand 表向き札のみからハンドを評価 (ベッティング順序決定用)
 // 5枚未満の場合はハイカード比較用にソートした値を返す
 func (p *SevenCardStudPlayer) EvalVisibleHand() int {
@@ -274,6 +303,42 @@ func CompareVisibleHands(a, b *SevenCardStudPlayer) int {
 		}
 	}
 	return 0
+}
+
+// CompareVisibleHandsLow 2人のプレイヤーの表向き札をローボール比較する (低い方が強い)
+// a が強い(低い): 1, b が強い: -1, 同じ: 0
+func CompareVisibleHandsLow(a, b *SevenCardStudPlayer) int {
+	rankA := a.EvalVisibleHand()
+	rankB := b.EvalVisibleHand()
+	// ローボール: 低いランクが強い
+	if rankA < rankB {
+		return 1
+	}
+	if rankA > rankB {
+		return -1
+	}
+	// 同ランク: カード値が低い方が強い (Ace=1)
+	aVals := sortedDoorCardValuesLow(a.doorCards)
+	bVals := sortedDoorCardValuesLow(b.doorCards)
+	for i := 0; i < len(aVals) && i < len(bVals); i++ {
+		if aVals[i] < bVals[i] {
+			return 1
+		}
+		if aVals[i] > bVals[i] {
+			return -1
+		}
+	}
+	return 0
+}
+
+// sortedDoorCardValuesLow 表向き札の値を降順ソートして返す (Ace=1, ローボール用)
+func sortedDoorCardValuesLow(cards []*Card) []int {
+	vals := make([]int, len(cards))
+	for i, c := range cards {
+		vals[i] = c.GetValue() // Ace stays as 1
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(vals)))
+	return vals
 }
 
 // sortedDoorCardValues 表向き札の値をソートして返す (Ace=14)

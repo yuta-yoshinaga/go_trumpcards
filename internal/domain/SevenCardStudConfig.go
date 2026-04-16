@@ -65,6 +65,11 @@ func DefaultSevenCardStudConfig() SevenCardStudConfig {
 	}
 }
 
+// DefaultRazzConfig Razz デフォルト設定
+func DefaultRazzConfig() SevenCardStudConfig {
+	return DefaultSevenCardStudConfig()
+}
+
 // Validate 設定値のドメインバリデーション
 func (c SevenCardStudConfig) Validate() error {
 	if err := ValidateRange("betting limit", int(c.BettingLimit), int(BettingLimitFixed), int(BettingLimitNoLimit)); err != nil {

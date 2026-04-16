@@ -1,0 +1,58 @@
+{
+  "phase": {
+    "thirdStreet": "Third Street",
+    "fourthStreet": "Fourth Street",
+    "fifthStreet": "Fifth Street",
+    "sixthStreet": "Sixth Street",
+    "seventhStreet": "Seventh Street",
+    "showdown": "Showdown",
+    "end": "End",
+    "init": "Init",
+    "rebuy": "Rebuy"
+  },
+  "doorCards": "Door Cards",
+  "holeCards": "Hole Cards",
+  "yourHand": "Your Hand",
+  "anteBringIn": "Ante/Bring-in",
+  "handNumber": "Hand {{count}} / Lv.{{level}}",
+  "rebuy": {
+    "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} times)",
+    "accept": "Rebuy",
+    "skip": "Skip"
+  },
+  "addon": {
+    "prompt": "Add-on? ({{chips}} chips)",
+    "accept": "Add-on",
+    "skip": "Skip"
+  },
+  "muck": {
+    "prompt": "What do you want to do with your hand?",
+    "muck": "Muck",
+    "show": "Show"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "Voluntarily put in pot %",
+    "pfr": "PFR",
+    "pfrTooltip": "Pre-flop raise %",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3-bet %",
+    "af": "AF",
+    "afTooltip": "Aggression factor"
+  },
+  "settings": {
+    "cpuMetaAI": "CPU Adaptive AI"
+  },
+  "tutorial": {
+    "playerHand": "Your hand. Hole cards and door cards are shown. In Razz, the lowest hand wins.",
+    "actionButtons": "Select an action: bet, raise, call, etc.",
+    "potDisplay": "Current pot amount.",
+    "cpuArea": "CPU opponents' cards and status.",
+    "resetButton": "Reset the game to start a new hand."
+  },
+  "hint": {
+    "strongHandRank": "Strong low hand ({{rank}}). Bet aggressively.",
+    "decentHandRank": "Decent low hand ({{rank}}). Play based on the situation.",
+    "weakHandRank": "Weak hand ({{rank}}). Consider folding."
+  }
+}

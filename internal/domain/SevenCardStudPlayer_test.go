@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -326,4 +327,106 @@ func TestEvalPartialHand(t *testing.T) {
 			assert.Equal(t, tt.wantRank, evalPartialHand(tt.cards))
 		})
 	}
+}
+
+func TestEvalBestHandRazz_PicksLowestCombo(t *testing.T) {
+	p := NewSevenCardStudPlayer(true, 0)
+	// 7 cards: A,2,3,4,5,K,Q — should pick A-2-3-4-5 (wheel, HighCard)
+	p.AddHoleCard(NewCard(CardDesignSpade, 1, false))
+	p.AddHoleCard(NewCard(CardDesignHeart, 2, false))
+	p.AddHoleCard(NewCard(CardDesignClover, 13, false)) // K
+	p.AddDoorCard(NewCard(CardDesignDiamond, 3, false))
+	p.AddDoorCard(NewCard(CardDesignSpade, 4, false))
+	p.AddDoorCard(NewCard(CardDesignHeart, 5, false))
+	p.AddDoorCard(NewCard(CardDesignClover, 12, false)) // Q
+
+	rank := p.EvalBestHandRazz()
+	assert.Equal(t, PokerHandHighCard, rank)
+	// Best hand should be the wheel (A-2-3-4-5)
+	vals := make([]int, 5)
+	for i, c := range p.GetBestHand() {
+		vals[i] = c.GetValue()
+	}
+	sort.Ints(vals)
+	assert.Equal(t, []int{1, 2, 3, 4, 5}, vals)
+}
+
+func TestEvalBestHandRazz_IgnoresFlushAndStraight(t *testing.T) {
+	p := NewSevenCardStudPlayer(true, 0)
+	// All spades A-2-3-4-5 + 6s + 7s — would be straight flush in normal poker
+	// In Razz, still evaluates as HighCard
+	p.AddHoleCard(NewCard(CardDesignSpade, 1, false))
+	p.AddHoleCard(NewCard(CardDesignSpade, 2, false))
+	p.AddHoleCard(NewCard(CardDesignSpade, 6, false))
+	p.AddDoorCard(NewCard(CardDesignSpade, 3, false))
+	p.AddDoorCard(NewCard(CardDesignSpade, 4, false))
+	p.AddDoorCard(NewCard(CardDesignSpade, 5, false))
+	p.AddDoorCard(NewCard(CardDesignSpade, 7, false))
+
+	rank := p.EvalBestHandRazz()
+	assert.Equal(t, PokerHandHighCard, rank)
+}
+
+func TestEvalBestHandRazz_PairIsWorst(t *testing.T) {
+	p := NewSevenCardStudPlayer(true, 0)
+	// 7 cards: 3,3,5,7,9,J,K — best Razz hand avoids the pair
+	p.AddHoleCard(NewCard(CardDesignSpade, 3, false))
+	p.AddHoleCard(NewCard(CardDesignHeart, 3, false))
+	p.AddHoleCard(NewCard(CardDesignClover, 5, false))
+	p.AddDoorCard(NewCard(CardDesignDiamond, 7, false))
+	p.AddDoorCard(NewCard(CardDesignSpade, 9, false))
+	p.AddDoorCard(NewCard(CardDesignHeart, 11, false))  // J
+	p.AddDoorCard(NewCard(CardDesignClover, 13, false)) // K
+
+	rank := p.EvalBestHandRazz()
+	// Best combo avoids pair: 3,5,7,9,J = HighCard
+	assert.Equal(t, PokerHandHighCard, rank)
+}
+
+func TestEvalBestHandRazz_LessThan5Cards(t *testing.T) {
+	p := NewSevenCardStudPlayer(true, 0)
+	p.AddHoleCard(NewCard(CardDesignSpade, 1, false))
+	p.AddDoorCard(NewCard(CardDesignHeart, 2, false))
+
+	rank := p.EvalBestHandRazz()
+	assert.Equal(t, PokerHandHighCard, rank)
+	assert.Nil(t, p.GetBestHand())
+}
+
+func TestCompareVisibleHandsLow_LowerRankWins(t *testing.T) {
+	a := NewSevenCardStudPlayer(true, 0)
+	a.AddDoorCard(NewCard(CardDesignSpade, 2, false)) // HighCard
+
+	b := NewSevenCardStudPlayer(false, 0)
+	b.AddDoorCard(NewCard(CardDesignHeart, 5, false))
+	b.AddDoorCard(NewCard(CardDesignClover, 5, false)) // OnePair
+
+	// a has HighCard (rank 0), b has OnePair (rank 1). Lower rank = stronger in low.
+	result := CompareVisibleHandsLow(a, b)
+	assert.Equal(t, 1, result, "HighCard should beat OnePair in lowball")
+}
+
+func TestCompareVisibleHandsLow_SameRankLowerCardsWin(t *testing.T) {
+	a := NewSevenCardStudPlayer(true, 0)
+	a.AddDoorCard(NewCard(CardDesignSpade, 1, false)) // Ace=1
+	a.AddDoorCard(NewCard(CardDesignHeart, 3, false))
+
+	b := NewSevenCardStudPlayer(false, 0)
+	b.AddDoorCard(NewCard(CardDesignClover, 5, false))
+	b.AddDoorCard(NewCard(CardDesignDiamond, 7, false))
+
+	// Both HighCard. a has [3,1], b has [7,5]. a's highest card 3 < 7 => a wins.
+	result := CompareVisibleHandsLow(a, b)
+	assert.Equal(t, 1, result, "Lower cards should win in lowball")
+}
+
+func TestCompareVisibleHandsLow_EqualCards(t *testing.T) {
+	a := NewSevenCardStudPlayer(true, 0)
+	a.AddDoorCard(NewCard(CardDesignSpade, 5, false))
+
+	b := NewSevenCardStudPlayer(false, 0)
+	b.AddDoorCard(NewCard(CardDesignHeart, 5, false))
+
+	result := CompareVisibleHandsLow(a, b)
+	assert.Equal(t, 0, result)
 }

@@ -13,6 +13,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   omaha: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
   shortdeck: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
   sevencardstud: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
+  razz: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
   indianpoker: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
   videopoker: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   deuceswild: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },

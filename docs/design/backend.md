@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全53ゲーム)](#12-ゲームドメイン-全53ゲーム)
+  - [1.2 ゲームドメイン (全54ゲーム)](#12-ゲームドメイン-全54ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -137,7 +137,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全53ゲーム)
+### 1.2 ゲームドメイン (全54ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1050,6 +1050,8 @@ classDiagram
     SevenCardStud --> "1" BettingState
     SevenCardStudPlayer --|> GamePlayer
     SevenCardStudPlayer --> "1" ChipHolder
+
+    note for SevenCardStud "Razz (ラズ) はSevenCardStudのローボール変種\nNewRazz() でlowballフラグ付きインスタンスを生成\nA-5ローボールルール = Aは常にロー、ストレート・フラッシュはカウントしない\n最強ハンド = A-2-3-4-5 (the wheel)"
 ```
 
 #### ソリティア系ゲーム
@@ -1454,7 +1456,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全51ゲーム共通)**
+**Interactor パターン (全52ゲーム共通)**
 
 ```mermaid
 classDiagram

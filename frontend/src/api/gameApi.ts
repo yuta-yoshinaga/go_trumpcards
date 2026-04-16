@@ -84,6 +84,7 @@ const workerUrl: Record<string, string> = {
   paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
+  razz: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
@@ -383,6 +384,9 @@ export interface SevenCardStudConfigInput {
 
 /** API client for the Seven Card Stud /sevencardstud/exec endpoint. */
 export const sevenCardStudApi = createHoldemLikeApi<SevenCardStudResponse, SevenCardStudConfigInput>('sevencardstud');
+
+/** API client for the Razz /razz/exec endpoint. */
+export const razzApi = createHoldemLikeApi<SevenCardStudResponse, SevenCardStudConfigInput>('razz');
 
 /** Configuration options for Pineapple Poker (extends Hold'em with cardIdx for discard). */
 export interface PineappleConfigInput extends HoldemConfigInput {
@@ -1069,6 +1073,7 @@ const games = [
   'shortdeck',
   'pineapple',
   'sevencardstud',
+  'razz',
   'hearts',
   'spades',
   'twotenjack',

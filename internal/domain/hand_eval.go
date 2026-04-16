@@ -305,3 +305,70 @@ func checkRoyalStraightValues(sortedValues []int) bool {
 		sortedValues[3] == 12 &&
 		sortedValues[4] == 13
 }
+
+// evalRazzHand evaluates a 5-card hand for A-5 lowball (Razz).
+// Straights and flushes do NOT count against the player.
+// Only pair-type categories matter. Returns the same PokerHand* constants.
+func evalRazzHand(cards []*Card) int {
+	if len(cards) != 5 {
+		return PokerHandHighCard
+	}
+
+	valueCounts := make(map[int]int)
+	for _, c := range cards {
+		valueCounts[c.GetValue()]++
+	}
+	counts := make([]int, 0, len(valueCounts))
+	for _, cnt := range valueCounts {
+		counts = append(counts, cnt)
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(counts)))
+
+	if counts[0] == 4 {
+		return PokerHandFourOfAKind
+	}
+	if len(counts) >= 2 && counts[0] == 3 && counts[1] == 2 {
+		return PokerHandFullHouse
+	}
+	if counts[0] == 3 {
+		return PokerHandThreeOfAKind
+	}
+	if len(counts) >= 2 && counts[0] == 2 && counts[1] == 2 {
+		return PokerHandTwoPair
+	}
+	if counts[0] == 2 {
+		return PokerHandOnePair
+	}
+	return PokerHandHighCard
+}
+
+// compareRazzCards compares two Razz hands (A-5 lowball: Ace=1, lower wins).
+// Returns -1 if a is stronger (lower), 1 if b is stronger, 0 if tie.
+func compareRazzCards(a, b []*Card) int {
+	aVals := razzCardValues(a)
+	bVals := razzCardValues(b)
+	sort.Sort(sort.Reverse(sort.IntSlice(aVals)))
+	sort.Sort(sort.Reverse(sort.IntSlice(bVals)))
+	for i := 0; i < len(aVals) && i < len(bVals); i++ {
+		if aVals[i] < bVals[i] {
+			return -1
+		}
+		if aVals[i] > bVals[i] {
+			return 1
+		}
+	}
+	return 0
+}
+
+// razzCardValues returns card values for Razz comparison (Ace=1, Joker=0).
+func razzCardValues(cards []*Card) []int {
+	vals := make([]int, len(cards))
+	for i, c := range cards {
+		if c.GetDesign() == CardDesignJoker {
+			vals[i] = 0
+		} else {
+			vals[i] = c.GetValue() // Ace stays as 1
+		}
+	}
+	return vals
+}

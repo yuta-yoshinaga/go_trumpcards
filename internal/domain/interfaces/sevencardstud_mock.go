@@ -247,3 +247,8 @@ func (_m *MockSevenCardStudGame) GetBringInPlayerIdx() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+func (_m *MockSevenCardStudGame) GetIsLowball() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
