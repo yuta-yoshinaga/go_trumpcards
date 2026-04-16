@@ -7,19 +7,14 @@ const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const betPhaseState: RedDogResponse = {
   initialCards: [],
-  thirdCard: null,
   phase: RedDogPhase.BET,
-  gameEndFlag: false,
   ante: 0,
   raise: 0,
   spread: 0,
   result: 0,
   totalPayout: 0,
   chips: 1000,
-  actionLog: [],
   message: '',
-  messageCode: '',
-  messageParams: {},
 };
 
 const spreadDecisionState: RedDogResponse = {
@@ -34,7 +29,6 @@ const spreadDecisionState: RedDogResponse = {
 const endPhaseWin: RedDogResponse = {
   ...betPhaseState,
   phase: RedDogPhase.END,
-  gameEndFlag: true,
   initialCards: [card('SPADE', 3), card('HEART', 10)],
   thirdCard: card('DIAMOND', 7),
   ante: 100,
@@ -49,7 +43,6 @@ const endPhaseWin: RedDogResponse = {
 const endPhaseLose: RedDogResponse = {
   ...betPhaseState,
   phase: RedDogPhase.END,
-  gameEndFlag: true,
   initialCards: [card('SPADE', 3), card('HEART', 10)],
   thirdCard: card('CLOVER', 2),
   ante: 100,
