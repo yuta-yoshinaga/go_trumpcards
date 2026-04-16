@@ -42,6 +42,7 @@ import pinochle from '../../../docs/manual/cui/pinochle.md?raw';
 import poker from '../../../docs/manual/cui/poker.md?raw';
 import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
 import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
+import reddog from '../../../docs/manual/cui/reddog.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
@@ -97,6 +98,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/poker': poker,
   '/poker-squares': pokersquares,
   '/pyramid': pyramid,
+  '/reddog': reddog,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,
   '/shortdeck': shortdeck,

@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全52ゲーム)](#12-ゲームドメイン-全52ゲーム)
+  - [1.2 ゲームドメイン (全53ゲーム)](#12-ゲームドメイン-全53ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -28,6 +28,7 @@
   - [2.14 Durak アタック・ディフェンスフロー](#214-durak-アタックディフェンスフロー)
   - [2.15 FortyThieves ドロー・ムーブフロー](#215-fortythieves-ドロームーブフロー)
   - [2.16 PaiGow ベット・セットフロー](#216-paigow-ベットセットフロー)
+  - [2.18 RedDog ベット・スプレッドフロー](#218-reddog-ベットスプレッドフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -68,6 +69,7 @@
   - [3.36 War フェーズ遷移](#336-war-フェーズ遷移)
   - [3.37 LetItRide フェーズ遷移](#337-letitride-フェーズ遷移)
   - [3.38 PokerSquares フェーズ遷移](#338-pokersquares-フェーズ遷移)
+  - [3.39 RedDog フェーズ遷移](#339-reddog-フェーズ遷移)
 
 ---
 
@@ -135,7 +137,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全52ゲーム)
+### 1.2 ゲームドメイン (全53ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -343,6 +345,28 @@ classDiagram
     VideoPoker --> "1" TrumpCards
     VideoPoker --> "1" ChipHolder
     VideoPoker --> "0..1" VideoPokerVariantConfig
+
+    class RedDog {
+        -trumpCards *TrumpCards
+        -initialCards []*Card
+        -thirdCard *Card
+        -chips ChipHolder
+        -ante int
+        -raise int
+        -spread int
+        -phase int
+        +Reset()
+        +Bet(amount int) error
+        +ResolveInitial()
+        +Raise(amount int) error
+        +Stay()
+        +ResolveThird()
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
+    }
+
+    RedDog --> "1" TrumpCards
+    RedDog --> "1" ChipHolder
 
     note for VideoPokerVariantConfig "DeucesWild・JokerPoker は独立したドメインクラスを持たず\nVideoPokerVariantConfig のファクトリ関数\n(DeucesWildConfig / JokerPokerConfig) として実装"
 ```
@@ -2114,6 +2138,50 @@ sequenceDiagram
     Pres-->>User: ゲームクリア表示
 ```
 
+### 2.18 RedDog ベット・スプレッドフロー
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Ctrl as RedDogController
+    participant Interactor as RedDogInteractor
+    participant Domain as RedDog
+    participant Pres as RedDogPresenter
+
+    User->>Ctrl: bet(amount)
+    Ctrl->>Interactor: Bet(amount)
+    Interactor->>Domain: Bet(amount)
+    Domain->>Domain: dealInitial() → 2枚配布
+    Domain->>Domain: ResolveInitial() → スプレッド計算
+    alt ペア
+        Domain->>Domain: phase=PairThird → dealThird() → ResolveThird()
+    else 連続
+        Domain->>Domain: phase=End (プッシュ)
+    else スプレッドあり
+        Domain->>Domain: phase=SpreadDecision
+    end
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: カード＋スプレッド表示
+
+    alt スプレッド判断フェーズ
+        User->>Ctrl: raise(amount) / stay
+        Ctrl->>Interactor: Raise(amount) / Stay()
+        Interactor->>Domain: Raise(amount) / Stay()
+        Domain->>Domain: dealThird() → ResolveThird() → 配当計算
+        Domain-->>Interactor: nil
+        Interactor->>Pres: Output(game, nil)
+        Pres-->>User: 3枚目＋結果表示
+    end
+
+    User->>Ctrl: reset
+    Ctrl->>Interactor: Reset()
+    Interactor->>Domain: Reset()
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ベット画面
+```
+
 ---
 
 ## 3. ステートマシン図
@@ -2814,5 +2882,26 @@ stateDiagram-v2
 ```
 
 PokerSquares 固有のアクション: `Place(row, col)` / `Undo` / `GiveUp`。5x5 グリッドに 25 枚のカードを 1 枚ずつ配置し、全配置完了時に 5 行 + 5 列 = 10 手のポーカー役を American 採点法で評価して合計スコアを算出する。
+
+### 3.39 RedDog フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> SpreadDecision : Bet() (2枚配布＋スプレッドあり)
+    Bet --> PairThird : Bet() (ペア → 3枚目)
+    Bet --> End : Bet() (連続 → プッシュ)
+    SpreadDecision --> End : Raise() / Stay() (3枚目配布＋判定)
+    PairThird --> End : (3枚目自動配布＋判定)
+    End --> Bet : Reset() (次ラウンド)
+    End --> [*]
+
+    note right of Bet : RedDogPhaseBet = 1
+    note right of SpreadDecision : RedDogPhaseSpreadDecision = 3
+    note right of PairThird : RedDogPhasePairThird = 4
+    note right of End : RedDogPhaseEnd = 5
+```
+
+RedDog 固有のアクション: `Bet(amount)` / `Raise(amount)` / `Stay`。2枚のカードのランク差（スプレッド）に基づき、3枚目がその間に入るかを賭ける。ペア時は11:1配当のチャンス、連続はプッシュ。
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

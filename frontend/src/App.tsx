@@ -45,6 +45,7 @@ import { PinochlePage } from './pages/PinochlePage';
 import { PokerPage } from './pages/PokerPage';
 import { PokerSquaresPage } from './pages/PokerSquaresPage';
 import { PyramidPage } from './pages/PyramidPage';
+import { RedDogPage } from './pages/RedDogPage';
 import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
@@ -113,6 +114,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/whist': <WhistPage />,
   '/poker-squares': <PokerSquaresPage />,
   '/pageone': <PageOnePage />,
+  '/reddog': <RedDogPage />,
 };
 
 /** Root application component with router and game page routes. */

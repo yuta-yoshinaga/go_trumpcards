@@ -440,3 +440,12 @@ export const LetItRidePhase = {
   SECOND_DECISION: 3,
   END: 4,
 } as const;
+
+/** Red Dog phase constants (sync: internal/domain/RedDog.go). */
+export const RedDogPhase = {
+  BET: 1,
+  INITIAL_DEALT: 2,
+  SPREAD_DECISION: 3,
+  PAIR_THIRD: 4,
+  END: 5,
+} as const;

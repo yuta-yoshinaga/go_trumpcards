@@ -114,6 +114,8 @@ tags:
     description: Let It Ride (レットイットライド) game
   - name: pokersquares
     description: Poker Squares (ポーカー・スクエア) game
+  - name: reddog
+    description: Red Dog (レッドドッグ) game
 
 paths:
   /blackjack/exec:
@@ -4992,6 +4994,72 @@ paths:
                     colScores: []
                     totalScore: 0
                     message: "param error: row and col are required."
+
+  /reddog/exec:
+    post:
+      tags:
+        - reddog
+      summary: Execute a Red Dog game command
+      description: |
+        Send a command to advance the Red Dog (レッドドッグ) game session
+        identified by `sessionId`. Red Dog is a single-player casino card game
+        using a standard 52-card deck. Player places an ante bet, then 2 cards
+        are dealt. If ranks are consecutive → push; if equal (pair) → a third
+        card is dealt (match = 11:1, else push). Otherwise a spread is shown
+        and the player may raise (up to ante) or stay before the third card.
+
+        | Phase           | Value | Description |
+        |-----------------|-------|-------------|
+        | Bet             | `1`   | Place ante bet |
+        | InitialDealt    | `2`   | 2 cards dealt (auto-resolved) |
+        | SpreadDecision  | `3`   | Raise or Stay |
+        | PairThird       | `4`   | Third card for pair (auto) |
+        | End             | `5`   | Round complete |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place ante (requires `amount`) |
+        | `raise` | —       | Raise before third card (requires `amount`, max ante) |
+        | `stay`  | `s`     | Stay (no raise) and draw third card |
+        | `log`   | —       | View action log |
+      operationId: reddogExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedDogRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 as ante
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              raise:
+                summary: Raise 50
+                value:
+                  command: raise
+                  amount: 50
+                  sessionId: my-session-001
+              stay:
+                summary: Stay (no raise)
+                value:
+                  command: stay
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedDogResponse'
 
 components:
   schemas:
@@ -12766,3 +12834,78 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Red Dog (レッドドッグ)
+    # -------------------------------------------------------------------------
+    RedDogRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, raise, stay, s, log]
+          description: Game command to execute.
+        amount:
+          type: integer
+          description: Bet or raise amount (required for `bet` and `raise` commands).
+          example: 100
+        sessionId:
+          type: string
+          description: Session identifier for game state persistence.
+
+    RedDogResponse:
+      type: object
+      properties:
+        initialCards:
+          type: array
+          description: The initial 2 dealt cards.
+          items:
+            $ref: '#/components/schemas/Card'
+        thirdCard:
+          description: Third card (present after raise/stay or pair resolution).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        phase:
+          type: integer
+          description: "Current game phase: 1=Bet, 2=InitialDealt, 3=SpreadDecision, 4=PairThird, 5=End."
+          example: 1
+        chips:
+          type: integer
+          description: Player's chip balance.
+          example: 1000
+        ante:
+          type: integer
+          description: Ante bet amount.
+          example: 100
+        raise:
+          type: integer
+          description: Raise amount (0 if not raised).
+          example: 0
+        spread:
+          type: integer
+          description: "Spread value (|rank2 - rank1| - 1). 0 for pairs and consecutive ranks."
+          example: 4
+        result:
+          type: integer
+          description: "Game result: 1=Win, 0=Draw/Push, -1=Lose."
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout returned to the player.
+          example: 0
+        message:
+          type: string
+          description: Human-readable status or result message.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code for i18n.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template.

@@ -2369,3 +2369,24 @@ export interface LetItRideResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+// --- Red Dog (レッドドッグ) ---
+
+/** Red Dog API response. */
+export interface RedDogResponse {
+  /** Initial 2 cards. */
+  initialCards: Card[];
+  /** Third card revealed at end (or after raise/stay). */
+  thirdCard?: Card;
+  phase: number;
+  chips: number;
+  ante: number;
+  raise: number;
+  /** Spread = |rank2 - rank1| - 1, 0 when consecutive or pair. */
+  spread: number;
+  result: number;
+  totalPayout: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}

@@ -6,6 +6,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   threecard: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   paigow: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   letitride: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  reddog: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   // Poker
   poker: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
   holdem: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },

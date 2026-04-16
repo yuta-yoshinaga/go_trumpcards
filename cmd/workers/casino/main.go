@@ -243,6 +243,20 @@ func main() {
 		controller.NewLetItRideWebControllerWithProvider,
 	))
 
+	// Red Dog
+	must(worker.RegisterKV(mux, "/reddog/exec", "reddog:",
+		func() usecase.RedDogInteractorIF {
+			return usecase.NewRedDogInteractor(
+				domain.NewDefaultRedDog(),
+				new(presenter.RedDogWebPresenter),
+			)
+		},
+		func(data []byte) (usecase.RedDogInteractorIF, error) {
+			return usecase.RestoreRedDogInteractor(data, new(presenter.RedDogWebPresenter))
+		},
+		controller.NewRedDogWebControllerWithProvider,
+	))
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

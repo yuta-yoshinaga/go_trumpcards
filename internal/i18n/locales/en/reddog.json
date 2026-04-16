@@ -1,0 +1,6 @@
+{
+  "helpTitle": "Red Dog",
+  "helpBet": "  b <amount>           bet (places ante and deals 2 cards)",
+  "helpRaise": "  raise <amount>       raise (up to ante)",
+  "helpStay": "  s                    stay (draw third card without raising)"
+}
