@@ -41,6 +41,7 @@ import pinochle from '../../../docs/manual/web/pinochle.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
 import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
+import reddog from '../../../docs/manual/web/reddog.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
@@ -95,6 +96,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/poker': poker,
   '/poker-squares': pokersquares,
   '/pyramid': pyramid,
+  '/reddog': reddog,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,
   '/shortdeck': shortdeck,

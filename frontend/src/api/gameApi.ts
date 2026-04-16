@@ -41,6 +41,7 @@ import type {
   PokerResponse,
   PokerSquaresResponse,
   PyramidResponse,
+  RedDogResponse,
   SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
@@ -120,6 +121,7 @@ const workerUrl: Record<string, string> = {
   yukon: WORKER_SOLO,
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
+  reddog: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1048,6 +1050,12 @@ export const letitrideApi = {
     gameExec<LetItRideResponse>('letitride', { command, amount }),
 };
 
+/** API client for the Red Dog /reddog/exec endpoint. */
+export const reddogApi = {
+  exec: (command: 'reset' | 'bet' | 'raise' | 'stay' | 'log', amount?: number) =>
+    gameExec<RedDogResponse>('reddog', { command, amount }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1101,6 +1109,7 @@ const games = [
   'letitride',
   'pokersquares',
   'pageone',
+  'reddog',
 ] as const;
 type Game = (typeof games)[number];
 

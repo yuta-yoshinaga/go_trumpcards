@@ -70,6 +70,7 @@ var gameRegistry = []GameRegistryEntry{
 	{"letitride", "Let It Ride (レット・イット・ライド)", func() cuiGame { return NewLetItRideCui() }},
 	{"pokersquares", "Poker Squares (ポーカー・スクエアズ)", func() cuiGame { return NewPokerSquaresCui() }},
 	{"pageone", "Page One (ページワン)", func() cuiGame { return NewPageOneCui() }},
+	{"reddog", "Red Dog (レッドドッグ)", func() cuiGame { return NewRedDogCui() }},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

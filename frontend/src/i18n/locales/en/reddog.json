@@ -1,0 +1,53 @@
+{
+  "title": "Red Dog",
+  "betGuide": "Place your ante to deal 2 cards",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "raise": "Raise",
+    "spread": "Spread",
+    "initial": "Initial",
+    "third": "Third"
+  },
+  "button": {
+    "bet": "Bet",
+    "raise": "Raise",
+    "stay": "Stay",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Bet",
+    "initialDealt": "Initial Dealt",
+    "spreadDecision": "Spread Decision",
+    "pairThird": "Third Card",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "You win!",
+    "playerLoses": "You lose",
+    "push": "Push"
+  },
+  "payout": {
+    "total": "Total Payout"
+  },
+  "payoutRef": {
+    "title": "Payout Table",
+    "header": "Spread and Payouts",
+    "spread1": "Spread 1: 5:1",
+    "spread2": "Spread 2: 4:1",
+    "spread3": "Spread 3: 2:1",
+    "spread4Plus": "Spread 4+: 1:1",
+    "pair": "Pair + matching third: 11:1",
+    "consecutive": "Consecutive: Push",
+    "pairNoMatch": "Pair + non-match: Push"
+  },
+  "tutorial": {
+    "betControls": "Enter ante and bet to deal cards",
+    "actionButtons": "When a spread is shown, choose to raise or stay",
+    "results": "Results and payouts are displayed here"
+  },
+  "hint": {
+    "largeSpread": "Spread is large — raise recommended",
+    "smallSpread": "Spread is small — stay recommended"
+  }
+}

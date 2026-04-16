@@ -447,6 +447,12 @@ func (web *TrumpCardsWeb) registerAll() {
 		po := domain.NewPageOne(domain.NewTrumpCards(0), players, config)
 		return usecase.NewPageOneInteractor(po, new(presenter.PageOneWebPresenter))
 	}))
+	web.register("reddog", controller.NewRedDogWebController(func() usecase.RedDogInteractorIF {
+		return usecase.NewRedDogInteractor(
+			domain.NewDefaultRedDog(),
+			new(presenter.RedDogWebPresenter),
+		)
+	}))
 }
 
 // Exec ゲーム実行

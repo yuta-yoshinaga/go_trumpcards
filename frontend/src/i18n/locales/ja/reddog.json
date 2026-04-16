@@ -1,0 +1,53 @@
+{
+  "title": "レッドドッグ",
+  "betGuide": "アンテをベットしてカードを2枚配ります",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "raise": "レイズ",
+    "spread": "スプレッド",
+    "initial": "初手",
+    "third": "3枚目"
+  },
+  "button": {
+    "bet": "ベット",
+    "raise": "レイズ",
+    "stay": "ステイ",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "initialDealt": "初手公開",
+    "spreadDecision": "スプレッド判断",
+    "pairThird": "3枚目待ち",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "playerLoses": "敗北",
+    "push": "プッシュ"
+  },
+  "payout": {
+    "total": "合計配当"
+  },
+  "payoutRef": {
+    "title": "配当表",
+    "header": "スプレッドと配当",
+    "spread1": "スプレッド1: 5:1",
+    "spread2": "スプレッド2: 4:1",
+    "spread3": "スプレッド3: 2:1",
+    "spread4Plus": "スプレッド4以上: 1:1",
+    "pair": "同位ペア＋3枚目同位: 11:1",
+    "consecutive": "連続: プッシュ",
+    "pairNoMatch": "ペア＋不一致: プッシュ"
+  },
+  "tutorial": {
+    "betControls": "アンテ額を入力してベットします",
+    "actionButtons": "スプレッドが出たらレイズかステイを選択します",
+    "results": "結果と配当が表示されます"
+  },
+  "hint": {
+    "largeSpread": "スプレッドが大きい — レイズ推奨",
+    "smallSpread": "スプレッドが小さい — ステイ推奨"
+  }
+}

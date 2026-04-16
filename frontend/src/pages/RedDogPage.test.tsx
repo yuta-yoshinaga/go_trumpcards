@@ -1,0 +1,132 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { reddogApi } from '../api/gameApi';
+import { useCliMode } from '../hooks/useCliMode';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, CardDesign, RedDogResponse } from '../types/card';
+import { RedDogPhase } from '../types/phases';
+import { RedDogPage } from './RedDogPage';
+
+vi.mock('../api/gameApi', () => ({
+  reddogApi: { exec: vi.fn() },
+  actionLogApi: { reddog: vi.fn() },
+}));
+
+vi.mock('../hooks/useCliMode', () => ({
+  useCliMode: vi.fn(() => ({
+    cliEnabled: false,
+    toggleCli: vi.fn(),
+    logEntries: [],
+    addInput: vi.fn(),
+    addOutput: vi.fn(),
+    addError: vi.fn(),
+    clearLog: vi.fn(),
+  })),
+}));
+
+const mockApi = vi.mocked(reddogApi.exec);
+const mockUseCliMode = vi.mocked(useCliMode);
+
+const card = (design: CardDesign, value: number): Card => ({ design, value });
+
+const betState: RedDogResponse = {
+  initialCards: [],
+  phase: RedDogPhase.BET,
+  chips: 1000,
+  ante: 0,
+  raise: 0,
+  spread: 0,
+  result: 0,
+  totalPayout: 0,
+  message: '',
+};
+
+const spreadState: RedDogResponse = {
+  initialCards: [card('SPADE', 5), card('HEART', 10)],
+  phase: RedDogPhase.SPREAD_DECISION,
+  chips: 900,
+  ante: 100,
+  raise: 0,
+  spread: 4,
+  result: 0,
+  totalPayout: 0,
+  message: '',
+};
+
+const winState: RedDogResponse = {
+  initialCards: [card('SPADE', 5), card('HEART', 10)],
+  thirdCard: card('CLOVER', 7),
+  phase: RedDogPhase.END,
+  chips: 1100,
+  ante: 100,
+  raise: 0,
+  spread: 4,
+  result: 1,
+  totalPayout: 200,
+  message: 'You win!',
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockApi.mockResolvedValue(betState);
+});
+
+describe('RedDogPage', () => {
+  it('calls reset on mount', async () => {
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+  });
+
+  it('renders bet phase with bet button', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /ベット/ })).toBeInTheDocument());
+  });
+
+  it('triggers bet action with current amount', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<RedDogPage />);
+    const betBtn = await screen.findByRole('button', { name: /ベット/ });
+    mockApi.mockClear();
+    fireEvent.click(betBtn);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 100));
+  });
+
+  it('renders spread decision with raise & stay buttons', async () => {
+    mockApi.mockResolvedValue(spreadState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /レイズ/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /ステイ/ })).toBeInTheDocument();
+  });
+
+  it('triggers stay on stay click', async () => {
+    mockApi.mockResolvedValue(spreadState);
+    renderWithProviders(<RedDogPage />);
+    const stayBtn = await screen.findByRole('button', { name: /ステイ/ });
+    mockApi.mockClear();
+    fireEvent.click(stayBtn);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('stay'));
+  });
+
+  it('triggers raise on raise click', async () => {
+    mockApi.mockResolvedValue(spreadState);
+    renderWithProviders(<RedDogPage />);
+    const raiseBtn = await screen.findByRole('button', { name: /レイズ/ });
+    mockApi.mockClear();
+    fireEvent.click(raiseBtn);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('raise', 100));
+  });
+
+  it('renders end phase with reset and payout', async () => {
+    mockApi.mockResolvedValue(winState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /リセット/ })).toBeInTheDocument());
+    expect(screen.getByText(/200/)).toBeInTheDocument();
+  });
+
+  it('reads from useCliMode', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<RedDogPage />);
+    await waitFor(() => expect(mockUseCliMode).toHaveBeenCalledWith('reddog'));
+  });
+});
