@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { razzApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevenCardStudResponse } from '../types/card';
 import { RazzPage } from './RazzPage';
@@ -11,7 +12,20 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { razz: vi.fn() },
 }));
 
+vi.mock('../hooks/useCliMode', () => ({
+  useCliMode: vi.fn(() => ({
+    cliEnabled: false,
+    toggleCli: vi.fn(),
+    logEntries: [],
+    addInput: vi.fn(),
+    addOutput: vi.fn(),
+    addError: vi.fn(),
+    clearLog: vi.fn(),
+  })),
+}));
+
 const mockExec = vi.mocked(razzApi.exec);
+const mockUseCliMode = vi.mocked(useCliMode);
 
 /** Helper: base human player */
 const humanPlayer = (overrides: Partial<import('../types/card').SevenCardStudPlayerData> = {}) => ({
@@ -727,5 +741,150 @@ describe('RazzPage', () => {
     const allSummaries = container.querySelectorAll('details summary');
     const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
     expect(settingsSummary).toBeTruthy();
+  });
+
+  // ---- CLI mode ----
+  it('renders CliTerminal when CLI mode is enabled', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+  });
+
+  it('sends CLI command via terminal input', async () => {
+    const addInput = vi.fn();
+    const addOutput = vi.fn();
+    const addError = vi.fn();
+    const clearLog = vi.fn();
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput,
+      addOutput,
+      addError,
+      clearLog,
+    });
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: 'fold' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined));
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+  });
+
+  it('rejects unknown CLI command', async () => {
+    const addError = vi.fn();
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError,
+      clearLog: vi.fn(),
+    });
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: 'invalid' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(addError).toHaveBeenCalledWith(expect.stringContaining('Unknown command')));
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+  });
+
+  it('sends CLI bet command with amount', async () => {
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: 'bet 50' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 50));
+    mockUseCliMode.mockReturnValue({
+      cliEnabled: false,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+  });
+
+  // ---- CPU card rendering: no door cards, not folded ----
+  it('shows card-back placeholders for CPU with no door cards', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer(), cpuPlayer(1, { doorCards: [], folded: false })],
+    });
+    const { container } = renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(container.querySelector('[data-testid="animated-card-back"]')).toBeInTheDocument());
+  });
+
+  // ---- Human with no door cards renders card-back placeholders ----
+  it('shows card-back placeholders for human with no door cards', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [] }), cpuPlayer(1)],
+    });
+    const { container } = renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(container.querySelector('[data-testid="animated-card-back"]')).toBeInTheDocument());
+  });
+
+  // ---- Seventh street: 3 hole card placeholders ----
+  it('shows 3 face-down placeholders for human hole cards on seventh street', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      phase: 5, // SEVENTH_STREET
+      players: [humanPlayer({ holeCards: [] }), cpuPlayer(1)],
+    });
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 });

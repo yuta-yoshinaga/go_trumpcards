@@ -1127,7 +1127,7 @@ func TestRazz_DetermineBringIn_HighestCardBringsIn(t *testing.T) {
 	assert.Equal(t, 1, bringIn, "King (highest card) should bring in for Razz")
 }
 
-func TestRazz_DetermineBringIn_AceIsHigh(t *testing.T) {
+func TestRazz_DetermineBringIn_AceIsLow(t *testing.T) {
 	cfg := DefaultRazzConfig()
 	cfg.TableSize = 3
 	players := []*SevenCardStudPlayer{
@@ -1137,13 +1137,13 @@ func TestRazz_DetermineBringIn_AceIsHigh(t *testing.T) {
 	}
 	s := NewRazz(NewTrumpCards(0), players, cfg)
 
-	// Ace=14 in bring-in evaluation, so Ace is highest
-	players[0].AddDoorCard(NewCard(CardDesignSpade, 1, false))  // Ace=14
-	players[1].AddDoorCard(NewCard(CardDesignHeart, 13, false)) // K=13
+	// In Razz, Ace stays as 1 (low), so King (13) is highest and brings in
+	players[0].AddDoorCard(NewCard(CardDesignSpade, 1, false))  // Ace=1 (low)
+	players[1].AddDoorCard(NewCard(CardDesignHeart, 13, false)) // K=13 (highest)
 	players[2].AddDoorCard(NewCard(CardDesignClover, 7, false))
 
 	bringIn := s.determineBringIn()
-	assert.Equal(t, 0, bringIn, "Ace (=14 high) should bring in for Razz")
+	assert.Equal(t, 1, bringIn, "King should bring in for Razz (Ace is low)")
 }
 
 func TestRazz_DetermineBettingLeader_LowestHandActsFirst(t *testing.T) {
@@ -1305,6 +1305,88 @@ func TestRazz_CPUEvalThirdStreetStrengthRazz(t *testing.T) {
 	badScore := s.evalThirdStreetStrength(1)
 
 	assert.Greater(t, goodScore, badScore, "A-2-3 should score higher than K-K-Q in Razz")
+}
+
+func TestRazz_CPUEvalThirdStreetStrengthRazz_Branches(t *testing.T) {
+	tests := []struct {
+		name   string
+		cards  []struct{ value int }
+		minExp int
+		maxExp int
+	}{
+		{
+			name:   "maxVal 6-8: A-4-7 medium-high",
+			cards:  []struct{ value int }{{1}, {4}, {7}},
+			minExp: 50, maxExp: 70,
+		},
+		{
+			name:   "maxVal 9-10: A-2-9 moderate",
+			cards:  []struct{ value int }{{1}, {2}, {9}},
+			minExp: 30, maxExp: 50,
+		},
+		{
+			name:   "maxVal >=11 no pair: A-5-J weak",
+			cards:  []struct{ value int }{{1}, {5}, {11}},
+			minExp: 10, maxExp: 30,
+		},
+		{
+			name:   "maxVal >=11 no pair: 3-8-K very weak",
+			cards:  []struct{ value int }{{3}, {8}, {13}},
+			minExp: 0, maxExp: 20,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newTestRazz()
+			p := s.players[1]
+			p.ClearCards()
+			designs := []int{CardDesignSpade, CardDesignHeart, CardDesignClover}
+			for i, c := range tc.cards {
+				if i < 2 {
+					p.AddHoleCard(NewCard(designs[i], c.value, false))
+				} else {
+					p.AddDoorCard(NewCard(designs[i], c.value, false))
+				}
+			}
+			score := s.evalThirdStreetStrength(1)
+			assert.GreaterOrEqual(t, score, tc.minExp, "score too low")
+			assert.LessOrEqual(t, score, tc.maxExp, "score too high")
+		})
+	}
+}
+
+func TestRazz_CPUDecide_MetaAI_Lowball(t *testing.T) {
+	cfg := DefaultRazzConfig()
+	cfg.TableSize = 3
+	cfg.CpuMetaAI = true
+	players := []*SevenCardStudPlayer{
+		NewSevenCardStudPlayer(true, HoldemStyleTAG),
+		NewSevenCardStudPlayer(false, HoldemStyleLAP),
+		NewSevenCardStudPlayer(false, HoldemStyleTAP),
+	}
+	s := NewRazz(NewTrumpCards(0), players, cfg)
+	s.phase = SevenCardStudPhaseThirdStreet
+	s.humanProfile = &BettingHumanProfile{}
+	s.lastHumanPlayMs = 500
+	s.lastBet = 20
+
+	// Give CPU a decent lowball hand
+	p := players[1]
+	p.ClearCards()
+	p.AddHoleCard(NewCard(CardDesignSpade, 1, false))
+	p.AddHoleCard(NewCard(CardDesignHeart, 2, false))
+	p.AddDoorCard(NewCard(CardDesignClover, 5, false))
+	p.SetChips(1000)
+
+	// Run multiple times to cover stochastic MetaAI paths
+	for i := 0; i < 100; i++ {
+		action, _ := s.cpuDecide(1)
+		assert.Contains(t, []int{
+			SevenCardStudActionFold, SevenCardStudActionCall, SevenCardStudActionCheck,
+			SevenCardStudActionBet, SevenCardStudActionRaise, SevenCardStudActionAllIn,
+		}, action)
+	}
 }
 
 func TestInvertRazzRank(t *testing.T) {

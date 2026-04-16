@@ -294,8 +294,8 @@ func (s *SevenCardStud) determineBringIn() int {
 		}
 		door := p.GetDoorCards()[0]
 		val := door.GetValue()
-		if val == 1 {
-			val = 14 // Ace is high
+		if val == 1 && !s.lowball {
+			val = 14 // Ace is high (normal stud only; in Razz ace stays low)
 		}
 		suit := SuitRank(door.GetDesign())
 
