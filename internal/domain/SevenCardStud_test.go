@@ -1088,3 +1088,228 @@ func TestSevenCardStud_SkipRebuy_WithChipsTransitionsToAddon(t *testing.T) {
 	assert.Equal(t, SevenCardStudPhaseRebuy, s.GetPhase())
 	assert.Equal(t, SevenCardStudRebuyPhaseAddon, s.GetRebuyPhaseType())
 }
+
+// --- Razz (lowball) tests ---
+
+func newTestRazz() *SevenCardStud {
+	cfg := DefaultRazzConfig()
+	cfg.TableSize = 4
+	players := NewSevenCardStudPlayersForTable(cfg.TableSize)
+	return NewRazz(NewTrumpCards(0), players, cfg)
+}
+
+func TestNewRazz_SetLowball(t *testing.T) {
+	s := newTestRazz()
+	assert.True(t, s.GetIsLowball())
+}
+
+func TestNewSevenCardStud_NotLowball(t *testing.T) {
+	s := newTestSevenCardStud()
+	assert.False(t, s.GetIsLowball())
+}
+
+func TestRazz_DetermineBringIn_HighestCardBringsIn(t *testing.T) {
+	cfg := DefaultRazzConfig()
+	cfg.TableSize = 3
+	players := []*SevenCardStudPlayer{
+		NewSevenCardStudPlayer(true, HoldemStyleTAG),
+		NewSevenCardStudPlayer(false, HoldemStyleLAP),
+		NewSevenCardStudPlayer(false, HoldemStyleTAP),
+	}
+	s := NewRazz(NewTrumpCards(0), players, cfg)
+
+	// Give each player a door card: P0=2, P1=K, P2=7
+	players[0].AddDoorCard(NewCard(CardDesignSpade, 2, false))
+	players[1].AddDoorCard(NewCard(CardDesignHeart, 13, false)) // King = highest
+	players[2].AddDoorCard(NewCard(CardDesignClover, 7, false))
+
+	bringIn := s.determineBringIn()
+	assert.Equal(t, 1, bringIn, "King (highest card) should bring in for Razz")
+}
+
+func TestRazz_DetermineBringIn_AceIsHigh(t *testing.T) {
+	cfg := DefaultRazzConfig()
+	cfg.TableSize = 3
+	players := []*SevenCardStudPlayer{
+		NewSevenCardStudPlayer(true, HoldemStyleTAG),
+		NewSevenCardStudPlayer(false, HoldemStyleLAP),
+		NewSevenCardStudPlayer(false, HoldemStyleTAP),
+	}
+	s := NewRazz(NewTrumpCards(0), players, cfg)
+
+	// Ace=14 in bring-in evaluation, so Ace is highest
+	players[0].AddDoorCard(NewCard(CardDesignSpade, 1, false))  // Ace=14
+	players[1].AddDoorCard(NewCard(CardDesignHeart, 13, false)) // K=13
+	players[2].AddDoorCard(NewCard(CardDesignClover, 7, false))
+
+	bringIn := s.determineBringIn()
+	assert.Equal(t, 0, bringIn, "Ace (=14 high) should bring in for Razz")
+}
+
+func TestRazz_DetermineBettingLeader_LowestHandActsFirst(t *testing.T) {
+	cfg := DefaultRazzConfig()
+	cfg.TableSize = 3
+	players := []*SevenCardStudPlayer{
+		NewSevenCardStudPlayer(true, HoldemStyleTAG),
+		NewSevenCardStudPlayer(false, HoldemStyleLAP),
+		NewSevenCardStudPlayer(false, HoldemStyleTAP),
+	}
+	s := NewRazz(NewTrumpCards(0), players, cfg)
+	s.phase = SevenCardStudPhaseFourthStreet
+
+	// P0: pair of 5s (bad in Razz), P1: 2,7 (good), P2: K,Q (bad)
+	players[0].AddDoorCard(NewCard(CardDesignSpade, 5, false))
+	players[0].AddDoorCard(NewCard(CardDesignHeart, 5, false))
+	players[1].AddDoorCard(NewCard(CardDesignClover, 2, false))
+	players[1].AddDoorCard(NewCard(CardDesignDiamond, 7, false))
+	players[2].AddDoorCard(NewCard(CardDesignSpade, 13, false))
+	players[2].AddDoorCard(NewCard(CardDesignHeart, 12, false))
+
+	leader := s.determineBettingLeader()
+	assert.Equal(t, 1, leader, "Lowest visible hand (2,7 HighCard) should lead in Razz")
+}
+
+func TestRazz_Showdown_LowestHandWins(t *testing.T) {
+	cfg := DefaultRazzConfig()
+	cfg.TableSize = 2
+	players := []*SevenCardStudPlayer{
+		NewSevenCardStudPlayer(true, HoldemStyleTAG),
+		NewSevenCardStudPlayer(false, HoldemStyleGTO),
+	}
+	s := NewRazz(NewTrumpCards(0), players, cfg)
+	s.phase = SevenCardStudPhaseShowdown
+	s.pot = 100
+
+	// Player 0: A-2-3-4-5 (wheel) — best Razz hand
+	players[0].AddHoleCard(NewCard(CardDesignSpade, 1, false))
+	players[0].AddHoleCard(NewCard(CardDesignHeart, 2, false))
+	players[0].AddHoleCard(NewCard(CardDesignClover, 5, false))
+	players[0].AddDoorCard(NewCard(CardDesignDiamond, 3, false))
+	players[0].AddDoorCard(NewCard(CardDesignSpade, 4, false))
+	players[0].AddDoorCard(NewCard(CardDesignHeart, 8, false))
+	players[0].AddDoorCard(NewCard(CardDesignClover, 9, false))
+	players[0].SetChips(900)
+
+	// Player 1: pair of 6s — worse hand
+	players[1].AddHoleCard(NewCard(CardDesignSpade, 6, false))
+	players[1].AddHoleCard(NewCard(CardDesignHeart, 6, false))
+	players[1].AddHoleCard(NewCard(CardDesignClover, 10, false))
+	players[1].AddDoorCard(NewCard(CardDesignDiamond, 7, false))
+	players[1].AddDoorCard(NewCard(CardDesignSpade, 8, false))
+	players[1].AddDoorCard(NewCard(CardDesignHeart, 11, false))
+	players[1].AddDoorCard(NewCard(CardDesignClover, 12, false))
+	players[1].SetChips(900)
+
+	// Set starting chips for side pot calculation
+	s.startingChips = []int{1000, 1000}
+
+	s.resolveShowdown()
+
+	// Player 0 (wheel) should win
+	require.NotEmpty(t, s.roundResults)
+	var humanWon int
+	for _, r := range s.roundResults {
+		if r.PlayerIdx == 0 {
+			humanWon = r.WonAmount
+		}
+	}
+	assert.Equal(t, 100, humanWon, "Wheel should beat pair of 6s in Razz")
+}
+
+func TestRazz_GetRazzHandName(t *testing.T) {
+	tests := []struct {
+		name     string
+		rank     int
+		hand     []*Card
+		expected string
+	}{
+		{
+			"wheel",
+			PokerHandHighCard,
+			[]*Card{
+				NewCard(CardDesignSpade, 1, false),
+				NewCard(CardDesignHeart, 2, false),
+				NewCard(CardDesignClover, 3, false),
+				NewCard(CardDesignDiamond, 4, false),
+				NewCard(CardDesignSpade, 5, false),
+			},
+			"Wheel",
+		},
+		{
+			"8-low",
+			PokerHandHighCard,
+			[]*Card{
+				NewCard(CardDesignSpade, 1, false),
+				NewCard(CardDesignHeart, 2, false),
+				NewCard(CardDesignClover, 3, false),
+				NewCard(CardDesignDiamond, 4, false),
+				NewCard(CardDesignSpade, 8, false),
+			},
+			"8-Low",
+		},
+		{
+			"one pair",
+			PokerHandOnePair,
+			[]*Card{
+				NewCard(CardDesignSpade, 5, false),
+				NewCard(CardDesignHeart, 5, false),
+				NewCard(CardDesignClover, 3, false),
+				NewCard(CardDesignDiamond, 7, false),
+				NewCard(CardDesignSpade, 9, false),
+			},
+			"One Pair",
+		},
+		{
+			"empty hand",
+			PokerHandHighCard,
+			nil,
+			"High Card",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, getRazzHandName(tt.rank, tt.hand))
+		})
+	}
+}
+
+func TestRazz_JSON_RoundTrip(t *testing.T) {
+	s := newTestRazz()
+	assert.True(t, s.GetIsLowball())
+
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+
+	var s2 SevenCardStud
+	err = json.Unmarshal(data, &s2)
+	require.NoError(t, err)
+	assert.True(t, s2.GetIsLowball(), "lowball flag should survive JSON round-trip")
+}
+
+func TestRazz_CPUEvalThirdStreetStrengthRazz(t *testing.T) {
+	s := newTestRazz()
+	p := s.players[1] // CPU player
+
+	// Good Razz hand: A-2-3 (low cards, no pair)
+	p.ClearCards()
+	p.AddHoleCard(NewCard(CardDesignSpade, 1, false))
+	p.AddHoleCard(NewCard(CardDesignHeart, 2, false))
+	p.AddDoorCard(NewCard(CardDesignClover, 3, false))
+	goodScore := s.evalThirdStreetStrength(1)
+
+	// Bad Razz hand: K-K-Q (pair + high cards)
+	p.ClearCards()
+	p.AddHoleCard(NewCard(CardDesignSpade, 13, false))
+	p.AddHoleCard(NewCard(CardDesignHeart, 13, false))
+	p.AddDoorCard(NewCard(CardDesignClover, 12, false))
+	badScore := s.evalThirdStreetStrength(1)
+
+	assert.Greater(t, goodScore, badScore, "A-2-3 should score higher than K-K-Q in Razz")
+}
+
+func TestInvertRazzRank(t *testing.T) {
+	assert.Equal(t, PokerHandFourOfAKind, invertRazzRank(PokerHandHighCard))
+	assert.Equal(t, PokerHandThreeOfAKind, invertRazzRank(PokerHandOnePair))
+	assert.Equal(t, PokerHandOnePair, invertRazzRank(PokerHandTwoPair))
+	assert.Equal(t, PokerHandHighCard, invertRazzRank(PokerHandFullHouse))
+}

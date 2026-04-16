@@ -201,6 +201,19 @@ func main() {
 		controller.NewSevenCardStudWebControllerWithProvider,
 	))
 
+	// Razz
+	must(worker.RegisterKV(mux, "/razz/exec", "razz:",
+		func() usecase.SevenCardStudInteractorIF {
+			cfg := domain.DefaultRazzConfig()
+			r := domain.NewRazz(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewSevenCardStudInteractor(r, new(presenter.SevenCardStudWebPresenter))
+		},
+		func(data []byte) (usecase.SevenCardStudInteractorIF, error) {
+			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))
+		},
+		controller.NewSevenCardStudWebControllerWithProvider,
+	))
+
 	// Pai Gow Poker
 	must(worker.RegisterKV(mux, "/paigow/exec", "paigow:",
 		func() usecase.PaiGowInteractorIF {

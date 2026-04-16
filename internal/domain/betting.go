@@ -421,7 +421,47 @@ func lowballCardValues(cards []*Card) []int {
 	return vals
 }
 
-// WinnerFunc ポット勝者判定関数型
+// FindPotWinnersRazz 対象プレイヤーから最弱ハンドのプレイヤーを返す (A-5 Lowball: Ace=1, 低い手が勝ち)
+// ストレート・フラッシュは無視。ランクが低いほど強い。同ランク時はカード値が低い方が勝つ (Ace=1)
+func FindPotWinnersRazz(players []BettingPlayer, eligible []int) []int {
+	bestRank := -1
+	var bestCards []*Card
+	var winners []int
+
+	for _, idx := range eligible {
+		pl := players[idx]
+		if pl.GetFolded() {
+			continue
+		}
+		rank := pl.GetHandRank()
+		cards := pl.GetComparisonCards()
+
+		if bestRank == -1 {
+			bestRank = rank
+			bestCards = cards
+			winners = []int{idx}
+			continue
+		}
+
+		if rank < bestRank {
+			bestRank = rank
+			bestCards = cards
+			winners = []int{idx}
+		} else if rank == bestRank {
+			cmp := compareRazzCards(cards, bestCards)
+			if cmp < 0 {
+				bestCards = cards
+				winners = []int{idx}
+			} else if cmp == 0 {
+				winners = append(winners, idx)
+			}
+		}
+	}
+
+	return winners
+}
+
+// WinnerFunc ポッ���勝者判定��数型
 type WinnerFunc func(players []BettingPlayer, eligible []int) []int
 
 // DistributePotsWithWinnerFunc サイドポットの勝者配分を計算しチップを付与 (勝者判定関数を指定)

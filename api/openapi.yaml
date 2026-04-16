@@ -116,6 +116,8 @@ tags:
     description: Poker Squares (ポーカー・スクエア) game
   - name: reddog
     description: Red Dog (レッドドッグ) game
+  - name: razz
+    description: Razz (ラズ) game - lowball variant of Seven Card Stud
 
 paths:
   /blackjack/exec:
@@ -5060,6 +5062,121 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RedDogResponse'
+
+  /razz/exec:
+    post:
+      tags:
+        - razz
+      summary: Execute a Razz game command
+      description: |
+        Send a command to advance the Razz game session identified by
+        `sessionId`.  Razz is a lowball variant of Seven Card Stud where
+        the lowest hand wins using A-5 lowball rules.  Ace is always low,
+        straights and flushes don't count against you.  The best possible
+        hand is A-2-3-4-5 (the wheel).
+
+        Each player receives 2 face-down hole cards and 1 face-up door card
+        on Third Street, then 1 face-up card each on Fourth through Sixth
+        Street, and 1 final face-down card on Seventh Street.  Uses antes
+        and bring-in (highest door card brings in, unlike Seven Card Stud
+        where lowest brings in).  Best low 5 out of 7 cards wins.
+
+        The game supports configurable table sizes: 2-max through 7-max
+        (default 4, i.e., 1 human + 3 CPU).
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Init       | `0`   | Before any cards are dealt |
+        | ThirdSt    | `1`   | 2 hole cards + 1 door card; first betting round (bring-in) |
+        | FourthSt   | `2`   | 4th card (face-up); betting round |
+        | FifthSt    | `3`   | 5th card (face-up); betting round |
+        | SixthSt    | `4`   | 6th card (face-up); betting round |
+        | SeventhSt  | `5`   | 7th card (face-down); final betting round |
+        | Showdown   | `6`   | Hands evaluated; lowest hand wins |
+        | End        | `7`   | Round complete; results displayed |
+        | Rebuy      | `8`   | Rebuy/addon decision phase |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `fold`  | `f`     | Fold and forfeit the pot |
+        | `check` | `ck`    | Pass without betting (only when no outstanding bet) |
+        | `call`  | `c`     | Match the current bet |
+        | `bet`   | `b`     | Place a bet (use `amount`) |
+        | `raise` | `ra`    | Raise by a specified amount on top of calling (use `amount`) |
+        | `allin` | `a`     | Go all-in with all remaining chips |
+        | `rebuy` | `rb`    | Buy back chips during rebuy period |
+        | `skiprebuy` | `sr` | Skip rebuy opportunity |
+        | `addon` | `ad`    | Add chips (one-time addon purchase) |
+        | `skipaddon` | `sa` | Skip addon opportunity |
+        | `muck`  | `m`     | Muck (hide) hand at showdown |
+        | `show`  | `sh`    | Show hand at showdown |
+        | `log`   | `l`     | View action log |
+        | `quit`  | `q`     | End the session |
+      operationId: razzExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevenCardStudRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              call:
+                summary: Call
+                value:
+                  command: call
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 40
+                value:
+                  command: bet
+                  amount: 40
+                  sessionId: my-session-001
+              allin:
+                summary: Go all-in
+                value:
+                  command: allin
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    pot: 0
+                    sidePots: []
+                    dealerIdx: 0
+                    currentTurn: 0
+                    phase: 0
+                    gameEndFlag: false
+                    lastBet: 0
+                    minRaise: 0
+                    roundResults: []
+                    cpuActions: []
+                    message: param error.
 
 components:
   schemas:

@@ -104,7 +104,13 @@ func (s *SevenCardStud) cpuDecide(idx int) (int, int) {
 	// メタAI: コール確率調整
 	if s.config.CpuMetaAI && s.humanProfile != nil && s.lastHumanPlayMs > 0 {
 		if action == SevenCardStudActionFold && callAmount > 0 {
-			handRank := p.EvalBestHand()
+			var handRank int
+			if s.lowball {
+				handRank = p.EvalBestHandRazz()
+				handRank = invertRazzRank(handRank)
+			} else {
+				handRank = p.EvalBestHand()
+			}
 			bracket := bettingHandBracket(handRank)
 			adjustedCall := s.humanProfile.AdjustedCallChance(0.0, bracket, s.lastHumanPlayMs)
 			if adjustedCall > 0 && rand.Float64() < adjustedCall { //nolint:gosec // non-crypto random for game AI
@@ -131,6 +137,9 @@ func (s *SevenCardStud) cpuDecide(idx int) (int, int) {
 
 // evalThirdStreetStrength サードストリートのハンド強度評価 (0-100)
 func (s *SevenCardStud) evalThirdStreetStrength(idx int) int {
+	if s.lowball {
+		return s.evalThirdStreetStrengthRazz(idx)
+	}
 	p := s.players[idx]
 	all := p.GetAllCards()
 	if len(all) < 3 {
@@ -222,6 +231,65 @@ func (s *SevenCardStud) evalThirdStreetStrength(idx int) int {
 	return clamp(score, 0, 100)
 }
 
+// evalThirdStreetStrengthRazz Razz用サードストリート強度評価 (0-100)
+// 低いカード=良い、ペア=悪い、Ace=1(最良)
+func (s *SevenCardStud) evalThirdStreetStrengthRazz(idx int) int {
+	p := s.players[idx]
+	all := p.GetAllCards()
+	if len(all) < 3 {
+		return 0
+	}
+
+	score := 0
+
+	// ペア判定 (ペアは悪い)
+	freq := make(map[int]int)
+	for _, c := range all {
+		freq[c.GetValue()]++ // Ace=1 (low, good)
+	}
+	hasPair := false
+	for _, cnt := range freq {
+		if cnt >= 2 {
+			hasPair = true
+			break
+		}
+	}
+
+	if hasPair {
+		// ペアがある = 弱い (10-25)
+		score = 15
+	} else {
+		// 全カードの値で強度判定 (低いほど良い)
+		maxVal := 0
+		sumVal := 0
+		for _, c := range all {
+			v := c.GetValue()
+			if v > maxVal {
+				maxVal = v
+			}
+			sumVal += v
+		}
+		// 最高カードが低いほど良い: A-2-3 => maxVal=3, score=90
+		// 8以下 = プレミアム(70-90), 9-10 = 中程度(40-60), J以上 = 弱い(10-30)
+		if maxVal <= 5 {
+			score = 90
+		} else if maxVal <= 8 {
+			score = 70 - (maxVal-5)*5
+		} else if maxVal <= 10 {
+			score = 50 - (maxVal-8)*10
+		} else {
+			score = 25 - (maxVal-10)*5
+		}
+		// 平均値ボーナス (低いほどボーナス)
+		avg := sumVal / len(all)
+		if avg <= 4 {
+			score += 10
+		}
+	}
+
+	return clamp(score, 0, 100)
+}
+
 // cpuDecideThirdStreet サードストリートのCPU意思決定
 func (s *SevenCardStud) cpuDecideThirdStreet(idx int, params cpuStyleParams, callAmount int) (int, int) {
 	p := s.players[idx]
@@ -260,7 +328,14 @@ func (s *SevenCardStud) cpuDecideThirdStreet(idx int, params cpuStyleParams, cal
 // cpuDecidePostThird 4th Street以降のCPU意思決定
 func (s *SevenCardStud) cpuDecidePostThird(idx int, params cpuStyleParams, callAmount int) (int, int) {
 	p := s.players[idx]
-	handRank := p.EvalBestHand()
+	var handRank int
+	if s.lowball {
+		handRank = p.EvalBestHandRazz()
+		// Razz: ランクを反転 (HighCard=0 が最強 → 高い値に変換)
+		handRank = invertRazzRank(handRank)
+	} else {
+		handRank = p.EvalBestHand()
+	}
 
 	if params.aggressive {
 		if handRank >= params.postFlopRaiseRank || rand.Intn(100) < params.bluffRate { //nolint:gosec
@@ -323,7 +398,13 @@ func (s *SevenCardStud) cpuDecideThirdStreetGTO(idx, callAmount int) (int, int) 
 // cpuDecidePostThirdGTO GTO 4th Street以降意思決定
 func (s *SevenCardStud) cpuDecidePostThirdGTO(idx, callAmount int) (int, int) {
 	p := s.players[idx]
-	handRank := p.EvalBestHand()
+	var handRank int
+	if s.lowball {
+		handRank = p.EvalBestHandRazz()
+		handRank = invertRazzRank(handRank)
+	} else {
+		handRank = p.EvalBestHand()
+	}
 	category := classifyGTOHand(handRank)
 
 	// セブンカードスタッドにはコミュニティカードがないのでドライボード扱い
@@ -340,6 +421,21 @@ func (s *SevenCardStud) cpuDecidePostThirdGTO(idx, callAmount int) (int, int) {
 		return CpuRaiseOrBet(p.GetChips(), callAmount, betAmt)
 	default:
 		return CpuCallOrCheck(callAmount)
+	}
+}
+
+// invertRazzRank Razzランクを通常ポーカー相当の強度に変換する
+// HighCard(0)=最強→7(FourOfAKind相当), OnePair(1)=弱い→3(ThreeOfAKind相当)
+func invertRazzRank(rank int) int {
+	switch rank {
+	case PokerHandHighCard:
+		return PokerHandFourOfAKind // 最強
+	case PokerHandOnePair:
+		return PokerHandThreeOfAKind // 中程度
+	case PokerHandTwoPair:
+		return PokerHandOnePair // 弱い
+	default:
+		return PokerHandHighCard // 非常に弱い
 	}
 }
 

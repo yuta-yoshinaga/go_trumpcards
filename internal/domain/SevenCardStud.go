@@ -83,7 +83,8 @@ type SevenCardStud struct {
 	actionLog        []*ActionLogEntry
 	humanProfile     *BettingHumanProfile
 	lastHumanPlayMs  int
-	bringInPlayerIdx int // ブリングインプレイヤーインデックス
+	bringInPlayerIdx int  // ブリングインプレイヤーインデックス
+	lowball          bool // ローボール (Razz) モード
 }
 
 // NewSevenCardStud コンストラクタ
@@ -107,6 +108,16 @@ func NewSevenCardStud(trumpCards *TrumpCards, players []*SevenCardStudPlayer, co
 		bringInPlayerIdx: -1,
 	}
 }
+
+// NewRazz Razz (A-5 ローボール) コンストラクタ
+func NewRazz(trumpCards *TrumpCards, players []*SevenCardStudPlayer, config SevenCardStudConfig) *SevenCardStud {
+	s := NewSevenCardStud(trumpCards, players, config)
+	s.lowball = true
+	return s
+}
+
+// GetIsLowball ローボールモードかどうか
+func (s *SevenCardStud) GetIsLowball() bool { return s.lowball }
 
 // Reset ゲーム初期化
 func (s *SevenCardStud) Reset() error {
@@ -264,12 +275,18 @@ func (s *SevenCardStud) postAntes() {
 	}
 }
 
-// determineBringIn 最も低いドアカードを持つプレイヤーを決定する
-// 同値の場合はスートランキングが低い方 (クラブ < ダイヤ < ハート < スペード)
+// determineBringIn ブリングインプレイヤーを決定する
+// 通常: 最も低いドアカードを持つプレイヤー
+// Razz: 最も高いドアカードを持つプレイヤー
+// 同値の場合はスートランキングで決定 (クラブ < ダイヤ < ハート < スペード)
 func (s *SevenCardStud) determineBringIn() int {
 	bestIdx := 0
-	bestVal := 999
-	bestSuit := 999
+	bestVal := -1
+	bestSuit := -1
+	if !s.lowball {
+		bestVal = 999
+		bestSuit = 999
+	}
 
 	for i, p := range s.players {
 		if len(p.GetDoorCards()) == 0 {
@@ -282,10 +299,20 @@ func (s *SevenCardStud) determineBringIn() int {
 		}
 		suit := SuitRank(door.GetDesign())
 
-		if val < bestVal || (val == bestVal && suit < bestSuit) {
-			bestIdx = i
-			bestVal = val
-			bestSuit = suit
+		if s.lowball {
+			// Razz: 最も高いカードがブリングイン
+			if val > bestVal || (val == bestVal && suit > bestSuit) {
+				bestIdx = i
+				bestVal = val
+				bestSuit = suit
+			}
+		} else {
+			// 通常: 最も低いカードがブリングイン
+			if val < bestVal || (val == bestVal && suit < bestSuit) {
+				bestIdx = i
+				bestVal = val
+				bestSuit = suit
+			}
 		}
 	}
 	return bestIdx
@@ -537,7 +564,9 @@ func (s *SevenCardStud) dealRemainingStreets() {
 	}
 }
 
-// determineBettingLeader 最も強い表向き手を持つアクティブプレイヤーを返す
+// determineBettingLeader ベッティングリーダーを返す
+// 通常: 最も強い表向き手を持つアクティブプレイヤー
+// Razz: 最も弱い (低い) 表向き手を持つアクティブプレイヤー
 func (s *SevenCardStud) determineBettingLeader() int {
 	bestIdx := -1
 	for i, p := range s.players {
@@ -548,8 +577,14 @@ func (s *SevenCardStud) determineBettingLeader() int {
 			bestIdx = i
 			continue
 		}
-		if CompareVisibleHands(p, s.players[bestIdx]) > 0 {
-			bestIdx = i
+		if s.lowball {
+			if CompareVisibleHandsLow(p, s.players[bestIdx]) > 0 {
+				bestIdx = i
+			}
+		} else {
+			if CompareVisibleHands(p, s.players[bestIdx]) > 0 {
+				bestIdx = i
+			}
 		}
 	}
 	if bestIdx == -1 {
@@ -653,18 +688,27 @@ func (s *SevenCardStud) resolveShowdown() {
 		if !p.GetFolded() {
 			if s.communityCard != nil {
 				p.AddHoleCard(s.communityCard)
-				p.EvalBestHand()
-				// 一時的に追加した共有カードを除去
-				p.holeCards = p.holeCards[:len(p.holeCards)-1]
+			}
+			if s.lowball {
+				p.EvalBestHandRazz()
 			} else {
 				p.EvalBestHand()
+			}
+			if s.communityCard != nil {
+				// 一時的に追加した共有カードを除去
+				p.holeCards = p.holeCards[:len(p.holeCards)-1]
 			}
 		}
 	}
 
 	bp := s.bettingPlayers()
 	s.sidePots = CalculateSidePots(bp, s.pot, s.startingChips)
-	wonAmounts := DistributePots(bp, s.sidePots)
+	var wonAmounts map[int]int
+	if s.lowball {
+		wonAmounts = DistributePotsWithWinnerFunc(bp, s.sidePots, FindPotWinnersRazz)
+	} else {
+		wonAmounts = DistributePots(bp, s.sidePots)
+	}
 
 	s.roundResults = make([]SevenCardStudResult, 0)
 	humanLost := false
@@ -672,10 +716,14 @@ func (s *SevenCardStud) resolveShowdown() {
 		if p.GetFolded() {
 			continue
 		}
+		handName := s.getHandName(p.GetHandRank())
+		if s.lowball {
+			handName = getRazzHandName(p.GetHandRank(), p.GetBestHand())
+		}
 		result := SevenCardStudResult{
 			PlayerIdx: i,
 			HandRank:  p.GetHandRank(),
-			HandName:  s.getHandName(p.GetHandRank()),
+			HandName:  handName,
 			BestHand:  p.GetBestHand(),
 			Kickers:   ExtractKickers(p.GetBestHand(), p.GetHandRank()),
 			WonAmount: wonAmounts[i],
@@ -742,6 +790,38 @@ func (s *SevenCardStud) getHandName(rank int) string {
 		return PokerHandNames[rank]
 	}
 	return "Unknown"
+}
+
+// getRazzHandName Razz用ハンド名を返す (例: "8-Low", "Wheel", "One Pair")
+func getRazzHandName(rank int, bestHand []*Card) string {
+	if rank != PokerHandHighCard {
+		if rank >= 0 && rank < len(PokerHandNames) {
+			return PokerHandNames[rank]
+		}
+		return "Unknown"
+	}
+	if len(bestHand) == 0 {
+		return "High Card"
+	}
+	// HighCard: 最高カード値で名前をつける (Ace=1)
+	highVal := 0
+	for _, c := range bestHand {
+		v := c.GetValue()
+		if v > highVal {
+			highVal = v
+		}
+	}
+	// A-2-3-4-5 = Wheel
+	if highVal == 5 {
+		vals := make(map[int]bool)
+		for _, c := range bestHand {
+			vals[c.GetValue()] = true
+		}
+		if vals[1] && vals[2] && vals[3] && vals[4] && vals[5] {
+			return "Wheel"
+		}
+	}
+	return fmt.Sprintf("%d-Low", highVal)
 }
 
 // --- 棋譜 ---
@@ -933,6 +1013,7 @@ type sevenCardStudJSON struct {
 	Profile          *BettingHumanProfileData `json:"pf,omitempty"`
 	LastHumanPlayMs  int                      `json:"hm"`
 	BringInPlayerIdx int                      `json:"bi"`
+	Lowball          bool                     `json:"lw,omitempty"`
 }
 
 const sevenCardStudMaxSliceLen = 1000
@@ -967,6 +1048,7 @@ func (s *SevenCardStud) MarshalJSON() ([]byte, error) {
 		ActionLog:        s.actionLog,
 		LastHumanPlayMs:  s.lastHumanPlayMs,
 		BringInPlayerIdx: s.bringInPlayerIdx,
+		Lowball:          s.lowball,
 	}
 	if s.humanProfile != nil {
 		d := s.humanProfile.Export()
@@ -1053,6 +1135,7 @@ func (s *SevenCardStud) UnmarshalJSON(data []byte) error {
 	}
 	s.lastHumanPlayMs = j.LastHumanPlayMs
 	s.bringInPlayerIdx = j.BringInPlayerIdx
+	s.lowball = j.Lowball
 	if j.Profile != nil {
 		s.humanProfile = &BettingHumanProfile{}
 		s.humanProfile.Import(*j.Profile)
