@@ -28,7 +28,7 @@
   - [2.14 Durak アタック・ディフェンスフロー](#214-durak-アタックディフェンスフロー)
   - [2.15 FortyThieves ドロー・ムーブフロー](#215-fortythieves-ドロームーブフロー)
   - [2.16 PaiGow ベット・セットフロー](#216-paigow-ベットセットフロー)
-  - [2.18 RedDog ベット・スプレッドフロー](#218-reddog-ベットスプレッドフロー)
+  - [2.17 RedDog ベット・スプレッドフロー](#217-reddog-ベットスプレッドフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -2138,7 +2138,7 @@ sequenceDiagram
     Pres-->>User: ゲームクリア表示
 ```
 
-### 2.18 RedDog ベット・スプレッドフロー
+### 2.17 RedDog ベット・スプレッドフロー
 
 ```mermaid
 sequenceDiagram

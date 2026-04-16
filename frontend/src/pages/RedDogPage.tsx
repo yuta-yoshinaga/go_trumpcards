@@ -35,6 +35,9 @@ import { parseReddogCommand, REDDOG_HELP } from '../utils/cli/commands/reddogCom
 import { formatReddogState } from '../utils/cli/formatters/reddogFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 
+/** Minimum bet amount matching backend RedDogMinBet. */
+const REDDOG_MIN_BET = 10;
+
 const RD_TUTORIAL_STEPS: TutorialStep[] = [
   {
     target: '[data-tutorial="rd-bet-controls"]',
@@ -111,7 +114,7 @@ function RedDogPageContent() {
   }
 
   const handleBet = () => execApi('bet', betAmount);
-  const handleRaise = () => execApi('raise', Math.min(raiseAmount, state.ante));
+  const handleRaise = () => execApi('raise', Math.min(raiseAmount, state.ante, state.chips));
   const handleStay = () => execApi('stay');
   const handleReset = () => execApi('reset');
 
@@ -257,7 +260,7 @@ function RedDogPageContent() {
                     type="button"
                     className={btnSuccess}
                     onClick={handleRaise}
-                    disabled={loading || state.chips < 10}
+                    disabled={loading || state.chips < REDDOG_MIN_BET}
                   >
                     {t('button.raise')}
                   </button>
