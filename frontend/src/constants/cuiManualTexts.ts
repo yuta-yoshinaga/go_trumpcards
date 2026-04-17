@@ -44,6 +44,7 @@ import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
 import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
+import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
@@ -114,6 +115,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/war': war,
   '/whist': whist,
   '/yukon': yukon,
+  '/scorpion': scorpion,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

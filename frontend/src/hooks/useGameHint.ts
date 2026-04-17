@@ -32,6 +32,7 @@ import type {
   PokerSquaresResponse,
   PyramidResponse,
   RedDogResponse,
+  ScorpionResponse,
   SevensResponse,
   ShortDeckResponse,
   SpadesResponse,
@@ -80,6 +81,7 @@ import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
+import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
@@ -149,6 +151,7 @@ const hintFactories = {
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),
+  scorpion: (s) => getScorpionHint(s as ScorpionResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

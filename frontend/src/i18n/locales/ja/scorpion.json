@@ -1,0 +1,38 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "スコーピオン",
+  "tableau": "場札",
+  "stock": "ストック",
+  "completed": "完成",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "deal": "配る",
+  "autoComplete": "自動完成",
+  "undo": "元に戻す",
+  "empty": "空",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "stalemate": "手詰まりです",
+  "landscapeBanner": "横向き画面推奨",
+  "frontendHint": {
+    "moveToTableau": "場札間で移動可能なカードがあります",
+    "dealStock": "ストックから配れます"
+  },
+  "tutorial": {
+    "tableau": "ここに7列で配られたカードがあります。表向きのカード(と上に乗るカードすべて)をクリック/ドラッグして移動できます。",
+    "stock": "ストックにはカードが3枚あります。配ボタンで列0〜2の末尾に1枚ずつ追加できます。空列があると配れません。",
+    "controls": "ヒント・ギブアップ・元に戻す等の操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "scorpion": "スコーピオン"
+  }
+}

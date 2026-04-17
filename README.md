@@ -73,6 +73,7 @@ Go + Clean Architecture で実装した51種類のトランプゲーム。CLI �
 | ページワン (Page One) | `pageone` | [CUI](docs/manual/cui/pageone.md) / [Web](docs/manual/web/pageone.md) |
 | レッドドッグ (Red Dog) | `reddog` | [CUI](docs/manual/cui/reddog.md) / [Web](docs/manual/web/reddog.md) |
 | ラズ (Razz) | `razz` | [CUI](docs/manual/cui/razz.md) / [Web](docs/manual/web/razz.md) |
+| スコーピオン (Scorpion) | `scorpion` | [CUI](docs/manual/cui/scorpion.md) / [Web](docs/manual/web/scorpion.md) |
 
 ## Demo
 

@@ -47,6 +47,7 @@ import { PokerSquaresPage } from './pages/PokerSquaresPage';
 import { PyramidPage } from './pages/PyramidPage';
 import { RazzPage } from './pages/RazzPage';
 import { RedDogPage } from './pages/RedDogPage';
+import { ScorpionPage } from './pages/ScorpionPage';
 import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
@@ -113,6 +114,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/fortythieves': <FortyThievesPage />,
   '/canfield': <CanfieldPage />,
   '/yukon': <YukonPage />,
+  '/scorpion': <ScorpionPage />,
   '/whist': <WhistPage />,
   '/poker-squares': <PokerSquaresPage />,
   '/pageone': <PageOnePage />,

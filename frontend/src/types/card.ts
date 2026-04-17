@@ -2262,6 +2262,31 @@ export interface YukonResponse {
   hint?: YukonHint;
 }
 
+// --- Scorpion (スコーピオン) ---
+
+/** A suggested move hint in Scorpion. */
+export interface ScorpionHint {
+  fromCol: number;
+  cardIndex: number;
+  toCol: number;
+}
+
+/** API response shape for a Scorpion game. */
+export interface ScorpionResponse {
+  tableau: KlondikeTableauCard[][];
+  stockCount: number;
+  completedSuits: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: ScorpionHint;
+}
+
 // --- Whist (ホイスト) ---
 
 /** Whist player data with team, scores, and trick count. */
