@@ -10,9 +10,12 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -25,6 +28,7 @@ import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PinochleMeldData, PinochleResponse } from '../types/card';
 import { PinochlePhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { PINOCHLE_HELP, parsePinochleCommand } from '../utils/cli/commands/pinochleCommands';
 import { formatPinochleState } from '../utils/cli/formatters/pinochleFormatter';
@@ -45,9 +49,59 @@ const PINOCHLE_PHASE_KEYS: Readonly<Record<number, string>> = {
 /** Suit labels for display. */
 const SUIT_LABELS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
+/** Pinochle tutorial step definitions. */
+const PN_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="pn-game-info"]',
+    messageKey: 'tutorial.gameInfo',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pn-player-info"]',
+    messageKey: 'tutorial.playerInfo',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pn-trick-display"]',
+    messageKey: 'tutorial.trickDisplay',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pn-meld-area"]',
+    messageKey: 'tutorial.meldArea',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pn-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pn-action-buttons"]',
+    messageKey: 'tutorial.actionButtons',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pn-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
 /** Pinochle game page. */
 export function PinochlePage() {
-  return <PinochlePageContent />;
+  return (
+    <TutorialWrapper gameName="pinochle" steps={PN_TUTORIAL_STEPS}>
+      <PinochlePageContent />
+    </TutorialWrapper>
+  );
 }
 
 /** Inner content of the Pinochle page. */
@@ -126,6 +180,8 @@ function PinochlePageContent() {
       <GamePageHeading title={tc('nav.pinochle')} />
       <PhaseIndicator phaseName={phaseNames[phase]} isHumanTurn={isBidTurn || isTrumpTurn || isPlayTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        <TutorialButton />
+        <ManualButton gamePath="/pinochle" />
       </PhaseIndicator>
 
       {cliEnabled ? (
@@ -167,7 +223,7 @@ function PinochlePageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             {/* Game Info */}
-            <div className="text-white text-center mb-2 text-sm">
+            <div className="text-white text-center mb-2 text-sm" data-tutorial="pn-game-info">
               <span className="mr-4">
                 {t('round')}: {state.roundNumber} / {t('trick')}: {state.trickNumber}
               </span>
@@ -185,7 +241,7 @@ function PinochlePageContent() {
             </div>
 
             {/* Players Info */}
-            <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="grid grid-cols-2 gap-2 mb-3" data-tutorial="pn-player-info">
               {state.players?.map((p) => (
                 <div
                   key={p.id}
@@ -201,7 +257,7 @@ function PinochlePageContent() {
 
             {/* Current Trick */}
             {state.currentTrick?.length > 0 && (
-              <div className="mb-3 p-2 rounded bg-black/40">
+              <div className="mb-3 p-2 rounded bg-black/40" data-tutorial="pn-trick-display">
                 <div className="text-white/70 text-sm mb-1">{tc('common:table', { defaultValue: 'Table' })}:</div>
                 <div className="flex gap-2 justify-center">
                   {state.currentTrick.map((tc, i) => (
@@ -220,7 +276,7 @@ function PinochlePageContent() {
 
             {/* Melds */}
             {(phase === PinochlePhase.MELD || phase === PinochlePhase.ROUND_END) && state.playerMelds && (
-              <div className="mb-3 p-2 rounded bg-purple-900/30">
+              <div className="mb-3 p-2 rounded bg-purple-900/30" data-tutorial="pn-meld-area">
                 <div className="text-white font-bold mb-1">{t('meldScore')}:</div>
                 {state.playerMelds.map((melds: PinochleMeldData[], pIdx: number) =>
                   melds.length > 0 ? (
@@ -258,7 +314,7 @@ function PinochlePageContent() {
           <GameFooter className={`${gameTheme.pinochle.footer} px-4 py-2.5`}>
             {/* Hand */}
             {humanPlayer && humanPlayer.cards.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
+              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="pn-player-hand">
                 {humanPlayer.cards.map((card, idx) => {
                   const isValid = state.validPlayIndices?.includes(idx);
                   return (
@@ -290,7 +346,7 @@ function PinochlePageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            <div className="flex gap-2 items-center flex-wrap">
+            <div className="flex gap-2 items-center flex-wrap" data-tutorial="pn-action-buttons">
               {/* Bid */}
               {isBidTurn && (
                 <>
@@ -349,6 +405,7 @@ function PinochlePageContent() {
               <button
                 type="button"
                 className={btnOutline}
+                data-tutorial="pn-reset-button"
                 onClick={() =>
                   requestConfirm(() => {
                     hideActionLog();
