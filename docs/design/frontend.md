@@ -33,6 +33,8 @@
   - [2.18 YukonPage フェーズ別レンダリングフロー](#218-yukonpage-フェーズ別レンダリングフロー)
   - [2.19 WhistPage フェーズ別レンダリングフロー](#219-whistpage-フェーズ別レンダリングフロー)
   - [2.20 CLIモード コマンド実行フロー](#220-cliモード-コマンド実行フロー)
+  - [2.21 RedDogPage フェーズ別レンダリングフロー](#221-reddogpage-フェーズ別レンダリングフロー)
+  - [2.22 ScorpionPage フェーズ別レンダリングフロー](#222-scorpionpage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -379,7 +381,24 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全51ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    class RedDogResponse {
+        +Card[] initialCards
+        +Card thirdCard
+        +number phase
+        +boolean gameEndFlag
+        +number ante
+        +number raise
+        +number spread
+        +number result
+        +number totalPayout
+        +number chips
+        +ActionLogEntry[] actionLog
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全55ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -720,6 +739,15 @@ classDiagram
         GAME_OVER = 2
     }
 
+    class RedDogPhase {
+        <<enumeration>>
+        BET = 1
+        INITIAL_DEALT = 2
+        SPREAD_DECISION = 3
+        PAIR_THIRD = 4
+        END = 5
+    }
+
     note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase, FortyThievesPhase, CanfieldPhase, YukonPhase は、\nそれぞれ同一の値を持つ別定数です"
 
     note for DurakPhase "DurakPhase の定数は src/pages/DurakPage.tsx 内にローカル定義 (PHASE_ATTACK/DEFEND/BOUT_END)。\nPigsTailPhase の定数は src/pages/PigsTailPage.tsx 内にローカル定義 (PIGTAIL_PHASE_PLAY/END)。\nDaifugoPage は数値 Phase を持たず gameEndFlag と t('phase.play'/'phase.end') を使用する"
@@ -774,7 +802,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全51ゲーム()
+        ...全55ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -830,7 +858,13 @@ classDiagram
 
     PaiGowApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全51ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, whist,\nletitride)"
+    class RedDogApi {
+        +run(cmd, amount?) Promise~RedDogResponse~
+    }
+
+    RedDogApi --> gameApi : uses postJson/gameExec
+
+    note for BlackJackApi "全55ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, scorpion, whist,\nletitride, pokersquares, pageone, reddog, razz)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1209,7 +1243,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全51ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全55ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1672,6 +1706,21 @@ classDiagram
 
     SevenCardStudPage --|> GamePage : follows pattern
 
+    class RazzPage {
+        +CPUプレイヤーエリア (ドアカード表示)
+        +ホールカード・ドアカード表示
+        +ベッティングアクションボタン
+        +ポット・サイドポット表示
+        +HUD統計表示
+        +マック/ショー選択
+        +リバイ/アドオン画面
+        +CPU行動アニメーション
+    }
+
+    note for RazzPage "SevenCardStudPageと構造的に同一\nローボール (A-5) ハンド評価のみ異なる"
+
+    RazzPage --|> GamePage : follows pattern
+
     class DurakPage {
         +CPUプレイヤーエリア (手札枚数表示)
         +テーブルカード (攻撃/防御) 表示
@@ -1738,6 +1787,19 @@ classDiagram
 
     PokerSquaresPage --|> GamePage : follows pattern
 
+    class RedDogPage {
+        +チップ表示
+        +アンテ額入力
+        +初手2枚カード表示
+        +スプレッド表示
+        +3枚目カード表示
+        +レイズ/ステイボタン
+        +配当表(collapsible)
+        +合計配当表示
+    }
+
+    RedDogPage --|> GamePage : follows pattern
+
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
     GamePage --> GameFooter : renders
@@ -1748,10 +1810,10 @@ classDiagram
     GamePage --> GamePageHeading : renders
     GamePage --> ManualButton : renders
 
-    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud)
+    GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud/Razz)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全51ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全55ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1774,15 +1836,15 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (43ゲーム)
+        +Routes (55ゲーム)
     }
 
     class gameCategories {
-        +table: [BlackJack, Baccarat, ThreeCard, PaiGow]
-        +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
-        +trickTaking: [Hearts, Spades, OhHell, Euchre, Bridge, Napoleon]
-        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail, Durak]
-        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves]
+        +table: [BlackJack, Baccarat, ThreeCard, PaiGow, CaribbeanStud, LetItRide, RedDog]
+        +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, Razz, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
+        +trickTaking: [Hearts, Spades, OhHell, Euchre, Bridge, Napoleon, TwoTenJack, Whist]
+        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail, Durak, War, FiftyOne, PageOne]
+        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, Canfield, Yukon, Scorpion, PokerSquares]
         +rummy: [GinRummy, Canasta, Cribbage]
     }
 
@@ -1797,11 +1859,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 42 pages
+    App --> GamePage : routes to 55 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "45名前空間: common + 43ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "57名前空間: common + 55ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
@@ -2503,6 +2565,83 @@ sequenceDiagram
     Formatter-->>useCliGame: テキスト出力
     useCliGame->>Log: addOutput(テキスト)
     Log-->>User: CliTerminal再レンダリング (自動スクロール)
+```
+
+### 2.21 RedDogPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Page as RedDogPage
+    participant Hook as useGameApi
+    participant API as reddogApi
+
+    Note over Page: BET フェーズ
+    Page->>Page: アンテ入力 + ベットボタン表示
+    User->>Page: ベットボタンクリック
+    Page->>Hook: exec('bet', amount)
+    Hook->>API: POST /reddog {cmd='bet', amount}
+    API-->>Hook: RedDogResponse
+    Hook-->>Page: state 更新
+
+    alt スプレッドあり
+        Note over Page: SPREAD_DECISION フェーズ
+        Page->>Page: 初手2枚 + スプレッド + レイズ/ステイボタン表示
+        User->>Page: レイズ or ステイ
+        Page->>Hook: exec('raise', amount) / exec('stay')
+        Hook->>API: POST /reddog
+        API-->>Hook: RedDogResponse
+        Hook-->>Page: state 更新
+    else ペア
+        Note over Page: PAIR_THIRD → END (自動遷移)
+    else 連続
+        Note over Page: END (プッシュ)
+    end
+
+    Note over Page: END フェーズ
+    Page->>Page: 結果 + 配当 + リセットボタン表示
+    User->>Page: リセットボタンクリック
+    Page->>Hook: exec('reset')
+```
+
+### 2.22 ScorpionPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as ScorpionPage
+    participant Hook as useGameApi
+    participant API as scorpionApi
+
+    Note over User,API: プレイフェーズ (phase=0)
+    User->>Page: タブローカード選択 → 移動先列クリック
+    Page->>Hook: dispatch move {fromCol, cardIndex, toCol}
+    Hook->>API: POST /scorpion/exec cmd=move
+    API-->>Hook: ScorpionResponse (phase=0)
+    Hook-->>Page: 再レンダリング → タブロー更新
+
+    User->>Page: ディール (D キー) / ディールボタン
+    Page->>Hook: dispatch deal
+    Hook->>API: POST /scorpion/exec cmd=deal
+    API-->>Hook: ScorpionResponse (ストック3枚が各列末尾へ)
+
+    User->>Page: ヒントボタン (H キー)
+    Page->>Hook: dispatch hint
+    API-->>Hook: ScorpionResponse (hint 付き)
+
+    User->>Page: オートコンプリート (A キー)
+    Page->>Hook: dispatch autocomplete
+    API-->>Hook: ScorpionResponse (phase=0 or 1)
+
+    User->>Page: 元に戻す (Z キー)
+    Page->>Hook: dispatch undo
+    API-->>Hook: ScorpionResponse (前の状態に復元)
+
+    Note over User,API: ゲームクリア (phase=1)
+    Page-->>User: クリアメッセージ + 完成スート数表示
+
+    Note over User,API: ゲームオーバー (phase=2)
+    Page-->>User: 手詰まり / ギブアップメッセージ表示
 ```
 
 ---

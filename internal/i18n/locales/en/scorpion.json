@@ -1,0 +1,19 @@
+{
+  "helpTitle": "Scorpion",
+  "helpMove": "  m <col> [<col>]      move top card between tableau columns",
+  "helpMoveTT": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "helpDeal": "  d                    deal 3 stock cards to columns 0-2",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete",
+  "promptFromColumn": "Enter source column number",
+  "promptCardIndex": "Enter card index",
+  "promptToColumn": "Enter destination column number",
+  "moveUsage": "Usage: m t <col> <cardIdx> t <col> or m <col> <col>",
+  "playing": "Build K-to-A same-suit runs to clear the column",
+  "gameClear": "Game clear! Moves: {{.moveCount}}",
+  "gameOver": "Game over",
+  "stalemate": "Stalemate",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint available"
+}

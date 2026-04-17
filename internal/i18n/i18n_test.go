@@ -91,6 +91,24 @@ func TestQuitSentinel(t *testing.T) {
 	assert.Equal(t, "bye.", i18n.QuitSentinel)
 }
 
+func TestMarkError(t *testing.T) {
+	assert.Equal(t, i18n.ErrorPrefix+"boom", i18n.MarkError("boom"))
+	assert.Equal(t, "", i18n.MarkError(""))
+	// idempotent
+	marked := i18n.MarkError("boom")
+	assert.Equal(t, marked, i18n.MarkError(marked))
+}
+
+func TestStripErrorPrefix(t *testing.T) {
+	body, isErr := i18n.StripErrorPrefix(i18n.ErrorPrefix + "boom")
+	assert.True(t, isErr)
+	assert.Equal(t, "boom", body)
+
+	body, isErr = i18n.StripErrorPrefix("ok")
+	assert.False(t, isErr)
+	assert.Equal(t, "ok", body)
+}
+
 func TestT_English_unknownCommand(t *testing.T) {
 	i18n.SetLang("en")
 	result := i18n.T("unknownCommand")

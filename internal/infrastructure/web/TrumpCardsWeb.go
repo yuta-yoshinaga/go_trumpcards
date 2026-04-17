@@ -347,6 +347,11 @@ func (web *TrumpCardsWeb) registerAll() {
 		scs := domain.NewSevenCardStud(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
 		return usecase.NewSevenCardStudInteractor(scs, new(presenter.SevenCardStudWebPresenter))
 	}))
+	web.register("razz", controller.NewSevenCardStudWebController(func() usecase.SevenCardStudInteractorIF {
+		cfg := domain.DefaultRazzConfig()
+		r := domain.NewRazz(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+		return usecase.NewSevenCardStudInteractor(r, new(presenter.SevenCardStudWebPresenter))
+	}))
 	web.register("clocksolitaire", controller.NewClockSolitaireWebController(func() usecase.ClockSolitaireInteractorIF {
 		cs := domain.NewClockSolitaire(domain.NewTrumpCards(0))
 		return usecase.NewClockSolitaireInteractor(cs, new(presenter.ClockSolitaireWebPresenter))
@@ -415,6 +420,10 @@ func (web *TrumpCardsWeb) registerAll() {
 		yukon := domain.NewYukon(domain.NewTrumpCards(0))
 		return usecase.NewYukonInteractor(yukon, new(presenter.YukonWebPresenter))
 	}))
+	web.register("scorpion", controller.NewScorpionWebController(func() usecase.ScorpionInteractorIF {
+		scorpion := domain.NewScorpion(domain.NewTrumpCards(0))
+		return usecase.NewScorpionInteractor(scorpion, new(presenter.ScorpionWebPresenter))
+	}))
 	web.register("whist", controller.NewWhistWebController(func() usecase.WhistInteractorIF {
 		config := domain.DefaultWhistConfig()
 		players := []*domain.WhistPlayer{
@@ -446,6 +455,12 @@ func (web *TrumpCardsWeb) registerAll() {
 		}
 		po := domain.NewPageOne(domain.NewTrumpCards(0), players, config)
 		return usecase.NewPageOneInteractor(po, new(presenter.PageOneWebPresenter))
+	}))
+	web.register("reddog", controller.NewRedDogWebController(func() usecase.RedDogInteractorIF {
+		return usecase.NewRedDogInteractor(
+			domain.NewDefaultRedDog(),
+			new(presenter.RedDogWebPresenter),
+		)
 	}))
 }
 

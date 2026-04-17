@@ -62,4 +62,6 @@ type SevenCardStudGame interface {
 	ImportProfile(data []byte) error
 	// GetBringInPlayerIdx ブリングインプレイヤーインデックスを取得する
 	GetBringInPlayerIdx() int
+	// GetIsLowball ローボール(Razz)モードかどうかを返す
+	GetIsLowball() bool
 }

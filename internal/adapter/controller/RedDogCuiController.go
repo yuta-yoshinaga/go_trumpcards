@@ -1,0 +1,48 @@
+package controller
+
+import (
+	"math"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// RedDogCuiController レッドドッグCUIコントローラークラス
+type RedDogCuiController struct {
+	ci usecase.RedDogInteractorIF
+}
+
+// NewRedDogCuiController コンストラクタ
+func NewRedDogCuiController(ci usecase.RedDogInteractorIF) *RedDogCuiController {
+	return &RedDogCuiController{ci: ci}
+}
+
+// Exec ゲーム実行
+// コマンド例: "r", "b 100", "raise 50", "s", "log", "q"
+func (rc *RedDogCuiController) Exec(command string) string {
+	return execCuiCommand(
+		command,
+		func(_ []string) string { return rc.ci.Reset() },
+		[]string{"b", "bet", "raise", "s", "stay", "log"},
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "b", "bet":
+				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", 1, math.MaxInt)
+				if !ok {
+					return errMsg, true
+				}
+				return rc.ci.Bet(amount), true
+			case "raise":
+				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Raise amount is required.", "Invalid raise amount. Please enter a number.", 1, math.MaxInt)
+				if !ok {
+					return errMsg, true
+				}
+				return rc.ci.Raise(amount), true
+			case "s", "stay":
+				return rc.ci.Stay(), true
+			default:
+				return handleCuiLog(cmd, rc.ci.ActionLog)
+			}
+		},
+	)
+}

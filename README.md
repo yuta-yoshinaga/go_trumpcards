@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した50種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した51種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -71,6 +71,9 @@ Go + Clean Architecture で実装した50種類のトランプゲーム。CLI �
 | ホイスト (Whist) | `whist` | [CUI](docs/manual/cui/whist.md) / [Web](docs/manual/web/whist.md) |
 | ポーカー・スクエア (Poker Squares) | `pokersquares` | [CUI](docs/manual/cui/pokersquares.md) / [Web](docs/manual/web/pokersquares.md) |
 | ページワン (Page One) | `pageone` | [CUI](docs/manual/cui/pageone.md) / [Web](docs/manual/web/pageone.md) |
+| レッドドッグ (Red Dog) | `reddog` | [CUI](docs/manual/cui/reddog.md) / [Web](docs/manual/web/reddog.md) |
+| ラズ (Razz) | `razz` | [CUI](docs/manual/cui/razz.md) / [Web](docs/manual/web/razz.md) |
+| スコーピオン (Scorpion) | `scorpion` | [CUI](docs/manual/cui/scorpion.md) / [Web](docs/manual/web/scorpion.md) |
 
 ## Demo
 

@@ -1,0 +1,97 @@
+package usecase
+
+import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
+)
+
+// ScorpionInteractorIF スコーピオンインタラクターインタフェース
+type ScorpionInteractorIF interface {
+	// Snapshot serialises game state for KV persistence.
+	Snapshot() ([]byte, error)
+	// Reset ゲーム初期化
+	Reset() string
+	// Deal ストックからタブローに配る
+	Deal() string
+	// MoveTableauToTableau タブローからタブローにカードを移動
+	MoveTableauToTableau(fromCol, cardIndex, toCol int) string
+	// GiveUp ギブアップ
+	GiveUp() string
+	// Hint ヒント取得
+	Hint() string
+	// AutoComplete オートコンプリート
+	AutoComplete() string
+	// ActionLog 棋譜を出力する
+	ActionLog() string
+	// Undo アンドゥ
+	Undo() string
+	// UndoN n回連続アンドゥ
+	UndoN(n int) string
+}
+
+// ScorpionInteractor スコーピオンインタラクタークラス
+type ScorpionInteractor struct {
+	GameBase[interfaces.ScorpionGame]
+	sp presenter.ScorpionPresenter
+}
+
+// NewScorpionInteractor コンストラクタ
+func NewScorpionInteractor(s interfaces.ScorpionGame, sp presenter.ScorpionPresenter) *ScorpionInteractor {
+	mustNotNil("ScorpionInteractor", map[string]any{"s": s, "sp": sp})
+	return &ScorpionInteractor{GameBase: GameBase[interfaces.ScorpionGame]{Game: s}, sp: sp}
+}
+
+// Reset ゲーム初期化
+func (si *ScorpionInteractor) Reset() string {
+	return runAndPresent(si.Game, si.sp, si.Game.Reset)
+}
+
+// Deal ストックからタブローに配る
+func (si *ScorpionInteractor) Deal() string {
+	return execAndPresent(si.Game, si.sp, si.Game.Deal)
+}
+
+// MoveTableauToTableau タブローからタブローにカードを移動
+func (si *ScorpionInteractor) MoveTableauToTableau(fromCol, cardIndex, toCol int) string {
+	return execAndPresent(si.Game, si.sp, func() error {
+		return si.Game.MoveTableauToTableau(fromCol, cardIndex, toCol)
+	})
+}
+
+// GiveUp ギブアップ
+func (si *ScorpionInteractor) GiveUp() string {
+	return runAndPresent(si.Game, si.sp, si.Game.GiveUp)
+}
+
+// Hint ヒント取得
+func (si *ScorpionInteractor) Hint() string {
+	return si.sp.HintOutput(si.Game)
+}
+
+// AutoComplete オートコンプリート
+func (si *ScorpionInteractor) AutoComplete() string {
+	return execAndPresent(si.Game, si.sp, si.Game.AutoComplete)
+}
+
+// ActionLog 棋譜を出力する
+func (si *ScorpionInteractor) ActionLog() string {
+	return si.sp.ActionLogOutput(si.Game)
+}
+
+// Undo アンドゥ
+func (si *ScorpionInteractor) Undo() string {
+	return execAndPresent(si.Game, si.sp, si.Game.Undo)
+}
+
+// UndoN n回連続アンドゥ
+func (si *ScorpionInteractor) UndoN(n int) string {
+	return execAndPresent(si.Game, si.sp, func() error { return si.Game.UndoN(n) })
+}
+
+// RestoreScorpionInteractor deserialises JSON into a ScorpionInteractor.
+func RestoreScorpionInteractor(data []byte, sp presenter.ScorpionPresenter) (*ScorpionInteractor, error) {
+	return restoreAndBuild[domain.Scorpion](data, func(g *domain.Scorpion) *ScorpionInteractor {
+		return &ScorpionInteractor{GameBase: GameBase[interfaces.ScorpionGame]{Game: g}, sp: sp}
+	})
+}

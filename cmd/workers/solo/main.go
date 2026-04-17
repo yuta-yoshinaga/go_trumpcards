@@ -222,6 +222,18 @@ func main() {
 		controller.NewYukonWebControllerWithProvider,
 	))
 
+	// Scorpion
+	must(worker.RegisterKV(mux, "/scorpion/exec", "scorpion:",
+		func() usecase.ScorpionInteractorIF {
+			scorpion := domain.NewScorpion(domain.NewTrumpCards(0))
+			return usecase.NewScorpionInteractor(scorpion, new(presenter.ScorpionWebPresenter))
+		},
+		func(data []byte) (usecase.ScorpionInteractorIF, error) {
+			return usecase.RestoreScorpionInteractor(data, new(presenter.ScorpionWebPresenter))
+		},
+		controller.NewScorpionWebControllerWithProvider,
+	))
+
 	var handler http.Handler = mux
 	if origins := corsmw.ParseOrigins(cloudflare.Getenv("CORS_ALLOWED_ORIGINS")); origins != nil {
 		handler = corsmw.Middleware(origins, mux)

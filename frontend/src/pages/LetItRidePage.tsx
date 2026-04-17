@@ -3,6 +3,7 @@ import { letitrideApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -327,21 +328,13 @@ function LetItRidePageContent() {
             <SettingsPanel title={t('settings.title')} groups={[]} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="lir-bet-controls">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="letitride-bet-amount" className="text-white text-sm">
-                    {t('label.bet')}
-                  </label>
-                  <input
-                    id="letitride-bet-amount"
-                    type="number"
-                    min={10}
-                    max={Math.floor(state.chips / 3)}
-                    step={10}
-                    value={betAmount}
-                    onChange={(e) => setBetAmount(Number(e.target.value))}
-                    className="w-24 px-2 py-1 rounded text-sm"
-                  />
-                </div>
+                <ChipBetInput
+                  id="letitride-bet-amount"
+                  label={t('label.bet')}
+                  value={betAmount}
+                  onChange={setBetAmount}
+                  max={Math.floor(state.chips / 3)}
+                />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
                 </button>

@@ -70,6 +70,9 @@ var gameRegistry = []GameRegistryEntry{
 	{"letitride", "Let It Ride (レット・イット・ライド)", func() cuiGame { return NewLetItRideCui() }},
 	{"pokersquares", "Poker Squares (ポーカー・スクエアズ)", func() cuiGame { return NewPokerSquaresCui() }},
 	{"pageone", "Page One (ページワン)", func() cuiGame { return NewPageOneCui() }},
+	{"reddog", "Red Dog (レッドドッグ)", func() cuiGame { return NewRedDogCui() }},
+	{"razz", "Razz (ラズ)", func() cuiGame { return NewRazzCui() }},
+	{"scorpion", "Scorpion (スコーピオン)", func() cuiGame { return NewScorpionCui() }},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -218,7 +221,7 @@ func (m *GameManager) switchGame(name string) string {
 		if suggestion := cuiutil.SuggestCommand(name, m.gameOrder, 2); suggestion != "" {
 			msg += "\n  " + i18n.Tf("didYouMean", "name", suggestion)
 		}
-		return msg
+		return i18n.MarkError(msg)
 	}
 	if name == m.currentGame {
 		return i18n.Tf("alreadyPlaying", "name", name)

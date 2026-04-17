@@ -401,3 +401,202 @@ func TestCompareThreeCardHands(t *testing.T) {
 		})
 	}
 }
+
+// --- evalRazzHand tests (A-5 lowball: ignores straights/flushes) ---
+
+func TestEvalRazzHand(t *testing.T) {
+	tests := []struct {
+		name  string
+		cards []*Card
+		want  int
+	}{
+		{
+			"wheel A-2-3-4-5 is HighCard (straights ignored)",
+			[]*Card{
+				NewCard(CardDesignSpade, 1, false),
+				NewCard(CardDesignHeart, 2, false),
+				NewCard(CardDesignClover, 3, false),
+				NewCard(CardDesignDiamond, 4, false),
+				NewCard(CardDesignSpade, 5, false),
+			},
+			PokerHandHighCard,
+		},
+		{
+			"flush is HighCard (flushes ignored)",
+			[]*Card{
+				NewCard(CardDesignSpade, 1, false),
+				NewCard(CardDesignSpade, 3, false),
+				NewCard(CardDesignSpade, 5, false),
+				NewCard(CardDesignSpade, 7, false),
+				NewCard(CardDesignSpade, 9, false),
+			},
+			PokerHandHighCard,
+		},
+		{
+			"straight flush is HighCard (both ignored)",
+			[]*Card{
+				NewCard(CardDesignHeart, 1, false),
+				NewCard(CardDesignHeart, 2, false),
+				NewCard(CardDesignHeart, 3, false),
+				NewCard(CardDesignHeart, 4, false),
+				NewCard(CardDesignHeart, 5, false),
+			},
+			PokerHandHighCard,
+		},
+		{
+			"one pair",
+			[]*Card{
+				NewCard(CardDesignSpade, 3, false),
+				NewCard(CardDesignHeart, 3, false),
+				NewCard(CardDesignClover, 5, false),
+				NewCard(CardDesignDiamond, 7, false),
+				NewCard(CardDesignSpade, 9, false),
+			},
+			PokerHandOnePair,
+		},
+		{
+			"two pair",
+			[]*Card{
+				NewCard(CardDesignSpade, 3, false),
+				NewCard(CardDesignHeart, 3, false),
+				NewCard(CardDesignClover, 5, false),
+				NewCard(CardDesignDiamond, 5, false),
+				NewCard(CardDesignSpade, 9, false),
+			},
+			PokerHandTwoPair,
+		},
+		{
+			"three of a kind",
+			[]*Card{
+				NewCard(CardDesignSpade, 4, false),
+				NewCard(CardDesignHeart, 4, false),
+				NewCard(CardDesignClover, 4, false),
+				NewCard(CardDesignDiamond, 7, false),
+				NewCard(CardDesignSpade, 9, false),
+			},
+			PokerHandThreeOfAKind,
+		},
+		{
+			"full house",
+			[]*Card{
+				NewCard(CardDesignSpade, 4, false),
+				NewCard(CardDesignHeart, 4, false),
+				NewCard(CardDesignClover, 4, false),
+				NewCard(CardDesignDiamond, 9, false),
+				NewCard(CardDesignSpade, 9, false),
+			},
+			PokerHandFullHouse,
+		},
+		{
+			"four of a kind",
+			[]*Card{
+				NewCard(CardDesignSpade, 4, false),
+				NewCard(CardDesignHeart, 4, false),
+				NewCard(CardDesignClover, 4, false),
+				NewCard(CardDesignDiamond, 4, false),
+				NewCard(CardDesignSpade, 9, false),
+			},
+			PokerHandFourOfAKind,
+		},
+		{
+			"wrong card count returns HighCard",
+			[]*Card{
+				NewCard(CardDesignSpade, 4, false),
+			},
+			PokerHandHighCard,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, evalRazzHand(tt.cards))
+		})
+	}
+}
+
+func TestCompareRazzCards(t *testing.T) {
+	tests := []struct {
+		name string
+		a, b []*Card
+		want int
+	}{
+		{
+			"wheel beats 6-low",
+			[]*Card{
+				NewCard(CardDesignSpade, 1, false),
+				NewCard(CardDesignHeart, 2, false),
+				NewCard(CardDesignClover, 3, false),
+				NewCard(CardDesignDiamond, 4, false),
+				NewCard(CardDesignSpade, 5, false),
+			},
+			[]*Card{
+				NewCard(CardDesignSpade, 1, false),
+				NewCard(CardDesignHeart, 2, false),
+				NewCard(CardDesignClover, 3, false),
+				NewCard(CardDesignDiamond, 4, false),
+				NewCard(CardDesignHeart, 6, false),
+			},
+			-1,
+		},
+		{
+			"7-low loses to 6-low",
+			[]*Card{
+				NewCard(CardDesignSpade, 1, false),
+				NewCard(CardDesignHeart, 2, false),
+				NewCard(CardDesignClover, 3, false),
+				NewCard(CardDesignDiamond, 5, false),
+				NewCard(CardDesignSpade, 7, false),
+			},
+			[]*Card{
+				NewCard(CardDesignSpade, 1, false),
+				NewCard(CardDesignHeart, 2, false),
+				NewCard(CardDesignClover, 3, false),
+				NewCard(CardDesignDiamond, 4, false),
+				NewCard(CardDesignHeart, 6, false),
+			},
+			1,
+		},
+		{
+			"identical hands tie",
+			[]*Card{
+				NewCard(CardDesignSpade, 1, false),
+				NewCard(CardDesignHeart, 2, false),
+				NewCard(CardDesignClover, 3, false),
+				NewCard(CardDesignDiamond, 4, false),
+				NewCard(CardDesignSpade, 5, false),
+			},
+			[]*Card{
+				NewCard(CardDesignHeart, 1, false),
+				NewCard(CardDesignClover, 2, false),
+				NewCard(CardDesignDiamond, 3, false),
+				NewCard(CardDesignSpade, 4, false),
+				NewCard(CardDesignHeart, 5, false),
+			},
+			0,
+		},
+		{
+			"ace is low (1) not high (14)",
+			[]*Card{
+				NewCard(CardDesignSpade, 1, false), // Ace=1
+				NewCard(CardDesignHeart, 2, false),
+				NewCard(CardDesignClover, 3, false),
+				NewCard(CardDesignDiamond, 4, false),
+				NewCard(CardDesignSpade, 8, false),
+			},
+			[]*Card{
+				NewCard(CardDesignSpade, 2, false),
+				NewCard(CardDesignHeart, 3, false),
+				NewCard(CardDesignClover, 4, false),
+				NewCard(CardDesignDiamond, 5, false),
+				NewCard(CardDesignHeart, 8, false),
+			},
+			-1, // A-8-4-3-2 beats 8-5-4-3-2 because second card 4 < 5
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, compareRazzCards(tt.a, tt.b))
+		})
+	}
+}

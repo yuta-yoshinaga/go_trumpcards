@@ -201,6 +201,19 @@ func main() {
 		controller.NewSevenCardStudWebControllerWithProvider,
 	))
 
+	// Razz
+	must(worker.RegisterKV(mux, "/razz/exec", "razz:",
+		func() usecase.SevenCardStudInteractorIF {
+			cfg := domain.DefaultRazzConfig()
+			r := domain.NewRazz(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewSevenCardStudInteractor(r, new(presenter.SevenCardStudWebPresenter))
+		},
+		func(data []byte) (usecase.SevenCardStudInteractorIF, error) {
+			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))
+		},
+		controller.NewSevenCardStudWebControllerWithProvider,
+	))
+
 	// Pai Gow Poker
 	must(worker.RegisterKV(mux, "/paigow/exec", "paigow:",
 		func() usecase.PaiGowInteractorIF {
@@ -241,6 +254,20 @@ func main() {
 			return usecase.RestoreLetItRideInteractor(data, new(presenter.LetItRideWebPresenter))
 		},
 		controller.NewLetItRideWebControllerWithProvider,
+	))
+
+	// Red Dog
+	must(worker.RegisterKV(mux, "/reddog/exec", "reddog:",
+		func() usecase.RedDogInteractorIF {
+			return usecase.NewRedDogInteractor(
+				domain.NewDefaultRedDog(),
+				new(presenter.RedDogWebPresenter),
+			)
+		},
+		func(data []byte) (usecase.RedDogInteractorIF, error) {
+			return usecase.RestoreRedDogInteractor(data, new(presenter.RedDogWebPresenter))
+		},
+		controller.NewRedDogWebControllerWithProvider,
 	))
 
 	var handler http.Handler = mux

@@ -41,6 +41,8 @@ import type {
   PokerResponse,
   PokerSquaresResponse,
   PyramidResponse,
+  RedDogResponse,
+  ScorpionResponse,
   SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
@@ -83,6 +85,7 @@ const workerUrl: Record<string, string> = {
   paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
+  razz: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
@@ -118,8 +121,10 @@ const workerUrl: Record<string, string> = {
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
   yukon: WORKER_SOLO,
+  scorpion: WORKER_SOLO,
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
+  reddog: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -381,6 +386,9 @@ export interface SevenCardStudConfigInput {
 
 /** API client for the Seven Card Stud /sevencardstud/exec endpoint. */
 export const sevenCardStudApi = createHoldemLikeApi<SevenCardStudResponse, SevenCardStudConfigInput>('sevencardstud');
+
+/** API client for the Razz /razz/exec endpoint. */
+export const razzApi = createHoldemLikeApi<SevenCardStudResponse, SevenCardStudConfigInput>('razz');
 
 /** Configuration options for Pineapple Poker (extends Hold'em with cardIdx for discard). */
 export interface PineappleConfigInput extends HoldemConfigInput {
@@ -973,6 +981,29 @@ export const yukonApi = {
     }),
 };
 
+/** Source or target zone for a Scorpion card move. */
+export interface ScorpionMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Scorpion /scorpion/exec endpoint. */
+export const scorpionApi = {
+  exec: (
+    command: 'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
+    from?: ScorpionMoveZone,
+    to?: ScorpionMoveZone,
+    n?: number,
+  ) =>
+    gameExec<ScorpionResponse>('scorpion', {
+      command,
+      from,
+      to,
+      n,
+    }),
+};
+
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {
   exec: (
@@ -1048,6 +1079,12 @@ export const letitrideApi = {
     gameExec<LetItRideResponse>('letitride', { command, amount }),
 };
 
+/** API client for the Red Dog /reddog/exec endpoint. */
+export const reddogApi = {
+  exec: (command: 'reset' | 'bet' | 'raise' | 'stay' | 'log', amount?: number) =>
+    gameExec<RedDogResponse>('reddog', { command, amount }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1061,6 +1098,7 @@ const games = [
   'shortdeck',
   'pineapple',
   'sevencardstud',
+  'razz',
   'hearts',
   'spades',
   'twotenjack',
@@ -1097,10 +1135,12 @@ const games = [
   'fortythieves',
   'canfield',
   'yukon',
+  'scorpion',
   'whist',
   'letitride',
   'pokersquares',
   'pageone',
+  'reddog',
 ] as const;
 type Game = (typeof games)[number];
 

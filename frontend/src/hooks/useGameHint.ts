@@ -31,6 +31,8 @@ import type {
   PokerResponse,
   PokerSquaresResponse,
   PyramidResponse,
+  RedDogResponse,
+  ScorpionResponse,
   SevensResponse,
   ShortDeckResponse,
   SpadesResponse,
@@ -78,6 +80,8 @@ import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
+import { getReddogHint } from '../utils/hints/reddogHint';
+import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
@@ -137,14 +141,17 @@ const hintFactories = {
   pinochle: (s) => getPinochleHint(s as PinochleResponse),
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
   sevencardstud: () => null,
+  razz: () => null,
   fortythieves: () => null,
   paigow: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
   letitride: (s) => getLetitrideHint(s as LetItRideResponse),
+  reddog: (s) => getReddogHint(s as RedDogResponse),
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),
+  scorpion: (s) => getScorpionHint(s as ScorpionResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

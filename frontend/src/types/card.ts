@@ -2262,6 +2262,31 @@ export interface YukonResponse {
   hint?: YukonHint;
 }
 
+// --- Scorpion (スコーピオン) ---
+
+/** A suggested move hint in Scorpion. */
+export interface ScorpionHint {
+  fromCol: number;
+  cardIndex: number;
+  toCol: number;
+}
+
+/** API response shape for a Scorpion game. */
+export interface ScorpionResponse {
+  tableau: KlondikeTableauCard[][];
+  stockCount: number;
+  completedSuits: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: ScorpionHint;
+}
+
 // --- Whist (ホイスト) ---
 
 /** Whist player data with team, scores, and trick count. */
@@ -2364,6 +2389,27 @@ export interface LetItRideResponse {
   bet1Payout: number;
   bet2Payout: number;
   bet3Payout: number;
+  totalPayout: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Red Dog (レッドドッグ) ---
+
+/** Red Dog API response. */
+export interface RedDogResponse {
+  /** Initial 2 cards. */
+  initialCards: Card[];
+  /** Third card revealed at end (or after raise/stay). */
+  thirdCard?: Card;
+  phase: number;
+  chips: number;
+  ante: number;
+  raise: number;
+  /** Spread = |rank2 - rank1| - 1, 0 when consecutive or pair. */
+  spread: number;
+  result: number;
   totalPayout: number;
   message: string;
   messageCode?: string;

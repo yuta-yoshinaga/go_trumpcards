@@ -6,6 +6,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -58,7 +59,7 @@ func TestOldMaidCuiController_Method(t *testing.T) {
 		omiMock.AssertCalled(t, "Shuffle")
 	})
 	t.Run("success Exec other", func(t *testing.T) {
-		assert.Equal(t, "コマンドが不明です: other", tomc.Exec("other"))
+		assert.Equal(t, i18n.ErrorPrefix+"コマンドが不明です: other", tomc.Exec("other"))
 	})
 	t.Run("success Exec empty", func(t *testing.T) {
 		assert.Equal(t, "'help' でコマンド一覧を表示します。", tomc.Exec(""))

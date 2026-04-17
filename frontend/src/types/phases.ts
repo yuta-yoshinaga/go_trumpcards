@@ -419,6 +419,13 @@ export const YukonPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Scorpion phase constants (sync: internal/domain/Scorpion.go). */
+export const ScorpionPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Whist phase constants (sync: internal/domain/Whist.go). */
 export const WhistPhase = {
   PLAY: 0,
@@ -439,4 +446,13 @@ export const LetItRidePhase = {
   FIRST_DECISION: 2,
   SECOND_DECISION: 3,
   END: 4,
+} as const;
+
+/** Red Dog phase constants (sync: internal/domain/RedDog.go). */
+export const RedDogPhase = {
+  BET: 1,
+  INITIAL_DEALT: 2,
+  SPREAD_DECISION: 3,
+  PAIR_THIRD: 4,
+  END: 5,
 } as const;

@@ -114,6 +114,12 @@ tags:
     description: Let It Ride (レットイットライド) game
   - name: pokersquares
     description: Poker Squares (ポーカー・スクエア) game
+  - name: reddog
+    description: Red Dog (レッドドッグ) game
+  - name: razz
+    description: Razz (ラズ) game - lowball variant of Seven Card Stud
+  - name: scorpion
+    description: Scorpion (スコーピオン) game - variant of solitaire combining Yukon and Spider mechanics
 
 paths:
   /blackjack/exec:
@@ -4706,6 +4712,111 @@ paths:
         '400':
           description: Bad request
 
+  /scorpion/exec:
+    post:
+      tags:
+        - scorpion
+      summary: Execute a Scorpion (スコーピオン) game command
+      description: |
+        Send a command to advance a Scorpion solitaire session identified by `sessionId`.
+        Scorpion combines Yukon's "move any face-up card (with everything above it) in a group"
+        mechanic with Spider's "same-suit K-to-A sequence is removed from the board" mechanic.
+        49 cards are dealt into 7 columns (columns 0-3 start with 3 face-down + 4 face-up;
+        columns 4-6 are fully face-up). Remaining 3 cards form the stock.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All 4 suits removed |
+        | GameOver  | 2     | Player gave up |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `deal`           | `d`     | Deal 3 stock cards to columns 0-2 (requires no empty column) |
+        | `move`           | `m`     | Move card(s) between tableau columns (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-remove completed suits when all cards are face-up |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: scorpionExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, deal, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  stockCount:
+                    type: integer
+                  completedSuits:
+                    type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
   /whist/exec:
     post:
       tags:
@@ -4992,6 +5103,187 @@ paths:
                     colScores: []
                     totalScore: 0
                     message: "param error: row and col are required."
+
+  /reddog/exec:
+    post:
+      tags:
+        - reddog
+      summary: Execute a Red Dog game command
+      description: |
+        Send a command to advance the Red Dog (レッドドッグ) game session
+        identified by `sessionId`. Red Dog is a single-player casino card game
+        using a standard 52-card deck. Player places an ante bet, then 2 cards
+        are dealt. If ranks are consecutive → push; if equal (pair) → a third
+        card is dealt (match = 11:1, else push). Otherwise a spread is shown
+        and the player may raise (up to ante) or stay before the third card.
+
+        | Phase           | Value | Description |
+        |-----------------|-------|-------------|
+        | Bet             | `1`   | Place ante bet |
+        | InitialDealt    | `2`   | 2 cards dealt (auto-resolved) |
+        | SpreadDecision  | `3`   | Raise or Stay |
+        | PairThird       | `4`   | Third card for pair (auto) |
+        | End             | `5`   | Round complete |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place ante (requires `amount`) |
+        | `raise` | —       | Raise before third card (requires `amount`, max ante) |
+        | `stay`  | `s`     | Stay (no raise) and draw third card |
+        | `log`   | —       | View action log |
+      operationId: reddogExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedDogRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 as ante
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              raise:
+                summary: Raise 50
+                value:
+                  command: raise
+                  amount: 50
+                  sessionId: my-session-001
+              stay:
+                summary: Stay (no raise)
+                value:
+                  command: stay
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedDogResponse'
+
+  /razz/exec:
+    post:
+      tags:
+        - razz
+      summary: Execute a Razz game command
+      description: |
+        Send a command to advance the Razz game session identified by
+        `sessionId`.  Razz is a lowball variant of Seven Card Stud where
+        the lowest hand wins using A-5 lowball rules.  Ace is always low,
+        straights and flushes don't count against you.  The best possible
+        hand is A-2-3-4-5 (the wheel).
+
+        Each player receives 2 face-down hole cards and 1 face-up door card
+        on Third Street, then 1 face-up card each on Fourth through Sixth
+        Street, and 1 final face-down card on Seventh Street.  Uses antes
+        and bring-in (highest door card brings in, unlike Seven Card Stud
+        where lowest brings in).  Best low 5 out of 7 cards wins.
+
+        The game supports configurable table sizes: 2-max through 7-max
+        (default 4, i.e., 1 human + 3 CPU).
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Init       | `0`   | Before any cards are dealt |
+        | ThirdSt    | `1`   | 2 hole cards + 1 door card; first betting round (bring-in) |
+        | FourthSt   | `2`   | 4th card (face-up); betting round |
+        | FifthSt    | `3`   | 5th card (face-up); betting round |
+        | SixthSt    | `4`   | 6th card (face-up); betting round |
+        | SeventhSt  | `5`   | 7th card (face-down); final betting round |
+        | Showdown   | `6`   | Hands evaluated; lowest hand wins |
+        | End        | `7`   | Round complete; results displayed |
+        | Rebuy      | `8`   | Rebuy/addon decision phase |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `fold`  | `f`     | Fold and forfeit the pot |
+        | `check` | `ck`    | Pass without betting (only when no outstanding bet) |
+        | `call`  | `c`     | Match the current bet |
+        | `bet`   | `b`     | Place a bet (use `amount`) |
+        | `raise` | `ra`    | Raise by a specified amount on top of calling (use `amount`) |
+        | `allin` | `a`     | Go all-in with all remaining chips |
+        | `rebuy` | `rb`    | Buy back chips during rebuy period |
+        | `skiprebuy` | `sr` | Skip rebuy opportunity |
+        | `addon` | `ad`    | Add chips (one-time addon purchase) |
+        | `skipaddon` | `sa` | Skip addon opportunity |
+        | `muck`  | `m`     | Muck (hide) hand at showdown |
+        | `show`  | `sh`    | Show hand at showdown |
+        | `log`   | `l`     | View action log |
+        | `quit`  | `q`     | End the session |
+      operationId: razzExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevenCardStudRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              call:
+                summary: Call
+                value:
+                  command: call
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 40
+                value:
+                  command: bet
+                  amount: 40
+                  sessionId: my-session-001
+              allin:
+                summary: Go all-in
+                value:
+                  command: allin
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenCardStudResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    pot: 0
+                    sidePots: []
+                    dealerIdx: 0
+                    currentTurn: 0
+                    phase: 0
+                    gameEndFlag: false
+                    lastBet: 0
+                    minRaise: 0
+                    roundResults: []
+                    cpuActions: []
+                    message: param error.
 
 components:
   schemas:
@@ -12766,3 +13058,78 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Red Dog (レッドドッグ)
+    # -------------------------------------------------------------------------
+    RedDogRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, raise, stay, s, log]
+          description: Game command to execute.
+        amount:
+          type: integer
+          description: Bet or raise amount (required for `bet` and `raise` commands).
+          example: 100
+        sessionId:
+          type: string
+          description: Session identifier for game state persistence.
+
+    RedDogResponse:
+      type: object
+      properties:
+        initialCards:
+          type: array
+          description: The initial 2 dealt cards.
+          items:
+            $ref: '#/components/schemas/Card'
+        thirdCard:
+          description: Third card (present after raise/stay or pair resolution).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        phase:
+          type: integer
+          description: "Current game phase: 1=Bet, 2=InitialDealt, 3=SpreadDecision, 4=PairThird, 5=End."
+          example: 1
+        chips:
+          type: integer
+          description: Player's chip balance.
+          example: 1000
+        ante:
+          type: integer
+          description: Ante bet amount.
+          example: 100
+        raise:
+          type: integer
+          description: Raise amount (0 if not raised).
+          example: 0
+        spread:
+          type: integer
+          description: "Spread value (|rank2 - rank1| - 1). 0 for pairs and consecutive ranks."
+          example: 4
+        result:
+          type: integer
+          description: "Game result: 1=Win, 0=Draw/Push, -1=Lose."
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout returned to the player.
+          example: 0
+        message:
+          type: string
+          description: Human-readable status or result message.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code for i18n.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template.
