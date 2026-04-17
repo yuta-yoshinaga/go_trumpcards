@@ -1840,10 +1840,10 @@ classDiagram
     }
 
     class gameCategories {
-        +table: [BlackJack, Baccarat, ThreeCard, PaiGow]
+        +table: [BlackJack, Baccarat, ThreeCard, PaiGow, CaribbeanStud, LetItRide, RedDog]
         +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, Razz, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
-        +trickTaking: [Hearts, Spades, OhHell, Euchre, Bridge, Napoleon]
-        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail, Durak]
+        +trickTaking: [Hearts, Spades, OhHell, Euchre, Bridge, Napoleon, TwoTenJack, Whist]
+        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail, Durak, War, FiftyOne, PageOne]
         +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, Canfield, Yukon, Scorpion, PokerSquares]
         +rummy: [GinRummy, Canasta, Cribbage]
     }
