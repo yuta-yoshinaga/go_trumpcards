@@ -1,0 +1,19 @@
+{
+  "helpTitle": "Scorpion (スコーピオン)",
+  "helpMove": "  m <col> [<col>]      move top card between tableau columns",
+  "helpMoveTT": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "helpDeal": "  d                    deal 3 stock cards to columns 0-2",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete",
+  "promptFromColumn": "移動元の列番号を入力してください",
+  "promptCardIndex": "カード番号を入力してください",
+  "promptToColumn": "移動先の列番号を入力してください",
+  "moveUsage": "使用法: m t <列> <カードID> t <列> または m <列> <列>",
+  "playing": "同スートでK-A列を作ってください",
+  "gameClear": "ゲームクリア！ 手数: {{.moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "stalemate": "手詰まりです",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません"
+}

@@ -43,6 +43,7 @@ import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
+import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
@@ -113,4 +114,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/fiftyone': fiftyone,
   '/whist': whist,
   '/yukon': yukon,
+  '/scorpion': scorpion,
 };

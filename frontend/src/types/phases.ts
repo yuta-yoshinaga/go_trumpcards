@@ -419,6 +419,13 @@ export const YukonPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Scorpion phase constants (sync: internal/domain/Scorpion.go). */
+export const ScorpionPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Whist phase constants (sync: internal/domain/Whist.go). */
 export const WhistPhase = {
   PLAY: 0,

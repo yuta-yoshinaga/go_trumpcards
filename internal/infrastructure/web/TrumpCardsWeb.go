@@ -420,6 +420,10 @@ func (web *TrumpCardsWeb) registerAll() {
 		yukon := domain.NewYukon(domain.NewTrumpCards(0))
 		return usecase.NewYukonInteractor(yukon, new(presenter.YukonWebPresenter))
 	}))
+	web.register("scorpion", controller.NewScorpionWebController(func() usecase.ScorpionInteractorIF {
+		scorpion := domain.NewScorpion(domain.NewTrumpCards(0))
+		return usecase.NewScorpionInteractor(scorpion, new(presenter.ScorpionWebPresenter))
+	}))
 	web.register("whist", controller.NewWhistWebController(func() usecase.WhistInteractorIF {
 		config := domain.DefaultWhistConfig()
 		players := []*domain.WhistPlayer{

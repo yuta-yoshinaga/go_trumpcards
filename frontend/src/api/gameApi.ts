@@ -42,6 +42,7 @@ import type {
   PokerSquaresResponse,
   PyramidResponse,
   RedDogResponse,
+  ScorpionResponse,
   SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
@@ -120,6 +121,7 @@ const workerUrl: Record<string, string> = {
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
   yukon: WORKER_SOLO,
+  scorpion: WORKER_SOLO,
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
@@ -979,6 +981,29 @@ export const yukonApi = {
     }),
 };
 
+/** Source or target zone for a Scorpion card move. */
+export interface ScorpionMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Scorpion /scorpion/exec endpoint. */
+export const scorpionApi = {
+  exec: (
+    command: 'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
+    from?: ScorpionMoveZone,
+    to?: ScorpionMoveZone,
+    n?: number,
+  ) =>
+    gameExec<ScorpionResponse>('scorpion', {
+      command,
+      from,
+      to,
+      n,
+    }),
+};
+
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {
   exec: (
@@ -1110,6 +1135,7 @@ const games = [
   'fortythieves',
   'canfield',
   'yukon',
+  'scorpion',
   'whist',
   'letitride',
   'pokersquares',

@@ -76,7 +76,7 @@ Games are distributed across three Workers to stay under the 1MB gzip size limit
 |--------|----------|-------------|-------|
 | **casino** | Table & poker | `cmd/workers/casino/main.go` | blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, caribbeanstud, sevencardstud, paigow, letitride, reddog, razz |
 | **classic** | Trick-taking & matching | `cmd/workers/classic/main.go` | hearts, spades, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, twotenjack, war, durak, fiftyone, whist |
-| **solo** | Solitaire & rummy | `cmd/workers/solo/main.go` | klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, pokersquares |
+| **solo** | Solitaire & rummy | `cmd/workers/solo/main.go` | klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, scorpion, pokersquares |
 
 The frontend routes requests to the correct Worker via `workerUrl` mapping in `frontend/src/api/gameApi.ts`. When `VITE_WORKER_*_URL` env vars are unset, requests fall back to relative URLs (Docker deployment).
 

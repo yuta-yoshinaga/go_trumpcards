@@ -118,6 +118,8 @@ tags:
     description: Red Dog (レッドドッグ) game
   - name: razz
     description: Razz (ラズ) game - lowball variant of Seven Card Stud
+  - name: scorpion
+    description: Scorpion (スコーピオン) game - variant of solitaire combining Yukon and Spider mechanics
 
 paths:
   /blackjack/exec:
@@ -4701,6 +4703,111 @@ paths:
                         type: integer
                       toZone:
                         type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /scorpion/exec:
+    post:
+      tags:
+        - scorpion
+      summary: Execute a Scorpion (スコーピオン) game command
+      description: |
+        Send a command to advance a Scorpion solitaire session identified by `sessionId`.
+        Scorpion combines Yukon's "move any face-up card (with everything above it) in a group"
+        mechanic with Spider's "same-suit K-to-A sequence is removed from the board" mechanic.
+        49 cards are dealt into 7 columns (columns 0-3 start with 3 face-down + 4 face-up;
+        columns 4-6 are fully face-up). Remaining 3 cards form the stock.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All 4 suits removed |
+        | GameOver  | 2     | Player gave up |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `deal`           | `d`     | Deal 3 stock cards to columns 0-2 (requires no empty column) |
+        | `move`           | `m`     | Move card(s) between tableau columns (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-remove completed suits when all cards are face-up |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: scorpionExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, deal, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  stockCount:
+                    type: integer
+                  completedSuits:
+                    type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
                       toCol:
                         type: integer
                   message:
