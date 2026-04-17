@@ -661,7 +661,7 @@ func TestScorpion_UnmarshalJSON_invalid(t *testing.T) {
 		for i := range bigLog {
 			bigLog[i] = &domain.ActionLogEntry{}
 		}
-		data, _ := json.Marshal(map[string]interface{}{"al": bigLog})
+		data, _ := json.Marshal(map[string]any{"al": bigLog})
 		s := &domain.Scorpion{}
 		err := json.Unmarshal(data, s)
 		assert.Error(t, err)
@@ -672,7 +672,7 @@ func TestScorpion_UnmarshalJSON_invalid(t *testing.T) {
 		for i := range bigCol {
 			bigCol[i] = &domain.KlondikeTableauCard{}
 		}
-		data, _ := json.Marshal(map[string]interface{}{
+		data, _ := json.Marshal(map[string]any{
 			"tb": [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard{bigCol},
 		})
 		s := &domain.Scorpion{}

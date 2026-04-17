@@ -257,7 +257,9 @@ func TestYukon_MoveTableauToTableau(t *testing.T) {
 
 	t.Run("invalid card index", func(t *testing.T) {
 		y := setupPlayingYukon()
-		err := y.MoveTableauToTableau(0, -1, 1)
+		// -1 is valid shorthand for "top card" (see "cardIndex -1 shorthand" sub-test above),
+		// so test out-of-range values (<-1 and >=len).
+		err := y.MoveTableauToTableau(0, -2, 1)
 		assert.Error(t, err)
 		err = y.MoveTableauToTableau(0, 100, 1)
 		assert.Error(t, err)
