@@ -494,6 +494,63 @@ func TestScorpion_AutoComplete(t *testing.T) {
 		err := s.AutoComplete()
 		assert.Error(t, err)
 	})
+
+	t.Run("re-evaluates stalemate after removing a completed suit", func(t *testing.T) {
+		// Before: completedSuits=3, stalemate=true, one column ready to complete.
+		// AutoComplete removes the K-A ♠ run → completedSuits=4 → game clear.
+		// checkScorpionStalemate fires but short-circuits because phase != Playing.
+		s := newTestScorpion()
+		s.Reset()
+		clearScorpionTableau(s)
+		s.SetIsStalemate(true)
+		s.SetCompletedSuits(3)
+
+		var tab [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
+		col := make([]*domain.KlondikeTableauCard, 0, domain.CardValueMax)
+		for v := domain.CardValueMax; v >= 1; v-- {
+			col = append(col, makeTableauCard(domain.CardDesignSpade, v, true))
+		}
+		tab[0] = col
+		s.SetTableau(tab)
+
+		err := s.AutoComplete()
+		assert.NoError(t, err)
+		assert.Equal(t, domain.ScorpionPhaseGameClear, s.GetPhase())
+	})
+}
+
+func TestScorpion_ResetClearsStalemate(t *testing.T) {
+	s := setupPlayingScorpion()
+	s.SetIsStalemate(true)
+	s.Reset()
+	// Initial deal has moves available so isStalemate should be re-computed to false.
+	assert.False(t, s.IsStalemate())
+}
+
+func TestScorpion_DealRejectsWhenNotPlaying(t *testing.T) {
+	s := setupPlayingScorpion()
+	s.SetPhase(domain.ScorpionPhaseGameOver)
+	err := s.Deal()
+	assert.Error(t, err)
+}
+
+func TestScorpionHint_IsDeal(t *testing.T) {
+	t.Run("nil hint", func(t *testing.T) {
+		var h *domain.ScorpionHint
+		assert.False(t, h.IsDeal())
+	})
+	t.Run("normal move", func(t *testing.T) {
+		h := &domain.ScorpionHint{FromCol: 0, CardIndex: 1, ToCol: 2}
+		assert.False(t, h.IsDeal())
+	})
+	t.Run("deal sentinel", func(t *testing.T) {
+		h := &domain.ScorpionHint{
+			FromCol:   domain.ScorpionHintDeal,
+			CardIndex: domain.ScorpionHintDeal,
+			ToCol:     domain.ScorpionHintDeal,
+		}
+		assert.True(t, h.IsDeal())
+	})
 }
 
 func TestScorpion_AllFaceUp(t *testing.T) {

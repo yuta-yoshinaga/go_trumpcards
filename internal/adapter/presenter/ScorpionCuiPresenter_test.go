@@ -107,7 +107,11 @@ func TestScorpionCuiPresenter_HintOutput(t *testing.T) {
 
 	t.Run("deal hint", func(t *testing.T) {
 		sg := new(interfaces.MockScorpionGame)
-		sg.On("GetHint").Return(&domain.ScorpionHint{FromCol: -1, CardIndex: -1, ToCol: -1})
+		sg.On("GetHint").Return(&domain.ScorpionHint{
+			FromCol:   domain.ScorpionHintDeal,
+			CardIndex: domain.ScorpionHintDeal,
+			ToCol:     domain.ScorpionHintDeal,
+		})
 
 		p := new(ScorpionCuiPresenter)
 		result := p.HintOutput(sg)

@@ -60,7 +60,7 @@ func (p *ScorpionCuiPresenter) HintOutput(s interfaces.ScorpionGame) string {
 	if hint == nil {
 		return "ヒントはありません。\n"
 	}
-	if hint.FromCol < 0 {
+	if hint.IsDeal() {
 		return "ヒント: d でストックから配ってください\n"
 	}
 	return fmt.Sprintf("ヒント: タブロー列%d[%d] → タブロー列%d\n", hint.FromCol, hint.CardIndex, hint.ToCol)

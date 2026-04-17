@@ -37,11 +37,20 @@ const ScorpionStockSize = 3
 // ScorpionCompletedSuitsCnt ゲームクリアに必要な完成スート数
 const ScorpionCompletedSuitsCnt = 4
 
-// ScorpionHint ヒント
+// ScorpionHintDeal はストックから配るのが最善手であることを示すセンチネル値。
+// ScorpionHint のフィールドすべてがこの値のとき、通常のカード移動ではなく Deal コマンドを意味する。
+const ScorpionHintDeal = -1
+
+// ScorpionHint ヒント。FromCol/CardIndex/ToCol が全て ScorpionHintDeal の場合は「ストックから配る」を示す。
 type ScorpionHint struct {
 	FromCol   int
 	CardIndex int
 	ToCol     int
+}
+
+// IsDeal は「ストックから配る」ヒントかどうかを返す。
+func (h *ScorpionHint) IsDeal() bool {
+	return h != nil && h.FromCol == ScorpionHintDeal
 }
 
 // Scorpion スコーピオンゲームクラス
@@ -102,6 +111,9 @@ func (s *Scorpion) Reset() {
 	for s.trumpCards.GetRemainingCount() > 0 {
 		s.stock = append(s.stock, s.trumpCards.DrawCard())
 	}
+
+	// 初期局面でも手詰まり状態を評価しておく（他のエントリポイントと同じ不変条件を保つ）
+	s.checkScorpionStalemate()
 }
 
 // Deal ストックから先頭3列に1枚ずつ配る
@@ -119,14 +131,16 @@ func (s *Scorpion) Deal() error {
 		}
 	}
 	s.takeSnapshot()
-	// ストックの3枚を列0,1,2に表向きで配る
-	dealt := make([]*Card, 0, len(s.stock))
-	for i := range len(s.stock) {
+	// ストックのカードを列0から順に1枚ずつ表向きで配る。
+	// 通常は ScorpionStockSize (3) 枚で ScorpionTableauCnt 以下だが、将来的な安全のため min を取る。
+	dealCount := min(len(s.stock), ScorpionTableauCnt)
+	dealt := make([]*Card, 0, dealCount)
+	for i := range dealCount {
 		card := s.stock[i]
 		s.tableau[i] = append(s.tableau[i], &KlondikeTableauCard{Card: card, FaceUp: true})
 		dealt = append(dealt, card)
 	}
-	s.stock = s.stock[:0]
+	s.stock = s.stock[dealCount:]
 	s.moveCount++
 	s.appendLog("deal", "ストックから列0-2に1枚ずつ配りました", dealt)
 	// 配った後に完成スートをチェック
@@ -262,7 +276,7 @@ func (s *Scorpion) GetHint() *ScorpionHint {
 			}
 		}
 		if !hasEmpty {
-			return &ScorpionHint{FromCol: -1, CardIndex: -1, ToCol: -1}
+			return &ScorpionHint{FromCol: ScorpionHintDeal, CardIndex: ScorpionHintDeal, ToCol: ScorpionHintDeal}
 		}
 	}
 	return nil
@@ -290,6 +304,8 @@ func (s *Scorpion) AutoComplete() error {
 	}
 	s.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
 	s.checkGameClear()
+	// 除去によって新しい手が現れた可能性があるため、手詰まり状態を再評価する
+	s.checkScorpionStalemate()
 	return nil
 }
 

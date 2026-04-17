@@ -162,7 +162,6 @@ function ScorpionPageContent() {
   const { playSound } = useSound();
   const {
     state,
-    setState,
     loading,
     error,
     exec: apiCall,
@@ -237,10 +236,9 @@ function ScorpionPageContent() {
     void apiCall('giveup');
   }, [apiCall]);
 
-  const handleHint = useCallback(async () => {
-    const res = await scorpionApi.exec('hint');
-    setState((prev) => (prev ? { ...prev, hint: res.hint } : prev));
-  }, [setState]);
+  const handleHint = useCallback(() => {
+    void apiCall('hint');
+  }, [apiCall]);
 
   const handleAutoComplete = useCallback(() => {
     void apiCall('autocomplete');
