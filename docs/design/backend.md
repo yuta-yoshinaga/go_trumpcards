@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全54ゲーム)](#12-ゲームドメイン-全54ゲーム)
+  - [1.2 ゲームドメイン (全55ゲーム)](#12-ゲームドメイン-全55ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -70,6 +70,7 @@
   - [3.37 LetItRide フェーズ遷移](#337-letitride-フェーズ遷移)
   - [3.38 PokerSquares フェーズ遷移](#338-pokersquares-フェーズ遷移)
   - [3.39 RedDog フェーズ遷移](#339-reddog-フェーズ遷移)
+  - [3.40 Scorpion フェーズ遷移](#340-scorpion-フェーズ遷移)
 
 ---
 
@@ -137,7 +138,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全54ゲーム)
+### 1.2 ゲームドメイン (全55ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1328,6 +1329,32 @@ classDiagram
 
     Yukon --> "*" KlondikeTableauCard
 
+    class Scorpion {
+        -trumpCards *TrumpCards
+        -tableau [7][]*KlondikeTableauCard
+        -stock []*Card
+        -completedSuits int
+        -phase ScorpionPhase
+        -moveCount int
+        -actionLog []*ActionLogEntry
+        -history []*scorpionSnapshot
+        -isStalemate bool
+        +Reset()
+        +Deal() error
+        +MoveTableauToTableau(fromCol int, cardIndex int, toCol int) error
+        +GetHint() *ScorpionHint
+        +AutoComplete() error
+        +AllFaceUp() bool
+        +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
+        +GiveUp()
+        +GetPhase() ScorpionPhase
+    }
+
+    Scorpion --> "*" KlondikeTableauCard
+    Scorpion --> "1" TrumpCards
+
     class Canfield {
         -trumpCards *TrumpCards
         -tableau [4][]*CanfieldTableauCard
@@ -1456,7 +1483,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全52ゲーム共通)**
+**Interactor パターン (全55ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -2905,5 +2932,27 @@ stateDiagram-v2
 ```
 
 RedDog 固有のアクション: `Bet(amount)` / `Raise(amount)` / `Stay`。2枚のカードのランク差（スプレッド）に基づき、3枚目がその間に入るかを賭ける。ペア時は11:1配当のチャンス、連続はプッシュ。
+
+### 3.40 Scorpion フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : MoveTableauToTableau()
+    Playing --> Playing : Deal() (ストック3枚配布)
+    Playing --> Playing : Undo() / UndoN() / GetHint()
+    Playing --> GameClear : 4スートが完成した
+    Playing --> GameClear : AutoComplete()
+    Playing --> GameOver : GiveUp()
+    Playing --> GameOver : 手詰まり検出 (isStalemate)
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : ScorpionPhasePlaying = 0
+    note right of GameClear : ScorpionPhaseGameClear = 1
+    note right of GameOver : ScorpionPhaseGameOver = 2
+```
+
+Scorpion 固有のアクション: `MoveTableauToTableau(fromCol, cardIndex, toCol)` / `Deal` / `Undo` / `UndoN` / `GiveUp`。Yukon 的な「任意カード以降を一括で移動」ルールと Spider 的な「同スート13枚で自動除去」ルールを組み合わせた 52 枚 1 デッキのソリティア。ストック 3 枚は各列の末尾に追加され、4 スート全完成でゲームクリア。
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。
