@@ -99,7 +99,7 @@ function PegBoard({ scores, pointLimit }: { scores: { name: string; score: numbe
         const pct = Math.min((p.score / pointLimit) * 100, 100);
         return (
           <div key={idx} className="mb-1">
-            <div className="flex justify-between text-white/70 text-xs mb-0.5">
+            <div className="flex justify-between text-ds-text-muted text-xs mb-0.5">
               <span>{p.name}</span>
               <span>
                 {p.score}/{pointLimit}
@@ -107,7 +107,7 @@ function PegBoard({ scores, pointLimit }: { scores: { name: string; score: numbe
             </div>
             <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all ${idx === 0 ? 'bg-yellow-400' : 'bg-blue-400'}`}
+                className={`h-full rounded-full transition-all ${idx === 0 ? 'bg-ds-warning' : 'bg-ds-info'}`}
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -273,7 +273,7 @@ function CribbagePageContent() {
                       width={cardWidth}
                       onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
-                    <div className="text-white/70 text-sm">
+                    <div className="text-ds-text-muted text-sm">
                       <div>{t('starter')}</div>
                     </div>
                   </div>
@@ -282,7 +282,7 @@ function CribbagePageContent() {
                 {/* Pegging area */}
                 {(isPeggingPhase || state.pegPlayedCards.length > 0) && (
                   <div className="my-3 p-2 rounded bg-black/30" data-tutorial="cb-pegging-area">
-                    <div className="text-white/70 text-sm mb-1">
+                    <div className="text-ds-text-muted text-sm mb-1">
                       {t('pegPlayedCards')} - {t('pegCount', { count: state.pegCount })}
                     </div>
                     <div className="flex flex-wrap gap-1">
@@ -301,7 +301,7 @@ function CribbagePageContent() {
                 {/* Crib (shown during show/round end/game end) */}
                 {state.crib.length > 0 && (isShowPhase || isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30">
-                    <div className="text-white/70 text-sm mb-1">{t('crib')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('crib')}</div>
                     <div className="flex flex-wrap gap-1">
                       {state.crib.map((card, idx) => (
                         <AnimatedCard
@@ -318,8 +318,8 @@ function CribbagePageContent() {
                 {/* Hand score details (show phase) */}
                 {(isShowPhase || isRoundEnd || isGameEnd) && state.handScoreDetails.some((d) => d !== null) && (
                   <div className="my-3 p-2 rounded bg-black/30">
-                    <div className="text-white/70 text-sm mb-1">{t('score')}</div>
-                    <table className="w-full text-sm text-white/70">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('score')}</div>
+                    <table className="w-full text-sm text-ds-text-muted">
                       <thead>
                         <tr>
                           <th scope="col" className="text-left" />
@@ -358,7 +358,7 @@ function CribbagePageContent() {
                   .filter((p) => !p.isHuman)
                   .map((p) => (
                     <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-white/70 text-sm">
+                      <div className="text-ds-text-muted text-sm">
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                         {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                         {t('roundScore', { score: p.roundScore })}
@@ -392,8 +392,8 @@ function CribbagePageContent() {
 
                 {/* Score table */}
                 <div className="my-3 p-2 rounded bg-black/30">
-                  <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-                  <table className="w-full text-sm text-white/70">
+                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                  <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
                         <th scope="col" className="text-left">

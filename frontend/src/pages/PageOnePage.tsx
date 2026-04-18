@@ -211,7 +211,7 @@ function PageOnePageContent() {
                       width={cardWidth}
                       onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
-                    <div className="text-white/70 text-sm">
+                    <div className="text-ds-text-muted text-sm">
                       <div>{t('discardTop')}</div>
                     </div>
                   </div>
@@ -236,7 +236,7 @@ function PageOnePageContent() {
                   .filter((p) => !p.isHuman)
                   .map((p) => (
                     <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-white/70 text-sm">
+                      <div className="text-ds-text-muted text-sm">
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                         {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                         {t('roundScore', { score: p.roundScore })}
@@ -246,8 +246,8 @@ function PageOnePageContent() {
                   ))}
 
                 <div className="my-3 p-2 rounded bg-black/30">
-                  <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-                  <table className="w-full text-sm text-white/70">
+                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                  <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
                         <th scope="col" className="text-left">

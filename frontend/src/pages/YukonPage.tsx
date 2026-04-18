@@ -358,7 +358,7 @@ function YukonPageContent() {
                     <button
                       type="button"
                       className={`${focusRingWhite} rounded-lg transition-colors ${
-                        isTarget ? 'hover:ring-2 hover:ring-yellow-400 cursor-pointer' : ''
+                        isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                       }`}
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
                       disabled={!isPlaying || !isTarget}
@@ -405,7 +405,7 @@ function YukonPageContent() {
                       <button
                         type="button"
                         className={`border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted ${focusRingWhite} ${
-                          selectedSource ? 'hover:ring-2 hover:ring-yellow-400 cursor-pointer' : ''
+                          selectedSource ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                         }`}
                         style={{ width: yk.cw, height: yk.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
@@ -444,10 +444,10 @@ function YukonPageContent() {
                                   onDragStart={dnd.handleDragStart(zone)}
                                   onDragEnd={dnd.handleDragEnd}
                                   className={`${focusRingWhite} rounded-lg transition-all ${
-                                    isSelected ? 'ring-2 ring-yellow-400 -translate-y-1' : ''
+                                    isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                                   } ${isDragSrc ? 'opacity-50' : ''} ${
-                                    hintFrom ? 'ring-2 ring-blue-400 animate-pulse' : ''
-                                  } ${hintTo ? 'ring-2 ring-green-400 animate-pulse' : ''}`}
+                                    hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''
+                                  } ${hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                                   onClick={() => {
                                     if (selectedSource) {
                                       if (isLast) {

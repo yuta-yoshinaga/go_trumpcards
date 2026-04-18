@@ -234,11 +234,11 @@ describe('PyramidPage', () => {
     const card3Img = screen.getByAltText('♦ 3');
     const card3Button = card3Img.closest('button') as HTMLButtonElement;
     fireEvent.click(card3Button);
-    await waitFor(() => expect(card3Button.className).toContain('ring-yellow-400'));
+    await waitFor(() => expect(card3Button.className).toContain('ring-ds-warning'));
 
     // Click again to deselect
     fireEvent.click(card3Button);
-    await waitFor(() => expect(card3Button.className).not.toContain('ring-yellow-400'));
+    await waitFor(() => expect(card3Button.className).not.toContain('ring-ds-warning'));
   });
 
   it('waste card button has aria-pressed', async () => {

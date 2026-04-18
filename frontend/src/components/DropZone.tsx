@@ -55,7 +55,7 @@ export function DropZone({
   keyboardDropLabel,
 }: DropZoneProps) {
   const keyboardAffordance = onKeyboardDrop !== undefined && !!ariaLabel;
-  const highlightClass = isDropTarget ? 'ring-2 ring-blue-400 rounded' : '';
+  const highlightClass = isDropTarget ? 'ring-2 ring-ds-info rounded' : '';
   const positionClass = keyboardAffordance ? 'relative' : '';
   const combinedClass = [positionClass, highlightClass, className].filter(Boolean).join(' ');
   const label = keyboardDropLabel ?? ariaLabel;

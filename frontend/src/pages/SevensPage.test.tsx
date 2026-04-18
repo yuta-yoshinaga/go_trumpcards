@@ -1118,9 +1118,9 @@ describe('SevensPage', () => {
     // The SPADE A cell should have yellow border because K (13) is placed and tunnel is enabled
     const allACells = screen.getAllByText('A');
     // Find the one in SPADE row (first occurrence) that has tunnel highlight border class
-    const spadeACell = allACells.find((el) => el.classList.contains('border-amber-400'));
+    const spadeACell = allACells.find((el) => el.classList.contains('border-ds-warning'));
     expect(spadeACell).toBeDefined();
-    expect(spadeACell).toHaveClass('border-amber-400');
+    expect(spadeACell).toHaveClass('border-ds-warning');
   });
 
   it('shows yellow border on K cell when A is placed (tunnel highlight)', async () => {
@@ -1135,9 +1135,9 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     const allKCells = screen.getAllByText('K');
     // The SPADE K cell should have yellow border class because A (1) is placed and tunnel is enabled
-    const spadeKCell = allKCells.find((el) => el.classList.contains('border-amber-400'));
+    const spadeKCell = allKCells.find((el) => el.classList.contains('border-ds-warning'));
     expect(spadeKCell).toBeDefined();
-    expect(spadeKCell).toHaveClass('border-amber-400');
+    expect(spadeKCell).toHaveClass('border-ds-warning');
   });
 
   it('does not show tunnel highlight when tunnelEnabled is false', async () => {
@@ -1152,7 +1152,7 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     const allACells = screen.getAllByText('A');
     // No A cell should have tunnel highlight class when tunnel is disabled
-    const highlightedA = allACells.find((el) => el.classList.contains('border-amber-400'));
+    const highlightedA = allACells.find((el) => el.classList.contains('border-ds-warning'));
     expect(highlightedA).toBeUndefined();
   });
 

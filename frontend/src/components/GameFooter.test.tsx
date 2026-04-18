@@ -5,7 +5,7 @@ import { GameFooter } from './GameFooter';
 describe('GameFooter', () => {
   it('renders children', () => {
     render(
-      <GameFooter className="bg-green-800">
+      <GameFooter className="bg-ds-success">
         <button type="button">リセット</button>
       </GameFooter>,
     );
@@ -23,7 +23,7 @@ describe('GameFooter', () => {
 
   it('includes shrink-0 and border-t base classes', () => {
     render(
-      <GameFooter className="bg-green-800">
+      <GameFooter className="bg-ds-success">
         <span>content</span>
       </GameFooter>,
     );

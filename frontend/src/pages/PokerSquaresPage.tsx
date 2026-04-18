@@ -188,7 +188,7 @@ function PokerSquaresPageContent() {
                                 disabled={!isPlaying || loading || filled || !state.currentCard}
                                 className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
                                   filled ? '' : 'cursor-pointer'
-                                } ${isHintTarget ? 'ring-2 ring-yellow-400' : ''}`}
+                                } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
                               >
                                 {cell.card ? (
                                   <AnimatedCard card={cell.card} width={cardWidth} />

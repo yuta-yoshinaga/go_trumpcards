@@ -225,7 +225,7 @@ function TriPeaksPageContent() {
                             disabled={!isPlaying || loading || !exposed}
                             aria-label={cardAlt(tc2.card)}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              isHinted ? 'ring-2 ring-yellow-400' : ''
+                              isHinted ? 'ring-2 ring-ds-warning' : ''
                             } ${!exposed ? 'opacity-60' : ''}`}
                           >
                             <AnimatedCard

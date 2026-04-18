@@ -76,7 +76,7 @@ function Board({
                   const baseClass =
                     'rounded text-center text-[0.6rem] sm:text-xs lg:text-sm leading-none aspect-square flex items-center justify-center';
                   const bold = isCenter ? ' font-bold' : '';
-                  const border = tunnelHighlight ? ' border border-amber-400' : '';
+                  const border = tunnelHighlight ? ' border border-ds-warning' : '';
 
                   if (canPlace) {
                     return (
@@ -85,7 +85,7 @@ function Board({
                         type="button"
                         onClick={() => onJokerPlace?.(idx, v)}
                         aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
-                        className={`${baseClass}${bold} border border-blue-400 cursor-pointer p-0`}
+                        className={`${baseClass}${bold} border border-ds-info cursor-pointer p-0`}
                         style={colors}
                         data-testid="board-cell"
                       >

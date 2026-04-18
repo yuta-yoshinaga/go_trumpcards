@@ -144,16 +144,16 @@ function PigsTailPageContent() {
             {/* Circle & Center area */}
             <div className="flex justify-center gap-8 items-center" data-tutorial="pt-circle-area">
               <div className="text-center">
-                <div className="text-xs text-white/60 mb-1">{t('label.circle')}</div>
-                <div className="w-16 h-16 rounded-full bg-blue-900/60 border-2 border-blue-400/40 flex items-center justify-center text-2xl font-bold text-white">
+                <div className="text-xs text-ds-text-muted mb-1">{t('label.circle')}</div>
+                <div className="w-16 h-16 rounded-full bg-ds-info/60 border-2 border-ds-info/40 flex items-center justify-center text-2xl font-bold text-white">
                   {state.circleCount}
                 </div>
               </div>
               <div className="text-center" data-tutorial="pt-center-area">
-                <div className="text-xs text-white/60 mb-1">
+                <div className="text-xs text-ds-text-muted mb-1">
                   {t('label.center')} ({state.centerCount})
                 </div>
-                <div className="w-16 h-16 rounded-lg bg-amber-900/60 border-2 border-amber-400/40 flex items-center justify-center text-xl font-bold text-white">
+                <div className="w-16 h-16 rounded-lg bg-ds-warning/60 border-2 border-ds-warning/40 flex items-center justify-center text-xl font-bold text-white">
                   {state.centerTop ? (SUIT_SYMBOLS[state.centerTop.design] ?? '?') : '-'}
                 </div>
               </div>
@@ -174,7 +174,7 @@ function PigsTailPageContent() {
                 {state.cpuActions.map((action, i) => (
                   <div
                     key={i}
-                    className={`text-xs px-2 py-1 rounded ${action.penaltyFlag ? 'bg-red-900/40 text-red-200' : 'bg-black/30 text-white/70'}`}
+                    className={`text-xs px-2 py-1 rounded ${action.penaltyFlag ? 'bg-ds-error/40 text-ds-error/80' : 'bg-black/30 text-ds-text-muted'}`}
                   >
                     CPU {action.drawPlayerIdx}:{' '}
                     {action.drawnCard ? (SUIT_SYMBOLS[action.drawnCard.design] ?? '?') + action.drawnCard.value : '?'}
@@ -193,14 +193,14 @@ function PigsTailPageContent() {
                   key={player.id}
                   className={`flex items-center justify-between px-3 py-2 rounded ${
                     !isGameEnd && state.currentTurn === idx
-                      ? 'bg-yellow-600/30 border border-yellow-400/50'
+                      ? 'bg-ds-warning/30 border border-ds-warning/50'
                       : 'bg-black/30'
-                  } ${isGameEnd && state.loserIdx === idx ? 'bg-red-900/40 border border-red-500/50' : ''}`}
+                  } ${isGameEnd && state.loserIdx === idx ? 'bg-ds-error/40 border border-ds-error/50' : ''}`}
                 >
                   <span className="text-white text-sm font-medium">
                     {player.isHuman ? tc('player.you') : `CPU ${player.id}`}
                   </span>
-                  <span className="text-white/80 text-sm">
+                  <span className="text-ds-text-primary text-sm">
                     {player.cardCount} {t('label.cards')}
                   </span>
                 </div>
@@ -221,7 +221,7 @@ function PigsTailPageContent() {
             <div className="flex gap-2 justify-center">
               <button
                 type="button"
-                className="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 onClick={handleDraw}
                 disabled={loading || isGameEnd || !isHumanTurn}
                 data-tutorial="pt-draw-button"
@@ -230,14 +230,14 @@ function PigsTailPageContent() {
               </button>
               <button
                 type="button"
-                className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white text-sm transition-colors"
+                className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-white text-sm transition-colors"
                 onClick={() => requestConfirm(handleReset)}
               >
                 {tc('button.reset')}
               </button>
               <button
                 type="button"
-                className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white text-sm transition-colors"
+                className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-white text-sm transition-colors"
                 onClick={showActionLog}
               >
                 {tc('actionLog.view')}

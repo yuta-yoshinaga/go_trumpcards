@@ -189,7 +189,7 @@ function FiftyOnePageContent() {
                 .filter((p) => !p.isHuman)
                 .map((p) => (
                   <div key={p.id} className="text-center">
-                    <div className="text-xs text-white/70 mb-1">
+                    <div className="text-xs text-ds-text-muted mb-1">
                       {tc('player.cpu', { id: p.id })} — {t('label.score')}: {isGameEnd ? p.score : '?'}
                     </div>
                     <div className="flex gap-0.5 justify-center">
@@ -205,7 +205,7 @@ function FiftyOnePageContent() {
 
             {/* Table cards */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="fo-table-cards">
-              <div className="text-center text-xs text-white/70 mb-2">{t('label.tableCards')}</div>
+              <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
               <div className="flex justify-center gap-2">
                 {state.tableCards.map((c, i) => (
                   <button
@@ -214,7 +214,7 @@ function FiftyOnePageContent() {
                     onClick={() => isHumanTurn && setSelectedTableIdx(i === selectedTableIdx ? null : i)}
                     disabled={!isHumanTurn}
                     className={`rounded transition-all ${
-                      selectedTableIdx === i ? 'ring-2 ring-yellow-400 -translate-y-1' : ''
+                      selectedTableIdx === i ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                   >
                     <AnimatedCard card={c} width={cardWidth * 0.9} />
@@ -225,12 +225,12 @@ function FiftyOnePageContent() {
 
             {/* Stop indicator */}
             {state.stopCallerIdx >= 0 && (
-              <div className="text-center text-yellow-300 text-sm font-medium">{t('label.stopCalled')}</div>
+              <div className="text-center text-ds-warning text-sm font-medium">{t('label.stopCalled')}</div>
             )}
 
             {/* Human hand */}
             <div className="text-center" data-tutorial="fo-player-hand">
-              <div className="text-xs text-white/70 mb-1">
+              <div className="text-xs text-ds-text-muted mb-1">
                 {tc('player.you')} — {t('label.score')}: {human.score}
               </div>
               <div className="flex justify-center gap-2">
@@ -241,7 +241,7 @@ function FiftyOnePageContent() {
                     onClick={() => isHumanTurn && setSelectedHandIdx(i === selectedHandIdx ? null : i)}
                     disabled={!isHumanTurn}
                     className={`rounded transition-all ${
-                      selectedHandIdx === i ? 'ring-2 ring-blue-400 -translate-y-2' : ''
+                      selectedHandIdx === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                   >
                     <AnimatedCard card={c} width={cardWidth} />
@@ -291,7 +291,7 @@ function FiftyOnePageContent() {
                 type="button"
                 onClick={handleExchange}
                 disabled={loading || !canExchange}
-                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="exchange-button"
               >
                 {t('button.exchange')}
@@ -300,7 +300,7 @@ function FiftyOnePageContent() {
                 type="button"
                 onClick={handleExchangeAll}
                 disabled={loading || !isHumanTurn}
-                className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-success hover:bg-ds-success text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="exchange-all-button"
               >
                 {t('button.exchangeAll')}
@@ -309,7 +309,7 @@ function FiftyOnePageContent() {
                 type="button"
                 onClick={handleStop}
                 disabled={loading || !isHumanTurn || state.stopCallerIdx >= 0}
-                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-error hover:bg-ds-error text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="stop-button"
               >
                 {t('button.stop')}
@@ -317,7 +317,7 @@ function FiftyOnePageContent() {
               <button
                 type="button"
                 onClick={() => requestConfirm(handleReset)}
-                className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-white text-sm"
                 data-tutorial="fo-reset-button"
               >
                 {tc('button.reset')}

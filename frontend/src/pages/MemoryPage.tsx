@@ -187,7 +187,7 @@ function MemoryPageContent() {
               {state.players.map((p, idx) => (
                 <span key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                   {idx > 0 && (
-                    <span className="text-white/40 mr-3" aria-hidden="true">
+                    <span className="text-ds-text-muted/80 mr-3" aria-hidden="true">
                       |
                     </span>
                   )}
@@ -214,8 +214,8 @@ function MemoryPageContent() {
                       bc.taken
                         ? 'hidden'
                         : bc.faceUp
-                          ? 'bg-white ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/30'
-                          : 'bg-blue-800 border border-white/10 hover:ring-1 hover:ring-yellow-400'
+                          ? 'bg-white ring-2 ring-ds-warning shadow-lg shadow-ds-warning/30'
+                          : 'bg-ds-info border border-white/10 hover:ring-1 hover:ring-ds-warning'
                     } transition-all`}
                   >
                     <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>

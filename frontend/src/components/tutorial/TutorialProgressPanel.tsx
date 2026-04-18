@@ -25,7 +25,7 @@ export function TutorialProgressPanel() {
           aria-valuemin={0}
           aria-valuemax={100}
         >
-          <div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${percentage}%` }} />
+          <div className="bg-ds-success h-2 rounded-full transition-all" style={{ width: `${percentage}%` }} />
         </div>
 
         {/* Game grid */}

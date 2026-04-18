@@ -489,7 +489,7 @@ function DoubtPageContent() {
                     <span className="text-game-text-muted text-xs">({valueName(claimedValue)})</span>
                     <span
                       id="claim-range-hint"
-                      className={`text-xs ${valWarning ? 'text-yellow-400' : 'text-gray-400'}`}
+                      className={`text-xs ${valWarning ? 'text-ds-warning' : 'text-ds-text-muted'}`}
                     >
                       {valWarning ? t('claimRangeWarning') : t('claimRangeHint')}
                     </span>

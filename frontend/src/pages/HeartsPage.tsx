@@ -263,7 +263,7 @@ function HeartsPageContent() {
                 {/* Current trick */}
                 {state.currentTrick.length > 0 && (
                   <div className="my-3 p-3 rounded bg-black/40" data-tutorial="ht-trick-display">
-                    <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('currentTrick')}</div>
                     <div className="flex gap-2">
                       {state.currentTrick.map((trickCard) => (
                         <div key={`trick-${trickCard.playerIdx}`} className="text-center">
@@ -290,14 +290,14 @@ function HeartsPageContent() {
                 {/* CPU players */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-white/70 text-sm">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
                       {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
                     </summary>
                     <div className="mt-1">
                       {state.players
                         .filter((p) => !p.isHuman)
                         .map((p) => (
-                          <div key={p.id} className="text-white/70 text-sm py-0.5">
+                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                             {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                             {t('roundScore', { score: p.roundScore })}
@@ -310,7 +310,7 @@ function HeartsPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-white/70 text-sm">
+                        <div className="text-ds-text-muted text-sm">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                           {t('roundScore', { score: p.roundScore })}
@@ -326,8 +326,8 @@ function HeartsPageContent() {
                     data-tutorial="ht-score-table"
                     open={isRoundEnd || isGameEnd || undefined}
                   >
-                    <summary className="cursor-pointer select-none text-white/70 text-sm">{t('scores')}</summary>
-                    <table className="w-full text-sm text-white/70 mt-1">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
+                    <table className="w-full text-sm text-ds-text-muted mt-1">
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">
@@ -352,8 +352,8 @@ function HeartsPageContent() {
                   </details>
                 ) : (
                   <div className="my-3 p-2 rounded bg-black/30" data-tutorial="ht-score-table">
-                    <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-                    <table className="w-full text-sm text-white/70">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                    <table className="w-full text-sm text-ds-text-muted">
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">

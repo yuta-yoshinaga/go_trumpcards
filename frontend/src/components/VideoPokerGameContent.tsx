@@ -54,7 +54,7 @@ function PayoutTable({ t, rows }: { t: (key: string) => string; rows: string[] }
   return (
     <details className="mb-3 text-center">
       <summary className="text-ds-warning text-sm cursor-pointer lg:text-base">{t('payoutTable.title')}</summary>
-      <ul className="text-gray-300 text-xs mt-1 space-y-0.5 lg:text-sm lg:space-y-1">
+      <ul className="text-ds-text-muted text-xs mt-1 space-y-0.5 lg:text-sm lg:space-y-1">
         {rows.map((row) => (
           <li key={row}>{t(`payoutTable.${row}`)}</li>
         ))}
@@ -191,7 +191,7 @@ export function VideoPokerGameContent({
                         type="button"
                         onClick={() => toggleHold(i)}
                         disabled={!isDrawPhase}
-                        className={`rounded transition-transform ${displayHeld[i] ? 'ring-2 ring-yellow-400 -translate-y-2' : ''}`}
+                        className={`rounded transition-transform ${displayHeld[i] ? 'ring-2 ring-ds-warning -translate-y-2' : ''}`}
                         aria-label={displayHeld[i] ? `${tNs('hold')} ${i}` : tNs('card', { index: i })}
                         aria-pressed={displayHeld[i] ?? false}
                       >
@@ -201,7 +201,7 @@ export function VideoPokerGameContent({
                           onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                         />
                       </button>
-                      {displayHeld[i] && <span className="text-yellow-400 text-xs font-bold mt-1">{tNs('hold')}</span>}
+                      {displayHeld[i] && <span className="text-ds-warning text-xs font-bold mt-1">{tNs('hold')}</span>}
                     </div>
                   ))}
                 </div>
@@ -235,7 +235,7 @@ export function VideoPokerGameContent({
                 <button type="button" className={`${btnPrimary} mt-2`} onClick={handleDeal} disabled={loading}>
                   {t('button.deal')}
                 </button>
-                <p className="text-gray-400 text-xs mt-2">{tNs('dealGuide')}</p>
+                <p className="text-ds-text-muted text-xs mt-2">{tNs('dealGuide')}</p>
               </div>
             )}
 

@@ -185,7 +185,7 @@ function GoFishPageContent() {
             {/* Rank selector */}
             {isHumanTurn && humanRanks.length > 0 && (
               <div className="my-3">
-                <div className="text-white/70 text-sm mb-1">{t('selectRank')}</div>
+                <div className="text-ds-text-muted text-sm mb-1">{t('selectRank')}</div>
                 <div className="flex flex-wrap gap-2">
                   {humanRanks.map((rank) => (
                     <button
@@ -193,7 +193,9 @@ function GoFishPageContent() {
                       type="button"
                       onClick={() => handleSelectRank(rank)}
                       className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                        selectedRank === rank ? 'bg-yellow-500 text-black' : 'bg-white/10 text-white hover:bg-white/20'
+                        selectedRank === rank
+                          ? 'bg-ds-warning text-ds-text-on-accent'
+                          : 'bg-white/10 text-ds-text-primary hover:bg-white/20'
                       }`}
                       aria-pressed={selectedRank === rank}
                     >

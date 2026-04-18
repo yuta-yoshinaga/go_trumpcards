@@ -289,12 +289,12 @@ function BlackJackPageContent() {
           >
             {phase === BjPhase.BET && (
               <div className="flex flex-col items-center justify-center py-6 gap-4">
-                <p className="text-white/50 text-lg">{t('betGuide')}</p>
+                <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
                 <details className="bg-black/30 rounded-lg w-full max-w-sm">
                   <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
-                  <ul className="text-white/70 text-sm space-y-1 px-4 pb-3">
+                  <ul className="text-ds-text-muted text-sm space-y-1 px-4 pb-3">
                     {(['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const).map((key) => (
                       <li key={key}>{t(`payoutRef.${key}`)}</li>
                     ))}
@@ -336,14 +336,14 @@ function BlackJackPageContent() {
                     <h2 className="text-ds-accent mt-0 mb-1">
                       {tc('player.cpu', { id: cpuIdx + 1 })} ({cpu.chips} chips)
                       {cpu.insuranceBet > 0 && (
-                        <span className="text-yellow-400 text-sm ml-2">
+                        <span className="text-ds-warning text-sm ml-2">
                           [{t('insurance')} {cpu.insuranceBet}]
                         </span>
                       )}
                     </h2>
                     {cpu.hands.map((hand, handIdx) => (
                       <div key={handIdx} className="mb-1">
-                        <div className="text-yellow-100 text-sm">
+                        <div className="text-ds-warning text-sm">
                           {cpu.hands.length > 1 ? `${t('hand', { idx: handIdx + 1 })} ` : ''}
                           {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
                           <HandStatusBadges
@@ -421,7 +421,7 @@ function BlackJackPageContent() {
                 {sideBetResults.map((r) => (
                   <div
                     key={r.betType}
-                    className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-yellow-400/90 text-gray-900 font-bold' : 'bg-gray-500/70 text-white'}`}
+                    className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-ds-warning/90 text-ds-text-on-accent font-bold' : 'bg-ds-surface-elevated/70 text-ds-text-primary'}`}
                   >
                     {r.betType === BJ_SIDE_BET_PERFECT_PAIRS ? t('sideBet.perfectPairs') : t('sideBet.twentyOnePlus3')}:{' '}
                     {r.payout > 0
@@ -435,7 +435,7 @@ function BlackJackPageContent() {
             {/* Hint banner */}
             {hintEnabled && suggestedAction !== BJ_SUGGEST_NONE && (
               <div className="mb-2">
-                <div className="bg-yellow-300/90 text-gray-900 text-center text-sm font-bold px-3 py-1 rounded">
+                <div className="bg-ds-warning/90 text-ds-text-on-accent text-center text-sm font-bold px-3 py-1 rounded">
                   {t('suggestion')} {suggestionLabels[suggestedAction]}
                 </div>
                 {bjHintResult && <HintTooltip reason={t(bjHintResult.reason)} confidence={bjHintResult.confidence} />}

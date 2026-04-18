@@ -71,8 +71,8 @@ export function BettingControls({
             }}
             className={`w-20 px-2 py-1 text-sm rounded border ${
               isOutOfRange
-                ? 'bg-red-900/40 border-ds-error text-ds-error'
-                : 'bg-white/90 border-transparent text-gray-900'
+                ? 'bg-ds-error/40 border-ds-error text-ds-error'
+                : 'bg-white/90 border-transparent text-ds-text-on-accent'
             }`}
           />
         </div>

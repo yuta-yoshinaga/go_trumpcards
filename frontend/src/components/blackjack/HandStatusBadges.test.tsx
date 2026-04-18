@@ -37,7 +37,7 @@ describe('HandStatusBadges', () => {
     const elem = screen.getByTitle(i18n.t('blackjack:status.surTooltip'));
     expect(elem).toBeInTheDocument();
     expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.sur')}]`);
-    expect(elem).toHaveClass('bg-gray-500');
+    expect(elem).toHaveClass('bg-ds-surface-elevated');
   });
 
   it('renders all badges simultaneously when all flags are true', () => {

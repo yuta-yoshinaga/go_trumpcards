@@ -164,7 +164,7 @@ function SpeedPageContent() {
           <div className="flex-1 flex flex-col gap-3 min-h-0">
             {/* CPU area */}
             <div className="flex items-center justify-center gap-2">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-ds-text-muted">
                 {t('cpuHand')}: {cpuPlayer.cardCount}
               </span>
               <div className="flex gap-1">
@@ -172,7 +172,7 @@ function SpeedPageContent() {
                   <AnimatedCardBack key={i} width={cardWidth * 0.7} onFlipComplete={() => playSound('cardFlip')} />
                 ))}
               </div>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-ds-text-muted">
                 {t('drawPile')}: {cpuPlayer.drawPileSize}
               </span>
             </div>
@@ -203,7 +203,7 @@ function SpeedPageContent() {
             <div className="flex flex-col items-center gap-1" data-tutorial="sp-player-hand">
               <div className="flex items-center gap-2">
                 <span className="text-sm">{t('yourHand')}</span>
-                <span className="text-sm text-gray-500" data-tutorial="sp-draw-pile">
+                <span className="text-sm text-ds-text-muted" data-tutorial="sp-draw-pile">
                   {t('drawPile')}: {humanPlayer.drawPileSize}
                 </span>
               </div>
@@ -232,12 +232,12 @@ function SpeedPageContent() {
             {/* Stuck message & flip button */}
             {isStuck && (
               <div className="flex flex-col items-center gap-2">
-                <p className="text-amber-600 font-bold">{t('stuckMessage')}</p>
+                <p className="text-ds-warning font-bold">{t('stuckMessage')}</p>
                 <button
                   type="button"
                   onClick={handleFlip}
                   disabled={loading}
-                  className={`px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50 ring-2 ring-amber-300${!loading ? ' animate-pulse' : ''}`}
+                  className={`px-4 py-2 bg-ds-warning text-white rounded hover:bg-ds-warning-hover disabled:opacity-50 ring-2 ring-ds-warning${!loading ? ' animate-pulse' : ''}`}
                   data-testid="flip-button"
                 >
                   {t('flipButton')}
@@ -247,7 +247,7 @@ function SpeedPageContent() {
 
             {/* Hint */}
             {state.hint?.found && isPlayPhase && (
-              <p className="text-center text-sm text-blue-600">
+              <p className="text-center text-sm text-ds-info">
                 {t('hint.play', { cardIndex: state.hint.cardIndex, pileIndex: state.hint.pileIndex })}
               </p>
             )}

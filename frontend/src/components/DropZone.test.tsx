@@ -20,7 +20,7 @@ describe('DropZone', () => {
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper.className).toContain('ring-2');
-    expect(wrapper.className).toContain('ring-blue-400');
+    expect(wrapper.className).toContain('ring-ds-info');
   });
 
   it('does not apply highlight class when isDropTarget is false', () => {
@@ -30,7 +30,7 @@ describe('DropZone', () => {
       </DropZone>,
     );
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).not.toContain('ring-blue-400');
+    expect(wrapper.className).not.toContain('ring-ds-info');
   });
 
   it('calls onDragOver when drag-over event fires', () => {

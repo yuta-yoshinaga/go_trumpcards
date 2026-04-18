@@ -205,7 +205,7 @@ function GolfPageContent() {
                           disabled={!isPlaying || loading || !exposed}
                           aria-label={cardAlt(gc.card)}
                           className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                            isHinted && exposed ? 'ring-2 ring-yellow-400' : ''
+                            isHinted && exposed ? 'ring-2 ring-ds-warning' : ''
                           } ${!exposed ? 'opacity-60' : ''}`}
                         >
                           <AnimatedCard

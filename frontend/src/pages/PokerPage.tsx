@@ -203,7 +203,7 @@ function PokerPageContent() {
           </span>
         )}
         {state?.isLowball && (
-          <span className="bg-yellow-600 text-white px-2 py-0.5 rounded text-xs font-bold">[{t('lowballMode')}]</span>
+          <span className="bg-ds-warning text-white px-2 py-0.5 rounded text-xs font-bold">[{t('lowballMode')}]</span>
         )}
       </PhaseIndicator>
 
