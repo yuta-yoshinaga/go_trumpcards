@@ -47,6 +47,7 @@ ADR-0029で`DESIGN.md`とデザイントークン (`--color-ds-*`) を導入し�
 | `text-white/80..90` | `text-ds-text-primary` |
 | `text-white/50..70` | `text-ds-text-muted` |
 | 金色ボタン上の暗色テキスト | `text-ds-text-on-accent` |
+| 明色サーフェス（白フィールド等）上の暗色テキスト | `text-ds-text-inverse` |
 
 ## Consequences
 
