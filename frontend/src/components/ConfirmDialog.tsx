@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { btnDanger, btnSecondary } from '../styles/buttonStyles';
 import { getFocusableElements } from '../utils/dom';
 
@@ -20,6 +21,8 @@ export interface ConfirmDialogProps {
 export function ConfirmDialog(props: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
+
+  useBodyScrollLock(props.open);
 
   useEffect(() => {
     if (!props.open) return;
