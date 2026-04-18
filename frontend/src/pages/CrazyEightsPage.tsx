@@ -166,7 +166,7 @@ function CrazyEightsPageContent() {
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.crazyeights.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.crazyeights.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.crazyeights')} />
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn || isChooseSuit}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />

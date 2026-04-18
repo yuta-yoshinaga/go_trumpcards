@@ -70,6 +70,23 @@ describe('MobileHandGrid', () => {
     expect(buttons[12]).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('renders a ✓ badge only on selected cards', () => {
+    const cards = makeCards(5);
+    render(<MobileHandGrid cards={cards} selectedIndices={[1, 3]} onToggle={() => {}} cardWidth={40} />);
+    const badges = screen.getAllByTestId('selected-badge');
+    expect(badges).toHaveLength(2);
+    for (const badge of badges) {
+      expect(badge.textContent).toBe('✓');
+      expect(badge).toHaveAttribute('aria-hidden', 'true');
+    }
+  });
+
+  it('does not render any ✓ badge when no card is selected', () => {
+    const cards = makeCards(5);
+    render(<MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />);
+    expect(screen.queryAllByTestId('selected-badge')).toHaveLength(0);
+  });
+
   it('passes dataTutorial as data-tutorial attribute', () => {
     const cards = makeCards(5);
     const { container } = render(

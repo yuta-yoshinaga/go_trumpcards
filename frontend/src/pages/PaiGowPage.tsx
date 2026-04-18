@@ -181,7 +181,7 @@ function PaiGowPageContent() {
   const phaseName = isBetPhase ? t('phase.bet') : isSetHandsPhase ? t('phase.setHands') : t('phase.end');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.paigow.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.paigow.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.paigow')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseName}>

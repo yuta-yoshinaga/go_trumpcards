@@ -146,7 +146,9 @@
   },
   "turnIndicator": {
     "yourTurn": "Your Turn",
-    "waiting": "Waiting"
+    "waiting": "Waiting",
+    "phaseOnly": "Current phase: {{phase}}",
+    "announcement": "Current phase: {{phase}}, {{turn}}"
   },
   "card": {
     "back": "Card back",

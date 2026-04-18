@@ -11,10 +11,15 @@ interface PhaseIndicatorProps {
 export function PhaseIndicator({ phaseName, isHumanTurn, children }: PhaseIndicatorProps) {
   const { t } = useTranslation('common');
 
+  const turnLabel =
+    isHumanTurn === undefined ? '' : isHumanTurn ? t('turnIndicator.yourTurn') : t('turnIndicator.waiting');
+  const announcementText = turnLabel
+    ? t('turnIndicator.announcement', { phase: phaseName, turn: turnLabel })
+    : t('turnIndicator.phaseOnly', { phase: phaseName });
+
   return (
     <div
       className="shrink-0 glass-panel text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1 items-center tabular-nums"
-      aria-live="polite"
       data-testid="phase-indicator"
     >
       <span>
@@ -28,10 +33,13 @@ export function PhaseIndicator({ phaseName, isHumanTurn, children }: PhaseIndica
               : 'text-game-text-muted'
           }
         >
-          {isHumanTurn ? t('turnIndicator.yourTurn') : t('turnIndicator.waiting')}
+          {turnLabel}
         </span>
       )}
       {children}
+      <span aria-live="polite" aria-atomic="true" className="sr-only" data-testid="phase-announcement">
+        {announcementText}
+      </span>
     </div>
   );
 }

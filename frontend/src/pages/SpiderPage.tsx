@@ -182,7 +182,7 @@ function SpiderPageContent() {
   const dealsRemaining = Math.floor(state.stockCount / 10);
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.spider.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.spider.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.spider')} />
       {/* Phase indicator */}
       <PhaseIndicator

@@ -208,7 +208,7 @@ function CribbagePageContent() {
   ];
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.cribbage.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.cribbage.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.cribbage')} />
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />

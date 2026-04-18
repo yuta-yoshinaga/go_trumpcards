@@ -171,7 +171,7 @@ function FreeCellPageContent() {
     selectedSource.cardIndex === cardIndex;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.freecell.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.freecell.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.freecell')} />
       <PhaseIndicator
         phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}

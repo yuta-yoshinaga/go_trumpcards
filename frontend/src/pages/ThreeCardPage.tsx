@@ -149,7 +149,7 @@ function ThreeCardPageContent() {
   const phaseName = isBetPhase ? t('phase.bet') : isActionPhase ? t('phase.action') : t('phase.end');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.threecard.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.threecard.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.threecard')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseName}>

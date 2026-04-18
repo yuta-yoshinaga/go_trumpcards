@@ -804,7 +804,7 @@ describe('OldMaidPage', () => {
   it('sets aria-busy on game screen while loading', async () => {
     await startGame();
 
-    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
+    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-busy]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
 
     let resolve!: (value: OldMaidResponse) => void;
@@ -1012,7 +1012,7 @@ describe('OldMaidPage', () => {
 
     // After the 600ms reveal timer, shake is triggered
     await waitFor(() => {
-      const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
+      const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-busy]') as HTMLElement;
       expect(container.className).toContain('animate-shake');
     });
   });
@@ -1033,7 +1033,7 @@ describe('OldMaidPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('card-reveal-area').querySelector('img[alt="♥ 5"]')).toBeInTheDocument();
     });
-    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
+    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-busy]') as HTMLElement;
     expect(container.className).not.toContain('animate-shake');
   });
 

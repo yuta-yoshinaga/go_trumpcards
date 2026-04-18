@@ -7,6 +7,7 @@ import { useIsMediumDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useFavoriteGames } from '../hooks/useFavoriteGames';
 import { useRecentGames } from '../hooks/useRecentGames';
 import { focusRingWhite } from '../styles/buttonStyles';
+import { getFocusableElements } from '../utils/dom';
 import { SoundToggle } from './SoundToggle';
 import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
 
@@ -103,15 +104,44 @@ export function NavBar() {
   const wasOpen = useRef(false);
 
   useEffect(() => {
-    if (isOpen && navRef.current) {
-      const firstInteractive = navRef.current.querySelector<HTMLElement>('input, a');
-      firstInteractive?.focus();
-    }
     if (!isOpen && wasOpen.current && toggleRef.current) {
       toggleRef.current.focus();
     }
     wasOpen.current = isOpen;
-  }, [isOpen]);
+
+    if (!isOpen || !navRef.current) return;
+    const nav = navRef.current;
+    const firstInteractive = nav.querySelector<HTMLElement>('input, a');
+    firstInteractive?.focus();
+
+    // Focus trap is scoped to mobile, where the menu covers the viewport
+    // like a modal. On tablet+ (sm:flex) the nav renders inline and a trap
+    // would prevent normal Tab flow into page content.
+    if (!isMobile) return;
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const focusable = getFocusableElements(nav);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first || !nav.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (active === last || !nav.contains(active)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleTab);
+    return () => document.removeEventListener('keydown', handleTab);
+  }, [isOpen, isMobile]);
 
   // Close nav dropdown on outside click (large desktop only).
   // On mobile/tablet, categories are always-open so this must be skipped
@@ -331,8 +361,11 @@ export function NavBar() {
                           <button
                             type="button"
                             aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
+                            aria-pressed={isFavorite(path)}
                             onClick={() => toggleFavorite(path)}
-                            className="text-ds-accent min-h-[44px] min-w-[44px] flex items-center justify-center text-sm shrink-0"
+                            className={`min-h-[44px] min-w-[44px] flex items-center justify-center text-sm shrink-0 transition-colors ${
+                              isFavorite(path) ? 'text-ds-accent' : 'text-ds-text-muted hover:text-ds-accent'
+                            }`}
                           >
                             {isFavorite(path) ? '★' : '☆'}
                           </button>

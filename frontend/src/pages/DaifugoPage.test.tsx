@@ -789,7 +789,7 @@ describe('DaifugoPage', () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
-    const container = screen.getByRole('button', { name: 'パス' }).closest('[aria-live]') as HTMLElement;
+    const container = screen.getByRole('button', { name: 'パス' }).closest('[aria-busy]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
 
     let resolve!: (value: DaifugoResponse) => void;
