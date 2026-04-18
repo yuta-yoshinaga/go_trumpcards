@@ -25,8 +25,8 @@ export const AUTO_NEXT_DELAY_OPTIONS = [
   { value: 2000, label: 'slow' },
 ] as const;
 
-/** Default auto-next delay in milliseconds. */
-export const DEFAULT_AUTO_NEXT_DELAY_MS = 1500;
+/** Default auto-next delay in milliseconds — must match one of AUTO_NEXT_DELAY_OPTIONS so the settings <select> has a matching option. */
+export const DEFAULT_AUTO_NEXT_DELAY_MS = 1000;
 
 const AUTO_NEXT_DELAY_STORAGE_KEY = 'memory_auto_next_delay_ms';
 

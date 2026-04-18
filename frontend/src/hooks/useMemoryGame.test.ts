@@ -141,6 +141,25 @@ describe('useMemoryGame', () => {
     vi.useRealTimers();
   });
 
+  it('auto-next does not fire when game has ended', async () => {
+    vi.useFakeTimers();
+    localStorage.setItem('memory_auto_next_delay_ms', '1000');
+    const gameEndState: MemoryResponse = { ...defaultState, phase: 2, gameEndFlag: true };
+    mockExec.mockResolvedValue(gameEndState);
+
+    const { result } = renderHook(() => useMemoryGame(), { wrapper: createWrapper() });
+    await vi.waitFor(() => expect(result.current.state).toEqual(gameEndState));
+
+    mockExec.mockClear();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+    expect(mockExec).not.toHaveBeenCalled();
+
+    localStorage.removeItem('memory_auto_next_delay_ms');
+    vi.useRealTimers();
+  });
+
   it('setAutoNextDelayMs persists the chosen delay', async () => {
     const { result } = renderHook(() => useMemoryGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
