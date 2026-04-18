@@ -33,6 +33,7 @@ import type {
   PyramidResponse,
   RedDogResponse,
   ScorpionResponse,
+  SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
   SpadesResponse,
@@ -80,6 +81,7 @@ import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
+import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
@@ -141,7 +143,7 @@ const hintFactories = {
   pinochle: (s) => getPinochleHint(s as PinochleResponse),
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
   sevencardstud: () => null,
-  razz: () => null,
+  razz: (s) => getRazzHint(s as SevenCardStudResponse),
   fortythieves: () => null,
   paigow: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),
