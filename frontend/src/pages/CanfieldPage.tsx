@@ -148,7 +148,7 @@ function CanfieldPageContent() {
   const topReserve = state.reserve.length > 0 ? state.reserve[state.reserve.length - 1] : null;
 
   return (
-    <div className={`flex min-h-screen flex-1 flex-col ${theme.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex min-h-screen flex-1 flex-col ${theme.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.canfield')} />
       <PhaseIndicator phaseName={phaseName}>
         <span className="text-sm text-white/70">

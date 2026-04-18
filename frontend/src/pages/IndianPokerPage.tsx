@@ -181,7 +181,7 @@ function IndianPokerPageContent() {
   }));
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.indianpoker.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.indianpoker.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.indianpoker')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>

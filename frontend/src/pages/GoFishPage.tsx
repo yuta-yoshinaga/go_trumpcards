@@ -137,7 +137,7 @@ function GoFishPageContent() {
   const humanRanks = humanPlayer ? [...new Set(humanPlayer.cards.map((c) => c.value))].sort((a, b) => a - b) : [];
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.gofish.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.gofish.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.gofish')} />
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />

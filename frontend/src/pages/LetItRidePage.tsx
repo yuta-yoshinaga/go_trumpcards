@@ -167,7 +167,7 @@ function LetItRidePageContent() {
         : t('phase.end');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.letitride.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.letitride.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.letitride')} />
       <PhaseIndicator phaseName={phaseName}>
         <span>

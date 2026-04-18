@@ -255,7 +255,7 @@ function BaccaratPageContent() {
   };
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.baccarat.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.baccarat.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.baccarat')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}>

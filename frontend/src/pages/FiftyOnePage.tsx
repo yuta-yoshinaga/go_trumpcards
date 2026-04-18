@@ -164,7 +164,7 @@ function FiftyOnePageContent() {
   const canExchange = isHumanTurn && selectedHandIdx !== null && selectedTableIdx !== null;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
       <GamePageHeading title={tc('nav.fiftyone')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />

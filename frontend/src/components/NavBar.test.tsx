@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { MemoryRouter } from 'react-router-dom';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { NavBar } from './NavBar';
 
@@ -215,6 +215,80 @@ describe('NavBar', () => {
       const nav = screen.getByRole('navigation');
       fireEvent.keyDown(nav, { key: 'Tab' });
       expect(nav).not.toHaveClass('hidden');
+    });
+
+    describe('focus trap (mobile)', () => {
+      const originalInnerWidth = window.innerWidth;
+
+      beforeEach(() => {
+        Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+        window.dispatchEvent(new Event('resize'));
+      });
+
+      afterEach(() => {
+        Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalInnerWidth });
+        window.dispatchEvent(new Event('resize'));
+      });
+
+      it('wraps Tab from the last focusable element back to the first', () => {
+        renderNavBar();
+        fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+        const nav = screen.getByRole('navigation');
+        const focusable = nav.querySelectorAll<HTMLElement>('a[href], button, input');
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        last.focus();
+        expect(document.activeElement).toBe(last);
+        const tabEvent = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+        document.dispatchEvent(tabEvent);
+        expect(tabEvent.defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(first);
+      });
+
+      it('wraps Shift+Tab from the first focusable element to the last', () => {
+        renderNavBar();
+        fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+        const nav = screen.getByRole('navigation');
+        const focusable = nav.querySelectorAll<HTMLElement>('a[href], button, input');
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        first.focus();
+        const tabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+        document.dispatchEvent(tabEvent);
+        expect(tabEvent.defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(last);
+      });
+
+      it('pulls focus back into the nav when Tab is pressed outside', () => {
+        renderNavBar();
+        fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+        const nav = screen.getByRole('navigation');
+        const outside = document.createElement('button');
+        document.body.appendChild(outside);
+        outside.focus();
+        expect(document.activeElement).toBe(outside);
+        const tabEvent = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+        document.dispatchEvent(tabEvent);
+        expect(tabEvent.defaultPrevented).toBe(true);
+        const focusable = nav.querySelectorAll<HTMLElement>('a[href], button, input');
+        expect(document.activeElement).toBe(focusable[0]);
+        document.body.removeChild(outside);
+      });
+
+      it('does not reset focus when the viewport resizes while the menu is open', () => {
+        renderNavBar();
+        fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+        const nav = screen.getByRole('navigation');
+        const focusable = nav.querySelectorAll<HTMLElement>('a[href], button, input');
+        const mid = focusable[Math.floor(focusable.length / 2)];
+        mid.focus();
+        expect(document.activeElement).toBe(mid);
+        // Cross the mobile breakpoint while the menu is still open — the
+        // effect re-runs because isMobile flips, but focus must be preserved.
+        Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+        window.dispatchEvent(new Event('resize'));
+        expect(document.activeElement).toBe(mid);
+      });
     });
   });
 
@@ -440,6 +514,26 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
       renderNavBar();
       expect(screen.queryByText(i18n.t('nav.favoriteGames'))).not.toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+      localStorage.removeItem('trumpcards-favorite-games');
+    });
+
+    it('exposes aria-pressed on the favorite toggle and flips color classes on toggle', () => {
+      localStorage.removeItem('trumpcards-favorite-games');
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const [firstStar] = screen.getAllByRole('button', { name: i18n.t('nav.addFavorite') });
+      expect(firstStar).toHaveAttribute('aria-pressed', 'false');
+      expect(firstStar.className).toContain('text-ds-text-muted');
+      fireEvent.click(firstStar);
+      const toggled = screen.getAllByRole('button', { name: i18n.t('nav.removeFavorite') })[0];
+      expect(toggled).toHaveAttribute('aria-pressed', 'true');
+      expect(toggled.className).toContain('text-ds-accent');
+      expect(toggled.className).not.toContain('text-ds-text-muted');
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
       window.dispatchEvent(new Event('resize'));
       localStorage.removeItem('trumpcards-favorite-games');

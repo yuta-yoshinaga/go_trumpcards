@@ -130,7 +130,7 @@ function WarPageContent() {
         : t('phase.reveal');
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
       <GamePageHeading title={tc('nav.war')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={!isGameEnd}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />

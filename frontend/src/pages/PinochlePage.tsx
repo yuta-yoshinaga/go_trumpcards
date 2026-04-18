@@ -176,7 +176,7 @@ function PinochlePageContent() {
   const isGameEnd = phase === PinochlePhase.GAME_END || state.gameEndFlag;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pinochle.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pinochle.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.pinochle')} />
       <PhaseIndicator phaseName={phaseNames[phase]} isHumanTurn={isBidTurn || isTrumpTurn || isPlayTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />

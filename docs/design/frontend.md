@@ -1256,6 +1256,8 @@ classDiagram
         +レスポンシブ ハンバーガーメニュー
         +カテゴリ折りたたみ (モバイル)
         +絵文字アイコン表示
+        +モバイル時 focus trap (Tab ラップ)
+        +お気に入りトグル aria-pressed + 色変化
     }
 
     class GameRoute {
@@ -1273,7 +1275,7 @@ classDiagram
     class PhaseIndicator {
         +string phaseName
         +boolean isYourTurn
-        +aria-live polite
+        +内部 sr-only ライブリージョン (aria-live polite, aria-atomic)
     }
 
     class SettingsPanel {

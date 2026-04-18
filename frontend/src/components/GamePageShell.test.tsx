@@ -167,4 +167,22 @@ describe('GamePageShell', () => {
     );
     expect(screen.getByRole('button', { name: 'manual-/spades' })).toBeInTheDocument();
   });
+
+  it('does not place aria-live on the outer container', () => {
+    const { container } = render(
+      <GamePageShell {...baseProps}>
+        <div />
+      </GamePageShell>,
+    );
+    expect(container.firstChild).not.toHaveAttribute('aria-live');
+  });
+
+  it('still forwards loading to aria-busy on the outer container', () => {
+    const { container } = render(
+      <GamePageShell {...baseProps} loading={true}>
+        <div />
+      </GamePageShell>,
+    );
+    expect(container.firstChild).toHaveAttribute('aria-busy', 'true');
+  });
 });

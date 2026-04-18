@@ -146,7 +146,7 @@ function CanastaPageContent() {
   }
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.canasta.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.canasta.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.canasta')} />
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />

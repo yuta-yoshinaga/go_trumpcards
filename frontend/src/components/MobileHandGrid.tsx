@@ -79,6 +79,7 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
                     background: 'none',
                     padding: 0,
                     borderRadius: 8,
+                    position: 'relative',
                     ...selectedCardStyle(isSelected),
                     transition: 'transform 0.15s, border 0.15s, box-shadow 0.15s, margin-left 0.15s',
                     boxSizing: 'border-box',
@@ -92,6 +93,15 @@ export function MobileHandGrid({ cards, selectedIndices, onToggle, cardWidth, da
                     className={reduced ? undefined : 'animate-card-deal-in'}
                     style={reduced ? undefined : { animationDelay: `${i * DEAL_IN_STAGGER_S}s` }}
                   />
+                  {isSelected && (
+                    <span
+                      aria-hidden="true"
+                      data-testid="selected-badge"
+                      className="absolute top-1 right-1 bg-ds-accent text-ds-text-on-accent rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow-md"
+                    >
+                      ✓
+                    </span>
+                  )}
                 </button>
               );
             })}

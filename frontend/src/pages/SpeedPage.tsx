@@ -147,7 +147,7 @@ function SpeedPageContent() {
       : t('phase.play');
 
   return (
-    <div className="flex flex-col h-full gap-2 p-2" aria-busy={loading} aria-live="polite">
+    <div className="flex flex-col h-full gap-2 p-2" aria-busy={loading}>
       <GamePageHeading title={tc('nav.speed')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isPlayPhase}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />

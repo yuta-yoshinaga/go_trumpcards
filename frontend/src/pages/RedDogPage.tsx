@@ -129,7 +129,7 @@ function RedDogPageContent() {
           : t('phase.initialDealt');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.reddog.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.reddog.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.reddog')} />
       <PhaseIndicator phaseName={phaseName}>
         <span>

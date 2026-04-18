@@ -148,7 +148,7 @@ function PageOnePageContent() {
   const isHumanMustDeclare = isMustDeclare && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pageone.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pageone.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.pageone')} />
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn || isHumanMustDeclare}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />

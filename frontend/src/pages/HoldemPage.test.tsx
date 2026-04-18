@@ -861,7 +861,7 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
-    const container = screen.getByRole('button', { name: 'ベット' }).closest('[aria-live]') as HTMLElement;
+    const container = screen.getByRole('button', { name: 'ベット' }).closest('[aria-busy]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
 
     let resolve!: (value: HoldemResponse) => void;

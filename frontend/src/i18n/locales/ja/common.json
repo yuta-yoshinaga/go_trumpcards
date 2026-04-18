@@ -146,7 +146,9 @@
   },
   "turnIndicator": {
     "yourTurn": "あなたのターン",
-    "waiting": "待機中"
+    "waiting": "待機中",
+    "phaseOnly": "現在のフェーズ: {{phase}}",
+    "announcement": "現在のフェーズ: {{phase}}、{{turn}}"
   },
   "card": {
     "back": "カード裏面",

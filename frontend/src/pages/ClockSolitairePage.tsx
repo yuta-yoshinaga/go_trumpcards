@@ -143,7 +143,7 @@ function ClockSolitairePageContent() {
   const radius = Math.min(cardWidth * 5, 180);
 
   return (
-    <div className={`flex min-h-screen flex-1 flex-col ${theme.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex min-h-screen flex-1 flex-col ${theme.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.clocksolitaire')} />
       <PhaseIndicator phaseName={phaseName}>
         <span className="text-sm text-white/70">

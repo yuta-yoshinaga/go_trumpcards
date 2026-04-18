@@ -164,7 +164,7 @@ function PyramidPageContent() {
   const pyramidWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pyramid.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pyramid.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.pyramid')} />
       {/* Phase indicator */}
       <PhaseIndicator
