@@ -179,6 +179,41 @@ function DoubtPageContent() {
     enabled: isHumanPlayTurn && !loading,
   });
 
+  // Keyboard shortcuts for the doubt decision window: Space = Doubt, Escape = Skip.
+  // Only active while a CPU has just played and the human is being asked to judge.
+  const isDoubtDecisionPhase =
+    state?.phase === DoubtPhase.DOUBT &&
+    state?.lastAction !== null &&
+    !state?.players[state.lastAction.playerIdx]?.isHuman &&
+    !state?.gameEndFlag;
+  const doubtKeyRef = useRef({ handleDoubt, handleSkip });
+  doubtKeyRef.current = { handleDoubt, handleSkip };
+  useEffect(() => {
+    if (!isDoubtDecisionPhase || loading) return;
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        doubtKeyRef.current.handleDoubt();
+      } else if (e.key === 'Escape' || e.key === 'Esc') {
+        e.preventDefault();
+        doubtKeyRef.current.handleSkip();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isDoubtDecisionPhase, loading]);
+
   if (!state) return <DoubtSkeleton />;
 
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
@@ -287,6 +322,16 @@ function DoubtPageContent() {
                     {cpuPlayed ? (
                       <>
                         <div className="text-white font-bold mb-2">{t('doubtQuestion')}</div>
+                        {state.lastAction && (
+                          <div
+                            className="bg-ds-warning/20 border-2 border-ds-warning rounded-lg py-2 px-3 mb-2 text-center animate-pulse"
+                            data-testid="doubt-last-action-highlight"
+                          >
+                            <div className="text-ds-warning font-bold text-base sm:text-lg">
+                              {actionDesc(state.lastAction, state.players, t)}
+                            </div>
+                          </div>
+                        )}
                         {countdown !== null && (
                           <CountdownBar
                             remaining={countdown}
