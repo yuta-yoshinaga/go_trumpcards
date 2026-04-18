@@ -24,7 +24,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
+import { AUTO_NEXT_DELAY_OPTIONS, CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -88,8 +88,19 @@ function MemoryPageContent() {
     useGamePageSetup('memory');
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
-  const { state, loading, error, exec, retry, memoryConfig, handleConfigChange, handleFlip, handleNext } =
-    useMemoryGame();
+  const {
+    state,
+    loading,
+    error,
+    exec,
+    retry,
+    memoryConfig,
+    handleConfigChange,
+    autoNextDelayMs,
+    setAutoNextDelayMs,
+    handleFlip,
+    handleNext,
+  } = useMemoryGame();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -162,6 +173,17 @@ function MemoryPageContent() {
                       label: t(`settings.${o.label.toLowerCase()}`),
                     })),
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+                  },
+                  {
+                    type: 'select',
+                    id: 'autoNextDelayMs',
+                    label: t('settings.autoNextDelay'),
+                    value: autoNextDelayMs,
+                    options: AUTO_NEXT_DELAY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.autoNextDelayOption.${o.label}`),
+                    })),
+                    onSelect: (v) => setAutoNextDelayMs(Number(v)),
                   },
                   {
                     type: 'checkbox' as const,

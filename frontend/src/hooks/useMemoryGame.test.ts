@@ -101,4 +101,56 @@ describe('useMemoryGame', () => {
 
     expect(result.current.memoryConfig.cpuDifficulty).toBe(1);
   });
+
+  it('auto-next fires handleNext after delay during result phase', async () => {
+    vi.useFakeTimers();
+    localStorage.setItem('memory_auto_next_delay_ms', '1000');
+    const resultState: MemoryResponse = { ...defaultState, phase: 2 };
+    mockExec.mockResolvedValue(resultState);
+
+    const { result } = renderHook(() => useMemoryGame(), { wrapper: createWrapper() });
+    await vi.waitFor(() => expect(result.current.state).toEqual(resultState));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(resultState);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(mockExec).toHaveBeenCalledWith('next');
+
+    localStorage.removeItem('memory_auto_next_delay_ms');
+    vi.useRealTimers();
+  });
+
+  it('auto-next is disabled when delay is 0 (manual)', async () => {
+    vi.useFakeTimers();
+    localStorage.setItem('memory_auto_next_delay_ms', '0');
+    const resultState: MemoryResponse = { ...defaultState, phase: 2 };
+    mockExec.mockResolvedValue(resultState);
+
+    const { result } = renderHook(() => useMemoryGame(), { wrapper: createWrapper() });
+    await vi.waitFor(() => expect(result.current.state).toEqual(resultState));
+
+    mockExec.mockClear();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+    expect(mockExec).not.toHaveBeenCalled();
+
+    localStorage.removeItem('memory_auto_next_delay_ms');
+    vi.useRealTimers();
+  });
+
+  it('setAutoNextDelayMs persists the chosen delay', async () => {
+    const { result } = renderHook(() => useMemoryGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    act(() => {
+      result.current.setAutoNextDelayMs(2000);
+    });
+
+    expect(result.current.autoNextDelayMs).toBe(2000);
+    expect(localStorage.getItem('memory_auto_next_delay_ms')).toBe('2000');
+    localStorage.removeItem('memory_auto_next_delay_ms');
+  });
 });
