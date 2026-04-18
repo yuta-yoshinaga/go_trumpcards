@@ -47,8 +47,11 @@ WORKDIR /app
 COPY --from=go-builder --chown=nonroot:nonroot /app/go_trumpcards .
 COPY --from=frontend-builder --chown=nonroot:nonroot /app/public ./public
 
-# Use a non-privileged port; the server reads the PORT environment variable
+# Use a non-privileged port; the server reads the PORT environment variable.
+# Bind to all interfaces inside the container so Docker's port mapping can
+# forward external traffic; the server defaults to 127.0.0.1 otherwise.
 ENV APP_ENV=production
+ENV HOST=0.0.0.0
 ENV PORT=8080
 EXPOSE 8080
 

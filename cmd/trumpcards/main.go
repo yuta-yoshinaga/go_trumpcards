@@ -170,7 +170,7 @@ func run() int {
 		_, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
 			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080)")
 			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
-			f.StringVar(&host, "host", "", "Bind address for the web server (default: all interfaces)")
+			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
 		})
 		if !ok {
 			return code
@@ -248,13 +248,13 @@ var builtinSubcommandHelp = map[string][]string{
 		"",
 		"FLAGS:",
 		"  -p, --port PORT   Port number (default: 8080; env PORT)",
-		"      --host HOST   Bind address (default: all interfaces; env HOST)",
+		"      --host HOST   Bind address (default: 127.0.0.1; use 0.0.0.0 to expose; env HOST)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards web",
 		"  trumpcards web --port 3000",
-		"  trumpcards web --host 127.0.0.1",
-		"  HOST=127.0.0.1 PORT=3000 trumpcards web",
+		"  trumpcards web --host 0.0.0.0",
+		"  HOST=0.0.0.0 PORT=3000 trumpcards web",
 	},
 	"update": {
 		"USAGE:",
@@ -441,17 +441,17 @@ EXAMPLES:
   trumpcards update --yes        Update without confirmation prompt
   trumpcards --version-short     Print just the version number (e.g. 1.2.3)
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
-  trumpcards web                 Start the web GUI server
+  trumpcards web                 Start the web GUI server (binds to 127.0.0.1)
   trumpcards web --port 3000     Start the web GUI on port 3000
-  trumpcards web --host 127.0.0.1  Bind to localhost only
+  trumpcards web --host 0.0.0.0  Expose the web GUI on all interfaces
   source <(trumpcards completion bash)   Enable bash completion
 
 ENVIRONMENT VARIABLES:
   NO_COLOR          Disable color output on both stdout and stderr when set
                     (see https://no-color.org/)
                     Example: NO_COLOR=1 trumpcards blackjack
-  HOST              Bind address for the web server (default: all interfaces)
-                    Example: HOST=127.0.0.1 trumpcards web
+  HOST              Bind address for the web server (default: 127.0.0.1)
+                    Example: HOST=0.0.0.0 trumpcards web
   PORT              Port number for the web server (default: 8080)
                     Example: PORT=3000 trumpcards web
 `)
