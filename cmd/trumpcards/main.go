@@ -34,6 +34,30 @@ var (
 // validator so the two cannot diverge.
 var supportedLangs = map[string]bool{"ja": true, "en": true}
 
+// portInRange reports whether port is a valid TCP port number, with 0
+// reserved for "let the OS assign an ephemeral port" (POSIX convention).
+func portInRange(port int) bool {
+	return port >= 0 && port <= 65535
+}
+
+// flagSetVisited reports whether any of the named flags was explicitly set
+// on fs. This lets the caller distinguish "user did not pass --port" from
+// "user passed --port 0" without needing a sentinel value in the integer
+// input space — which would misclassify e.g. `--port -1` as "unset".
+func flagSetVisited(fs *flag.FlagSet, names ...string) bool {
+	want := make(map[string]struct{}, len(names))
+	for _, n := range names {
+		want[n] = struct{}{}
+	}
+	seen := false
+	fs.Visit(func(fl *flag.Flag) {
+		if _, ok := want[fl.Name]; ok {
+			seen = true
+		}
+	})
+	return seen
+}
+
 func main() {
 	os.Exit(run())
 }
@@ -162,16 +186,16 @@ func run() int {
 	commands["web"] = func() int {
 		var port int
 		var host string
-		_, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
-			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080)")
+		fs, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
+			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
 			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
 			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
 		})
 		if !ok {
 			return code
 		}
-		if port != 0 {
-			if port < 1 || port > 65535 {
+		if flagSetVisited(fs, "port", "p") {
+			if !portInRange(port) {
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(port)))
 				return 1
 			}
@@ -242,12 +266,13 @@ var builtinSubcommandHelp = map[string][]string{
 		"  trumpcards web [--port PORT] [--host HOST]",
 		"",
 		"FLAGS:",
-		"  -p, --port PORT   Port number (default: 8080; env PORT)",
+		"  -p, --port PORT   Port number (default: 8080; 0 = OS-assigned ephemeral; env PORT)",
 		"      --host HOST   Bind address (default: 127.0.0.1; use 0.0.0.0 to expose; env HOST)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards web",
 		"  trumpcards web --port 3000",
+		"  trumpcards web --port 0            # start on any free port; see startup log for actual port",
 		"  trumpcards web --host 0.0.0.0",
 		"  HOST=0.0.0.0 PORT=3000 trumpcards web",
 	},
@@ -439,6 +464,7 @@ EXAMPLES:
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
   trumpcards web                 Start the web GUI server (binds to 127.0.0.1)
   trumpcards web --port 3000     Start the web GUI on port 3000
+  trumpcards web --port 0        Start on an OS-assigned ephemeral port (see startup log)
   trumpcards web --host 0.0.0.0  Expose the web GUI on all interfaces
   source <(trumpcards completion bash)   Enable bash completion
 

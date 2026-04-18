@@ -36,7 +36,7 @@
   "emptyInputHint": "Type 'help' for available commands.",
   "cliStartupBanner": "trumpcards {{version}} - Interactive Mode",
   "cliStartupGame": "Starting with {{game}}. Type 'switch <game>' to change, 'games' to list all.",
-  "cliInvalidPort": "Error: invalid port number {{port}} (must be 1-65535)",
+  "cliInvalidPort": "Error: invalid port number {{port}} (must be 0-65535; 0 asks the OS for an ephemeral port)",
   "cliExtraArgsWarning": "Warning: extra arguments ignored: {{args}}",
   "cliCompletionUsage": "Usage: trumpcards completion <bash|zsh|fish>",
   "cliCompletionUnsupportedShell": "Error: unsupported shell \"{{shell}}\" (supported: bash, zsh, fish)",
