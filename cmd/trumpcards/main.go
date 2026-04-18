@@ -439,14 +439,22 @@ ENVIRONMENT VARIABLES:
 // The `aliases` flag is a no-op in long mode because aliases are always shown
 // inline there.
 func printGames(short, aliases bool, w io.Writer) {
-	reverseAliases := make(map[string][]string)
-	for alias, canonical := range ui.GameAliases {
-		reverseAliases[canonical] = append(reverseAliases[canonical], alias)
+	var reverseAliases map[string][]string
+	if !short || aliases {
+		reverseAliases = make(map[string][]string)
+		for alias, canonical := range ui.GameAliases {
+			reverseAliases[canonical] = append(reverseAliases[canonical], alias)
+		}
+		for k := range reverseAliases {
+			sort.Strings(reverseAliases[k])
+		}
 	}
-	for k := range reverseAliases {
-		sort.Strings(reverseAliases[k])
+
+	var descs map[string]string
+	if !short {
+		descs = ui.GameDescriptions()
 	}
-	descs := ui.GameDescriptions()
+
 	for _, name := range ui.GameNames() {
 		if short {
 			_, _ = fmt.Fprintln(w, name)
