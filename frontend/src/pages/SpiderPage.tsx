@@ -300,7 +300,7 @@ function SpiderPageContent() {
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}
                                       onDragEnd={dnd.handleDragEnd}
-                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                     >
                                       <AnimatedCard
                                         card={tc.card}
@@ -438,7 +438,7 @@ function SpiderPageContent() {
                   onChange={(e) => {
                     handleResetWithConfig({ difficulty: Number(e.target.value) });
                   }}
-                  className="bg-gray-700 text-white text-sm rounded px-2 py-1"
+                  className="bg-ds-surface-elevated text-white text-sm rounded px-2 py-1"
                   aria-label={t('difficulty')}
                 >
                   <option value={1}>{t('difficulty1')}</option>

@@ -212,7 +212,7 @@ function PaiGowPageContent() {
             {/* Bet guide during bet phase */}
             {isBetPhase && (
               <div className="flex flex-col items-center justify-center py-4 gap-4">
-                <p className="text-white/50 text-lg">{t('betGuide')}</p>
+                <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
               </div>
             )}
 
@@ -222,7 +222,7 @@ function PaiGowPageContent() {
                 <div className="text-ds-warning font-bold text-center mb-1">
                   <span aria-hidden="true">🟡</span> {t('player')}
                 </div>
-                <p className="text-white/70 text-center text-sm mb-2">
+                <p className="text-ds-text-muted text-center text-sm mb-2">
                   {t('selectLowHand')} ({t('selectedCount', { count: selectedIndices.length })})
                 </p>
                 <div className="flex justify-center gap-2 flex-wrap">
@@ -231,7 +231,7 @@ function PaiGowPageContent() {
                       key={`p-${card.design}-${card.value}-${i}`}
                       type="button"
                       onClick={() => toggleCardSelection(i)}
-                      className={`relative transition-transform ${selectedIndices.includes(i) ? '-translate-y-3 ring-2 ring-yellow-400 rounded' : ''}`}
+                      className={`relative transition-transform ${selectedIndices.includes(i) ? '-translate-y-3 ring-2 ring-ds-warning rounded' : ''}`}
                       aria-pressed={selectedIndices.includes(i)}
                       aria-label={`Card ${i}`}
                     >

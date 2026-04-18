@@ -467,7 +467,7 @@ describe('MemoryPage', () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText(/あなた: 0/)).toBeInTheDocument());
     const cardBtn = screen.getByTestId('board-0');
-    expect(cardBtn.className).not.toContain('border-blue-600');
+    expect(cardBtn.className).not.toContain('border-ds-info');
     expect(cardBtn.className).toContain('border-white/10');
   });
 

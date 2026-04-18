@@ -81,7 +81,7 @@ describe('SevensBoard', () => {
   it('highlights tunnel wrap cells when A placed and tunnelEnabled', () => {
     const tablePlaced = [0, (1 << 1) | (1 << 7), 1 << 7, 1 << 7, 1 << 7];
     const { container } = render(<SevensBoard {...defaultProps} tablePlaced={tablePlaced} tunnelEnabled={true} />);
-    const highlighted = container.querySelectorAll('.border-amber-400');
+    const highlighted = container.querySelectorAll('.border-ds-warning');
     expect(highlighted.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -93,14 +93,14 @@ describe('SevensBoard', () => {
   it('highlights A cell when K is placed and tunnelEnabled', () => {
     const tablePlaced = [0, (1 << 13) | (1 << 7), 1 << 7, 1 << 7, 1 << 7];
     const { container } = render(<SevensBoard {...defaultProps} tablePlaced={tablePlaced} tunnelEnabled={true} />);
-    const highlighted = container.querySelectorAll('.border-amber-400');
+    const highlighted = container.querySelectorAll('.border-ds-warning');
     expect(highlighted.length).toBeGreaterThanOrEqual(1);
   });
 
   it('does not highlight tunnel wrap cells when tunnelEnabled is false', () => {
     const tablePlaced = [0, (1 << 1) | (1 << 7), 1 << 7, 1 << 7, 1 << 7];
     const { container } = render(<SevensBoard {...defaultProps} tablePlaced={tablePlaced} tunnelEnabled={false} />);
-    const highlighted = container.querySelectorAll('.border-amber-400');
+    const highlighted = container.querySelectorAll('.border-ds-warning');
     expect(highlighted).toHaveLength(0);
   });
 

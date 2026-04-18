@@ -151,10 +151,10 @@ function CanfieldPageContent() {
     <div className={`flex min-h-screen flex-1 flex-col ${theme.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.canfield')} />
       <PhaseIndicator phaseName={phaseName}>
-        <span className="text-sm text-white/70">
+        <span className="text-sm text-ds-text-muted">
           {t('baseRank')}: {state.baseRank || '?'}
         </span>
-        <span className="text-sm text-white/70">
+        <span className="text-sm text-ds-text-muted">
           {t('moveCount')}: {state.moveCount}
         </span>
         <TutorialButton />
@@ -200,7 +200,7 @@ function CanfieldPageContent() {
                   {pile.length > 0 ? (
                     <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
                   ) : (
-                    <span className="absolute inset-0 flex items-center justify-center text-xs text-white/40">
+                    <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
                       {t('foundation')}
                     </span>
                   )}
@@ -224,10 +224,10 @@ function CanfieldPageContent() {
               {state.stockCount > 0 ? (
                 <AnimatedCardBack width={cardWidth} />
               ) : (
-                <span className="text-xs text-white/40">{t('empty')}</span>
+                <span className="text-xs text-ds-text-muted/80">{t('empty')}</span>
               )}
             </button>
-            <span className="mt-1 text-xs text-white/70">
+            <span className="mt-1 text-xs text-ds-text-muted">
               {t('stock')}: {state.stockCount}
             </span>
           </div>
@@ -251,7 +251,7 @@ function CanfieldPageContent() {
                 />
               )}
             </div>
-            <span className="mt-1 text-xs text-white/70">{t('waste')}</span>
+            <span className="mt-1 text-xs text-ds-text-muted">{t('waste')}</span>
           </div>
 
           <div className="flex flex-col items-center" data-tutorial="cf-reserve">
@@ -273,7 +273,7 @@ function CanfieldPageContent() {
                 />
               )}
             </div>
-            <span className="mt-1 text-xs text-white/70">
+            <span className="mt-1 text-xs text-ds-text-muted">
               {t('reserve')}: {state.reserve.length}
             </span>
           </div>
@@ -285,7 +285,7 @@ function CanfieldPageContent() {
             const tZone: CanfieldMoveZone = { zone: 'tableau', col: i };
             return (
               <div key={`t-${i}`} className="flex flex-col gap-1">
-                <span className="text-xs text-white/70">#{i}</span>
+                <span className="text-xs text-ds-text-muted">#{i}</span>
                 <DropZone
                   isDropTarget={dnd.isDropTarget(tZone)}
                   onDragOver={dnd.handleDragOver(tZone)}

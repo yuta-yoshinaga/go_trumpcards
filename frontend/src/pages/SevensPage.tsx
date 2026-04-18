@@ -319,7 +319,7 @@ function SevensPageContent() {
             {state.humanAction && (
               <div
                 data-testid={state.humanAction.forcedPass ? 'human-action-forced-pass' : 'human-action'}
-                className={`rounded-lg py-2 px-3.5 my-2 text-xs ${state.humanAction.forcedPass ? 'bg-red-900/50 text-orange-200 border border-red-500/50' : 'bg-black/40 text-green-200'}`}
+                className={`rounded-lg py-2 px-3.5 my-2 text-xs ${state.humanAction.forcedPass ? 'bg-ds-error/50 text-ds-warning/80 border border-ds-error/50' : 'bg-black/40 text-ds-success/80'}`}
               >
                 {actionDesc(state.players, state.humanAction, t)}
               </div>
@@ -332,7 +332,7 @@ function SevensPageContent() {
                   <div
                     key={`cpu-action-${a.playerIdx}-${i}`}
                     data-testid={a.forcedPass ? `cpu-action-forced-pass-${i}` : `cpu-action-${i}`}
-                    className={a.forcedPass ? 'text-orange-200' : 'text-white'}
+                    className={a.forcedPass ? 'text-ds-warning/80' : 'text-white'}
                   >
                     {actionDesc(state.players, a, t)}
                   </div>

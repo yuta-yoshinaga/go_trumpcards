@@ -245,7 +245,7 @@ function PinochlePageContent() {
               {state.players?.map((p) => (
                 <div
                   key={p.id}
-                  className={`rounded p-2 text-sm ${p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-white/70'}`}
+                  className={`rounded p-2 text-sm ${p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-ds-text-muted'}`}
                 >
                   <div className="font-bold">{playerName(p.id, p.isHuman)}</div>
                   <div>
@@ -258,7 +258,7 @@ function PinochlePageContent() {
             {/* Current Trick */}
             {state.currentTrick?.length > 0 && (
               <div className="mb-3 p-2 rounded bg-black/40" data-tutorial="pn-trick-display">
-                <div className="text-white/70 text-sm mb-1">{tc('common:table', { defaultValue: 'Table' })}:</div>
+                <div className="text-ds-text-muted text-sm mb-1">{tc('common:table', { defaultValue: 'Table' })}:</div>
                 <div className="flex gap-2 justify-center">
                   {state.currentTrick.map((tc, i) => (
                     <div key={i} className="text-center">
@@ -267,7 +267,7 @@ function PinochlePageContent() {
                         width={cardWidth * 0.8}
                         onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                       />
-                      <div className="text-xs text-white/50 mt-1">P{tc.playerIdx}</div>
+                      <div className="text-xs text-ds-text-muted mt-1">P{tc.playerIdx}</div>
                     </div>
                   ))}
                 </div>
@@ -276,11 +276,11 @@ function PinochlePageContent() {
 
             {/* Melds */}
             {(phase === PinochlePhase.MELD || phase === PinochlePhase.ROUND_END) && state.playerMelds && (
-              <div className="mb-3 p-2 rounded bg-purple-900/30" data-tutorial="pn-meld-area">
-                <div className="text-white font-bold mb-1">{t('meldScore')}:</div>
+              <div className="mb-3 p-2 rounded bg-ds-accent/15" data-tutorial="pn-meld-area">
+                <div className="text-ds-text-primary font-bold mb-1">{t('meldScore')}:</div>
                 {state.playerMelds.map((melds: PinochleMeldData[], pIdx: number) =>
                   melds.length > 0 ? (
-                    <div key={pIdx} className="text-white/70 text-sm mb-1">
+                    <div key={pIdx} className="text-ds-text-muted text-sm mb-1">
                       <span className="font-semibold">{playerName(pIdx, state.players[pIdx]?.isHuman)}: </span>
                       {melds.map((m: PinochleMeldData, mIdx: number) => (
                         <span key={mIdx} className="mr-2">

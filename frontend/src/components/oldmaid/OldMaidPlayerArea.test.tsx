@@ -102,7 +102,7 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     fireEvent.keyDown(container, { key: 'ArrowRight' });
     // First ArrowRight from null -> index 0
     const images = screen.getAllByRole('img');
-    expect(images[0]).toHaveClass('ring-2', 'ring-blue-500');
+    expect(images[0]).toHaveClass('ring-2', 'ring-ds-info');
     expect(images[1]).not.toHaveClass('ring-2');
   });
 
@@ -115,7 +115,7 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     fireEvent.keyDown(container, { key: 'ArrowRight' });
     fireEvent.keyDown(container, { key: 'ArrowLeft' });
     const images = screen.getAllByRole('img');
-    expect(images[0]).toHaveClass('ring-2', 'ring-blue-500');
+    expect(images[0]).toHaveClass('ring-2', 'ring-ds-info');
     expect(images[1]).not.toHaveClass('ring-2');
   });
 
@@ -125,7 +125,7 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     const container = screen.getByTestId('human-card-container');
     fireEvent.keyDown(container, { key: 'ArrowLeft' });
     const images = screen.getAllByRole('img');
-    expect(images[0]).toHaveClass('ring-2', 'ring-blue-500');
+    expect(images[0]).toHaveClass('ring-2', 'ring-ds-info');
   });
 
   it('focus does not go below 0', () => {
@@ -136,7 +136,7 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     fireEvent.keyDown(container, { key: 'ArrowLeft' }); // clamp at 0
     fireEvent.keyDown(container, { key: 'ArrowLeft' }); // still 0
     const images = screen.getAllByRole('img');
-    expect(images[0]).toHaveClass('ring-2', 'ring-blue-500');
+    expect(images[0]).toHaveClass('ring-2', 'ring-ds-info');
   });
 
   it('focus does not go past the last card', () => {
@@ -148,7 +148,7 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
       fireEvent.keyDown(container, { key: 'ArrowRight' });
     }
     const images = screen.getAllByRole('img');
-    expect(images[2]).toHaveClass('ring-2', 'ring-blue-500');
+    expect(images[2]).toHaveClass('ring-2', 'ring-ds-info');
     expect(images[0]).not.toHaveClass('ring-2');
     expect(images[1]).not.toHaveClass('ring-2');
   });

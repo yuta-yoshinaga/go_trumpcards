@@ -20,11 +20,11 @@ export function GoFishPlayerArea({ player, isSelected, onSelect, disabled }: GoF
       onClick={() => onSelect(player.id)}
       disabled={disabled}
       className={`w-full mb-2 p-2 rounded text-left transition-colors ${
-        isSelected ? 'bg-yellow-500/30 ring-2 ring-yellow-400' : 'bg-black/30 hover:bg-black/40'
+        isSelected ? 'bg-ds-warning/30 ring-2 ring-ds-warning' : 'bg-black/30 hover:bg-black/40'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       aria-pressed={isSelected}
     >
-      <div className="text-white/70 text-sm">
+      <div className="text-ds-text-muted text-sm">
         {name}: {t('deck', { count: player.cardCount })} | {t('books', { count: player.bookCount })}
       </div>
     </button>

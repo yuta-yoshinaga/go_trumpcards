@@ -216,7 +216,7 @@ function OldMaidPageContent() {
             {/* Mode badge */}
             {state.mode === OldMaidMode.JijiNuki && (
               <div className="text-center mb-1">
-                <span className="inline-block rounded-md bg-red-600 px-2.5 py-0.5 text-sm font-bold text-white">
+                <span className="inline-block rounded-md bg-ds-error px-2.5 py-0.5 text-sm font-bold text-white">
                   {t('badge.jijiNuki')}
                 </span>
               </div>

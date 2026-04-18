@@ -10,7 +10,7 @@ export interface MetaAiIndicatorProps {
 }
 
 const levelColorClass: Record<AdaptationLevel, string> = {
-  learning: 'text-gray-400',
+  learning: 'text-ds-text-muted',
   adapting: 'text-ds-warning',
   adapted: 'text-ds-success',
 };

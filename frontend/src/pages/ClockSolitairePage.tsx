@@ -146,7 +146,7 @@ function ClockSolitairePageContent() {
     <div className={`flex min-h-screen flex-1 flex-col ${theme.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.clocksolitaire')} />
       <PhaseIndicator phaseName={phaseName}>
-        <span className="text-sm text-white/70">
+        <span className="text-sm text-ds-text-muted">
           {t('stepCount')}: {state.stepCount}
         </span>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -186,19 +186,19 @@ function ClockSolitairePageContent() {
                       width: cardWidth,
                     }}
                   >
-                    <span className="mb-0.5 text-xs font-bold text-white/70">{CLOCK_LABELS[i]}</span>
+                    <span className="mb-0.5 text-xs font-bold text-ds-text-muted">{CLOCK_LABELS[i]}</span>
                     {pile && pile.length > 0 ? (
                       <div className="relative" style={{ width: cardWidth }}>
                         {isComplete && topCard ? (
                           <AnimatedCard
                             card={topCard}
                             width={cardWidth}
-                            className="rounded border-2 border-green-400"
+                            className="rounded border-2 border-ds-success"
                           />
                         ) : (
                           <AnimatedCardBack width={cardWidth} />
                         )}
-                        <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-white/60">
+                        <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-ds-text-muted">
                           {faceUpCount}/4
                         </span>
                       </div>
@@ -222,7 +222,7 @@ function ClockSolitairePageContent() {
                   width: cardWidth,
                 }}
               >
-                <span className="mb-0.5 text-xs font-bold text-yellow-400">K</span>
+                <span className="mb-0.5 text-xs font-bold text-ds-warning">K</span>
                 {(() => {
                   const centerPile = state.piles[12];
                   const centerTopCard = centerPile?.[centerPile.length - 1]?.card ?? null;
@@ -232,12 +232,12 @@ function ClockSolitairePageContent() {
                         <AnimatedCard
                           card={centerTopCard}
                           width={cardWidth}
-                          className="rounded border-2 border-yellow-400"
+                          className="rounded border-2 border-ds-warning"
                         />
                       ) : (
                         <AnimatedCardBack width={cardWidth} />
                       )}
-                      <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-white/60">
+                      <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[10px] text-ds-text-muted">
                         {state.faceUpCount[12]}/4
                       </span>
                     </div>
@@ -254,7 +254,7 @@ function ClockSolitairePageContent() {
             {/* Current card */}
             {state.currentCard && (
               <div className="mt-6 flex flex-col items-center gap-1">
-                <span className="text-sm text-white/80">{t('currentCard')}</span>
+                <span className="text-sm text-ds-text-primary">{t('currentCard')}</span>
                 <AnimatedCard card={state.currentCard} width={cardWidth} className="rounded border-2 border-white/50" />
               </div>
             )}

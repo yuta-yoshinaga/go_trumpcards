@@ -224,7 +224,7 @@ function FreeCellPageContent() {
                             draggable={isPlaying && !loading}
                             onDragStart={dnd.handleDragStart(freeCellZone)}
                             onDragEnd={dnd.handleDragEnd}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
                           >
                             <AnimatedCard
                               card={card}
@@ -358,7 +358,7 @@ function FreeCellPageContent() {
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}
                                       onDragEnd={dnd.handleDragEnd}
-                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                     >
                                       <AnimatedCard
                                         card={card}

@@ -11,7 +11,7 @@ describe('MetaAiIndicator', () => {
       render(<MetaAiIndicator adaptationLevel="learning" strategyStyle="balanced" />);
       const el = screen.getByTestId('meta-ai-indicator');
       expect(el).toHaveTextContent('AI: 学習中...');
-      expect(el.className).toContain('text-gray-400');
+      expect(el.className).toContain('text-ds-text-muted');
     });
 
     it('renders adapting state in yellow', () => {

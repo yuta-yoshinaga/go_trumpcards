@@ -165,13 +165,13 @@ function RedDogPageContent() {
 
             {isBetPhase && (
               <div className="flex flex-col items-center justify-center py-4 gap-4">
-                <p className="text-white/50 text-lg">{t('betGuide')}</p>
+                <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
                 <details className="bg-black/30 rounded-lg w-full max-w-sm">
                   <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
-                  <div className="px-4 pb-3 text-white/70 text-sm space-y-1">
-                    <div className="font-bold text-white/90">{t('payoutRef.header')}</div>
+                  <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-1">
+                    <div className="font-bold text-ds-text-primary">{t('payoutRef.header')}</div>
                     <div>{t('payoutRef.spread1')}</div>
                     <div>{t('payoutRef.spread2')}</div>
                     <div>{t('payoutRef.spread3')}</div>

@@ -130,18 +130,18 @@ function BigRoadGrid({ history }: { history: number[] }) {
   return (
     <div className="mb-4" data-testid="big-road">
       <div
-        className="inline-grid gap-px bg-gray-700 border border-gray-600 rounded overflow-x-auto"
+        className="inline-grid gap-px bg-ds-surface-elevated border border-ds-border-subtle rounded overflow-x-auto"
         style={{ gridTemplateColumns: `repeat(${maxCols}, 28px)` }}
       >
         {grid.flatMap((row, ri) =>
           row.map((cell, ci) => {
             const cellKey = `r${String(ri)}c${String(ci)}`;
             return (
-              <div key={cellKey} className="w-7 h-7 flex items-center justify-center bg-gray-900 relative">
+              <div key={cellKey} className="w-7 h-7 flex items-center justify-center bg-ds-surface-elevated relative">
                 {cell && (
                   <>
                     <span
-                      className={`w-5 h-5 rounded-full inline-block ${cell.result === ROAD_PLAYER ? 'bg-blue-500' : 'bg-red-500'}`}
+                      className={`w-5 h-5 rounded-full inline-block ${cell.result === ROAD_PLAYER ? 'bg-ds-info' : 'bg-ds-error'}`}
                     />
                     {cell.tie && (
                       <span className="absolute inset-0 flex items-center justify-center text-ds-success font-bold text-xs">
@@ -277,12 +277,12 @@ function BaccaratPageContent() {
           >
             {isBetPhase && state.playerHand.length === 0 && (
               <div className="flex flex-col items-center justify-center py-6 gap-4">
-                <p className="text-white/50 text-lg">{t('betGuide')}</p>
+                <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
                 <details className="bg-black/30 rounded-lg w-full max-w-sm">
                   <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
-                  <ul className="text-white/70 text-sm space-y-1 px-4 pb-3">
+                  <ul className="text-ds-text-muted text-sm space-y-1 px-4 pb-3">
                     {(['playerWin', 'bankerWin', 'tie', 'playerPair', 'bankerPair'] as const).map((key) => (
                       <li key={key}>{t(`payoutRef.${key}`)}</li>
                     ))}
@@ -351,7 +351,7 @@ function BaccaratPageContent() {
               {state.history.length > 0 && (
                 <button
                   type="button"
-                  className="text-xs text-gray-400 underline mb-2"
+                  className="text-xs text-ds-text-muted underline mb-2"
                   onClick={handleClearHistory}
                   disabled={loading}
                 >

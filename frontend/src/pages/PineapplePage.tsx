@@ -119,7 +119,7 @@ function StatTooltip({ id, label, tooltipText }: { id: string; label: string; to
       {label}
       <span
         id={id}
-        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-ds-surface-elevated px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
         role="tooltip"
       >
         {tooltipText}

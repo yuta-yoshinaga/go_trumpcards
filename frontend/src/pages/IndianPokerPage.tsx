@@ -213,7 +213,7 @@ function IndianPokerPageContent() {
                   <div key={p.id} className={isMobile ? 'text-center' : 'mb-3'}>
                     <div className={`text-white text-sm mb-1 ${isMobile ? 'truncate' : ''}`}>
                       {tc('player.cpu', { id: p.id })}
-                      {!isMobile && <span className="text-gray-300 text-xs"> ({p.playStyleName})</span>}
+                      {!isMobile && <span className="text-ds-text-muted text-xs"> ({p.playStyleName})</span>}
                       <span className={`text-xs ${isMobile ? 'block' : 'ml-2'}`}>
                         {tc('betting.chips')} {p.chips}
                       </span>

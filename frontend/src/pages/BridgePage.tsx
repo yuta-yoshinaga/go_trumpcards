@@ -256,7 +256,7 @@ function BridgePageContent() {
             </div>
 
             {/* Vulnerability */}
-            <div className="text-white/70 text-center text-sm mb-2">
+            <div className="text-ds-text-muted text-center text-sm mb-2">
               <span className="mr-4">
                 {t('team', { n: 0 })}: {state.vulnerability[0] ? t('vulnerable') : t('notVulnerable')}
               </span>
@@ -296,10 +296,10 @@ function BridgePageContent() {
                 {/* Bid History */}
                 {state.bidHistory.length > 0 && (
                   <div className="my-2 p-2 rounded bg-black/30" data-tutorial="br-bid-history">
-                    <div className="text-white/70 text-sm mb-1">{t('bidHistory')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('bidHistory')}</div>
                     <div className="flex flex-wrap gap-1">
                       {state.bidHistory.map((entry, idx) => (
-                        <span key={idx} className="text-white/80 text-xs bg-black/20 px-1 rounded">
+                        <span key={idx} className="text-ds-text-primary text-xs bg-black/20 px-1 rounded">
                           {playerName(
                             state.players[entry.playerIdx]?.id ?? entry.playerIdx,
                             state.players[entry.playerIdx]?.isHuman ?? false,
@@ -321,7 +321,7 @@ function BridgePageContent() {
                 {/* Current trick */}
                 {state.currentTrick.length > 0 && (
                   <div className="my-3 p-3 rounded bg-black/40" data-tutorial="br-trick-display">
-                    <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('currentTrick')}</div>
                     <div className="flex gap-2">
                       {state.currentTrick.map((trickCard) => (
                         <div key={`trick-${trickCard.playerIdx}`} className="text-center">
@@ -345,7 +345,7 @@ function BridgePageContent() {
                 {/* Dummy hand */}
                 {state.openingLeadDone && state.dummyHand && state.dummyHand.length > 0 && (
                   <div className="my-3 p-3 rounded bg-black/40" data-tutorial="br-dummy-hand">
-                    <div className="text-white/70 text-sm mb-1">{t('dummyHand')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('dummyHand')}</div>
                     <div className="flex gap-1 flex-wrap">
                       {state.dummyHand.map((card, idx) => (
                         <AnimatedCard
@@ -361,7 +361,7 @@ function BridgePageContent() {
 
                 {/* Partnership info */}
                 {humanPlayer && (
-                  <div className="text-white/70 text-sm text-center mb-2">
+                  <div className="text-ds-text-muted text-sm text-center mb-2">
                     {t('partnership', {
                       partner: playerName(
                         state.players.find((p) => !p.isHuman && p.team === humanTeam)?.id ?? -1,
@@ -378,14 +378,14 @@ function BridgePageContent() {
                 {/* CPU players */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-white/70 text-sm">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
                       {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
                     </summary>
                     <div className="mt-1">
                       {state.players
                         .filter((p) => !p.isHuman)
                         .map((p) => (
-                          <div key={p.id} className="text-white/70 text-sm py-0.5">
+                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                             {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
                             {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
@@ -400,7 +400,7 @@ function BridgePageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-white/70 text-sm">
+                        <div className="text-ds-text-muted text-sm">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
                           {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
@@ -418,8 +418,10 @@ function BridgePageContent() {
                     data-tutorial="br-team-scores"
                     open={isRoundEnd || isGameEnd || undefined}
                   >
-                    <summary className="cursor-pointer select-none text-white/70 text-sm">{t('teamScores')}</summary>
-                    <table className="w-full text-sm text-white/70 mt-1">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                      {t('teamScores')}
+                    </summary>
+                    <table className="w-full text-sm text-ds-text-muted mt-1">
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">
@@ -444,8 +446,8 @@ function BridgePageContent() {
                   </details>
                 ) : (
                   <div className="my-3 p-2 rounded bg-black/30" data-tutorial="br-team-scores">
-                    <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
-                    <table className="w-full text-sm text-white/70">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+                    <table className="w-full text-sm text-ds-text-muted">
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">

@@ -30,7 +30,7 @@ interface SettingsPanelProps {
 export function SettingsPanel({ title, groups }: SettingsPanelProps) {
   return (
     <details className="px-4 pt-2">
-      <summary className="text-white/80 text-sm cursor-pointer select-none inline-flex items-center gap-1.5 hover:text-white transition-colors py-1">
+      <summary className="text-ds-text-primary text-sm cursor-pointer select-none inline-flex items-center gap-1.5 hover:text-ds-accent transition-colors py-1">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="14"
