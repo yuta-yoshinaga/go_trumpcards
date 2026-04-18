@@ -124,39 +124,12 @@ func run() int {
 		var short, aliases bool
 		_, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
-			f.BoolVar(&aliases, "aliases", false, "Include aliases in output (with --short)")
+			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
 		})
 		if !ok {
 			return code
 		}
-		if aliases && !short {
-			fmt.Fprintln(os.Stderr, i18n.T("cliAliasesWithoutShort"))
-		}
-		// Build reverse alias map: canonical name -> sorted list of aliases.
-		reverseAliases := make(map[string][]string)
-		for alias, canonical := range ui.GameAliases {
-			reverseAliases[canonical] = append(reverseAliases[canonical], alias)
-		}
-		for k := range reverseAliases {
-			sort.Strings(reverseAliases[k])
-		}
-		descs := ui.GameDescriptions()
-		for _, name := range ui.GameNames() {
-			if short {
-				fmt.Println(name)
-				if aliases {
-					for _, alias := range reverseAliases[name] {
-						fmt.Println(alias)
-					}
-				}
-			} else {
-				line := fmt.Sprintf("  %-16s %s", name, descs[name])
-				if aliasList := reverseAliases[name]; len(aliasList) > 0 {
-					line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
-				}
-				fmt.Println(line)
-			}
-		}
+		printGames(short, aliases, os.Stdout)
 		return 0
 	}
 	commands["completion"] = func() int {
@@ -188,7 +161,7 @@ func run() int {
 		_, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
 			f.IntVar(&port, "port", portUnset, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
 			f.IntVar(&port, "p", portUnset, "Port number for the web server (shorthand)")
-			f.StringVar(&host, "host", "", "Bind address for the web server (default: all interfaces)")
+			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
 		})
 		if !ok {
 			return code
@@ -267,14 +240,14 @@ var builtinSubcommandHelp = map[string][]string{
 		"",
 		"FLAGS:",
 		"  -p, --port PORT   Port number (default: 8080; 0 = OS-assigned ephemeral; env PORT)",
-		"      --host HOST   Bind address (default: all interfaces; env HOST)",
+		"      --host HOST   Bind address (default: 127.0.0.1; use 0.0.0.0 to expose; env HOST)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards web",
 		"  trumpcards web --port 3000",
 		"  trumpcards web --port 0            # start on any free port; see startup log for actual port",
-		"  trumpcards web --host 127.0.0.1",
-		"  HOST=127.0.0.1 PORT=3000 trumpcards web",
+		"  trumpcards web --host 0.0.0.0",
+		"  HOST=0.0.0.0 PORT=3000 trumpcards web",
 	},
 	"update": {
 		"USAGE:",
@@ -302,7 +275,8 @@ var builtinSubcommandHelp = map[string][]string{
 		"",
 		"FLAGS:",
 		"      --short     Print game names only (for scripting)",
-		"      --aliases   Include aliases (requires --short)",
+		"      --aliases   With --short, also print each alias on its own line",
+		"                  (long output always includes aliases inline)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards games",
@@ -432,7 +406,7 @@ GAMES:
 	}
 	sb.WriteString(`
 COMMANDS:
-  games        List all available games (--short for names only, --aliases to include aliases with --short)
+  games        List all available games (--short for names only; with --short, --aliases adds alias lines)
   help [game]  Show this help, or a specific game's help text
   completion   Generate shell completion script (bash, zsh, fish)
   update       Self-update to the latest version
@@ -461,22 +435,63 @@ EXAMPLES:
   trumpcards update --yes        Update without confirmation prompt
   trumpcards --version-short     Print just the version number (e.g. 1.2.3)
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
-  trumpcards web                 Start the web GUI server
+  trumpcards web                 Start the web GUI server (binds to 127.0.0.1)
   trumpcards web --port 3000     Start the web GUI on port 3000
   trumpcards web --port 0        Start on an OS-assigned ephemeral port (see startup log)
-  trumpcards web --host 127.0.0.1  Bind to localhost only
+  trumpcards web --host 0.0.0.0  Expose the web GUI on all interfaces
   source <(trumpcards completion bash)   Enable bash completion
 
 ENVIRONMENT VARIABLES:
   NO_COLOR          Disable color output on both stdout and stderr when set
                     (see https://no-color.org/)
                     Example: NO_COLOR=1 trumpcards blackjack
-  HOST              Bind address for the web server (default: all interfaces)
-                    Example: HOST=127.0.0.1 trumpcards web
+  HOST              Bind address for the web server (default: 127.0.0.1)
+                    Example: HOST=0.0.0.0 trumpcards web
   PORT              Port number for the web server (default: 8080)
                     Example: PORT=3000 trumpcards web
 `)
 	return sb.String()
+}
+
+// printGames writes the game list to w in the format selected by `short`.
+// With short=false (long mode), each line shows the canonical name, description,
+// and any aliases inline. With short=true, only canonical names are printed,
+// one per line — and if aliases is also true, every alias gets its own line.
+// The `aliases` flag is a no-op in long mode because aliases are always shown
+// inline there.
+func printGames(short, aliases bool, w io.Writer) {
+	var reverseAliases map[string][]string
+	if !short || aliases {
+		reverseAliases = make(map[string][]string)
+		for alias, canonical := range ui.GameAliases {
+			reverseAliases[canonical] = append(reverseAliases[canonical], alias)
+		}
+		for k := range reverseAliases {
+			sort.Strings(reverseAliases[k])
+		}
+	}
+
+	var descs map[string]string
+	if !short {
+		descs = ui.GameDescriptions()
+	}
+
+	for _, name := range ui.GameNames() {
+		if short {
+			_, _ = fmt.Fprintln(w, name)
+			if aliases {
+				for _, alias := range reverseAliases[name] {
+					_, _ = fmt.Fprintln(w, alias)
+				}
+			}
+		} else {
+			line := fmt.Sprintf("  %-16s %s", name, descs[name])
+			if aliasList := reverseAliases[name]; len(aliasList) > 0 {
+				line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
+			}
+			_, _ = fmt.Fprintln(w, line)
+		}
+	}
 }
 
 // buildGameCommands generates command handlers for all games from the registry.
