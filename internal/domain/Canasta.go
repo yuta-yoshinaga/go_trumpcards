@@ -72,6 +72,17 @@ func NewCanasta(trumpCards *TrumpCards, players []*CanastaPlayer, config Canasta
 	}
 }
 
+// NewDefaultCanasta returns Canasta with the standard 2-player setup (1 human, 1 CPU)
+// using a 2-deck pack with 4 jokers and DefaultCanastaConfig.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultCanasta() *Canasta {
+	players := []*CanastaPlayer{
+		NewCanastaPlayer(true),
+		NewCanastaPlayer(false),
+	}
+	return NewCanasta(NewTrumpCardsWithDecks(2, 4), players, DefaultCanastaConfig())
+}
+
 // Reset ゲーム初期化
 func (g *Canasta) Reset() {
 	g.gameEndFlag = false

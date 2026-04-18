@@ -9,13 +9,7 @@ import (
 
 // NewGinRummyCui コンストラクタ
 func NewGinRummyCui() *genericCuiGame {
-	config := domain.DefaultGinRummyConfig()
-	players := []*domain.GinRummyPlayer{
-		domain.NewGinRummyPlayer(true),
-		domain.NewGinRummyPlayer(false),
-	}
-	gr := domain.NewGinRummy(domain.NewTrumpCards(0), players, config)
-	cc := controller.NewGinRummyCuiController(usecase.NewGinRummyInteractor(gr, new(presenter.GinRummyCuiPresenter)))
+	cc := controller.NewGinRummyCuiController(usecase.NewGinRummyInteractor(domain.NewDefaultGinRummy(), new(presenter.GinRummyCuiPresenter)))
 	return newCuiGame(cc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "ginrummy.helpTitle",
 		CommandKeys: []string{

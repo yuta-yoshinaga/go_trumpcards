@@ -9,9 +9,7 @@ import (
 
 // NewOmahaCui コンストラクタ
 func NewOmahaCui() *genericCuiGame {
-	cfg := domain.DefaultOmahaConfig()
-	omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
-	oc := controller.NewOmahaCuiController(usecase.NewOmahaInteractor(omaha, new(presenter.OmahaCuiPresenter)))
+	oc := controller.NewOmahaCuiController(usecase.NewOmahaInteractor(domain.NewDefaultOmaha(), new(presenter.OmahaCuiPresenter)))
 	return newCuiGame(oc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "omaha.helpTitle",
 		CommandKeys: []string{

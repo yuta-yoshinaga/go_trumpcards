@@ -52,6 +52,12 @@ func NewClockSolitaire(trumpCards *TrumpCards) *ClockSolitaire {
 	}
 }
 
+// NewDefaultClockSolitaire returns ClockSolitaire with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultClockSolitaire() *ClockSolitaire {
+	return NewClockSolitaire(NewTrumpCards(0))
+}
+
 // Reset ゲームリセット
 func (cs *ClockSolitaire) Reset() {
 	cs.trumpCards.Shuffle()

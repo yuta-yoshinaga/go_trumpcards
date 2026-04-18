@@ -9,9 +9,7 @@ import (
 
 // NewHoldemCui コンストラクタ
 func NewHoldemCui() *genericCuiGame {
-	cfg := domain.DefaultHoldemConfig()
-	holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
-	hc := controller.NewHoldemCuiController(usecase.NewHoldemInteractor(holdem, new(presenter.HoldemCuiPresenter)))
+	hc := controller.NewHoldemCuiController(usecase.NewHoldemInteractor(domain.NewDefaultHoldem(), new(presenter.HoldemCuiPresenter)))
 	return newCuiGame(hc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "holdem.helpTitle",
 		CommandKeys: []string{

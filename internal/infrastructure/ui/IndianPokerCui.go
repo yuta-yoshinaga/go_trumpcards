@@ -9,9 +9,7 @@ import (
 
 // NewIndianPokerCui コンストラクタ
 func NewIndianPokerCui() *genericCuiGame {
-	cfg := domain.DefaultIndianPokerConfig()
-	ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
-	ipc := controller.NewIndianPokerCuiController(usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerCuiPresenter)))
+	ipc := controller.NewIndianPokerCuiController(usecase.NewIndianPokerInteractor(domain.NewDefaultIndianPoker(), new(presenter.IndianPokerCuiPresenter)))
 	return newCuiGame(ipc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "indianpoker.helpTitle",
 		CommandKeys: []string{

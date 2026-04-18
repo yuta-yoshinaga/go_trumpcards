@@ -9,15 +9,7 @@ import (
 
 // NewTwoTenJackCui コンストラクタ
 func NewTwoTenJackCui() *genericCuiGame {
-	config := domain.DefaultTwoTenJackConfig()
-	players := []*domain.TwoTenJackPlayer{
-		domain.NewTwoTenJackPlayer(true),
-		domain.NewTwoTenJackPlayer(false),
-		domain.NewTwoTenJackPlayer(false),
-		domain.NewTwoTenJackPlayer(false),
-	}
-	ttj := domain.NewTwoTenJack(domain.NewTrumpCards(0), players, config)
-	tc := controller.NewTwoTenJackCuiController(usecase.NewTwoTenJackInteractor(ttj, new(presenter.TwoTenJackCuiPresenter)))
+	tc := controller.NewTwoTenJackCuiController(usecase.NewTwoTenJackInteractor(domain.NewDefaultTwoTenJack(), new(presenter.TwoTenJackCuiPresenter)))
 	return newCuiGame(tc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "twotenjack.helpTitle",
 		CommandKeys: []string{

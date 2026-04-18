@@ -9,8 +9,7 @@ import (
 
 // NewFreeCellCui コンストラクタ
 func NewFreeCellCui() *genericCuiGame {
-	freeCell := domain.NewFreeCell(domain.NewTrumpCards(0))
-	fc := controller.NewFreeCellCuiController(usecase.NewFreeCellInteractor(freeCell, new(presenter.FreeCellCuiPresenter)))
+	fc := controller.NewFreeCellCuiController(usecase.NewFreeCellInteractor(domain.NewDefaultFreeCell(), new(presenter.FreeCellCuiPresenter)))
 	return newCuiGame(fc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "freecell.helpTitle",
 		CommandKeys: []string{

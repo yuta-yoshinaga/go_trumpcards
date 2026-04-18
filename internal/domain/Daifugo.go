@@ -142,6 +142,20 @@ func NewDaifugo(trumpCards *TrumpCards, players []*DaifugoPlayer, config Daifugo
 	}
 }
 
+// NewDefaultDaifugo returns Daifugo with the standard 4-player setup (1 human, 3 CPU)
+// and DefaultDaifugoConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultDaifugo() *Daifugo {
+	config := DefaultDaifugoConfig()
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	return NewDaifugo(NewTrumpCards(config.JokerCount), players, config)
+}
+
 // Reset ゲーム初期化
 func (d *Daifugo) Reset() {
 	// 前回のランクをプレイヤーオブジェクトに保存 (カード交換に使用)

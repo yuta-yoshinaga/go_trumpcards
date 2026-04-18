@@ -96,6 +96,12 @@ func NewKlondike(trumpCards *TrumpCards) *Klondike {
 	}
 }
 
+// NewDefaultKlondike returns Klondike with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultKlondike() *Klondike {
+	return NewKlondike(NewTrumpCards(0))
+}
+
 // ResetWithConfig 設定付きリセット
 func (k *Klondike) ResetWithConfig(cfg KlondikeConfig) {
 	if cfg.DrawCount == 3 {

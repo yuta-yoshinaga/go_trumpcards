@@ -105,6 +105,13 @@ func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemCon
 	}
 }
 
+// NewDefaultHoldem returns Holdem with the default table size and DefaultHoldemConfig.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultHoldem() *Holdem {
+	cfg := DefaultHoldemConfig()
+	return NewHoldem(NewTrumpCards(0), NewPlayersForTable(cfg.TableSize), cfg)
+}
+
 // Reset ゲーム初期化
 func (h *Holdem) Reset() error {
 	h.phase = HoldemPhaseInit

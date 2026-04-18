@@ -9,13 +9,7 @@ import (
 
 // NewCanastaCui コンストラクタ
 func NewCanastaCui() *genericCuiGame {
-	config := domain.DefaultCanastaConfig()
-	players := []*domain.CanastaPlayer{
-		domain.NewCanastaPlayer(true),
-		domain.NewCanastaPlayer(false),
-	}
-	canasta := domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, config)
-	cc := controller.NewCanastaCuiController(usecase.NewCanastaInteractor(canasta, new(presenter.CanastaCuiPresenter)))
+	cc := controller.NewCanastaCuiController(usecase.NewCanastaInteractor(domain.NewDefaultCanasta(), new(presenter.CanastaCuiPresenter)))
 	return newCuiGame(cc, []string{
 		"Canasta (カナスタ) Help",
 		"",

@@ -9,16 +9,8 @@ import (
 
 // NewDaifugoCui コンストラクタ
 func NewDaifugoCui() *genericCuiGame {
-	config := domain.DefaultDaifugoConfig()
-	players := []*domain.DaifugoPlayer{
-		domain.NewDaifugoPlayer(true),
-		domain.NewDaifugoPlayer(false),
-		domain.NewDaifugoPlayer(false),
-		domain.NewDaifugoPlayer(false),
-	}
-	daifugo := domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config)
 	dgc := controller.NewDaifugoCuiController(
-		usecase.NewDaifugoInteractor(daifugo, new(presenter.DaifugoCuiPresenter)),
+		usecase.NewDaifugoInteractor(domain.NewDefaultDaifugo(), new(presenter.DaifugoCuiPresenter)),
 	)
 	return newCuiGame(dgc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey:    "daifugo.helpTitle",

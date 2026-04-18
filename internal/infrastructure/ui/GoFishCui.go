@@ -9,15 +9,8 @@ import (
 
 // NewGoFishCui コンストラクタ
 func NewGoFishCui() *genericCuiGame {
-	players := []*domain.GoFishPlayer{
-		domain.NewGoFishPlayer(true),
-		domain.NewGoFishPlayer(false),
-		domain.NewGoFishPlayer(false),
-		domain.NewGoFishPlayer(false),
-	}
-	goFish := domain.NewGoFish(domain.NewTrumpCards(0), players)
 	gfc := controller.NewGoFishCuiController(
-		usecase.NewGoFishInteractor(goFish, new(presenter.GoFishCuiPresenter)),
+		usecase.NewGoFishInteractor(domain.NewDefaultGoFish(), new(presenter.GoFishCuiPresenter)),
 	)
 	return newCuiGame(gfc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey:    "gofish.helpTitle",

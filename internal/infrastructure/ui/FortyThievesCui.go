@@ -9,8 +9,7 @@ import (
 
 // NewFortyThievesCui コンストラクタ
 func NewFortyThievesCui() *genericCuiGame {
-	fortythieves := domain.NewFortyThieves(domain.NewTrumpCardsWithDecks(2, 0))
-	fc := controller.NewFortyThievesCuiController(usecase.NewFortyThievesInteractor(fortythieves, new(presenter.FortyThievesCuiPresenter)))
+	fc := controller.NewFortyThievesCuiController(usecase.NewFortyThievesInteractor(domain.NewDefaultFortyThieves(), new(presenter.FortyThievesCuiPresenter)))
 	return newCuiGame(fc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "fortythieves.helpTitle",
 		CommandKeys: []string{

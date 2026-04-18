@@ -58,72 +58,28 @@ func (web *TrumpCardsWeb) registerAll() {
 		)
 	}))
 	web.register("poker", controller.NewPokerWebController(func() usecase.PokerInteractorIF {
-		config := domain.DefaultPokerConfig()
-		players := []*domain.PokerPlayer{
-			domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
-			domain.NewPokerPlayer(false, domain.PokerStyleConservative),
-			domain.NewPokerPlayer(false, domain.PokerStyleAggressive),
-			domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
-		}
-		poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
-		return usecase.NewPokerInteractor(poker, new(presenter.PokerWebPresenter))
+		return usecase.NewPokerInteractor(domain.NewDefaultPoker(), new(presenter.PokerWebPresenter))
 	}))
 	web.register("oldmaid", controller.NewOldMaidWebController(func() usecase.OldMaidInteractorIF {
-		players := []*domain.OldMaidPlayer{
-			domain.NewOldMaidPlayer(true),
-			domain.NewOldMaidPlayer(false),
-			domain.NewOldMaidPlayer(false),
-			domain.NewOldMaidPlayer(false),
-		}
-		oldMaid := domain.NewOldMaid(domain.NewTrumpCards(1), players)
-		return usecase.NewOldMaidInteractor(oldMaid, new(presenter.OldMaidWebPresenter))
+		return usecase.NewOldMaidInteractor(domain.NewDefaultOldMaid(), new(presenter.OldMaidWebPresenter))
 	}))
 	web.register("daifugo", controller.NewDaifugoWebController(func() usecase.DaifugoInteractorIF {
-		config := domain.DefaultDaifugoConfig()
-		players := []*domain.DaifugoPlayer{
-			domain.NewDaifugoPlayer(true),
-			domain.NewDaifugoPlayer(false),
-			domain.NewDaifugoPlayer(false),
-			domain.NewDaifugoPlayer(false),
-		}
-		daifugo := domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config)
-		return usecase.NewDaifugoInteractor(daifugo, new(presenter.DaifugoWebPresenter))
+		return usecase.NewDaifugoInteractor(domain.NewDefaultDaifugo(), new(presenter.DaifugoWebPresenter))
 	}))
 	web.register("sevens", controller.NewSevensWebController(func() usecase.SevensInteractorIF {
-		config := domain.DefaultSevensConfig()
-		players := []*domain.SevensPlayer{
-			domain.NewSevensPlayer(true),
-			domain.NewSevensPlayer(false),
-			domain.NewSevensPlayer(false),
-			domain.NewSevensPlayer(false),
-		}
-		sevens := domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
-		return usecase.NewSevensInteractor(sevens, new(presenter.SevensWebPresenter))
+		return usecase.NewSevensInteractor(domain.NewDefaultSevens(), new(presenter.SevensWebPresenter))
 	}))
 	web.register("doubt", controller.NewDoubtWebController(func() usecase.DoubtInteractorIF {
-		players := []*domain.DoubtPlayer{
-			domain.NewDoubtPlayer(true),
-			domain.NewDoubtPlayer(false),
-			domain.NewDoubtPlayer(false),
-			domain.NewDoubtPlayer(false),
-		}
-		doubt := domain.NewDoubt(domain.NewTrumpCards(0), players)
-		return usecase.NewDoubtInteractor(doubt, new(presenter.DoubtWebPresenter))
+		return usecase.NewDoubtInteractor(domain.NewDefaultDoubt(), new(presenter.DoubtWebPresenter))
 	}))
 	web.register("holdem", controller.NewHoldemWebController(func() usecase.HoldemInteractorIF {
-		cfg := domain.DefaultHoldemConfig()
-		holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
-		return usecase.NewHoldemInteractor(holdem, new(presenter.HoldemWebPresenter))
+		return usecase.NewHoldemInteractor(domain.NewDefaultHoldem(), new(presenter.HoldemWebPresenter))
 	}))
 	web.register("omaha", controller.NewOmahaWebController(func() usecase.OmahaInteractorIF {
-		cfg := domain.DefaultOmahaConfig()
-		omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
-		return usecase.NewOmahaInteractor(omaha, new(presenter.OmahaWebPresenter))
+		return usecase.NewOmahaInteractor(domain.NewDefaultOmaha(), new(presenter.OmahaWebPresenter))
 	}))
 	web.register("shortdeck", controller.NewShortDeckWebController(func() usecase.ShortDeckInteractorIF {
-		cfg := domain.DefaultShortDeckConfig()
-		sd := domain.NewShortDeck(domain.NewTrumpCardsShortDeck(), domain.NewShortDeckPlayersForTable(cfg.TableSize), cfg)
-		return usecase.NewShortDeckInteractor(sd, new(presenter.ShortDeckWebPresenter))
+		return usecase.NewShortDeckInteractor(domain.NewDefaultShortDeck(), new(presenter.ShortDeckWebPresenter))
 	}))
 	web.register("hearts", controller.NewHeartsWebController(func() usecase.HeartsInteractorIF {
 		return usecase.NewHeartsInteractor(domain.NewDefaultHearts(), new(presenter.HeartsWebPresenter))
@@ -132,16 +88,13 @@ func (web *TrumpCardsWeb) registerAll() {
 		return usecase.NewMemoryInteractor(domain.NewDefaultMemory(), new(presenter.MemoryWebPresenter))
 	}))
 	web.register("klondike", controller.NewKlondikeWebController(func() usecase.KlondikeInteractorIF {
-		klondike := domain.NewKlondike(domain.NewTrumpCards(0))
-		return usecase.NewKlondikeInteractor(klondike, new(presenter.KlondikeWebPresenter))
+		return usecase.NewKlondikeInteractor(domain.NewDefaultKlondike(), new(presenter.KlondikeWebPresenter))
 	}))
 	web.register("freecell", controller.NewFreeCellWebController(func() usecase.FreeCellInteractorIF {
-		freeCell := domain.NewFreeCell(domain.NewTrumpCards(0))
-		return usecase.NewFreeCellInteractor(freeCell, new(presenter.FreeCellWebPresenter))
+		return usecase.NewFreeCellInteractor(domain.NewDefaultFreeCell(), new(presenter.FreeCellWebPresenter))
 	}))
 	web.register("baccarat", controller.NewBaccaratWebController(func() usecase.BaccaratInteractorIF {
-		baccarat := domain.NewDefaultBaccarat()
-		return usecase.NewBaccaratInteractor(baccarat, new(presenter.BaccaratWebPresenter))
+		return usecase.NewBaccaratInteractor(domain.NewDefaultBaccarat(), new(presenter.BaccaratWebPresenter))
 	}))
 	web.register("spades", controller.NewSpadesWebController(func() usecase.SpadesInteractorIF {
 		return usecase.NewSpadesInteractor(domain.NewDefaultSpades(), new(presenter.SpadesWebPresenter))
@@ -150,33 +103,16 @@ func (web *TrumpCardsWeb) registerAll() {
 		return usecase.NewCrazyEightsInteractor(domain.NewDefaultCrazyEights(), new(presenter.CrazyEightsWebPresenter))
 	}))
 	web.register("ginrummy", controller.NewGinRummyWebController(func() usecase.GinRummyInteractorIF {
-		config := domain.DefaultGinRummyConfig()
-		players := []*domain.GinRummyPlayer{
-			domain.NewGinRummyPlayer(true),
-			domain.NewGinRummyPlayer(false),
-		}
-		gr := domain.NewGinRummy(domain.NewTrumpCards(0), players, config)
-		return usecase.NewGinRummyInteractor(gr, new(presenter.GinRummyWebPresenter))
+		return usecase.NewGinRummyInteractor(domain.NewDefaultGinRummy(), new(presenter.GinRummyWebPresenter))
 	}))
 	web.register("spider", controller.NewSpiderWebController(func() usecase.SpiderInteractorIF {
-		spider := domain.NewSpider(domain.NewTrumpCardsWithSuits(domain.SpiderTotalCards, []int{domain.CardDesignSpade}))
-		return usecase.NewSpiderInteractor(spider, new(presenter.SpiderWebPresenter))
+		return usecase.NewSpiderInteractor(domain.NewDefaultSpider(), new(presenter.SpiderWebPresenter))
 	}))
 	web.register("napoleon", controller.NewNapoleonWebController(func() usecase.NapoleonInteractorIF {
-		config := domain.DefaultNapoleonConfig()
-		players := []*domain.NapoleonPlayer{
-			domain.NewNapoleonPlayer(true),
-			domain.NewNapoleonPlayer(false),
-			domain.NewNapoleonPlayer(false),
-			domain.NewNapoleonPlayer(false),
-		}
-		napoleon := domain.NewNapoleon(domain.NewTrumpCards(1), players, config)
-		return usecase.NewNapoleonInteractor(napoleon, new(presenter.NapoleonWebPresenter))
+		return usecase.NewNapoleonInteractor(domain.NewDefaultNapoleon(), new(presenter.NapoleonWebPresenter))
 	}))
 	web.register("indianpoker", controller.NewIndianPokerWebController(func() usecase.IndianPokerInteractorIF {
-		cfg := domain.DefaultIndianPokerConfig()
-		ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
-		return usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerWebPresenter))
+		return usecase.NewIndianPokerInteractor(domain.NewDefaultIndianPoker(), new(presenter.IndianPokerWebPresenter))
 	}))
 	web.register("videopoker", controller.NewVideoPokerWebController(func() usecase.VideoPokerInteractorIF {
 		return usecase.NewVideoPokerInteractor(
@@ -197,32 +133,16 @@ func (web *TrumpCardsWeb) registerAll() {
 		)
 	}))
 	web.register("euchre", controller.NewEuchreWebController(func() usecase.EuchreInteractorIF {
-		config := domain.DefaultEuchreConfig()
-		players := []*domain.EuchrePlayer{
-			domain.NewEuchrePlayer(true, 0),
-			domain.NewEuchrePlayer(false, 1),
-			domain.NewEuchrePlayer(false, 0),
-			domain.NewEuchrePlayer(false, 1),
-		}
-		euchre := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, config)
-		return usecase.NewEuchreInteractor(euchre, new(presenter.EuchreWebPresenter))
+		return usecase.NewEuchreInteractor(domain.NewDefaultEuchre(), new(presenter.EuchreWebPresenter))
 	}))
 	web.register("pyramid", controller.NewPyramidWebController(func() usecase.PyramidInteractorIF {
-		pyramid := domain.NewPyramid(domain.NewTrumpCards(0))
-		return usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidWebPresenter))
+		return usecase.NewPyramidInteractor(domain.NewDefaultPyramid(), new(presenter.PyramidWebPresenter))
 	}))
 	web.register("tripeaks", controller.NewTriPeaksWebController(func() usecase.TriPeaksInteractorIF {
-		triPeaks := domain.NewTriPeaks(domain.NewTrumpCards(0))
-		return usecase.NewTriPeaksInteractor(triPeaks, new(presenter.TriPeaksWebPresenter))
+		return usecase.NewTriPeaksInteractor(domain.NewDefaultTriPeaks(), new(presenter.TriPeaksWebPresenter))
 	}))
 	web.register("cribbage", controller.NewCribbageWebController(func() usecase.CribbageInteractorIF {
-		config := domain.DefaultCribbageConfig()
-		players := []*domain.CribbagePlayer{
-			domain.NewCribbagePlayer(true),
-			domain.NewCribbagePlayer(false),
-		}
-		cribbage := domain.NewCribbage(domain.NewTrumpCards(0), players, config)
-		return usecase.NewCribbageInteractor(cribbage, new(presenter.CribbageWebPresenter))
+		return usecase.NewCribbageInteractor(domain.NewDefaultCribbage(), new(presenter.CribbageWebPresenter))
 	}))
 	web.register("threecard", controller.NewThreeCardWebController(func() usecase.ThreeCardInteractorIF {
 		return usecase.NewThreeCardInteractor(
@@ -234,101 +154,43 @@ func (web *TrumpCardsWeb) registerAll() {
 		return usecase.NewOhHellInteractor(domain.NewDefaultOhHell(), new(presenter.OhHellWebPresenter))
 	}))
 	web.register("bridge", controller.NewBridgeWebController(func() usecase.BridgeInteractorIF {
-		config := domain.DefaultBridgeConfig()
-		players := []*domain.BridgePlayer{
-			domain.NewBridgePlayer(true, 0),
-			domain.NewBridgePlayer(false, 1),
-			domain.NewBridgePlayer(false, 0),
-			domain.NewBridgePlayer(false, 1),
-		}
-		bridge := domain.NewBridge(domain.NewTrumpCards(0), players, config)
-		return usecase.NewBridgeInteractor(bridge, new(presenter.BridgeWebPresenter))
+		return usecase.NewBridgeInteractor(domain.NewDefaultBridge(), new(presenter.BridgeWebPresenter))
 	}))
 	web.register("pineapple", controller.NewPineappleWebController(func() usecase.PineappleInteractorIF {
-		cfg := domain.DefaultPineappleConfig()
-		pineapple := domain.NewPineapple(domain.NewTrumpCards(0), domain.NewPineapplePlayersForTable(cfg.TableSize), cfg)
-		return usecase.NewPineappleInteractor(pineapple, new(presenter.PineappleWebPresenter))
+		return usecase.NewPineappleInteractor(domain.NewDefaultPineapple(), new(presenter.PineappleWebPresenter))
 	}))
 	web.register("speed", controller.NewSpeedWebController(func() usecase.SpeedInteractorIF {
-		config := domain.DefaultSpeedConfig()
-		players := []*domain.SpeedPlayer{
-			domain.NewSpeedPlayer(true),
-			domain.NewSpeedPlayer(false),
-		}
-		speed := domain.NewSpeed(domain.NewTrumpCards(0), players, config)
-		return usecase.NewSpeedInteractor(speed, new(presenter.SpeedWebPresenter))
+		return usecase.NewSpeedInteractor(domain.NewDefaultSpeed(), new(presenter.SpeedWebPresenter))
 	}))
 	web.register("gofish", controller.NewGoFishWebController(func() usecase.GoFishInteractorIF {
-		players := []*domain.GoFishPlayer{
-			domain.NewGoFishPlayer(true),
-			domain.NewGoFishPlayer(false),
-			domain.NewGoFishPlayer(false),
-			domain.NewGoFishPlayer(false),
-		}
-		goFish := domain.NewGoFish(domain.NewTrumpCards(0), players)
-		return usecase.NewGoFishInteractor(goFish, new(presenter.GoFishWebPresenter))
+		return usecase.NewGoFishInteractor(domain.NewDefaultGoFish(), new(presenter.GoFishWebPresenter))
 	}))
 	web.register("canasta", controller.NewCanastaWebController(func() usecase.CanastaInteractorIF {
-		config := domain.DefaultCanastaConfig()
-		players := []*domain.CanastaPlayer{
-			domain.NewCanastaPlayer(true),
-			domain.NewCanastaPlayer(false),
-		}
-		canasta := domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, config)
-		return usecase.NewCanastaInteractor(canasta, new(presenter.CanastaWebPresenter))
+		return usecase.NewCanastaInteractor(domain.NewDefaultCanasta(), new(presenter.CanastaWebPresenter))
 	}))
 	web.register("pinochle", controller.NewPinochleWebController(func() usecase.PinochleInteractorIF {
-		config := domain.DefaultPinochleConfig()
-		players := []*domain.PinochlePlayer{
-			domain.NewPinochlePlayer(true, 0),
-			domain.NewPinochlePlayer(false, 1),
-			domain.NewPinochlePlayer(false, 0),
-			domain.NewPinochlePlayer(false, 1),
-		}
-		pinochle := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, config)
-		return usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleWebPresenter))
+		return usecase.NewPinochleInteractor(domain.NewDefaultPinochle(), new(presenter.PinochleWebPresenter))
 	}))
 	web.register("golf", controller.NewGolfWebController(func() usecase.GolfInteractorIF {
-		golf := domain.NewGolf(domain.NewTrumpCards(0))
-		return usecase.NewGolfInteractor(golf, new(presenter.GolfWebPresenter))
+		return usecase.NewGolfInteractor(domain.NewDefaultGolf(), new(presenter.GolfWebPresenter))
 	}))
 	web.register("pigtail", controller.NewPigsTailWebController(func() usecase.PigsTailInteractorIF {
-		players := []*domain.PigsTailPlayer{
-			domain.NewPigsTailPlayer(true),
-			domain.NewPigsTailPlayer(false),
-			domain.NewPigsTailPlayer(false),
-			domain.NewPigsTailPlayer(false),
-		}
-		pigsTail := domain.NewPigsTail(domain.NewTrumpCards(0), players)
-		return usecase.NewPigsTailInteractor(pigsTail, new(presenter.PigsTailWebPresenter))
+		return usecase.NewPigsTailInteractor(domain.NewDefaultPigsTail(), new(presenter.PigsTailWebPresenter))
 	}))
 	web.register("sevencardstud", controller.NewSevenCardStudWebController(func() usecase.SevenCardStudInteractorIF {
-		cfg := domain.DefaultSevenCardStudConfig()
-		scs := domain.NewSevenCardStud(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
-		return usecase.NewSevenCardStudInteractor(scs, new(presenter.SevenCardStudWebPresenter))
+		return usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStud(), new(presenter.SevenCardStudWebPresenter))
 	}))
 	web.register("razz", controller.NewSevenCardStudWebController(func() usecase.SevenCardStudInteractorIF {
-		cfg := domain.DefaultRazzConfig()
-		r := domain.NewRazz(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
-		return usecase.NewSevenCardStudInteractor(r, new(presenter.SevenCardStudWebPresenter))
+		return usecase.NewSevenCardStudInteractor(domain.NewDefaultRazz(), new(presenter.SevenCardStudWebPresenter))
 	}))
 	web.register("clocksolitaire", controller.NewClockSolitaireWebController(func() usecase.ClockSolitaireInteractorIF {
-		cs := domain.NewClockSolitaire(domain.NewTrumpCards(0))
-		return usecase.NewClockSolitaireInteractor(cs, new(presenter.ClockSolitaireWebPresenter))
+		return usecase.NewClockSolitaireInteractor(domain.NewDefaultClockSolitaire(), new(presenter.ClockSolitaireWebPresenter))
 	}))
 	web.register("durak", controller.NewDurakWebController(func() usecase.DurakInteractorIF {
-		players := []*domain.DurakPlayer{
-			domain.NewDurakPlayer(true),
-			domain.NewDurakPlayer(false),
-			domain.NewDurakPlayer(false),
-			domain.NewDurakPlayer(false),
-		}
-		d := domain.NewDurak(domain.NewTrumpCardsShortDeck(), players)
-		return usecase.NewDurakInteractor(d, new(presenter.DurakWebPresenter))
+		return usecase.NewDurakInteractor(domain.NewDefaultDurak(), new(presenter.DurakWebPresenter))
 	}))
 	web.register("fortythieves", controller.NewFortyThievesWebController(func() usecase.FortyThievesInteractorIF {
-		ft := domain.NewFortyThieves(domain.NewTrumpCardsWithDecks(2, 0))
-		return usecase.NewFortyThievesInteractor(ft, new(presenter.FortyThievesWebPresenter))
+		return usecase.NewFortyThievesInteractor(domain.NewDefaultFortyThieves(), new(presenter.FortyThievesWebPresenter))
 	}))
 	web.register("paigow", controller.NewPaiGowWebController(func() usecase.PaiGowInteractorIF {
 		return usecase.NewPaiGowInteractor(
@@ -337,15 +199,7 @@ func (web *TrumpCardsWeb) registerAll() {
 		)
 	}))
 	web.register("twotenjack", controller.NewTwoTenJackWebController(func() usecase.TwoTenJackInteractorIF {
-		config := domain.DefaultTwoTenJackConfig()
-		players := []*domain.TwoTenJackPlayer{
-			domain.NewTwoTenJackPlayer(true),
-			domain.NewTwoTenJackPlayer(false),
-			domain.NewTwoTenJackPlayer(false),
-			domain.NewTwoTenJackPlayer(false),
-		}
-		ttj := domain.NewTwoTenJack(domain.NewTrumpCards(0), players, config)
-		return usecase.NewTwoTenJackInteractor(ttj, new(presenter.TwoTenJackWebPresenter))
+		return usecase.NewTwoTenJackInteractor(domain.NewDefaultTwoTenJack(), new(presenter.TwoTenJackWebPresenter))
 	}))
 	web.register("caribbeanstud", controller.NewCaribbeanStudWebController(func() usecase.CaribbeanStudInteractorIF {
 		return usecase.NewCaribbeanStudInteractor(
@@ -354,46 +208,22 @@ func (web *TrumpCardsWeb) registerAll() {
 		)
 	}))
 	web.register("war", controller.NewWarWebController(func() usecase.WarInteractorIF {
-		config := domain.DefaultWarConfig()
-		players := []*domain.WarPlayer{
-			domain.NewWarPlayer(true),
-			domain.NewWarPlayer(false),
-		}
-		war := domain.NewWar(domain.NewTrumpCards(0), players, config)
-		return usecase.NewWarInteractor(war, new(presenter.WarWebPresenter))
+		return usecase.NewWarInteractor(domain.NewDefaultWar(), new(presenter.WarWebPresenter))
 	}))
 	web.register("canfield", controller.NewCanfieldWebController(func() usecase.CanfieldInteractorIF {
-		canfield := domain.NewCanfield(domain.NewTrumpCards(0))
-		return usecase.NewCanfieldInteractor(canfield, new(presenter.CanfieldWebPresenter))
+		return usecase.NewCanfieldInteractor(domain.NewDefaultCanfield(), new(presenter.CanfieldWebPresenter))
 	}))
 	web.register("fiftyone", controller.NewFiftyOneWebController(func() usecase.FiftyOneInteractorIF {
-		players := []*domain.FiftyOnePlayer{
-			domain.NewFiftyOnePlayer(true),
-			domain.NewFiftyOnePlayer(false),
-			domain.NewFiftyOnePlayer(false),
-			domain.NewFiftyOnePlayer(false),
-		}
-		fo := domain.NewFiftyOne(domain.NewTrumpCards(0), players)
-		return usecase.NewFiftyOneInteractor(fo, new(presenter.FiftyOneWebPresenter))
+		return usecase.NewFiftyOneInteractor(domain.NewDefaultFiftyOne(), new(presenter.FiftyOneWebPresenter))
 	}))
 	web.register("yukon", controller.NewYukonWebController(func() usecase.YukonInteractorIF {
-		yukon := domain.NewYukon(domain.NewTrumpCards(0))
-		return usecase.NewYukonInteractor(yukon, new(presenter.YukonWebPresenter))
+		return usecase.NewYukonInteractor(domain.NewDefaultYukon(), new(presenter.YukonWebPresenter))
 	}))
 	web.register("scorpion", controller.NewScorpionWebController(func() usecase.ScorpionInteractorIF {
-		scorpion := domain.NewScorpion(domain.NewTrumpCards(0))
-		return usecase.NewScorpionInteractor(scorpion, new(presenter.ScorpionWebPresenter))
+		return usecase.NewScorpionInteractor(domain.NewDefaultScorpion(), new(presenter.ScorpionWebPresenter))
 	}))
 	web.register("whist", controller.NewWhistWebController(func() usecase.WhistInteractorIF {
-		config := domain.DefaultWhistConfig()
-		players := []*domain.WhistPlayer{
-			domain.NewWhistPlayer(true, 0),
-			domain.NewWhistPlayer(false, 1),
-			domain.NewWhistPlayer(false, 0),
-			domain.NewWhistPlayer(false, 1),
-		}
-		whist := domain.NewWhist(domain.NewTrumpCards(0), players, config)
-		return usecase.NewWhistInteractor(whist, new(presenter.WhistWebPresenter))
+		return usecase.NewWhistInteractor(domain.NewDefaultWhist(), new(presenter.WhistWebPresenter))
 	}))
 	web.register("letitride", controller.NewLetItRideWebController(func() usecase.LetItRideInteractorIF {
 		return usecase.NewLetItRideInteractor(
@@ -402,19 +232,10 @@ func (web *TrumpCardsWeb) registerAll() {
 		)
 	}))
 	web.register("pokersquares", controller.NewPokerSquaresWebController(func() usecase.PokerSquaresInteractorIF {
-		ps := domain.NewPokerSquares(domain.NewTrumpCards(0))
-		return usecase.NewPokerSquaresInteractor(ps, new(presenter.PokerSquaresWebPresenter))
+		return usecase.NewPokerSquaresInteractor(domain.NewDefaultPokerSquares(), new(presenter.PokerSquaresWebPresenter))
 	}))
 	web.register("pageone", controller.NewPageOneWebController(func() usecase.PageOneInteractorIF {
-		config := domain.DefaultPageOneConfig()
-		players := []*domain.PageOnePlayer{
-			domain.NewPageOnePlayer(true),
-			domain.NewPageOnePlayer(false),
-			domain.NewPageOnePlayer(false),
-			domain.NewPageOnePlayer(false),
-		}
-		po := domain.NewPageOne(domain.NewTrumpCards(0), players, config)
-		return usecase.NewPageOneInteractor(po, new(presenter.PageOneWebPresenter))
+		return usecase.NewPageOneInteractor(domain.NewDefaultPageOne(), new(presenter.PageOneWebPresenter))
 	}))
 	web.register("reddog", controller.NewRedDogWebController(func() usecase.RedDogInteractorIF {
 		return usecase.NewRedDogInteractor(

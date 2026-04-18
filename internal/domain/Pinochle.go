@@ -146,6 +146,19 @@ func NewPinochle(trumpCards *TrumpCards, players []*PinochlePlayer, config Pinoc
 	}
 }
 
+// NewDefaultPinochle returns Pinochle with the standard 4-player team setup
+// (human team 0, alternating CPU teams) and DefaultPinochleConfig.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultPinochle() *Pinochle {
+	players := []*PinochlePlayer{
+		NewPinochlePlayer(true, 0),
+		NewPinochlePlayer(false, 1),
+		NewPinochlePlayer(false, 0),
+		NewPinochlePlayer(false, 1),
+	}
+	return NewPinochle(NewTrumpCardsPinochle(), players, DefaultPinochleConfig())
+}
+
 // Reset ゲーム初期化
 func (p *Pinochle) Reset() {
 	p.gameEndFlag = false

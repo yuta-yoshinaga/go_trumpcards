@@ -10,16 +10,8 @@ import (
 
 // NewSevensCui コンストラクタ
 func NewSevensCui() *genericCuiGame {
-	config := domain.DefaultSevensConfig()
-	players := []*domain.SevensPlayer{
-		domain.NewSevensPlayer(true),
-		domain.NewSevensPlayer(false),
-		domain.NewSevensPlayer(false),
-		domain.NewSevensPlayer(false),
-	}
-	sevens := domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
 	sgc := controller.NewSevensCuiController(
-		usecase.NewSevensInteractor(sevens, new(presenter.SevensCuiPresenter)),
+		usecase.NewSevensInteractor(domain.NewDefaultSevens(), new(presenter.SevensCuiPresenter)),
 	)
 	return newCuiGame(sgc, []string{
 		i18n.T("sevens.helpTitle"),

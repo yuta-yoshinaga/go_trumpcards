@@ -76,6 +76,12 @@ func NewCanfield(trumpCards *TrumpCards) *Canfield {
 	return &Canfield{trumpCards: trumpCards}
 }
 
+// NewDefaultCanfield returns Canfield with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultCanfield() *Canfield {
+	return NewCanfield(NewTrumpCards(0))
+}
+
 // Reset ゲームリセット
 func (c *Canfield) Reset() {
 	c.trumpCards.Shuffle()

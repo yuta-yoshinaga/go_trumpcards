@@ -9,13 +9,7 @@ import (
 
 // NewCribbageCui コンストラクタ
 func NewCribbageCui() *genericCuiGame {
-	config := domain.DefaultCribbageConfig()
-	players := []*domain.CribbagePlayer{
-		domain.NewCribbagePlayer(true),
-		domain.NewCribbagePlayer(false),
-	}
-	g := domain.NewCribbage(domain.NewTrumpCards(0), players, config)
-	cc := controller.NewCribbageCuiController(usecase.NewCribbageInteractor(g, new(presenter.CribbageCuiPresenter)))
+	cc := controller.NewCribbageCuiController(usecase.NewCribbageInteractor(domain.NewDefaultCribbage(), new(presenter.CribbageCuiPresenter)))
 	return newCuiGame(cc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey:          "cribbage.helpTitle",
 		CommandKeys:       []string{"cribbage.helpDiscard", "cribbage.helpPeg", "cribbage.helpGo", "cribbage.helpShowNext", "cribbage.helpNextRound"},

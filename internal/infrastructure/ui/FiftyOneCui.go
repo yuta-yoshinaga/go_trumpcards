@@ -9,15 +9,8 @@ import (
 
 // NewFiftyOneCui コンストラクタ
 func NewFiftyOneCui() *genericCuiGame {
-	players := []*domain.FiftyOnePlayer{
-		domain.NewFiftyOnePlayer(true),
-		domain.NewFiftyOnePlayer(false),
-		domain.NewFiftyOnePlayer(false),
-		domain.NewFiftyOnePlayer(false),
-	}
-	fo := domain.NewFiftyOne(domain.NewTrumpCards(0), players)
 	foc := controller.NewFiftyOneCuiController(
-		usecase.NewFiftyOneInteractor(fo, new(presenter.FiftyOneCuiPresenter)),
+		usecase.NewFiftyOneInteractor(domain.NewDefaultFiftyOne(), new(presenter.FiftyOneCuiPresenter)),
 	)
 	return newCuiGame(foc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey:    "fiftyone.helpTitle",

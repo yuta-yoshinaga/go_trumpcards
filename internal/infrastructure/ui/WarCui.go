@@ -9,14 +9,8 @@ import (
 
 // NewWarCui コンストラクタ
 func NewWarCui() *genericCuiGame {
-	players := []*domain.WarPlayer{
-		domain.NewWarPlayer(true),
-		domain.NewWarPlayer(false),
-	}
-	config := domain.DefaultWarConfig()
-	game := domain.NewWar(domain.NewTrumpCards(0), players, config)
 	wc := controller.NewWarCuiController(
-		usecase.NewWarInteractor(game, new(presenter.WarCuiPresenter)),
+		usecase.NewWarInteractor(domain.NewDefaultWar(), new(presenter.WarCuiPresenter)),
 	)
 	return newCuiGame(wc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey:    "war.helpTitle",

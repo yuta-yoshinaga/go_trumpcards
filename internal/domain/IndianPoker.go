@@ -81,6 +81,13 @@ func NewIndianPoker(trumpCards *TrumpCards, players []*IndianPokerPlayer, config
 	}
 }
 
+// NewDefaultIndianPoker returns IndianPoker with the standard player setup and
+// DefaultIndianPokerConfig. Used as the single source of truth for CUI, Web,
+// and Worker construction sites.
+func NewDefaultIndianPoker() *IndianPoker {
+	return NewIndianPoker(NewTrumpCards(0), NewIndianPokerPlayers(), DefaultIndianPokerConfig())
+}
+
 // Reset ゲーム初期化
 func (ip *IndianPoker) Reset() error {
 	ip.phase = IndianPokerPhaseInit

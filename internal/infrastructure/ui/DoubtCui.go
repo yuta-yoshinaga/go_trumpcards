@@ -24,13 +24,7 @@ type DoubtCui struct {
 
 // NewDoubtCui コンストラクタ
 func NewDoubtCui() *DoubtCui {
-	players := []*domain.DoubtPlayer{
-		domain.NewDoubtPlayer(true),
-		domain.NewDoubtPlayer(false),
-		domain.NewDoubtPlayer(false),
-		domain.NewDoubtPlayer(false),
-	}
-	game := domain.NewDoubt(domain.NewTrumpCards(0), players)
+	game := domain.NewDefaultDoubt()
 	dc := controller.NewDoubtCuiController(
 		usecase.NewDoubtInteractor(game, new(presenter.DoubtCuiPresenter)),
 	)

@@ -9,8 +9,7 @@ import (
 
 // NewClockSolitaireCui コンストラクタ
 func NewClockSolitaireCui() *genericCuiGame {
-	cs := domain.NewClockSolitaire(domain.NewTrumpCards(0))
-	cc := controller.NewClockSolitaireCuiController(usecase.NewClockSolitaireInteractor(cs, new(presenter.ClockSolitaireCuiPresenter)))
+	cc := controller.NewClockSolitaireCuiController(usecase.NewClockSolitaireInteractor(domain.NewDefaultClockSolitaire(), new(presenter.ClockSolitaireCuiPresenter)))
 	return newCuiGame(cc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey:          "clocksolitaire.helpTitle",
 		CommandKeys:       []string{"clocksolitaire.helpStep", "clocksolitaire.helpAutoPlay"},

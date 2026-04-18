@@ -9,8 +9,7 @@ import (
 
 // NewTriPeaksCui コンストラクタ
 func NewTriPeaksCui() *genericCuiGame {
-	triPeaks := domain.NewTriPeaks(domain.NewTrumpCards(0))
-	tc := controller.NewTriPeaksCuiController(usecase.NewTriPeaksInteractor(triPeaks, new(presenter.TriPeaksCuiPresenter)))
+	tc := controller.NewTriPeaksCuiController(usecase.NewTriPeaksInteractor(domain.NewDefaultTriPeaks(), new(presenter.TriPeaksCuiPresenter)))
 	return newCuiGame(tc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "tripeaks.helpTitle",
 		CommandKeys: []string{

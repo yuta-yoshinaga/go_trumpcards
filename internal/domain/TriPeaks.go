@@ -113,6 +113,12 @@ func NewTriPeaks(trumpCards *TrumpCards) *TriPeaks {
 	}
 }
 
+// NewDefaultTriPeaks returns TriPeaks with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultTriPeaks() *TriPeaks {
+	return NewTriPeaks(NewTrumpCards(0))
+}
+
 // Reset ゲームリセット
 func (t *TriPeaks) Reset() {
 	t.trumpCards.Shuffle()

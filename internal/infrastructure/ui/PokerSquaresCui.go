@@ -10,8 +10,7 @@ import (
 
 // NewPokerSquaresCui はコンストラクタ。
 func NewPokerSquaresCui() *genericCuiGame {
-	ps := domain.NewPokerSquares(domain.NewTrumpCards(0))
-	pc := controller.NewPokerSquaresCuiController(usecase.NewPokerSquaresInteractor(ps, new(presenter.PokerSquaresCuiPresenter)))
+	pc := controller.NewPokerSquaresCuiController(usecase.NewPokerSquaresInteractor(domain.NewDefaultPokerSquares(), new(presenter.PokerSquaresCuiPresenter)))
 	return newCuiGame(pc, []string{
 		"Poker Squares (ポーカー・スクエアズ)",
 		"",

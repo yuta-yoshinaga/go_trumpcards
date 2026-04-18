@@ -70,6 +70,12 @@ func NewGolf(trumpCards *TrumpCards) *Golf {
 	}
 }
 
+// NewDefaultGolf returns Golf with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultGolf() *Golf {
+	return NewGolf(NewTrumpCards(0))
+}
+
 // Reset ゲームリセット
 func (g *Golf) Reset() {
 	g.trumpCards.Shuffle()

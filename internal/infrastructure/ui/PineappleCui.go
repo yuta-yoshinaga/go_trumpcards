@@ -9,9 +9,7 @@ import (
 
 // NewPineappleCui コンストラクタ
 func NewPineappleCui() *genericCuiGame {
-	cfg := domain.DefaultPineappleConfig()
-	pineapple := domain.NewPineapple(domain.NewTrumpCards(0), domain.NewPineapplePlayersForTable(cfg.TableSize), cfg)
-	pc := controller.NewPineappleCuiController(usecase.NewPineappleInteractor(pineapple, new(presenter.PineappleCuiPresenter)))
+	pc := controller.NewPineappleCuiController(usecase.NewPineappleInteractor(domain.NewDefaultPineapple(), new(presenter.PineappleCuiPresenter)))
 	return newCuiGame(pc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "pineapple.helpTitle",
 		CommandKeys: []string{

@@ -94,6 +94,19 @@ func NewDurak(trumpCards *TrumpCards, players []*DurakPlayer) *Durak {
 	}
 }
 
+// NewDefaultDurak returns Durak with the standard 4-player setup (1 human, 3 CPU)
+// using the short deck. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultDurak() *Durak {
+	players := []*DurakPlayer{
+		NewDurakPlayer(true),
+		NewDurakPlayer(false),
+		NewDurakPlayer(false),
+		NewDurakPlayer(false),
+	}
+	return NewDurak(NewTrumpCardsShortDeck(), players)
+}
+
 // ---- 公開メソッド: ゲーム操作 ----
 
 // Reset ゲーム初期化

@@ -80,6 +80,19 @@ func NewTwoTenJack(trumpCards *TrumpCards, players []*TwoTenJackPlayer, config T
 	}
 }
 
+// NewDefaultTwoTenJack returns TwoTenJack with the standard 4-player setup (1 human, 3 CPU)
+// and DefaultTwoTenJackConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultTwoTenJack() *TwoTenJack {
+	players := []*TwoTenJackPlayer{
+		NewTwoTenJackPlayer(true),
+		NewTwoTenJackPlayer(false),
+		NewTwoTenJackPlayer(false),
+		NewTwoTenJackPlayer(false),
+	}
+	return NewTwoTenJack(NewTrumpCards(0), players, DefaultTwoTenJackConfig())
+}
+
 // Reset ゲーム初期化
 func (t *TwoTenJack) Reset() {
 	t.gameEndFlag = false

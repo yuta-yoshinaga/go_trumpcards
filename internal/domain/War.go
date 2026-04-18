@@ -69,6 +69,17 @@ func NewWar(trumpCards *TrumpCards, players []*WarPlayer, config WarConfig) *War
 	return w
 }
 
+// NewDefaultWar returns War with the standard 2-player setup (1 human, 1 CPU)
+// and DefaultWarConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultWar() *War {
+	players := []*WarPlayer{
+		NewWarPlayer(true),
+		NewWarPlayer(false),
+	}
+	return NewWar(NewTrumpCards(0), players, DefaultWarConfig())
+}
+
 // Reset ゲームをリセットして新しいゲームを開始する
 func (w *War) Reset() {
 	w.phase = WarPhaseReveal

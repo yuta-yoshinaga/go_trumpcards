@@ -51,15 +51,7 @@ func main() {
 	// Poker
 	must(worker.RegisterKV(mux, "/poker/exec", "poker:",
 		func() usecase.PokerInteractorIF {
-			config := domain.DefaultPokerConfig()
-			players := []*domain.PokerPlayer{
-				domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
-				domain.NewPokerPlayer(false, domain.PokerStyleConservative),
-				domain.NewPokerPlayer(false, domain.PokerStyleAggressive),
-				domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
-			}
-			poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
-			return usecase.NewPokerInteractor(poker, new(presenter.PokerWebPresenter))
+			return usecase.NewPokerInteractor(domain.NewDefaultPoker(), new(presenter.PokerWebPresenter))
 		},
 		func(data []byte) (usecase.PokerInteractorIF, error) {
 			return usecase.RestorePokerInteractor(data, new(presenter.PokerWebPresenter))
@@ -70,9 +62,7 @@ func main() {
 	// Texas Hold'em
 	must(worker.RegisterKV(mux, "/holdem/exec", "holdem:",
 		func() usecase.HoldemInteractorIF {
-			cfg := domain.DefaultHoldemConfig()
-			holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
-			return usecase.NewHoldemInteractor(holdem, new(presenter.HoldemWebPresenter))
+			return usecase.NewHoldemInteractor(domain.NewDefaultHoldem(), new(presenter.HoldemWebPresenter))
 		},
 		func(data []byte) (usecase.HoldemInteractorIF, error) {
 			return usecase.RestoreHoldemInteractor(data, new(presenter.HoldemWebPresenter))
@@ -83,9 +73,7 @@ func main() {
 	// Omaha
 	must(worker.RegisterKV(mux, "/omaha/exec", "omaha:",
 		func() usecase.OmahaInteractorIF {
-			cfg := domain.DefaultOmahaConfig()
-			omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
-			return usecase.NewOmahaInteractor(omaha, new(presenter.OmahaWebPresenter))
+			return usecase.NewOmahaInteractor(domain.NewDefaultOmaha(), new(presenter.OmahaWebPresenter))
 		},
 		func(data []byte) (usecase.OmahaInteractorIF, error) {
 			return usecase.RestoreOmahaInteractor(data, new(presenter.OmahaWebPresenter))
@@ -96,9 +84,7 @@ func main() {
 	// Short Deck
 	must(worker.RegisterKV(mux, "/shortdeck/exec", "shortdeck:",
 		func() usecase.ShortDeckInteractorIF {
-			cfg := domain.DefaultShortDeckConfig()
-			sd := domain.NewShortDeck(domain.NewTrumpCardsShortDeck(), domain.NewShortDeckPlayersForTable(cfg.TableSize), cfg)
-			return usecase.NewShortDeckInteractor(sd, new(presenter.ShortDeckWebPresenter))
+			return usecase.NewShortDeckInteractor(domain.NewDefaultShortDeck(), new(presenter.ShortDeckWebPresenter))
 		},
 		func(data []byte) (usecase.ShortDeckInteractorIF, error) {
 			return usecase.RestoreShortDeckInteractor(data, new(presenter.ShortDeckWebPresenter))
@@ -109,9 +95,7 @@ func main() {
 	// Indian Poker
 	must(worker.RegisterKV(mux, "/indianpoker/exec", "indianpoker:",
 		func() usecase.IndianPokerInteractorIF {
-			cfg := domain.DefaultIndianPokerConfig()
-			ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
-			return usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerWebPresenter))
+			return usecase.NewIndianPokerInteractor(domain.NewDefaultIndianPoker(), new(presenter.IndianPokerWebPresenter))
 		},
 		func(data []byte) (usecase.IndianPokerInteractorIF, error) {
 			return usecase.RestoreIndianPokerInteractor(data, new(presenter.IndianPokerWebPresenter))
@@ -178,9 +162,7 @@ func main() {
 	// Pineapple Poker
 	must(worker.RegisterKV(mux, "/pineapple/exec", "pineapple:",
 		func() usecase.PineappleInteractorIF {
-			cfg := domain.DefaultPineappleConfig()
-			pineapple := domain.NewPineapple(domain.NewTrumpCards(0), domain.NewPineapplePlayersForTable(cfg.TableSize), cfg)
-			return usecase.NewPineappleInteractor(pineapple, new(presenter.PineappleWebPresenter))
+			return usecase.NewPineappleInteractor(domain.NewDefaultPineapple(), new(presenter.PineappleWebPresenter))
 		},
 		func(data []byte) (usecase.PineappleInteractorIF, error) {
 			return usecase.RestorePineappleInteractor(data, new(presenter.PineappleWebPresenter))
@@ -191,9 +173,7 @@ func main() {
 	// Seven Card Stud
 	must(worker.RegisterKV(mux, "/sevencardstud/exec", "sevencardstud:",
 		func() usecase.SevenCardStudInteractorIF {
-			cfg := domain.DefaultSevenCardStudConfig()
-			scs := domain.NewSevenCardStud(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
-			return usecase.NewSevenCardStudInteractor(scs, new(presenter.SevenCardStudWebPresenter))
+			return usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStud(), new(presenter.SevenCardStudWebPresenter))
 		},
 		func(data []byte) (usecase.SevenCardStudInteractorIF, error) {
 			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))
@@ -204,9 +184,7 @@ func main() {
 	// Razz
 	must(worker.RegisterKV(mux, "/razz/exec", "razz:",
 		func() usecase.SevenCardStudInteractorIF {
-			cfg := domain.DefaultRazzConfig()
-			r := domain.NewRazz(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
-			return usecase.NewSevenCardStudInteractor(r, new(presenter.SevenCardStudWebPresenter))
+			return usecase.NewSevenCardStudInteractor(domain.NewDefaultRazz(), new(presenter.SevenCardStudWebPresenter))
 		},
 		func(data []byte) (usecase.SevenCardStudInteractorIF, error) {
 			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))

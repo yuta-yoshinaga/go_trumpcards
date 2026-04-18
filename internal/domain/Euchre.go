@@ -92,6 +92,19 @@ func NewEuchre(trumpCards *TrumpCards, players []*EuchrePlayer, config EuchreCon
 	}
 }
 
+// NewDefaultEuchre returns Euchre with the standard 4-player team setup
+// (human team 0, alternating CPU teams) and DefaultEuchreConfig.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultEuchre() *Euchre {
+	players := []*EuchrePlayer{
+		NewEuchrePlayer(true, 0),
+		NewEuchrePlayer(false, 1),
+		NewEuchrePlayer(false, 0),
+		NewEuchrePlayer(false, 1),
+	}
+	return NewEuchre(NewTrumpCardsEuchre(), players, DefaultEuchreConfig())
+}
+
 // Reset ゲーム初期化
 func (e *Euchre) Reset() {
 	e.gameEndFlag = false

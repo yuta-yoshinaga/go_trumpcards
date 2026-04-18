@@ -138,6 +138,18 @@ func NewDoubt(trumpCards *TrumpCards, players []*DoubtPlayer) *Doubt {
 	}
 }
 
+// NewDefaultDoubt returns Doubt with the standard 4-player setup (1 human, 3 CPU).
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultDoubt() *Doubt {
+	players := []*DoubtPlayer{
+		NewDoubtPlayer(true),
+		NewDoubtPlayer(false),
+		NewDoubtPlayer(false),
+		NewDoubtPlayer(false),
+	}
+	return NewDoubt(NewTrumpCards(0), players)
+}
+
 // Reset ゲーム初期化: シャッフルして各プレイヤーに均等配布
 func (d *Doubt) Reset() {
 	d.gameEndFlag = false
