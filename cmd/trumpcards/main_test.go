@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -167,7 +168,12 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			flag.CommandLine = flag.NewFlagSet(tc.args[0], flag.ContinueOnError)
+			// Simulate production: Go's package init gives flag.CommandLine a
+			// Usage func that writes the help text. A fresh FlagSet has
+			// Usage=nil by default, which would hide a regression where we
+			// forget to suppress the internal Usage callback.
+			flag.CommandLine = flag.NewFlagSet(tc.args[0], flag.ExitOnError)
+			flag.CommandLine.Usage = func() { _, _ = fmt.Fprint(os.Stderr, "USAGE: simulated-prod-help\n") }
 			os.Args = tc.args
 
 			rOut, wOut, _ := os.Pipe()
@@ -195,6 +201,9 @@ func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 			if !strings.Contains(errStr, tc.wantInclude) {
 				t.Errorf("stderr should include offending flag %q; got: %q", tc.wantInclude, firstLine(errStr))
 			}
+			if n := strings.Count(errStr, "USAGE:"); n != 1 {
+				t.Errorf("help text should be printed exactly once; got %d USAGE: markers", n)
+			}
 		})
 	}
 }
@@ -221,6 +230,12 @@ func TestDetectBootstrapLang(t *testing.T) {
 		{"--lang garbage ignored -> fall back to LANG", []string{"--lang", "klingon"}, "en_US.UTF-8", "en"},
 		{"--lang with no value -> ignore", []string{"--lang"}, "en_US.UTF-8", "en"},
 		{"--lang appears after other flag", []string{"--bogus", "--lang", "en"}, "", "en"},
+		// Gemini review: must mirror flag.Parse semantics.
+		{"stops at first positional arg (like flag.Parse)", []string{"blackjack", "--lang", "en"}, "", "ja"},
+		{"stops at -- end-of-flags terminator", []string{"--", "--lang", "en"}, "", "ja"},
+		{"last --lang wins on repeat", []string{"--lang", "ja", "--lang", "en"}, "", "en"},
+		{"last --lang=form wins on repeat", []string{"--lang=en", "--lang=ja"}, "", "ja"},
+		{"unsupported last value keeps earlier valid one", []string{"--lang", "en", "--lang", "klingon"}, "", "en"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

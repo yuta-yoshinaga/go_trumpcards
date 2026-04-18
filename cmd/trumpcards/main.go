@@ -29,6 +29,11 @@ var (
 	date    = "unknown"
 )
 
+// supportedLangs is the single source of truth for which i18n locales the CLI
+// accepts, shared by bootstrap detection (pre-Parse) and the post-Parse
+// validator so the two cannot diverge.
+var supportedLangs = map[string]bool{"ja": true, "en": true}
+
 func main() {
 	os.Exit(run())
 }
@@ -38,9 +43,12 @@ func run() int {
 
 	// Route parse errors through i18n. Default is ExitOnError with English
 	// output to stderr; switch to ContinueOnError + a discarded sink so we
-	// can wrap the error in cliFlagError ourselves.
+	// own error rendering. We also suppress FlagSet.Usage — the flag package
+	// calls it internally before returning the error, which would print the
+	// help text once before our handler prints it again.
 	flag.CommandLine.Init(os.Args[0], flag.ContinueOnError)
 	flag.CommandLine.SetOutput(io.Discard)
+	flag.CommandLine.Usage = func() {}
 
 	lang := flag.String("lang", "", "language (ja or en)")
 	showVersion := flag.Bool("version", false, "Show version information")
@@ -49,9 +57,6 @@ func run() int {
 	noColorFlag := flag.Bool("no-color", false, "Disable color output")
 	showHelp := flag.Bool("help", false, "Show this help message")
 	flag.BoolVar(showHelp, "h", false, "Show this help message (shorthand)")
-	flag.Usage = func() {
-		fmt.Fprint(os.Stderr, helpText)
-	}
 
 	// Resolve the locale from LANG env + any --lang in os.Args before Parse
 	// so a flag error (e.g. --bogus) is rendered in the user's language,
@@ -59,10 +64,8 @@ func run() int {
 	i18n.SetLang(detectBootstrapLang(os.Args[1:], os.Getenv("LANG")))
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
-		if errors.Is(err, flag.ErrHelp) {
-			_, _ = fmt.Fprint(os.Stdout, helpText)
-			return 0
-		}
+		// NB: -h / --help are registered above so flag.Parse handles them
+		// itself and returns nil; flag.ErrHelp is therefore unreachable here.
 		_, _ = fmt.Fprintln(os.Stderr, i18n.Tf("cliFlagError", "err", err.Error()))
 		_, _ = fmt.Fprint(os.Stderr, helpText)
 		return 2
@@ -93,7 +96,6 @@ func run() int {
 	// An explicit --lang with an unsupported value is a hard error (exit 2);
 	// an unsupported LANG env value emits a one-line warning and falls back to "ja"
 	// (suppress with TRUMPCARDS_QUIET=1).
-	supportedLangs := map[string]bool{"ja": true, "en": true}
 	detectedLang := "ja"
 	var langEnvWarn string // deferred until SetLang is called so i18n resolves
 	if envLang := os.Getenv("LANG"); envLang != "" {
@@ -480,28 +482,40 @@ ENVIRONMENT VARIABLES:
 
 // detectBootstrapLang returns the locale to use before flag parsing runs,
 // so any flag-parse error can be emitted in the user's preferred language.
-// Resolution order mirrors the post-parse logic: an explicit `--lang`
-// (or `-lang`, with optional `=value`) in args wins, then LANG env, then "ja".
-// Unsupported values fall through to the next source rather than causing a fault.
+// Resolution mirrors Go's flag.Parse best-effort: an explicit `--lang`
+// (or `-lang`, with optional `=value`) in args wins with last-occurrence
+// semantics, scanning stops at the first non-flag arg or at `--`, then
+// LANG env, then "ja". Unsupported values fall through to the next source.
+// This is best-effort; the authoritative locale is still resolved after
+// flag.Parse.
 func detectBootstrapLang(args []string, langEnv string) string {
-	supported := map[string]bool{"ja": true, "en": true}
 	fromEnv := "ja"
 	if langEnv != "" {
 		prefix := langEnv
 		if idx := strings.IndexAny(langEnv, "_-."); idx >= 0 {
 			prefix = langEnv[:idx]
 		}
-		if supported[prefix] {
+		if supportedLangs[prefix] {
 			fromEnv = prefix
 		}
 	}
-	for i := range args {
+	fromArgs := ""
+	for i := 0; i < len(args); i++ {
 		a := args[i]
+		// End-of-flags terminator: flag.Parse stops here.
+		if a == "--" {
+			break
+		}
+		// First non-flag positional arg (game name): flag.Parse stops here too.
+		if !strings.HasPrefix(a, "-") {
+			break
+		}
 		var val string
 		switch {
 		case a == "--lang" || a == "-lang":
 			if i+1 < len(args) {
 				val = args[i+1]
+				i++ // consume the value so a non-flag value doesn't stop the scan
 			}
 		case strings.HasPrefix(a, "--lang="):
 			val = strings.TrimPrefix(a, "--lang=")
@@ -510,9 +524,12 @@ func detectBootstrapLang(args []string, langEnv string) string {
 		default:
 			continue
 		}
-		if supported[val] {
-			return val
+		if supportedLangs[val] {
+			fromArgs = val // last-valid-wins, matching flag.Parse behavior
 		}
+	}
+	if fromArgs != "" {
+		return fromArgs
 	}
 	return fromEnv
 }
