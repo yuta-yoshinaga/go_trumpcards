@@ -252,3 +252,60 @@ func TestBuildHelpTextMentionsVersionShort(t *testing.T) {
 		t.Errorf("help text should document --version-short; got:\n%s", helpText)
 	}
 }
+
+func TestPrintGamesLongModeAlwaysIncludesAliases(t *testing.T) {
+	// Pick a canonical name with known aliases, e.g. ginrummy -> gin.
+	var withAlias string
+	for alias, canonical := range ui.GameAliases {
+		if alias != "" && canonical != "" {
+			withAlias = canonical
+			break
+		}
+	}
+	if withAlias == "" {
+		t.Skip("no aliases registered; cannot verify long-mode alias inlining")
+	}
+	var buf bytes.Buffer
+	// aliases=false — long mode must STILL show aliases inline.
+	printGames(false, false, &buf)
+	out := buf.String()
+	if !strings.Contains(out, "[aliases:") {
+		t.Errorf("long mode output should contain inline '[aliases:' for games with aliases; got:\n%s", out)
+	}
+}
+
+func TestPrintGamesShortModeRespectsAliasesFlag(t *testing.T) {
+	var withAlias string
+	var aliasSample string
+	for alias, canonical := range ui.GameAliases {
+		if alias != "" && canonical != "" {
+			withAlias = canonical
+			aliasSample = alias
+			break
+		}
+	}
+	if withAlias == "" {
+		t.Skip("no aliases registered")
+	}
+
+	var without, with bytes.Buffer
+	printGames(true, false, &without)
+	printGames(true, true, &with)
+
+	// Without --aliases, alias lines should not appear.
+	if strings.Contains(without.String(), "\n"+aliasSample+"\n") || strings.HasPrefix(without.String(), aliasSample+"\n") {
+		t.Errorf("short mode without --aliases should not list alias %q; got:\n%s", aliasSample, without.String())
+	}
+	// With --aliases, alias lines must appear.
+	if !strings.Contains(with.String(), aliasSample) {
+		t.Errorf("short mode with --aliases should list alias %q; got:\n%s", aliasSample, with.String())
+	}
+}
+
+func TestCliAliasesWithoutShortKeyRemoved(t *testing.T) {
+	// The `cliAliasesWithoutShort` warning contradicted the long-mode behavior
+	// and was removed; ensure it hasn't crept back into either locale.
+	if got := i18n.T("cliAliasesWithoutShort"); got != "cliAliasesWithoutShort" && got != "" {
+		t.Errorf("i18n key 'cliAliasesWithoutShort' should be removed but still resolves to: %q", got)
+	}
+}

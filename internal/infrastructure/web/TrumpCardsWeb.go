@@ -119,8 +119,13 @@ func (web *TrumpCardsWeb) Exec() error {
 	return runErr
 }
 
+// getListenAddr returns the "host:port" address the web server should bind to.
+// Default is 127.0.0.1:8080; set HOST=0.0.0.0 to expose on all interfaces.
 func getListenAddr() string {
 	host := os.Getenv("HOST")
+	if host == "" {
+		host = "127.0.0.1"
+	}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

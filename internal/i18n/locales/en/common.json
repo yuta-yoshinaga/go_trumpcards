@@ -36,7 +36,6 @@
   "emptyInputHint": "Type 'help' for available commands.",
   "cliStartupBanner": "trumpcards {{version}} - Interactive Mode",
   "cliStartupGame": "Starting with {{game}}. Type 'switch <game>' to change, 'games' to list all.",
-  "cliAliasesWithoutShort": "Note: --aliases has no effect without --short",
   "cliInvalidPort": "Error: invalid port number {{port}} (must be 1-65535)",
   "cliExtraArgsWarning": "Warning: extra arguments ignored: {{args}}",
   "cliCompletionUsage": "Usage: trumpcards completion <bash|zsh|fish>",
