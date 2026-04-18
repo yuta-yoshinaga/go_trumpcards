@@ -10,7 +10,13 @@
     "cpuDifficulty": "CPU Difficulty",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "autoNextDelay": "Result Display",
+    "autoNextDelayOption": {
+      "manual": "Manual",
+      "fast": "1s",
+      "slow": "2s"
+    }
   },
   "scores": "Scores",
   "cardFaceDown": "Card {{position}} (face down)",
