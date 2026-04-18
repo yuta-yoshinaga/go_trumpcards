@@ -6,6 +6,7 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cuiManualTexts, isCliModeEnabled } from '../constants/cuiManualTexts';
 import { manualTexts } from '../constants/manualTexts';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { btnSecondary } from '../styles/buttonStyles';
 import { getFocusableElements } from '../utils/dom';
 import { MermaidBlock } from './MermaidBlock';
@@ -43,6 +44,8 @@ export function ManualModal({ open, onClose, gamePath }: ManualModalProps) {
   const { t } = useTranslation('common');
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
+
+  useBodyScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { useIsMobile } from '../../hooks/useCardDimensions';
 import type { DaifugoResponse } from '../../types/card';
 import { getFocusableElements } from '../../utils/dom';
@@ -90,15 +91,13 @@ function RulesBadgeModal({
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
+  useBodyScrollLock(true);
+
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement;
     const dialog = dialogRef.current as HTMLElement;
     const focusable = getFocusableElements(dialog);
     if (focusable.length > 0) focusable[0].focus();
-
-    // Prevent background scrolling
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -124,7 +123,6 @@ function RulesBadgeModal({
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = originalOverflow;
       previousFocus?.focus();
     };
   }, [onClose]);

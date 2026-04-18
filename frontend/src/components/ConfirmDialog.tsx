@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { btnDanger, btnSecondary } from '../styles/buttonStyles';
 import { getFocusableElements } from '../utils/dom';
 
@@ -24,6 +25,8 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
   const titleId = `${id}-title`;
   const descId = `${id}-desc`;
   const hasDescription = props.message.length > 0;
+
+  useBodyScrollLock(props.open);
 
   useEffect(() => {
     if (!props.open) return;
