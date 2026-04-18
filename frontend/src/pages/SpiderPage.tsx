@@ -39,6 +39,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSpiderCommand, SPIDER_HELP } from '../utils/cli/commands/spiderCommands';
 import { formatSpiderState } from '../utils/cli/formatters/spiderFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 /** Spider Solitaire tutorial step definitions. */
 const SPD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -180,6 +181,7 @@ function SpiderPageContent() {
     selectedSource.cardIndex === cardIndex;
 
   const dealsRemaining = Math.floor(state.stockCount / 10);
+  const autoCompleteReady = state.stockCount === 0 && isTableauAllFaceUp(state.tableau);
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.spider.bg}`} aria-busy={loading}>
@@ -415,9 +417,11 @@ function SpiderPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>

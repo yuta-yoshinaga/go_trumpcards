@@ -230,15 +230,43 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
-  it('clicking auto complete button dispatches autocomplete', async () => {
+  it('clicking auto complete button dispatches autocomplete when all tableau face-up', async () => {
+    const allFaceUpState: KlondikeResponse = {
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 13), faceUp: true }], [], [], [], [], [], []]),
+    };
+    mockExec.mockResolvedValue(allFaceUpState);
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue(allFaceUpState);
     fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('auto complete button is disabled and pulses hidden when tableau has face-down cards', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const btn = screen.getByTestId('autocomplete-button');
+    expect(btn).toBeDisabled();
+    expect(btn.className).not.toContain('animate-pulse');
+  });
+
+  it('auto complete button pulses when all tableau face-up', async () => {
+    const allFaceUpState: KlondikeResponse = {
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 13), faceUp: true }], [], [], [], [], [], []]),
+    };
+    mockExec.mockResolvedValue(allFaceUpState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const btn = screen.getByTestId('autocomplete-button');
+    expect(btn).not.toBeDisabled();
+    expect(btn.className).toContain('animate-pulse');
   });
 
   it('clicking give up button dispatches giveup', async () => {

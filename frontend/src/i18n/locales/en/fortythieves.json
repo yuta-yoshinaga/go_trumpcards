@@ -17,6 +17,7 @@
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available when stock and waste are empty",
   "undo": "Undo",
   "stalemate": "Stalemate",
   "playing": "Move cards to build foundations",
