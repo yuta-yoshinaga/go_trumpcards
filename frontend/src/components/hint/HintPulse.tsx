@@ -18,7 +18,7 @@ export function HintPulse({ active, reducedMotion, children }: HintPulseProps) {
     return (
       <span className="relative inline-flex" data-testid="hint-pulse">
         {children}
-        <span className="absolute -top-1 -right-1 text-yellow-400 text-xs" data-testid="hint-icon">
+        <span className="absolute -top-1 -right-1 text-ds-accent text-xs" data-testid="hint-icon">
           💡
         </span>
       </span>
@@ -29,7 +29,7 @@ export function HintPulse({ active, reducedMotion, children }: HintPulseProps) {
     <span className="relative inline-flex" data-testid="hint-pulse">
       {children}
       <span
-        className="absolute inset-0 rounded animate-pulse ring-2 ring-yellow-400 pointer-events-none"
+        className="absolute inset-0 rounded animate-pulse ring-2 ring-ds-accent pointer-events-none"
         data-testid="hint-ring"
       />
     </span>

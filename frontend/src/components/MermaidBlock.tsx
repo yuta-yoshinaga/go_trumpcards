@@ -44,7 +44,7 @@ export function MermaidBlock({ code }: { code: string }) {
 
   if (error) {
     return (
-      <pre className="text-red-400 text-xs overflow-x-auto">
+      <pre className="text-ds-error text-xs overflow-x-auto">
         <code>{code}</code>
       </pre>
     );
