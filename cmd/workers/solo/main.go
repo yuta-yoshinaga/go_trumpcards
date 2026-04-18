@@ -11,6 +11,7 @@ import (
 
 	corsmw "github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/cors"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"
+	_ "github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games/solo"
 )
 
 func main() {
