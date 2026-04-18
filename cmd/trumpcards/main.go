@@ -29,6 +29,24 @@ var (
 	date    = "unknown"
 )
 
+// portUnset distinguishes "user did not pass --port" from "user passed --port 0"
+// (which is the POSIX convention for "let the OS assign an ephemeral port").
+const portUnset = -1
+
+// resolvePortEnv interprets a --port value: returns the string to write into
+// the PORT env var, whether the caller should write it, and whether the value
+// is out of range (0..65535). portUnset yields (_, false, false), signalling
+// the default 8080 should stand.
+func resolvePortEnv(port int) (envValue string, set, invalid bool) {
+	if port == portUnset {
+		return "", false, false
+	}
+	if port < 0 || port > 65535 {
+		return "", false, true
+	}
+	return strconv.Itoa(port), true, false
+}
+
 func main() {
 	os.Exit(run())
 }
@@ -165,22 +183,23 @@ func run() int {
 		return 0
 	}
 	commands["web"] = func() int {
-		var port int
+		port := portUnset
 		var host string
 		_, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
-			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080)")
-			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
+			f.IntVar(&port, "port", portUnset, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
+			f.IntVar(&port, "p", portUnset, "Port number for the web server (shorthand)")
 			f.StringVar(&host, "host", "", "Bind address for the web server (default: all interfaces)")
 		})
 		if !ok {
 			return code
 		}
-		if port != 0 {
-			if port < 1 || port > 65535 {
-				fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(port)))
-				return 1
-			}
-			_ = os.Setenv("PORT", strconv.Itoa(port))
+		portEnv, setPort, invalid := resolvePortEnv(port)
+		if invalid {
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(port)))
+			return 1
+		}
+		if setPort {
+			_ = os.Setenv("PORT", portEnv)
 		}
 		if host != "" {
 			_ = os.Setenv("HOST", host)
@@ -247,12 +266,13 @@ var builtinSubcommandHelp = map[string][]string{
 		"  trumpcards web [--port PORT] [--host HOST]",
 		"",
 		"FLAGS:",
-		"  -p, --port PORT   Port number (default: 8080; env PORT)",
+		"  -p, --port PORT   Port number (default: 8080; 0 = OS-assigned ephemeral; env PORT)",
 		"      --host HOST   Bind address (default: all interfaces; env HOST)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards web",
 		"  trumpcards web --port 3000",
+		"  trumpcards web --port 0            # start on any free port; see startup log for actual port",
 		"  trumpcards web --host 127.0.0.1",
 		"  HOST=127.0.0.1 PORT=3000 trumpcards web",
 	},
@@ -443,6 +463,7 @@ EXAMPLES:
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
   trumpcards web                 Start the web GUI server
   trumpcards web --port 3000     Start the web GUI on port 3000
+  trumpcards web --port 0        Start on an OS-assigned ephemeral port (see startup log)
   trumpcards web --host 127.0.0.1  Bind to localhost only
   source <(trumpcards completion bash)   Enable bash completion
 

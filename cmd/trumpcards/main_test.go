@@ -126,6 +126,32 @@ func TestRunHelpCommandUnknownGame(t *testing.T) {
 	}
 }
 
+func TestResolvePortEnv(t *testing.T) {
+	tests := []struct {
+		name        string
+		port        int
+		wantEnv     string
+		wantSet     bool
+		wantInvalid bool
+	}{
+		{"unset sentinel leaves PORT untouched", portUnset, "", false, false},
+		{"port 0 requests ephemeral", 0, "0", true, false},
+		{"port 8080 is valid", 8080, "8080", true, false},
+		{"port 65535 is max valid", 65535, "65535", true, false},
+		{"negative port is invalid", -2, "", false, true},
+		{"port > 65535 is invalid", 65536, "", false, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env, set, invalid := resolvePortEnv(tt.port)
+			if env != tt.wantEnv || set != tt.wantSet || invalid != tt.wantInvalid {
+				t.Errorf("resolvePortEnv(%d) = (%q, %v, %v), want (%q, %v, %v)",
+					tt.port, env, set, invalid, tt.wantEnv, tt.wantSet, tt.wantInvalid)
+			}
+		})
+	}
+}
+
 func TestBuildHelpTextMentionsVersionShort(t *testing.T) {
 	helpText := buildHelpText()
 	if !strings.Contains(helpText, "--version-short") {
