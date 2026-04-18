@@ -45,6 +45,18 @@ func TestNewMemory(t *testing.T) {
 	assert.Equal(t, -1, m.GetWinnerIdx())
 }
 
+func TestNewDefaultMemory(t *testing.T) {
+	m := NewDefaultMemory()
+	assert.NotNil(t, m)
+	assert.Equal(t, MemoryPlayerCnt, m.GetPlayerCnt())
+	assert.True(t, m.GetPlayer(0).GetIsHuman())
+	for i := 1; i < m.GetPlayerCnt(); i++ {
+		assert.False(t, m.GetPlayer(i).GetIsHuman(), "player %d should be CPU", i)
+	}
+	assert.Equal(t, -1, m.GetWinnerIdx())
+	assert.False(t, m.GetGameEndFlag())
+}
+
 func TestMemoryReset(t *testing.T) {
 	m := newTestMemory()
 	m.Reset()

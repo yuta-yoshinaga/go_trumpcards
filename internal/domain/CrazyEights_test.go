@@ -50,6 +50,18 @@ func TestNewCrazyEights(t *testing.T) {
 	assert.False(t, g.GetGameEndFlag())
 }
 
+func TestNewDefaultCrazyEights(t *testing.T) {
+	g := domain.NewDefaultCrazyEights()
+	assert.NotNil(t, g)
+	assert.Equal(t, domain.CrazyEightsPlayerCnt, g.GetPlayerCnt())
+	assert.True(t, g.GetPlayer(0).GetIsHuman())
+	for i := 1; i < g.GetPlayerCnt(); i++ {
+		assert.False(t, g.GetPlayer(i).GetIsHuman(), "player %d should be CPU", i)
+	}
+	assert.Equal(t, -1, g.GetWinnerIdx())
+	assert.False(t, g.GetGameEndFlag())
+}
+
 func TestCrazyEights_Reset(t *testing.T) {
 	g := newTestCrazyEights()
 	g.Reset()

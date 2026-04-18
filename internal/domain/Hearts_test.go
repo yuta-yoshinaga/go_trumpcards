@@ -59,6 +59,18 @@ func TestNewHearts(t *testing.T) {
 	assert.Nil(t, h.GetActionLog())
 }
 
+func TestNewDefaultHearts(t *testing.T) {
+	h := domain.NewDefaultHearts()
+	assert.NotNil(t, h)
+	assert.Equal(t, domain.HeartsPlayerCnt, h.GetPlayerCnt())
+	assert.True(t, h.GetPlayer(0).GetIsHuman())
+	for i := 1; i < h.GetPlayerCnt(); i++ {
+		assert.False(t, h.GetPlayer(i).GetIsHuman(), "player %d should be CPU", i)
+	}
+	assert.Equal(t, -1, h.GetWinnerIdx())
+	assert.False(t, h.GetGameEndFlag())
+}
+
 // --- Reset ---
 
 func TestHearts_Reset(t *testing.T) {

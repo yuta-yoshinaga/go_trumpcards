@@ -28,7 +28,11 @@ type CuiHelpSpec struct {
 // blank + settings header + setting keys (only when non-empty),
 // blank + session header + reset + quit + help.
 func BuildCuiHelp(spec CuiHelpSpec) []string {
-	lines := make([]string, 0, 8+len(spec.CommandKeys)+len(spec.ExtraCommandLines)+len(spec.SettingKeys)+len(spec.ExtraSettingLines))
+	// 10 fixed lines: title + blank + gameCommands header + blank + settings header +
+	// blank + session header + reset + quit + help. The two "blank + settings header" lines
+	// are included unconditionally in capacity; the slight over-allocation when the settings
+	// section is skipped is harmless.
+	lines := make([]string, 0, 10+len(spec.CommandKeys)+len(spec.ExtraCommandLines)+len(spec.SettingKeys)+len(spec.ExtraSettingLines))
 	lines = append(lines, i18n.T(spec.TitleKey), "", i18n.T("gameCommands"))
 	for _, k := range spec.CommandKeys {
 		lines = append(lines, i18n.T(k))
