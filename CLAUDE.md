@@ -136,9 +136,12 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 | **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist, pageone) |
 | **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, scorpion, pokersquares) |
 
-**When adding/modifying a game, always update both:**
-1. The worker entry point (`cmd/workers/<worker>/main.go`) — register with `registerKV`
-2. The frontend worker URL mapping (`frontend/src/api/gameApi.ts` `workerUrl`) — must match the worker assignment
+The worker entry points (`cmd/workers/{casino,classic,solo}/main.go`) are thin shells that call `games.RegisterCategory(mux, games.Category…)`. The actual game set each worker serves comes from `Category` in `internal/infrastructure/games/games.go` — changing a game's worker assignment is a one-line `Category` edit, not a move across three files.
+
+**When adding/modifying a game, always update:**
+1. `internal/infrastructure/games/games.go` — Web factory + `Category` (selects the worker)
+2. `internal/infrastructure/games/games_wasm.go` — `bind("<name>", …)` closure for the KV-backed worker route
+3. `frontend/src/api/gameApi.ts` `workerUrl` — must match the `Category`
 
 Build: `make build-worker-{solo,casino,classic}` or `make build-workers` (requires TinyGo).
 

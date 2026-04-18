@@ -9,8 +9,8 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 3. **Interactor**: `internal/usecase/<Game>Interactor.go` with presenter interface in `internal/usecase/presenter/`
 4. **Controller**: CUI controller in `internal/adapter/controller/`, Web controller in `internal/adapter/controller/`, reuse `cuiutil` package for input parsing and `ClampIntPtr` for config validation
 5. **Presenter**: CUI and Web presenters in `internal/adapter/presenter/`, reuse `buildCuiOutput`, `cuiCardListStr`, `ActionLogOutput` helpers, `WebOutputBase` for common web output fields
-6. **Infrastructure**: Register in `cmd/trumpcards/main.go` (CLI) and `internal/infrastructure/web/TrumpCardsWeb.go` (API route)
-6b. **Cloudflare Worker (WASM)**: Register in the appropriate `cmd/workers/{casino,classic,solo}/main.go` using `registerKV`. Worker assignment: casino (table/poker games), classic (trick-taking/matching), solo (solitaire/rummy). Also verify `frontend/src/api/gameApi.ts` `workerUrl` mapping matches.
+6. **Infrastructure**: Register in `cmd/trumpcards/main.go` (CLI) and add a single entry to `internal/infrastructure/games/games.go` — this drives both the HTTP server (`TrumpCardsWeb`) and the Cloudflare Worker routes. Set `Category` to `CategoryCasino`/`CategoryClassic`/`CategorySolo` to pin the game to one worker (casino = table/poker, classic = trick-taking/matching, solo = solitaire/rummy).
+6b. **Cloudflare Worker (WASM)**: Add a matching `bind("<name>", ...)` in `internal/infrastructure/games/games_wasm.go` — the `registerWorker` binding must exist or `RegisterCategory` will fail at runtime (and `TestAllEntriesAreValid` keeps the list honest). Also verify `frontend/src/api/gameApi.ts` `workerUrl` mapping matches the `Category` you chose in step 6.
 7. **Run `goimports -w` and `golangci-lint run ./...`** on all new files
 8. **80%+ branch coverage** for all new packages
 
@@ -58,5 +58,6 @@ Run through this cross-check for the new `<game>`:
 - [ ] `frontend/src/utils/hints/<game>Hint.ts` exists (real implementation or documented `null` stub)
 - [ ] `frontend/src/hooks/useGameHint.ts` registers `<game>` in `hintFactories`
 - [ ] `<Game>Page.tsx` is wrapped in `<TutorialWrapper>` and surfaces `TutorialButton` + `HintToggle`
-- [ ] `cmd/workers/{casino,classic,solo}/main.go` registers `<game>` in exactly one worker
-- [ ] `frontend/src/api/gameApi.ts` `workerUrl` maps `<game>` to that same worker
+- [ ] `internal/infrastructure/games/games.go` has a `Game` entry for `<game>` with the correct `Category`
+- [ ] `internal/infrastructure/games/games_wasm.go` has a matching `bind("<game>", ...)` closure
+- [ ] `frontend/src/api/gameApi.ts` `workerUrl` maps `<game>` to the worker matching that `Category`
