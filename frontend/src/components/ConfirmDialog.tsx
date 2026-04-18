@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { btnDanger, btnSecondary } from '../styles/buttonStyles';
 import { getFocusableElements } from '../utils/dom';
@@ -21,6 +21,10 @@ export interface ConfirmDialogProps {
 export function ConfirmDialog(props: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
+  const id = useId();
+  const titleId = `${id}-title`;
+  const descId = `${id}-desc`;
+  const hasDescription = props.message.length > 0;
 
   useBodyScrollLock(props.open);
 
@@ -79,14 +83,19 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         ref={dialogRef}
         role="alertdialog"
         aria-modal="true"
-        aria-labelledby="confirm-dialog-title"
+        aria-labelledby={titleId}
+        aria-describedby={hasDescription ? descId : undefined}
         className="glass-panel rounded-lg shadow-xl p-6 max-w-sm mx-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="confirm-dialog-title" className="text-lg font-bold text-ds-text-primary mb-2">
+        <h2 id={titleId} className="text-lg font-bold text-ds-text-primary mb-2">
           {props.title}
         </h2>
-        <p className="text-ds-text-primary mb-4">{props.message}</p>
+        {hasDescription && (
+          <p id={descId} className="text-ds-text-primary mb-4">
+            {props.message}
+          </p>
+        )}
         <div className="flex justify-end gap-2">
           <button type="button" className={btnSecondary} onClick={props.onCancel}>
             {props.cancelLabel}

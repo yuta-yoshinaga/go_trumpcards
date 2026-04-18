@@ -32,7 +32,7 @@ export function GameMessageBox({
     <div
       role={role}
       aria-live={live}
-      className="glass-panel rounded-lg text-white text-center px-4 py-2 text-lg font-bold mb-2"
+      className="glass-panel rounded-lg text-ds-text-primary text-center px-4 py-2 text-lg font-bold mb-2"
     >
       {displayMessage}
     </div>

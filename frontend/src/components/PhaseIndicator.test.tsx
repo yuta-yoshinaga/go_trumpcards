@@ -17,7 +17,7 @@ describe('PhaseIndicator', () => {
       'animate-pulse',
       'font-bold',
       'text-base',
-      'bg-green-900/40',
+      'bg-ds-success/20',
       'px-2',
       'py-0.5',
       'rounded-full',
