@@ -7,7 +7,7 @@ interface LandscapeBannerProps {
 /** Banner suggesting landscape orientation on small portrait screens. */
 export function LandscapeBanner({ message }: LandscapeBannerProps) {
   return (
-    <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-ds-warning/90 text-black text-sm font-medium">
+    <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-ds-warning/90 text-ds-text-on-accent text-sm font-medium">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="20"
