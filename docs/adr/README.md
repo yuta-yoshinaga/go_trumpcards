@@ -47,3 +47,4 @@ ADR番号は連番ではない — 欠番はリトマステスト導入時に非
 | [ADR-0027](0027-cloudflare-workers-wasm.md) | Cloudflare Workers (TinyGo/Wasm) によるエッジデプロイ | Accepted | 2026-03-28 |
 | [ADR-0028](0028-kv-session-persistence.md) | Cloudflare KV によるセッション永続化 | Accepted | 2026-03-28 |
 | [ADR-0029](0029-design-system.md) | デザインシステム (DESIGN.md) の導入 | Accepted | 2026-04-04 |
+| [ADR-0030](0030-design-tokens-only-in-source.md) | ソースコードではデザイントークンのみ使用 / 生Tailwindパレット禁止 | Accepted | 2026-04-19 |
