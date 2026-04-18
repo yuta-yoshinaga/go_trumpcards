@@ -4,7 +4,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -19,26 +18,17 @@ func NewNapoleonCui() *genericCuiGame {
 	}
 	napoleon := domain.NewNapoleon(domain.NewTrumpCards(1), players, config)
 	nc := controller.NewNapoleonCuiController(usecase.NewNapoleonInteractor(napoleon, new(presenter.NapoleonCuiPresenter)))
-	return newCuiGame(nc, []string{
-		i18n.T("napoleon.helpTitle"),
-		"",
-		i18n.T("gameCommands"),
-		i18n.T("napoleon.helpBid"),
-		i18n.T("napoleon.helpTrump"),
-		i18n.T("napoleon.helpExchange"),
-		i18n.T("napoleon.helpPlay"),
-		i18n.T("napoleon.helpNext"),
-		i18n.T("napoleon.helpNextRound"),
-		"  l                    action log",
-		"",
-		i18n.T("settings"),
-		i18n.T("napoleon.helpSetDifficulty"),
-		i18n.T("napoleon.helpSetLimit"),
-		i18n.T("napoleon.helpSetMinBid"),
-		"",
-		i18n.T("session"),
-		i18n.T("resetEntry"),
-		i18n.T("quitEntry"),
-		i18n.T("helpEntry"),
-	})
+	return newCuiGame(nc, BuildCuiHelp(CuiHelpSpec{
+		TitleKey: "napoleon.helpTitle",
+		CommandKeys: []string{
+			"napoleon.helpBid",
+			"napoleon.helpTrump",
+			"napoleon.helpExchange",
+			"napoleon.helpPlay",
+			"napoleon.helpNext",
+			"napoleon.helpNextRound",
+		},
+		ExtraCommandLines: []string{"  l                    action log"},
+		SettingKeys:       []string{"napoleon.helpSetDifficulty", "napoleon.helpSetLimit", "napoleon.helpSetMinBid"},
+	}))
 }

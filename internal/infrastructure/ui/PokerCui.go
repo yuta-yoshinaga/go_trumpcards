@@ -4,7 +4,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -19,26 +18,18 @@ func NewPokerCui() *genericCuiGame {
 	}
 	poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
 	pc := controller.NewPokerCuiController(usecase.NewPokerInteractor(poker, new(presenter.PokerCuiPresenter)))
-	return newCuiGame(pc, []string{
-		i18n.T("poker.helpTitle"),
-		"",
-		i18n.T("gameCommands"),
-		i18n.T("poker.helpBet"),
-		i18n.T("poker.helpCall"),
-		i18n.T("poker.helpRaise"),
-		i18n.T("poker.helpCheck"),
-		i18n.T("poker.helpFold"),
-		i18n.T("poker.helpAllIn"),
-		i18n.T("poker.helpExchange"),
-		i18n.T("poker.helpStand"),
-		"",
-		i18n.T("settings"),
-		i18n.T("poker.helpBettingLimit"),
-		i18n.T("poker.helpLowball"),
-		"",
-		i18n.T("session"),
-		i18n.T("resetEntry"),
-		i18n.T("quitEntry"),
-		i18n.T("helpEntry"),
-	})
+	return newCuiGame(pc, BuildCuiHelp(CuiHelpSpec{
+		TitleKey: "poker.helpTitle",
+		CommandKeys: []string{
+			"poker.helpBet",
+			"poker.helpCall",
+			"poker.helpRaise",
+			"poker.helpCheck",
+			"poker.helpFold",
+			"poker.helpAllIn",
+			"poker.helpExchange",
+			"poker.helpStand",
+		},
+		SettingKeys: []string{"poker.helpBettingLimit", "poker.helpLowball"},
+	}))
 }

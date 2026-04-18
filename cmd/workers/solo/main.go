@@ -83,15 +83,7 @@ func main() {
 	// Memory
 	must(worker.RegisterKV(mux, "/memory/exec", "memory:",
 		func() usecase.MemoryInteractorIF {
-			config := domain.DefaultMemoryConfig()
-			players := []*domain.MemoryPlayer{
-				domain.NewMemoryPlayer(true),
-				domain.NewMemoryPlayer(false),
-				domain.NewMemoryPlayer(false),
-				domain.NewMemoryPlayer(false),
-			}
-			memory := domain.NewMemory(domain.NewTrumpCards(0), players, config)
-			return usecase.NewMemoryInteractor(memory, new(presenter.MemoryWebPresenter))
+			return usecase.NewMemoryInteractor(domain.NewDefaultMemory(), new(presenter.MemoryWebPresenter))
 		},
 		func(data []byte) (usecase.MemoryInteractorIF, error) {
 			return usecase.RestoreMemoryInteractor(data, new(presenter.MemoryWebPresenter))

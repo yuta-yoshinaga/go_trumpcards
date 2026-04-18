@@ -93,6 +93,19 @@ func NewHearts(trumpCards *TrumpCards, players []*HeartsPlayer, config HeartsCon
 	}
 }
 
+// NewDefaultHearts returns Hearts with the standard 4-player setup (1 human, 3 CPU)
+// and DefaultHeartsConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultHearts() *Hearts {
+	players := []*HeartsPlayer{
+		NewHeartsPlayer(true),
+		NewHeartsPlayer(false),
+		NewHeartsPlayer(false),
+		NewHeartsPlayer(false),
+	}
+	return NewHearts(NewTrumpCards(0), players, DefaultHeartsConfig())
+}
+
 // Reset ゲーム初期化: デッキをシャッフルして配布し、最初のフェーズを設定
 func (h *Hearts) Reset() {
 	h.gameEndFlag = false

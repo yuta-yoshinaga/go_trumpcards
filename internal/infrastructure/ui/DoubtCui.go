@@ -46,24 +46,11 @@ func (cui *DoubtCui) Controller() CuiExecer { return cui.dc }
 
 // HelpLines returns the game's help lines.
 func (cui *DoubtCui) HelpLines() []string {
-	return []string{
-		i18n.T("doubt.helpTitle"),
-		"",
-		i18n.T("gameCommands"),
-		i18n.T("doubt.helpPlay"),
-		i18n.T("doubt.helpDoubt"),
-		i18n.T("doubt.helpSkip"),
-		"",
-		i18n.T("settings"),
-		i18n.T("doubt.helpSetWindow"),
-		i18n.T("doubt.helpSetMemory"),
-		i18n.T("doubt.helpSetPenalty"),
-		"",
-		i18n.T("session"),
-		i18n.T("resetEntry"),
-		i18n.T("quitEntry"),
-		i18n.T("helpEntry"),
-	}
+	return BuildCuiHelp(CuiHelpSpec{
+		TitleKey:    "doubt.helpTitle",
+		CommandKeys: []string{"doubt.helpPlay", "doubt.helpDoubt", "doubt.helpSkip"},
+		SettingKeys: []string{"doubt.helpSetWindow", "doubt.helpSetMemory", "doubt.helpSetPenalty"},
+	})
 }
 
 // inputReader 標準入力を読み込み inputCh に送るゴルーチン
