@@ -230,17 +230,18 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
-  it('clicking auto complete button dispatches autocomplete when all tableau face-up', async () => {
-    const allFaceUpState: KlondikeResponse = {
+  it('clicking auto complete button dispatches autocomplete when stock empty and tableau face-up', async () => {
+    const readyState: KlondikeResponse = {
       ...playingState,
+      stockCount: 0,
       tableau: makeTableau([[{ card: card('SPADE', 13), faceUp: true }], [], [], [], [], [], []]),
     };
-    mockExec.mockResolvedValue(allFaceUpState);
+    mockExec.mockResolvedValue(readyState);
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(allFaceUpState);
+    mockExec.mockResolvedValue(readyState);
     fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
@@ -255,12 +256,27 @@ describe('KlondikePage', () => {
     expect(btn.className).not.toContain('animate-pulse');
   });
 
-  it('auto complete button pulses when all tableau face-up', async () => {
-    const allFaceUpState: KlondikeResponse = {
+  it('auto complete button is disabled while stock still has cards (even if tableau all face-up)', async () => {
+    const tableauFaceUpButStockRemaining: KlondikeResponse = {
       ...playingState,
+      stockCount: 5,
       tableau: makeTableau([[{ card: card('SPADE', 13), faceUp: true }], [], [], [], [], [], []]),
     };
-    mockExec.mockResolvedValue(allFaceUpState);
+    mockExec.mockResolvedValue(tableauFaceUpButStockRemaining);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const btn = screen.getByTestId('autocomplete-button');
+    expect(btn).toBeDisabled();
+  });
+
+  it('auto complete button pulses when stock empty and tableau all face-up', async () => {
+    const readyState: KlondikeResponse = {
+      ...playingState,
+      stockCount: 0,
+      tableau: makeTableau([[{ card: card('SPADE', 13), faceUp: true }], [], [], [], [], [], []]),
+    };
+    mockExec.mockResolvedValue(readyState);
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
 
