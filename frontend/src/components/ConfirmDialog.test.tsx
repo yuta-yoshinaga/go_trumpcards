@@ -79,8 +79,26 @@ describe('ConfirmDialog', () => {
 
   it('uses aria-labelledby referencing the title element', () => {
     render(<ConfirmDialog {...defaultProps()} />);
-    expect(screen.getByRole('alertdialog')).toHaveAttribute('aria-labelledby', 'confirm-dialog-title');
-    expect(screen.getByText('リセット確認')).toHaveAttribute('id', 'confirm-dialog-title');
+    const dialog = screen.getByRole('alertdialog');
+    const labelledby = dialog.getAttribute('aria-labelledby');
+    expect(labelledby).toBeTruthy();
+    expect(screen.getByText('リセット確認').id).toBe(labelledby);
+  });
+
+  it('uses aria-describedby referencing the message element', () => {
+    render(<ConfirmDialog {...defaultProps()} />);
+    const dialog = screen.getByRole('alertdialog');
+    const describedby = dialog.getAttribute('aria-describedby');
+    expect(describedby).toBeTruthy();
+    expect(screen.getByText('本当にゲームをリセットしますか？').id).toBe(describedby);
+  });
+
+  it('generates unique IDs for labelledby and describedby', () => {
+    render(<ConfirmDialog {...defaultProps()} />);
+    const dialog = screen.getByRole('alertdialog');
+    const labelledby = dialog.getAttribute('aria-labelledby');
+    const describedby = dialog.getAttribute('aria-describedby');
+    expect(labelledby).not.toBe(describedby);
   });
 
   it('focuses cancel button on open', () => {
