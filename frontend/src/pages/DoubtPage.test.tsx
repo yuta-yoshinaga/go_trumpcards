@@ -480,6 +480,24 @@ describe('DoubtPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []));
   });
 
+  it('Space / Escape are ignored when a SELECT has focus', async () => {
+    mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ダウト！' })).toBeInTheDocument());
+
+    // Open the settings panel and focus one of its <select> elements so the
+    // keyboard handler sees a SELECT target and should bail out.
+    const selects = document.querySelectorAll('select');
+    expect(selects.length).toBeGreaterThan(0);
+    const selectEl = selects[0] as HTMLSelectElement;
+    selectEl.focus();
+
+    mockExec.mockClear();
+    fireEvent.keyDown(selectEl, { key: ' ' });
+    fireEvent.keyDown(selectEl, { key: 'Escape' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('calls doubt with [0, ...cpuDoubters] when ダウト！ clicked with cpu doubters', async () => {
     const s: DoubtResponse = { ...doubtPhaseCpuPlayedState, cpuDoubters: [2, 3] };
     mockExec.mockResolvedValue(s);

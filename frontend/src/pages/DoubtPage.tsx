@@ -192,7 +192,15 @@ function DoubtPageContent() {
     if (!isDoubtDecisionPhase || loading) return;
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       if (e.key === ' ' || e.key === 'Spacebar') {
         e.preventDefault();
