@@ -2,39 +2,73 @@ package color
 
 import "sync/atomic"
 
-var noColor atomic.Bool
+// Independent flags for stdout and stderr color output. This lets the CLI
+// enable color on stderr while stdout is being piped (e.g. `trumpcards <game> | tee log.txt`)
+// and conversely disable stderr color when it is redirected to a file.
+var (
+	noColorStdout atomic.Bool
+	noColorStderr atomic.Bool
+)
 
-// SetNoColor sets whether color output is disabled.
-// When true, callers should suppress ANSI color escape codes.
+// SetNoColor disables color output for both stdout and stderr when v is true,
+// and enables it for both when v is false. Kept for backward compatibility with
+// callers that do not need per-stream control.
 func SetNoColor(v bool) {
-	noColor.Store(v)
+	noColorStdout.Store(v)
+	noColorStderr.Store(v)
 }
 
-// NoColor reports whether color output is disabled.
-func NoColor() bool {
-	return noColor.Load()
-}
+// SetStdoutColor enables (true) or disables (false) color output for stdout.
+func SetStdoutColor(enabled bool) { noColorStdout.Store(!enabled) }
+
+// SetStderrColor enables (true) or disables (false) color output for stderr.
+func SetStderrColor(enabled bool) { noColorStderr.Store(!enabled) }
+
+// NoColor reports whether stdout color output is disabled.
+// Retained for backward compatibility; prefer NoColorStdout / NoColorStderr.
+func NoColor() bool { return noColorStdout.Load() }
+
+// NoColorStdout reports whether color output is disabled for stdout.
+func NoColorStdout() bool { return noColorStdout.Load() }
+
+// NoColorStderr reports whether color output is disabled for stderr.
+func NoColorStderr() bool { return noColorStderr.Load() }
 
 const reset = "\033[0m"
 
-func wrap(code, s string) string {
-	if s == "" || noColor.Load() {
+func wrap(code, s string, off bool) string {
+	if s == "" || off {
 		return s
 	}
 	return code + s + reset
 }
 
-// Red wraps s with red ANSI color code.
-func Red(s string) string { return wrap("\033[31m", s) }
+// Red wraps s with red ANSI color code (stdout-targeted).
+func Red(s string) string { return wrap("\033[31m", s, noColorStdout.Load()) }
 
-// Green wraps s with green ANSI color code.
-func Green(s string) string { return wrap("\033[32m", s) }
+// Green wraps s with green ANSI color code (stdout-targeted).
+func Green(s string) string { return wrap("\033[32m", s, noColorStdout.Load()) }
 
-// Yellow wraps s with yellow ANSI color code.
-func Yellow(s string) string { return wrap("\033[33m", s) }
+// Yellow wraps s with yellow ANSI color code (stdout-targeted).
+func Yellow(s string) string { return wrap("\033[33m", s, noColorStdout.Load()) }
 
-// Bold wraps s with bold ANSI code.
-func Bold(s string) string { return wrap("\033[1m", s) }
+// Bold wraps s with bold ANSI code (stdout-targeted).
+func Bold(s string) string { return wrap("\033[1m", s, noColorStdout.Load()) }
 
-// BoldYellow wraps s with bold yellow ANSI code.
-func BoldYellow(s string) string { return wrap("\033[1;33m", s) }
+// BoldYellow wraps s with bold yellow ANSI code (stdout-targeted).
+func BoldYellow(s string) string { return wrap("\033[1;33m", s, noColorStdout.Load()) }
+
+// RedStderr wraps s with red ANSI color code honoring the stderr color flag.
+func RedStderr(s string) string { return wrap("\033[31m", s, noColorStderr.Load()) }
+
+// GreenStderr wraps s with green ANSI color code honoring the stderr color flag.
+func GreenStderr(s string) string { return wrap("\033[32m", s, noColorStderr.Load()) }
+
+// YellowStderr wraps s with yellow ANSI color code honoring the stderr color flag.
+func YellowStderr(s string) string { return wrap("\033[33m", s, noColorStderr.Load()) }
+
+// BoldStderr wraps s with bold ANSI code honoring the stderr color flag.
+func BoldStderr(s string) string { return wrap("\033[1m", s, noColorStderr.Load()) }
+
+// BoldYellowStderr wraps s with bold yellow ANSI code honoring the stderr color flag.
+func BoldYellowStderr(s string) string { return wrap("\033[1;33m", s, noColorStderr.Load()) }

@@ -39,6 +39,7 @@ func run() int {
 	lang := flag.String("lang", "", "language (ja or en)")
 	showVersion := flag.Bool("version", false, "Show version information")
 	flag.BoolVar(showVersion, "V", false, "Show version information (shorthand)")
+	showVersionShort := flag.Bool("version-short", false, "Print version number only (machine-readable)")
 	noColorFlag := flag.Bool("no-color", false, "Disable color output")
 	showHelp := flag.Bool("help", false, "Show this help message")
 	flag.BoolVar(showHelp, "h", false, "Show this help message (shorthand)")
@@ -52,12 +53,17 @@ func run() int {
 		return 0
 	}
 
-	// Color control: NO_COLOR env var (https://no-color.org/), --no-color flag,
-	// or non-TTY stdout (pipe/redirect auto-detection).
-	if os.Getenv("NO_COLOR") != "" || *noColorFlag || !term.IsTerminal(int(os.Stdout.Fd())) {
-		color.SetNoColor(true)
-	}
+	// Color control: NO_COLOR env var (https://no-color.org/) and --no-color flag
+	// force color off on both streams. TTY auto-detection is done per stream so that
+	// `game | tee log.txt` keeps stderr colors and `game 2> err.log` keeps stdout colors.
+	forceOff := os.Getenv("NO_COLOR") != "" || *noColorFlag
+	color.SetStdoutColor(!forceOff && term.IsTerminal(int(os.Stdout.Fd())))
+	color.SetStderrColor(!forceOff && term.IsTerminal(int(os.Stderr.Fd())))
 
+	if *showVersionShort {
+		fmt.Println(version)
+		return 0
+	}
 	if *showVersion {
 		fmt.Printf("trumpcards %s (commit: %s, built: %s)\n", version, commit, date)
 		return 0
@@ -201,6 +207,13 @@ func run() int {
 		arg = canonical
 	}
 	if handler, ok := commands[arg]; ok {
+		// `<game> --help` / `<game> -h`: Go's flag package stops parsing at the first
+		// non-flag argument, so these trailing flags land in Args(). Intercept them
+		// and print that game's help instead of launching the game. Subcommands in
+		// subFlagCommands are handled by parseSubFlags (which catches flag.ErrHelp).
+		if !subFlagCommands[arg] && hasHelpFlag(flag.Args()[1:]) {
+			return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
+		}
 		if flag.NArg() > 1 && !subFlagCommands[arg] {
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(flag.Args()[1:], " ")))
 		}
@@ -364,6 +377,19 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 	return fs, 0, true
 }
 
+// hasHelpFlag reports whether args contains a help flag. It accepts all four
+// forms Go's flag package treats as equivalent for a help flag registered as
+// both "help" and "h": "-h", "--h", "-help", "--help".
+func hasHelpFlag(args []string) bool {
+	for _, a := range args {
+		switch a {
+		case "-h", "--h", "-help", "--help":
+			return true
+		}
+	}
+	return false
+}
+
 func mapKeys(m map[string]func() int) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
@@ -397,18 +423,23 @@ COMMANDS:
 OPTIONS:
   -h, --help        Show this help message
   --lang ja|en      Language (default: ja)
-  --no-color        Disable color output
+  --no-color        Disable color output (stdout and stderr)
+                    Auto-detection is per-stream: stdout color is on only
+                    when stdout is a TTY; the same applies to stderr.
   -V, --version     Show version information
+  --version-short   Print version number only (machine-readable)
 
 EXAMPLES:
   trumpcards                     Start interactive mode (switch games with 'switch <game>')
   trumpcards blackjack           Play BlackJack
+  trumpcards blackjack --help    Show BlackJack's in-game commands
   trumpcards --lang en poker     Play Poker in English
   trumpcards games               List all available games
   trumpcards games --short       List game names only (for scripting)
   trumpcards games --short --aliases  List game names including aliases
   trumpcards update              Self-update to the latest version
   trumpcards update --yes        Update without confirmation prompt
+  trumpcards --version-short     Print just the version number (e.g. 1.2.3)
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
   trumpcards web                 Start the web GUI server
   trumpcards web --port 3000     Start the web GUI on port 3000
@@ -416,7 +447,8 @@ EXAMPLES:
   source <(trumpcards completion bash)   Enable bash completion
 
 ENVIRONMENT VARIABLES:
-  NO_COLOR          Disable color output when set (see https://no-color.org/)
+  NO_COLOR          Disable color output on both stdout and stderr when set
+                    (see https://no-color.org/)
                     Example: NO_COLOR=1 trumpcards blackjack
   HOST              Bind address for the web server (default: all interfaces)
                     Example: HOST=127.0.0.1 trumpcards web
