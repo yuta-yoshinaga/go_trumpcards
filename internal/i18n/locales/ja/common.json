@@ -36,7 +36,6 @@
   "emptyInputHint": "'help' でコマンド一覧を表示します。",
   "cliStartupBanner": "trumpcards {{version}} - インタラクティブモード",
   "cliStartupGame": "{{game}} を開始します。'switch <game>' でゲームを切り替え、'games' で一覧を表示できます。",
-  "cliAliasesWithoutShort": "注意: --aliases は --short なしでは効果がありません",
   "cliInvalidPort": "エラー: 無効なポート番号 {{port}} です (1-65535 の範囲で指定してください)",
   "cliExtraArgsWarning": "警告: 余分な引数は無視されました: {{args}}",
   "cliCompletionUsage": "使い方: trumpcards completion <bash|zsh|fish>",
