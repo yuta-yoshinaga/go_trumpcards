@@ -250,6 +250,32 @@ describe('SpeedPage', () => {
     expect(flipPileBtns[0]).toHaveClass('animate-pulse');
   });
 
+  it('keyboard shortcut: Space triggers flip when stuck', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(window, { key: ' ' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('flip'));
+  });
+
+  it('keyboard shortcut: Enter triggers flip when stuck', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(window, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('flip'));
+  });
+
+  it('keyboard shortcut: Space is ignored during play phase', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(window, { key: ' ' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('keyboard shortcut: digit key smart-plays the matching hand card', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
