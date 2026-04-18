@@ -3,8 +3,8 @@ import type { HintResult } from '../../types/hint';
 import { SevenCardStudPhase } from '../../types/phases';
 
 const LOW_CARD_MAX = 8;
-const STRONG_LOW_THRESHOLD = 3;
-const DECENT_LOW_THRESHOLD = 2;
+const STRONG_LOW_CAP = 5;
+const DECENT_LOW_CAP = 4;
 
 const BETTING_PHASES: ReadonlySet<number> = new Set([
   SevenCardStudPhase.THIRD_STREET,
@@ -15,7 +15,7 @@ const BETTING_PHASES: ReadonlySet<number> = new Set([
 ]);
 
 function isLow(card: Card): boolean {
-  return card.value === 1 || (card.value >= 2 && card.value <= LOW_CARD_MAX);
+  return card.value <= LOW_CARD_MAX;
 }
 
 function hasPair(cards: readonly Card[]): boolean {
@@ -45,10 +45,11 @@ export function getRazzHint(state: SevenCardStudResponse): HintResult | null {
   }
 
   const lowCount = cards.filter(isLow).length;
-  if (lowCount >= STRONG_LOW_THRESHOLD) {
+  const totalCards = cards.length;
+  if (lowCount >= Math.min(STRONG_LOW_CAP, totalCards)) {
     return { targetAction: 'raise', reason: 'hint.strongHandRank', confidence: 'strong' };
   }
-  if (lowCount >= DECENT_LOW_THRESHOLD) {
+  if (lowCount >= Math.min(DECENT_LOW_CAP, totalCards - 1)) {
     return { targetAction: 'call', reason: 'hint.decentHandRank', confidence: 'moderate' };
   }
   return { targetAction: 'fold', reason: 'hint.weakHandRank', confidence: 'moderate' };

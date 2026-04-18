@@ -135,4 +135,55 @@ describe('getRazzHint', () => {
     const state = makeState();
     expect(getRazzHint(state)).toBeNull();
   });
+
+  it('recommends fold on 7th street when only 3 of 7 cards are low', () => {
+    const state = makeState({ phase: SevenCardStudPhase.SEVENTH_STREET });
+    state.players[0].holeCards = [
+      { design: 'SPADE', value: 2 },
+      { design: 'HEART', value: 4 },
+      { design: 'CLUB', value: 6 },
+      { design: 'DIAMOND', value: 10 },
+    ];
+    state.players[0].doorCards = [
+      { design: 'SPADE', value: 11 },
+      { design: 'HEART', value: 12 },
+      { design: 'CLUB', value: 13 },
+    ];
+    const hint = getRazzHint(state);
+    expect(hint?.targetAction).toBe('fold');
+  });
+
+  it('recommends raise on 7th street when all 7 cards are low', () => {
+    const state = makeState({ phase: SevenCardStudPhase.SEVENTH_STREET });
+    state.players[0].holeCards = [
+      { design: 'SPADE', value: 1 },
+      { design: 'HEART', value: 2 },
+      { design: 'CLUB', value: 3 },
+      { design: 'DIAMOND', value: 4 },
+    ];
+    state.players[0].doorCards = [
+      { design: 'SPADE', value: 5 },
+      { design: 'HEART', value: 6 },
+      { design: 'CLUB', value: 7 },
+    ];
+    const hint = getRazzHint(state);
+    expect(hint?.targetAction).toBe('raise');
+    expect(hint?.confidence).toBe('strong');
+  });
+
+  it('recommends call on 5th street with 4 of 5 cards low', () => {
+    const state = makeState({ phase: SevenCardStudPhase.FIFTH_STREET });
+    state.players[0].holeCards = [
+      { design: 'SPADE', value: 2 },
+      { design: 'HEART', value: 4 },
+    ];
+    state.players[0].doorCards = [
+      { design: 'CLUB', value: 6 },
+      { design: 'DIAMOND', value: 7 },
+      { design: 'SPADE', value: 12 },
+    ];
+    const hint = getRazzHint(state);
+    expect(hint?.targetAction).toBe('call');
+    expect(hint?.confidence).toBe('moderate');
+  });
 });
