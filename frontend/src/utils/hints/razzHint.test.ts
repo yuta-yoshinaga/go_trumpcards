@@ -141,13 +141,13 @@ describe('getRazzHint', () => {
     state.players[0].holeCards = [
       { design: 'SPADE', value: 2 },
       { design: 'HEART', value: 4 },
-      { design: 'CLUB', value: 6 },
+      { design: 'CLOVER', value: 6 },
       { design: 'DIAMOND', value: 10 },
     ];
     state.players[0].doorCards = [
       { design: 'SPADE', value: 11 },
       { design: 'HEART', value: 12 },
-      { design: 'CLUB', value: 13 },
+      { design: 'CLOVER', value: 13 },
     ];
     const hint = getRazzHint(state);
     expect(hint?.targetAction).toBe('fold');
@@ -158,13 +158,13 @@ describe('getRazzHint', () => {
     state.players[0].holeCards = [
       { design: 'SPADE', value: 1 },
       { design: 'HEART', value: 2 },
-      { design: 'CLUB', value: 3 },
+      { design: 'CLOVER', value: 3 },
       { design: 'DIAMOND', value: 4 },
     ];
     state.players[0].doorCards = [
       { design: 'SPADE', value: 5 },
       { design: 'HEART', value: 6 },
-      { design: 'CLUB', value: 7 },
+      { design: 'CLOVER', value: 7 },
     ];
     const hint = getRazzHint(state);
     expect(hint?.targetAction).toBe('raise');
@@ -178,7 +178,7 @@ describe('getRazzHint', () => {
       { design: 'HEART', value: 4 },
     ];
     state.players[0].doorCards = [
-      { design: 'CLUB', value: 6 },
+      { design: 'CLOVER', value: 6 },
       { design: 'DIAMOND', value: 7 },
       { design: 'SPADE', value: 12 },
     ];
