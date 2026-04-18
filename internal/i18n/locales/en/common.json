@@ -49,6 +49,7 @@
   "cliLangEnvFallback": "Note: LANG=\"{{lang}}\" is not a supported language, defaulting to ja (set TRUMPCARDS_QUIET=1 to silence)",
   "cliSubcommandFlagError": "Error: trumpcards {{cmd}}: {{err}}",
   "cliTryHelp": "Run 'trumpcards help {{cmd}}' for usage.",
+  "cliFlagError": "Error: invalid option ({{err}})",
   "metaAIRequired": "Meta-AI setting is required (0=off, 1=on).",
   "invalidMetaAI": "Invalid value: {{val}}. Please enter 0 or 1.",
   "cancelled": "Cancelled.",
