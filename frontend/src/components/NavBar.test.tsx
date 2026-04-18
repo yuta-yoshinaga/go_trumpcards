@@ -274,6 +274,21 @@ describe('NavBar', () => {
         expect(document.activeElement).toBe(focusable[0]);
         document.body.removeChild(outside);
       });
+
+      it('does not reset focus when the viewport resizes while the menu is open', () => {
+        renderNavBar();
+        fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+        const nav = screen.getByRole('navigation');
+        const focusable = nav.querySelectorAll<HTMLElement>('a[href], button, input');
+        const mid = focusable[Math.floor(focusable.length / 2)];
+        mid.focus();
+        expect(document.activeElement).toBe(mid);
+        // Cross the mobile breakpoint while the menu is still open — the
+        // effect re-runs because isMobile flips, but focus must be preserved.
+        Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+        window.dispatchEvent(new Event('resize'));
+        expect(document.activeElement).toBe(mid);
+      });
     });
   });
 

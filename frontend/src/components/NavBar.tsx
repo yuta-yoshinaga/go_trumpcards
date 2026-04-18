@@ -104,15 +104,23 @@ export function NavBar() {
   const wasOpen = useRef(false);
 
   useEffect(() => {
-    if (!isOpen && wasOpen.current && toggleRef.current) {
+    const justOpened = isOpen && !wasOpen.current;
+    const justClosed = !isOpen && wasOpen.current;
+    wasOpen.current = isOpen;
+
+    if (justClosed && toggleRef.current) {
       toggleRef.current.focus();
     }
-    wasOpen.current = isOpen;
 
     if (!isOpen || !navRef.current) return;
     const nav = navRef.current;
-    const firstInteractive = nav.querySelector<HTMLElement>('input, a');
-    firstInteractive?.focus();
+
+    // Only move focus on the open transition; re-running the effect for a
+    // viewport resize (isMobile flip) must not steal focus from the user.
+    if (justOpened) {
+      const initial = getFocusableElements(nav)[0];
+      initial?.focus();
+    }
 
     // Focus trap is scoped to mobile, where the menu covers the viewport
     // like a modal. On tablet+ (sm:flex) the nav renders inline and a trap
