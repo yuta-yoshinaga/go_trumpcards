@@ -148,10 +148,11 @@ describe('SevensBoard', () => {
     expect(button.style.color).toBe('white');
   });
 
-  it('joker placeable cells pulse and have ds-info ring', () => {
+  it('joker placeable cells pulse (motion-safe) and have ds-info ring', () => {
     render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
     const button = screen.getByLabelText('SPADE 6 に配置') as HTMLElement;
-    expect(button.className).toContain('animate-pulse');
+    // Pinned to the motion-safe: variant so OS "Reduce Motion" users never see the pulse.
+    expect(button.className).toContain('motion-safe:animate-pulse');
     expect(button.className).toContain('ring-ds-info');
     expect(button.dataset.jokerPlaceable).toBe('true');
   });

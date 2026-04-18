@@ -85,7 +85,7 @@ function Board({
                         type="button"
                         onClick={() => onJokerPlace?.(idx, v)}
                         aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
-                        className={`${baseClass}${bold} ring-2 ring-ds-info ring-offset-1 ring-offset-black/30 animate-pulse cursor-pointer p-0 hover:brightness-110`}
+                        className={`${baseClass}${bold} ring-2 ring-ds-info ring-offset-1 ring-offset-black/30 motion-safe:animate-pulse cursor-pointer p-0 hover:brightness-110`}
                         style={colors}
                         data-testid="board-cell"
                         data-joker-placeable="true"
