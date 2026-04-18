@@ -451,6 +451,35 @@ describe('DoubtPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []));
   });
 
+  it('highlights the CPU last action prominently in the doubt window', async () => {
+    mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByTestId('doubt-last-action-highlight')).toBeInTheDocument());
+    expect(screen.getByTestId('doubt-last-action-highlight')).toHaveClass('animate-pulse');
+  });
+
+  it('Space key triggers doubt in doubt decision window', async () => {
+    mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ダウト！' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.keyDown(window, { key: ' ' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0]));
+  });
+
+  it('Escape key triggers skip in doubt decision window', async () => {
+    mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スルー' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []));
+  });
+
   it('calls doubt with [0, ...cpuDoubters] when ダウト！ clicked with cpu doubters', async () => {
     const s: DoubtResponse = { ...doubtPhaseCpuPlayedState, cpuDoubters: [2, 3] };
     mockExec.mockResolvedValue(s);
