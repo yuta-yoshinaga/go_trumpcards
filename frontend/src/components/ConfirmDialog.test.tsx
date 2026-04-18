@@ -77,28 +77,21 @@ describe('ConfirmDialog', () => {
     expect(onCancel).not.toHaveBeenCalled();
   });
 
-  it('uses aria-labelledby referencing the title element', () => {
+  it('exposes the title via the accessible name', () => {
     render(<ConfirmDialog {...defaultProps()} />);
-    const dialog = screen.getByRole('alertdialog');
-    const labelledby = dialog.getAttribute('aria-labelledby');
-    expect(labelledby).toBeTruthy();
-    expect(screen.getByText('リセット確認').id).toBe(labelledby);
+    expect(screen.getByRole('alertdialog', { name: 'リセット確認' })).toBeInTheDocument();
   });
 
-  it('uses aria-describedby referencing the message element', () => {
+  it('exposes the message via the accessible description', () => {
     render(<ConfirmDialog {...defaultProps()} />);
-    const dialog = screen.getByRole('alertdialog');
-    const describedby = dialog.getAttribute('aria-describedby');
-    expect(describedby).toBeTruthy();
-    expect(screen.getByText('本当にゲームをリセットしますか？').id).toBe(describedby);
+    expect(screen.getByRole('alertdialog', { description: '本当にゲームをリセットしますか？' })).toBeInTheDocument();
   });
 
-  it('generates unique IDs for labelledby and describedby', () => {
-    render(<ConfirmDialog {...defaultProps()} />);
+  it('omits aria-describedby and the message paragraph when message is empty', () => {
+    render(<ConfirmDialog {...defaultProps({ message: '' })} />);
     const dialog = screen.getByRole('alertdialog');
-    const labelledby = dialog.getAttribute('aria-labelledby');
-    const describedby = dialog.getAttribute('aria-describedby');
-    expect(labelledby).not.toBe(describedby);
+    expect(dialog).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByText('本当にゲームをリセットしますか？')).not.toBeInTheDocument();
   });
 
   it('focuses cancel button on open', () => {
