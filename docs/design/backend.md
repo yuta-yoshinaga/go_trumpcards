@@ -1555,8 +1555,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "41ゲーム × CUI/Web = 82 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "41ゲーム × CUI/Web = 82 Presenter 実装"
+    note for GameCuiController "55ゲーム × CUI/Web = 110 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "55ゲーム × CUI/Web = 110 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1623,8 +1623,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 46 controllers
-    GameManager --> "*" CuiExecer : holds 46 games
+    TrumpCardsWeb --> "*" GameWebController : holds 55 controllers
+    GameManager --> "*" CuiExecer : holds 55 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
