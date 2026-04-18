@@ -113,6 +113,8 @@ func TestNewDefaultBridge(t *testing.T) {
 	assertHumanFirst(t, g, func(i int) bool { return g.GetPlayer(i).GetIsHuman() }, 4)
 	assert.Equal(t, 0, g.GetPlayer(0).GetTeam())
 	assert.Equal(t, 1, g.GetPlayer(1).GetTeam())
+	assert.Equal(t, 0, g.GetPlayer(2).GetTeam())
+	assert.Equal(t, 1, g.GetPlayer(3).GetTeam())
 }
 
 func TestNewDefaultEuchre(t *testing.T) {
@@ -121,6 +123,8 @@ func TestNewDefaultEuchre(t *testing.T) {
 	assertHumanFirst(t, g, func(i int) bool { return g.GetPlayer(i).GetIsHuman() }, 4)
 	assert.Equal(t, 0, g.GetPlayer(0).GetTeam())
 	assert.Equal(t, 1, g.GetPlayer(1).GetTeam())
+	assert.Equal(t, 0, g.GetPlayer(2).GetTeam())
+	assert.Equal(t, 1, g.GetPlayer(3).GetTeam())
 }
 
 func TestNewDefaultPinochle(t *testing.T) {
@@ -129,6 +133,8 @@ func TestNewDefaultPinochle(t *testing.T) {
 	assertHumanFirst(t, g, func(i int) bool { return g.GetPlayer(i).GetIsHuman() }, 4)
 	assert.Equal(t, 0, g.GetPlayer(0).GetTeam())
 	assert.Equal(t, 1, g.GetPlayer(1).GetTeam())
+	assert.Equal(t, 0, g.GetPlayer(2).GetTeam())
+	assert.Equal(t, 1, g.GetPlayer(3).GetTeam())
 }
 
 func TestNewDefaultWhist(t *testing.T) {
@@ -137,6 +143,8 @@ func TestNewDefaultWhist(t *testing.T) {
 	assertHumanFirst(t, g, func(i int) bool { return g.GetPlayer(i).GetIsHuman() }, 4)
 	assert.Equal(t, 0, g.GetPlayer(0).GetTeam())
 	assert.Equal(t, 1, g.GetPlayer(1).GetTeam())
+	assert.Equal(t, 0, g.GetPlayer(2).GetTeam())
+	assert.Equal(t, 1, g.GetPlayer(3).GetTeam())
 }
 
 // 2-player games.
@@ -274,5 +282,5 @@ func TestNewDefaultRazz(t *testing.T) {
 func TestNewDefaultIndianPoker(t *testing.T) {
 	g := domain.NewDefaultIndianPoker()
 	assert.NotNil(t, g)
-	assertHumanFirst(t, g, func(i int) bool { return g.GetPlayer(i).GetIsHuman() }, g.GetPlayerCnt())
+	assertHumanFirst(t, g, func(i int) bool { return g.GetPlayer(i).GetIsHuman() }, 4)
 }
