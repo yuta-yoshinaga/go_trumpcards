@@ -37,6 +37,7 @@ import { YukonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 const noop = () => {};
@@ -298,6 +299,7 @@ function YukonPageContent() {
   const isGameClear = state.phase === YukonPhase.GAME_CLEAR;
   const isGameOver = state.phase === YukonPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const autoCompleteReady = isTableauAllFaceUp(state.tableau);
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -518,7 +520,14 @@ function YukonPageContent() {
                   <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
                     {t('hint')}
                   </button>
-                  <button type="button" className={btnSuccess} onClick={handleAutoComplete} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnSuccess}${autoCompleteReady && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+                    onClick={handleAutoComplete}
+                    disabled={loading || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                  >
                     {t('autoComplete')}
                   </button>
                   <button

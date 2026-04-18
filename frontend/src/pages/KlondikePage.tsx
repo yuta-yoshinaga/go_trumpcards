@@ -40,6 +40,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { KLONDIKE_HELP, parseKlondikeCommand } from '../utils/cli/commands/klondikeCommands';
 import { formatKlondikeState } from '../utils/cli/formatters/klondikeFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -211,6 +212,9 @@ function KlondikePageContent() {
 
   // Waste display: in 3-card mode show up to 3 fanned cards, only top clickable
   const wasteDisplay = state.drawCount === 3 ? state.waste.slice(-3) : state.waste.slice(-1);
+  // Mirrors the backend's Klondike.AllFaceUp() guard: stock must be empty AND every tableau card face-up.
+  // (Waste cards are always face-up and AutoComplete pops them, so no waste check is needed.)
+  const autoCompleteReady = state.stockCount === 0 && isTableauAllFaceUp(state.tableau);
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.klondike.bg}`} aria-busy={loading}>
@@ -566,9 +570,11 @@ function KlondikePageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
