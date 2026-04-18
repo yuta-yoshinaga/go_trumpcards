@@ -96,22 +96,32 @@ function SpeedPageContent() {
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  // Keyboard shortcuts: 1..N select a hand card; ←/→ play selected card to left/right center pile.
-  // Active only when CLI mode is off and a play phase is in progress. Respects input focus
-  // and skips when modifier keys (Ctrl/Alt/Meta) are held to avoid hijacking browser shortcuts.
-  // Latest state and handlers are read via refs so the listener is registered only once
+  // Keyboard shortcuts: 1..N select a hand card; ←/→ play selected card to left/right center pile;
+  // Space/Enter triggers Flip during STUCK phase.
+  // Active only when CLI mode is off and a play phase or stuck phase is in progress. Respects
+  // input focus and skips when modifier keys (Ctrl/Alt/Meta) are held to avoid hijacking browser
+  // shortcuts. Latest state and handlers are read via refs so the listener is registered only once
   // per enable/disable transition rather than on every state update (e.g. each CPU move).
   const isPlayPhaseForKeys = state?.phase === SpeedPhase.PLAY;
-  const keyHandlersRef = useRef({ state, handleSmartClick, handlePlay, selectedCardIndices });
-  keyHandlersRef.current = { state, handleSmartClick, handlePlay, selectedCardIndices };
+  const isStuckForKeys = state?.phase === SpeedPhase.STUCK;
+  const keyboardActive = isPlayPhaseForKeys || isStuckForKeys;
+  const keyHandlersRef = useRef({ state, handleSmartClick, handlePlay, selectedCardIndices, handleFlip });
+  keyHandlersRef.current = { state, handleSmartClick, handlePlay, selectedCardIndices, handleFlip };
   useEffect(() => {
-    if (cliEnabled || !isPlayPhaseForKeys || loading) return;
+    if (cliEnabled || !keyboardActive || loading) return;
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       const cur = keyHandlersRef.current;
       if (!cur.state) return;
+      if (cur.state.phase === SpeedPhase.STUCK) {
+        if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') {
+          e.preventDefault();
+          cur.handleFlip();
+        }
+        return;
+      }
       if (e.key >= '1' && e.key <= '9') {
         const idx = Number.parseInt(e.key, 10) - 1;
         if (idx < cur.state.players[0].cards.length) {
@@ -129,7 +139,7 @@ function SpeedPageContent() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [cliEnabled, isPlayPhaseForKeys, loading]);
+  }, [cliEnabled, keyboardActive, loading]);
 
   if (!state || state.players.length < 2) return <SpeedSkeleton />;
 
