@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- Baccarat, BlackJack, Canasta, Canfield, Caribbean Stud Poker, Clock Solitaire, Contract Bridge, Crazy Eights, Cribbage, Daifugo, Deuces Wild, Doubt, Durak, Euchre, Fifty-one, Forty Thieves, FreeCell, Gin Rummy, Go Fish, Golf, Hearts, Indian Poker, Joker Poker, Klondike, Let It Ride, Memory, Napoleon, Oh Hell, Old Maid, Omaha Hold'em, Pai Gow Poker, Pig's Tail, Pineapple Poker, Pinochle, Poker, Poker Squares, Pyramid, Razz, Scorpion, Seven Card Stud, Sevens, Short Deck Hold'em, Spades, Speed, Spider Solitaire, Texas Hold'em, Three Card Poker, TriPeaks, Two Ten Jack, Video Poker, War, Whist, Yukon. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go implementations of 55 trump card game algorithms (blackjack, poker, hearts, klondike, baccarat, ...). Run `go run ./cmd/trumpcards games --short` for the canonical list. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
