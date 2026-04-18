@@ -9,8 +9,7 @@ import (
 
 // NewKlondikeCui コンストラクタ
 func NewKlondikeCui() *genericCuiGame {
-	klondike := domain.NewKlondike(domain.NewTrumpCards(0))
-	kc := controller.NewKlondikeCuiController(usecase.NewKlondikeInteractor(klondike, new(presenter.KlondikeCuiPresenter)))
+	kc := controller.NewKlondikeCuiController(usecase.NewKlondikeInteractor(domain.NewDefaultKlondike(), new(presenter.KlondikeCuiPresenter)))
 	return newCuiGame(kc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "klondike.helpTitle",
 		CommandKeys: []string{

@@ -45,15 +45,7 @@ func main() {
 	// Euchre
 	must(worker.RegisterKV(mux, "/euchre/exec", "euchre:",
 		func() usecase.EuchreInteractorIF {
-			config := domain.DefaultEuchreConfig()
-			players := []*domain.EuchrePlayer{
-				domain.NewEuchrePlayer(true, 0),
-				domain.NewEuchrePlayer(false, 1),
-				domain.NewEuchrePlayer(false, 0),
-				domain.NewEuchrePlayer(false, 1),
-			}
-			euchre := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, config)
-			return usecase.NewEuchreInteractor(euchre, new(presenter.EuchreWebPresenter))
+			return usecase.NewEuchreInteractor(domain.NewDefaultEuchre(), new(presenter.EuchreWebPresenter))
 		},
 		func(data []byte) (usecase.EuchreInteractorIF, error) {
 			return usecase.RestoreEuchreInteractor(data, new(presenter.EuchreWebPresenter))
@@ -64,15 +56,7 @@ func main() {
 	// Napoleon
 	must(worker.RegisterKV(mux, "/napoleon/exec", "napoleon:",
 		func() usecase.NapoleonInteractorIF {
-			config := domain.DefaultNapoleonConfig()
-			players := []*domain.NapoleonPlayer{
-				domain.NewNapoleonPlayer(true),
-				domain.NewNapoleonPlayer(false),
-				domain.NewNapoleonPlayer(false),
-				domain.NewNapoleonPlayer(false),
-			}
-			napoleon := domain.NewNapoleon(domain.NewTrumpCards(1), players, config)
-			return usecase.NewNapoleonInteractor(napoleon, new(presenter.NapoleonWebPresenter))
+			return usecase.NewNapoleonInteractor(domain.NewDefaultNapoleon(), new(presenter.NapoleonWebPresenter))
 		},
 		func(data []byte) (usecase.NapoleonInteractorIF, error) {
 			return usecase.RestoreNapoleonInteractor(data, new(presenter.NapoleonWebPresenter))
@@ -83,14 +67,7 @@ func main() {
 	// Old Maid
 	must(worker.RegisterKV(mux, "/oldmaid/exec", "oldmaid:",
 		func() usecase.OldMaidInteractorIF {
-			players := []*domain.OldMaidPlayer{
-				domain.NewOldMaidPlayer(true),
-				domain.NewOldMaidPlayer(false),
-				domain.NewOldMaidPlayer(false),
-				domain.NewOldMaidPlayer(false),
-			}
-			oldMaid := domain.NewOldMaid(domain.NewTrumpCards(1), players)
-			return usecase.NewOldMaidInteractor(oldMaid, new(presenter.OldMaidWebPresenter))
+			return usecase.NewOldMaidInteractor(domain.NewDefaultOldMaid(), new(presenter.OldMaidWebPresenter))
 		},
 		func(data []byte) (usecase.OldMaidInteractorIF, error) {
 			return usecase.RestoreOldMaidInteractor(data, new(presenter.OldMaidWebPresenter))
@@ -101,14 +78,7 @@ func main() {
 	// Doubt
 	must(worker.RegisterKV(mux, "/doubt/exec", "doubt:",
 		func() usecase.DoubtInteractorIF {
-			players := []*domain.DoubtPlayer{
-				domain.NewDoubtPlayer(true),
-				domain.NewDoubtPlayer(false),
-				domain.NewDoubtPlayer(false),
-				domain.NewDoubtPlayer(false),
-			}
-			doubt := domain.NewDoubt(domain.NewTrumpCards(0), players)
-			return usecase.NewDoubtInteractor(doubt, new(presenter.DoubtWebPresenter))
+			return usecase.NewDoubtInteractor(domain.NewDefaultDoubt(), new(presenter.DoubtWebPresenter))
 		},
 		func(data []byte) (usecase.DoubtInteractorIF, error) {
 			return usecase.RestoreDoubtInteractor(data, new(presenter.DoubtWebPresenter))
@@ -119,15 +89,7 @@ func main() {
 	// Daifugo
 	must(worker.RegisterKV(mux, "/daifugo/exec", "daifugo:",
 		func() usecase.DaifugoInteractorIF {
-			config := domain.DefaultDaifugoConfig()
-			players := []*domain.DaifugoPlayer{
-				domain.NewDaifugoPlayer(true),
-				domain.NewDaifugoPlayer(false),
-				domain.NewDaifugoPlayer(false),
-				domain.NewDaifugoPlayer(false),
-			}
-			daifugo := domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config)
-			return usecase.NewDaifugoInteractor(daifugo, new(presenter.DaifugoWebPresenter))
+			return usecase.NewDaifugoInteractor(domain.NewDefaultDaifugo(), new(presenter.DaifugoWebPresenter))
 		},
 		func(data []byte) (usecase.DaifugoInteractorIF, error) {
 			return usecase.RestoreDaifugoInteractor(data, new(presenter.DaifugoWebPresenter))
@@ -138,15 +100,7 @@ func main() {
 	// Sevens
 	must(worker.RegisterKV(mux, "/sevens/exec", "sevens:",
 		func() usecase.SevensInteractorIF {
-			config := domain.DefaultSevensConfig()
-			players := []*domain.SevensPlayer{
-				domain.NewSevensPlayer(true),
-				domain.NewSevensPlayer(false),
-				domain.NewSevensPlayer(false),
-				domain.NewSevensPlayer(false),
-			}
-			sevens := domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
-			return usecase.NewSevensInteractor(sevens, new(presenter.SevensWebPresenter))
+			return usecase.NewSevensInteractor(domain.NewDefaultSevens(), new(presenter.SevensWebPresenter))
 		},
 		func(data []byte) (usecase.SevensInteractorIF, error) {
 			return usecase.RestoreSevensInteractor(data, new(presenter.SevensWebPresenter))
@@ -179,15 +133,7 @@ func main() {
 	// Contract Bridge
 	must(worker.RegisterKV(mux, "/bridge/exec", "bridge:",
 		func() usecase.BridgeInteractorIF {
-			config := domain.DefaultBridgeConfig()
-			players := []*domain.BridgePlayer{
-				domain.NewBridgePlayer(true, 0),
-				domain.NewBridgePlayer(false, 1),
-				domain.NewBridgePlayer(false, 0),
-				domain.NewBridgePlayer(false, 1),
-			}
-			bridge := domain.NewBridge(domain.NewTrumpCards(0), players, config)
-			return usecase.NewBridgeInteractor(bridge, new(presenter.BridgeWebPresenter))
+			return usecase.NewBridgeInteractor(domain.NewDefaultBridge(), new(presenter.BridgeWebPresenter))
 		},
 		func(data []byte) (usecase.BridgeInteractorIF, error) {
 			return usecase.RestoreBridgeInteractor(data, new(presenter.BridgeWebPresenter))
@@ -198,13 +144,7 @@ func main() {
 	// Speed
 	must(worker.RegisterKV(mux, "/speed/exec", "speed:",
 		func() usecase.SpeedInteractorIF {
-			config := domain.DefaultSpeedConfig()
-			players := []*domain.SpeedPlayer{
-				domain.NewSpeedPlayer(true),
-				domain.NewSpeedPlayer(false),
-			}
-			speed := domain.NewSpeed(domain.NewTrumpCards(0), players, config)
-			return usecase.NewSpeedInteractor(speed, new(presenter.SpeedWebPresenter))
+			return usecase.NewSpeedInteractor(domain.NewDefaultSpeed(), new(presenter.SpeedWebPresenter))
 		},
 		func(data []byte) (usecase.SpeedInteractorIF, error) {
 			return usecase.RestoreSpeedInteractor(data, new(presenter.SpeedWebPresenter))
@@ -215,14 +155,7 @@ func main() {
 	// Go Fish
 	must(worker.RegisterKV(mux, "/gofish/exec", "gofish:",
 		func() usecase.GoFishInteractorIF {
-			players := []*domain.GoFishPlayer{
-				domain.NewGoFishPlayer(true),
-				domain.NewGoFishPlayer(false),
-				domain.NewGoFishPlayer(false),
-				domain.NewGoFishPlayer(false),
-			}
-			goFish := domain.NewGoFish(domain.NewTrumpCards(0), players)
-			return usecase.NewGoFishInteractor(goFish, new(presenter.GoFishWebPresenter))
+			return usecase.NewGoFishInteractor(domain.NewDefaultGoFish(), new(presenter.GoFishWebPresenter))
 		},
 		func(data []byte) (usecase.GoFishInteractorIF, error) {
 			return usecase.RestoreGoFishInteractor(data, new(presenter.GoFishWebPresenter))
@@ -233,15 +166,7 @@ func main() {
 	// Pinochle
 	must(worker.RegisterKV(mux, "/pinochle/exec", "pinochle:",
 		func() usecase.PinochleInteractorIF {
-			config := domain.DefaultPinochleConfig()
-			players := []*domain.PinochlePlayer{
-				domain.NewPinochlePlayer(true, 0),
-				domain.NewPinochlePlayer(false, 1),
-				domain.NewPinochlePlayer(false, 0),
-				domain.NewPinochlePlayer(false, 1),
-			}
-			pinochle := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, config)
-			return usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleWebPresenter))
+			return usecase.NewPinochleInteractor(domain.NewDefaultPinochle(), new(presenter.PinochleWebPresenter))
 		},
 		func(data []byte) (usecase.PinochleInteractorIF, error) {
 			return usecase.RestorePinochleInteractor(data, new(presenter.PinochleWebPresenter))
@@ -252,14 +177,7 @@ func main() {
 	// Pig's Tail
 	must(worker.RegisterKV(mux, "/pigtail/exec", "pigtail:",
 		func() usecase.PigsTailInteractorIF {
-			players := []*domain.PigsTailPlayer{
-				domain.NewPigsTailPlayer(true),
-				domain.NewPigsTailPlayer(false),
-				domain.NewPigsTailPlayer(false),
-				domain.NewPigsTailPlayer(false),
-			}
-			pigsTail := domain.NewPigsTail(domain.NewTrumpCards(0), players)
-			return usecase.NewPigsTailInteractor(pigsTail, new(presenter.PigsTailWebPresenter))
+			return usecase.NewPigsTailInteractor(domain.NewDefaultPigsTail(), new(presenter.PigsTailWebPresenter))
 		},
 		func(data []byte) (usecase.PigsTailInteractorIF, error) {
 			return usecase.RestorePigsTailInteractor(data, new(presenter.PigsTailWebPresenter))
@@ -270,15 +188,7 @@ func main() {
 	// Two Ten Jack
 	must(worker.RegisterKV(mux, "/twotenjack/exec", "twotenjack:",
 		func() usecase.TwoTenJackInteractorIF {
-			config := domain.DefaultTwoTenJackConfig()
-			players := []*domain.TwoTenJackPlayer{
-				domain.NewTwoTenJackPlayer(true),
-				domain.NewTwoTenJackPlayer(false),
-				domain.NewTwoTenJackPlayer(false),
-				domain.NewTwoTenJackPlayer(false),
-			}
-			ttj := domain.NewTwoTenJack(domain.NewTrumpCards(0), players, config)
-			return usecase.NewTwoTenJackInteractor(ttj, new(presenter.TwoTenJackWebPresenter))
+			return usecase.NewTwoTenJackInteractor(domain.NewDefaultTwoTenJack(), new(presenter.TwoTenJackWebPresenter))
 		},
 		func(data []byte) (usecase.TwoTenJackInteractorIF, error) {
 			return usecase.RestoreTwoTenJackInteractor(data, new(presenter.TwoTenJackWebPresenter))
@@ -289,13 +199,7 @@ func main() {
 	// War
 	must(worker.RegisterKV(mux, "/war/exec", "war:",
 		func() usecase.WarInteractorIF {
-			config := domain.DefaultWarConfig()
-			players := []*domain.WarPlayer{
-				domain.NewWarPlayer(true),
-				domain.NewWarPlayer(false),
-			}
-			war := domain.NewWar(domain.NewTrumpCards(0), players, config)
-			return usecase.NewWarInteractor(war, new(presenter.WarWebPresenter))
+			return usecase.NewWarInteractor(domain.NewDefaultWar(), new(presenter.WarWebPresenter))
 		},
 		func(data []byte) (usecase.WarInteractorIF, error) {
 			return usecase.RestoreWarInteractor(data, new(presenter.WarWebPresenter))
@@ -306,14 +210,7 @@ func main() {
 	// Durak
 	must(worker.RegisterKV(mux, "/durak/exec", "durak:",
 		func() usecase.DurakInteractorIF {
-			players := []*domain.DurakPlayer{
-				domain.NewDurakPlayer(true),
-				domain.NewDurakPlayer(false),
-				domain.NewDurakPlayer(false),
-				domain.NewDurakPlayer(false),
-			}
-			d := domain.NewDurak(domain.NewTrumpCardsShortDeck(), players)
-			return usecase.NewDurakInteractor(d, new(presenter.DurakWebPresenter))
+			return usecase.NewDurakInteractor(domain.NewDefaultDurak(), new(presenter.DurakWebPresenter))
 		},
 		func(data []byte) (usecase.DurakInteractorIF, error) {
 			return usecase.RestoreDurakInteractor(data, new(presenter.DurakWebPresenter))
@@ -324,14 +221,7 @@ func main() {
 	// Fifty-one
 	must(worker.RegisterKV(mux, "/fiftyone/exec", "fiftyone:",
 		func() usecase.FiftyOneInteractorIF {
-			players := []*domain.FiftyOnePlayer{
-				domain.NewFiftyOnePlayer(true),
-				domain.NewFiftyOnePlayer(false),
-				domain.NewFiftyOnePlayer(false),
-				domain.NewFiftyOnePlayer(false),
-			}
-			fo := domain.NewFiftyOne(domain.NewTrumpCards(0), players)
-			return usecase.NewFiftyOneInteractor(fo, new(presenter.FiftyOneWebPresenter))
+			return usecase.NewFiftyOneInteractor(domain.NewDefaultFiftyOne(), new(presenter.FiftyOneWebPresenter))
 		},
 		func(data []byte) (usecase.FiftyOneInteractorIF, error) {
 			return usecase.RestoreFiftyOneInteractor(data, new(presenter.FiftyOneWebPresenter))
@@ -342,15 +232,7 @@ func main() {
 	// Whist
 	must(worker.RegisterKV(mux, "/whist/exec", "whist:",
 		func() usecase.WhistInteractorIF {
-			config := domain.DefaultWhistConfig()
-			players := []*domain.WhistPlayer{
-				domain.NewWhistPlayer(true, 0),
-				domain.NewWhistPlayer(false, 1),
-				domain.NewWhistPlayer(false, 0),
-				domain.NewWhistPlayer(false, 1),
-			}
-			whist := domain.NewWhist(domain.NewTrumpCards(0), players, config)
-			return usecase.NewWhistInteractor(whist, new(presenter.WhistWebPresenter))
+			return usecase.NewWhistInteractor(domain.NewDefaultWhist(), new(presenter.WhistWebPresenter))
 		},
 		func(data []byte) (usecase.WhistInteractorIF, error) {
 			return usecase.RestoreWhistInteractor(data, new(presenter.WhistWebPresenter))
@@ -361,15 +243,7 @@ func main() {
 	// Page One
 	must(worker.RegisterKV(mux, "/pageone/exec", "pageone:",
 		func() usecase.PageOneInteractorIF {
-			config := domain.DefaultPageOneConfig()
-			players := []*domain.PageOnePlayer{
-				domain.NewPageOnePlayer(true),
-				domain.NewPageOnePlayer(false),
-				domain.NewPageOnePlayer(false),
-				domain.NewPageOnePlayer(false),
-			}
-			po := domain.NewPageOne(domain.NewTrumpCards(0), players, config)
-			return usecase.NewPageOneInteractor(po, new(presenter.PageOneWebPresenter))
+			return usecase.NewPageOneInteractor(domain.NewDefaultPageOne(), new(presenter.PageOneWebPresenter))
 		},
 		func(data []byte) (usecase.PageOneInteractorIF, error) {
 			return usecase.RestorePageOneInteractor(data, new(presenter.PageOneWebPresenter))

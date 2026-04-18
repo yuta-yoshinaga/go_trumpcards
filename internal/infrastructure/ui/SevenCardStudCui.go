@@ -9,9 +9,7 @@ import (
 
 // NewSevenCardStudCui コンストラクタ
 func NewSevenCardStudCui() *genericCuiGame {
-	cfg := domain.DefaultSevenCardStudConfig()
-	scs := domain.NewSevenCardStud(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
-	sc := controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(scs, new(presenter.SevenCardStudCuiPresenter)))
+	sc := controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStud(), new(presenter.SevenCardStudCuiPresenter)))
 	return newCuiGame(sc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "sevencardstud.helpTitle",
 		CommandKeys: []string{

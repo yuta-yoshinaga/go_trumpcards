@@ -9,8 +9,7 @@ import (
 
 // NewSpiderCui コンストラクタ
 func NewSpiderCui() *genericCuiGame {
-	spider := domain.NewSpider(domain.NewTrumpCardsWithSuits(domain.SpiderTotalCards, []int{domain.CardDesignSpade}))
-	sc := controller.NewSpiderCuiController(usecase.NewSpiderInteractor(spider, new(presenter.SpiderCuiPresenter)))
+	sc := controller.NewSpiderCuiController(usecase.NewSpiderInteractor(domain.NewDefaultSpider(), new(presenter.SpiderCuiPresenter)))
 	return newCuiGame(sc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "spider.helpTitle",
 		CommandKeys: []string{

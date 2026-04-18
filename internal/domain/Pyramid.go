@@ -73,6 +73,12 @@ func NewPyramid(trumpCards *TrumpCards) *Pyramid {
 	}
 }
 
+// NewDefaultPyramid returns Pyramid with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultPyramid() *Pyramid {
+	return NewPyramid(NewTrumpCards(0))
+}
+
 // Reset ゲームリセット
 func (p *Pyramid) Reset() {
 	p.trumpCards.Shuffle()

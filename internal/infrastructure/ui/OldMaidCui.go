@@ -9,15 +9,8 @@ import (
 
 // NewOldMaidCui コンストラクタ
 func NewOldMaidCui() *genericCuiGame {
-	players := []*domain.OldMaidPlayer{
-		domain.NewOldMaidPlayer(true),
-		domain.NewOldMaidPlayer(false),
-		domain.NewOldMaidPlayer(false),
-		domain.NewOldMaidPlayer(false),
-	}
-	oldMaid := domain.NewOldMaid(domain.NewTrumpCards(1), players)
 	omc := controller.NewOldMaidCuiController(
-		usecase.NewOldMaidInteractor(oldMaid, new(presenter.OldMaidCuiPresenter)),
+		usecase.NewOldMaidInteractor(domain.NewDefaultOldMaid(), new(presenter.OldMaidCuiPresenter)),
 	)
 	return newCuiGame(omc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey:    "oldmaid.helpTitle",

@@ -86,6 +86,14 @@ func NewShortDeck(trumpCards *TrumpCards, players []*ShortDeckPlayer, config Sho
 	}
 }
 
+// NewDefaultShortDeck returns ShortDeck with the default table size and
+// DefaultShortDeckConfig using the short (6+) deck. Used as the single source
+// of truth for CUI, Web, and Worker construction sites.
+func NewDefaultShortDeck() *ShortDeck {
+	cfg := DefaultShortDeckConfig()
+	return NewShortDeck(NewTrumpCardsShortDeck(), NewShortDeckPlayersForTable(cfg.TableSize), cfg)
+}
+
 // Reset ゲーム初期化
 func (sd *ShortDeck) Reset() error {
 	sd.phase = ShortDeckPhaseInit

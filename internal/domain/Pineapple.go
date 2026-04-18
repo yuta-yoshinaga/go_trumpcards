@@ -88,6 +88,14 @@ func NewPineapple(trumpCards *TrumpCards, players []*PineapplePlayer, config Pin
 	}
 }
 
+// NewDefaultPineapple returns Pineapple with the default table size and
+// DefaultPineappleConfig. Used as the single source of truth for CUI, Web,
+// and Worker construction sites.
+func NewDefaultPineapple() *Pineapple {
+	cfg := DefaultPineappleConfig()
+	return NewPineapple(NewTrumpCards(0), NewPineapplePlayersForTable(cfg.TableSize), cfg)
+}
+
 // Reset ゲーム初期化
 func (p *Pineapple) Reset() error {
 	p.phase = PineapplePhaseInit

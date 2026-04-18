@@ -9,15 +9,7 @@ import (
 
 // NewPinochleCui コンストラクタ
 func NewPinochleCui() *genericCuiGame {
-	config := domain.DefaultPinochleConfig()
-	players := []*domain.PinochlePlayer{
-		domain.NewPinochlePlayer(true, 0),
-		domain.NewPinochlePlayer(false, 1),
-		domain.NewPinochlePlayer(false, 0),
-		domain.NewPinochlePlayer(false, 1),
-	}
-	pinochle := domain.NewPinochle(domain.NewTrumpCardsPinochle(), players, config)
-	pc := controller.NewPinochleCuiController(usecase.NewPinochleInteractor(pinochle, new(presenter.PinochleCuiPresenter)))
+	pc := controller.NewPinochleCuiController(usecase.NewPinochleInteractor(domain.NewDefaultPinochle(), new(presenter.PinochleCuiPresenter)))
 	return newCuiGame(pc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "pinochle.helpTitle",
 		CommandKeys: []string{

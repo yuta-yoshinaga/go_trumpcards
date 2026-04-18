@@ -64,6 +64,12 @@ func NewPokerSquares(tc *TrumpCards) *PokerSquares {
 	return &PokerSquares{trumpCards: tc}
 }
 
+// NewDefaultPokerSquares returns PokerSquares with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultPokerSquares() *PokerSquares {
+	return NewPokerSquares(NewTrumpCards(0))
+}
+
 // Reset はゲームを初期化する。デッキをシャッフルし、最初のカードを引く。
 func (p *PokerSquares) Reset() {
 	p.trumpCards.Shuffle()

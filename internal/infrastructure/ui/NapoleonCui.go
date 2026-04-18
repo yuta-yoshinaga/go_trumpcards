@@ -9,15 +9,7 @@ import (
 
 // NewNapoleonCui コンストラクタ
 func NewNapoleonCui() *genericCuiGame {
-	config := domain.DefaultNapoleonConfig()
-	players := []*domain.NapoleonPlayer{
-		domain.NewNapoleonPlayer(true),
-		domain.NewNapoleonPlayer(false),
-		domain.NewNapoleonPlayer(false),
-		domain.NewNapoleonPlayer(false),
-	}
-	napoleon := domain.NewNapoleon(domain.NewTrumpCards(1), players, config)
-	nc := controller.NewNapoleonCuiController(usecase.NewNapoleonInteractor(napoleon, new(presenter.NapoleonCuiPresenter)))
+	nc := controller.NewNapoleonCuiController(usecase.NewNapoleonInteractor(domain.NewDefaultNapoleon(), new(presenter.NapoleonCuiPresenter)))
 	return newCuiGame(nc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "napoleon.helpTitle",
 		CommandKeys: []string{

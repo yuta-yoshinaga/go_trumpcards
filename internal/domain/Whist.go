@@ -70,6 +70,19 @@ func NewWhist(trumpCards *TrumpCards, players []*WhistPlayer, config WhistConfig
 	}
 }
 
+// NewDefaultWhist returns Whist with the standard 4-player team setup
+// (human team 0, alternating CPU teams) and DefaultWhistConfig.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultWhist() *Whist {
+	players := []*WhistPlayer{
+		NewWhistPlayer(true, 0),
+		NewWhistPlayer(false, 1),
+		NewWhistPlayer(false, 0),
+		NewWhistPlayer(false, 1),
+	}
+	return NewWhist(NewTrumpCards(0), players, DefaultWhistConfig())
+}
+
 // Reset ゲーム初期化
 func (w *Whist) Reset() {
 	w.gameEndFlag = false

@@ -9,15 +9,7 @@ import (
 
 // NewEuchreCui コンストラクタ
 func NewEuchreCui() *genericCuiGame {
-	config := domain.DefaultEuchreConfig()
-	players := []*domain.EuchrePlayer{
-		domain.NewEuchrePlayer(true, 0),
-		domain.NewEuchrePlayer(false, 1),
-		domain.NewEuchrePlayer(false, 0),
-		domain.NewEuchrePlayer(false, 1),
-	}
-	euchre := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, config)
-	ec := controller.NewEuchreCuiController(usecase.NewEuchreInteractor(euchre, new(presenter.EuchreCuiPresenter)))
+	ec := controller.NewEuchreCuiController(usecase.NewEuchreInteractor(domain.NewDefaultEuchre(), new(presenter.EuchreCuiPresenter)))
 	return newCuiGame(ec, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "euchre.helpTitle",
 		CommandKeys: []string{

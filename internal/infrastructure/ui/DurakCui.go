@@ -10,15 +10,8 @@ import (
 
 // NewDurakCui コンストラクタ
 func NewDurakCui() *genericCuiGame {
-	players := []*domain.DurakPlayer{
-		domain.NewDurakPlayer(true),
-		domain.NewDurakPlayer(false),
-		domain.NewDurakPlayer(false),
-		domain.NewDurakPlayer(false),
-	}
-	durak := domain.NewDurak(domain.NewTrumpCardsShortDeck(), players)
 	dc := controller.NewDurakCuiController(
-		usecase.NewDurakInteractor(durak, new(presenter.DurakCuiPresenter)),
+		usecase.NewDurakInteractor(domain.NewDefaultDurak(), new(presenter.DurakCuiPresenter)),
 	)
 	return newCuiGame(dc, []string{
 		i18n.T("durak.helpTitle"),

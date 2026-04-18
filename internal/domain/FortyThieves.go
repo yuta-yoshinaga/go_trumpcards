@@ -75,6 +75,12 @@ func NewFortyThieves(trumpCards *TrumpCards) *FortyThieves {
 	}
 }
 
+// NewDefaultFortyThieves returns FortyThieves with two combined 52-card decks.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultFortyThieves() *FortyThieves {
+	return NewFortyThieves(NewTrumpCardsWithDecks(2, 0))
+}
+
 // Reset ゲームリセット
 func (ft *FortyThieves) Reset() {
 	ft.trumpCards.Shuffle()

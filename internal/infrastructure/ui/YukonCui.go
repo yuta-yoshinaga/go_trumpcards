@@ -9,8 +9,7 @@ import (
 
 // NewYukonCui コンストラクタ
 func NewYukonCui() *genericCuiGame {
-	yukon := domain.NewYukon(domain.NewTrumpCards(0))
-	yc := controller.NewYukonCuiController(usecase.NewYukonInteractor(yukon, new(presenter.YukonCuiPresenter)))
+	yc := controller.NewYukonCuiController(usecase.NewYukonInteractor(domain.NewDefaultYukon(), new(presenter.YukonCuiPresenter)))
 	return newCuiGame(yc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "yukon.helpTitle",
 		CommandKeys: []string{

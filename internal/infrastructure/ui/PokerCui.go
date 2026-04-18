@@ -9,15 +9,7 @@ import (
 
 // NewPokerCui コンストラクタ
 func NewPokerCui() *genericCuiGame {
-	config := domain.DefaultPokerConfig()
-	players := []*domain.PokerPlayer{
-		domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
-		domain.NewPokerPlayer(false, domain.PokerStyleConservative),
-		domain.NewPokerPlayer(false, domain.PokerStyleAggressive),
-		domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
-	}
-	poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
-	pc := controller.NewPokerCuiController(usecase.NewPokerInteractor(poker, new(presenter.PokerCuiPresenter)))
+	pc := controller.NewPokerCuiController(usecase.NewPokerInteractor(domain.NewDefaultPoker(), new(presenter.PokerCuiPresenter)))
 	return newCuiGame(pc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "poker.helpTitle",
 		CommandKeys: []string{

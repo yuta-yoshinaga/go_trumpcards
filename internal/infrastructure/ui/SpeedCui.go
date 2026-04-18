@@ -9,14 +9,8 @@ import (
 
 // NewSpeedCui コンストラクタ
 func NewSpeedCui() *genericCuiGame {
-	players := []*domain.SpeedPlayer{
-		domain.NewSpeedPlayer(true),
-		domain.NewSpeedPlayer(false),
-	}
-	config := domain.DefaultSpeedConfig()
-	game := domain.NewSpeed(domain.NewTrumpCards(0), players, config)
 	sc := controller.NewSpeedCuiController(
-		usecase.NewSpeedInteractor(game, new(presenter.SpeedCuiPresenter)),
+		usecase.NewSpeedInteractor(domain.NewDefaultSpeed(), new(presenter.SpeedCuiPresenter)),
 	)
 	return newCuiGame(sc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey:    "speed.helpTitle",

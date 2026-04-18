@@ -9,15 +9,7 @@ import (
 
 // NewPageOneCui コンストラクタ
 func NewPageOneCui() *genericCuiGame {
-	config := domain.DefaultPageOneConfig()
-	players := []*domain.PageOnePlayer{
-		domain.NewPageOnePlayer(true),
-		domain.NewPageOnePlayer(false),
-		domain.NewPageOnePlayer(false),
-		domain.NewPageOnePlayer(false),
-	}
-	po := domain.NewPageOne(domain.NewTrumpCards(0), players, config)
-	cc := controller.NewPageOneCuiController(usecase.NewPageOneInteractor(po, new(presenter.PageOneCuiPresenter)))
+	cc := controller.NewPageOneCuiController(usecase.NewPageOneInteractor(domain.NewDefaultPageOne(), new(presenter.PageOneCuiPresenter)))
 	return newCuiGame(cc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "pageone.helpTitle",
 		CommandKeys: []string{

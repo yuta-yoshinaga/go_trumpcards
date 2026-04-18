@@ -89,6 +89,18 @@ func NewPigsTail(trumpCards *TrumpCards, players []*PigsTailPlayer) *PigsTail {
 	}
 }
 
+// NewDefaultPigsTail returns PigsTail with the standard 4-player setup (1 human, 3 CPU).
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultPigsTail() *PigsTail {
+	players := []*PigsTailPlayer{
+		NewPigsTailPlayer(true),
+		NewPigsTailPlayer(false),
+		NewPigsTailPlayer(false),
+		NewPigsTailPlayer(false),
+	}
+	return NewPigsTail(NewTrumpCards(0), players)
+}
+
 // SetConfig ゲーム設定をセット
 func (pt *PigsTail) SetConfig(config PigsTailConfig) { pt.config = config }
 

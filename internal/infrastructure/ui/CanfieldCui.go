@@ -9,8 +9,7 @@ import (
 
 // NewCanfieldCui コンストラクタ
 func NewCanfieldCui() *genericCuiGame {
-	canfield := domain.NewCanfield(domain.NewTrumpCards(0))
-	cc := controller.NewCanfieldCuiController(usecase.NewCanfieldInteractor(canfield, new(presenter.CanfieldCuiPresenter)))
+	cc := controller.NewCanfieldCuiController(usecase.NewCanfieldInteractor(domain.NewDefaultCanfield(), new(presenter.CanfieldCuiPresenter)))
 	return newCuiGame(cc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "canfield.helpTitle",
 		CommandKeys: []string{

@@ -9,8 +9,7 @@ import (
 
 // NewPyramidCui コンストラクタ
 func NewPyramidCui() *genericCuiGame {
-	pyramid := domain.NewPyramid(domain.NewTrumpCards(0))
-	pc := controller.NewPyramidCuiController(usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidCuiPresenter)))
+	pc := controller.NewPyramidCuiController(usecase.NewPyramidInteractor(domain.NewDefaultPyramid(), new(presenter.PyramidCuiPresenter)))
 	return newCuiGame(pc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "pyramid.helpTitle",
 		CommandKeys: []string{

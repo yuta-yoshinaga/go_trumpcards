@@ -133,6 +133,20 @@ func NewBridge(trumpCards *TrumpCards, players []*BridgePlayer, config BridgeCon
 	}
 }
 
+// NewDefaultBridge returns Bridge with the standard 4-player setup
+// (North human team 0, East CPU team 1, South CPU team 0, West CPU team 1)
+// and DefaultBridgeConfig. Used as the single source of truth for CUI, Web,
+// and Worker construction sites.
+func NewDefaultBridge() *Bridge {
+	players := []*BridgePlayer{
+		NewBridgePlayer(true, 0),
+		NewBridgePlayer(false, 1),
+		NewBridgePlayer(false, 0),
+		NewBridgePlayer(false, 1),
+	}
+	return NewBridge(NewTrumpCards(0), players, DefaultBridgeConfig())
+}
+
 // Reset ゲーム初期化
 func (b *Bridge) Reset() {
 	b.gameEndFlag = false

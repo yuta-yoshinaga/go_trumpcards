@@ -75,6 +75,13 @@ func NewSpider(trumpCards *TrumpCards) *Spider {
 	}
 }
 
+// NewDefaultSpider returns Spider with the 1-suit difficulty using the
+// standard Spider card count (104 spade cards).
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultSpider() *Spider {
+	return NewSpider(NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade}))
+}
+
 // ResetWithConfig 設定付きリセット
 func (s *Spider) ResetWithConfig(cfg SpiderConfig) {
 	switch cfg.Difficulty {

@@ -9,8 +9,7 @@ import (
 
 // NewScorpionCui コンストラクタ
 func NewScorpionCui() *genericCuiGame {
-	scorpion := domain.NewScorpion(domain.NewTrumpCards(0))
-	sc := controller.NewScorpionCuiController(usecase.NewScorpionInteractor(scorpion, new(presenter.ScorpionCuiPresenter)))
+	sc := controller.NewScorpionCuiController(usecase.NewScorpionInteractor(domain.NewDefaultScorpion(), new(presenter.ScorpionCuiPresenter)))
 	return newCuiGame(sc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "scorpion.helpTitle",
 		CommandKeys: []string{

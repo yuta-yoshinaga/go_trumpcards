@@ -9,9 +9,7 @@ import (
 
 // NewShortDeckCui コンストラクタ
 func NewShortDeckCui() *genericCuiGame {
-	cfg := domain.DefaultShortDeckConfig()
-	sd := domain.NewShortDeck(domain.NewTrumpCardsShortDeck(), domain.NewShortDeckPlayersForTable(cfg.TableSize), cfg)
-	sc := controller.NewShortDeckCuiController(usecase.NewShortDeckInteractor(sd, new(presenter.ShortDeckCuiPresenter)))
+	sc := controller.NewShortDeckCuiController(usecase.NewShortDeckInteractor(domain.NewDefaultShortDeck(), new(presenter.ShortDeckCuiPresenter)))
 	return newCuiGame(sc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "shortdeck.helpTitle",
 		CommandKeys: []string{

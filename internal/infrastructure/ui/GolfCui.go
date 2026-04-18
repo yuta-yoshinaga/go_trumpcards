@@ -9,8 +9,7 @@ import (
 
 // NewGolfCui コンストラクタ
 func NewGolfCui() *genericCuiGame {
-	golf := domain.NewGolf(domain.NewTrumpCards(0))
-	gc := controller.NewGolfCuiController(usecase.NewGolfInteractor(golf, new(presenter.GolfCuiPresenter)))
+	gc := controller.NewGolfCuiController(usecase.NewGolfInteractor(domain.NewDefaultGolf(), new(presenter.GolfCuiPresenter)))
 	return newCuiGame(gc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey:          "golf.helpTitle",
 		CommandKeys:       []string{"golf.helpDraw", "golf.helpRemove", "golf.helpGiveUp", "golf.helpHint"},

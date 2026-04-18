@@ -9,15 +9,7 @@ import (
 
 // NewBridgeCui コンストラクタ
 func NewBridgeCui() *genericCuiGame {
-	config := domain.DefaultBridgeConfig()
-	players := []*domain.BridgePlayer{
-		domain.NewBridgePlayer(true, 0),  // North (human, team 0)
-		domain.NewBridgePlayer(false, 1), // East (CPU, team 1)
-		domain.NewBridgePlayer(false, 0), // South (CPU, team 0)
-		domain.NewBridgePlayer(false, 1), // West (CPU, team 1)
-	}
-	bridge := domain.NewBridge(domain.NewTrumpCards(0), players, config)
-	bc := controller.NewBridgeCuiController(usecase.NewBridgeInteractor(bridge, new(presenter.BridgeCuiPresenter)))
+	bc := controller.NewBridgeCuiController(usecase.NewBridgeInteractor(domain.NewDefaultBridge(), new(presenter.BridgeCuiPresenter)))
 	return newCuiGame(bc, []string{
 		"=== Contract Bridge ===",
 		"",

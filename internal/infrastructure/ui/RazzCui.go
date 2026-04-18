@@ -9,9 +9,7 @@ import (
 
 // NewRazzCui コンストラクタ
 func NewRazzCui() *genericCuiGame {
-	cfg := domain.DefaultRazzConfig()
-	r := domain.NewRazz(domain.NewTrumpCards(0), domain.NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
-	sc := controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(r, new(presenter.SevenCardStudCuiPresenter)))
+	sc := controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(domain.NewDefaultRazz(), new(presenter.SevenCardStudCuiPresenter)))
 	return newCuiGame(sc, BuildCuiHelp(CuiHelpSpec{
 		TitleKey: "razz.helpTitle",
 		CommandKeys: []string{
