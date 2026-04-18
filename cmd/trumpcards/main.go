@@ -34,22 +34,28 @@ var (
 // validator so the two cannot diverge.
 var supportedLangs = map[string]bool{"ja": true, "en": true}
 
-// portUnset distinguishes "user did not pass --port" from "user passed --port 0"
-// (which is the POSIX convention for "let the OS assign an ephemeral port").
-const portUnset = -1
+// portInRange reports whether port is a valid TCP port number, with 0
+// reserved for "let the OS assign an ephemeral port" (POSIX convention).
+func portInRange(port int) bool {
+	return port >= 0 && port <= 65535
+}
 
-// resolvePortEnv interprets a --port value: returns the string to write into
-// the PORT env var, whether the caller should write it, and whether the value
-// is out of range (0..65535). portUnset yields (_, false, false), signalling
-// the default 8080 should stand.
-func resolvePortEnv(port int) (envValue string, set, invalid bool) {
-	if port == portUnset {
-		return "", false, false
+// flagSetVisited reports whether any of the named flags was explicitly set
+// on fs. This lets the caller distinguish "user did not pass --port" from
+// "user passed --port 0" without needing a sentinel value in the integer
+// input space — which would misclassify e.g. `--port -1` as "unset".
+func flagSetVisited(fs *flag.FlagSet, names ...string) bool {
+	want := make(map[string]struct{}, len(names))
+	for _, n := range names {
+		want[n] = struct{}{}
 	}
-	if port < 0 || port > 65535 {
-		return "", false, true
-	}
-	return strconv.Itoa(port), true, false
+	seen := false
+	fs.Visit(func(fl *flag.Flag) {
+		if _, ok := want[fl.Name]; ok {
+			seen = true
+		}
+	})
+	return seen
 }
 
 func main() {
@@ -178,23 +184,22 @@ func run() int {
 		return 0
 	}
 	commands["web"] = func() int {
-		port := portUnset
+		var port int
 		var host string
-		_, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
-			f.IntVar(&port, "port", portUnset, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
-			f.IntVar(&port, "p", portUnset, "Port number for the web server (shorthand)")
+		fs, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
+			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
+			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
 			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
 		})
 		if !ok {
 			return code
 		}
-		portEnv, setPort, invalid := resolvePortEnv(port)
-		if invalid {
-			fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(port)))
-			return 1
-		}
-		if setPort {
-			_ = os.Setenv("PORT", portEnv)
+		if flagSetVisited(fs, "port", "p") {
+			if !portInRange(port) {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(port)))
+				return 1
+			}
+			_ = os.Setenv("PORT", strconv.Itoa(port))
 		}
 		if host != "" {
 			_ = os.Setenv("HOST", host)

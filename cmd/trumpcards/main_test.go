@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -129,29 +130,112 @@ func TestRunHelpCommandUnknownGame(t *testing.T) {
 	}
 }
 
-func TestResolvePortEnv(t *testing.T) {
+func TestPortInRange(t *testing.T) {
+	tests := []struct {
+		port int
+		want bool
+	}{
+		{0, true}, // ephemeral (POSIX)
+		{1, true},
+		{8080, true},
+		{65535, true}, // max
+		{-1, false},   // must reject (previously collided with the portUnset sentinel)
+		{-2, false},
+		{65536, false},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("port=%d", tt.port), func(t *testing.T) {
+			if got := portInRange(tt.port); got != tt.want {
+				t.Errorf("portInRange(%d) = %v, want %v", tt.port, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFlagSetVisitedDistinguishesExplicitFromDefault(t *testing.T) {
 	tests := []struct {
 		name        string
-		port        int
-		wantEnv     string
-		wantSet     bool
-		wantInvalid bool
+		args        []string
+		wantVisited bool
+		wantPortVal int
 	}{
-		{"unset sentinel leaves PORT untouched", portUnset, "", false, false},
-		{"port 0 requests ephemeral", 0, "0", true, false},
-		{"port 8080 is valid", 8080, "8080", true, false},
-		{"port 65535 is max valid", 65535, "65535", true, false},
-		{"negative port is invalid", -2, "", false, true},
-		{"port > 65535 is invalid", 65536, "", false, true},
+		{"no flag -> not visited, default 0", nil, false, 0},
+		{"--port 0 -> visited (critical: collides with default value)", []string{"--port", "0"}, true, 0},
+		{"--port -1 -> visited (must not be misclassified as unset)", []string{"--port", "-1"}, true, -1},
+		{"--port 3000 -> visited", []string{"--port", "3000"}, true, 3000},
+		{"-p 8080 shorthand -> visited", []string{"-p", "8080"}, true, 8080},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env, set, invalid := resolvePortEnv(tt.port)
-			if env != tt.wantEnv || set != tt.wantSet || invalid != tt.wantInvalid {
-				t.Errorf("resolvePortEnv(%d) = (%q, %v, %v), want (%q, %v, %v)",
-					tt.port, env, set, invalid, tt.wantEnv, tt.wantSet, tt.wantInvalid)
+			var port int
+			fs := flag.NewFlagSet("web", flag.ContinueOnError)
+			fs.SetOutput(io.Discard)
+			fs.IntVar(&port, "port", 0, "")
+			fs.IntVar(&port, "p", 0, "")
+			if err := fs.Parse(tt.args); err != nil {
+				t.Fatalf("parse error: %v", err)
+			}
+			if got := flagSetVisited(fs, "port", "p"); got != tt.wantVisited {
+				t.Errorf("flagSetVisited = %v, want %v", got, tt.wantVisited)
+			}
+			if port != tt.wantPortVal {
+				t.Errorf("port = %d, want %d", port, tt.wantPortVal)
 			}
 		})
+	}
+}
+
+// TestRunWebRejectsExplicitInvalidPort covers the bug Gemini and Claude
+// flagged: under the previous portUnset=-1 sentinel, `--port -1` silently
+// fell through to the default 8080. With the fs.Visit approach the explicit
+// -1 must be rejected with cliInvalidPort and exit 1 before any bind.
+func TestRunWebRejectsExplicitInvalidPort(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origPortEnv, portEnvWasSet := os.LookupEnv("PORT")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if portEnvWasSet {
+			_ = os.Setenv("PORT", origPortEnv)
+		} else {
+			_ = os.Unsetenv("PORT")
+		}
+	}()
+	_ = os.Unsetenv("PORT") // baseline
+
+	flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+	os.Args = []string{"trumpcards", "web", "--port", "-1"}
+
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	os.Stdout = wOut
+	os.Stderr = wErr
+
+	exitCh := make(chan int, 1)
+	go func() { exitCh <- run() }()
+	exit := <-exitCh
+
+	_ = wOut.Close()
+	_ = wErr.Close()
+	var outBuf, errBuf bytes.Buffer
+	_, _ = outBuf.ReadFrom(rOut)
+	_, _ = errBuf.ReadFrom(rErr)
+
+	if exit != 1 {
+		t.Errorf("exit = %d, want 1 (stderr=%q)", exit, errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "-1") {
+		t.Errorf("stderr should mention the offending port; got: %q", errBuf.String())
+	}
+	// Guard against regression: the old sentinel behavior would silently
+	// pass through and try to bind 8080, leaving PORT untouched.
+	if got := os.Getenv("PORT"); got != "" {
+		t.Errorf("PORT should not be set on invalid input; got %q", got)
 	}
 }
 
