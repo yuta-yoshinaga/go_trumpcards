@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
 // GameRegistryEntry holds a game's name, description, and CUI constructor.
@@ -15,64 +19,886 @@ type GameRegistryEntry struct {
 	NewCui      func() cuiGame
 }
 
-// gameRegistry is the single source of truth for all games.
+// cuiEntry builds a generic CUI game from a controller and a help spec.
+// Used by gameRegistry entries that follow the standard help template.
+func cuiEntry(ctrl CuiExecer, spec CuiHelpSpec) cuiGame {
+	return newCuiGame(ctrl, BuildCuiHelp(spec))
+}
+
+// gameRegistry is the single source of truth for all games. Each entry wires
+// the game's controller/interactor/presenter and declares its help text
+// inline — this file is the one place to look to see or add a game.
 // Order determines display order in help, games list, and completion.
 var gameRegistry = []GameRegistryEntry{
-	{"blackjack", "BlackJack (ブラックジャック)", func() cuiGame { return NewBlackJackCui() }},
-	{"poker", "5-card Draw Poker (ポーカー)", func() cuiGame { return NewPokerCui() }},
-	{"oldmaid", "Old Maid (ババ抜き)", func() cuiGame { return NewOldMaidCui() }},
-	{"daifugo", "Daifugo / Great Fool (大富豪)", func() cuiGame { return NewDaifugoCui() }},
-	{"sevens", "Sevens (7並べ)", func() cuiGame { return NewSevensCui() }},
-	{"doubt", "Doubt (ダウト)", func() cuiGame { return NewDoubtCui() }},
-	{"holdem", "Texas Hold'em (テキサスホールデム)", func() cuiGame { return NewHoldemCui() }},
-	{"omaha", "Omaha Hold'em (オマハホールデム)", func() cuiGame { return NewOmahaCui() }},
-	{"shortdeck", "Short Deck (6+ Hold'em) (ショートデック)", func() cuiGame { return NewShortDeckCui() }},
-	{"pineapple", "Pineapple Poker (パイナップルポーカー)", func() cuiGame { return NewPineappleCui() }},
-	{"hearts", "Hearts (ハーツ)", func() cuiGame { return NewHeartsCui() }},
-	{"memory", "Memory / Concentration (神経衰弱)", func() cuiGame { return NewMemoryCui() }},
-	{"klondike", "Klondike Solitaire (ソリティア)", func() cuiGame { return NewKlondikeCui() }},
-	{"freecell", "FreeCell (フリーセル)", func() cuiGame { return NewFreeCellCui() }},
-	{"baccarat", "Baccarat (バカラ)", func() cuiGame { return NewBaccaratCui() }},
-	{"spades", "Spades (スペード)", func() cuiGame { return NewSpadesCui() }},
-	{"crazyeights", "Crazy Eights (クレイジーエイト)", func() cuiGame { return NewCrazyEightsCui() }},
-	{"ginrummy", "Gin Rummy (ジンラミー)", func() cuiGame { return NewGinRummyCui() }},
-	{"canasta", "Canasta (カナスタ)", func() cuiGame { return NewCanastaCui() }},
-	{"spider", "Spider Solitaire (スパイダーソリティア)", func() cuiGame { return NewSpiderCui() }},
-	{"napoleon", "Napoleon (ナポレオン)", func() cuiGame { return NewNapoleonCui() }},
-	{"indianpoker", "Indian Poker (インディアンポーカー)", func() cuiGame { return NewIndianPokerCui() }},
-	{"videopoker", "Video Poker Jacks or Better (ビデオポーカー)", func() cuiGame { return NewVideoPokerCui() }},
-	{"deuceswild", "Deuces Wild (デューシーズワイルド)", func() cuiGame { return NewDeucesWildCui() }},
-	{"jokerpoker", "Joker Poker (ジョーカーポーカー)", func() cuiGame { return NewJokerPokerCui() }},
-	{"euchre", "Euchre (ユーカー)", func() cuiGame { return NewEuchreCui() }},
-	{"pyramid", "Pyramid (ピラミッド)", func() cuiGame { return NewPyramidCui() }},
-	{"tripeaks", "TriPeaks (トリピークス)", func() cuiGame { return NewTriPeaksCui() }},
-	{"cribbage", "Cribbage (クリベッジ)", func() cuiGame { return NewCribbageCui() }},
-	{"threecard", "Three Card Poker (スリーカードポーカー)", func() cuiGame { return NewThreeCardCui() }},
-	{"ohhell", "Oh Hell (オー・ヘル)", func() cuiGame { return NewOhHellCui() }},
-	{"bridge", "Contract Bridge (コントラクトブリッジ)", func() cuiGame { return NewBridgeCui() }},
-	{"speed", "Speed (スピード)", func() cuiGame { return NewSpeedCui() }},
-	{"gofish", "Go Fish (ゴーフィッシュ)", func() cuiGame { return NewGoFishCui() }},
-	{"pinochle", "Pinochle (ピノクル)", func() cuiGame { return NewPinochleCui() }},
-	{"golf", "Golf Solitaire (ゴルフ)", func() cuiGame { return NewGolfCui() }},
-	{"pigtail", "Pig's Tail (ブタのしっぽ)", func() cuiGame { return NewPigsTailCui() }},
-	{"sevencardstud", "Seven Card Stud (セブンカードスタッド)", func() cuiGame { return NewSevenCardStudCui() }},
-	{"clocksolitaire", "Clock Solitaire (クロックソリティア)", func() cuiGame { return NewClockSolitaireCui() }},
-	{"durak", "Durak / Fool (ドゥラーク)", func() cuiGame { return NewDurakCui() }},
-	{"fortythieves", "Forty Thieves (フォーティシーブス)", func() cuiGame { return NewFortyThievesCui() }},
-	{"paigow", "Pai Gow Poker (パイガオポーカー)", func() cuiGame { return NewPaiGowCui() }},
-	{"twotenjack", "Two Ten Jack (ツーテンジャック)", func() cuiGame { return NewTwoTenJackCui() }},
-	{"caribbeanstud", "Caribbean Stud Poker (カリビアンスタッドポーカー)", func() cuiGame { return NewCaribbeanStudCui() }},
-	{"war", "War (戦争)", func() cuiGame { return NewWarCui() }},
-	{"canfield", "Canfield Solitaire (キャンフィールド)", func() cuiGame { return NewCanfieldCui() }},
-	{"fiftyone", "Fifty-one (フィフティワン)", func() cuiGame { return NewFiftyOneCui() }},
-	{"yukon", "Yukon Solitaire (ユーコン)", func() cuiGame { return NewYukonCui() }},
-	{"whist", "Whist (ホイスト)", func() cuiGame { return NewWhistCui() }},
-	{"letitride", "Let It Ride (レット・イット・ライド)", func() cuiGame { return NewLetItRideCui() }},
-	{"pokersquares", "Poker Squares (ポーカー・スクエアズ)", func() cuiGame { return NewPokerSquaresCui() }},
-	{"pageone", "Page One (ページワン)", func() cuiGame { return NewPageOneCui() }},
-	{"reddog", "Red Dog (レッドドッグ)", func() cuiGame { return NewRedDogCui() }},
-	{"razz", "Razz (ラズ)", func() cuiGame { return NewRazzCui() }},
-	{"scorpion", "Scorpion (スコーピオン)", func() cuiGame { return NewScorpionCui() }},
+	{Name: "blackjack", Description: "BlackJack (ブラックジャック)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBlackJackCuiController(usecase.NewBlackJackInteractor(
+				domain.NewDefaultBlackJack(), new(presenter.BlackJackCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "blackjack.helpTitle",
+				CommandKeys: []string{
+					"blackjack.helpBet",
+					"blackjack.helpHit",
+					"blackjack.helpStand",
+					"blackjack.helpDouble",
+					"blackjack.helpSplit",
+					"blackjack.helpInsurance",
+					"blackjack.helpDeclineInsurance",
+				},
+				SettingKeys: []string{"blackjack.helpSetCpuCount"},
+			})
+	}},
+	{Name: "poker", Description: "5-card Draw Poker (ポーカー)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPokerCuiController(usecase.NewPokerInteractor(
+				domain.NewDefaultPoker(), new(presenter.PokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "poker.helpTitle",
+				CommandKeys: []string{
+					"poker.helpBet",
+					"poker.helpCall",
+					"poker.helpRaise",
+					"poker.helpCheck",
+					"poker.helpFold",
+					"poker.helpAllIn",
+					"poker.helpExchange",
+					"poker.helpStand",
+				},
+				SettingKeys: []string{"poker.helpBettingLimit", "poker.helpLowball"},
+			})
+	}},
+	{Name: "oldmaid", Description: "Old Maid (ババ抜き)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOldMaidCuiController(usecase.NewOldMaidInteractor(
+				domain.NewDefaultOldMaid(), new(presenter.OldMaidCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "oldmaid.helpTitle",
+				CommandKeys: []string{"oldmaid.helpDraw", "oldmaid.helpShuffle", "oldmaid.helpReorder"},
+				SettingKeys: []string{"oldmaid.helpSetMode", "oldmaid.helpSetPlacement", "oldmaid.helpSetMemoryAI"},
+			})
+	}},
+	{Name: "daifugo", Description: "Daifugo / Great Fool (大富豪)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDaifugoCuiController(usecase.NewDaifugoInteractor(
+				domain.NewDefaultDaifugo(), new(presenter.DaifugoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "daifugo.helpTitle",
+				CommandKeys: []string{"daifugo.helpPlay", "daifugo.helpSort"},
+				SettingKeys: []string{"daifugo.helpSetDifficulty", "daifugo.helpSetJoker", "daifugo.helpSetRule"},
+			})
+	}},
+	{Name: "sevens", Description: "Sevens (7並べ)", NewCui: func() cuiGame {
+		return newCuiGame(
+			controller.NewSevensCuiController(usecase.NewSevensInteractor(
+				domain.NewDefaultSevens(), new(presenter.SevensCuiPresenter))),
+			[]string{
+				i18n.T("sevens.helpTitle"),
+				"",
+				i18n.T("gameCommands"),
+				i18n.T("sevens.helpPlay"),
+				"",
+				i18n.T("session"),
+				"  r [tunnel] [joker=N] [strategy] [passes=N]  reset with options",
+				i18n.T("quitEntry"),
+				i18n.T("helpEntry"),
+			})
+	}},
+	{Name: "doubt", Description: "Doubt (ダウト)", NewCui: func() cuiGame { return NewDoubtCui() }},
+	{Name: "holdem", Description: "Texas Hold'em (テキサスホールデム)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewHoldemCuiController(usecase.NewHoldemInteractor(
+				domain.NewDefaultHoldem(), new(presenter.HoldemCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "holdem.helpTitle",
+				CommandKeys: []string{
+					"holdem.helpFold",
+					"holdem.helpCheck",
+					"holdem.helpCall",
+					"holdem.helpBet",
+					"holdem.helpRaise",
+					"holdem.helpAllIn",
+				},
+				ExtraCommandLines: []string{
+					"  rb                   rebuy",
+					"  sr                   skip rebuy",
+					"  ad                   add-on",
+					"  sa                   skip add-on",
+				},
+				SettingKeys: []string{"holdem.helpBettingLimit", "holdem.helpTournament"},
+				ExtraSettingLines: []string{
+					"  sb <amount>          small blind (>=1)",
+					"  bb <amount>          big blind (>=2)",
+					"  lh <hands>           blind level-up hands (>=1)",
+					"  ts [4|6|9]           table size",
+				},
+			})
+	}},
+	{Name: "omaha", Description: "Omaha Hold'em (オマハホールデム)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOmahaCuiController(usecase.NewOmahaInteractor(
+				domain.NewDefaultOmaha(), new(presenter.OmahaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "omaha.helpTitle",
+				CommandKeys: []string{
+					"omaha.helpFold",
+					"omaha.helpCheck",
+					"omaha.helpCall",
+					"omaha.helpBet",
+					"omaha.helpRaise",
+					"omaha.helpAllIn",
+				},
+				ExtraCommandLines: []string{
+					"  rb                   rebuy",
+					"  sr                   skip rebuy",
+					"  ad                   add-on",
+					"  sa                   skip add-on",
+				},
+				SettingKeys: []string{"omaha.helpBettingLimit", "omaha.helpTournament"},
+				ExtraSettingLines: []string{
+					"  sb <amount>          small blind (>=1)",
+					"  bb <amount>          big blind (>=2)",
+					"  lh <hands>           blind level-up hands (>=1)",
+					"  ts [4|6|9]           table size",
+				},
+			})
+	}},
+	{Name: "shortdeck", Description: "Short Deck (6+ Hold'em) (ショートデック)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewShortDeckCuiController(usecase.NewShortDeckInteractor(
+				domain.NewDefaultShortDeck(), new(presenter.ShortDeckCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "shortdeck.helpTitle",
+				CommandKeys: []string{
+					"shortdeck.helpFold",
+					"shortdeck.helpCheck",
+					"shortdeck.helpCall",
+					"shortdeck.helpBet",
+					"shortdeck.helpRaise",
+					"shortdeck.helpAllIn",
+				},
+				ExtraCommandLines: []string{
+					"  rb                   rebuy",
+					"  sr                   skip rebuy",
+					"  ad                   add-on",
+					"  sa                   skip add-on",
+				},
+				SettingKeys: []string{"shortdeck.helpBettingLimit", "shortdeck.helpTournament"},
+				ExtraSettingLines: []string{
+					"  sb <amount>          small blind (>=1)",
+					"  bb <amount>          big blind (>=2)",
+					"  lh <hands>           blind level-up hands (>=1)",
+					"  ts [4|6|9]           table size",
+				},
+			})
+	}},
+	{Name: "pineapple", Description: "Pineapple Poker (パイナップルポーカー)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPineappleCuiController(usecase.NewPineappleInteractor(
+				domain.NewDefaultPineapple(), new(presenter.PineappleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "pineapple.helpTitle",
+				CommandKeys: []string{
+					"pineapple.helpFold",
+					"pineapple.helpCheck",
+					"pineapple.helpCall",
+					"pineapple.helpBet",
+					"pineapple.helpRaise",
+					"pineapple.helpAllIn",
+				},
+				ExtraCommandLines: []string{
+					"  d <index>            discard",
+					"  rb                   rebuy",
+					"  sr                   skip rebuy",
+					"  ad                   add-on",
+					"  sa                   skip add-on",
+				},
+				SettingKeys: []string{"pineapple.helpBettingLimit", "pineapple.helpTournament"},
+				ExtraSettingLines: []string{
+					"  sb <amount>          small blind (>=1)",
+					"  bb <amount>          big blind (>=2)",
+					"  lh <hands>           blind level-up hands (>=1)",
+					"  ts [4|6|9]           table size",
+				},
+			})
+	}},
+	{Name: "hearts", Description: "Hearts (ハーツ)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewHeartsCuiController(usecase.NewHeartsInteractor(
+				domain.NewDefaultHearts(), new(presenter.HeartsCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "hearts.helpTitle",
+				CommandKeys:       []string{"hearts.helpPass", "hearts.helpPlay", "hearts.helpNext", "hearts.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"hearts.helpSetDifficulty", "hearts.helpSetLimit"},
+			})
+	}},
+	{Name: "memory", Description: "Memory / Concentration (神経衰弱)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMemoryCuiController(usecase.NewMemoryInteractor(
+				domain.NewDefaultMemory(), new(presenter.MemoryCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "memory.helpTitle",
+				CommandKeys:       []string{"memory.helpFlip", "memory.helpNext"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"memory.helpSetDifficulty"},
+			})
+	}},
+	{Name: "klondike", Description: "Klondike Solitaire (ソリティア)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewKlondikeCuiController(usecase.NewKlondikeInteractor(
+				domain.NewDefaultKlondike(), new(presenter.KlondikeCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "klondike.helpTitle",
+				CommandKeys: []string{
+					"klondike.helpDraw",
+					"klondike.helpMove",
+					"klondike.helpMoveWF",
+					"klondike.helpMoveTF",
+					"klondike.helpMoveTT",
+					"klondike.helpGiveUp",
+					"klondike.helpHint",
+					"klondike.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "freecell", Description: "FreeCell (フリーセル)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFreeCellCuiController(usecase.NewFreeCellInteractor(
+				domain.NewDefaultFreeCell(), new(presenter.FreeCellCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "freecell.helpTitle",
+				CommandKeys: []string{
+					"freecell.helpMove",
+					"freecell.helpMoveTF",
+					"freecell.helpMoveTT",
+					"freecell.helpMoveTC",
+					"freecell.helpMoveCT",
+					"freecell.helpMoveCF",
+					"freecell.helpGiveUp",
+					"freecell.helpHint",
+					"freecell.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "baccarat", Description: "Baccarat (バカラ)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBaccaratCuiController(usecase.NewBaccaratInteractor(
+				domain.NewDefaultBaccarat(), new(presenter.BaccaratCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "baccarat.helpTitle",
+				CommandKeys: []string{"baccarat.helpBet"},
+				ExtraCommandLines: []string{
+					"  log                  action log",
+					"  ch                   clear history",
+				},
+			})
+	}},
+	{Name: "spades", Description: "Spades (スペード)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpadesCuiController(usecase.NewSpadesInteractor(
+				domain.NewDefaultSpades(), new(presenter.SpadesCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "spades.helpTitle",
+				CommandKeys:       []string{"spades.helpBid", "spades.helpPlay", "spades.helpNext", "spades.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"spades.helpSetDifficulty", "spades.helpSetLimit"},
+			})
+	}},
+	{Name: "crazyeights", Description: "Crazy Eights (クレイジーエイト)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCrazyEightsCuiController(usecase.NewCrazyEightsInteractor(
+				domain.NewDefaultCrazyEights(), new(presenter.CrazyEightsCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "crazyeights.helpTitle",
+				CommandKeys:       []string{"crazyeights.helpPlay", "crazyeights.helpDraw", "crazyeights.helpSuit", "crazyeights.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"crazyeights.helpSetDifficulty", "crazyeights.helpSetLimit"},
+			})
+	}},
+	{Name: "ginrummy", Description: "Gin Rummy (ジンラミー)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewGinRummyCuiController(usecase.NewGinRummyInteractor(
+				domain.NewDefaultGinRummy(), new(presenter.GinRummyCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "ginrummy.helpTitle",
+				CommandKeys: []string{
+					"ginrummy.helpDrawStock",
+					"ginrummy.helpDrawDiscard",
+					"ginrummy.helpDiscard",
+					"ginrummy.helpKnock",
+					"ginrummy.helpLayoff",
+					"ginrummy.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"ginrummy.helpSetDifficulty", "ginrummy.helpSetLimit"},
+			})
+	}},
+	{Name: "canasta", Description: "Canasta (カナスタ)", NewCui: func() cuiGame {
+		return newCuiGame(
+			controller.NewCanastaCuiController(usecase.NewCanastaInteractor(
+				domain.NewDefaultCanasta(), new(presenter.CanastaCuiPresenter))),
+			[]string{
+				"Canasta (カナスタ) Help",
+				"",
+				"Game Commands:",
+				"  ds                   draw from stock",
+				"  dd <idx,idx>         pick up discard pile (natural pair indices)",
+				"  m <idx,idx;idx,idx>  meld (semicolon-separated groups)",
+				"  sm                   skip meld phase",
+				"  d <idx>              discard a card",
+				"  go                   go out (requires canasta)",
+				"  nr                   next round",
+				"  l                    action log",
+				"",
+				"Settings:",
+				"  sd <0-2>             set CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+				"  sl <n>               set point limit",
+				"",
+				"Session:",
+				"  r / reset            reset game",
+				"  q / quit             quit",
+				"  ? / help             show help",
+			})
+	}},
+	{Name: "spider", Description: "Spider Solitaire (スパイダーソリティア)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpiderCuiController(usecase.NewSpiderInteractor(
+				domain.NewDefaultSpider(), new(presenter.SpiderCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spider.helpTitle",
+				CommandKeys: []string{
+					"spider.helpDeal",
+					"spider.helpMove",
+					"spider.helpGiveUp",
+					"spider.helpHint",
+					"spider.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "napoleon", Description: "Napoleon (ナポレオン)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewNapoleonCuiController(usecase.NewNapoleonInteractor(
+				domain.NewDefaultNapoleon(), new(presenter.NapoleonCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "napoleon.helpTitle",
+				CommandKeys: []string{
+					"napoleon.helpBid",
+					"napoleon.helpTrump",
+					"napoleon.helpExchange",
+					"napoleon.helpPlay",
+					"napoleon.helpNext",
+					"napoleon.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"napoleon.helpSetDifficulty", "napoleon.helpSetLimit", "napoleon.helpSetMinBid"},
+			})
+	}},
+	{Name: "indianpoker", Description: "Indian Poker (インディアンポーカー)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewIndianPokerCuiController(usecase.NewIndianPokerInteractor(
+				domain.NewDefaultIndianPoker(), new(presenter.IndianPokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "indianpoker.helpTitle",
+				CommandKeys: []string{
+					"indianpoker.helpFold",
+					"indianpoker.helpCheck",
+					"indianpoker.helpCall",
+					"indianpoker.helpBet",
+					"indianpoker.helpRaise",
+					"indianpoker.helpAllIn",
+				},
+				SettingKeys: []string{"indianpoker.helpAnte", "indianpoker.helpBettingLimit", "indianpoker.helpMetaAI"},
+			})
+	}},
+	{Name: "videopoker", Description: "Video Poker Jacks or Better (ビデオポーカー)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewVideoPokerCuiController(usecase.NewVideoPokerInteractor(
+				domain.NewDefaultVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "videopoker.helpTitle",
+				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "deuceswild", Description: "Deuces Wild (デューシーズワイルド)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewVideoPokerCuiController(usecase.NewVideoPokerInteractor(
+				domain.NewDeucesWildVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "deuceswild.helpTitle",
+				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "jokerpoker", Description: "Joker Poker (ジョーカーポーカー)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewVideoPokerCuiController(usecase.NewVideoPokerInteractor(
+				domain.NewJokerPokerVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "jokerpoker.helpTitle",
+				CommandKeys:       []string{"videopoker.helpBet", "videopoker.helpHold"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "euchre", Description: "Euchre (ユーカー)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewEuchreCuiController(usecase.NewEuchreInteractor(
+				domain.NewDefaultEuchre(), new(presenter.EuchreCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "euchre.helpTitle",
+				CommandKeys: []string{
+					"euchre.helpOrderUp",
+					"euchre.helpOrderUpAlone",
+					"euchre.helpPass",
+					"euchre.helpCall",
+					"euchre.helpCallAlone",
+					"euchre.helpDiscard",
+					"euchre.helpPlay",
+					"euchre.helpNext",
+					"euchre.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"euchre.helpSetDifficulty", "euchre.helpSetLimit"},
+			})
+	}},
+	{Name: "pyramid", Description: "Pyramid (ピラミッド)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPyramidCuiController(usecase.NewPyramidInteractor(
+				domain.NewDefaultPyramid(), new(presenter.PyramidCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "pyramid.helpTitle",
+				CommandKeys: []string{
+					"pyramid.helpDraw",
+					"pyramid.helpRemoveKing",
+					"pyramid.helpRemovePair",
+					"pyramid.helpRemoveWaste",
+					"pyramid.helpRemoveWasteKing",
+					"pyramid.helpGiveUp",
+					"pyramid.helpHint",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "tripeaks", Description: "TriPeaks (トリピークス)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTriPeaksCuiController(usecase.NewTriPeaksInteractor(
+				domain.NewDefaultTriPeaks(), new(presenter.TriPeaksCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "tripeaks.helpTitle",
+				CommandKeys: []string{
+					"tripeaks.helpDraw",
+					"tripeaks.helpRemove",
+					"tripeaks.helpGiveUp",
+					"tripeaks.helpHint",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "cribbage", Description: "Cribbage (クリベッジ)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCribbageCuiController(usecase.NewCribbageInteractor(
+				domain.NewDefaultCribbage(), new(presenter.CribbageCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "cribbage.helpTitle",
+				CommandKeys:       []string{"cribbage.helpDiscard", "cribbage.helpPeg", "cribbage.helpGo", "cribbage.helpShowNext", "cribbage.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"cribbage.helpSetDifficulty", "cribbage.helpSetLimit"},
+			})
+	}},
+	{Name: "threecard", Description: "Three Card Poker (スリーカードポーカー)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewThreeCardCuiController(usecase.NewThreeCardInteractor(
+				domain.NewDefaultThreeCard(), new(presenter.ThreeCardCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "threecard.helpTitle",
+				CommandKeys:       []string{"threecard.helpBet", "threecard.helpPlay", "threecard.helpFold"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "ohhell", Description: "Oh Hell (オー・ヘル)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOhHellCuiController(usecase.NewOhHellInteractor(
+				domain.NewDefaultOhHell(), new(presenter.OhHellCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "ohhell.helpTitle",
+				CommandKeys:       []string{"ohhell.helpBid", "ohhell.helpPlay", "ohhell.helpNext", "ohhell.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"ohhell.helpSetDifficulty", "ohhell.helpSetMaxHand"},
+			})
+	}},
+	{Name: "bridge", Description: "Contract Bridge (コントラクトブリッジ)", NewCui: func() cuiGame {
+		return newCuiGame(
+			controller.NewBridgeCuiController(usecase.NewBridgeInteractor(
+				domain.NewDefaultBridge(), new(presenter.BridgeCuiPresenter))),
+			[]string{
+				"=== Contract Bridge ===",
+				"",
+				"Game Commands:",
+				"  b <type> <level> <suit>  bid (type: 0=pass,1=bid,2=dbl,3=rdbl; level: 1-7; suit: 1-5)",
+				"  p <index>                play a card",
+				"  n                        next trick",
+				"  nr                       next round (score & proceed)",
+				"  h                        hint",
+				"  l                        action log",
+				"",
+				"Settings:",
+				"  sd <0-2>                 set CPU difficulty (0=Easy,1=Normal,2=Hard)",
+				"",
+				"Session:",
+				"  r                        reset game",
+				"  q                        quit",
+				"  help                     show this help",
+			})
+	}},
+	{Name: "speed", Description: "Speed (スピード)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpeedCuiController(usecase.NewSpeedInteractor(
+				domain.NewDefaultSpeed(), new(presenter.SpeedCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "speed.helpTitle",
+				CommandKeys: []string{"speed.helpPlay", "speed.helpFlip", "speed.helpHint"},
+				SettingKeys: []string{"speed.helpSetDifficulty"},
+			})
+	}},
+	{Name: "gofish", Description: "Go Fish (ゴーフィッシュ)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewGoFishCuiController(usecase.NewGoFishInteractor(
+				domain.NewDefaultGoFish(), new(presenter.GoFishCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "gofish.helpTitle",
+				CommandKeys: []string{"gofish.helpAsk"},
+				SettingKeys: []string{"gofish.helpSetDifficulty"},
+			})
+	}},
+	{Name: "pinochle", Description: "Pinochle (ピノクル)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPinochleCuiController(usecase.NewPinochleInteractor(
+				domain.NewDefaultPinochle(), new(presenter.PinochleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "pinochle.helpTitle",
+				CommandKeys: []string{
+					"pinochle.helpBid",
+					"pinochle.helpPass",
+					"pinochle.helpTrump",
+					"pinochle.helpMeld",
+					"pinochle.helpPlay",
+					"pinochle.helpNext",
+					"pinochle.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"pinochle.helpSetDifficulty", "pinochle.helpSetLimit"},
+			})
+	}},
+	{Name: "golf", Description: "Golf Solitaire (ゴルフ)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewGolfCuiController(usecase.NewGolfInteractor(
+				domain.NewDefaultGolf(), new(presenter.GolfCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "golf.helpTitle",
+				CommandKeys:       []string{"golf.helpDraw", "golf.helpRemove", "golf.helpGiveUp", "golf.helpHint"},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "pigtail", Description: "Pig's Tail (ブタのしっぽ)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPigsTailCuiController(usecase.NewPigsTailInteractor(
+				domain.NewDefaultPigsTail(), new(presenter.PigsTailCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "pigtail.helpTitle",
+				CommandKeys: []string{"pigtail.helpAction"},
+			})
+	}},
+	{Name: "sevencardstud", Description: "Seven Card Stud (セブンカードスタッド)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(
+				domain.NewDefaultSevenCardStud(), new(presenter.SevenCardStudCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sevencardstud.helpTitle",
+				CommandKeys: []string{
+					"sevencardstud.helpFold",
+					"sevencardstud.helpCheck",
+					"sevencardstud.helpCall",
+					"sevencardstud.helpBet",
+					"sevencardstud.helpRaise",
+					"sevencardstud.helpAllIn",
+				},
+				ExtraCommandLines: []string{
+					"  rb                   rebuy",
+					"  sr                   skip rebuy",
+					"  ad                   add-on",
+					"  sa                   skip add-on",
+				},
+				SettingKeys: []string{"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament"},
+				ExtraSettingLines: []string{
+					"  ante <amount>        ante (>=1)",
+					"  bi <amount>          bring-in (>=1)",
+					"  sb <amount>          small bet (>=1)",
+					"  bb <amount>          big bet (>=1)",
+					"  lh <hands>           ante level-up hands (>=1)",
+					"  ts [2-7]             table size",
+				},
+			})
+	}},
+	{Name: "clocksolitaire", Description: "Clock Solitaire (クロックソリティア)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewClockSolitaireCuiController(usecase.NewClockSolitaireInteractor(
+				domain.NewDefaultClockSolitaire(), new(presenter.ClockSolitaireCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "clocksolitaire.helpTitle",
+				CommandKeys:       []string{"clocksolitaire.helpStep", "clocksolitaire.helpAutoPlay"},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "durak", Description: "Durak / Fool (ドゥラーク)", NewCui: func() cuiGame {
+		return newCuiGame(
+			controller.NewDurakCuiController(usecase.NewDurakInteractor(
+				domain.NewDefaultDurak(), new(presenter.DurakCuiPresenter))),
+			[]string{
+				i18n.T("durak.helpTitle"),
+				"",
+				i18n.T("gameCommands"),
+				"  a <idx>                  attack with card",
+				"  d <atkIdx> <handIdx>     defend attack card",
+				"  p                        pass (stop attacking)",
+				"  t                        take cards (give up defense)",
+				"  sort <0|1>               sort hand (0=suit, 1=value)",
+				"  sd <0-2>                 set CPU difficulty",
+				"  l                        action log",
+				"",
+				i18n.T("commonCommands"),
+			})
+	}},
+	{Name: "fortythieves", Description: "Forty Thieves (フォーティシーブス)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFortyThievesCuiController(usecase.NewFortyThievesInteractor(
+				domain.NewDefaultFortyThieves(), new(presenter.FortyThievesCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "fortythieves.helpTitle",
+				CommandKeys: []string{
+					"fortythieves.helpDraw",
+					"fortythieves.helpMove",
+					"fortythieves.helpMoveWF",
+					"fortythieves.helpMoveTF",
+					"fortythieves.helpMoveTT",
+					"fortythieves.helpGiveUp",
+					"fortythieves.helpHint",
+					"fortythieves.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "paigow", Description: "Pai Gow Poker (パイガオポーカー)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPaiGowCuiController(usecase.NewPaiGowInteractor(
+				domain.NewDefaultPaiGow(), new(presenter.PaiGowCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "paigow.helpTitle",
+				CommandKeys:       []string{"paigow.helpBet", "paigow.helpSet"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "twotenjack", Description: "Two Ten Jack (ツーテンジャック)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTwoTenJackCuiController(usecase.NewTwoTenJackInteractor(
+				domain.NewDefaultTwoTenJack(), new(presenter.TwoTenJackCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "twotenjack.helpTitle",
+				CommandKeys: []string{
+					"twotenjack.helpDeclare",
+					"twotenjack.helpPlay",
+					"twotenjack.helpNext",
+					"twotenjack.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"twotenjack.helpSetDifficulty", "twotenjack.helpSetLimit"},
+			})
+	}},
+	{Name: "caribbeanstud", Description: "Caribbean Stud Poker (カリビアンスタッドポーカー)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCaribbeanStudCuiController(usecase.NewCaribbeanStudInteractor(
+				domain.NewDefaultCaribbeanStud(), new(presenter.CaribbeanStudCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "caribbeanstud.helpTitle",
+				CommandKeys:       []string{"caribbeanstud.helpBet", "caribbeanstud.helpPlay", "caribbeanstud.helpFold"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "war", Description: "War (戦争)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewWarCuiController(usecase.NewWarInteractor(
+				domain.NewDefaultWar(), new(presenter.WarCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "war.helpTitle",
+				CommandKeys: []string{"war.helpStep"},
+				SettingKeys: []string{"war.helpSetMax"},
+			})
+	}},
+	{Name: "canfield", Description: "Canfield Solitaire (キャンフィールド)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCanfieldCuiController(usecase.NewCanfieldInteractor(
+				domain.NewDefaultCanfield(), new(presenter.CanfieldCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "canfield.helpTitle",
+				CommandKeys: []string{
+					"canfield.helpDraw",
+					"canfield.helpMove",
+					"canfield.helpMoveWF",
+					"canfield.helpMoveRT",
+					"canfield.helpMoveRF",
+					"canfield.helpMoveTF",
+					"canfield.helpMoveTT",
+					"canfield.helpGiveUp",
+					"canfield.helpHint",
+					"canfield.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "fiftyone", Description: "Fifty-one (フィフティワン)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewFiftyOneCuiController(usecase.NewFiftyOneInteractor(
+				domain.NewDefaultFiftyOne(), new(presenter.FiftyOneCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:    "fiftyone.helpTitle",
+				CommandKeys: []string{"fiftyone.helpPlay", "fiftyone.helpAll", "fiftyone.helpStop"},
+				SettingKeys: []string{"fiftyone.helpSetDifficulty"},
+			})
+	}},
+	{Name: "yukon", Description: "Yukon Solitaire (ユーコン)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewYukonCuiController(usecase.NewYukonInteractor(
+				domain.NewDefaultYukon(), new(presenter.YukonCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "yukon.helpTitle",
+				CommandKeys: []string{
+					"yukon.helpMove",
+					"yukon.helpMoveTF",
+					"yukon.helpMoveTT",
+					"yukon.helpGiveUp",
+					"yukon.helpHint",
+					"yukon.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "whist", Description: "Whist (ホイスト)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewWhistCuiController(usecase.NewWhistInteractor(
+				domain.NewDefaultWhist(), new(presenter.WhistCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "whist.helpTitle",
+				CommandKeys:       []string{"whist.helpPlay", "whist.helpNext", "whist.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"whist.helpSetDifficulty", "whist.helpSetLimit"},
+			})
+	}},
+	{Name: "letitride", Description: "Let It Ride (レット・イット・ライド)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewLetItRideCuiController(usecase.NewLetItRideInteractor(
+				domain.NewDefaultLetItRide(), new(presenter.LetItRideCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "letitride.helpTitle",
+				CommandKeys:       []string{"letitride.helpBet", "letitride.helpPull", "letitride.helpLetItRide"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "pokersquares", Description: "Poker Squares (ポーカー・スクエアズ)", NewCui: func() cuiGame {
+		return newCuiGame(
+			controller.NewPokerSquaresCuiController(usecase.NewPokerSquaresInteractor(
+				domain.NewDefaultPokerSquares(), new(presenter.PokerSquaresCuiPresenter))),
+			[]string{
+				"Poker Squares (ポーカー・スクエアズ)",
+				"",
+				i18n.T("gameCommands"),
+				"  p <row> <col>            カードを配置 (0-4)",
+				"  u                        アンドゥ",
+				"  g                        ギブアップ",
+				"  l                        action log",
+				"",
+				i18n.T("session"),
+				i18n.T("resetEntry"),
+				i18n.T("quitEntry"),
+				i18n.T("helpEntry"),
+			})
+	}},
+	{Name: "pageone", Description: "Page One (ページワン)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPageOneCuiController(usecase.NewPageOneInteractor(
+				domain.NewDefaultPageOne(), new(presenter.PageOneCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "pageone.helpTitle",
+				CommandKeys: []string{
+					"pageone.helpPlay",
+					"pageone.helpDraw",
+					"pageone.helpDeclare",
+					"pageone.helpSkip",
+					"pageone.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"pageone.helpSetDifficulty", "pageone.helpSetLimit"},
+			})
+	}},
+	{Name: "reddog", Description: "Red Dog (レッドドッグ)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewRedDogCuiController(usecase.NewRedDogInteractor(
+				domain.NewDefaultRedDog(), new(presenter.RedDogCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "reddog.helpTitle",
+				CommandKeys:       []string{"reddog.helpBet", "reddog.helpRaise", "reddog.helpStay"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "razz", Description: "Razz (ラズ)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(
+				domain.NewDefaultRazz(), new(presenter.SevenCardStudCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "razz.helpTitle",
+				CommandKeys: []string{
+					"sevencardstud.helpFold",
+					"sevencardstud.helpCheck",
+					"sevencardstud.helpCall",
+					"sevencardstud.helpBet",
+					"sevencardstud.helpRaise",
+					"sevencardstud.helpAllIn",
+				},
+				ExtraCommandLines: []string{
+					"  rb                   rebuy",
+					"  sr                   skip rebuy",
+					"  ad                   add-on",
+					"  sa                   skip add-on",
+				},
+				SettingKeys: []string{"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament"},
+				ExtraSettingLines: []string{
+					"  ante <amount>        ante (>=1)",
+					"  bi <amount>          bring-in (>=1)",
+					"  sb <amount>          small bet (>=1)",
+					"  bb <amount>          big bet (>=1)",
+					"  lh <hands>           ante level-up hands (>=1)",
+					"  ts [2-7]             table size",
+				},
+			})
+	}},
+	{Name: "scorpion", Description: "Scorpion (スコーピオン)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewScorpionCuiController(usecase.NewScorpionInteractor(
+				domain.NewDefaultScorpion(), new(presenter.ScorpionCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "scorpion.helpTitle",
+				CommandKeys: []string{
+					"scorpion.helpMove",
+					"scorpion.helpMoveTT",
+					"scorpion.helpDeal",
+					"scorpion.helpGiveUp",
+					"scorpion.helpHint",
+					"scorpion.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
