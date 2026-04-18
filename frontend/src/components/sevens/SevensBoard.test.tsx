@@ -148,6 +148,21 @@ describe('SevensBoard', () => {
     expect(button.style.color).toBe('white');
   });
 
+  it('joker placeable cells pulse (motion-safe) and have ds-info ring', () => {
+    render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
+    const button = screen.getByLabelText('SPADE 6 に配置') as HTMLElement;
+    // Pinned to the motion-safe: variant so OS "Reduce Motion" users never see the pulse.
+    expect(button.className).toContain('motion-safe:animate-pulse');
+    expect(button.className).toContain('ring-ds-info');
+    expect(button.dataset.jokerPlaceable).toBe('true');
+  });
+
+  it('joker placeable cells use ds-info background (blue highlight)', () => {
+    render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
+    const button = screen.getByLabelText('SPADE 6 に配置') as HTMLElement;
+    expect(button.style.background).toBe('var(--color-ds-info)');
+  });
+
   it('grid has horizontal scroll wrapper', () => {
     const { container } = render(<SevensBoard {...defaultProps} />);
     const scrollWrapper = container.querySelector('.overflow-x-auto');
