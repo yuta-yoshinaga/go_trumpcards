@@ -36,6 +36,12 @@ func main() {
 func run() int {
 	helpText := buildHelpText()
 
+	// Route parse errors through i18n. Default is ExitOnError with English
+	// output to stderr; switch to ContinueOnError + a discarded sink so we
+	// can wrap the error in cliFlagError ourselves.
+	flag.CommandLine.Init(os.Args[0], flag.ContinueOnError)
+	flag.CommandLine.SetOutput(io.Discard)
+
 	lang := flag.String("lang", "", "language (ja or en)")
 	showVersion := flag.Bool("version", false, "Show version information")
 	flag.BoolVar(showVersion, "V", false, "Show version information (shorthand)")
@@ -46,7 +52,21 @@ func run() int {
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, helpText)
 	}
-	flag.Parse()
+
+	// Resolve the locale from LANG env + any --lang in os.Args before Parse
+	// so a flag error (e.g. --bogus) is rendered in the user's language,
+	// not English.
+	i18n.SetLang(detectBootstrapLang(os.Args[1:], os.Getenv("LANG")))
+
+	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			_, _ = fmt.Fprint(os.Stdout, helpText)
+			return 0
+		}
+		_, _ = fmt.Fprintln(os.Stderr, i18n.Tf("cliFlagError", "err", err.Error()))
+		_, _ = fmt.Fprint(os.Stderr, helpText)
+		return 2
+	}
 
 	if *showHelp {
 		_, _ = fmt.Fprint(os.Stdout, helpText)
@@ -456,6 +476,45 @@ ENVIRONMENT VARIABLES:
                     Example: PORT=3000 trumpcards web
 `)
 	return sb.String()
+}
+
+// detectBootstrapLang returns the locale to use before flag parsing runs,
+// so any flag-parse error can be emitted in the user's preferred language.
+// Resolution order mirrors the post-parse logic: an explicit `--lang`
+// (or `-lang`, with optional `=value`) in args wins, then LANG env, then "ja".
+// Unsupported values fall through to the next source rather than causing a fault.
+func detectBootstrapLang(args []string, langEnv string) string {
+	supported := map[string]bool{"ja": true, "en": true}
+	fromEnv := "ja"
+	if langEnv != "" {
+		prefix := langEnv
+		if idx := strings.IndexAny(langEnv, "_-."); idx >= 0 {
+			prefix = langEnv[:idx]
+		}
+		if supported[prefix] {
+			fromEnv = prefix
+		}
+	}
+	for i := range args {
+		a := args[i]
+		var val string
+		switch {
+		case a == "--lang" || a == "-lang":
+			if i+1 < len(args) {
+				val = args[i+1]
+			}
+		case strings.HasPrefix(a, "--lang="):
+			val = strings.TrimPrefix(a, "--lang=")
+		case strings.HasPrefix(a, "-lang="):
+			val = strings.TrimPrefix(a, "-lang=")
+		default:
+			continue
+		}
+		if supported[val] {
+			return val
+		}
+	}
+	return fromEnv
 }
 
 // buildGameCommands generates command handlers for all games from the registry.
