@@ -106,39 +106,12 @@ func run() int {
 		var short, aliases bool
 		_, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
-			f.BoolVar(&aliases, "aliases", false, "Include aliases in output (with --short)")
+			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
 		})
 		if !ok {
 			return code
 		}
-		if aliases && !short {
-			fmt.Fprintln(os.Stderr, i18n.T("cliAliasesWithoutShort"))
-		}
-		// Build reverse alias map: canonical name -> sorted list of aliases.
-		reverseAliases := make(map[string][]string)
-		for alias, canonical := range ui.GameAliases {
-			reverseAliases[canonical] = append(reverseAliases[canonical], alias)
-		}
-		for k := range reverseAliases {
-			sort.Strings(reverseAliases[k])
-		}
-		descs := ui.GameDescriptions()
-		for _, name := range ui.GameNames() {
-			if short {
-				fmt.Println(name)
-				if aliases {
-					for _, alias := range reverseAliases[name] {
-						fmt.Println(alias)
-					}
-				}
-			} else {
-				line := fmt.Sprintf("  %-16s %s", name, descs[name])
-				if aliasList := reverseAliases[name]; len(aliasList) > 0 {
-					line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
-				}
-				fmt.Println(line)
-			}
-		}
+		printGames(short, aliases, os.Stdout)
 		return 0
 	}
 	commands["completion"] = func() int {
@@ -282,7 +255,8 @@ var builtinSubcommandHelp = map[string][]string{
 		"",
 		"FLAGS:",
 		"      --short     Print game names only (for scripting)",
-		"      --aliases   Include aliases (requires --short)",
+		"      --aliases   With --short, also print each alias on its own line",
+		"                  (long output always includes aliases inline)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards games",
@@ -412,7 +386,7 @@ GAMES:
 	}
 	sb.WriteString(`
 COMMANDS:
-  games        List all available games (--short for names only, --aliases to include aliases with --short)
+  games        List all available games (--short for names only; with --short, --aliases adds alias lines)
   help [game]  Show this help, or a specific game's help text
   completion   Generate shell completion script (bash, zsh, fish)
   update       Self-update to the latest version
@@ -456,6 +430,39 @@ ENVIRONMENT VARIABLES:
                     Example: PORT=3000 trumpcards web
 `)
 	return sb.String()
+}
+
+// printGames writes the game list to w in the format selected by `short`.
+// With short=false (long mode), each line shows the canonical name, description,
+// and any aliases inline. With short=true, only canonical names are printed,
+// one per line — and if aliases is also true, every alias gets its own line.
+// The `aliases` flag is a no-op in long mode because aliases are always shown
+// inline there.
+func printGames(short, aliases bool, w io.Writer) {
+	reverseAliases := make(map[string][]string)
+	for alias, canonical := range ui.GameAliases {
+		reverseAliases[canonical] = append(reverseAliases[canonical], alias)
+	}
+	for k := range reverseAliases {
+		sort.Strings(reverseAliases[k])
+	}
+	descs := ui.GameDescriptions()
+	for _, name := range ui.GameNames() {
+		if short {
+			_, _ = fmt.Fprintln(w, name)
+			if aliases {
+				for _, alias := range reverseAliases[name] {
+					_, _ = fmt.Fprintln(w, alias)
+				}
+			}
+		} else {
+			line := fmt.Sprintf("  %-16s %s", name, descs[name])
+			if aliasList := reverseAliases[name]; len(aliasList) > 0 {
+				line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
+			}
+			_, _ = fmt.Fprintln(w, line)
+		}
+	}
 }
 
 // buildGameCommands generates command handlers for all games from the registry.
