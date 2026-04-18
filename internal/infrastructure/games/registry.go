@@ -134,19 +134,24 @@ var registry = []*Game{
 	{Name: "scorpion", Category: CategorySolo},
 }
 
-// All returns a fresh copy of the registry in canonical order.
-func All() []*Game {
-	out := make([]*Game, len(registry))
-	copy(out, registry)
+// All returns a value-level copy of the registry in canonical order.
+// Returning values (not pointers) ensures callers cannot mutate the global
+// registry's fields — the two function-pointer fields are cheap to copy.
+func All() []Game {
+	out := make([]Game, len(registry))
+	for i, g := range registry {
+		out[i] = *g
+	}
 	return out
 }
 
-// ByCategory returns the games assigned to cat in canonical order.
-func ByCategory(cat Category) []*Game {
-	var out []*Game
+// ByCategory returns the games assigned to cat in canonical order. Returned
+// values are copies of the registry entries (see All).
+func ByCategory(cat Category) []Game {
+	var out []Game
 	for _, g := range registry {
 		if g.Category == cat {
-			out = append(out, g)
+			out = append(out, *g)
 		}
 	}
 	return out

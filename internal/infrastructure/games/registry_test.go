@@ -23,16 +23,22 @@ func TestAllReturnsExpectedTotal(t *testing.T) {
 	}
 }
 
-func TestAllReturnsFreshCopy(t *testing.T) {
+// TestAllReturnsIndependentCopy verifies that mutations to the returned
+// slice — at both slice and field level — do not leak back into the global
+// registry. Both dimensions matter: a shared backing array lets a caller
+// overwrite neighbouring entries, and shared struct pointers let a caller
+// corrupt a game's Name or factories.
+func TestAllReturnsIndependentCopy(t *testing.T) {
 	a := All()
-	b := All()
-	if len(a) == 0 || len(b) == 0 {
+	if len(a) == 0 {
 		t.Fatal("All() returned empty slice")
 	}
-	// Mutating one copy must not affect the other.
-	a[0] = nil
-	if b[0] == nil {
-		t.Fatal("All() returned a shared backing array; mutations leak between callers")
+	originalName := a[0].Name
+	a[0].Name = "mutated"
+
+	b := All()
+	if b[0].Name != originalName {
+		t.Fatalf("mutation leaked: b[0].Name = %q, want %q", b[0].Name, originalName)
 	}
 }
 
@@ -71,9 +77,6 @@ func TestCategoryString(t *testing.T) {
 func TestAllEntriesAreValid(t *testing.T) {
 	seen := make(map[string]bool, expectedTotal)
 	for i, g := range All() {
-		if g == nil {
-			t.Fatalf("entry %d is nil", i)
-		}
 		if g.Name == "" {
 			t.Errorf("entry %d has empty Name", i)
 		}
@@ -83,10 +86,8 @@ func TestAllEntriesAreValid(t *testing.T) {
 		seen[g.Name] = true
 		if g.NewWebController == nil {
 			t.Errorf("game %q has nil NewWebController", g.Name)
-		} else {
-			if ctrl := g.NewWebController(); ctrl == nil {
-				t.Errorf("game %q: NewWebController() returned nil", g.Name)
-			}
+		} else if ctrl := g.NewWebController(); ctrl == nil {
+			t.Errorf("game %q: NewWebController() returned nil", g.Name)
 		}
 		switch g.Category {
 		case CategoryCasino, CategoryClassic, CategorySolo:
@@ -98,25 +99,19 @@ func TestAllEntriesAreValid(t *testing.T) {
 }
 
 // TestRegistryMatchesCLI asserts that the games registered here are exactly
-// the set registered by the CLI's gameRegistry. The CLI is the canonical
-// source of the game catalog; any drift would mean CLI and Web/Worker disagree.
+// the set registered by the CLI's gameRegistry — in the same order. Using
+// an ordered comparison (not set equality) is load-bearing: registry.go
+// documents that its order mirrors the CLI's, and downstream help text /
+// listings / completion order depend on that contract.
 func TestRegistryMatchesCLI(t *testing.T) {
-	cliNames := make(map[string]bool, len(ui.GameNames()))
-	for _, name := range ui.GameNames() {
-		cliNames[name] = true
+	cliNames := ui.GameNames()
+	all := All()
+	if len(cliNames) != len(all) {
+		t.Fatalf("count mismatch: CLI=%d, registry=%d", len(cliNames), len(all))
 	}
-	webNames := make(map[string]bool, expectedTotal)
-	for _, g := range All() {
-		webNames[g.Name] = true
-	}
-	for name := range cliNames {
-		if !webNames[name] {
-			t.Errorf("CLI registers %q but games.registry does not", name)
-		}
-	}
-	for name := range webNames {
-		if !cliNames[name] {
-			t.Errorf("games.registry includes %q but CLI does not", name)
+	for i, name := range cliNames {
+		if all[i].Name != name {
+			t.Errorf("order mismatch at index %d: CLI=%q, registry=%q", i, name, all[i].Name)
 		}
 	}
 }
