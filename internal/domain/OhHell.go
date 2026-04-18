@@ -73,6 +73,19 @@ func NewOhHell(trumpCards *TrumpCards, players []*OhHellPlayer, config OhHellCon
 	}
 }
 
+// NewDefaultOhHell returns OhHell with the standard 4-player setup (1 human, 3 CPU)
+// and DefaultOhHellConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultOhHell() *OhHell {
+	players := []*OhHellPlayer{
+		NewOhHellPlayer(true),
+		NewOhHellPlayer(false),
+		NewOhHellPlayer(false),
+		NewOhHellPlayer(false),
+	}
+	return NewOhHell(NewTrumpCards(0), players, DefaultOhHellConfig())
+}
+
 // Reset ゲーム初期化
 func (o *OhHell) Reset() {
 	o.gameEndFlag = false

@@ -75,6 +75,19 @@ func NewSpades(trumpCards *TrumpCards, players []*SpadesPlayer, config SpadesCon
 	}
 }
 
+// NewDefaultSpades returns Spades with the standard 4-player setup (1 human, 3 CPU)
+// and DefaultSpadesConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultSpades() *Spades {
+	players := []*SpadesPlayer{
+		NewSpadesPlayer(true),
+		NewSpadesPlayer(false),
+		NewSpadesPlayer(false),
+		NewSpadesPlayer(false),
+	}
+	return NewSpades(NewTrumpCards(0), players, DefaultSpadesConfig())
+}
+
 // Reset ゲーム初期化
 func (s *Spades) Reset() {
 	s.gameEndFlag = false

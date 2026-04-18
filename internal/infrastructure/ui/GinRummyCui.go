@@ -4,7 +4,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -17,25 +16,17 @@ func NewGinRummyCui() *genericCuiGame {
 	}
 	gr := domain.NewGinRummy(domain.NewTrumpCards(0), players, config)
 	cc := controller.NewGinRummyCuiController(usecase.NewGinRummyInteractor(gr, new(presenter.GinRummyCuiPresenter)))
-	return newCuiGame(cc, []string{
-		i18n.T("ginrummy.helpTitle"),
-		"",
-		i18n.T("gameCommands"),
-		i18n.T("ginrummy.helpDrawStock"),
-		i18n.T("ginrummy.helpDrawDiscard"),
-		i18n.T("ginrummy.helpDiscard"),
-		i18n.T("ginrummy.helpKnock"),
-		i18n.T("ginrummy.helpLayoff"),
-		i18n.T("ginrummy.helpNextRound"),
-		"  l                    action log",
-		"",
-		i18n.T("settings"),
-		i18n.T("ginrummy.helpSetDifficulty"),
-		i18n.T("ginrummy.helpSetLimit"),
-		"",
-		i18n.T("session"),
-		i18n.T("resetEntry"),
-		i18n.T("quitEntry"),
-		i18n.T("helpEntry"),
-	})
+	return newCuiGame(cc, BuildCuiHelp(CuiHelpSpec{
+		TitleKey: "ginrummy.helpTitle",
+		CommandKeys: []string{
+			"ginrummy.helpDrawStock",
+			"ginrummy.helpDrawDiscard",
+			"ginrummy.helpDiscard",
+			"ginrummy.helpKnock",
+			"ginrummy.helpLayoff",
+			"ginrummy.helpNextRound",
+		},
+		ExtraCommandLines: []string{"  l                    action log"},
+		SettingKeys:       []string{"ginrummy.helpSetDifficulty", "ginrummy.helpSetLimit"},
+	}))
 }

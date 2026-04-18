@@ -4,7 +4,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -14,18 +13,9 @@ func NewRedDogCui() *genericCuiGame {
 		domain.NewDefaultRedDog(),
 		new(presenter.RedDogCuiPresenter),
 	))
-	return newCuiGame(rc, []string{
-		i18n.T("reddog.helpTitle"),
-		"",
-		i18n.T("gameCommands"),
-		i18n.T("reddog.helpBet"),
-		i18n.T("reddog.helpRaise"),
-		i18n.T("reddog.helpStay"),
-		"  log                  action log",
-		"",
-		i18n.T("session"),
-		i18n.T("resetEntry"),
-		i18n.T("quitEntry"),
-		i18n.T("helpEntry"),
-	})
+	return newCuiGame(rc, BuildCuiHelp(CuiHelpSpec{
+		TitleKey:          "reddog.helpTitle",
+		CommandKeys:       []string{"reddog.helpBet", "reddog.helpRaise", "reddog.helpStay"},
+		ExtraCommandLines: []string{"  log                  action log"},
+	}))
 }

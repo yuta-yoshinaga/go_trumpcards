@@ -126,26 +126,10 @@ func (web *TrumpCardsWeb) registerAll() {
 		return usecase.NewShortDeckInteractor(sd, new(presenter.ShortDeckWebPresenter))
 	}))
 	web.register("hearts", controller.NewHeartsWebController(func() usecase.HeartsInteractorIF {
-		config := domain.DefaultHeartsConfig()
-		players := []*domain.HeartsPlayer{
-			domain.NewHeartsPlayer(true),
-			domain.NewHeartsPlayer(false),
-			domain.NewHeartsPlayer(false),
-			domain.NewHeartsPlayer(false),
-		}
-		hearts := domain.NewHearts(domain.NewTrumpCards(0), players, config)
-		return usecase.NewHeartsInteractor(hearts, new(presenter.HeartsWebPresenter))
+		return usecase.NewHeartsInteractor(domain.NewDefaultHearts(), new(presenter.HeartsWebPresenter))
 	}))
 	web.register("memory", controller.NewMemoryWebController(func() usecase.MemoryInteractorIF {
-		config := domain.DefaultMemoryConfig()
-		players := []*domain.MemoryPlayer{
-			domain.NewMemoryPlayer(true),
-			domain.NewMemoryPlayer(false),
-			domain.NewMemoryPlayer(false),
-			domain.NewMemoryPlayer(false),
-		}
-		memory := domain.NewMemory(domain.NewTrumpCards(0), players, config)
-		return usecase.NewMemoryInteractor(memory, new(presenter.MemoryWebPresenter))
+		return usecase.NewMemoryInteractor(domain.NewDefaultMemory(), new(presenter.MemoryWebPresenter))
 	}))
 	web.register("klondike", controller.NewKlondikeWebController(func() usecase.KlondikeInteractorIF {
 		klondike := domain.NewKlondike(domain.NewTrumpCards(0))
@@ -160,26 +144,10 @@ func (web *TrumpCardsWeb) registerAll() {
 		return usecase.NewBaccaratInteractor(baccarat, new(presenter.BaccaratWebPresenter))
 	}))
 	web.register("spades", controller.NewSpadesWebController(func() usecase.SpadesInteractorIF {
-		config := domain.DefaultSpadesConfig()
-		players := []*domain.SpadesPlayer{
-			domain.NewSpadesPlayer(true),
-			domain.NewSpadesPlayer(false),
-			domain.NewSpadesPlayer(false),
-			domain.NewSpadesPlayer(false),
-		}
-		spades := domain.NewSpades(domain.NewTrumpCards(0), players, config)
-		return usecase.NewSpadesInteractor(spades, new(presenter.SpadesWebPresenter))
+		return usecase.NewSpadesInteractor(domain.NewDefaultSpades(), new(presenter.SpadesWebPresenter))
 	}))
 	web.register("crazyeights", controller.NewCrazyEightsWebController(func() usecase.CrazyEightsInteractorIF {
-		config := domain.DefaultCrazyEightsConfig()
-		players := []*domain.CrazyEightsPlayer{
-			domain.NewCrazyEightsPlayer(true),
-			domain.NewCrazyEightsPlayer(false),
-			domain.NewCrazyEightsPlayer(false),
-			domain.NewCrazyEightsPlayer(false),
-		}
-		ce := domain.NewCrazyEights(domain.NewTrumpCards(0), players, config)
-		return usecase.NewCrazyEightsInteractor(ce, new(presenter.CrazyEightsWebPresenter))
+		return usecase.NewCrazyEightsInteractor(domain.NewDefaultCrazyEights(), new(presenter.CrazyEightsWebPresenter))
 	}))
 	web.register("ginrummy", controller.NewGinRummyWebController(func() usecase.GinRummyInteractorIF {
 		config := domain.DefaultGinRummyConfig()
@@ -263,15 +231,7 @@ func (web *TrumpCardsWeb) registerAll() {
 		)
 	}))
 	web.register("ohhell", controller.NewOhHellWebController(func() usecase.OhHellInteractorIF {
-		config := domain.DefaultOhHellConfig()
-		players := []*domain.OhHellPlayer{
-			domain.NewOhHellPlayer(true),
-			domain.NewOhHellPlayer(false),
-			domain.NewOhHellPlayer(false),
-			domain.NewOhHellPlayer(false),
-		}
-		ohHell := domain.NewOhHell(domain.NewTrumpCards(0), players, config)
-		return usecase.NewOhHellInteractor(ohHell, new(presenter.OhHellWebPresenter))
+		return usecase.NewOhHellInteractor(domain.NewDefaultOhHell(), new(presenter.OhHellWebPresenter))
 	}))
 	web.register("bridge", controller.NewBridgeWebController(func() usecase.BridgeInteractorIF {
 		config := domain.DefaultBridgeConfig()

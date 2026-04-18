@@ -4,7 +4,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -14,18 +13,9 @@ func NewCaribbeanStudCui() *genericCuiGame {
 		domain.NewDefaultCaribbeanStud(),
 		new(presenter.CaribbeanStudCuiPresenter),
 	))
-	return newCuiGame(cs, []string{
-		i18n.T("caribbeanstud.helpTitle"),
-		"",
-		i18n.T("gameCommands"),
-		i18n.T("caribbeanstud.helpBet"),
-		i18n.T("caribbeanstud.helpPlay"),
-		i18n.T("caribbeanstud.helpFold"),
-		"  log                  action log",
-		"",
-		i18n.T("session"),
-		i18n.T("resetEntry"),
-		i18n.T("quitEntry"),
-		i18n.T("helpEntry"),
-	})
+	return newCuiGame(cs, BuildCuiHelp(CuiHelpSpec{
+		TitleKey:          "caribbeanstud.helpTitle",
+		CommandKeys:       []string{"caribbeanstud.helpBet", "caribbeanstud.helpPlay", "caribbeanstud.helpFold"},
+		ExtraCommandLines: []string{"  log                  action log"},
+	}))
 }

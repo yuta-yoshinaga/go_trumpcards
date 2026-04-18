@@ -23,15 +23,7 @@ func main() {
 	// Hearts
 	must(worker.RegisterKV(mux, "/hearts/exec", "hearts:",
 		func() usecase.HeartsInteractorIF {
-			config := domain.DefaultHeartsConfig()
-			players := []*domain.HeartsPlayer{
-				domain.NewHeartsPlayer(true),
-				domain.NewHeartsPlayer(false),
-				domain.NewHeartsPlayer(false),
-				domain.NewHeartsPlayer(false),
-			}
-			hearts := domain.NewHearts(domain.NewTrumpCards(0), players, config)
-			return usecase.NewHeartsInteractor(hearts, new(presenter.HeartsWebPresenter))
+			return usecase.NewHeartsInteractor(domain.NewDefaultHearts(), new(presenter.HeartsWebPresenter))
 		},
 		func(data []byte) (usecase.HeartsInteractorIF, error) {
 			return usecase.RestoreHeartsInteractor(data, new(presenter.HeartsWebPresenter))
@@ -42,15 +34,7 @@ func main() {
 	// Spades
 	must(worker.RegisterKV(mux, "/spades/exec", "spades:",
 		func() usecase.SpadesInteractorIF {
-			config := domain.DefaultSpadesConfig()
-			players := []*domain.SpadesPlayer{
-				domain.NewSpadesPlayer(true),
-				domain.NewSpadesPlayer(false),
-				domain.NewSpadesPlayer(false),
-				domain.NewSpadesPlayer(false),
-			}
-			spades := domain.NewSpades(domain.NewTrumpCards(0), players, config)
-			return usecase.NewSpadesInteractor(spades, new(presenter.SpadesWebPresenter))
+			return usecase.NewSpadesInteractor(domain.NewDefaultSpades(), new(presenter.SpadesWebPresenter))
 		},
 		func(data []byte) (usecase.SpadesInteractorIF, error) {
 			return usecase.RestoreSpadesInteractor(data, new(presenter.SpadesWebPresenter))
@@ -173,15 +157,7 @@ func main() {
 	// Crazy Eights
 	must(worker.RegisterKV(mux, "/crazyeights/exec", "crazyeights:",
 		func() usecase.CrazyEightsInteractorIF {
-			config := domain.DefaultCrazyEightsConfig()
-			players := []*domain.CrazyEightsPlayer{
-				domain.NewCrazyEightsPlayer(true),
-				domain.NewCrazyEightsPlayer(false),
-				domain.NewCrazyEightsPlayer(false),
-				domain.NewCrazyEightsPlayer(false),
-			}
-			ce := domain.NewCrazyEights(domain.NewTrumpCards(0), players, config)
-			return usecase.NewCrazyEightsInteractor(ce, new(presenter.CrazyEightsWebPresenter))
+			return usecase.NewCrazyEightsInteractor(domain.NewDefaultCrazyEights(), new(presenter.CrazyEightsWebPresenter))
 		},
 		func(data []byte) (usecase.CrazyEightsInteractorIF, error) {
 			return usecase.RestoreCrazyEightsInteractor(data, new(presenter.CrazyEightsWebPresenter))
@@ -192,15 +168,7 @@ func main() {
 	// Oh Hell
 	must(worker.RegisterKV(mux, "/ohhell/exec", "ohhell:",
 		func() usecase.OhHellInteractorIF {
-			config := domain.DefaultOhHellConfig()
-			players := []*domain.OhHellPlayer{
-				domain.NewOhHellPlayer(true),
-				domain.NewOhHellPlayer(false),
-				domain.NewOhHellPlayer(false),
-				domain.NewOhHellPlayer(false),
-			}
-			ohHell := domain.NewOhHell(domain.NewTrumpCards(0), players, config)
-			return usecase.NewOhHellInteractor(ohHell, new(presenter.OhHellWebPresenter))
+			return usecase.NewOhHellInteractor(domain.NewDefaultOhHell(), new(presenter.OhHellWebPresenter))
 		},
 		func(data []byte) (usecase.OhHellInteractorIF, error) {
 			return usecase.RestoreOhHellInteractor(data, new(presenter.OhHellWebPresenter))
