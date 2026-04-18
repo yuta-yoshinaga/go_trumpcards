@@ -24,9 +24,11 @@ func TestHasHelpFlag(t *testing.T) {
 		{"no help flag", []string{"--lang", "en"}, false},
 		{"--help present", []string{"--help"}, true},
 		{"-h present", []string{"-h"}, true},
+		{"-help present (Go flag treats as --help)", []string{"-help"}, true},
+		{"--h present (Go flag treats as -h)", []string{"--h"}, true},
 		{"help mixed with other args", []string{"--lang", "en", "--help"}, true},
 		{"short flag among multiple", []string{"foo", "-h", "bar"}, true},
-		{"looks like help but is not", []string{"-help", "--h"}, false},
+		{"not a help flag", []string{"--helpful", "-help-me"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -71,6 +73,41 @@ func TestRunHelpCommandResolvesAlias(t *testing.T) {
 	}
 	if stdout.Len() == 0 {
 		t.Errorf("expected alias 'gin' to resolve to ginrummy help; got empty stdout")
+	}
+}
+
+func TestRunHelpCommandForBuiltinSubcommand(t *testing.T) {
+	// "web" is a builtin subcommand (not a game). runHelpCommand should fall
+	// through the game-registry lookup and emit the entry from builtinSubcommandHelp.
+	var stdout, stderr bytes.Buffer
+	helpText := buildHelpText()
+	code := runHelpCommand([]string{"web"}, helpText, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("runHelpCommand(web) exit = %d, want 0", code)
+	}
+	if stderr.Len() != 0 {
+		t.Errorf("expected no stderr output; got %q", stderr.String())
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "trumpcards web") {
+		t.Errorf("expected web help text; got: %q", out)
+	}
+}
+
+func TestRunHelpCommandExtraArgs(t *testing.T) {
+	// Extra positional args after the game name should trigger a warning
+	// on stderr but still return the game's help on stdout with exit 0.
+	var stdout, stderr bytes.Buffer
+	helpText := buildHelpText()
+	code := runHelpCommand([]string{"blackjack", "extra"}, helpText, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("runHelpCommand(blackjack extra) exit = %d, want 0", code)
+	}
+	if stdout.Len() == 0 {
+		t.Errorf("expected blackjack help on stdout despite extra args")
+	}
+	if stderr.Len() == 0 {
+		t.Errorf("expected extra-args warning on stderr; got empty")
 	}
 }
 

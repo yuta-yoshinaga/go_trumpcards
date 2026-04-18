@@ -111,6 +111,7 @@ func TestStderrColorFunctions(t *testing.T) {
 		prefix string
 	}{
 		{"RedStderr", RedStderr, "\033[31m"},
+		{"GreenStderr", GreenStderr, "\033[32m"},
 		{"YellowStderr", YellowStderr, "\033[33m"},
 		{"BoldStderr", BoldStderr, "\033[1m"},
 		{"BoldYellowStderr", BoldYellowStderr, "\033[1;33m"},

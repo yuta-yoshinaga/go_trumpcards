@@ -377,10 +377,13 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 	return fs, 0, true
 }
 
-// hasHelpFlag reports whether args contains "-h" or "--help".
+// hasHelpFlag reports whether args contains a help flag. It accepts all four
+// forms Go's flag package treats as equivalent for a help flag registered as
+// both "help" and "h": "-h", "--h", "-help", "--help".
 func hasHelpFlag(args []string) bool {
 	for _, a := range args {
-		if a == "-h" || a == "--help" {
+		switch a {
+		case "-h", "--h", "-help", "--help":
 			return true
 		}
 	}
