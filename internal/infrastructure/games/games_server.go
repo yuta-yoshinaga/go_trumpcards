@@ -293,4 +293,9 @@ func init() {
 			return usecase.NewScorpionInteractor(domain.NewDefaultScorpion(), new(presenter.ScorpionWebPresenter))
 		},
 		controller.NewScorpionWebController)
+	BindWebControllerFor("accordion",
+		func() usecase.AccordionInteractorIF {
+			return usecase.NewAccordionInteractor(domain.NewDefaultAccordion(), new(presenter.AccordionWebPresenter))
+		},
+		controller.NewAccordionWebController)
 }

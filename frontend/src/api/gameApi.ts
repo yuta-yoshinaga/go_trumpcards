@@ -1,4 +1,5 @@
 import type {
+  AccordionResponse,
   ActionLogResponse,
   BaccaratResponse,
   BadugiResponse,
@@ -124,6 +125,7 @@ const workerUrl: Record<string, string> = {
   canfield: WORKER_SOLO,
   yukon: WORKER_SOLO,
   scorpion: WORKER_SOLO,
+  accordion: WORKER_SOLO,
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
@@ -1025,6 +1027,28 @@ export const scorpionApi = {
     }),
 };
 
+/** Source or target pile for an Accordion move. */
+export interface AccordionMoveZone {
+  zone: 'pile';
+  index?: number;
+}
+
+/** API client for the Accordion /accordion/exec endpoint. */
+export const accordionApi = {
+  exec: (
+    command: 'reset' | 'move' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
+    from?: AccordionMoveZone,
+    to?: AccordionMoveZone,
+    n?: number,
+  ) =>
+    gameExec<AccordionResponse>('accordion', {
+      command,
+      from,
+      to,
+      n,
+    }),
+};
+
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {
   exec: (
@@ -1158,6 +1182,7 @@ const games = [
   'canfield',
   'yukon',
   'scorpion',
+  'accordion',
   'whist',
   'letitride',
   'pokersquares',

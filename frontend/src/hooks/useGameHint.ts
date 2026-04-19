@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type {
+  AccordionResponse,
   BaccaratResponse,
   BadugiResponse,
   BlackJackResponse,
@@ -49,6 +50,7 @@ import type {
   YukonResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
+import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
@@ -157,6 +159,7 @@ const hintFactories = {
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
+  accordion: (s) => getAccordionHint(s as AccordionResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

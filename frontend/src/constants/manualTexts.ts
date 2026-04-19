@@ -2,6 +2,7 @@
  * Build-time imports of game manual Markdown files (Japanese, web version).
  * Keyed by game route path for direct lookup from the current URL.
  */
+import accordion from '../../../docs/manual/web/accordion.md?raw';
 import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
@@ -117,4 +118,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/whist': whist,
   '/yukon': yukon,
   '/scorpion': scorpion,
+  '/accordion': accordion,
 };

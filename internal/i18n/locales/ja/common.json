@@ -62,6 +62,7 @@
   "invalidColumn": "無効な列番号です: {{val}}",
   "invalidCardIndex": "無効なカードインデックスです: {{val}}",
   "invalidCell": "無効なセル番号です: {{val}}",
+  "invalidIndex": "無効なインデックスです: {{val}}",
   "freecell.promptSourceZone": "移動元を入力してください (t=場札, c=フリーセル):",
   "freecell.promptToZone": "移動先を入力してください (t=場札, f=組札, c=フリーセル):",
   "freecell.promptToZoneFromCell": "移動先を入力してください (t=場札, f=組札):",

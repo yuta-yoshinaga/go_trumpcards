@@ -1,0 +1,381 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { type AccordionMoveZone, accordionApi } from '../api/gameApi';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
+import { LandscapeBanner } from '../components/LandscapeBanner';
+import { ManualButton } from '../components/ManualButton';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
+import { PhaseIndicator } from '../components/PhaseIndicator';
+import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
+import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
+import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { AccordionResponse } from '../types/card';
+import { AccordionPhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+
+/** Accordion tutorial step definitions. */
+const AC_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="ac-piles"]',
+    messageKey: 'tutorial.piles',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ac-controls"]',
+    messageKey: 'tutorial.controls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ac-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+type ApiArgs = Parameters<typeof accordionApi.exec>;
+
+/** Parses an Accordion CLI command. */
+function parseAccordionCommand(input: string): CliParseResult<ApiArgs> {
+  const parts = input.trim().split(/\s+/);
+  const cmd = parts[0]?.toLowerCase();
+  switch (cmd) {
+    case 'r':
+    case 'reset':
+      return { args: ['reset'] };
+    case 'g':
+    case 'giveup':
+      return { args: ['giveup'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
+    case 'u':
+    case 'undo':
+      return { args: ['undo'] };
+    case 'l':
+    case 'log':
+      return { args: ['log'] };
+    case 'm':
+    case 'move': {
+      if (parts.length !== 3) return { error: 'Usage: m <fromIdx> <toIdx>' };
+      const from = Number.parseInt(parts[1], 10);
+      const to = Number.parseInt(parts[2], 10);
+      if (Number.isNaN(from) || Number.isNaN(to)) return { error: 'Invalid index' };
+      return { args: ['move', { zone: 'pile', index: from }, { zone: 'pile', index: to }] };
+    }
+    default:
+      return { error: `Unknown command: ${cmd}` };
+  }
+}
+
+/** Formats Accordion state for CLI display. */
+function formatAccordionState(state: AccordionResponse): string {
+  const lines: string[] = [];
+  lines.push(`Piles: ${state.pileCount}  Moves: ${state.moveCount}`);
+  const tops = state.piles
+    .map((p, i) => {
+      const top = p.cards[0];
+      const label = top ? `${top.design[0]}${top.value}` : '??';
+      return `[${i}]${label}${p.size > 1 ? `(+${p.size - 1})` : ''}`;
+    })
+    .join(' ');
+  lines.push(tops);
+  if (state.message) lines.push(state.message);
+  return lines.join('\n');
+}
+
+/** Renders the Accordion solitaire game page. */
+export function AccordionPage() {
+  return (
+    <TutorialWrapper gameName="accordion" steps={AC_TUTORIAL_STEPS}>
+      <AccordionPageContent />
+    </TutorialWrapper>
+  );
+}
+
+/** Inner content of the Accordion page. */
+function AccordionPageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('accordion');
+  const { playSound } = useSound();
+  const {
+    state,
+    loading,
+    error,
+    exec: apiCall,
+    retry,
+  } = useGameApi<AccordionResponse, ApiArgs>((...args) => accordionApi.exec(...args));
+
+  useEffect(() => {
+    void apiCall('reset');
+  }, [apiCall]);
+
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('accordion', state);
+
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('accordion');
+  const accordionCliConfig: CliGameConfig<AccordionResponse, ApiArgs> = useMemo(
+    () => ({
+      gameName: 'accordion',
+      parseCommand: parseAccordionCommand,
+      formatResponse: formatAccordionState,
+      helpText: [
+        'm <from> <to>  Merge pile `from` onto `to` (to must be from-1 or from-3)',
+        'g              Give up',
+        'h              Hint',
+        'u              Undo',
+        'l              Action log',
+        'r              Reset',
+      ],
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(apiCall, accordionCliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { cardWidth } = useCardDimensions();
+
+  const handleReset = useCallback(() => {
+    requestConfirm(() => {
+      void apiCall('reset');
+      playSound('shuffle');
+      setSelectedIdx(null);
+    });
+  }, [apiCall, requestConfirm, playSound]);
+
+  const handleGiveUp = useCallback(() => {
+    void apiCall('giveup');
+  }, [apiCall]);
+
+  const handleHint = useCallback(() => {
+    void apiCall('hint');
+  }, [apiCall]);
+
+  const handleUndo = useCallback(() => {
+    void apiCall('undo');
+    setSelectedIdx(null);
+  }, [apiCall]);
+
+  const handleUndoEscape = useCallback(
+    (n: number) => {
+      void apiCall('undo_n', undefined, undefined, n);
+      setSelectedIdx(null);
+    },
+    [apiCall],
+  );
+
+  const dispatchMove = useCallback(
+    (fromIdx: number, toIdx: number) => {
+      const from: AccordionMoveZone = { zone: 'pile', index: fromIdx };
+      const to: AccordionMoveZone = { zone: 'pile', index: toIdx };
+      void apiCall('move', from, to);
+      playSound('cardPlace');
+      setSelectedIdx(null);
+    },
+    [apiCall, playSound],
+  );
+
+  const handlePileClick = useCallback(
+    (idx: number) => {
+      if (selectedIdx === null) {
+        setSelectedIdx(idx);
+        return;
+      }
+      if (selectedIdx === idx) {
+        setSelectedIdx(null);
+        return;
+      }
+      const offset = selectedIdx - idx;
+      if (offset === 1 || offset === 3) {
+        dispatchMove(selectedIdx, idx);
+      } else {
+        setSelectedIdx(idx);
+      }
+    },
+    [selectedIdx, dispatchMove],
+  );
+
+  if (error) return <ErrorAlert message={error} onRetry={retry} />;
+  if (!state) return <KlondikeSkeleton />;
+
+  const isPlaying = state.phase === AccordionPhase.PLAYING;
+  const isGameClear = state.phase === AccordionPhase.GAME_CLEAR;
+  const isGameOver = state.phase === AccordionPhase.GAME_OVER;
+  const isEnded = isGameClear || isGameOver;
+
+  const phaseName = isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing');
+
+  return (
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.klondike.bg}`} aria-busy={loading}>
+      <GamePageHeading title={tc('nav.accordion')} />
+      <PhaseIndicator phaseName={phaseName}>
+        <span>
+          {t('moveCount')}: {state.moveCount}
+        </span>
+        <span>
+          {t('piles')}: {state.pileCount}
+        </span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        <TutorialButton />
+        <ManualButton gamePath="/accordion" />
+      </PhaseIndicator>
+
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={tc('settings.title', { ns: 'common' })}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
+          <LandscapeBanner message={t('landscapeBanner')} />
+
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <div className="flex flex-wrap gap-1 sm:gap-2 justify-center" data-tutorial="ac-piles">
+              {state.piles.map((pile, idx) => {
+                const top = pile.cards[0];
+                const isSelected = selectedIdx === idx;
+                const hintFrom = state.hint?.fromIdx === idx;
+                const hintTo = state.hint?.toIdx === idx;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    className={`relative ${focusRingWhite} rounded-lg transition-transform ${
+                      isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+                    } ${hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''} ${
+                      hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''
+                    }`}
+                    onClick={() => handlePileClick(idx)}
+                    disabled={!isPlaying}
+                    aria-label={top ? `${idx}: ${cardAlt(top)}` : `${idx}: empty`}
+                  >
+                    {top && <AnimatedCard card={top} width={cardWidth} />}
+                    <span className="absolute top-0 left-0 text-[10px] bg-black/40 text-white rounded-br px-1">
+                      {idx}
+                    </span>
+                    {pile.size > 1 && (
+                      <span className="absolute bottom-0 right-0 text-[10px] bg-black/60 text-white rounded-tl px-1">
+                        +{pile.size - 1}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div data-tutorial="ac-controls">
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            {error && <ErrorAlert message={error} onRetry={retry} />}
+
+            {state.hint && (
+              <div
+                className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
+                role="status"
+                aria-live="polite"
+              >
+                {t('hintMove', { from: state.hint.fromIdx, to: state.hint.toIdx })}
+              </div>
+            )}
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
+
+            <ActionLogSection
+              isEndPhase={isEnded}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <GameFooter>
+              <button type="button" className={btnPrimary} onClick={handleReset} data-tutorial="ac-reset-button">
+                {t('common:reset')}
+              </button>
+
+              {isPlaying && (
+                <>
+                  <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
+                    {t('hint')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnOutline}
+                    onClick={handleUndo}
+                    disabled={loading || !state.canUndo}
+                  >
+                    {t('undo')}
+                  </button>
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('giveup')}
+                  </button>
+                  {state.isStalemate && (
+                    <StalemateEscapeButton
+                      undoToEscape={state.undoToEscape ?? -1}
+                      onEscape={handleUndoEscape}
+                      disabled={loading}
+                    />
+                  )}
+                </>
+              )}
+
+              {isEnded && (
+                <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>
+                  {t('common:showActionLog')}
+                </button>
+              )}
+            </GameFooter>
+          </div>
+        </>
+      )}
+
+      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
+      {isGameClear && <WinCelebration show={true} />}
+    </div>
+  );
+}

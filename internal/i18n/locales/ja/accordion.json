@@ -1,0 +1,16 @@
+{
+  "helpTitle": "Accordion (アコーディオン)",
+  "helpMove": "  m <from> <to>       パイルを重ねる (例: m 3 0)",
+  "helpGiveup": "  g, giveup           ギブアップ",
+  "helpHint": "  h, hint             ヒントを表示",
+  "helpLog": "  log, l              棋譜を表示",
+  "helpUndo": "  u, undo             1手戻す",
+  "promptFromIndex": "移動元のパイル番号を入力してください:",
+  "promptToIndex": "移動先のパイル番号を入力してください:",
+  "playing": "プレイ中",
+  "stalemate": "手詰まりです",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません"
+}

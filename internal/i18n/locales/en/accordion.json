@@ -1,0 +1,16 @@
+{
+  "helpTitle": "Accordion",
+  "helpMove": "  m <from> <to>       Merge pile (e.g. m 3 0)",
+  "helpGiveup": "  g, giveup           Give up",
+  "helpHint": "  h, hint             Show hint",
+  "helpLog": "  log, l              Show action log",
+  "helpUndo": "  u, undo             Undo last move",
+  "promptFromIndex": "Enter source pile index:",
+  "promptToIndex": "Enter destination pile index:",
+  "playing": "Playing",
+  "stalemate": "No moves available",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "hintAvailable": "Hint available",
+  "noHint": "No hints available"
+}
