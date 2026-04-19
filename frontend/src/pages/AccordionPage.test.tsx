@@ -221,4 +221,83 @@ describe('AccordionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument();
   });
+
+  it('StalemateEscapeButton dispatches undo_n with the escape count', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      isStalemate: true,
+      canUndo: true,
+      undoToEscape: 2,
+    });
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('stalemate-escape-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 2));
+  });
+
+  it('renders empty placeholder when pile has no cards', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      piles: [{ cards: [], size: 0 }, ...playingState.piles.slice(1)],
+    });
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Empty pile still renders a button with 0: empty aria-label
+    expect(screen.getByRole('button', { name: /^0: empty$/ })).toBeInTheDocument();
+  });
+
+  it('renders multi-card pile size badge', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      piles: [{ cards: [card('SPADE', 1)], size: 5 }, ...playingState.piles.slice(1)],
+    });
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByText('+4')).toBeInTheDocument();
+  });
+
+  it('CLI mode dispatches an m command via parseAccordionCommand', async () => {
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /CLI|GUI/i }));
+    const input = await screen.findByLabelText(/コマンドを入力/);
+    mockExec.mockClear();
+    fireEvent.change(input, { target: { value: 'm 3 0' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'pile', index: 3 }, { zone: 'pile', index: 0 }),
+    );
+  });
+
+  it('CLI mode rejects malformed move command', async () => {
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /CLI|GUI/i }));
+    const input = await screen.findByLabelText(/コマンドを入力/);
+    mockExec.mockClear();
+    fireEvent.change(input, { target: { value: 'm 3' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    // No API call — parse error was rendered in the terminal log instead
+    await waitFor(() => expect(mockExec).not.toHaveBeenCalled());
+  });
+
+  it('retry button re-dispatches reset after error', async () => {
+    mockExec.mockRejectedValueOnce(new Error('boom'));
+    renderWithProviders(<AccordionPage />);
+    const retryBtn = await screen.findByRole('button', { name: /retry|再試行|やり直/i });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(retryBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+  });
+
+  it('toggles frontend hint checkbox', async () => {
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const hintToggle = screen.getByRole('checkbox', { name: /ヒント表示/ });
+    expect(hintToggle).not.toBeChecked();
+    fireEvent.click(hintToggle);
+    expect(hintToggle).toBeChecked();
+  });
 });

@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { BJ_SUGGEST_HIT, BJ_SUGGEST_NONE } from '../components/blackjack/bjConstants';
 import type {
+  AccordionResponse,
   BaccaratResponse,
   BlackJackResponse,
   CanastaResponse,
@@ -707,5 +708,22 @@ describe('useGameHint', () => {
     };
     const { result } = renderHook(() => useGameHint('scorpion', state));
     expect(result.current.hint?.reason).toBe('frontendHint.dealStock');
+  });
+
+  it('routes accordion through getAccordionHint', () => {
+    localStorage.setItem('hint_enabled_accordion', 'true');
+    const state: AccordionResponse = {
+      piles: [],
+      pileCount: 0,
+      phase: 0,
+      moveCount: 0,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+      hint: { fromIdx: 3, toIdx: 0 },
+    };
+    const { result } = renderHook(() => useGameHint('accordion', state));
+    expect(result.current.hint).not.toBeNull();
+    expect(result.current.hint?.reason).toBe('frontendHint.accordionOffset3');
   });
 });

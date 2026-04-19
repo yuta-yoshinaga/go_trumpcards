@@ -105,7 +105,12 @@ func (a *Accordion) Move(fromIdx, toIdx int) error {
 
 	a.takeSnapshot()
 	a.piles[toIdx] = append(a.piles[toIdx], a.piles[fromIdx]...)
-	a.piles = append(a.piles[:fromIdx], a.piles[fromIdx+1:]...)
+	// Nil out the vacated tail slot before truncating so the removed pile's
+	// card slice can be GC'd. Without this, the backing array keeps the old
+	// inner slice alive for the lifetime of a.piles.
+	copy(a.piles[fromIdx:], a.piles[fromIdx+1:])
+	a.piles[len(a.piles)-1] = nil
+	a.piles = a.piles[:len(a.piles)-1]
 	a.moveCount++
 	top := a.piles[toIdx][len(a.piles[toIdx])-1]
 	a.appendLog("move", fmt.Sprintf("パイル%d→パイル%d", fromIdx, toIdx), []*Card{top})
@@ -246,6 +251,11 @@ func (a *Accordion) checkAccordionStalemate() {
 }
 
 // takeSnapshot 現在の状態をスナップショットとして保存
+//
+// actionLog は意図的に含めない。他のソリティア(Scorpion/Klondike 等)と同様に
+// 棋譜は追記専用として扱い、Undo で巻き戻されない。プレゼンターは Playing
+// フェーズの間 棋譜を非表示にするため、ユーザーには「undo で消えた手」が
+// 露出しない。
 func (a *Accordion) takeSnapshot() {
 	snap := &accordionSnapshot{
 		phase:       a.phase,
@@ -301,8 +311,11 @@ func (a *Accordion) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// accordionMaxSliceLen caps slice sizes during deserialisation.
-const accordionMaxSliceLen = 1000
+// accordionMaxSliceLen caps slice sizes during deserialisation. A real game
+// has at most CardCnt (52) piles, each holding at most CardCnt cards, and the
+// action log grows by one entry per move. 200 gives a comfortable margin while
+// still bounding unbounded allocation from a hostile payload.
+const accordionMaxSliceLen = 200
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (a *Accordion) UnmarshalJSON(data []byte) error {

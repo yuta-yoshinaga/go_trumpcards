@@ -276,9 +276,13 @@ function AccordionPageContent() {
                 const isSelected = selectedIdx === idx;
                 const hintFrom = state.hint?.fromIdx === idx;
                 const hintTo = state.hint?.toIdx === idx;
+                // Keying by the top card's identity lets React preserve
+                // per-pile state (ring/selection class transitions, AnimatedCard
+                // instances) when piles shift left after a merge.
+                const pileKey = top ? `${top.design}-${top.value}-${pile.size}` : `empty-${idx}`;
                 return (
                   <button
-                    key={idx}
+                    key={pileKey}
                     type="button"
                     className={`relative ${focusRingWhite} rounded-lg transition-transform ${
                       isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
@@ -310,8 +314,6 @@ function AccordionPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-
-            {error && <ErrorAlert message={error} onRetry={retry} />}
 
             {state.hint && (
               <div
