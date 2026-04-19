@@ -62,6 +62,7 @@
   "invalidColumn": "Invalid column: {{val}}",
   "invalidCardIndex": "Invalid card index: {{val}}",
   "invalidCell": "Invalid cell: {{val}}",
+  "invalidIndex": "Invalid index: {{val}}",
   "freecell.promptSourceZone": "Enter source zone (t=tableau, c=freecell):",
   "freecell.promptToZone": "Enter destination (t=tableau, f=foundation, c=freecell):",
   "freecell.promptToZoneFromCell": "Enter destination (t=tableau, f=foundation):",

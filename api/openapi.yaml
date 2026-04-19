@@ -122,6 +122,8 @@ tags:
     description: Badugi (バドゥーギ) game - Asian 4-card draw lowball poker
   - name: scorpion
     description: Scorpion (スコーピオン) game - variant of solitaire combining Yukon and Spider mechanics
+  - name: accordion
+    description: Accordion (アコーディオン) game - compression solitaire where piles merge onto the 1st or 3rd pile to the left
 
 paths:
   /blackjack/exec:
@@ -4811,6 +4813,112 @@ paths:
                       cardIndex:
                         type: integer
                       toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /accordion/exec:
+    post:
+      tags:
+        - accordion
+      summary: Execute an Accordion (アコーディオン) game command
+      description: |
+        Send a command to advance an Accordion compression solitaire session identified by `sessionId`.
+        A standard 52-card deck is dealt one pile per card in a single row. A pile may be moved onto
+        the pile 1 or 3 positions to its left when the top cards match in suit or rank; the source pile
+        is then absorbed and every pile to its right shifts left to close the gap. The game clears when
+        all cards are compressed into a single pile.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All cards in one pile |
+        | GameOver  | 2     | Player gave up |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `move`   | `m`     | Merge pile `from.index` onto pile `to.index` (`to` must be `from-1` or `from-3`) |
+        | `giveup` | `g`     | Give up the current game |
+        | `hint`   | `h`     | Get a move suggestion |
+        | `undo`   | `u`     | Undo last move |
+        | `undo_n` | —       | Undo N moves (requires `n`) |
+        | `log`    | `l`     | View action log |
+      operationId: accordionExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, giveup, g, hint, h, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [pile]
+                    index:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [pile]
+                    index:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  piles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        cards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        size:
+                          type: integer
+                  pileCount:
+                    type: integer
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromIdx:
+                        type: integer
+                      toIdx:
                         type: integer
                   message:
                     type: string

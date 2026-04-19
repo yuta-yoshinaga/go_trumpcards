@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した55種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した57種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -75,6 +75,7 @@ Go + Clean Architecture で実装した55種類のトランプゲーム。CLI �
 | ラズ (Razz) | `razz` | [CUI](docs/manual/cui/razz.md) / [Web](docs/manual/web/razz.md) |
 | バドゥーギ (Badugi) | `badugi` | [CUI](docs/manual/cui/badugi.md) / [Web](docs/manual/web/badugi.md) |
 | スコーピオン (Scorpion) | `scorpion` | [CUI](docs/manual/cui/scorpion.md) / [Web](docs/manual/web/scorpion.md) |
+| アコーディオン (Accordion) | `accordion` | [CUI](docs/manual/cui/accordion.md) / [Web](docs/manual/web/accordion.md) |
 
 ## Demo
 

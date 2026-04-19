@@ -446,6 +446,13 @@ export const ScorpionPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Accordion phase constants (sync: internal/domain/Accordion.go). */
+export const AccordionPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Whist phase constants (sync: internal/domain/Whist.go). */
 export const WhistPhase = {
   PLAY: 0,

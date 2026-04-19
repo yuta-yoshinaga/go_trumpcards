@@ -918,6 +918,21 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "accordion", Description: "Accordion (アコーディオン)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewAccordionCuiController(usecase.NewAccordionInteractor(
+				domain.NewDefaultAccordion(), new(presenter.AccordionCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "accordion.helpTitle",
+				CommandKeys: []string{
+					"accordion.helpMove",
+					"accordion.helpGiveup",
+					"accordion.helpHint",
+					"accordion.helpLog",
+					"accordion.helpUndo",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

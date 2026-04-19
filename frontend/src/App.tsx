@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
 import { gameRoutes } from './constants/gameRoutes';
+import { AccordionPage } from './pages/AccordionPage';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BadugiPage } from './pages/BadugiPage';
 import { BlackJackPage } from './pages/BlackJackPage';
@@ -117,6 +118,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/canfield': <CanfieldPage />,
   '/yukon': <YukonPage />,
   '/scorpion': <ScorpionPage />,
+  '/accordion': <AccordionPage />,
   '/whist': <WhistPage />,
   '/poker-squares': <PokerSquaresPage />,
   '/pageone': <PageOnePage />,

@@ -142,4 +142,12 @@ func init() {
 			return usecase.RestoreScorpionInteractor(data, new(presenter.ScorpionWebPresenter))
 		},
 		controller.NewScorpionWebControllerWithProvider)
+	games.RegisterKVGame("accordion", games.CategorySolo,
+		func() usecase.AccordionInteractorIF {
+			return usecase.NewAccordionInteractor(domain.NewDefaultAccordion(), new(presenter.AccordionWebPresenter))
+		},
+		func(data []byte) (usecase.AccordionInteractorIF, error) {
+			return usecase.RestoreAccordionInteractor(data, new(presenter.AccordionWebPresenter))
+		},
+		controller.NewAccordionWebControllerWithProvider)
 }

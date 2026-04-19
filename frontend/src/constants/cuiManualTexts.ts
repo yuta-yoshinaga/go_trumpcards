@@ -3,6 +3,7 @@
  * Keyed by game route path for direct lookup from the current URL.
  * Used when the page has CLI mode enabled so the manual matches the terminal UI.
  */
+import accordion from '../../../docs/manual/cui/accordion.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
@@ -118,6 +119,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/whist': whist,
   '/yukon': yukon,
   '/scorpion': scorpion,
+  '/accordion': accordion,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

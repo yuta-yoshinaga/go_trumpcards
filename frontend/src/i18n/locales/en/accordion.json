@@ -1,0 +1,33 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Accordion",
+  "piles": "Piles",
+  "moveCount": "Moves",
+  "giveup": "Give up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hints available",
+  "hintAvailable": "Hint available",
+  "stalemate": "No moves available",
+  "hintMove": "Pile {{from}} → Pile {{to}}",
+  "landscapeBanner": "Landscape orientation recommended",
+  "frontendHint": {
+    "accordionOffset1": "You can merge with the adjacent pile to the left",
+    "accordionOffset3": "You can merge with the pile 3 positions to the left"
+  },
+  "tutorial": {
+    "piles": "52 cards are laid out in a row. Click a pile to select it, then click the pile 1 or 3 positions to its left — if the top cards share a suit or rank, they merge into one pile.",
+    "controls": "Game controls: hint, give up, undo.",
+    "resetButton": "Starts a new game."
+  },
+  "nav": {
+    "accordion": "Accordion"
+  }
+}
