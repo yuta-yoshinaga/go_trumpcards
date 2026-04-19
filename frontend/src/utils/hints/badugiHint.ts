@@ -53,5 +53,5 @@ export function getBadugiHint(state: BadugiResponse): HintResult | null {
   if (size === 3) return { targetAction: 'call', reason: 'hint.callWithValue', confidence: 'moderate' };
   const hasBetToCall = state.lastBet > human.currentBet;
   if (hasBetToCall) return { targetAction: 'fold', reason: 'hint.foldWeak', confidence: 'moderate' };
-  return { targetAction: 'check', reason: 'hint.foldWeak', confidence: 'moderate' };
+  return { targetAction: 'check', reason: 'hint.checkWeak', confidence: 'moderate' };
 }

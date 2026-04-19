@@ -89,9 +89,8 @@ func badugiMaskSubset(hand []*Card, mask int) []*Card {
 }
 
 // badugiSubsetValid reports whether the subset has all-distinct ranks and
-// all-distinct suits. Badugi uses a 52-card deck with no wild cards, so the
-// caller is expected to pass non-Joker cards; Jokers would collapse into
-// design 0 and rank 0 and are not exercised.
+// all-distinct suits. Badugi uses a 52-card deck with no wild cards, so this
+// path is never exercised with Jokers.
 func badugiSubsetValid(cards []*Card) bool {
 	var suits, ranks uint32
 	for _, c := range cards {

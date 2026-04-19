@@ -998,6 +998,17 @@ func (b *Badugi) UnmarshalJSON(data []byte) error {
 		len(j.Round.CpuExchanges) > badugiMaxSliceLen || len(j.Round.ActionLog) > badugiMaxSliceLen {
 		return fmt.Errorf("badugi: input array exceeds maximum allowed size")
 	}
+	// Consistency check: per-player slices (ActedFlags, StartingChips) must
+	// match the Players length, otherwise ExecuteBettingAction's direct
+	// ActedFlags[playerIdx] access would panic on restored state.
+	if n := len(j.Players); n > 0 {
+		if got := len(j.Round.ActedFlags); got != 0 && got != n {
+			return fmt.Errorf("badugi: ActedFlags length %d != Players length %d", got, n)
+		}
+		if got := len(j.Round.StartingChips); got != 0 && got != n {
+			return fmt.Errorf("badugi: StartingChips length %d != Players length %d", got, n)
+		}
+	}
 	b.trumpCards = j.TrumpCards
 	if b.trumpCards == nil {
 		b.trumpCards = NewTrumpCards(0)

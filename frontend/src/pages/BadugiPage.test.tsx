@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { badugiApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -116,5 +116,88 @@ describe('BadugiPage', () => {
     );
     renderWithProviders(<BadugiPage />);
     await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
+  });
+
+  it('wires betting buttons during the human turn', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DEAL, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /チェック/ })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /チェック/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, undefined, 0));
+  });
+
+  it('wires fold and allin', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.BET, currentTurn: 0, lastBet: 20 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /フォールド/ })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /フォールド/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined, undefined, undefined, 0));
+
+    fireEvent.click(screen.getByRole('button', { name: /オールイン/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin', undefined, undefined, undefined, 0));
+  });
+
+  it('exposes exchange and stand during draw phase', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', []));
+
+    fireEvent.click(screen.getByRole('button', { name: /スタンド/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand'));
+  });
+
+  it('hides betting controls when the human has folded', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.BET,
+        players: [humanPlayer({ folded: true }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByText(/フォールド/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: /チェック/ })).toBeNull();
+  });
+
+  it('shows reset confirmation dialog', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.END, gameEndFlag: true }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /リセット/ })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /リセット/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /確認/ })).toBeInTheDocument());
+  });
+
+  it('toggles betting limit and reissues reset with the new config', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.END, gameEndFlag: true }));
+    renderWithProviders(<BadugiPage />);
+    // SettingsPanel wraps its form in <details>; open it via the summary.
+    const summary = await screen.findByText('設定');
+    fireEvent.click(summary);
+
+    const limitSelect = await screen.findByLabelText(/リミット/);
+    fireEvent.change(limitSelect, { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: /リセット/ }));
+    fireEvent.click(screen.getByRole('button', { name: /確認/ }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenLastCalledWith('reset', undefined, undefined, { bettingLimit: 2, cpuMetaAI: false }),
+    );
+  });
+
+  it('marks a selected card as pressed in draw phase', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    // Card buttons come first in the footer; pick the first non-action button
+    // by role=button and aria-pressed attribute presence.
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    expect(cardButtons.length).toBeGreaterThan(0);
+    fireEvent.click(cardButtons[0]);
+    await waitFor(() => expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true'));
   });
 });

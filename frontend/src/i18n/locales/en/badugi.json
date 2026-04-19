@@ -34,7 +34,8 @@
     "dropDup": "Discard cards that duplicate a rank or suit.",
     "bigBet": "Strong hand — bet or raise.",
     "callWithValue": "Three-card low is worth a value call.",
-    "foldWeak": "Weak hand — fold."
+    "foldWeak": "Weak hand — fold.",
+    "checkWeak": "Weak hand, but no outstanding bet — check."
   },
   "result": {
     "win": "You win.",

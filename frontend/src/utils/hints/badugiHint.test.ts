@@ -104,5 +104,6 @@ describe('getBadugiHint', () => {
     s.players[0].cards = [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3), card('SPADE', 4)];
     const hint = getBadugiHint(s);
     expect(hint?.targetAction).toBe('check');
+    expect(hint?.reason).toBe('hint.checkWeak');
   });
 });
