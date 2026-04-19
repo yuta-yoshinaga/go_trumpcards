@@ -2955,4 +2955,28 @@ stateDiagram-v2
 
 Scorpion 固有のアクション: `MoveTableauToTableau(fromCol, cardIndex, toCol)` / `Deal` / `Undo` / `UndoN` / `GiveUp`。Yukon 的な「任意カード以降を一括で移動」ルールと Spider 的な「同スート13枚で自動除去」ルールを組み合わせた 52 枚 1 デッキのソリティア。ストック 3 枚は各列の末尾に追加され、4 スート全完成でゲームクリア。
 
+### 3.41 Trash フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> PlayerTurn : Reset()
+    PlayerTurn --> PlayerTurn : Draw() [1-10 → auto-place chain]
+    PlayerTurn --> AwaitWild : Draw() [K/Joker]
+    PlayerTurn --> PlayerTurn : Draw() [J/Q → discard, switch turn]
+    AwaitWild --> PlayerTurn : PlaceWild(pos) [chain continues]
+    AwaitWild --> GameOver : PlaceWild(pos) [all 10 face-up]
+    PlayerTurn --> GameOver : 勝利確定 (全スロット表向き)
+    PlayerTurn --> PlayerTurn : CpuStep() [CPUターン]
+    AwaitWild --> PlayerTurn : CpuStep() [CPUがワイルドを配置]
+    GameOver --> [*]
+
+    note right of PlayerTurn : TrashPhasePlayerTurn = 0
+    note right of AwaitWild : TrashPhaseAwaitWild = 1
+    note right of GameOver : TrashPhaseGameOver = 2
+```
+
+Trash 固有のアクション: `Draw()` / `PlaceWild(pos)` / `CpuStep()` / `Reset()`。2人プレイヤー (人間 vs CPU)、54枚デッキ (52+ジョーカー2)。
+各プレイヤーは10枚の裏向きカード (ポジション1〜10) を持ち、山札から引いたカードを対応するポジションと交換しつつチェーン化。
+K/Joker はワイルドで任意スロット配置、J/Q はターン終了。山札が尽きた場合は捨て札の一番上を残して残りを再シャッフル。
+
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

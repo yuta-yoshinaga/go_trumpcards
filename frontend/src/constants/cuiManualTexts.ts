@@ -54,6 +54,7 @@ import spades from '../../../docs/manual/cui/spades.md?raw';
 import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
+import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
@@ -120,6 +121,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/yukon': yukon,
   '/scorpion': scorpion,
   '/accordion': accordion,
+  '/trash': trash,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

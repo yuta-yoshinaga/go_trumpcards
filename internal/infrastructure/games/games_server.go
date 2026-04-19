@@ -298,4 +298,9 @@ func init() {
 			return usecase.NewAccordionInteractor(domain.NewDefaultAccordion(), new(presenter.AccordionWebPresenter))
 		},
 		controller.NewAccordionWebController)
+	BindWebControllerFor("trash",
+		func() usecase.TrashInteractorIF {
+			return usecase.NewTrashInteractor(domain.NewDefaultTrash(), new(presenter.TrashWebPresenter))
+		},
+		controller.NewTrashWebController)
 }

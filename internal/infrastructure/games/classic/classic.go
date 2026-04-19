@@ -183,4 +183,12 @@ func init() {
 			return usecase.RestorePageOneInteractor(data, new(presenter.PageOneWebPresenter))
 		},
 		controller.NewPageOneWebControllerWithProvider)
+	games.RegisterKVGame("trash", games.CategoryClassic,
+		func() usecase.TrashInteractorIF {
+			return usecase.NewTrashInteractor(domain.NewDefaultTrash(), new(presenter.TrashWebPresenter))
+		},
+		func(data []byte) (usecase.TrashInteractorIF, error) {
+			return usecase.RestoreTrashInteractor(data, new(presenter.TrashWebPresenter))
+		},
+		controller.NewTrashWebControllerWithProvider)
 }

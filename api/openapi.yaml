@@ -124,6 +124,8 @@ tags:
     description: Scorpion (スコーピオン) game - variant of solitaire combining Yukon and Spider mechanics
   - name: accordion
     description: Accordion (アコーディオン) game - compression solitaire where piles merge onto the 1st or 3rd pile to the left
+  - name: trash
+    description: Trash (トラッシュ / ガベージ) game - 2-player matching game where each player flips 10 face-down cards into position 1..10 using wilds
 
 paths:
   /blackjack/exec:
@@ -4924,6 +4926,106 @@ paths:
                     type: string
                   messageCode:
                     type: string
+        '400':
+          description: Bad request
+
+  /trash/exec:
+    post:
+      tags:
+        - trash
+      summary: Execute a Trash (トラッシュ) game command
+      description: |
+        Send a command to advance a Trash (Garbage) session identified by `sessionId`.
+        Two players (1 human vs 1 CPU) each have 10 face-down slots. On a turn the
+        player draws from the stock; Ace-10 auto-places at the matching position
+        (continuing the chain), K/Joker becomes a wild the player places manually,
+        J/Q ends the turn. First to flip all 10 slots wins. Uses a 54-card deck
+        (52 + 2 jokers); the stock refills from the shuffled discard pile when
+        empty.
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | PlayerTurn  | 0     | Active player may draw |
+        | AwaitWild   | 1     | Active player must choose a position for the drawn wild |
+        | GameOver    | 2     | A player flipped all 10 slots |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `draw`  | `d`     | Draw one card from the stock |
+        | `place` | `p`     | Place the pending wild at `position` (1..10) |
+        | `cpu`   | —       | Advance the CPU turn by one step |
+        | `log`   | `l`     | View action log (available after game over) |
+      operationId: trashExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, place, p, cpu, log, l, quit, q]
+                sessionId:
+                  type: string
+                position:
+                  type: integer
+                  description: Slot index (1..10) for wild placement
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phase:
+                    type: integer
+                  current:
+                    type: integer
+                  players:
+                    type: array
+                    minItems: 2
+                    maxItems: 2
+                    items:
+                      type: object
+                      properties:
+                        slots:
+                          type: array
+                          minItems: 10
+                          maxItems: 10
+                          items:
+                            type: object
+                            properties:
+                              card:
+                                $ref: '#/components/schemas/Card'
+                              faceUp:
+                                type: boolean
+                        isCpu:
+                          type: boolean
+                  stockSize:
+                    type: integer
+                  discardSize:
+                    type: integer
+                  discardTop:
+                    $ref: '#/components/schemas/Card'
+                  pending:
+                    $ref: '#/components/schemas/Card'
+                  moveCount:
+                    type: integer
+                  winner:
+                    type: integer
+                    description: -1 until the game ends; 0 for the human, 1 for the CPU
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
         '400':
           description: Bad request
 

@@ -2405,6 +2405,37 @@ export interface AccordionResponse {
   hint?: AccordionHint;
 }
 
+// --- Trash (トラッシュ) ---
+
+/** A single slot (position 1..10) for one Trash player. */
+export interface TrashSlot {
+  /** Face-down slots omit this field. Only face-up cards expose their identity. */
+  card?: Card;
+  faceUp: boolean;
+}
+
+/** One player's full Trash state: 10 slots plus a flag for the CPU. */
+export interface TrashPlayerState {
+  slots: TrashSlot[];
+  isCpu: boolean;
+}
+
+/** API response shape for a Trash game. */
+export interface TrashResponse {
+  phase: number;
+  current: number;
+  players: [TrashPlayerState, TrashPlayerState];
+  stockSize: number;
+  discardSize: number;
+  discardTop?: Card;
+  pending?: Card;
+  moveCount: number;
+  winner: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Whist (ホイスト) ---
 
 /** Whist player data with team, scores, and trick count. */

@@ -57,6 +57,7 @@ import { SpadesPage } from './pages/SpadesPage';
 import { SpeedPage } from './pages/SpeedPage';
 import { SpiderPage } from './pages/SpiderPage';
 import { ThreeCardPage } from './pages/ThreeCardPage';
+import { TrashPage } from './pages/TrashPage';
 import { TriPeaksPage } from './pages/TriPeaksPage';
 import { TwoTenJackPage } from './pages/TwoTenJackPage';
 import { VideoPokerPage } from './pages/VideoPokerPage';
@@ -119,6 +120,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/yukon': <YukonPage />,
   '/scorpion': <ScorpionPage />,
   '/accordion': <AccordionPage />,
+  '/trash': <TrashPage />,
   '/whist': <WhistPage />,
   '/poker-squares': <PokerSquaresPage />,
   '/pageone': <PageOnePage />,
