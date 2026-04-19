@@ -67,6 +67,12 @@ func NewFreeCell(trumpCards *TrumpCards) *FreeCell {
 	}
 }
 
+// NewDefaultFreeCell returns FreeCell with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultFreeCell() *FreeCell {
+	return NewFreeCell(NewTrumpCards(0))
+}
+
 // Reset ゲームリセット
 func (f *FreeCell) Reset() {
 	f.trumpCards.Shuffle()

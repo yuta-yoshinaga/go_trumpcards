@@ -118,7 +118,7 @@ export function OldMaidPlayerArea({
         {onToggleSuspect && !player.isFinished && !gameEndFlag && (
           <button
             type="button"
-            className="ml-1 px-1.5 py-0.5 text-xs rounded bg-red-700/60 hover:bg-red-700 text-white"
+            className="ml-1 px-1.5 py-0.5 text-xs rounded bg-ds-error/60 hover:bg-ds-error text-white"
             onClick={onToggleSuspect}
           >
             {isSuspect ? t('suspect.unpin') : t('suspect.pin')}
@@ -141,7 +141,7 @@ export function OldMaidPlayerArea({
               key={`${card.design}-${card.value}`}
               card={card}
               width={cardWidth}
-              className={focusedCardIdx === i && onReorder ? 'ring-2 ring-blue-500' : undefined}
+              className={focusedCardIdx === i && onReorder ? 'ring-2 ring-ds-info' : undefined}
               draggable={!gameEndFlag && !!onReorder}
               onDragStart={(e: React.DragEvent) => {
                 e.dataTransfer.setData('oldmaidCardIndex', String(i));

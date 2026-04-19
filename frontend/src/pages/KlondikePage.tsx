@@ -40,6 +40,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { KLONDIKE_HELP, parseKlondikeCommand } from '../utils/cli/commands/klondikeCommands';
 import { formatKlondikeState } from '../utils/cli/formatters/klondikeFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -211,9 +212,12 @@ function KlondikePageContent() {
 
   // Waste display: in 3-card mode show up to 3 fanned cards, only top clickable
   const wasteDisplay = state.drawCount === 3 ? state.waste.slice(-3) : state.waste.slice(-1);
+  // Mirrors the backend's Klondike.AllFaceUp() guard: stock must be empty AND every tableau card face-up.
+  // (Waste cards are always face-up and AutoComplete pops them, so no waste check is needed.)
+  const autoCompleteReady = state.stockCount === 0 && isTableauAllFaceUp(state.tableau);
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.klondike.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.klondike.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.klondike')} />
       {/* Phase indicator */}
       <PhaseIndicator
@@ -302,7 +306,7 @@ function KlondikePageContent() {
                                 draggable={isPlaying && !loading}
                                 onDragStart={dnd.handleDragStart({ zone: 'waste' })}
                                 onDragEnd={dnd.handleDragEnd}
-                                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
+                                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
                               >
                                 <AnimatedCard
                                   card={card}
@@ -440,7 +444,7 @@ function KlondikePageContent() {
                                     draggable={isPlaying && !loading}
                                     onDragStart={dnd.handleDragStart(cardZone)}
                                     onDragEnd={dnd.handleDragEnd}
-                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                   >
                                     <AnimatedCard
                                       card={tc.card}
@@ -566,9 +570,11 @@ function KlondikePageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
@@ -583,7 +589,7 @@ function KlondikePageContent() {
                 </div>
               )}
               {/* Draw mode toggle */}
-              <label htmlFor="draw-mode-select" className="text-sm text-gray-300">
+              <label htmlFor="draw-mode-select" className="text-sm text-ds-text-muted">
                 {t('drawMode')}
               </label>
               <select
@@ -595,14 +601,14 @@ function KlondikePageContent() {
                   handleResetWithConfig({ drawCount: n, scoringMode: scoringModeSetting });
                   resetTimer();
                 }}
-                className="bg-gray-700 text-white text-sm rounded px-2 py-1"
+                className="bg-ds-surface-elevated text-white text-sm rounded px-2 py-1"
                 aria-label={t('drawMode')}
               >
                 <option value={1}>{t('drawMode1')}</option>
                 <option value={3}>{t('drawMode3')}</option>
               </select>
               {/* Scoring mode toggle */}
-              <label htmlFor="scoring-mode-select" className="text-sm text-gray-300">
+              <label htmlFor="scoring-mode-select" className="text-sm text-ds-text-muted">
                 {t('scoringMode')}
               </label>
               <select
@@ -614,7 +620,7 @@ function KlondikePageContent() {
                   handleResetWithConfig({ drawCount: drawCountSetting, scoringMode: n });
                   resetTimer();
                 }}
-                className="bg-gray-700 text-white text-sm rounded px-2 py-1"
+                className="bg-ds-surface-elevated text-white text-sm rounded px-2 py-1"
                 aria-label={t('scoringMode')}
               >
                 <option value={0}>{t('scoringNone')}</option>

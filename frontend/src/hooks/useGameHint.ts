@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import type {
+  AccordionResponse,
   BaccaratResponse,
+  BadugiResponse,
   BlackJackResponse,
   CanastaResponse,
   CanfieldResponse,
@@ -33,12 +35,14 @@ import type {
   PyramidResponse,
   RedDogResponse,
   ScorpionResponse,
+  SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
   SpadesResponse,
   SpeedResponse,
   SpiderResponse,
   ThreeCardResponse,
+  TrashResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
   VideoPokerResponse,
@@ -47,7 +51,9 @@ import type {
   YukonResponse,
 } from '../types/card';
 import type { HintResult } from '../types/hint';
+import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
+import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
@@ -80,6 +86,7 @@ import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
+import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
@@ -88,6 +95,7 @@ import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
+import { getTrashHint } from '../utils/hints/trashHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
@@ -141,7 +149,8 @@ const hintFactories = {
   pinochle: (s) => getPinochleHint(s as PinochleResponse),
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
   sevencardstud: () => null,
-  razz: () => null,
+  razz: (s) => getRazzHint(s as SevenCardStudResponse),
+  badugi: (s) => getBadugiHint(s as BadugiResponse),
   fortythieves: () => null,
   paigow: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),
@@ -152,6 +161,8 @@ const hintFactories = {
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
+  accordion: (s) => getAccordionHint(s as AccordionResponse),
+  trash: (s) => getTrashHint(s as TrashResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

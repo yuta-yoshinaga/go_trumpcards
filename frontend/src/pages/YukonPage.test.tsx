@@ -95,12 +95,33 @@ describe('YukonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
-  it('autocomplete button triggers autocomplete command', async () => {
+  it('autocomplete button triggers autocomplete command when all face-up', async () => {
+    const readyState: YukonResponse = {
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [{ card: card('HEART', 8), faceUp: true }],
+        [{ card: card('CLOVER', 5), faceUp: true }],
+        [{ card: card('DIAMOND', 10), faceUp: true }],
+        [{ card: card('SPADE', 3), faceUp: true }],
+        [{ card: card('HEART', 7), faceUp: true }],
+        [{ card: card('CLOVER', 2), faceUp: true }],
+      ],
+    };
+    mockExec.mockResolvedValue(readyState);
     renderWithProviders(<YukonPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(readyState);
     const btn = screen.getByRole('button', { name: '自動完成' });
     btn.click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('autocomplete button is disabled while face-down cards exist', async () => {
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
+    expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
   });
 
   it('giveup button triggers giveup command', async () => {

@@ -149,7 +149,7 @@ function ThreeCardPageContent() {
   const phaseName = isBetPhase ? t('phase.bet') : isActionPhase ? t('phase.action') : t('phase.end');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.threecard.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.threecard.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.threecard')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseName}>
@@ -180,14 +180,14 @@ function ThreeCardPageContent() {
             {/* Payout table during bet phase */}
             {isBetPhase && (
               <div className="flex flex-col items-center justify-center py-4 gap-4">
-                <p className="text-white/50 text-lg">{t('betGuide')}</p>
+                <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
                 <details className="bg-black/30 rounded-lg w-full max-w-sm">
                   <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
-                  <div className="px-4 pb-3 text-white/70 text-sm space-y-2">
+                  <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
                     <div>
-                      <div className="font-bold text-white/90 mb-1">{t('payoutRef.anteBonusHeader')}</div>
+                      <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.anteBonusHeader')}</div>
                       <ul className="space-y-0.5">
                         {(['anteBonusStraight', 'anteBonusThreeOfAKind', 'anteBonusStraightFlush'] as const).map(
                           (key) => (
@@ -197,7 +197,7 @@ function ThreeCardPageContent() {
                       </ul>
                     </div>
                     <div>
-                      <div className="font-bold text-white/90 mb-1">{t('payoutRef.pairPlusHeader')}</div>
+                      <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.pairPlusHeader')}</div>
                       <ul className="space-y-0.5">
                         {(
                           [

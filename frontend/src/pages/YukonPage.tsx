@@ -37,6 +37,7 @@ import { YukonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 const noop = () => {};
@@ -298,6 +299,7 @@ function YukonPageContent() {
   const isGameClear = state.phase === YukonPhase.GAME_CLEAR;
   const isGameOver = state.phase === YukonPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const autoCompleteReady = isTableauAllFaceUp(state.tableau);
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -306,7 +308,7 @@ function YukonPageContent() {
     selectedSource.cardIndex === cardIndex;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.klondike.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.klondike.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.yukon')} />
       <PhaseIndicator
         phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
@@ -358,7 +360,7 @@ function YukonPageContent() {
                     <button
                       type="button"
                       className={`${focusRingWhite} rounded-lg transition-colors ${
-                        isTarget ? 'hover:ring-2 hover:ring-yellow-400 cursor-pointer' : ''
+                        isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                       }`}
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
                       disabled={!isPlaying || !isTarget}
@@ -405,7 +407,7 @@ function YukonPageContent() {
                       <button
                         type="button"
                         className={`border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted ${focusRingWhite} ${
-                          selectedSource ? 'hover:ring-2 hover:ring-yellow-400 cursor-pointer' : ''
+                          selectedSource ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                         }`}
                         style={{ width: yk.cw, height: yk.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
@@ -444,10 +446,10 @@ function YukonPageContent() {
                                   onDragStart={dnd.handleDragStart(zone)}
                                   onDragEnd={dnd.handleDragEnd}
                                   className={`${focusRingWhite} rounded-lg transition-all ${
-                                    isSelected ? 'ring-2 ring-yellow-400 -translate-y-1' : ''
+                                    isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                                   } ${isDragSrc ? 'opacity-50' : ''} ${
-                                    hintFrom ? 'ring-2 ring-blue-400 animate-pulse' : ''
-                                  } ${hintTo ? 'ring-2 ring-green-400 animate-pulse' : ''}`}
+                                    hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''
+                                  } ${hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                                   onClick={() => {
                                     if (selectedSource) {
                                       if (isLast) {
@@ -518,7 +520,14 @@ function YukonPageContent() {
                   <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
                     {t('hint')}
                   </button>
-                  <button type="button" className={btnSuccess} onClick={handleAutoComplete} disabled={loading}>
+                  <button
+                    type="button"
+                    className={`${btnSuccess}${autoCompleteReady && !loading ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
+                    onClick={handleAutoComplete}
+                    disabled={loading || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
+                  >
                     {t('autoComplete')}
                   </button>
                   <button

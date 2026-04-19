@@ -149,15 +149,27 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
-  it('clicking auto complete button dispatches autocomplete', async () => {
+  it('clicking auto complete button dispatches autocomplete when ready', async () => {
+    const readyState: SpiderResponse = {
+      ...playingState,
+      stockCount: 0,
+      tableau: makeTableau([[{ card: card('SPADE', 13), faceUp: true }], [], [], [], [], [], [], [], [], []]),
+    };
+    mockExec.mockResolvedValue(readyState);
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '自動完成' })).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue(readyState);
     fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('auto complete button is disabled while stock remains or face-down cards exist', async () => {
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
+    expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
   });
 
   it('clicking give up button dispatches giveup', async () => {

@@ -56,6 +56,20 @@ func NewSevens(trumpCards *TrumpCards, players []*SevensPlayer, config SevensCon
 	return s
 }
 
+// NewDefaultSevens returns Sevens with the standard 4-player setup (1 human, 3 CPU)
+// and DefaultSevensConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultSevens() *Sevens {
+	config := DefaultSevensConfig()
+	players := []*SevensPlayer{
+		NewSevensPlayer(true),
+		NewSevensPlayer(false),
+		NewSevensPlayer(false),
+		NewSevensPlayer(false),
+	}
+	return NewSevens(NewTrumpCards(config.JokerCount), players, config)
+}
+
 // Reset ゲーム初期化
 func (s *Sevens) Reset() {
 	s.gameEndFlag = false

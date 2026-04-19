@@ -9,8 +9,12 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 3. **Interactor**: `internal/usecase/<Game>Interactor.go` with presenter interface in `internal/usecase/presenter/`
 4. **Controller**: CUI controller in `internal/adapter/controller/`, Web controller in `internal/adapter/controller/`, reuse `cuiutil` package for input parsing and `ClampIntPtr` for config validation
 5. **Presenter**: CUI and Web presenters in `internal/adapter/presenter/`, reuse `buildCuiOutput`, `cuiCardListStr`, `ActionLogOutput` helpers, `WebOutputBase` for common web output fields
-6. **Infrastructure**: Register in `cmd/trumpcards/main.go` (CLI) and `internal/infrastructure/web/TrumpCardsWeb.go` (API route)
-6b. **Cloudflare Worker (WASM)**: Register in the appropriate `cmd/workers/{casino,classic,solo}/main.go` using `registerKV`. Worker assignment: casino (table/poker games), classic (trick-taking/matching), solo (solitaire/rummy). Also verify `frontend/src/api/gameApi.ts` `workerUrl` mapping matches.
+6. **Infrastructure**: Register in `cmd/trumpcards/main.go` (CLI) and add four entries for the new game:
+   - **(a)** `{Name: "<name>", Category: Category…}` in the `registry` slice in `internal/infrastructure/games/registry.go`. `Category` pins the game to one Cloudflare Worker (casino = table/poker, classic = trick-taking/matching, solo = solitaire/rummy).
+   - **(b)** `BindWebController("<name>", …)` in `internal/infrastructure/games/games_server.go` — wires the HTTP server factory.
+   - **(c)** `games.BindWorker("<name>", games.Category…, …)` in the matching sub-package under `internal/infrastructure/games/{casino,classic,solo}/` — the per-category split is what keeps each Cloudflare Worker WASM binary under the 1 MB gzipped free-tier limit, so the sub-package must match the `Category` in (a). `games.BindWorker` panics at init if they disagree.
+   - **(d)** `GameRegistryEntry` entry in the `gameRegistry` slice in `internal/infrastructure/ui/GameManager.go` — the CLI-side wiring. Use the `cuiEntry` helper with a `CuiHelpSpec` for the standard help template; fall back to `newCuiGame(ctrl, []string{...})` if the game needs a hand-authored help block.
+6b. **Frontend worker URL**: verify `frontend/src/api/gameApi.ts` `workerUrl` maps the new game to the same worker name as its `Category`.
 7. **Run `goimports -w` and `golangci-lint run ./...`** on all new files
 8. **80%+ branch coverage** for all new packages
 
@@ -58,5 +62,8 @@ Run through this cross-check for the new `<game>`:
 - [ ] `frontend/src/utils/hints/<game>Hint.ts` exists (real implementation or documented `null` stub)
 - [ ] `frontend/src/hooks/useGameHint.ts` registers `<game>` in `hintFactories`
 - [ ] `<Game>Page.tsx` is wrapped in `<TutorialWrapper>` and surfaces `TutorialButton` + `HintToggle`
-- [ ] `cmd/workers/{casino,classic,solo}/main.go` registers `<game>` in exactly one worker
-- [ ] `frontend/src/api/gameApi.ts` `workerUrl` maps `<game>` to that same worker
+- [ ] `internal/infrastructure/games/registry.go` has a `{Name, Category}` entry for `<game>`
+- [ ] `internal/infrastructure/games/games_server.go` has a matching `BindWebController("<game>", ...)` call
+- [ ] `internal/infrastructure/games/<category>/<category>.go` has a matching `games.BindWorker("<game>", games.Category…, ...)` call in the correct category sub-package
+- [ ] `internal/infrastructure/ui/GameManager.go` `gameRegistry` has a matching `GameRegistryEntry` for `<game>` (CLI wiring)
+- [ ] `frontend/src/api/gameApi.ts` `workerUrl` maps `<game>` to the worker matching that `Category`

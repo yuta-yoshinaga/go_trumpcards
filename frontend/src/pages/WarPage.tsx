@@ -130,7 +130,7 @@ function WarPageContent() {
         : t('phase.reveal');
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
       <GamePageHeading title={tc('nav.war')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={!isGameEnd}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -152,7 +152,7 @@ function WarPageContent() {
             {/* CPU area */}
             <div className="flex items-center justify-center gap-4" data-tutorial="wr-cpu-pile">
               <div className="text-center">
-                <div className="text-xs text-white/70">
+                <div className="text-xs text-ds-text-muted">
                   {tc('player.cpu', { id: 1 })} — {t('label.drawPile')}: {cpu.drawPileSize} / {t('label.discardPile')}:{' '}
                   {cpu.discardPileSize}
                 </div>
@@ -173,7 +173,7 @@ function WarPageContent() {
               data-tutorial="wr-arena"
             >
               <div className="text-center">
-                <div className="text-xs text-white/70 mb-1">CPU</div>
+                <div className="text-xs text-ds-text-muted mb-1">CPU</div>
                 {state.cpuRevealed ? (
                   <AnimatedCard card={state.cpuRevealed} width={cardWidth * 1.1} />
                 ) : (
@@ -184,15 +184,15 @@ function WarPageContent() {
                 )}
               </div>
               <div className="text-center">
-                <div className="text-sm text-white/80 font-semibold">
+                <div className="text-sm text-ds-text-primary font-semibold">
                   {t('label.potCount', { count: state.warPotSize })}
                 </div>
-                <div className="text-xs text-white/60 mt-1">
+                <div className="text-xs text-ds-text-muted mt-1">
                   {t('label.rounds')}: {state.roundsPlayed} / {state.config.maxRounds}
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-xs text-white/70 mb-1">{tc('player.you')}</div>
+                <div className="text-xs text-ds-text-muted mb-1">{tc('player.you')}</div>
                 {state.playerRevealed ? (
                   <AnimatedCard card={state.playerRevealed} width={cardWidth * 1.1} />
                 ) : (
@@ -207,7 +207,7 @@ function WarPageContent() {
             {/* Player area */}
             <div className="flex items-center justify-center gap-4" data-tutorial="wr-player-pile">
               <div className="text-center">
-                <div className="text-xs text-white/70">
+                <div className="text-xs text-ds-text-muted">
                   {tc('player.you')} — {t('label.drawPile')}: {human.drawPileSize} / {t('label.discardPile')}:{' '}
                   {human.discardPileSize}
                 </div>
@@ -269,7 +269,7 @@ function WarPageContent() {
                 type="button"
                 onClick={handleStep}
                 disabled={loading || isGameEnd}
-                className="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="step-button"
                 data-tutorial="wr-step-button"
               >
@@ -279,7 +279,7 @@ function WarPageContent() {
                 type="button"
                 onClick={() => requestConfirm(handleReset)}
                 data-tutorial="wr-reset-button"
-                className="px-4 py-2 rounded-lg bg-gray-600 hover:bg-gray-500 text-white text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-white text-sm"
               >
                 {tc('button.reset')}
               </button>

@@ -285,7 +285,7 @@ function SevenCardStudPageContent() {
                 <div key={p.id} className="mb-3 p-2 rounded bg-black/30">
                   <div className="text-white text-sm mb-1">
                     CPU {p.id}
-                    <span className="ml-2 text-xs text-gray-300">{p.playStyleName}</span>
+                    <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
                     <span className="ml-2 text-xs">
                       {tc('betting.chips')} {p.chips}
                     </span>
@@ -303,7 +303,7 @@ function SevenCardStudPageContent() {
                     )}
                   </div>
                   {/* Door cards (always visible) */}
-                  <div className="text-gray-300 text-xs mb-0.5">{t('doorCards')}</div>
+                  <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
                   <div className="flex flex-wrap gap-1 mb-1">
                     {p.doorCards?.length
                       ? p.doorCards.map((card) => (
@@ -321,7 +321,7 @@ function SevenCardStudPageContent() {
                         ))}
                   </div>
                   {/* Hole cards (face-down unless showdown) */}
-                  <div className="text-gray-300 text-xs mb-0.5">{t('holeCards')}</div>
+                  <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
                   <div className="flex flex-wrap gap-1">
                     {isShowdown && !p.folded && p.holeCards?.length
                       ? p.holeCards.map((card) => (
@@ -383,7 +383,7 @@ function SevenCardStudPageContent() {
                   )}
                 </div>
                 {/* Door cards */}
-                <div className="text-gray-300 text-xs mb-0.5">{t('doorCards')}</div>
+                <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
                 <div className="flex flex-wrap gap-1.5 mb-1">
                   {humanPlayer.doorCards?.length
                     ? humanPlayer.doorCards.map((card) => (
@@ -401,7 +401,7 @@ function SevenCardStudPageContent() {
                       ))}
                 </div>
                 {/* Hole cards */}
-                <div className="text-gray-300 text-xs mb-0.5">{t('holeCards')}</div>
+                <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {humanPlayer.holeCards?.length
                     ? humanPlayer.holeCards.map((card) => (

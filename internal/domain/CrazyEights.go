@@ -59,6 +59,19 @@ func NewCrazyEights(trumpCards *TrumpCards, players []*CrazyEightsPlayer, config
 	}
 }
 
+// NewDefaultCrazyEights returns CrazyEights with the standard 4-player setup (1 human, 3 CPU)
+// and DefaultCrazyEightsConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultCrazyEights() *CrazyEights {
+	players := []*CrazyEightsPlayer{
+		NewCrazyEightsPlayer(true),
+		NewCrazyEightsPlayer(false),
+		NewCrazyEightsPlayer(false),
+		NewCrazyEightsPlayer(false),
+	}
+	return NewCrazyEights(NewTrumpCards(0), players, DefaultCrazyEightsConfig())
+}
+
 // Reset ゲーム初期化
 func (g *CrazyEights) Reset() {
 	g.gameEndFlag = false

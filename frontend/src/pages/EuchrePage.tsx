@@ -202,7 +202,7 @@ function EuchrePageContent() {
   const suitName = (suit: number) => (SUIT_NAMES[suit] ? t(SUIT_NAMES[suit]) : '');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.euchre.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.euchre.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.euchre')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanBidTurn || isHumanTurn || isHumanDiscard}>
@@ -291,7 +291,7 @@ function EuchrePageContent() {
                 {/* Face-up card */}
                 {state.faceUpCard && (isPickUpPhase || isCallTrumpPhase) && (
                   <div className="my-2 text-center">
-                    <div className="text-white/70 text-sm mb-1">{t('faceUpCard')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('faceUpCard')}</div>
                     <div className="inline-block">
                       <AnimatedCard
                         card={state.faceUpCard}
@@ -305,7 +305,7 @@ function EuchrePageContent() {
                 {/* Current trick */}
                 {state.currentTrick.length > 0 && (
                   <div className="my-3 p-3 rounded bg-black/40" data-tutorial="eu-trick-display">
-                    <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('currentTrick')}</div>
                     <div className="flex gap-2">
                       {state.currentTrick.map((trickCard) => (
                         <div key={`trick-${trickCard.playerIdx}`} className="text-center">
@@ -328,7 +328,7 @@ function EuchrePageContent() {
 
                 {/* Partnership info */}
                 {humanPlayer && (
-                  <div className="text-white/70 text-sm text-center mb-2" data-tutorial="eu-team-info">
+                  <div className="text-ds-text-muted text-sm text-center mb-2" data-tutorial="eu-team-info">
                     {t('partnership', {
                       partner: playerName(
                         state.players.find((p) => !p.isHuman && p.team === humanTeam)?.id ?? -1,
@@ -345,14 +345,14 @@ function EuchrePageContent() {
                 {/* CPU players */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-white/70 text-sm">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
                       {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
                     </summary>
                     <div className="mt-1">
                       {state.players
                         .filter((p) => !p.isHuman)
                         .map((p) => (
-                          <div key={p.id} className="text-white/70 text-sm py-0.5">
+                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                             {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
                             {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
@@ -365,7 +365,7 @@ function EuchrePageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-white/70 text-sm">
+                        <div className="text-ds-text-muted text-sm">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('team', { n: p.team })} | {t('trickCount', { count: p.trickCount })}
                           {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
@@ -381,8 +381,10 @@ function EuchrePageContent() {
                     data-tutorial="eu-score-table"
                     open={isRoundEnd || isGameEnd || undefined}
                   >
-                    <summary className="cursor-pointer select-none text-white/70 text-sm">{t('teamScores')}</summary>
-                    <table className="w-full text-sm text-white/70 mt-1">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                      {t('teamScores')}
+                    </summary>
+                    <table className="w-full text-sm text-ds-text-muted mt-1">
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">
@@ -403,8 +405,8 @@ function EuchrePageContent() {
                   </details>
                 ) : (
                   <div className="my-3 p-2 rounded bg-black/30" data-tutorial="eu-score-table">
-                    <div className="text-white/70 text-sm mb-1">{t('teamScores')}</div>
-                    <table className="w-full text-sm text-white/70">
+                    <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+                    <table className="w-full text-sm text-ds-text-muted">
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">

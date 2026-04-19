@@ -73,6 +73,19 @@ func NewMemory(trumpCards *TrumpCards, players []*MemoryPlayer, config MemoryCon
 	return m
 }
 
+// NewDefaultMemory returns Memory with the standard 4-player setup (1 human, 3 CPU)
+// and DefaultMemoryConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultMemory() *Memory {
+	players := []*MemoryPlayer{
+		NewMemoryPlayer(true),
+		NewMemoryPlayer(false),
+		NewMemoryPlayer(false),
+		NewMemoryPlayer(false),
+	}
+	return NewMemory(NewTrumpCards(0), players, DefaultMemoryConfig())
+}
+
 // Reset ゲームリセット
 func (m *Memory) Reset() {
 	m.trumpCards.Shuffle()

@@ -58,5 +58,14 @@
     "hint_pass": "Your hand is weak, pass is recommended",
     "hint_trump": "This suit is optimal for trump",
     "hint_play": "This card is the best play"
+  },
+  "tutorial": {
+    "gameInfo": "Shows the round/trick number, team scores, trump suit, and highest bid.",
+    "playerInfo": "Each player's team, bid, meld score, and tricks taken.",
+    "trickDisplay": "The current trick. Trump cards beat the lead suit.",
+    "meldArea": "During the meld phase you score points with hand combinations (Run, Pinochle, Marriage, etc.).",
+    "playerHand": "Your hand. Playable cards are highlighted.",
+    "actionButtons": "Select actions such as Bid, Pass, Declare Trump, or Play depending on the phase.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

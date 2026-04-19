@@ -151,7 +151,7 @@ function GolfPageContent() {
     : cardWidth;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.golf.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.golf.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.golf')} />
       <PhaseIndicator
         phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
@@ -205,7 +205,7 @@ function GolfPageContent() {
                           disabled={!isPlaying || loading || !exposed}
                           aria-label={cardAlt(gc.card)}
                           className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                            isHinted && exposed ? 'ring-2 ring-yellow-400' : ''
+                            isHinted && exposed ? 'ring-2 ring-ds-warning' : ''
                           } ${!exposed ? 'opacity-60' : ''}`}
                         >
                           <AnimatedCard

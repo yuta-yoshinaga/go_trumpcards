@@ -15,7 +15,7 @@ interface BoardProps {
 
 /** Cell background and text color style based on card placement state. */
 function cellColors(placed: boolean, isCenter: boolean, canPlace: boolean): React.CSSProperties {
-  if (canPlace) return { background: 'var(--color-game-card-selected)', color: 'white' };
+  if (canPlace) return { background: 'var(--color-ds-info)', color: 'white' };
   if (placed)
     return isCenter
       ? { background: 'var(--color-game-status-waiting)', color: 'var(--color-game-text-strong)' }
@@ -76,7 +76,7 @@ function Board({
                   const baseClass =
                     'rounded text-center text-[0.6rem] sm:text-xs lg:text-sm leading-none aspect-square flex items-center justify-center';
                   const bold = isCenter ? ' font-bold' : '';
-                  const border = tunnelHighlight ? ' border border-amber-400' : '';
+                  const border = tunnelHighlight ? ' border border-ds-warning' : '';
 
                   if (canPlace) {
                     return (
@@ -85,9 +85,10 @@ function Board({
                         type="button"
                         onClick={() => onJokerPlace?.(idx, v)}
                         aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
-                        className={`${baseClass}${bold} border border-blue-400 cursor-pointer p-0`}
+                        className={`${baseClass}${bold} ring-2 ring-ds-info ring-offset-1 ring-offset-black/30 motion-safe:animate-pulse cursor-pointer p-0 hover:brightness-110`}
                         style={colors}
                         data-testid="board-cell"
+                        data-joker-placeable="true"
                       >
                         {valueName(v)}
                       </button>

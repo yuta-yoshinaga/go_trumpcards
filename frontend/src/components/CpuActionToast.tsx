@@ -78,7 +78,7 @@ export function CpuActionToast({ actions }: CpuActionToastProps) {
         type="button"
         onClick={() => setVisible(false)}
         aria-label={t('button.dismiss')}
-        className="absolute top-0 right-1 px-2 py-0.5 text-white/70 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
+        className="absolute top-0 right-1 px-2 py-0.5 text-ds-text-muted hover:text-ds-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
       >
         ×
       </button>

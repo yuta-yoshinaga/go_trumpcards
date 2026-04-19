@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- Baccarat, BlackJack, Canasta, Canfield, Caribbean Stud Poker, Clock Solitaire, Contract Bridge, Crazy Eights, Cribbage, Daifugo, Deuces Wild, Doubt, Durak, Euchre, Fifty-one, Forty Thieves, FreeCell, Gin Rummy, Go Fish, Golf, Hearts, Indian Poker, Joker Poker, Klondike, Let It Ride, Memory, Napoleon, Oh Hell, Old Maid, Omaha Hold'em, Pai Gow Poker, Pig's Tail, Pineapple Poker, Pinochle, Poker, Poker Squares, Pyramid, Razz, Scorpion, Seven Card Stud, Sevens, Short Deck Hold'em, Spades, Speed, Spider Solitaire, Texas Hold'em, Three Card Poker, TriPeaks, Two Ten Jack, Video Poker, War, Whist, Yukon. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go implementations of 58 trump card game algorithms (blackjack, poker, hearts, klondike, baccarat, ...). Run `go run ./cmd/trumpcards games --short` for the canonical list. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -28,7 +28,7 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # deuceswild, jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, caribbeanstud, ohhell,
 # bridge, speed, gofish, canasta, pinochle, golf, pigtail, sevencardstud,
 # clocksolitaire, durak, fortythieves, paigow, war, canfield, fiftyone, yukon, whist,
-# letitride, pokersquares, pageone, reddog, razz, scorpion
+# letitride, pokersquares, pageone, reddog, razz, badugi, scorpion, accordion, trash
 go run ./cmd/trumpcards games      # List all available games
 go run ./cmd/trumpcards games --short  # List game names only (for scripting)
 go run ./cmd/trumpcards update     # Self-update to the latest version
@@ -132,13 +132,17 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 
 | Worker | Entry point | Games |
 |--------|-------------|-------|
-| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, caribbeanstud, sevencardstud, paigow, letitride, reddog, razz) |
-| **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist, pageone) |
-| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, scorpion, pokersquares) |
+| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, caribbeanstud, sevencardstud, paigow, letitride, reddog, razz, badugi) |
+| **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist, pageone, trash) |
+| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, scorpion, accordion, pokersquares) |
 
-**When adding/modifying a game, always update both:**
-1. The worker entry point (`cmd/workers/<worker>/main.go`) — register with `registerKV`
-2. The frontend worker URL mapping (`frontend/src/api/gameApi.ts` `workerUrl`) — must match the worker assignment
+The worker entry points (`cmd/workers/{casino,classic,solo}/main.go`) are thin shells that blank-import the matching `internal/infrastructure/games/<category>` sub-package and call `games.RegisterCategory(mux, games.Category…)`. The registry itself (`internal/infrastructure/games/registry.go`) stores only `{Name, Category}` for each game; the Web-server factories live in `games_server.go` (excluded from WASM via build tags) and the Worker bindings live in per-category sub-packages — this split is what keeps each Cloudflare Worker binary under the 1 MB gzipped free-tier limit by letting TinyGo dead-code-eliminate the games from the other two categories.
+
+**When adding/modifying a game, always update:**
+1. `internal/infrastructure/games/registry.go` — `{Name, Category}` entry (selects the worker)
+2. `internal/infrastructure/games/games_server.go` — `BindWebController("<name>", …)` for the HTTP server factory
+3. `internal/infrastructure/games/{casino,classic,solo}/<category>.go` — `games.BindWorker("<name>", …)` for the KV-backed worker route (must match the `Category`)
+4. `frontend/src/api/gameApi.ts` `workerUrl` — must match the `Category`
 
 Build: `make build-worker-{solo,casino,classic}` or `make build-workers` (requires TinyGo).
 

@@ -1,6 +1,8 @@
 import type {
+  AccordionResponse,
   ActionLogResponse,
   BaccaratResponse,
+  BadugiResponse,
   BlackJackResponse,
   BridgeResponse,
   CanastaResponse,
@@ -51,6 +53,7 @@ import type {
   SpeedResponse,
   SpiderResponse,
   ThreeCardResponse,
+  TrashResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
   VideoPokerResponse,
@@ -86,6 +89,7 @@ const workerUrl: Record<string, string> = {
   pineapple: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
+  badugi: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
@@ -122,6 +126,8 @@ const workerUrl: Record<string, string> = {
   canfield: WORKER_SOLO,
   yukon: WORKER_SOLO,
   scorpion: WORKER_SOLO,
+  accordion: WORKER_SOLO,
+  trash: WORKER_CLASSIC,
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
@@ -209,6 +215,25 @@ export const pokerApi = {
     humanPlayMs?: number,
     profile?: unknown,
   ) => gameExec<PokerResponse>('poker', { command, indices, amount, humanPlayMs, profile, ...config }),
+};
+
+/** Configuration options for Badugi game settings. */
+export interface BadugiConfigInput {
+  cpuCount?: number;
+  bettingLimit?: number;
+  cpuMetaAI?: boolean;
+}
+
+/** API client for the Badugi /badugi/exec endpoint. */
+export const badugiApi = {
+  exec: (
+    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    indices?: number[],
+    amount?: number,
+    config?: BadugiConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) => gameExec<BadugiResponse>('badugi', { command, indices, amount, humanPlayMs, profile, ...config }),
 };
 
 /** API client for the Old Maid /oldmaid/exec endpoint. */
@@ -1004,6 +1029,36 @@ export const scorpionApi = {
     }),
 };
 
+/** Source or target pile for an Accordion move. */
+export interface AccordionMoveZone {
+  zone: 'pile';
+  index?: number;
+}
+
+/** API client for the Accordion /accordion/exec endpoint. */
+export const accordionApi = {
+  exec: (
+    command: 'reset' | 'move' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
+    from?: AccordionMoveZone,
+    to?: AccordionMoveZone,
+    n?: number,
+  ) =>
+    gameExec<AccordionResponse>('accordion', {
+      command,
+      from,
+      to,
+      n,
+    }),
+};
+
+/** Command verbs accepted by the Trash /trash/exec endpoint. */
+export type TrashCommand = 'reset' | 'draw' | 'place' | 'cpu' | 'log';
+
+/** API client for the Trash /trash/exec endpoint. */
+export const trashApi = {
+  exec: (command: TrashCommand, position?: number) => gameExec<TrashResponse>('trash', { command, position }),
+};
+
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {
   exec: (
@@ -1099,6 +1154,7 @@ const games = [
   'pineapple',
   'sevencardstud',
   'razz',
+  'badugi',
   'hearts',
   'spades',
   'twotenjack',
@@ -1136,6 +1192,8 @@ const games = [
   'canfield',
   'yukon',
   'scorpion',
+  'accordion',
+  'trash',
   'whist',
   'letitride',
   'pokersquares',

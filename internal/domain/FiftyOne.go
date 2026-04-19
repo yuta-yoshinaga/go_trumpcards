@@ -76,6 +76,18 @@ func NewFiftyOne(trumpCards *TrumpCards, players []*FiftyOnePlayer) *FiftyOne {
 	}
 }
 
+// NewDefaultFiftyOne returns FiftyOne with the standard 4-player setup (1 human, 3 CPU).
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultFiftyOne() *FiftyOne {
+	players := []*FiftyOnePlayer{
+		NewFiftyOnePlayer(true),
+		NewFiftyOnePlayer(false),
+		NewFiftyOnePlayer(false),
+		NewFiftyOnePlayer(false),
+	}
+	return NewFiftyOne(NewTrumpCards(0), players)
+}
+
 // Reset ゲームを初期化する
 func (fo *FiftyOne) Reset() {
 	// カードリセット

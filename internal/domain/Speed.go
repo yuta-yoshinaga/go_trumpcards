@@ -59,6 +59,17 @@ func NewSpeed(trumpCards *TrumpCards, players []*SpeedPlayer, config SpeedConfig
 	return s
 }
 
+// NewDefaultSpeed returns Speed with the standard 2-player setup (1 human, 1 CPU)
+// and DefaultSpeedConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultSpeed() *Speed {
+	players := []*SpeedPlayer{
+		NewSpeedPlayer(true),
+		NewSpeedPlayer(false),
+	}
+	return NewSpeed(NewTrumpCards(0), players, DefaultSpeedConfig())
+}
+
 // Reset ゲームをリセットして新しいゲームを開始する
 func (s *Speed) Reset() {
 	s.phase = SpeedPhasePlay

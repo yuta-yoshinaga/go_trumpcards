@@ -29,6 +29,35 @@ var (
 	date    = "unknown"
 )
 
+// supportedLangs is the single source of truth for which i18n locales the CLI
+// accepts, shared by bootstrap detection (pre-Parse) and the post-Parse
+// validator so the two cannot diverge.
+var supportedLangs = map[string]bool{"ja": true, "en": true}
+
+// portInRange reports whether port is a valid TCP port number, with 0
+// reserved for "let the OS assign an ephemeral port" (POSIX convention).
+func portInRange(port int) bool {
+	return port >= 0 && port <= 65535
+}
+
+// flagSetVisited reports whether any of the named flags was explicitly set
+// on fs. This lets the caller distinguish "user did not pass --port" from
+// "user passed --port 0" without needing a sentinel value in the integer
+// input space — which would misclassify e.g. `--port -1` as "unset".
+func flagSetVisited(fs *flag.FlagSet, names ...string) bool {
+	want := make(map[string]struct{}, len(names))
+	for _, n := range names {
+		want[n] = struct{}{}
+	}
+	seen := false
+	fs.Visit(func(fl *flag.Flag) {
+		if _, ok := want[fl.Name]; ok {
+			seen = true
+		}
+	})
+	return seen
+}
+
 func main() {
 	os.Exit(run())
 }
@@ -36,28 +65,52 @@ func main() {
 func run() int {
 	helpText := buildHelpText()
 
+	// Route parse errors through i18n. Default is ExitOnError with English
+	// output to stderr; switch to ContinueOnError + a discarded sink so we
+	// own error rendering. We also suppress FlagSet.Usage — the flag package
+	// calls it internally before returning the error, which would print the
+	// help text once before our handler prints it again.
+	flag.CommandLine.Init(os.Args[0], flag.ContinueOnError)
+	flag.CommandLine.SetOutput(io.Discard)
+	flag.CommandLine.Usage = func() {}
+
 	lang := flag.String("lang", "", "language (ja or en)")
 	showVersion := flag.Bool("version", false, "Show version information")
 	flag.BoolVar(showVersion, "V", false, "Show version information (shorthand)")
+	showVersionShort := flag.Bool("version-short", false, "Print version number only (machine-readable)")
 	noColorFlag := flag.Bool("no-color", false, "Disable color output")
 	showHelp := flag.Bool("help", false, "Show this help message")
 	flag.BoolVar(showHelp, "h", false, "Show this help message (shorthand)")
-	flag.Usage = func() {
-		fmt.Fprint(os.Stderr, helpText)
+
+	// Resolve the locale from LANG env + any --lang in os.Args before Parse
+	// so a flag error (e.g. --bogus) is rendered in the user's language,
+	// not English.
+	i18n.SetLang(detectBootstrapLang(os.Args[1:], os.Getenv("LANG")))
+
+	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
+		// NB: -h / --help are registered above so flag.Parse handles them
+		// itself and returns nil; flag.ErrHelp is therefore unreachable here.
+		_, _ = fmt.Fprintln(os.Stderr, i18n.Tf("cliFlagError", "err", err.Error()))
+		_, _ = fmt.Fprint(os.Stderr, helpText)
+		return 2
 	}
-	flag.Parse()
 
 	if *showHelp {
 		_, _ = fmt.Fprint(os.Stdout, helpText)
 		return 0
 	}
 
-	// Color control: NO_COLOR env var (https://no-color.org/), --no-color flag,
-	// or non-TTY stdout (pipe/redirect auto-detection).
-	if os.Getenv("NO_COLOR") != "" || *noColorFlag || !term.IsTerminal(int(os.Stdout.Fd())) {
-		color.SetNoColor(true)
-	}
+	// Color control: NO_COLOR env var (https://no-color.org/) and --no-color flag
+	// force color off on both streams. TTY auto-detection is done per stream so that
+	// `game | tee log.txt` keeps stderr colors and `game 2> err.log` keeps stdout colors.
+	forceOff := os.Getenv("NO_COLOR") != "" || *noColorFlag
+	color.SetStdoutColor(!forceOff && term.IsTerminal(int(os.Stdout.Fd())))
+	color.SetStderrColor(!forceOff && term.IsTerminal(int(os.Stderr.Fd())))
 
+	if *showVersionShort {
+		fmt.Println(version)
+		return 0
+	}
 	if *showVersion {
 		fmt.Printf("trumpcards %s (commit: %s, built: %s)\n", version, commit, date)
 		return 0
@@ -67,7 +120,6 @@ func run() int {
 	// An explicit --lang with an unsupported value is a hard error (exit 2);
 	// an unsupported LANG env value emits a one-line warning and falls back to "ja"
 	// (suppress with TRUMPCARDS_QUIET=1).
-	supportedLangs := map[string]bool{"ja": true, "en": true}
 	detectedLang := "ja"
 	var langEnvWarn string // deferred until SetLang is called so i18n resolves
 	if envLang := os.Getenv("LANG"); envLang != "" {
@@ -100,39 +152,12 @@ func run() int {
 		var short, aliases bool
 		_, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
-			f.BoolVar(&aliases, "aliases", false, "Include aliases in output (with --short)")
+			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
 		})
 		if !ok {
 			return code
 		}
-		if aliases && !short {
-			fmt.Fprintln(os.Stderr, i18n.T("cliAliasesWithoutShort"))
-		}
-		// Build reverse alias map: canonical name -> sorted list of aliases.
-		reverseAliases := make(map[string][]string)
-		for alias, canonical := range ui.GameAliases {
-			reverseAliases[canonical] = append(reverseAliases[canonical], alias)
-		}
-		for k := range reverseAliases {
-			sort.Strings(reverseAliases[k])
-		}
-		descs := ui.GameDescriptions()
-		for _, name := range ui.GameNames() {
-			if short {
-				fmt.Println(name)
-				if aliases {
-					for _, alias := range reverseAliases[name] {
-						fmt.Println(alias)
-					}
-				}
-			} else {
-				line := fmt.Sprintf("  %-16s %s", name, descs[name])
-				if aliasList := reverseAliases[name]; len(aliasList) > 0 {
-					line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
-				}
-				fmt.Println(line)
-			}
-		}
+		printGames(short, aliases, os.Stdout)
 		return 0
 	}
 	commands["completion"] = func() int {
@@ -161,16 +186,16 @@ func run() int {
 	commands["web"] = func() int {
 		var port int
 		var host string
-		_, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
-			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080)")
+		fs, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
+			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
 			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
-			f.StringVar(&host, "host", "", "Bind address for the web server (default: all interfaces)")
+			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
 		})
 		if !ok {
 			return code
 		}
-		if port != 0 {
-			if port < 1 || port > 65535 {
+		if flagSetVisited(fs, "port", "p") {
+			if !portInRange(port) {
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(port)))
 				return 1
 			}
@@ -201,6 +226,13 @@ func run() int {
 		arg = canonical
 	}
 	if handler, ok := commands[arg]; ok {
+		// `<game> --help` / `<game> -h`: Go's flag package stops parsing at the first
+		// non-flag argument, so these trailing flags land in Args(). Intercept them
+		// and print that game's help instead of launching the game. Subcommands in
+		// subFlagCommands are handled by parseSubFlags (which catches flag.ErrHelp).
+		if !subFlagCommands[arg] && hasHelpFlag(flag.Args()[1:]) {
+			return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
+		}
 		if flag.NArg() > 1 && !subFlagCommands[arg] {
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(flag.Args()[1:], " ")))
 		}
@@ -234,14 +266,15 @@ var builtinSubcommandHelp = map[string][]string{
 		"  trumpcards web [--port PORT] [--host HOST]",
 		"",
 		"FLAGS:",
-		"  -p, --port PORT   Port number (default: 8080; env PORT)",
-		"      --host HOST   Bind address (default: all interfaces; env HOST)",
+		"  -p, --port PORT   Port number (default: 8080; 0 = OS-assigned ephemeral; env PORT)",
+		"      --host HOST   Bind address (default: 127.0.0.1; use 0.0.0.0 to expose; env HOST)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards web",
 		"  trumpcards web --port 3000",
-		"  trumpcards web --host 127.0.0.1",
-		"  HOST=127.0.0.1 PORT=3000 trumpcards web",
+		"  trumpcards web --port 0            # start on any free port; see startup log for actual port",
+		"  trumpcards web --host 0.0.0.0",
+		"  HOST=0.0.0.0 PORT=3000 trumpcards web",
 	},
 	"update": {
 		"USAGE:",
@@ -269,7 +302,8 @@ var builtinSubcommandHelp = map[string][]string{
 		"",
 		"FLAGS:",
 		"      --short     Print game names only (for scripting)",
-		"      --aliases   Include aliases (requires --short)",
+		"      --aliases   With --short, also print each alias on its own line",
+		"                  (long output always includes aliases inline)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards games",
@@ -364,6 +398,19 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 	return fs, 0, true
 }
 
+// hasHelpFlag reports whether args contains a help flag. It accepts all four
+// forms Go's flag package treats as equivalent for a help flag registered as
+// both "help" and "h": "-h", "--h", "-help", "--help".
+func hasHelpFlag(args []string) bool {
+	for _, a := range args {
+		switch a {
+		case "-h", "--h", "-help", "--help":
+			return true
+		}
+	}
+	return false
+}
+
 func mapKeys(m map[string]func() int) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
@@ -386,7 +433,7 @@ GAMES:
 	}
 	sb.WriteString(`
 COMMANDS:
-  games        List all available games (--short for names only, --aliases to include aliases with --short)
+  games        List all available games (--short for names only; with --short, --aliases adds alias lines)
   help [game]  Show this help, or a specific game's help text
   completion   Generate shell completion script (bash, zsh, fish)
   update       Self-update to the latest version
@@ -397,33 +444,135 @@ COMMANDS:
 OPTIONS:
   -h, --help        Show this help message
   --lang ja|en      Language (default: ja)
-  --no-color        Disable color output
+  --no-color        Disable color output (stdout and stderr)
+                    Auto-detection is per-stream: stdout color is on only
+                    when stdout is a TTY; the same applies to stderr.
   -V, --version     Show version information
+  --version-short   Print version number only (machine-readable)
 
 EXAMPLES:
   trumpcards                     Start interactive mode (switch games with 'switch <game>')
   trumpcards blackjack           Play BlackJack
+  trumpcards blackjack --help    Show BlackJack's in-game commands
   trumpcards --lang en poker     Play Poker in English
   trumpcards games               List all available games
   trumpcards games --short       List game names only (for scripting)
   trumpcards games --short --aliases  List game names including aliases
   trumpcards update              Self-update to the latest version
   trumpcards update --yes        Update without confirmation prompt
+  trumpcards --version-short     Print just the version number (e.g. 1.2.3)
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
-  trumpcards web                 Start the web GUI server
+  trumpcards web                 Start the web GUI server (binds to 127.0.0.1)
   trumpcards web --port 3000     Start the web GUI on port 3000
-  trumpcards web --host 127.0.0.1  Bind to localhost only
+  trumpcards web --port 0        Start on an OS-assigned ephemeral port (see startup log)
+  trumpcards web --host 0.0.0.0  Expose the web GUI on all interfaces
   source <(trumpcards completion bash)   Enable bash completion
 
 ENVIRONMENT VARIABLES:
-  NO_COLOR          Disable color output when set (see https://no-color.org/)
+  NO_COLOR          Disable color output on both stdout and stderr when set
+                    (see https://no-color.org/)
                     Example: NO_COLOR=1 trumpcards blackjack
-  HOST              Bind address for the web server (default: all interfaces)
-                    Example: HOST=127.0.0.1 trumpcards web
+  HOST              Bind address for the web server (default: 127.0.0.1)
+                    Example: HOST=0.0.0.0 trumpcards web
   PORT              Port number for the web server (default: 8080)
                     Example: PORT=3000 trumpcards web
 `)
 	return sb.String()
+}
+
+// detectBootstrapLang returns the locale to use before flag parsing runs,
+// so any flag-parse error can be emitted in the user's preferred language.
+// Resolution mirrors Go's flag.Parse best-effort: an explicit `--lang`
+// (or `-lang`, with optional `=value`) in args wins with last-occurrence
+// semantics, scanning stops at the first non-flag arg or at `--`, then
+// LANG env, then "ja". Unsupported values fall through to the next source.
+// This is best-effort; the authoritative locale is still resolved after
+// flag.Parse.
+func detectBootstrapLang(args []string, langEnv string) string {
+	fromEnv := "ja"
+	if langEnv != "" {
+		prefix := langEnv
+		if idx := strings.IndexAny(langEnv, "_-."); idx >= 0 {
+			prefix = langEnv[:idx]
+		}
+		if supportedLangs[prefix] {
+			fromEnv = prefix
+		}
+	}
+	fromArgs := ""
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		// End-of-flags terminator: flag.Parse stops here.
+		if a == "--" {
+			break
+		}
+		// First non-flag positional arg (game name): flag.Parse stops here too.
+		if !strings.HasPrefix(a, "-") {
+			break
+		}
+		var val string
+		switch {
+		case a == "--lang" || a == "-lang":
+			if i+1 < len(args) {
+				val = args[i+1]
+				i++ // consume the value so a non-flag value doesn't stop the scan
+			}
+		case strings.HasPrefix(a, "--lang="):
+			val = strings.TrimPrefix(a, "--lang=")
+		case strings.HasPrefix(a, "-lang="):
+			val = strings.TrimPrefix(a, "-lang=")
+		default:
+			continue
+		}
+		if supportedLangs[val] {
+			fromArgs = val // last-valid-wins, matching flag.Parse behavior
+		}
+	}
+	if fromArgs != "" {
+		return fromArgs
+	}
+	return fromEnv
+}
+
+// printGames writes the game list to w in the format selected by `short`.
+// With short=false (long mode), each line shows the canonical name, description,
+// and any aliases inline. With short=true, only canonical names are printed,
+// one per line — and if aliases is also true, every alias gets its own line.
+// The `aliases` flag is a no-op in long mode because aliases are always shown
+// inline there.
+func printGames(short, aliases bool, w io.Writer) {
+	var reverseAliases map[string][]string
+	if !short || aliases {
+		reverseAliases = make(map[string][]string)
+		for alias, canonical := range ui.GameAliases {
+			reverseAliases[canonical] = append(reverseAliases[canonical], alias)
+		}
+		for k := range reverseAliases {
+			sort.Strings(reverseAliases[k])
+		}
+	}
+
+	var descs map[string]string
+	if !short {
+		descs = ui.GameDescriptions()
+	}
+
+	for _, name := range ui.GameNames() {
+		if short {
+			_, _ = fmt.Fprintln(w, name)
+			if aliases {
+				for _, alias := range reverseAliases[name] {
+					_, _ = fmt.Fprintln(w, alias)
+				}
+			}
+		} else {
+			line := fmt.Sprintf("  %-16s %s", name, descs[name])
+			if aliasList := reverseAliases[name]; len(aliasList) > 0 {
+				line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
+			}
+			_, _ = fmt.Fprintln(w, line)
+		}
+	}
 }
 
 // buildGameCommands generates command handlers for all games from the registry.

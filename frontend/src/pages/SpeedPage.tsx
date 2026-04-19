@@ -96,22 +96,32 @@ function SpeedPageContent() {
   );
   const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  // Keyboard shortcuts: 1..N select a hand card; ←/→ play selected card to left/right center pile.
-  // Active only when CLI mode is off and a play phase is in progress. Respects input focus
-  // and skips when modifier keys (Ctrl/Alt/Meta) are held to avoid hijacking browser shortcuts.
-  // Latest state and handlers are read via refs so the listener is registered only once
+  // Keyboard shortcuts: 1..N select a hand card; ←/→ play selected card to left/right center pile;
+  // Space/Enter triggers Flip during STUCK phase.
+  // Active only when CLI mode is off and a play phase or stuck phase is in progress. Respects
+  // input focus and skips when modifier keys (Ctrl/Alt/Meta) are held to avoid hijacking browser
+  // shortcuts. Latest state and handlers are read via refs so the listener is registered only once
   // per enable/disable transition rather than on every state update (e.g. each CPU move).
   const isPlayPhaseForKeys = state?.phase === SpeedPhase.PLAY;
-  const keyHandlersRef = useRef({ state, handleSmartClick, handlePlay, selectedCardIndices });
-  keyHandlersRef.current = { state, handleSmartClick, handlePlay, selectedCardIndices };
+  const isStuckForKeys = state?.phase === SpeedPhase.STUCK;
+  const keyboardActive = isPlayPhaseForKeys || isStuckForKeys;
+  const keyHandlersRef = useRef({ state, handleSmartClick, handlePlay, selectedCardIndices, handleFlip });
+  keyHandlersRef.current = { state, handleSmartClick, handlePlay, selectedCardIndices, handleFlip };
   useEffect(() => {
-    if (cliEnabled || !isPlayPhaseForKeys || loading) return;
+    if (cliEnabled || !keyboardActive || loading) return;
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       const cur = keyHandlersRef.current;
       if (!cur.state) return;
+      if (cur.state.phase === SpeedPhase.STUCK) {
+        if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') {
+          e.preventDefault();
+          cur.handleFlip();
+        }
+        return;
+      }
       if (e.key >= '1' && e.key <= '9') {
         const idx = Number.parseInt(e.key, 10) - 1;
         if (idx < cur.state.players[0].cards.length) {
@@ -129,7 +139,7 @@ function SpeedPageContent() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [cliEnabled, isPlayPhaseForKeys, loading]);
+  }, [cliEnabled, keyboardActive, loading]);
 
   if (!state || state.players.length < 2) return <SpeedSkeleton />;
 
@@ -147,7 +157,7 @@ function SpeedPageContent() {
       : t('phase.play');
 
   return (
-    <div className="flex flex-col h-full gap-2 p-2" aria-busy={loading} aria-live="polite">
+    <div className="flex flex-col h-full gap-2 p-2" aria-busy={loading}>
       <GamePageHeading title={tc('nav.speed')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isPlayPhase}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -164,7 +174,7 @@ function SpeedPageContent() {
           <div className="flex-1 flex flex-col gap-3 min-h-0">
             {/* CPU area */}
             <div className="flex items-center justify-center gap-2">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-ds-text-muted">
                 {t('cpuHand')}: {cpuPlayer.cardCount}
               </span>
               <div className="flex gap-1">
@@ -172,7 +182,7 @@ function SpeedPageContent() {
                   <AnimatedCardBack key={i} width={cardWidth * 0.7} onFlipComplete={() => playSound('cardFlip')} />
                 ))}
               </div>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-ds-text-muted">
                 {t('drawPile')}: {cpuPlayer.drawPileSize}
               </span>
             </div>
@@ -203,7 +213,7 @@ function SpeedPageContent() {
             <div className="flex flex-col items-center gap-1" data-tutorial="sp-player-hand">
               <div className="flex items-center gap-2">
                 <span className="text-sm">{t('yourHand')}</span>
-                <span className="text-sm text-gray-500" data-tutorial="sp-draw-pile">
+                <span className="text-sm text-ds-text-muted" data-tutorial="sp-draw-pile">
                   {t('drawPile')}: {humanPlayer.drawPileSize}
                 </span>
               </div>
@@ -232,12 +242,12 @@ function SpeedPageContent() {
             {/* Stuck message & flip button */}
             {isStuck && (
               <div className="flex flex-col items-center gap-2">
-                <p className="text-amber-600 font-bold">{t('stuckMessage')}</p>
+                <p className="text-ds-warning font-bold">{t('stuckMessage')}</p>
                 <button
                   type="button"
                   onClick={handleFlip}
                   disabled={loading}
-                  className={`px-4 py-2 bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50 ring-2 ring-amber-300${!loading ? ' animate-pulse' : ''}`}
+                  className={`px-4 py-2 bg-ds-warning text-white rounded hover:bg-ds-warning-hover disabled:opacity-50 ring-2 ring-ds-warning${!loading ? ' animate-pulse' : ''}`}
                   data-testid="flip-button"
                 >
                   {t('flipButton')}
@@ -247,7 +257,7 @@ function SpeedPageContent() {
 
             {/* Hint */}
             {state.hint?.found && isPlayPhase && (
-              <p className="text-center text-sm text-blue-600">
+              <p className="text-center text-sm text-ds-info">
                 {t('hint.play', { cardIndex: state.hint.cardIndex, pileIndex: state.hint.pileIndex })}
               </p>
             )}

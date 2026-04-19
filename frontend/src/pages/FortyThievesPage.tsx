@@ -36,6 +36,7 @@ import type { FortyThievesResponse } from '../types/card';
 import { FortyThievesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♠', '♣', '♣', '♥', '♥', '♦', '♦'] as const;
 
@@ -180,6 +181,7 @@ function FortyThievesPageContent() {
   const isGameClear = state.phase === FortyThievesPhase.GAME_CLEAR;
   const isGameOver = state.phase === FortyThievesPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const autoCompleteReady = state.stockCount === 0 && state.waste.length === 0 && isTableauAllFaceUp(state.tableau);
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -191,7 +193,7 @@ function FortyThievesPageContent() {
   const wasteDisplay = state.waste.slice(-1);
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.fortythieves.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.fortythieves.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.fortythieves')} />
       {/* Phase indicator */}
       <PhaseIndicator
@@ -254,7 +256,7 @@ function FortyThievesPageContent() {
                       draggable={isPlaying && !loading}
                       onDragStart={dnd.handleDragStart({ zone: 'waste' })}
                       onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
                     >
                       <AnimatedCard
                         card={wasteDisplay[0]}
@@ -380,7 +382,7 @@ function FortyThievesPageContent() {
                                     draggable={isPlaying && !loading}
                                     onDragStart={dnd.handleDragStart(cardZone)}
                                     onDragEnd={dnd.handleDragEnd}
-                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                    className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                   >
                                     <AnimatedCard
                                       card={tc.card}
@@ -498,9 +500,11 @@ function FortyThievesPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
                     onClick={handleAutoComplete}
-                    disabled={loading || isAutoCompleting}
+                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    data-testid="autocomplete-button"
+                    title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>

@@ -265,6 +265,95 @@ export interface PokerResponse {
   profile?: BettingHumanProfileData;
 }
 
+/** Badugi seat snapshot returned by the /badugi/exec API. */
+export interface BadugiPlayerData {
+  id: number;
+  isHuman: boolean;
+  cards: Card[];
+  chips: number;
+  currentBet: number;
+  folded: boolean;
+  allIn: boolean;
+  /** BadugiHand.Size (1..4) after showdown, 0 otherwise. */
+  handSize: number;
+  handName: string;
+  /** Cards exchanged in the most recent draw. */
+  drawCount: number;
+  /** Cumulative draws across all three draw rounds. */
+  totalDraws: number;
+  playStyleName: string;
+  /** Best-subset selection revealed at showdown. */
+  bestCards?: Card[];
+}
+
+/** CPU betting action in Badugi. */
+export interface BadugiCpuAction {
+  playerIdx: number;
+  action: number;
+  amount: number;
+  drawIndex: number;
+  roundLabel: string;
+}
+
+/** CPU draw result in Badugi. */
+export interface BadugiCpuExchange {
+  playerIdx: number;
+  drawIndex: number;
+  exchangeCount: number;
+}
+
+/** Badugi showdown result for a single player. */
+export interface BadugiResult {
+  playerIdx: number;
+  handSize: number;
+  handName: string;
+  wonAmount: number;
+}
+
+/** Badugi side pot with eligible player seats. */
+export interface BadugiSidePot {
+  amount: number;
+  eligiblePlayers: number[];
+}
+
+/** Meta-AI statistics for Badugi CPU adaptation. */
+export interface BadugiMetaAI {
+  enabled: boolean;
+  gamesPlayed: number;
+  bluffRate: number;
+  foldRate: number;
+  hesitationMean: number;
+}
+
+/** Badugi phase discriminator: 0 Init, 1 Deal, 2 Bet, 3 Draw, 4 Showdown, 5 End. */
+export type BadugiPhaseId = 0 | 1 | 2 | 3 | 4 | 5;
+
+/** Full Badugi game state returned by the API. */
+export interface BadugiResponse {
+  players: BadugiPlayerData[];
+  pot: number;
+  sidePots: BadugiSidePot[];
+  dealerIdx: number;
+  currentTurn: number;
+  phase: BadugiPhaseId;
+  drawIndex: number;
+  gameEndFlag: boolean;
+  lastBet: number;
+  minRaise: number;
+  ante: number;
+  bettingLimit: number;
+  raiseCount: number;
+  maxBetAmount: number;
+  roundResults: BadugiResult[];
+  cpuActions: BadugiCpuAction[];
+  cpuExchanges: BadugiCpuExchange[];
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  metaAI?: BadugiMetaAI;
+  profile?: BettingHumanProfileData;
+}
+
 /** Old Maid player data with hand and finish status. */
 export interface OldMaidPlayerData {
   id: number;
@@ -2285,6 +2374,66 @@ export interface ScorpionResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   hint?: ScorpionHint;
+}
+
+// --- Accordion (アコーディオン) ---
+
+/** A single pile in Accordion. Only the top card is revealed; size tracks stacked depth. */
+export interface AccordionPile {
+  cards: Card[];
+  size: number;
+}
+
+/** A suggested move hint in Accordion. */
+export interface AccordionHint {
+  fromIdx: number;
+  toIdx: number;
+}
+
+/** API response shape for an Accordion game. */
+export interface AccordionResponse {
+  piles: AccordionPile[];
+  pileCount: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: AccordionHint;
+}
+
+// --- Trash (トラッシュ) ---
+
+/** A single slot (position 1..10) for one Trash player. */
+export interface TrashSlot {
+  /** Face-down slots omit this field. Only face-up cards expose their identity. */
+  card?: Card;
+  faceUp: boolean;
+}
+
+/** One player's full Trash state: 10 slots plus a flag for the CPU. */
+export interface TrashPlayerState {
+  slots: TrashSlot[];
+  isCpu: boolean;
+}
+
+/** API response shape for a Trash game. */
+export interface TrashResponse {
+  phase: number;
+  current: number;
+  players: [TrashPlayerState, TrashPlayerState];
+  stockSize: number;
+  discardSize: number;
+  discardTop?: Card;
+  pending?: Card;
+  moveCount: number;
+  winner: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }
 
 // --- Whist (ホイスト) ---

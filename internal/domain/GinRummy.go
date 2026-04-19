@@ -73,6 +73,17 @@ func NewGinRummy(trumpCards *TrumpCards, players []*GinRummyPlayer, config GinRu
 	}
 }
 
+// NewDefaultGinRummy returns GinRummy with the standard 2-player setup (1 human, 1 CPU)
+// and DefaultGinRummyConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultGinRummy() *GinRummy {
+	players := []*GinRummyPlayer{
+		NewGinRummyPlayer(true),
+		NewGinRummyPlayer(false),
+	}
+	return NewGinRummy(NewTrumpCards(0), players, DefaultGinRummyConfig())
+}
+
 // Reset ゲーム初期化
 func (g *GinRummy) Reset() {
 	g.gameEndFlag = false

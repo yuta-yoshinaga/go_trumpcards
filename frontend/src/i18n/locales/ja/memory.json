@@ -10,7 +10,13 @@
     "cpuDifficulty": "CPU難易度",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "autoNextDelay": "結果表示時間",
+    "autoNextDelayOption": {
+      "manual": "手動",
+      "fast": "1秒",
+      "slow": "2秒"
+    }
   },
   "scores": "スコア",
   "cardFaceDown": "{{position}}枚目のカード（裏向き）",

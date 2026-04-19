@@ -86,6 +86,17 @@ func NewCribbage(trumpCards *TrumpCards, players []*CribbagePlayer, config Cribb
 	}
 }
 
+// NewDefaultCribbage returns Cribbage with the standard 2-player setup (1 human, 1 CPU)
+// and DefaultCribbageConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultCribbage() *Cribbage {
+	players := []*CribbagePlayer{
+		NewCribbagePlayer(true),
+		NewCribbagePlayer(false),
+	}
+	return NewCribbage(NewTrumpCards(0), players, DefaultCribbageConfig())
+}
+
 // Reset ゲーム初期化
 func (g *Cribbage) Reset() {
 	g.gameEndFlag = false

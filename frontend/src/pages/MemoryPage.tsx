@@ -24,7 +24,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
+import { AUTO_NEXT_DELAY_OPTIONS, CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -88,8 +88,19 @@ function MemoryPageContent() {
     useGamePageSetup('memory');
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
-  const { state, loading, error, exec, retry, memoryConfig, handleConfigChange, handleFlip, handleNext } =
-    useMemoryGame();
+  const {
+    state,
+    loading,
+    error,
+    exec,
+    retry,
+    memoryConfig,
+    handleConfigChange,
+    autoNextDelayMs,
+    setAutoNextDelayMs,
+    handleFlip,
+    handleNext,
+  } = useMemoryGame();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -131,7 +142,7 @@ function MemoryPageContent() {
   const isHumanTurn = (isFlip1 || isFlip2) && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.memory.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.memory.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.memory')} />
       {/* Phase indicator */}
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
@@ -164,6 +175,17 @@ function MemoryPageContent() {
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
+                    type: 'select',
+                    id: 'autoNextDelayMs',
+                    label: t('settings.autoNextDelay'),
+                    value: autoNextDelayMs,
+                    options: AUTO_NEXT_DELAY_OPTIONS.map((o) => ({
+                      value: o.value,
+                      label: t(`settings.autoNextDelayOption.${o.label}`),
+                    })),
+                    onSelect: (v) => setAutoNextDelayMs(Number(v)),
+                  },
+                  {
                     type: 'checkbox' as const,
                     id: 'frontendHint',
                     label: tc('hint.toggle', { ns: 'tutorial' }),
@@ -187,7 +209,7 @@ function MemoryPageContent() {
               {state.players.map((p, idx) => (
                 <span key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                   {idx > 0 && (
-                    <span className="text-white/40 mr-3" aria-hidden="true">
+                    <span className="text-ds-text-muted/80 mr-3" aria-hidden="true">
                       |
                     </span>
                   )}
@@ -214,8 +236,8 @@ function MemoryPageContent() {
                       bc.taken
                         ? 'hidden'
                         : bc.faceUp
-                          ? 'bg-white ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/30'
-                          : 'bg-blue-800 border border-white/10 hover:ring-1 hover:ring-yellow-400'
+                          ? 'bg-white ring-2 ring-ds-warning shadow-lg shadow-ds-warning/30'
+                          : 'bg-ds-info border border-white/10 hover:ring-1 hover:ring-ds-warning'
                     } transition-all`}
                   >
                     <div className={`memory-card-inner${bc.faceUp ? ' flipped' : ''}`}>

@@ -1,0 +1,33 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "アコーディオン",
+  "piles": "パイル数",
+  "moveCount": "手数",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "stalemate": "手詰まりです",
+  "hintMove": "パイル{{from}} → パイル{{to}}",
+  "landscapeBanner": "横向き画面推奨",
+  "frontendHint": {
+    "accordionOffset1": "左隣のカードと合流できます",
+    "accordionOffset3": "3つ左のカードと合流できます"
+  },
+  "tutorial": {
+    "piles": "52枚のカードが1列に並んでいます。各パイルをクリックして選択し、その後『1つ左』または『3つ左』のパイルをクリックすると、スートまたはランクが一致する場合に重ねて圧縮できます。",
+    "controls": "ヒント・ギブアップ・元に戻す等の操作ボタンです。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "accordion": "アコーディオン"
+  }
+}

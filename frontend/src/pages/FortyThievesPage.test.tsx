@@ -195,15 +195,27 @@ describe('FortyThievesPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
-  it('clicking auto complete button dispatches autocomplete', async () => {
+  it('clicking auto complete button dispatches autocomplete when ready', async () => {
+    const readyState: FortyThievesResponse = {
+      ...playingState,
+      stockCount: 0,
+      waste: [],
+    };
+    mockExec.mockResolvedValue(readyState);
     renderWithProviders(<FortyThievesPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue(readyState);
     fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('auto complete button is disabled while stock or waste has cards', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeInTheDocument());
+    expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
   });
 
   it('clicking give up button dispatches giveup', async () => {

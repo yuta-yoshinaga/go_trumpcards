@@ -113,6 +113,19 @@ func NewNapoleon(trumpCards *TrumpCards, players []*NapoleonPlayer, config Napol
 	}
 }
 
+// NewDefaultNapoleon returns Napoleon with the standard 4-player setup (1 human, 3 CPU)
+// and DefaultNapoleonConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultNapoleon() *Napoleon {
+	players := []*NapoleonPlayer{
+		NewNapoleonPlayer(true),
+		NewNapoleonPlayer(false),
+		NewNapoleonPlayer(false),
+		NewNapoleonPlayer(false),
+	}
+	return NewNapoleon(NewTrumpCards(1), players, DefaultNapoleonConfig())
+}
+
 // Reset ゲーム初期化
 func (n *Napoleon) Reset() {
 	n.round = napoleonRoundState{

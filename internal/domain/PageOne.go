@@ -57,6 +57,19 @@ func NewPageOne(trumpCards *TrumpCards, players []*PageOnePlayer, config PageOne
 	}
 }
 
+// NewDefaultPageOne returns PageOne with the standard 4-player setup (1 human, 3 CPU)
+// and DefaultPageOneConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultPageOne() *PageOne {
+	players := []*PageOnePlayer{
+		NewPageOnePlayer(true),
+		NewPageOnePlayer(false),
+		NewPageOnePlayer(false),
+		NewPageOnePlayer(false),
+	}
+	return NewPageOne(NewTrumpCards(0), players, DefaultPageOneConfig())
+}
+
 // Reset ゲーム初期化
 func (g *PageOne) Reset() {
 	g.gameEndFlag = false

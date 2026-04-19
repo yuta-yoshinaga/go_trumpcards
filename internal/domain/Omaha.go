@@ -86,6 +86,13 @@ func NewOmaha(trumpCards *TrumpCards, players []*OmahaPlayer, config OmahaConfig
 	}
 }
 
+// NewDefaultOmaha returns Omaha with the default table size and DefaultOmahaConfig.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultOmaha() *Omaha {
+	cfg := DefaultOmahaConfig()
+	return NewOmaha(NewTrumpCards(0), NewOmahaPlayersForTable(cfg.TableSize), cfg)
+}
+
 // Reset ゲーム初期化
 func (o *Omaha) Reset() error {
 	o.phase = OmahaPhaseInit

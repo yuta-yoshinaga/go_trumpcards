@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した51種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した58種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -73,7 +73,10 @@ Go + Clean Architecture で実装した51種類のトランプゲーム。CLI �
 | ページワン (Page One) | `pageone` | [CUI](docs/manual/cui/pageone.md) / [Web](docs/manual/web/pageone.md) |
 | レッドドッグ (Red Dog) | `reddog` | [CUI](docs/manual/cui/reddog.md) / [Web](docs/manual/web/reddog.md) |
 | ラズ (Razz) | `razz` | [CUI](docs/manual/cui/razz.md) / [Web](docs/manual/web/razz.md) |
+| バドゥーギ (Badugi) | `badugi` | [CUI](docs/manual/cui/badugi.md) / [Web](docs/manual/web/badugi.md) |
 | スコーピオン (Scorpion) | `scorpion` | [CUI](docs/manual/cui/scorpion.md) / [Web](docs/manual/web/scorpion.md) |
+| アコーディオン (Accordion) | `accordion` | [CUI](docs/manual/cui/accordion.md) / [Web](docs/manual/web/accordion.md) |
+| トラッシュ (Trash) | `trash` | [CUI](docs/manual/cui/trash.md) / [Web](docs/manual/web/trash.md) |
 
 ## Demo
 

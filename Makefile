@@ -1,8 +1,9 @@
 TINYGO ?= tinygo
 WASM_OPT ?= wasm-opt
 ASSETS_GEN := go run github.com/syumai/workers/cmd/workers-assets-gen
+COVERAGE_DIR := build/coverage
 
-.PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo clean-workers deploy-workers
+.PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo clean-workers deploy-workers coverage clean-cov
 
 build-workers: build-worker-casino build-worker-classic build-worker-solo
 
@@ -32,3 +33,14 @@ deploy-workers: build-workers
 	cd workers/casino && bunx wrangler deploy
 	cd workers/classic && bunx wrangler deploy
 	cd workers/solo && bunx wrangler deploy
+
+coverage: ## Run tests with coverage, writing profile and HTML report to build/coverage/.
+	@mkdir -p $(COVERAGE_DIR)
+	go test -tags test -coverprofile=$(COVERAGE_DIR)/coverage.out -covermode=atomic ./...
+	go tool cover -html=$(COVERAGE_DIR)/coverage.out -o $(COVERAGE_DIR)/coverage.html
+	@echo "Coverage written to $(COVERAGE_DIR)/"
+
+clean-cov: ## Remove coverage profile artifacts (root-level *.out, coverage.html, build/coverage).
+	@find . -maxdepth 1 -type f \( -name '*.out' -o -name 'coverage.html' \) -delete
+	@rm -rf $(COVERAGE_DIR)
+	@echo "Removed coverage artifacts"

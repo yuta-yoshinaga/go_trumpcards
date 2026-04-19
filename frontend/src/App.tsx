@@ -6,7 +6,9 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
 import { gameRoutes } from './constants/gameRoutes';
+import { AccordionPage } from './pages/AccordionPage';
 import { BaccaratPage } from './pages/BaccaratPage';
+import { BadugiPage } from './pages/BadugiPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
 import { CanastaPage } from './pages/CanastaPage';
@@ -55,6 +57,7 @@ import { SpadesPage } from './pages/SpadesPage';
 import { SpeedPage } from './pages/SpeedPage';
 import { SpiderPage } from './pages/SpiderPage';
 import { ThreeCardPage } from './pages/ThreeCardPage';
+import { TrashPage } from './pages/TrashPage';
 import { TriPeaksPage } from './pages/TriPeaksPage';
 import { TwoTenJackPage } from './pages/TwoTenJackPage';
 import { VideoPokerPage } from './pages/VideoPokerPage';
@@ -78,6 +81,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/pineapple': <PineapplePage />,
   '/sevencardstud': <SevenCardStudPage />,
   '/razz': <RazzPage />,
+  '/badugi': <BadugiPage />,
   '/shortdeck': <ShortDeckPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,
@@ -115,6 +119,8 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/canfield': <CanfieldPage />,
   '/yukon': <YukonPage />,
   '/scorpion': <ScorpionPage />,
+  '/accordion': <AccordionPage />,
+  '/trash': <TrashPage />,
   '/whist': <WhistPage />,
   '/poker-squares': <PokerSquaresPage />,
   '/pageone': <PageOnePage />,

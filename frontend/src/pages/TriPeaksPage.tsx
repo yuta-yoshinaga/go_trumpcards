@@ -166,7 +166,7 @@ function TriPeaksPageContent() {
     : cardWidth;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.tripeaks.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.tripeaks.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.tripeaks')} />
       <PhaseIndicator
         phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
@@ -225,7 +225,7 @@ function TriPeaksPageContent() {
                             disabled={!isPlaying || loading || !exposed}
                             aria-label={cardAlt(tc2.card)}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              isHinted ? 'ring-2 ring-yellow-400' : ''
+                              isHinted ? 'ring-2 ring-ds-warning' : ''
                             } ${!exposed ? 'opacity-60' : ''}`}
                           >
                             <AnimatedCard

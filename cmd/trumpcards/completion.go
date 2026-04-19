@@ -132,7 +132,7 @@ func writeBashCompletion(w io.Writer) error {
     esac
 
     if [[ "$cur" == -* ]]; then
-        COMPREPLY=( $(compgen -W "--help --lang --no-color --version -h -V" -- "$cur") )
+        COMPREPLY=( $(compgen -W "--help --lang --no-color --version --version-short -h -V" -- "$cur") )
         return
     fi
 
@@ -163,6 +163,7 @@ _trumpcards() {
     _arguments \
         '(-h --help)'{-h,--help}'[Show help message]' \
         '(-V --version)'{-V,--version}'[Show version information]' \
+        '--version-short[Print version number only]' \
         '--lang[Language]:language:(ja en)' \
         '--no-color[Disable color output]' \
         '1:command:->cmds' \
@@ -216,6 +217,7 @@ complete -c trumpcards -f
 # Global options
 complete -c trumpcards -l help -s h -d 'Show help message'
 complete -c trumpcards -l version -s V -d 'Show version information'
+complete -c trumpcards -l version-short -d 'Print version number only'
 complete -c trumpcards -l lang -x -a 'ja en' -d 'Language'
 complete -c trumpcards -l no-color -d 'Disable color output'
 

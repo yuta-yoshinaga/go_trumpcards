@@ -64,6 +64,26 @@ export const PokerAction = {
   ALL_IN: 5,
 } as const;
 
+/** Badugi phase constants (sync: internal/domain/Badugi.go). */
+export const BadugiPhase = {
+  INIT: 0,
+  DEAL: 1,
+  BET: 2,
+  DRAW: 3,
+  SHOWDOWN: 4,
+  END: 5,
+} as const;
+
+/** Badugi betting action constants (sync: internal/domain/Badugi.go). */
+export const BadugiAction = {
+  FOLD: 0,
+  CHECK: 1,
+  CALL: 2,
+  BET: 3,
+  RAISE: 4,
+  ALL_IN: 5,
+} as const;
+
 /** Texas Hold'em phase constants (sync: internal/domain/Holdem.go). */
 export const HoldemPhase = {
   INIT: 0,
@@ -423,6 +443,20 @@ export const YukonPhase = {
 export const ScorpionPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Accordion phase constants (sync: internal/domain/Accordion.go). */
+export const AccordionPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Trash phase constants (sync: internal/domain/Trash.go). */
+export const TrashPhase = {
+  PLAYER_TURN: 0,
+  AWAIT_WILD: 1,
   GAME_OVER: 2,
 } as const;
 

@@ -199,7 +199,7 @@ function DaifugoPageContent() {
   ] as const;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.daifugo.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.daifugo.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.daifugo')} />
       <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -244,7 +244,7 @@ function DaifugoPageContent() {
               <div className="text-white font-bold mb-1.5">{t('tableCards')}</div>
               <div className="flex flex-wrap gap-1">
                 {!state.tableCards || state.tableCards.length === 0 ? (
-                  <span className="text-gray-400">{t('tableEmpty')}</span>
+                  <span className="text-ds-text-muted">{t('tableEmpty')}</span>
                 ) : (
                   state.tableCards.map((card) => (
                     <AnimatedCard
@@ -260,7 +260,7 @@ function DaifugoPageContent() {
 
             {pendingBanner && (
               <div
-                className="bg-yellow-700/80 rounded-[10px] text-white text-center py-2 px-4 text-sm font-bold my-2"
+                className="bg-ds-warning/80 rounded-[10px] text-white text-center py-2 px-4 text-sm font-bold my-2"
                 data-tutorial="df-special-actions"
               >
                 {pendingBanner}
@@ -291,7 +291,7 @@ function DaifugoPageContent() {
             )}
 
             {state.humanAction && (
-              <div className="bg-black/40 rounded-lg text-green-200 py-2 px-3.5 my-2 text-xs">
+              <div className="bg-black/40 rounded-lg text-ds-success/80 py-2 px-3.5 my-2 text-xs">
                 {actionDescription(state.players, state.humanAction)}
               </div>
             )}

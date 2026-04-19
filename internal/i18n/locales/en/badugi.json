@@ -1,0 +1,13 @@
+{
+  "helpTitle": "Badugi",
+  "helpBet": "  b [amount]           bet (e.g. b 20)",
+  "helpCall": "  c                    call",
+  "helpRaise": "  ra [amount]          raise (e.g. ra 30)",
+  "helpCheck": "  ck                   check",
+  "helpFold": "  f                    fold",
+  "helpAllIn": "  a                    all-in",
+  "helpExchange": "  e [0-3]              exchange cards (e.g. e 0 2)",
+  "helpStand": "  s                    stand pat (no exchange)",
+  "helpBettingLimit": "  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
+  "helpCpuCount": "  scc [1-3]            CPU player count"
+}

@@ -92,6 +92,19 @@ func NewOldMaid(trumpCards *TrumpCards, players []*OldMaidPlayer) *OldMaid {
 	}
 }
 
+// NewDefaultOldMaid returns OldMaid with the standard 4-player setup (1 human, 3 CPU)
+// using a deck with 1 joker. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultOldMaid() *OldMaid {
+	players := []*OldMaidPlayer{
+		NewOldMaidPlayer(true),
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+	}
+	return NewOldMaid(NewTrumpCards(1), players)
+}
+
 // SetConfig ゲーム設定をセット
 func (o *OldMaid) SetConfig(config OldMaidConfig) { o.config = config }
 

@@ -94,7 +94,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
         <summary className="cursor-pointer select-none text-center text-ds-warning hover:text-ds-warning-hover py-1">
           {t('advancedSettings')}
           {(props.perfectPairsBet > 0 || props.twentyOnePlus3Bet > 0) && (
-            <span className="ml-2 inline-block bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded-full">
+            <span className="ml-2 inline-block bg-ds-warning text-ds-text-on-accent text-xs font-bold px-1.5 py-0.5 rounded-full">
               {t('sideBetActive')}
             </span>
           )}

@@ -3,7 +3,9 @@
  * Keyed by game route path for direct lookup from the current URL.
  * Used when the page has CLI mode enabled so the manual matches the terminal UI.
  */
+import accordion from '../../../docs/manual/cui/accordion.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
+import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
@@ -52,6 +54,7 @@ import spades from '../../../docs/manual/cui/spades.md?raw';
 import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
+import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
 import videopoker from '../../../docs/manual/cui/videopoker.md?raw';
@@ -101,6 +104,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/poker-squares': pokersquares,
   '/pyramid': pyramid,
   '/razz': razz,
+  '/badugi': badugi,
   '/reddog': reddog,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,
@@ -116,6 +120,8 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/whist': whist,
   '/yukon': yukon,
   '/scorpion': scorpion,
+  '/accordion': accordion,
+  '/trash': trash,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

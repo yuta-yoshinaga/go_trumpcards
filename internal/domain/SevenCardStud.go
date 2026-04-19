@@ -116,6 +116,22 @@ func NewRazz(trumpCards *TrumpCards, players []*SevenCardStudPlayer, config Seve
 	return s
 }
 
+// NewDefaultSevenCardStud returns SevenCardStud with the default table size and
+// DefaultSevenCardStudConfig. Used as the single source of truth for CUI, Web,
+// and Worker construction sites.
+func NewDefaultSevenCardStud() *SevenCardStud {
+	cfg := DefaultSevenCardStudConfig()
+	return NewSevenCardStud(NewTrumpCards(0), NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+}
+
+// NewDefaultRazz returns Razz (A-5 lowball) with the default table size and
+// DefaultRazzConfig. Used as the single source of truth for CUI, Web, and Worker
+// construction sites.
+func NewDefaultRazz() *SevenCardStud {
+	cfg := DefaultRazzConfig()
+	return NewRazz(NewTrumpCards(0), NewSevenCardStudPlayersForTable(cfg.TableSize), cfg)
+}
+
 // GetIsLowball ローボールモードかどうか
 func (s *SevenCardStud) GetIsLowball() bool { return s.lowball }
 

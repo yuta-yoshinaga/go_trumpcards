@@ -14,6 +14,7 @@
   "giveup": "Give Up",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available when stock is empty and every card is face up",
   "undo": "Undo",
   "empty": "Empty",
   "gameClear": "Game Clear! Moves: {{moveCount}}",

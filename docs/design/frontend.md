@@ -35,6 +35,7 @@
   - [2.20 CLIモード コマンド実行フロー](#220-cliモード-コマンド実行フロー)
   - [2.21 RedDogPage フェーズ別レンダリングフロー](#221-reddogpage-フェーズ別レンダリングフロー)
   - [2.22 ScorpionPage フェーズ別レンダリングフロー](#222-scorpionpage-フェーズ別レンダリングフロー)
+  - [2.23 TrashPage フェーズ別レンダリングフロー](#223-trashpage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -398,7 +399,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全55ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全58ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -802,7 +803,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全55ゲーム()
+        ...全58ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -864,7 +865,7 @@ classDiagram
 
     RedDogApi --> gameApi : uses postJson/gameExec
 
-    note for BlackJackApi "全55ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, scorpion, whist,\nletitride, pokersquares, pageone, reddog, razz)"
+    note for BlackJackApi "全58ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\npineapple, hearts, memory, klondike, freecell,\nbaccarat, spades, twotenjack, crazyeights, ginrummy, canasta,\nspider, napoleon, indianpoker, videopoker,\ndeuceswild, jokerpoker, euchre, pyramid, tripeaks,\ncribbage, threecard, caribbeanstud, ohhell, bridge, speed,\ngofish, pinochle, golf, pigtail,\nsevencardstud, clocksolitaire, durak,\nfortythieves, paigow, war, canfield, fiftyone, yukon, scorpion, accordion, whist,\nletitride, pokersquares, pageone, reddog, razz, badugi, trash)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -1243,7 +1244,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useBlackJackGame "全55ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全58ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1256,6 +1257,8 @@ classDiagram
         +レスポンシブ ハンバーガーメニュー
         +カテゴリ折りたたみ (モバイル)
         +絵文字アイコン表示
+        +モバイル時 focus trap (Tab ラップ)
+        +お気に入りトグル aria-pressed + 色変化
     }
 
     class GameRoute {
@@ -1273,7 +1276,7 @@ classDiagram
     class PhaseIndicator {
         +string phaseName
         +boolean isYourTurn
-        +aria-live polite
+        +内部 sr-only ライブリージョン (aria-live polite, aria-atomic)
     }
 
     class SettingsPanel {
@@ -1813,7 +1816,7 @@ classDiagram
     GamePage --> PokerTableLayout : renders (Hold'em/Omaha/ShortDeck/Pineapple/SevenCardStud/Razz)
     PokerTableLayout --> CpuPlayerCard : wraps
 
-    note for GamePage "全55ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全58ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -1836,15 +1839,15 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (55ゲーム)
+        +Routes (58ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Baccarat, ThreeCard, PaiGow, CaribbeanStud, LetItRide, RedDog]
-        +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, Razz, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
+        +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, Razz, Badugi, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, OhHell, Euchre, Bridge, Napoleon, TwoTenJack, Whist]
-        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail, Durak, War, FiftyOne, PageOne]
-        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, Canfield, Yukon, Scorpion, PokerSquares]
+        +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights, Speed, GoFish, Pinochle, PigsTail, Durak, War, FiftyOne, PageOne, Trash]
+        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, Canfield, Yukon, Scorpion, Accordion, PokerSquares]
         +rummy: [GinRummy, Canasta, Cribbage]
     }
 
@@ -1859,11 +1862,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 55 pages
+    App --> GamePage : routes to 58 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "57名前空間: common + 55ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "60名前空間: common + 58ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
@@ -2642,6 +2645,41 @@ sequenceDiagram
 
     Note over User,API: ゲームオーバー (phase=2)
     Page-->>User: 手詰まり / ギブアップメッセージ表示
+```
+
+### 2.23 TrashPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as TrashPage
+    participant Hook as useGameApi
+    participant API as trashApi
+
+    Note over User,API: PlayerTurn (phase=0, current=0)
+    User->>Page: 山札ボタンをクリック
+    Page->>Hook: dispatch draw
+    Hook->>API: POST /trash/exec cmd=draw
+    API-->>Hook: TrashResponse (自動チェーン解決)
+    Hook-->>Page: 再レンダリング → スロット更新
+
+    Note over User,API: AwaitWild (phase=1)
+    Page-->>User: 自スロットに ring-info 強調
+    User->>Page: 裏向きスロットをクリック
+    Page->>Hook: dispatch place position=pos
+    Hook->>API: POST /trash/exec cmd=place
+    API-->>Hook: TrashResponse (wild 配置 + 連鎖)
+
+    Note over User,API: CPU Turn (current=1)
+    Page->>Hook: useEffect → 自動 dispatch cpu (500ms遅延)
+    Hook->>API: POST /trash/exec cmd=cpu
+    API-->>Hook: TrashResponse (CPU が1ステップ進行)
+    Page-->>User: 自動で再レンダリング (勝敗 / ターン交代まで)
+
+    Note over User,API: GameOver (phase=2)
+    Page-->>User: 勝敗メッセージ + 手数表示 + WinCelebration (勝利時)
+    User->>Page: Reset ボタン
+    Page->>Hook: dispatch reset
 ```
 
 ---

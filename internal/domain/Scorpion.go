@@ -83,6 +83,12 @@ func NewScorpion(trumpCards *TrumpCards) *Scorpion {
 	}
 }
 
+// NewDefaultScorpion returns Scorpion with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultScorpion() *Scorpion {
+	return NewScorpion(NewTrumpCards(0))
+}
+
 // Reset ゲームリセット
 func (s *Scorpion) Reset() {
 	s.trumpCards.Shuffle()

@@ -39,6 +39,18 @@ func TestNewSpades(t *testing.T) {
 	assert.Equal(t, 0, s.GetRoundNumber())
 }
 
+func TestNewDefaultSpades(t *testing.T) {
+	s := domain.NewDefaultSpades()
+	assert.NotNil(t, s)
+	assert.Equal(t, domain.SpadesPlayerCnt, s.GetPlayerCnt())
+	assert.True(t, s.GetPlayer(0).GetIsHuman())
+	for i := 1; i < s.GetPlayerCnt(); i++ {
+		assert.False(t, s.GetPlayer(i).GetIsHuman(), "player %d should be CPU", i)
+	}
+	assert.Equal(t, -1, s.GetWinnerIdx())
+	assert.False(t, s.GetGameEndFlag())
+}
+
 func TestSpades_Reset(t *testing.T) {
 	s := newTestSpades()
 	s.Reset()

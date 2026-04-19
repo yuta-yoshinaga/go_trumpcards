@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import type { TutorialStep } from '../../types/tutorial';
 import { getFocusableElements } from '../ConfirmDialog';
 import { TutorialTooltip } from './TutorialTooltip';
@@ -72,14 +73,7 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
 
-  // Lock background scroll while overlay is visible
-  useLayoutEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+  useBodyScrollLock(true);
 
   // Find and observe the target element
   useEffect(() => {

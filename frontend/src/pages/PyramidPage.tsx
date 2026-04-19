@@ -164,7 +164,7 @@ function PyramidPageContent() {
   const pyramidWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pyramid.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pyramid.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.pyramid')} />
       {/* Phase indicator */}
       <PhaseIndicator
@@ -226,7 +226,7 @@ function PyramidPageContent() {
                             aria-label={cardAlt(pc.card)}
                             aria-pressed={isSelected('pyramid', rowIdx, colIdx)}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              isSelected('pyramid', rowIdx, colIdx) ? 'ring-2 ring-yellow-400' : ''
+                              isSelected('pyramid', rowIdx, colIdx) ? 'ring-2 ring-ds-warning' : ''
                             } ${!exposed ? 'opacity-60' : ''}`}
                           >
                             <AnimatedCard
@@ -281,7 +281,7 @@ function PyramidPageContent() {
                     aria-label={cardAlt(state.waste[state.waste.length - 1])}
                     aria-pressed={isSelected('waste')}
                     className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                      isSelected('waste') ? 'ring-2 ring-yellow-400' : ''
+                      isSelected('waste') ? 'ring-2 ring-ds-warning' : ''
                     }`}
                   >
                     <AnimatedCard

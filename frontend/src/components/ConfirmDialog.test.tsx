@@ -77,10 +77,21 @@ describe('ConfirmDialog', () => {
     expect(onCancel).not.toHaveBeenCalled();
   });
 
-  it('uses aria-labelledby referencing the title element', () => {
+  it('exposes the title via the accessible name', () => {
     render(<ConfirmDialog {...defaultProps()} />);
-    expect(screen.getByRole('alertdialog')).toHaveAttribute('aria-labelledby', 'confirm-dialog-title');
-    expect(screen.getByText('リセット確認')).toHaveAttribute('id', 'confirm-dialog-title');
+    expect(screen.getByRole('alertdialog', { name: 'リセット確認' })).toBeInTheDocument();
+  });
+
+  it('exposes the message via the accessible description', () => {
+    render(<ConfirmDialog {...defaultProps()} />);
+    expect(screen.getByRole('alertdialog', { description: '本当にゲームをリセットしますか？' })).toBeInTheDocument();
+  });
+
+  it('omits aria-describedby and the message paragraph when message is empty', () => {
+    render(<ConfirmDialog {...defaultProps({ message: '' })} />);
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByText('本当にゲームをリセットしますか？')).not.toBeInTheDocument();
   });
 
   it('focuses cancel button on open', () => {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { useIsMobile } from '../../hooks/useCardDimensions';
 import type { DaifugoResponse } from '../../types/card';
 import { getFocusableElements } from '../../utils/dom';
@@ -90,15 +91,13 @@ function RulesBadgeModal({
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
+  useBodyScrollLock(true);
+
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement;
     const dialog = dialogRef.current as HTMLElement;
     const focusable = getFocusableElements(dialog);
     if (focusable.length > 0) focusable[0].focus();
-
-    // Prevent background scrolling
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -124,7 +123,6 @@ function RulesBadgeModal({
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = originalOverflow;
       previousFocus?.focus();
     };
   }, [onClose]);
@@ -197,7 +195,7 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
       <div className="my-1 px-1">
         <button
           type="button"
-          className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-bold bg-amber-500 text-white"
+          className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-bold bg-ds-warning text-white"
           onClick={openModal}
           data-testid="rules-summary-button"
         >
@@ -230,7 +228,7 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
           {b.label}
           <span
             role="tooltip"
-            className="hidden group-hover/badge:block group-focus/badge:block absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 font-normal"
+            className="hidden group-hover/badge:block group-focus/badge:block absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-ds-surface-elevated text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 font-normal"
           >
             {b.description}
           </span>

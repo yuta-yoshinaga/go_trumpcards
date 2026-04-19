@@ -215,7 +215,7 @@ function NapoleonPageContent() {
   const trumpLabel = state.trumpSuit > 0 ? t(`suitName.${SUIT_KEYS[state.trumpSuit]}`) : '';
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.napoleon.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.napoleon.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.napoleon')} />
       {/* Phase indicator */}
       <PhaseIndicator
@@ -294,7 +294,7 @@ function NapoleonPageContent() {
               <div>
                 {/* Adjutant card info */}
                 {state.adjutantCard && (
-                  <div className="text-white/70 text-center text-sm mb-2" data-tutorial="np-adjutant-info">
+                  <div className="text-ds-text-muted text-center text-sm mb-2" data-tutorial="np-adjutant-info">
                     {t('adjutantCard')}:{' '}
                     <AnimatedCard
                       card={state.adjutantCard}
@@ -306,7 +306,7 @@ function NapoleonPageContent() {
 
                 {/* Highest bid info */}
                 {state.highestBid > 0 && (
-                  <div className="text-white/70 text-center text-sm mb-2">
+                  <div className="text-ds-text-muted text-center text-sm mb-2">
                     {t('highestBid', { bid: state.highestBid })}
                   </div>
                 )}
@@ -331,7 +331,7 @@ function NapoleonPageContent() {
                 {/* Kitty cards (during exchange phase) */}
                 {isKittyExchange && state.kitty.length > 0 && (
                   <div className="my-2 p-2 rounded bg-black/40" data-tutorial="np-kitty-cards">
-                    <div className="text-white/70 text-sm mb-1">{t('kittyLabel')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('kittyLabel')}</div>
                     <div className="flex gap-2">
                       {state.kitty.map((card, idx) => (
                         <AnimatedCard
@@ -348,7 +348,7 @@ function NapoleonPageContent() {
                 {/* Current trick */}
                 {state.currentTrick.length > 0 && (
                   <div className="my-3 p-3 rounded bg-black/40" data-tutorial="np-trick-display">
-                    <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('currentTrick')}</div>
                     <div className="flex gap-2">
                       {state.currentTrick.map((trickCard) => (
                         <div key={`trick-${trickCard.playerIdx}`} className="text-center">
@@ -375,14 +375,14 @@ function NapoleonPageContent() {
                 {/* CPU players */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-white/70 text-sm">
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
                       {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
                     </summary>
                     <div className="mt-1">
                       {state.players
                         .filter((p) => !p.isHuman)
                         .map((p) => (
-                          <div key={p.id} className="text-white/70 text-sm py-0.5">
+                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                             {playerName(p.id, p.isHuman)}
                             {roleBadge(p)}: {t('cards', { count: p.cardCount })} |{' '}
                             {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
@@ -398,7 +398,7 @@ function NapoleonPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-white/70 text-sm">
+                        <div className="text-ds-text-muted text-sm">
                           {playerName(p.id, p.isHuman)}
                           {roleBadge(p)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
@@ -417,9 +417,9 @@ function NapoleonPageContent() {
                     data-tutorial="np-score-table"
                     open={isRoundEnd || isGameEnd || undefined}
                   >
-                    <summary className="cursor-pointer select-none text-white/70 text-sm">{t('scores')}</summary>
+                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-white/70 min-w-[420px] mt-1">
+                      <table className="w-full text-sm text-ds-text-muted min-w-[420px] mt-1">
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
@@ -458,9 +458,9 @@ function NapoleonPageContent() {
                   </details>
                 ) : (
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="np-score-table">
-                    <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-white/70 min-w-[420px]">
+                      <table className="w-full text-sm text-ds-text-muted min-w-[420px]">
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">

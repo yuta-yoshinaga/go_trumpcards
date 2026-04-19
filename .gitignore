@@ -2,6 +2,7 @@
 *.test
 *.out
 coverage.html
+/build/
 /cli
 /go_trumpcards
 /server

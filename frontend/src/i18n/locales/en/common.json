@@ -73,7 +73,10 @@
     "pageone": "Page One",
     "reddog": "Red Dog",
     "razz": "Razz",
-    "scorpion": "Scorpion"
+    "badugi": "Badugi",
+    "scorpion": "Scorpion",
+    "accordion": "Accordion",
+    "trash": "Trash"
   },
   "sound": {
     "mute": "Mute sound",
@@ -146,7 +149,9 @@
   },
   "turnIndicator": {
     "yourTurn": "Your Turn",
-    "waiting": "Waiting"
+    "waiting": "Waiting",
+    "phaseOnly": "Current phase: {{phase}}",
+    "announcement": "Current phase: {{phase}}, {{turn}}"
   },
   "card": {
     "back": "Card back",

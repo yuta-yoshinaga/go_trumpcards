@@ -17,7 +17,7 @@ describe('PhaseIndicator', () => {
       'animate-pulse',
       'font-bold',
       'text-base',
-      'bg-green-900/40',
+      'bg-ds-success/20',
       'px-2',
       'py-0.5',
       'rounded-full',
@@ -46,8 +46,18 @@ describe('PhaseIndicator', () => {
     expect(screen.getByText('ポット: 100')).toBeInTheDocument();
   });
 
-  it('has aria-live polite', () => {
+  it('does not place aria-live on the outer container', () => {
     render(<PhaseIndicator phaseName="テスト" />);
-    expect(screen.getByTestId('phase-indicator')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByTestId('phase-indicator')).not.toHaveAttribute('aria-live');
+  });
+
+  it('exposes a scoped sr-only live region for phase announcements', () => {
+    render(<PhaseIndicator phaseName="ベットフェーズ" isHumanTurn={true} />);
+    const statusNode = screen.getByTestId('phase-announcement');
+    expect(statusNode).toHaveAttribute('aria-live', 'polite');
+    expect(statusNode).toHaveAttribute('aria-atomic', 'true');
+    expect(statusNode).toHaveClass('sr-only');
+    expect(statusNode.textContent).toContain('ベットフェーズ');
+    expect(statusNode.textContent).toContain('あなたのターン');
   });
 });

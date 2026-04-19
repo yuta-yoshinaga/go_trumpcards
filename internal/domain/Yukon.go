@@ -61,6 +61,12 @@ func NewYukon(trumpCards *TrumpCards) *Yukon {
 	}
 }
 
+// NewDefaultYukon returns Yukon with a standard single 52-card deck.
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultYukon() *Yukon {
+	return NewYukon(NewTrumpCards(0))
+}
+
 // Reset ゲームリセット
 func (y *Yukon) Reset() {
 	y.trumpCards.Shuffle()

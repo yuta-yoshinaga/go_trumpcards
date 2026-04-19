@@ -195,7 +195,7 @@ function DurakPageContent() {
   };
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${theme.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${theme.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.durak')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -275,7 +275,7 @@ function DurakPageContent() {
                           type="button"
                           key={`pair-${pair.attack.design}-${pair.attack.value}-${i}`}
                           className={`flex flex-col items-center gap-0.5 p-1 rounded cursor-pointer ${
-                            selectedAttackIdx === i ? 'ring-2 ring-yellow-400' : ''
+                            selectedAttackIdx === i ? 'ring-2 ring-ds-warning' : ''
                           }`}
                           onClick={() => setSelectedAttackIdx(selectedAttackIdx === i ? null : i)}
                         >
@@ -338,16 +338,16 @@ function DurakPageContent() {
                     <div
                       key={player.id}
                       className={`p-2 rounded bg-black/30 ${
-                        state.currentTurn === player.id ? 'ring-2 ring-yellow-400' : ''
+                        state.currentTurn === player.id ? 'ring-2 ring-ds-warning' : ''
                       }`}
                     >
                       <div className="text-white text-sm font-bold">
                         {playerName(player.id, false)}
                         {state.attackerIdx === player.id && (
-                          <span className="text-red-400 text-xs ml-1">({t('attacker')})</span>
+                          <span className="text-ds-error text-xs ml-1">({t('attacker')})</span>
                         )}
                         {state.defenderIdx === player.id && (
-                          <span className="text-blue-400 text-xs ml-1">({t('defender')})</span>
+                          <span className="text-ds-info text-xs ml-1">({t('defender')})</span>
                         )}
                       </div>
                       <div className="text-game-text-muted text-xs">{player.cardCount}</div>
@@ -364,8 +364,8 @@ function DurakPageContent() {
               <div className="mb-2" data-tutorial="dk-player-hand">
                 <div className="text-white font-bold text-sm mb-1">
                   {humanPlayer.cardCount}
-                  {isAttacker && <span className="text-red-400 text-xs ml-2">({t('attacker')})</span>}
-                  {isDefender && <span className="text-blue-400 text-xs ml-2">({t('defender')})</span>}
+                  {isAttacker && <span className="text-ds-error text-xs ml-2">({t('attacker')})</span>}
+                  {isDefender && <span className="text-ds-info text-xs ml-2">({t('defender')})</span>}
                   {isHumanTurn && <span className="text-ds-success text-xs ml-2">{t('selectCard')}</span>}
                 </div>
                 <div className="flex flex-wrap gap-1">

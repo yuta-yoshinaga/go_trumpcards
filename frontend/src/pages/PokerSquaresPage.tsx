@@ -103,7 +103,7 @@ function PokerSquaresPageContent() {
   const handleReset = () => execApi('reset');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pokersquares.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pokersquares.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.pokersquares')} />
       <PhaseIndicator phaseName={state ? phaseNames[state.phase] : ''}>
         {state && (
@@ -188,7 +188,7 @@ function PokerSquaresPageContent() {
                                 disabled={!isPlaying || loading || filled || !state.currentCard}
                                 className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
                                   filled ? '' : 'cursor-pointer'
-                                } ${isHintTarget ? 'ring-2 ring-yellow-400' : ''}`}
+                                } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
                               >
                                 {cell.card ? (
                                   <AnimatedCard card={cell.card} width={cardWidth} />

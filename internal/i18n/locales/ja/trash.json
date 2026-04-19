@@ -1,0 +1,17 @@
+{
+  "helpTitle": "Trash (トラッシュ)",
+  "helpDraw": "  d, draw             山札から1枚引く",
+  "helpPlace": "  p, place <pos>      ワイルドを位置 <pos> に配置 (例: p 7)",
+  "helpCpu": "  cpu                 CPUのターンを1ステップ進める",
+  "helpLog": "  log, l              棋譜を表示",
+  "promptPosition": "配置する位置 (1〜10) を入力してください:",
+  "playerTurn": "あなたのターンです。山札から引いてください",
+  "cpuTurn": "CPUのターンです",
+  "awaitWild": "ワイルドを配置する位置を選んでください",
+  "cpuAwaitWild": "CPUがワイルドを配置しています",
+  "gameOverWin": "あなたの勝ち！ 手数: {{moveCount}}",
+  "gameOverLose": "CPUの勝ち 手数: {{moveCount}}",
+  "errSlotFilled": "そのスロットはすでに埋まっています",
+  "errInvalidPosition": "位置は1〜10の範囲で指定してください",
+  "errNotWildPhase": "今はワイルドを配置できません"
+}

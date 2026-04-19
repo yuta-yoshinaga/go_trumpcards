@@ -73,7 +73,10 @@
     "pageone": "ページワン",
     "reddog": "レッドドッグ",
     "razz": "ラズ",
-    "scorpion": "スコーピオン"
+    "badugi": "バドゥーギ",
+    "scorpion": "スコーピオン",
+    "accordion": "アコーディオン",
+    "trash": "トラッシュ"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -146,7 +149,9 @@
   },
   "turnIndicator": {
     "yourTurn": "あなたのターン",
-    "waiting": "待機中"
+    "waiting": "待機中",
+    "phaseOnly": "現在のフェーズ: {{phase}}",
+    "announcement": "現在のフェーズ: {{phase}}、{{turn}}"
   },
   "card": {
     "back": "カード裏面",

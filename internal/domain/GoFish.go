@@ -107,6 +107,18 @@ func NewGoFish(trumpCards *TrumpCards, players []*GoFishPlayer) *GoFish {
 	}
 }
 
+// NewDefaultGoFish returns GoFish with the standard 4-player setup (1 human, 3 CPU).
+// Used as the single source of truth for CUI, Web, and Worker construction sites.
+func NewDefaultGoFish() *GoFish {
+	players := []*GoFishPlayer{
+		NewGoFishPlayer(true),
+		NewGoFishPlayer(false),
+		NewGoFishPlayer(false),
+		NewGoFishPlayer(false),
+	}
+	return NewGoFish(NewTrumpCards(0), players)
+}
+
 // Reset ゲームを初期化する
 func (g *GoFish) Reset() {
 	// プレイヤーリセット

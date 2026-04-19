@@ -121,6 +121,18 @@ func TestNewOhHell(t *testing.T) {
 	assert.Equal(t, -1, o.GetTrumpSuit())
 }
 
+func TestNewDefaultOhHell(t *testing.T) {
+	o := domain.NewDefaultOhHell()
+	assert.NotNil(t, o)
+	assert.Equal(t, domain.OhHellPlayerCnt, o.GetPlayerCnt())
+	assert.True(t, o.GetPlayer(0).GetIsHuman())
+	for i := 1; i < o.GetPlayerCnt(); i++ {
+		assert.False(t, o.GetPlayer(i).GetIsHuman(), "player %d should be CPU", i)
+	}
+	assert.Equal(t, -1, o.GetWinnerIdx())
+	assert.False(t, o.GetGameEndFlag())
+}
+
 func TestOhHell_Reset(t *testing.T) {
 	o := newTestOhHell()
 	o.Reset()

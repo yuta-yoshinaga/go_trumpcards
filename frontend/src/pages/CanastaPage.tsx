@@ -146,7 +146,7 @@ function CanastaPageContent() {
   }
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.canasta.bg}`} aria-busy={loading} aria-live="polite">
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.canasta.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.canasta')} />
       <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -200,7 +200,7 @@ function CanastaPageContent() {
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
-              {state.isFrozen && <span className="ml-2 text-blue-300 font-bold">[{t('frozen')}]</span>}
+              {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
             </div>
 
             <div className={lgTwoColGrid}>
@@ -214,7 +214,9 @@ function CanastaPageContent() {
                       width={cardWidth}
                       onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
                     />
-                    <div className="text-white/70 text-sm">{tc('common:discardTop', { defaultValue: 'Discard' })}</div>
+                    <div className="text-ds-text-muted text-sm">
+                      {tc('common:discardTop', { defaultValue: 'Discard' })}
+                    </div>
                   </div>
                 )}
 
@@ -227,13 +229,13 @@ function CanastaPageContent() {
                       className="my-2 p-2 rounded bg-black/30"
                       data-tutorial={pi === 0 ? 'ca-meld-area' : undefined}
                     >
-                      <div className="text-white/70 text-sm mb-1">
+                      <div className="text-ds-text-muted text-sm mb-1">
                         {playerName(p.id, p.isHuman)} - {t('melds')}
-                        {p.hasCanasta && <span className="ml-2 text-yellow-400">★</span>}
+                        {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
                       </div>
                       {p.melds.map((m, mi) => (
                         <div key={mi} className="flex flex-wrap gap-1 mb-1">
-                          <span className="text-xs text-white/50 self-center mr-1">
+                          <span className="text-xs text-ds-text-muted self-center mr-1">
                             {m.isCanasta
                               ? m.isNatural
                                 ? t('naturalCanasta')
@@ -272,7 +274,7 @@ function CanastaPageContent() {
               <div>
                 {/* Score table */}
                 <div className="my-3 p-2 rounded bg-black/30">
-                  <table className="w-full text-sm text-white/70">
+                  <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
                         <th scope="col" className="text-left">
@@ -300,7 +302,7 @@ function CanastaPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-white/70 text-sm">
+                        <div className="text-ds-text-muted text-sm">
                           {playerName(p.id, p.isHuman)}: {p.cardCount} cards
                         </div>
                         {p.cards.length > 0 && (

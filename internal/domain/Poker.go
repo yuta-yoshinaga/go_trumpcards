@@ -132,6 +132,20 @@ func NewPoker(trumpCards *TrumpCards, players []*PokerPlayer, config PokerConfig
 	}
 }
 
+// NewDefaultPoker returns Poker with the standard 4-player setup (1 human balanced,
+// 3 CPU with mixed styles) and DefaultPokerConfig. Used as the single source of truth
+// for CUI, Web, and Worker construction sites.
+func NewDefaultPoker() *Poker {
+	config := DefaultPokerConfig()
+	players := []*PokerPlayer{
+		NewPokerPlayer(true, PokerStyleBalanced),
+		NewPokerPlayer(false, PokerStyleConservative),
+		NewPokerPlayer(false, PokerStyleAggressive),
+		NewPokerPlayer(false, PokerStyleBluffer),
+	}
+	return NewPoker(NewTrumpCards(config.JokerCount), players, config)
+}
+
 // Reset ゲーム初期化
 func (p *Poker) Reset() error {
 	p.round = pokerRoundState{
