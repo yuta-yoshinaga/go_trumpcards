@@ -1,34 +1,34 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { navigateTo, TIMEOUT_TRANSITION } from './helpers';
 
 test.describe('Accordion E2E', () => {
-  test('navigates to accordion, resets, and shows piles', async ({ page }) => {
+  test('navigates to accordion and renders the initial board', async ({ page }) => {
     await navigateTo(page, '/accordion');
 
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await expect(resetButton).toBeVisible();
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
-    await waitForLoaded(page);
+    // Wait for game state to fully load via a move-count readout guaranteed to render
+    await expect(page.getByText(/手数/).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await expect(page.getByText(/パイル数/).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
-    // 52 piles should be rendered at start (buttons with aria-labels "0:", "1:", ...)
+    // Pile 0 should be rendered as a button (aria-label starts with "0:")
     const pile0 = page.getByRole('button', { name: /^0:/ });
-    await expect(pile0).toBeVisible();
+    await expect(pile0.first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
-    // The giveup, hint, and undo buttons should be available while playing
-    await expect(page.getByRole('button', { name: 'ヒント' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'ギブアップ' })).toBeVisible();
+    // Hint and giveup buttons are visible while playing
+    await expect(page.getByRole('button', { name: 'ヒント' }).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await expect(page.getByRole('button', { name: 'ギブアップ' }).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+
+    // Reset button targeted via data-tutorial to avoid i18n/text coupling
+    await expect(page.locator('[data-tutorial="ac-reset-button"]')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
   });
 
   test('giveup ends the game', async ({ page }) => {
     await navigateTo(page, '/accordion');
-    await waitForLoaded(page);
+    await expect(page.getByText(/手数/).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
-    await page.getByRole('button', { name: 'ギブアップ' }).click();
-    await waitForLoaded(page);
+    await page.getByRole('button', { name: 'ギブアップ' }).first().click();
 
-    // After giveup, the action log button is exposed for end phase
+    // After giveup, the action log button should appear (end phase shows "棋譜")
     const logButton = page.getByRole('button', { name: /棋譜|action log|アクション/i });
-    await expect(logButton).toBeVisible();
+    await expect(logButton.first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
   });
 });

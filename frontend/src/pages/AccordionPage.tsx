@@ -335,7 +335,7 @@ function AccordionPageContent() {
 
             <GameFooter>
               <button type="button" className={btnPrimary} onClick={handleReset} data-tutorial="ac-reset-button">
-                {t('common:reset')}
+                {tc('button.reset')}
               </button>
 
               {isPlaying && (
