@@ -118,6 +118,8 @@ tags:
     description: Red Dog (レッドドッグ) game
   - name: razz
     description: Razz (ラズ) game - lowball variant of Seven Card Stud
+  - name: badugi
+    description: Badugi (バドゥーギ) game - Asian 4-card draw lowball poker
   - name: scorpion
     description: Scorpion (スコーピオン) game - variant of solitaire combining Yukon and Spider mechanics
 
@@ -5284,6 +5286,116 @@ paths:
                     roundResults: []
                     cpuActions: []
                     message: param error.
+
+  /badugi/exec:
+    post:
+      tags:
+        - badugi
+      summary: Execute a Badugi game command
+      description: |
+        Send a command to advance the Badugi game session identified by
+        `sessionId`. Badugi is an Asian-origin 4-card draw lowball poker
+        variant where the best hand has four cards, each with a distinct
+        rank and a distinct suit. Ace is always low (1). Straights and
+        flushes do not affect the hand.
+
+        Each player receives 4 cards and may exchange up to all four over
+        three draws, with a betting round before the first draw and after
+        each draw (four betting rounds total). At showdown, the largest
+        subset whose cards have unique ranks and suits wins, lowest card
+        first.
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Init       | `0`   | Pre-reset state |
+        | Deal       | `1`   | Cards dealt; first betting round |
+        | Bet        | `2`   | Betting round after a draw (drawIndex identifies which) |
+        | Draw       | `3`   | Draw round in progress (drawIndex 1..3) |
+        | Showdown   | `4`   | Hands evaluated |
+        | End        | `5`   | Round complete |
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `fold`   | `f`     | Fold and forfeit the pot |
+        | `check`  | `ck`    | Pass without betting |
+        | `call`   | `c`     | Match the current bet |
+        | `bet`    | `b`     | Place a bet (use `amount`) |
+        | `raise`  | `ra`    | Raise (use `amount`) |
+        | `allin`  | `a`     | Go all-in |
+        | `exchange` | `e`   | Draw the cards at `indices` (0..3) |
+        | `stand`  | `s`     | Stand pat (no exchange) |
+        | `log`    | `l`     | View action log |
+      operationId: badugiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command]
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, exchange, e, stand, s, log, l]
+                sessionId:
+                  type: string
+                amount:
+                  type: integer
+                humanPlayMs:
+                  type: integer
+                indices:
+                  type: array
+                  items:
+                    type: integer
+                cpuCount:
+                  type: integer
+                bettingLimit:
+                  type: integer
+                cpuMetaAI:
+                  type: boolean
+                profile:
+                  type: object
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items: { type: object }
+                  pot: { type: integer }
+                  sidePots:
+                    type: array
+                    items: { type: object }
+                  dealerIdx: { type: integer }
+                  currentTurn: { type: integer }
+                  phase: { type: integer }
+                  drawIndex: { type: integer }
+                  gameEndFlag: { type: boolean }
+                  lastBet: { type: integer }
+                  minRaise: { type: integer }
+                  ante: { type: integer }
+                  bettingLimit: { type: integer }
+                  raiseCount: { type: integer }
+                  maxBetAmount: { type: integer }
+                  roundResults:
+                    type: array
+                    items: { type: object }
+                  cpuActions:
+                    type: array
+                    items: { type: object }
+                  cpuExchanges:
+                    type: array
+                    items: { type: object }
+                  message: { type: string }
+                  messageCode: { type: string }
+                  messageParams:
+                    type: object
+                    additionalProperties: { type: string }
 
 components:
   schemas:

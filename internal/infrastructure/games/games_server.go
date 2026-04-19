@@ -283,6 +283,11 @@ func init() {
 			return usecase.NewSevenCardStudInteractor(domain.NewDefaultRazz(), new(presenter.SevenCardStudWebPresenter))
 		},
 		controller.NewSevenCardStudWebController)
+	BindWebControllerFor("badugi",
+		func() usecase.BadugiInteractorIF {
+			return usecase.NewBadugiInteractor(domain.NewDefaultBadugi(), new(presenter.BadugiWebPresenter))
+		},
+		controller.NewBadugiWebController)
 	BindWebControllerFor("scorpion",
 		func() usecase.ScorpionInteractorIF {
 			return usecase.NewScorpionInteractor(domain.NewDefaultScorpion(), new(presenter.ScorpionWebPresenter))

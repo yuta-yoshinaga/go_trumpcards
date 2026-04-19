@@ -158,4 +158,12 @@ func init() {
 			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))
 		},
 		controller.NewSevenCardStudWebControllerWithProvider)
+	games.RegisterKVGame("badugi", games.CategoryCasino,
+		func() usecase.BadugiInteractorIF {
+			return usecase.NewBadugiInteractor(domain.NewDefaultBadugi(), new(presenter.BadugiWebPresenter))
+		},
+		func(data []byte) (usecase.BadugiInteractorIF, error) {
+			return usecase.RestoreBadugiInteractor(data, new(presenter.BadugiWebPresenter))
+		},
+		controller.NewBadugiWebControllerWithProvider)
 }

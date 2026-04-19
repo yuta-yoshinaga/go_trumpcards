@@ -4,6 +4,7 @@
  * Used when the page has CLI mode enabled so the manual matches the terminal UI.
  */
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
+import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
@@ -101,6 +102,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/poker-squares': pokersquares,
   '/pyramid': pyramid,
   '/razz': razz,
+  '/badugi': badugi,
   '/reddog': reddog,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,

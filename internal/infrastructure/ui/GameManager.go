@@ -851,6 +851,25 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "badugi", Description: "Badugi (バドゥーギ)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBadugiCuiController(usecase.NewBadugiInteractor(
+				domain.NewDefaultBadugi(), new(presenter.BadugiCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "badugi.helpTitle",
+				CommandKeys: []string{
+					"badugi.helpBet",
+					"badugi.helpCall",
+					"badugi.helpRaise",
+					"badugi.helpCheck",
+					"badugi.helpFold",
+					"badugi.helpAllIn",
+					"badugi.helpExchange",
+					"badugi.helpStand",
+				},
+				SettingKeys: []string{"badugi.helpBettingLimit", "badugi.helpCpuCount"},
+			})
+	}},
 	{Name: "razz", Description: "Razz (ラズ)", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(

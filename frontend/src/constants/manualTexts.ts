@@ -3,6 +3,7 @@
  * Keyed by game route path for direct lookup from the current URL.
  */
 import baccarat from '../../../docs/manual/web/baccarat.md?raw';
+import badugi from '../../../docs/manual/web/badugi.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
@@ -99,6 +100,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/poker-squares': pokersquares,
   '/pyramid': pyramid,
   '/razz': razz,
+  '/badugi': badugi,
   '/reddog': reddog,
   '/sevencardstud': sevencardstud,
   '/sevens': sevens,

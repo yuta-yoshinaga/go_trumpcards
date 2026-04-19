@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type {
   BaccaratResponse,
+  BadugiResponse,
   BlackJackResponse,
   CanastaResponse,
   CanfieldResponse,
@@ -49,6 +50,7 @@ import type {
 } from '../types/card';
 import type { HintResult } from '../types/hint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
+import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
@@ -144,6 +146,7 @@ const hintFactories = {
   twotenjack: (s) => getTwoTenJackHint(s as TwoTenJackResponse),
   sevencardstud: () => null,
   razz: (s) => getRazzHint(s as SevenCardStudResponse),
+  badugi: (s) => getBadugiHint(s as BadugiResponse),
   fortythieves: () => null,
   paigow: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),

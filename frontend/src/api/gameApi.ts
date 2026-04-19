@@ -1,6 +1,7 @@
 import type {
   ActionLogResponse,
   BaccaratResponse,
+  BadugiResponse,
   BlackJackResponse,
   BridgeResponse,
   CanastaResponse,
@@ -86,6 +87,7 @@ const workerUrl: Record<string, string> = {
   pineapple: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
+  badugi: WORKER_CASINO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
@@ -209,6 +211,25 @@ export const pokerApi = {
     humanPlayMs?: number,
     profile?: unknown,
   ) => gameExec<PokerResponse>('poker', { command, indices, amount, humanPlayMs, profile, ...config }),
+};
+
+/** Configuration options for Badugi game settings. */
+export interface BadugiConfigInput {
+  cpuCount?: number;
+  bettingLimit?: number;
+  cpuMetaAI?: boolean;
+}
+
+/** API client for the Badugi /badugi/exec endpoint. */
+export const badugiApi = {
+  exec: (
+    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    indices?: number[],
+    amount?: number,
+    config?: BadugiConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) => gameExec<BadugiResponse>('badugi', { command, indices, amount, humanPlayMs, profile, ...config }),
 };
 
 /** API client for the Old Maid /oldmaid/exec endpoint. */
@@ -1099,6 +1120,7 @@ const games = [
   'pineapple',
   'sevencardstud',
   'razz',
+  'badugi',
   'hearts',
   'spades',
   'twotenjack',
