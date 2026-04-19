@@ -11,7 +11,7 @@ import (
 
 // init attaches the HTTP-server-side factory for every game. The build tag
 // excludes this file from Cloudflare Worker (TinyGo) binaries so that their
-// Web-server-only controllers/dispatchers do not drag in 55 games of code.
+// Web-server-only controllers/dispatchers do not drag in 58 games of code.
 func init() {
 	BindWebControllerFor("blackjack",
 		func() usecase.BlackJackInteractorIF {
