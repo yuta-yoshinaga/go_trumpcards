@@ -933,6 +933,20 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "trash", Description: "Trash (トラッシュ)", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTrashCuiController(usecase.NewTrashInteractor(
+				domain.NewDefaultTrash(), new(presenter.TrashCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "trash.helpTitle",
+				CommandKeys: []string{
+					"trash.helpDraw",
+					"trash.helpPlace",
+					"trash.helpCpu",
+					"trash.helpLog",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

@@ -1,0 +1,17 @@
+{
+  "helpTitle": "Trash",
+  "helpDraw": "  d, draw             Draw the top stock card",
+  "helpPlace": "  p, place <pos>      Place the wild at position <pos> (e.g. p 7)",
+  "helpCpu": "  cpu                 Advance the CPU's turn by one step",
+  "helpLog": "  log, l              Show action log",
+  "promptPosition": "Enter target position (1-10):",
+  "playerTurn": "Your turn. Draw from the stock",
+  "cpuTurn": "CPU's turn",
+  "awaitWild": "Choose a position for the wild",
+  "cpuAwaitWild": "CPU is placing its wild",
+  "gameOverWin": "You win! Moves: {{moveCount}}",
+  "gameOverLose": "CPU wins. Moves: {{moveCount}}",
+  "errSlotFilled": "That slot is already filled",
+  "errInvalidPosition": "Position must be between 1 and 10",
+  "errNotWildPhase": "You cannot place a wild right now"
+}

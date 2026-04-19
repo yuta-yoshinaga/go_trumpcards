@@ -453,6 +453,13 @@ export const AccordionPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Trash phase constants (sync: internal/domain/Trash.go). */
+export const TrashPhase = {
+  PLAYER_TURN: 0,
+  AWAIT_WILD: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Whist phase constants (sync: internal/domain/Whist.go). */
 export const WhistPhase = {
   PLAY: 0,

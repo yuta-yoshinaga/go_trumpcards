@@ -76,6 +76,7 @@ Go + Clean Architecture で実装した57種類のトランプゲーム。CLI �
 | バドゥーギ (Badugi) | `badugi` | [CUI](docs/manual/cui/badugi.md) / [Web](docs/manual/web/badugi.md) |
 | スコーピオン (Scorpion) | `scorpion` | [CUI](docs/manual/cui/scorpion.md) / [Web](docs/manual/web/scorpion.md) |
 | アコーディオン (Accordion) | `accordion` | [CUI](docs/manual/cui/accordion.md) / [Web](docs/manual/web/accordion.md) |
+| トラッシュ (Trash) | `trash` | [CUI](docs/manual/cui/trash.md) / [Web](docs/manual/web/trash.md) |
 
 ## Demo
 

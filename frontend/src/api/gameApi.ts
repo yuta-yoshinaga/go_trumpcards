@@ -53,6 +53,7 @@ import type {
   SpeedResponse,
   SpiderResponse,
   ThreeCardResponse,
+  TrashResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
   VideoPokerResponse,
@@ -126,6 +127,7 @@ const workerUrl: Record<string, string> = {
   yukon: WORKER_SOLO,
   scorpion: WORKER_SOLO,
   accordion: WORKER_SOLO,
+  trash: WORKER_CLASSIC,
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
@@ -1049,6 +1051,14 @@ export const accordionApi = {
     }),
 };
 
+/** Command verbs accepted by the Trash /trash/exec endpoint. */
+export type TrashCommand = 'reset' | 'draw' | 'place' | 'cpu' | 'log';
+
+/** API client for the Trash /trash/exec endpoint. */
+export const trashApi = {
+  exec: (command: TrashCommand, position?: number) => gameExec<TrashResponse>('trash', { command, position }),
+};
+
 /** API client for the Speed /speed/exec endpoint. */
 export const speedApi = {
   exec: (
@@ -1183,6 +1193,7 @@ const games = [
   'yukon',
   'scorpion',
   'accordion',
+  'trash',
   'whist',
   'letitride',
   'pokersquares',

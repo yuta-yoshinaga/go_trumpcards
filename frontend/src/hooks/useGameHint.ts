@@ -42,6 +42,7 @@ import type {
   SpeedResponse,
   SpiderResponse,
   ThreeCardResponse,
+  TrashResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
   VideoPokerResponse,
@@ -94,6 +95,7 @@ import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
+import { getTrashHint } from '../utils/hints/trashHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
 import { getTwoTenJackHint } from '../utils/hints/twotenjackHint';
 import { getVideoPokerHint } from '../utils/hints/videopokerHint';
@@ -160,6 +162,7 @@ const hintFactories = {
   yukon: (s) => getYukonHint(s as YukonResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
+  trash: (s) => getTrashHint(s as TrashResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

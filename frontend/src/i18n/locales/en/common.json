@@ -75,7 +75,8 @@
     "razz": "Razz",
     "badugi": "Badugi",
     "scorpion": "Scorpion",
-    "accordion": "Accordion"
+    "accordion": "Accordion",
+    "trash": "Trash"
   },
   "sound": {
     "mute": "Mute sound",

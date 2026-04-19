@@ -75,7 +75,8 @@
     "razz": "ラズ",
     "badugi": "バドゥーギ",
     "scorpion": "スコーピオン",
-    "accordion": "アコーディオン"
+    "accordion": "アコーディオン",
+    "trash": "トラッシュ"
   },
   "sound": {
     "mute": "サウンドをオフにする",

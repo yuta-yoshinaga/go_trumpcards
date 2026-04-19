@@ -35,6 +35,7 @@
   - [2.20 CLIモード コマンド実行フロー](#220-cliモード-コマンド実行フロー)
   - [2.21 RedDogPage フェーズ別レンダリングフロー](#221-reddogpage-フェーズ別レンダリングフロー)
   - [2.22 ScorpionPage フェーズ別レンダリングフロー](#222-scorpionpage-フェーズ別レンダリングフロー)
+  - [2.23 TrashPage フェーズ別レンダリングフロー](#223-trashpage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -2644,6 +2645,41 @@ sequenceDiagram
 
     Note over User,API: ゲームオーバー (phase=2)
     Page-->>User: 手詰まり / ギブアップメッセージ表示
+```
+
+### 2.23 TrashPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as TrashPage
+    participant Hook as useGameApi
+    participant API as trashApi
+
+    Note over User,API: PlayerTurn (phase=0, current=0)
+    User->>Page: 山札ボタンをクリック
+    Page->>Hook: dispatch draw
+    Hook->>API: POST /trash/exec cmd=draw
+    API-->>Hook: TrashResponse (自動チェーン解決)
+    Hook-->>Page: 再レンダリング → スロット更新
+
+    Note over User,API: AwaitWild (phase=1)
+    Page-->>User: 自スロットに ring-info 強調
+    User->>Page: 裏向きスロットをクリック
+    Page->>Hook: dispatch place position=pos
+    Hook->>API: POST /trash/exec cmd=place
+    API-->>Hook: TrashResponse (wild 配置 + 連鎖)
+
+    Note over User,API: CPU Turn (current=1)
+    Page->>Hook: useEffect → 自動 dispatch cpu (500ms遅延)
+    Hook->>API: POST /trash/exec cmd=cpu
+    API-->>Hook: TrashResponse (CPU が1ステップ進行)
+    Page-->>User: 自動で再レンダリング (勝敗 / ターン交代まで)
+
+    Note over User,API: GameOver (phase=2)
+    Page-->>User: 勝敗メッセージ + 手数表示 + WinCelebration (勝利時)
+    User->>Page: Reset ボタン
+    Page->>Hook: dispatch reset
 ```
 
 ---
