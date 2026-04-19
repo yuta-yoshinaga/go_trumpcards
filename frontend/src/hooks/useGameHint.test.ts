@@ -23,6 +23,7 @@ import type {
   SevensResponse,
   SpeedResponse,
   ThreeCardResponse,
+  TrashResponse,
   TwoTenJackResponse,
 } from '../types/card';
 import { CanastaPhase, CaribbeanStudPhase, GoFishPhase } from '../types/phases';
@@ -725,5 +726,24 @@ describe('useGameHint', () => {
     const { result } = renderHook(() => useGameHint('accordion', state));
     expect(result.current.hint).not.toBeNull();
     expect(result.current.hint?.reason).toBe('frontendHint.accordionOffset3');
+  });
+
+  it('routes trash through getTrashHint (always null — decisional hints n/a)', () => {
+    localStorage.setItem('hint_enabled_trash', 'true');
+    const state: TrashResponse = {
+      phase: 0,
+      current: 0,
+      players: [
+        { slots: Array.from({ length: 10 }, () => ({ faceUp: false })), isCpu: false },
+        { slots: Array.from({ length: 10 }, () => ({ faceUp: false })), isCpu: true },
+      ],
+      stockSize: 34,
+      discardSize: 0,
+      moveCount: 0,
+      winner: -1,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('trash', state));
+    expect(result.current.hint).toBeNull();
   });
 });

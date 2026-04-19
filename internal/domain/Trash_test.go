@@ -420,6 +420,31 @@ func TestTrashUnmarshalRejectsOversizedSlices(t *testing.T) {
 	assert.Error(t, json.Unmarshal(data, tr))
 }
 
+func TestTrashUnmarshalRejectsWinnerWhileNotGameOver(t *testing.T) {
+	cases := []struct {
+		name    string
+		payload string
+	}{
+		{"winner=1 with PlayerTurn", `{"wn":1,"ph":0}`},
+		{"winner=0 with AwaitWild", `{"wn":0,"ph":1}`},
+		{"winner=1 with AwaitWild", `{"wn":1,"ph":1}`},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			tr := &Trash{}
+			require.NoError(t, json.Unmarshal([]byte(c.payload), tr))
+			assert.Equal(t, -1, tr.GetWinner(), "winner must reset to -1 until GameOver")
+		})
+	}
+
+	t.Run("winner preserved on GameOver", func(t *testing.T) {
+		tr := &Trash{}
+		require.NoError(t, json.Unmarshal([]byte(`{"wn":1,"ph":2}`), tr))
+		assert.Equal(t, 1, tr.GetWinner())
+		assert.Equal(t, TrashPhaseGameOver, tr.GetPhase())
+	})
+}
+
 func TestTrashUnmarshalDefaults(t *testing.T) {
 	tr := &Trash{}
 	require.NoError(t, json.Unmarshal([]byte(`{}`), tr))

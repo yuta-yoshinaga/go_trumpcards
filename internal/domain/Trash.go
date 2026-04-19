@@ -471,8 +471,11 @@ func (t *Trash) UnmarshalJSON(data []byte) error {
 	t.pending = j.Pending
 	t.moveCount = j.MoveCount
 	t.winner = j.Winner
-	if t.winner == 0 && j.Phase != TrashPhaseGameOver {
-		// Safety: zero-value is ambiguous; treat untouched as -1.
+	if t.phase != TrashPhaseGameOver {
+		// Authoritative server state: winner is only meaningful after GameOver.
+		// Reject any value carried in the payload for earlier phases so a hostile
+		// or malformed snapshot cannot restore into a "we have a winner while
+		// still playing" state.
 		t.winner = -1
 	}
 	t.actionLog = j.ActionLog

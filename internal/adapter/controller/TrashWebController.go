@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -20,21 +21,21 @@ type TrashWebSlot struct {
 
 // TrashWebPlayer 1プレイヤー出力
 type TrashWebPlayer struct {
-	Slots [10]TrashWebSlot `json:"slots"`
-	IsCpu bool             `json:"isCpu"`
+	Slots [domain.TrashSlotCnt]TrashWebSlot `json:"slots"`
+	IsCpu bool                              `json:"isCpu"`
 }
 
 // TrashWebOutput トラッシュWebアウトプット
 type TrashWebOutput struct {
-	Phase       int               `json:"phase"`
-	Current     int               `json:"current"`
-	Players     [2]TrashWebPlayer `json:"players"`
-	StockSize   int               `json:"stockSize"`
-	DiscardSize int               `json:"discardSize"`
-	DiscardTop  *WebOutputCard    `json:"discardTop,omitempty"`
-	Pending     *WebOutputCard    `json:"pending,omitempty"`
-	MoveCount   int               `json:"moveCount"`
-	Winner      int               `json:"winner"`
+	Phase       int                                   `json:"phase"`
+	Current     int                                   `json:"current"`
+	Players     [domain.TrashPlayerCnt]TrashWebPlayer `json:"players"`
+	StockSize   int                                   `json:"stockSize"`
+	DiscardSize int                                   `json:"discardSize"`
+	DiscardTop  *WebOutputCard                        `json:"discardTop,omitempty"`
+	Pending     *WebOutputCard                        `json:"pending,omitempty"`
+	MoveCount   int                                   `json:"moveCount"`
+	Winner      int                                   `json:"winner"`
 	WebOutputBase
 }
 
