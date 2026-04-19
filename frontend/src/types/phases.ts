@@ -64,6 +64,26 @@ export const PokerAction = {
   ALL_IN: 5,
 } as const;
 
+/** Badugi phase constants (sync: internal/domain/Badugi.go). */
+export const BadugiPhase = {
+  INIT: 0,
+  DEAL: 1,
+  BET: 2,
+  DRAW: 3,
+  SHOWDOWN: 4,
+  END: 5,
+} as const;
+
+/** Badugi betting action constants (sync: internal/domain/Badugi.go). */
+export const BadugiAction = {
+  FOLD: 0,
+  CHECK: 1,
+  CALL: 2,
+  BET: 3,
+  RAISE: 4,
+  ALL_IN: 5,
+} as const;
+
 /** Texas Hold'em phase constants (sync: internal/domain/Holdem.go). */
 export const HoldemPhase = {
   INIT: 0,

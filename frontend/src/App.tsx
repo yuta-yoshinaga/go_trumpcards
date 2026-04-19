@@ -7,6 +7,7 @@ import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
 import { gameRoutes } from './constants/gameRoutes';
 import { BaccaratPage } from './pages/BaccaratPage';
+import { BadugiPage } from './pages/BadugiPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
 import { CanastaPage } from './pages/CanastaPage';
@@ -78,6 +79,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/pineapple': <PineapplePage />,
   '/sevencardstud': <SevenCardStudPage />,
   '/razz': <RazzPage />,
+  '/badugi': <BadugiPage />,
   '/shortdeck': <ShortDeckPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,

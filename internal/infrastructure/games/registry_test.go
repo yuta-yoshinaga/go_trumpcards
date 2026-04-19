@@ -7,11 +7,11 @@ import (
 )
 
 // expected category counts derived from the Phase 2 design: the three
-// Cloudflare Workers split 55 games into casino (18) / classic (21) / solo
+// Cloudflare Workers split 56 games into casino (19) / classic (21) / solo
 // (16). A mismatch here indicates that a game's Category is wrong (and would
 // route to the wrong worker in production).
 const (
-	expectedCasino  = 18
+	expectedCasino  = 19
 	expectedClassic = 21
 	expectedSolo    = 16
 	expectedTotal   = expectedCasino + expectedClassic + expectedSolo

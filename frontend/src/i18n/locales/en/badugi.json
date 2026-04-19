@@ -1,0 +1,45 @@
+{
+  "phase": {
+    "init": "Init",
+    "deal": "Deal",
+    "bet": "Bet",
+    "draw": "Draw {{n}}/3",
+    "showdown": "Showdown",
+    "end": "Result"
+  },
+  "yourHand": "Your hand",
+  "drawBadge": "Draw {{n}}/3",
+  "preDrawLabel": "Pre-draw",
+  "exchangeInstruction": "Click the cards you want to exchange, then press Exchange or Stand.",
+  "exchangeLabel": "Exchange",
+  "standLabel": "Stand pat",
+  "cpuExchange": "CPU draws:",
+  "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): exchanged {{count}}",
+  "exchangeCount": "Drew: {{count}}",
+  "cardSelected": "(selected to exchange)",
+  "settings": {
+    "title": "Settings",
+    "cpuMetaAI": "Meta-AI (CPUs learn your style)"
+  },
+  "bestCards": "Best cards",
+  "tutorial": {
+    "playerHand": "Your 4 cards. The best non-paired, non-suited subset is your hand.",
+    "exchangeButton": "Click cards to discard and press Exchange. Up to three draws per hand.",
+    "betControls": "Pick a betting action: call, raise, fold, and so on.",
+    "resultMessage": "The result appears here. A Badugi (all four distinct) is the strongest hand.",
+    "resetButton": "Reset to start a new hand."
+  },
+  "hint": {
+    "standPat": "You already hold a Badugi — stand pat.",
+    "dropDup": "Discard cards that duplicate a rank or suit.",
+    "bigBet": "Strong hand — bet or raise.",
+    "callWithValue": "Three-card low is worth a value call.",
+    "foldWeak": "Weak hand — fold."
+  },
+  "result": {
+    "win": "You win.",
+    "lose": "You lose.",
+    "folded": "You folded.",
+    "gameOver": "Game over."
+  }
+}
