@@ -23,13 +23,12 @@ test.describe('Let It Ride E2E', () => {
     await rideButton2.click();
     await waitForLoaded(page);
 
-    // END phase: リセット button should be visible
-    const resetButton = page.getByRole('button', { name: 'リセット' });
+    // END phase: 次のゲーム button should be visible
+    const resetButton = page.getByRole('button', { name: '次のゲーム' });
     await expect(resetButton).toBeVisible({ timeout: 10_000 });
 
     // Reset back to bet phase
     await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
     await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
   });
@@ -55,11 +54,10 @@ test.describe('Let It Ride E2E', () => {
     await waitForLoaded(page);
 
     // END phase
-    const resetButton = page.getByRole('button', { name: 'リセット' });
+    const resetButton = page.getByRole('button', { name: '次のゲーム' });
     await expect(resetButton).toBeVisible({ timeout: 10_000 });
 
     await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
     await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
   });

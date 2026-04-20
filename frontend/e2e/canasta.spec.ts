@@ -5,10 +5,10 @@ test.describe('Canasta E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
     await navigateTo(page, '/canasta');
 
-    // Click リセット to start
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await expect(resetButton).toBeVisible();
-    await resetButton.click();
+    // Click リセット to start (mid-game: confirm dialog)
+    const midResetButton = page.getByRole('button', { name: 'リセット' });
+    await expect(midResetButton).toBeVisible();
+    await midResetButton.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
@@ -23,6 +23,7 @@ test.describe('Canasta E2E', () => {
     const goOutButton = page.getByRole('button', { name: '上がる' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     const handCards = page.locator('button[aria-pressed]:has(img)');
+    const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     const MAX_TURNS = 60;
     let interactions = 0;
@@ -35,7 +36,7 @@ test.describe('Canasta E2E', () => {
           .or(discardButton)
           .or(goOutButton)
           .or(nextRoundButton)
-          .or(resetButton)
+          .or(anyResetButton)
           .first(),
       ).toBeVisible({ timeout: 10_000 });
 

@@ -25,8 +25,8 @@ test.describe('BlackJack E2E', () => {
     await standButton.click();
     await waitForLoaded(page);
 
-    // END phase: リセット button should be visible
-    const resetButton = page.getByRole('button', { name: /リセット/ });
+    // END phase: 次のゲーム button should be visible
+    const resetButton = page.getByRole('button', { name: '次のゲーム' });
     await expect(resetButton).toBeVisible({ timeout: 10_000 });
   });
 });

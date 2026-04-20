@@ -5,10 +5,10 @@ test.describe('Crazy Eights E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
     await navigateTo(page, '/crazyeights');
 
-    // Click リセット to start
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await expect(resetButton).toBeVisible();
-    await resetButton.click();
+    // Click リセット to start (mid-game: confirm dialog)
+    const midResetButton = page.getByRole('button', { name: 'リセット' });
+    await expect(midResetButton).toBeVisible();
+    await midResetButton.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
@@ -79,9 +79,14 @@ test.describe('Crazy Eights E2E', () => {
     // Verify we had at least one interaction (play, draw, suit choice, or round end)
     expect(interactions).toBeGreaterThan(0);
 
-    // Reset and verify game restarts
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
+    // Reset and verify game restarts. Button could be mid-game (リセット) or end (次のゲーム).
+    const midVisible = await midResetButton.isVisible();
+    if (midVisible) {
+      await midResetButton.click();
+      await page.getByRole('button', { name: '確認' }).click();
+    } else {
+      await page.getByRole('button', { name: '次のゲーム' }).click();
+    }
     await waitForLoaded(page);
     await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
   });

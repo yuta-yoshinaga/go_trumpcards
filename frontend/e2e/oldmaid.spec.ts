@@ -19,7 +19,8 @@ test.describe('Old Maid E2E', () => {
 
     // After drawing, the game processes CPU turns (with animation delays)
     // Wait until either the draw button reappears (human's turn again) or the game ends
-    const resetButton = page.getByRole('button', { name: 'リセット' });
+    // (reset button label is リセット mid-game, 次のゲーム at end state).
+    const resetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
     const nextAction = randomDrawButton.or(resetButton);
     await expect(nextAction.first()).toBeVisible({ timeout: 30_000 });
   });

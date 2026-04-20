@@ -5,10 +5,10 @@ test.describe('Poker E2E', () => {
   test('plays a full round: reset → bet → stand (no exchange) → bet → result → reset', async ({ page }) => {
     await navigateTo(page, '/poker');
 
-    // Click リセット to start a new game
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await expect(resetButton).toBeVisible();
-    await resetButton.click();
+    // Click リセット to start a new game (mid-game: confirm dialog)
+    const midResetButton = page.getByRole('button', { name: 'リセット' });
+    await expect(midResetButton).toBeVisible();
+    await midResetButton.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
@@ -37,12 +37,12 @@ test.describe('Poker E2E', () => {
     }
     await waitForLoaded(page);
 
-    // END phase: リセット should be visible again
-    await expect(resetButton).toBeVisible({ timeout: 10_000 });
+    // END phase: 次のゲーム should be visible
+    const endResetButton = page.getByRole('button', { name: '次のゲーム' });
+    await expect(endResetButton).toBeVisible({ timeout: 10_000 });
 
-    // Start another round
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
+    // Start another round (end state: no confirm dialog)
+    await endResetButton.click();
     await waitForLoaded(page);
   });
 });

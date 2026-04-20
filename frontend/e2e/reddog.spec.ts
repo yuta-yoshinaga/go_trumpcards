@@ -14,7 +14,7 @@ test.describe('Red Dog E2E', () => {
     // After bet, the game may go to SPREAD_DECISION or skip to END (pair/consecutive)
     const raiseButton = page.getByRole('button', { name: 'レイズ' });
     const stayButton = page.getByRole('button', { name: 'ステイ' });
-    const resetButton = page.getByRole('button', { name: 'リセット' });
+    const resetButton = page.getByRole('button', { name: '次のゲーム' });
 
     if (await isVisibleWithin(raiseButton, TIMEOUT_TRANSITION)) {
       // SPREAD_DECISION phase: choose stay
@@ -22,12 +22,11 @@ test.describe('Red Dog E2E', () => {
       await waitForLoaded(page);
     }
 
-    // END phase: リセット button should be visible
+    // END phase: 次のゲーム button should be visible
     await expect(resetButton).toBeVisible({ timeout: TIMEOUT_ACTION });
 
     // Reset back to bet phase
     await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
     await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
   });
@@ -49,21 +48,19 @@ test.describe('Red Dog E2E', () => {
         await waitForLoaded(page);
 
         // END phase
-        const resetButton = page.getByRole('button', { name: 'リセット' });
+        const resetButton = page.getByRole('button', { name: '次のゲーム' });
         await expect(resetButton).toBeVisible({ timeout: TIMEOUT_ACTION });
 
         await resetButton.click();
-        await page.getByRole('button', { name: '確認' }).click();
         await waitForLoaded(page);
         await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
         return;
       }
 
       // Auto-resolved (pair/consecutive) — reset and try again
-      const resetButton = page.getByRole('button', { name: 'リセット' });
+      const resetButton = page.getByRole('button', { name: '次のゲーム' });
       await expect(resetButton).toBeVisible({ timeout: TIMEOUT_ACTION });
       await resetButton.click();
-      await page.getByRole('button', { name: '確認' }).click();
       await waitForLoaded(page);
     }
 
