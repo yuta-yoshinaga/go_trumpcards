@@ -124,6 +124,7 @@ function BadugiPageContent() {
   const phase = state?.phase ?? BadugiPhase.INIT;
   const isBettingPhase = phase === BadugiPhase.DEAL || phase === BadugiPhase.BET;
   const isEnd = phase === BadugiPhase.END;
+  const isHandOver = phase === BadugiPhase.SHOWDOWN || phase === BadugiPhase.END;
   const drawIndex = state?.drawIndex ?? 0;
   const phaseLabel =
     phase === BadugiPhase.DRAW
@@ -390,7 +391,7 @@ function BadugiPageContent() {
         />
         <div className="text-center mt-2">
           <GameResetButton
-            isGameEnd={isEnd}
+            isGameEnd={isHandOver}
             onReset={handleManualReset}
             requestConfirm={requestConfirm}
             loading={loading}

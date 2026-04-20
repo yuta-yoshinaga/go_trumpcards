@@ -369,7 +369,7 @@ function IndianPokerPageContent() {
             {/* Reset */}
             <div className="text-center flex items-center justify-center gap-3">
               <GameResetButton
-                isGameEnd={phase === IndianPokerPhase.END}
+                isGameEnd={phase === IndianPokerPhase.SHOWDOWN || phase === IndianPokerPhase.END}
                 onReset={handleManualReset}
                 requestConfirm={requestConfirm}
                 loading={loading}

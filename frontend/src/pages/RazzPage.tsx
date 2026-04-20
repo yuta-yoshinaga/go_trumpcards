@@ -549,7 +549,7 @@ function RazzPageContent() {
               </div>
             </details>
             <GameResetButton
-              isGameEnd={phase === SevenCardStudPhase.END}
+              isGameEnd={phase === SevenCardStudPhase.SHOWDOWN || phase === SevenCardStudPhase.END}
               onReset={handleManualReset}
               requestConfirm={requestConfirm}
               loading={loading}

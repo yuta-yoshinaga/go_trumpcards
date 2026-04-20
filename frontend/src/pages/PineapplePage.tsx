@@ -590,7 +590,7 @@ function PineapplePageContent() {
               </div>
             </details>
             <GameResetButton
-              isGameEnd={phase === PineapplePhase.END}
+              isGameEnd={phase === PineapplePhase.SHOWDOWN || phase === PineapplePhase.END}
               onReset={handleManualReset}
               requestConfirm={requestConfirm}
               loading={loading}

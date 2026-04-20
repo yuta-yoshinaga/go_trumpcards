@@ -544,7 +544,7 @@ function HoldemPageContent() {
               </div>
             </details>
             <GameResetButton
-              isGameEnd={phase === HoldemPhase.END}
+              isGameEnd={phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END}
               onReset={handleManualReset}
               requestConfirm={requestConfirm}
               loading={loading}

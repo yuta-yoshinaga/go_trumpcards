@@ -542,7 +542,7 @@ function OmahaPageContent() {
               </div>
             </details>
             <GameResetButton
-              isGameEnd={phase === OmahaPhase.END}
+              isGameEnd={phase === OmahaPhase.SHOWDOWN || phase === OmahaPhase.END}
               onReset={handleManualReset}
               requestConfirm={requestConfirm}
               loading={loading}
