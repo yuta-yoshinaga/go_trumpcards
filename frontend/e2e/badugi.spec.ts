@@ -21,10 +21,10 @@ test.describe('Badugi E2E', () => {
     const foldButton = page.getByRole('button', { name: 'フォールド', exact: true });
     const standButton = page.getByRole('button', { name: 'スタンド', exact: true });
 
+    // Up to 4 bet rounds + 3 draw rounds × (1 human + 3 CPU) polls. Budget
+    // is generous since CI scheduling can stretch CPU turns.
     let roundEnded = false;
-    for (let round = 0; round < 30; round++) {
-      // Instant check — if no action is currently available (CPU thinking,
-      // animation playing, …), waitForLoaded below lets the page settle.
+    for (let round = 0; round < 120; round++) {
       if (await endResetButton.isVisible()) {
         roundEnded = true;
         break;
@@ -50,9 +50,9 @@ test.describe('Badugi E2E', () => {
         continue;
       }
 
-      // Nothing actionable yet — wait briefly for the next state change.
-      await page.waitForTimeout(500);
-      await waitForLoaded(page);
+      // No action currently available — CPU probably thinking. Brief sleep
+      // then re-check; aria-busy alone is not a sufficient signal.
+      await page.waitForTimeout(300);
     }
 
     expect(roundEnded).toBe(true);
