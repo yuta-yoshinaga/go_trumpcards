@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
@@ -29,7 +30,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, FreeCellResponse } from '../types/card';
 import { FreeCellPhase } from '../types/phases';
@@ -140,6 +141,11 @@ function FreeCellPageContent() {
     isPlaying: !!isPlayingForKbd,
     disabled: loading,
   });
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    handleReset();
+  }, [handleReset, hideActionLog]);
 
   const actionBindings = useMemo(
     () => [
@@ -476,21 +482,13 @@ function FreeCellPageContent() {
                   </button>
                 </div>
               )}
-              <div data-tutorial="fc-reset-button">
-                <button
-                  type="button"
-                  className={btnOutline}
-                  onClick={() =>
-                    requestConfirm(() => {
-                      hideActionLog();
-                      return handleReset();
-                    })
-                  }
-                  disabled={loading}
-                >
-                  {tc('button.reset')}
-                </button>
-              </div>
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="fc-reset-button"
+              />
             </div>
           </GameFooter>
         </>

@@ -234,4 +234,15 @@ describe('GolfPage', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }
   });
+
+  it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<GolfPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
+  });
 });

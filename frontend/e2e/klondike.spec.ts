@@ -61,15 +61,14 @@ test.describe('Klondike E2E', () => {
     await expect(page.getByRole('button', { name: '自動完成' })).not.toBeVisible();
     await expect(page.getByRole('button', { name: 'ギブアップ' })).not.toBeVisible();
 
-    // Reset should still be visible
-    await expect(page.getByRole('button', { name: 'リセット' })).toBeVisible();
+    // 次のゲーム button (end state) should be visible
+    await expect(page.getByRole('button', { name: '次のゲーム' })).toBeVisible();
 
     // Action log button should appear
     await expect(page.getByRole('button', { name: '棋譜を見る' })).toBeVisible();
 
-    // Reset to start a new game
-    await page.getByRole('button', { name: 'リセット' }).click();
-    await page.getByRole('button', { name: '確認' }).click();
+    // Start a new game (end state: no confirm dialog)
+    await page.getByRole('button', { name: '次のゲーム' }).click();
     await waitForLoaded(page);
     await expect(page.getByRole('button', { name: 'ヒント' })).toBeVisible();
   });

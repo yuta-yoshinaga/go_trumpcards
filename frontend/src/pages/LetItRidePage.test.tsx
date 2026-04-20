@@ -168,7 +168,7 @@ describe('LetItRidePage', () => {
   it('shows END phase with reset button and payout breakdown on win', async () => {
     mockApi.mockResolvedValue(endPhaseWin);
     renderWithProviders(<LetItRidePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
   });
 
@@ -245,37 +245,15 @@ describe('LetItRidePage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200));
   });
 
-  it('shows confirm dialog when reset is clicked', async () => {
+  it('next game button at end phase fires reset without dialog', async () => {
     mockApi.mockResolvedValue(endPhaseWin);
     renderWithProviders(<LetItRidePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-  });
-
-  it('dismisses confirm dialog on cancel', async () => {
-    mockApi.mockResolvedValue(endPhaseWin);
-    renderWithProviders(<LetItRidePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
-
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-  });
-
-  it('calls reset on confirm in dialog', async () => {
-    mockApi.mockResolvedValue(endPhaseWin);
-    renderWithProviders(<LetItRidePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
-
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-
+    mockApi.mockClear();
     mockApi.mockResolvedValue(betPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
   });
 
@@ -334,7 +312,7 @@ describe('LetItRidePage', () => {
   it('shows view action log button in END phase', async () => {
     mockApi.mockResolvedValue(endPhaseWin);
     renderWithProviders(<LetItRidePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     // The "view log" button (棋譜を見る) should also be present in END phase
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });

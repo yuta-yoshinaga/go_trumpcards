@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { pinochleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -159,6 +160,11 @@ function PinochlePageContent() {
       setBidAmount(20);
     }
   }, [state?.highestBid]);
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    handleReset();
+  }, [handleReset, hideActionLog]);
 
   if (!state) {
     return (
@@ -402,19 +408,13 @@ function PinochlePageContent() {
               )}
 
               {/* Reset */}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="pn-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    handleReset();
-                  })
-                }
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="pn-reset-button"
+              />
             </div>
           </GameFooter>
         </>

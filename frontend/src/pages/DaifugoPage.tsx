@@ -13,6 +13,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -31,7 +32,7 @@ import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DaifugoAction, DaifugoResponse } from '../types/card';
@@ -163,6 +164,11 @@ function DaifugoPageContent() {
     toggle: toggleCardSelection,
     enabled: isHumanTurnForKbd && !loading,
   });
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void exec('reset', [], configInput);
+  }, [exec, configInput, hideActionLog]);
 
   if (!state) return <DaifugoSkeleton />;
 
@@ -362,20 +368,14 @@ function DaifugoPageContent() {
             )}
 
             <div className="text-center" data-tutorial="df-play-pass">
-              <button
-                type="button"
-                className={`${btnOutline} min-w-[90px]`}
-                data-tutorial="df-reset-button"
-                disabled={loading}
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    exec('reset', [], configInput);
-                  })
-                }
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!state.gameEndFlag}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="df-reset-button"
+                className="min-w-[90px]"
+              />
               <button
                 type="button"
                 className={`${btnSecondary} min-w-[90px]`}

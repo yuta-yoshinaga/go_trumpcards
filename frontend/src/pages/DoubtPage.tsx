@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { doubtApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -11,6 +11,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -35,7 +36,7 @@ import {
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoubtCpuAction, DoubtResponse } from '../types/card';
@@ -213,6 +214,11 @@ function DoubtPageContent() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [isDoubtDecisionPhase, loading]);
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void exec('reset', undefined, undefined, undefined, doubtConfig);
+  }, [exec, hideActionLog, doubtConfig]);
 
   if (!state) return <DoubtSkeleton />;
 
@@ -551,20 +557,14 @@ function DoubtPageContent() {
 
             {/* Action buttons */}
             <div className="text-center">
-              <button
-                type="button"
-                className={`${btnOutline} min-w-[90px]`}
-                disabled={loading}
-                data-tutorial="dt-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    exec('reset', undefined, undefined, undefined, doubtConfig);
-                  })
-                }
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!state.gameEndFlag}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="dt-reset-button"
+                className="min-w-[90px]"
+              />
               {isHumanTurn && state.phase === 0 && (
                 <button
                   type="button"

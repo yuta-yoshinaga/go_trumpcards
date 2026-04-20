@@ -1,0 +1,95 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { whistApi } from '../api/gameApi';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { Card, WhistResponse } from '../types/card';
+import { WhistPage } from './WhistPage';
+
+vi.mock('../api/gameApi', () => ({
+  whistApi: { exec: vi.fn() },
+  actionLogApi: { whist: vi.fn() },
+}));
+
+const mockExec = vi.mocked(whistApi.exec);
+
+const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
+
+function makeState(overrides: Partial<WhistResponse> = {}): WhistResponse {
+  return {
+    players: [
+      {
+        id: 0,
+        isHuman: true,
+        cardCount: 3,
+        cards: [card('SPADE', 1), card('HEART', 5), card('DIAMOND', 9)],
+        roundScore: 0,
+        cumulativeScore: 0,
+        trickCount: 0,
+        team: 0,
+      },
+      { id: 1, isHuman: false, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0, team: 1 },
+      { id: 2, isHuman: false, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0, team: 0 },
+      { id: 3, isHuman: false, cardCount: 3, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0, team: 1 },
+    ],
+    phase: 0,
+    roundNumber: 1,
+    trickNumber: 1,
+    currentPlayerIdx: 0,
+    currentTrick: [],
+    trumpSuit: 0,
+    dealerIdx: 0,
+    teamScores: [0, 0],
+    gameEndFlag: false,
+    winnerTeam: -1,
+    leadPlayerIdx: 0,
+    message: '',
+    config: { cpuDifficulty: 1, pointLimit: 5 },
+    ...overrides,
+  };
+}
+
+const playState = makeState();
+const gameEndState = makeState({ phase: 3, gameEndFlag: true, winnerTeam: 0 });
+
+beforeEach(() => {
+  mockExec.mockResolvedValue(playState);
+});
+
+describe('WhistPage', () => {
+  it('calls reset on mount with default config', async () => {
+    renderWithProviders(<WhistPage />);
+    // useTrickGameBase fires the mount reset with four positional args.
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, pointLimit: 5 }),
+    );
+  });
+
+  it('shows mid-game リセット button that opens confirm dialog', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('executes reset after confirm dialog is accepted', async () => {
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1, pointLimit: 5 }));
+  });
+
+  it('shows 次のゲーム and fires reset directly at game end (no confirm)', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<WhistPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+});

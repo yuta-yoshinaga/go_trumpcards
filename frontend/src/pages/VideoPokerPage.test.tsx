@@ -97,21 +97,23 @@ describe('VideoPokerPage', () => {
   it('renders result phase with win message', async () => {
     mockExec.mockResolvedValue(resultPhaseWin);
     renderWithProviders(<VideoPokerPage />);
-    await waitFor(() => expect(screen.getByText(/次のハンド/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/次のゲーム/)).toBeInTheDocument());
   });
 
   it('renders result phase with lose message', async () => {
     mockExec.mockResolvedValue(resultPhaseLose);
     renderWithProviders(<VideoPokerPage />);
-    await waitFor(() => expect(screen.getByText(/次のハンド/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/次のゲーム/)).toBeInTheDocument());
   });
 
-  it('reset button shows confirmation dialog', async () => {
+  it('next game button fires reset directly without confirm dialog', async () => {
     mockExec.mockResolvedValue(resultPhaseWin);
     renderWithProviders(<VideoPokerPage />);
-    await waitFor(() => expect(screen.getByText(/次のハンド/)).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: /次のハンド/ }));
-    await waitFor(() => expect(screen.getByText(/リセットしますか/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/次のゲーム/)).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: /次のゲーム/ }));
+    expect(screen.queryByText(/リセットしますか/)).not.toBeInTheDocument();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('renders accessible h1 heading', async () => {

@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -26,7 +27,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -183,6 +184,14 @@ function EuchrePageContent() {
   });
 
   const phaseNames = usePhaseNames('euchre', EUCHRE_PHASE_KEYS);
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void apiExec('reset', undefined, undefined, undefined, {
+      cpuDifficulty: euchreConfig.cpuDifficulty,
+      pointLimit: euchreConfig.pointLimit,
+    });
+  }, [apiExec, hideActionLog, euchreConfig.cpuDifficulty, euchreConfig.pointLimit]);
 
   if (!state) return <EuchreSkeleton />;
 
@@ -587,23 +596,13 @@ function EuchrePageContent() {
               )}
 
               {/* Reset */}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="eu-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return apiExec('reset', undefined, undefined, undefined, {
-                      cpuDifficulty: euchreConfig.cpuDifficulty,
-                      pointLimit: euchreConfig.pointLimit,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="eu-reset-button"
+              />
             </div>
           </GameFooter>
         </>

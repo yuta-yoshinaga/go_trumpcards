@@ -297,7 +297,7 @@ describe('PyramidPage', () => {
   it('playing buttons not shown when game is over', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
@@ -306,7 +306,7 @@ describe('PyramidPage', () => {
   it('reset button always visible', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
   });
 
   it('displays message with messageCode', async () => {

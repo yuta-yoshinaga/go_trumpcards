@@ -26,7 +26,6 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -128,8 +127,7 @@ export function BlackJackPage() {
 
 /** Inner content of the BlackJack page, wrapped by TutorialProvider. */
 function BlackJackPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('blackjack');
+  const { t, tc, actionLog, showActionLog, hideActionLog } = useGamePageSetup('blackjack');
   const phaseNames = usePhaseNames('blackjack', BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
   const { playSound } = useSound();
@@ -567,7 +565,6 @@ function BlackJackPageContent() {
                   <BjEndPhaseControls
                     loading={loading}
                     onReset={handleReset}
-                    onManualReset={() => requestConfirm(handleReset)}
                     autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
                   />
                 </div>
@@ -578,7 +575,6 @@ function BlackJackPageContent() {
       )}
       <WinCelebration show={phase === BjPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <LossFeedback show={hands.some((h) => h.busted)} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );
 }

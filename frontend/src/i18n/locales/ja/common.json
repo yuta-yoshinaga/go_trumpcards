@@ -116,6 +116,7 @@
   },
   "button": {
     "reset": "リセット",
+    "nextGame": "次のゲーム",
     "pass": "パス",
     "cancel": "キャンセル",
     "confirmReset": "リセット確認",

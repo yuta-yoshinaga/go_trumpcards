@@ -7,6 +7,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { ManualButton } from '../components/ManualButton';
@@ -21,7 +22,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ClockSolitaireResponse } from '../types/card';
 import { ClockSolitairePhase } from '../types/phases';
@@ -295,15 +296,14 @@ function ClockSolitairePageContent() {
                   </button>
                 </div>
               )}
-              <div data-tutorial="clock-reset">
-                <button
-                  type="button"
-                  className={`${btnDanger} ${focusRingWhite}`}
-                  onClick={() => requestConfirm(handleReset)}
-                >
-                  {tc('reset')}
-                </button>
-              </div>
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="clock-reset"
+                className={focusRingWhite}
+              />
             </div>
           </GameFooter>
         </>

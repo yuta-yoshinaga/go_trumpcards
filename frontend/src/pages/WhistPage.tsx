@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
@@ -24,7 +25,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useWhistGame } from '../hooks/useWhistGame';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { WhistResponse } from '../types/card';
@@ -153,6 +154,14 @@ function WhistPageContent() {
   });
 
   const phaseNames = usePhaseNames('whist', WHIST_PHASE_KEYS);
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void dispatch('reset', undefined, {
+      cpuDifficulty: whistConfig.cpuDifficulty,
+      pointLimit: whistConfig.pointLimit,
+    });
+  }, [dispatch, hideActionLog, whistConfig.cpuDifficulty, whistConfig.pointLimit]);
 
   if (!state) return <WhistSkeleton />;
 
@@ -441,23 +450,13 @@ function WhistPageContent() {
                   {t('nextRound')}
                 </button>
               )}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="wh-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return dispatch('reset', undefined, {
-                      cpuDifficulty: whistConfig.cpuDifficulty,
-                      pointLimit: whistConfig.pointLimit,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="wh-reset-button"
+              />
             </div>
           </GameFooter>
         </>

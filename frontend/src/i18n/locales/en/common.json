@@ -116,6 +116,7 @@
   },
   "button": {
     "reset": "Reset",
+    "nextGame": "Next Game",
     "pass": "Pass",
     "cancel": "Cancel",
     "confirmReset": "Confirm Reset",

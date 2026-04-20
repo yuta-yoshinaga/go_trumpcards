@@ -11,40 +11,31 @@ function defaultProps(overrides?: Partial<BjEndPhaseControlsProps>): BjEndPhaseC
 }
 
 describe('BjEndPhaseControls', () => {
-  it('renders reset button', () => {
+  it('renders next-game button', () => {
     render(<BjEndPhaseControls {...defaultProps()} />);
-    expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
   });
 
-  it('calls onReset when reset button is clicked and onManualReset is not provided', () => {
+  it('calls onReset when the button is clicked', () => {
     const onReset = vi.fn();
     render(<BjEndPhaseControls {...defaultProps({ onReset })} />);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     expect(onReset).toHaveBeenCalled();
   });
 
-  it('calls onManualReset instead of onReset when onManualReset is provided', () => {
-    const onReset = vi.fn();
-    const onManualReset = vi.fn();
-    render(<BjEndPhaseControls {...defaultProps({ onReset, onManualReset })} />);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    expect(onManualReset).toHaveBeenCalled();
-    expect(onReset).not.toHaveBeenCalled();
-  });
-
-  it('disables reset button when loading is true', () => {
+  it('disables button when loading is true', () => {
     render(<BjEndPhaseControls {...defaultProps({ loading: true })} />);
-    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '次のゲーム' })).toBeDisabled();
   });
 
-  it('enables reset button when loading is false', () => {
+  it('enables button when loading is false', () => {
     render(<BjEndPhaseControls {...defaultProps({ loading: false })} />);
-    expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: '次のゲーム' })).not.toBeDisabled();
   });
 
-  it('has animate-pulse class on reset button', () => {
+  it('has animate-pulse class on button', () => {
     render(<BjEndPhaseControls {...defaultProps()} />);
-    expect(screen.getByRole('button', { name: 'リセット' })).toHaveClass('animate-pulse');
+    expect(screen.getByRole('button', { name: '次のゲーム' })).toHaveClass('animate-pulse');
   });
 
   // --- Auto-advance countdown tests ---
@@ -60,28 +51,28 @@ describe('BjEndPhaseControls', () => {
 
     it('shows countdown when autoAdvanceSeconds is provided', () => {
       render(<BjEndPhaseControls {...defaultProps({ autoAdvanceSeconds: 5 })} />);
-      expect(screen.getByRole('button', { name: 'リセット (5s)' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '次のゲーム (5s)' })).toBeInTheDocument();
     });
 
     it('does not show countdown when autoAdvanceSeconds is undefined', () => {
       render(<BjEndPhaseControls {...defaultProps()} />);
-      expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
     });
 
     it('does not show countdown when autoAdvanceSeconds is 0', () => {
       render(<BjEndPhaseControls {...defaultProps({ autoAdvanceSeconds: 0 })} />);
-      expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
     });
 
     it('decrements countdown every second', async () => {
       render(<BjEndPhaseControls {...defaultProps({ autoAdvanceSeconds: 3 })} />);
-      expect(screen.getByRole('button', { name: 'リセット (3s)' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '次のゲーム (3s)' })).toBeInTheDocument();
 
       vi.advanceTimersByTime(1000);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'リセット (2s)' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム (2s)' })).toBeInTheDocument());
 
       vi.advanceTimersByTime(1000);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'リセット (1s)' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム (1s)' })).toBeInTheDocument());
     });
 
     it('calls onReset when countdown reaches 0', async () => {
@@ -97,7 +88,7 @@ describe('BjEndPhaseControls', () => {
       render(<BjEndPhaseControls {...defaultProps({ onReset, autoAdvanceSeconds: 1 })} />);
 
       vi.advanceTimersByTime(1000);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     });
   });
 });

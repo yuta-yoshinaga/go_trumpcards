@@ -1,31 +1,28 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_QUICK, waitForLoaded } from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
 
 test.describe("Texas Hold'em E2E", () => {
   test('plays a full round: reset → check/call through rounds → showdown → reset', async ({ page }) => {
     await navigateTo(page, '/holdem');
 
-    // Click リセット to start
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await expect(resetButton).toBeVisible();
-    await resetButton.click();
+    // Click リセット to start (mid-game: confirm dialog)
+    const midResetButton = page.getByRole('button', { name: 'リセット' });
+    await expect(midResetButton).toBeVisible();
+    await midResetButton.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // Play through betting rounds: PRE_FLOP → FLOP → TURN → RIVER → SHOWDOWN
+    const endResetButton = page.getByRole('button', { name: '次のゲーム' });
     let roundEnded = false;
     for (let round = 0; round < 20; round++) {
       const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
       const callButton = page.getByRole('button', { name: 'コール', exact: true });
 
-      // Check if we've reached the end
-      if (await isVisibleWithin(resetButton, TIMEOUT_QUICK)) {
-        const checkVisible = await checkButton.isVisible();
-        const callVisible = await callButton.isVisible();
-        if (!checkVisible && !callVisible) {
-          roundEnded = true;
-          break;
-        }
+      // End state reached — break immediately.
+      if (await endResetButton.isVisible()) {
+        roundEnded = true;
+        break;
       }
 
       // Try check first, then call
@@ -50,9 +47,8 @@ test.describe("Texas Hold'em E2E", () => {
 
     expect(roundEnded).toBe(true);
 
-    // Start next round
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
+    // Start next round (end state: no confirm dialog)
+    await endResetButton.click();
     await waitForLoaded(page);
   });
 });

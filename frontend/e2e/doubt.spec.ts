@@ -5,10 +5,10 @@ test.describe('Doubt E2E', () => {
   test('plays a full game: reset → select card + play / skip doubt → end → reset', async ({ page }) => {
     await navigateTo(page, '/doubt');
 
-    // Click リセット to start
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await expect(resetButton).toBeVisible();
-    await resetButton.click();
+    // Click リセット to start (mid-game: confirm dialog)
+    const midResetButton = page.getByRole('button', { name: 'リセット' });
+    await expect(midResetButton).toBeVisible();
+    await midResetButton.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
@@ -54,9 +54,9 @@ test.describe('Doubt E2E', () => {
     // Assert game ended (Playwright auto-retry)
     await expect(gameEnd).toBeVisible({ timeout: 5_000 });
 
-    // Reset
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
+    // Reset (end state: no confirm dialog)
+    const endResetButton = page.getByRole('button', { name: '次のゲーム' });
+    await endResetButton.click();
     await waitForLoaded(page);
   });
 });

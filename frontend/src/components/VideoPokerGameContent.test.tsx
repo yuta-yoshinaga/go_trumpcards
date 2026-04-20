@@ -150,21 +150,23 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(resultPhaseWin);
     renderContent();
     await waitFor(() => expect(screen.getByText(/配当.*5/)).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: /次のハンド/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument();
   });
 
   it('renders result phase on lose', async () => {
     mockExec.mockResolvedValue(resultPhaseLose);
     renderContent();
-    await waitFor(() => expect(screen.getByRole('button', { name: /次のハンド/ })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
   });
 
-  it('shows reset confirmation dialog', async () => {
+  it('next game button fires reset directly without confirm dialog', async () => {
     mockExec.mockResolvedValue(resultPhaseWin);
     renderContent();
-    await waitFor(() => expect(screen.getByRole('button', { name: /次のハンド/ })).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: /次のハンド/ }));
-    await waitFor(() => expect(screen.getByText(/リセットしますか/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: /次のゲーム/ }));
+    expect(screen.queryByText(/リセットしますか/)).not.toBeInTheDocument();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('changes bet amount with selector', async () => {
@@ -196,7 +198,7 @@ describe('VideoPokerGameContent', () => {
   it('clicking card in result phase does not toggle hold', async () => {
     mockExec.mockResolvedValue(resultPhaseWin);
     renderContent();
-    await waitFor(() => expect(screen.getByRole('button', { name: /次のハンド/ })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
     const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
     expect(cardButtons.length).toBe(5);
     // heldIndices[0] is true in resultPhaseWin, so aria-pressed starts as "true"
@@ -222,7 +224,7 @@ describe('VideoPokerGameContent', () => {
     } as unknown as VideoPokerResponse;
     mockExec.mockResolvedValue(resultNoHeld);
     renderContent();
-    await waitFor(() => expect(screen.getByRole('button', { name: /次のハンド/ })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
     const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
     expect(cardButtons.every((b) => b.getAttribute('aria-pressed') === 'false')).toBe(true);
   });

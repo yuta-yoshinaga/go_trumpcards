@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -27,7 +28,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnSecondary } from '../styles/buttonStyles';
+import { btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SevensResponse } from '../types/card';
@@ -136,6 +137,34 @@ function SevensPageContent() {
     enabled: isHumanTurnForKbd && !loading,
     onDirectPlay: directPlay,
   });
+
+  const runAction = exec;
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void runAction('reset', -1, 0, 0, {
+      tunnelEnabled: cfgTunnel,
+      tunnelSkipWidth: cfgTunnelSkipWidth,
+      jokerCount: cfgJokerCount,
+      cpuStrategy: cfgCpuStrategy,
+      maxPasses: cfgMaxPasses,
+      noJokerFinish: cfgNoJokerFinish,
+      jokerReclaim: cfgJokerReclaim,
+      endStop: cfgEndStop,
+      jokerConsecutiveBanned: cfgJokerConsBan,
+    });
+  }, [
+    runAction,
+    hideActionLog,
+    cfgTunnel,
+    cfgTunnelSkipWidth,
+    cfgJokerCount,
+    cfgCpuStrategy,
+    cfgMaxPasses,
+    cfgNoJokerFinish,
+    cfgJokerReclaim,
+    cfgEndStop,
+    cfgJokerConsBan,
+  ]);
 
   if (!state) return <SevensSkeleton />;
 
@@ -393,30 +422,14 @@ function SevensPageContent() {
             )}
 
             <div className="text-center">
-              <button
-                type="button"
-                className={`${btnOutline} min-w-[90px]`}
-                disabled={loading}
-                data-tutorial="sv-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    exec('reset', -1, 0, 0, {
-                      tunnelEnabled: cfgTunnel,
-                      tunnelSkipWidth: cfgTunnelSkipWidth,
-                      jokerCount: cfgJokerCount,
-                      cpuStrategy: cfgCpuStrategy,
-                      maxPasses: cfgMaxPasses,
-                      noJokerFinish: cfgNoJokerFinish,
-                      jokerReclaim: cfgJokerReclaim,
-                      endStop: cfgEndStop,
-                      jokerConsecutiveBanned: cfgJokerConsBan,
-                    });
-                  })
-                }
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!state.gameEndFlag}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="sv-reset-button"
+                className="min-w-[90px]"
+              />
               <button
                 type="button"
                 className={`${btnSecondary} min-w-[90px]`}

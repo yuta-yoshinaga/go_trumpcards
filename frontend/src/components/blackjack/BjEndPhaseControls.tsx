@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { btnOutline } from '../../styles/buttonStyles';
+import { btnPrimary } from '../../styles/buttonStyles';
 
 /** Props for BlackJack end phase controls. */
 export interface BjEndPhaseControlsProps {
   loading: boolean;
   onReset: () => void;
-  onManualReset?: () => void;
   autoAdvanceSeconds?: number;
 }
 
-/** Renders the reset button with optional auto-advance countdown for BlackJack end phase. */
+/**
+ * Renders the "Next Game" button with optional auto-advance countdown for BlackJack end phase.
+ * No confirmation dialog — the hand is already resolved, so clicking just deals the next one.
+ */
 export function BjEndPhaseControls(props: BjEndPhaseControlsProps) {
   const { t } = useTranslation('common');
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -41,11 +43,11 @@ export function BjEndPhaseControls(props: BjEndPhaseControlsProps) {
   return (
     <button
       type="button"
-      className={`${btnOutline} animate-pulse ring-2 ring-white ring-offset-2 ring-offset-green-800`}
+      className={`${btnPrimary} animate-pulse ring-2 ring-white ring-offset-2 ring-offset-green-800`}
       disabled={props.loading}
-      onClick={props.onManualReset ?? props.onReset}
+      onClick={props.onReset}
     >
-      {t('button.reset')}
+      {t('button.nextGame')}
       {countdown !== null ? ` (${countdown}s)` : ''}
     </button>
   );

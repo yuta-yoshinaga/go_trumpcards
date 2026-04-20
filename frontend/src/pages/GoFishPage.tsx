@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { goFishApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -7,6 +7,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { GoFishBooksDisplay } from '../components/gofish/GoFishBooksDisplay';
 import { GoFishPlayerArea } from '../components/gofish/GoFishPlayerArea';
@@ -27,7 +28,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGoFishGame } from '../hooks/useGoFishGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary } from '../styles/buttonStyles';
+import { btnPrimary } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -122,6 +123,11 @@ function GoFishPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void exec('reset', undefined, undefined, { cpuDifficulty: goFishConfig.cpuDifficulty });
+  }, [exec, hideActionLog, goFishConfig.cpuDifficulty]);
 
   if (!state) return <GoFishSkeleton />;
 
@@ -268,22 +274,13 @@ function GoFishPageContent() {
                   {t('button.ask')}
                 </button>
               )}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="gf-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return exec('reset', undefined, undefined, {
-                      cpuDifficulty: goFishConfig.cpuDifficulty,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="gf-reset-button"
+              />
             </div>
           </GameFooter>
         </>

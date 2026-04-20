@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -7,6 +7,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -153,6 +154,11 @@ function DurakPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void gameExec('reset', undefined, undefined, durakConfig);
+  }, [gameExec, hideActionLog, durakConfig]);
 
   if (!state) return <DurakSkeleton />;
 
@@ -392,19 +398,13 @@ function DurakPageContent() {
 
             {/* Action buttons */}
             <div className="text-center" data-tutorial="dk-action-buttons">
-              <button
-                type="button"
-                className={`${btnOutline} min-w-[90px]`}
-                disabled={loading}
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    gameExec('reset', undefined, undefined, durakConfig);
-                  })
-                }
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                className="min-w-[90px]"
+              />
               {showAttackBtn && (
                 <button
                   type="button"

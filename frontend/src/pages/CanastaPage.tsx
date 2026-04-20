@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -121,6 +122,14 @@ function CanastaPageContent() {
   const isDiscardPhase = state?.phase === CanastaPhase.DISCARD;
   const isRoundEnd = state?.phase === CanastaPhase.ROUND_END;
   const isGameEnd = state?.phase === CanastaPhase.GAME_END || !!state?.gameEndFlag;
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void gameExec('reset', undefined, {
+      cpuDifficulty: canastaConfig.cpuDifficulty,
+      pointLimit: canastaConfig.pointLimit,
+    });
+  }, [gameExec, hideActionLog, canastaConfig.cpuDifficulty, canastaConfig.pointLimit]);
   const isHumanTurn =
     (isDrawPhase || isMeldPhase || isDiscardPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
 
@@ -422,21 +431,12 @@ function CanastaPageContent() {
                   {t('nextRound')}
                 </button>
               )}
-              <button
-                type="button"
-                className={btnOutline}
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return gameExec('reset', undefined, {
-                      cpuDifficulty: canastaConfig.cpuDifficulty,
-                      pointLimit: canastaConfig.pointLimit,
-                    });
-                  })
-                }
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+              />
             </div>
           </GameFooter>
         </>

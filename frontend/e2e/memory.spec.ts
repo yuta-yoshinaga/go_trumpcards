@@ -5,10 +5,10 @@ test.describe('Memory E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
     await navigateTo(page, '/memory');
 
-    // Click リセット to start
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await expect(resetButton).toBeVisible();
-    await resetButton.click();
+    // Click リセット to start (mid-game: confirm dialog)
+    const midResetButton = page.getByRole('button', { name: 'リセット' });
+    await expect(midResetButton).toBeVisible();
+    await midResetButton.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
@@ -20,12 +20,13 @@ test.describe('Memory E2E', () => {
     await expect(boardButtons.first()).toBeVisible();
 
     const nextButton = page.getByRole('button', { name: '次へ' });
+    const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     // Play through several turns to verify phase transitions
     const MAX_TURNS = 60;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       // Wait for something actionable
-      await expect(nextButton.or(resetButton).first()).toBeVisible({ timeout: 10_000 });
+      await expect(nextButton.or(anyResetButton).first()).toBeVisible({ timeout: 10_000 });
 
       const nextVisible = await nextButton.isVisible();
 
@@ -53,9 +54,14 @@ test.describe('Memory E2E', () => {
       }
     }
 
-    // Reset and verify game restarts
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
+    // Reset and verify game restarts. Button could be mid-game (リセット) or end (次のゲーム).
+    const midVisible = await midResetButton.isVisible();
+    if (midVisible) {
+      await midResetButton.click();
+      await page.getByRole('button', { name: '確認' }).click();
+    } else {
+      await page.getByRole('button', { name: '次のゲーム' }).click();
+    }
     await waitForLoaded(page);
     await expect(page.getByRole('status', { name: 'スコア' })).toBeVisible();
   });

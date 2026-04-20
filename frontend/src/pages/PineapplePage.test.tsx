@@ -253,4 +253,15 @@ describe('PineapplePage', () => {
     const settingsSummary = Array.from(allSummaries).find((s) => s.textContent?.includes('設定'));
     expect(settingsSummary).toBeTruthy();
   });
+
+  it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+    expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
+  });
 });

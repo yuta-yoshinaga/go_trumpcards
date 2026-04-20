@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { memoryApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
@@ -27,7 +28,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { AUTO_NEXT_DELAY_OPTIONS, CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { MemoryResponse } from '../types/card';
 import { MemoryPhase } from '../types/phases';
@@ -132,6 +133,11 @@ function MemoryPageContent() {
   });
 
   const phaseNames = usePhaseNames('memory', MEMORY_PHASE_KEYS);
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
+  }, [exec, hideActionLog, memoryConfig.cpuDifficulty]);
 
   if (!state) return <MemorySkeleton />;
 
@@ -292,21 +298,13 @@ function MemoryPageContent() {
                   </button>
                 </div>
               )}
-              <div data-tutorial="mem-reset-button">
-                <button
-                  type="button"
-                  className={btnOutline}
-                  onClick={() =>
-                    requestConfirm(() => {
-                      hideActionLog();
-                      return exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
-                    })
-                  }
-                  disabled={loading}
-                >
-                  {tc('button.reset')}
-                </button>
-              </div>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="mem-reset-button"
+              />
             </div>
           </GameFooter>
         </>

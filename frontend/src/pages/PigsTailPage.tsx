@@ -6,6 +6,7 @@ import { CliToggle } from '../components/cli/CliToggle';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { ManualButton } from '../components/ManualButton';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -228,13 +229,12 @@ function PigsTailPageContent() {
               >
                 {t('button.draw')}
               </button>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-white text-sm transition-colors"
-                onClick={() => requestConfirm(handleReset)}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+              />
               <button
                 type="button"
                 className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-white text-sm transition-colors"

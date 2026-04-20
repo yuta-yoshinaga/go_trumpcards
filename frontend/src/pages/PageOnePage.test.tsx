@@ -148,4 +148,20 @@ describe('PageOnePage', () => {
     renderWithProviders(<PageOnePage />);
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
   });
+
+  it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<PageOnePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 200,
+      }),
+    );
+    expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
+  });
 });

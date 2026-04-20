@@ -120,7 +120,7 @@ describe('RedDogPage', () => {
   it('renders end phase with reset and payout', async () => {
     mockApi.mockResolvedValue(winState);
     renderWithProviders(<RedDogPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: /リセット/ })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
     expect(screen.getByText(/200/)).toBeInTheDocument();
   });
 

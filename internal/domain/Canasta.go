@@ -809,6 +809,14 @@ func (g *Canasta) cpuMeld() {
 func (g *Canasta) cpuDiscard() {
 	player := g.players[g.currentPlayerIdx]
 
+	// Defensive: if the CPU reached the discard phase with no cards (e.g. a
+	// prior meld emptied the hand but HasCanasta() was false so goOut didn't
+	// fire), do not try to discard — that path panics via RemoveCard → nil.
+	if player.GetCardsSize() == 0 {
+		g.goOut(g.currentPlayerIdx, false)
+		return
+	}
+
 	// 上がれるかチェック
 	if player.GetCardsSize() == 1 && player.HasCanasta() {
 		card := player.GetCard(0)

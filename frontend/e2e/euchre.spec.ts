@@ -5,10 +5,10 @@ test.describe('Euchre E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
     await navigateTo(page, '/euchre');
 
-    // Click リセット to start
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await expect(resetButton).toBeVisible();
-    await resetButton.click();
+    // Click リセット to start (mid-game: confirm dialog)
+    const midResetButton = page.getByRole('button', { name: 'リセット' });
+    await expect(midResetButton).toBeVisible();
+    await midResetButton.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
@@ -26,6 +26,7 @@ test.describe('Euchre E2E', () => {
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     const handCards = page.locator('button[aria-pressed]:has(img)');
+    const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     // Play through several interactions to verify phase transitions
     const MAX_TURNS = 60;
@@ -38,7 +39,7 @@ test.describe('Euchre E2E', () => {
           .or(discardButton)
           .or(nextTrickButton)
           .or(nextRoundButton)
-          .or(resetButton)
+          .or(anyResetButton)
           .first(),
       ).toBeVisible({ timeout: 10_000 });
 
@@ -123,9 +124,14 @@ test.describe('Euchre E2E', () => {
     // Verify we had at least one interaction
     expect(interactions).toBeGreaterThan(0);
 
-    // Reset and verify game restarts
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
+    // Reset and verify game restarts. Button could be either mid-game (リセット) or end (次のゲーム).
+    const midVisible = await midResetButton.isVisible();
+    if (midVisible) {
+      await midResetButton.click();
+      await page.getByRole('button', { name: '確認' }).click();
+    } else {
+      await page.getByRole('button', { name: '次のゲーム' }).click();
+    }
     await waitForLoaded(page);
     await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
   });
