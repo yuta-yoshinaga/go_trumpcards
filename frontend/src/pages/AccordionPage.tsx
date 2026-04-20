@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
@@ -26,7 +27,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AccordionResponse } from '../types/card';
 import { AccordionPhase } from '../types/phases';
@@ -162,13 +163,11 @@ function AccordionPageContent() {
 
   const { cardWidth } = useCardDimensions();
 
-  const handleReset = useCallback(() => {
-    requestConfirm(() => {
-      void apiCall('reset');
-      playSound('shuffle');
-      setSelectedIdx(null);
-    });
-  }, [apiCall, requestConfirm, playSound]);
+  const handleManualReset = useCallback(() => {
+    void apiCall('reset');
+    playSound('shuffle');
+    setSelectedIdx(null);
+  }, [apiCall, playSound]);
 
   const handleGiveUp = useCallback(() => {
     void apiCall('giveup');
@@ -336,9 +335,13 @@ function AccordionPageContent() {
             />
 
             <GameFooter>
-              <button type="button" className={btnPrimary} onClick={handleReset} data-tutorial="ac-reset-button">
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="ac-reset-button"
+              />
 
               {isPlaying && (
                 <>

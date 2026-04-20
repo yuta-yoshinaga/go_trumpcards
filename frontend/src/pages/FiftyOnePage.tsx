@@ -7,6 +7,7 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -314,14 +315,13 @@ function FiftyOnePageContent() {
               >
                 {t('button.stop')}
               </button>
-              <button
-                type="button"
-                onClick={() => requestConfirm(handleReset)}
-                className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-white text-sm"
-                data-tutorial="fo-reset-button"
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="fo-reset-button"
+              />
               <ActionLogSection
                 isEndPhase={isGameEnd}
                 actionLog={actionLog}

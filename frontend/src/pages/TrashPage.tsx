@@ -7,6 +7,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { ManualButton } from '../components/ManualButton';
@@ -22,7 +23,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
+import { btnOutline, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TrashResponse, TrashSlot } from '../types/card';
 import { TrashPhase } from '../types/phases';
@@ -160,12 +161,10 @@ function TrashPageContent() {
 
   const { cardWidth } = useCardDimensions();
 
-  const handleReset = useCallback(() => {
-    requestConfirm(() => {
-      void apiCall('reset');
-      playSound('shuffle');
-    });
-  }, [apiCall, requestConfirm, playSound]);
+  const handleResetAction = useCallback(() => {
+    void apiCall('reset');
+    playSound('shuffle');
+  }, [apiCall, playSound]);
 
   const handleDraw = useCallback(() => {
     void apiCall('draw');
@@ -273,9 +272,13 @@ function TrashPageContent() {
             />
 
             <GameFooter>
-              <button type="button" className={btnPrimary} onClick={handleReset} data-tutorial="tr-reset">
-                {t('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={isGameOver}
+                onReset={handleResetAction}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="tr-reset"
+              />
 
               {isGameOver && (
                 <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>

@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
@@ -30,7 +31,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ScorpionResponse } from '../types/card';
 import { ScorpionPhase } from '../types/phases';
@@ -220,12 +221,10 @@ function ScorpionPageContent() {
     disabled: loading,
   });
 
-  const handleReset = useCallback(() => {
-    requestConfirm(() => {
-      void apiCall('reset');
-      playSound('shuffle');
-    });
-  }, [apiCall, requestConfirm, playSound]);
+  const handleManualReset = useCallback(() => {
+    void apiCall('reset');
+    playSound('shuffle');
+  }, [apiCall, playSound]);
 
   const handleDeal = useCallback(() => {
     void apiCall('deal');
@@ -468,9 +467,13 @@ function ScorpionPageContent() {
             />
 
             <GameFooter>
-              <button type="button" className={btnPrimary} onClick={handleReset} data-tutorial="sc-reset-button">
-                {t('common:reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="sc-reset-button"
+              />
 
               {isPlaying && (
                 <>

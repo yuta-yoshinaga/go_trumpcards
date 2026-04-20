@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -26,7 +27,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -145,6 +146,14 @@ function CrazyEightsPageContent() {
   const confirmAction = useCallback(() => {
     handlePlay();
   }, [handlePlay]);
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void gameExec('reset', undefined, undefined, {
+      cpuDifficulty: crazyEightsConfig.cpuDifficulty,
+      pointLimit: crazyEightsConfig.pointLimit,
+    });
+  }, [gameExec, hideActionLog, crazyEightsConfig.cpuDifficulty, crazyEightsConfig.pointLimit]);
 
   useCardKeyboardNav({
     cardCount: humanCardCountForKbd,
@@ -370,23 +379,13 @@ function CrazyEightsPageContent() {
                   {t('nextRound')}
                 </button>
               )}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="ce-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return gameExec('reset', undefined, undefined, {
-                      cpuDifficulty: crazyEightsConfig.cpuDifficulty,
-                      pointLimit: crazyEightsConfig.pointLimit,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="ce-reset-button"
+              />
             </div>
           </GameFooter>
         </>

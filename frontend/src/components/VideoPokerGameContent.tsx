@@ -21,6 +21,7 @@ import { ErrorAlert } from './ErrorAlert';
 import { GameFooter } from './GameFooter';
 import { GameMessageBox } from './GameMessageBox';
 import { GamePageHeading } from './GamePageHeading';
+import { GameResetButton } from './GameResetButton';
 import { GameResetDialog } from './GameResetDialog';
 import { HintTooltip } from './hint/HintTooltip';
 import { ManualButton } from './ManualButton';
@@ -256,16 +257,13 @@ export function VideoPokerGameContent({
             )}
             {isResultPhase && (
               <div className="flex justify-center gap-2 pb-2">
-                <div data-tutorial="vp-reset-button">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => requestConfirm(handleReset)}
-                    disabled={loading}
-                  >
-                    {t('button.reset')}
-                  </button>
-                </div>
+                <GameResetButton
+                  isGameEnd={isResultPhase}
+                  onReset={handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="vp-reset-button"
+                />
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                   {tc('actionLog.view')}
                 </button>

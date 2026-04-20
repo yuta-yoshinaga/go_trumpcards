@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -34,7 +35,7 @@ import {
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -190,6 +191,15 @@ function NapoleonPageContent() {
   });
 
   const phaseNames = usePhaseNames('napoleon', NAPOLEON_PHASE_KEYS);
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void apiExec('reset', undefined, undefined, undefined, undefined, undefined, undefined, {
+      cpuDifficulty: napoleonConfig.cpuDifficulty,
+      pointLimit: napoleonConfig.pointLimit,
+      minBid: napoleonConfig.minBid,
+    });
+  }, [apiExec, hideActionLog, napoleonConfig.cpuDifficulty, napoleonConfig.pointLimit, napoleonConfig.minBid]);
 
   if (!state) return <NapoleonSkeleton />;
 
@@ -705,24 +715,13 @@ function NapoleonPageContent() {
               )}
 
               {/* Reset */}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="np-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return apiExec('reset', undefined, undefined, undefined, undefined, undefined, undefined, {
-                      cpuDifficulty: napoleonConfig.cpuDifficulty,
-                      pointLimit: napoleonConfig.pointLimit,
-                      minBid: napoleonConfig.minBid,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="np-reset-button"
+              />
             </div>
           </GameFooter>
         </>

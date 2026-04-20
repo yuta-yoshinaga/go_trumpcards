@@ -128,7 +128,7 @@ export function BlackJackPage() {
 
 /** Inner content of the BlackJack page, wrapped by TutorialProvider. */
 function BlackJackPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, confirmReset, cancelReset } =
     useGamePageSetup('blackjack');
   const phaseNames = usePhaseNames('blackjack', BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
@@ -567,7 +567,6 @@ function BlackJackPageContent() {
                   <BjEndPhaseControls
                     loading={loading}
                     onReset={handleReset}
-                    onManualReset={() => requestConfirm(handleReset)}
                     autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
                   />
                 </div>

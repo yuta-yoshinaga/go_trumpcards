@@ -10,6 +10,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -25,7 +26,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
+import { btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -154,6 +155,11 @@ function BadugiPageContent() {
     onClear: clearSelection,
     enabled: canExchange,
   });
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    execAction('reset', undefined, undefined, { bettingLimit, cpuMetaAI });
+  }, [execAction, hideActionLog, bettingLimit, cpuMetaAI]);
 
   if (!state) return <PokerSkeleton />;
 
@@ -383,20 +389,14 @@ function BadugiPageContent() {
           ]}
         />
         <div className="text-center mt-2">
-          <button
-            type="button"
-            className={`${btnOutline} min-w-[90px]`}
-            disabled={loading}
-            data-tutorial="bg-reset-button"
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                execAction('reset', undefined, undefined, { bettingLimit, cpuMetaAI });
-              })
-            }
-          >
-            {tc('button.reset')}
-          </button>
+          <GameResetButton
+            isGameEnd={isEnd}
+            onReset={handleManualReset}
+            requestConfirm={requestConfirm}
+            loading={loading}
+            dataTutorial="bg-reset-button"
+            className="min-w-[90px]"
+          />
         </div>
       </GameFooter>
       <WinCelebration show={isEnd} onCelebrate={() => playSound('winFanfare')} />

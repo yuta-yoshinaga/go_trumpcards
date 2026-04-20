@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
@@ -24,7 +25,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SpadesResponse } from '../types/card';
@@ -160,6 +161,24 @@ function SpadesPageContent() {
   });
 
   const phaseNames = usePhaseNames('spades', SPADES_PHASE_KEYS);
+
+  const runAction = exec;
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void runAction('reset', undefined, undefined, {
+      cpuDifficulty: spadesConfig.cpuDifficulty,
+      pointLimit: spadesConfig.pointLimit,
+      nilBonus: spadesConfig.nilBonus,
+      bagPenaltyThreshold: spadesConfig.bagPenaltyThreshold,
+    });
+  }, [
+    runAction,
+    hideActionLog,
+    spadesConfig.cpuDifficulty,
+    spadesConfig.pointLimit,
+    spadesConfig.nilBonus,
+    spadesConfig.bagPenaltyThreshold,
+  ]);
 
   if (!state) return <SpadesSkeleton />;
 
@@ -476,25 +495,13 @@ function SpadesPageContent() {
                   {t('nextRound')}
                 </button>
               )}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="sp-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return exec('reset', undefined, undefined, {
-                      cpuDifficulty: spadesConfig.cpuDifficulty,
-                      pointLimit: spadesConfig.pointLimit,
-                      nilBonus: spadesConfig.nilBonus,
-                      bagPenaltyThreshold: spadesConfig.bagPenaltyThreshold,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="sp-reset-button"
+              />
             </div>
           </GameFooter>
         </>

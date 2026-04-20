@@ -267,7 +267,7 @@ describe('PinochlePage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PinochlePage />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
     });
   });
 

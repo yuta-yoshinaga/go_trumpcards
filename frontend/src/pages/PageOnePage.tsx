@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -26,7 +27,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePageOneGame } from '../hooks/usePageOneGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -136,6 +137,14 @@ function PageOnePageContent() {
   });
 
   const phaseNames = usePhaseNames('pageone', PAGEONE_PHASE_KEYS);
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void gameCall('reset', undefined, {
+      cpuDifficulty: pageOneConfig.cpuDifficulty,
+      pointLimit: pageOneConfig.pointLimit,
+    });
+  }, [gameCall, hideActionLog, pageOneConfig.cpuDifficulty, pageOneConfig.pointLimit]);
 
   if (!state) return <PageOneSkeleton />;
 
@@ -338,23 +347,13 @@ function PageOnePageContent() {
                   {t('nextRound')}
                 </button>
               )}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="po-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return gameCall('reset', undefined, {
-                      cpuDifficulty: pageOneConfig.cpuDifficulty,
-                      pointLimit: pageOneConfig.pointLimit,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="po-reset-button"
+              />
             </div>
           </GameFooter>
         </>

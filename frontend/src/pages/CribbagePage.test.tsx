@@ -633,8 +633,7 @@ describe('CribbagePage', () => {
     await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
 
     mockExec.mockResolvedValue(discardPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
 
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
   });

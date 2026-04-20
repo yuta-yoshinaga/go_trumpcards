@@ -11,6 +11,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -31,7 +32,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { IndianPokerResponse } from '../types/card';
@@ -117,6 +117,11 @@ function IndianPokerPageContent() {
   useEffect(() => {
     execApi('reset');
   }, [execApi]);
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void execApi('reset', undefined, { ante, bettingLimit, cpuMetaAI });
+  }, [execApi, hideActionLog, ante, bettingLimit, cpuMetaAI]);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -362,20 +367,15 @@ function IndianPokerPageContent() {
             />
 
             {/* Reset */}
-            <div className="text-center flex items-center justify-center gap-3" data-tutorial="ip-reset-button">
-              <button
-                type="button"
-                className={`${btnOutline} min-w-[90px]`}
-                disabled={loading}
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    execApi('reset', undefined, { ante, bettingLimit, cpuMetaAI });
-                  })
-                }
-              >
-                {tc('button.reset')}
-              </button>
+            <div className="text-center flex items-center justify-center gap-3">
+              <GameResetButton
+                isGameEnd={phase === IndianPokerPhase.END}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="ip-reset-button"
+                className="min-w-[90px]"
+              />
             </div>
           </GameFooter>
         </>

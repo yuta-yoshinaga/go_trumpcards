@@ -156,7 +156,7 @@ describe('CaribbeanStudPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'コール' }));
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
   });
 
   it('shows end phase with dealer wins', async () => {
@@ -218,25 +218,15 @@ describe('CaribbeanStudPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
   });
 
-  it('shows confirm dialog when reset button is clicked', async () => {
+  it('next game button executes reset without confirm dialog', async () => {
     mockApi.mockResolvedValue(endPhasePlayerWins);
     renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-  });
-
-  it('dismisses confirm dialog on cancel', async () => {
-    mockApi.mockResolvedValue(endPhasePlayerWins);
-    renderWithProviders(<CaribbeanStudPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
-
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    mockApi.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
   });
 
   it('shows network error', async () => {

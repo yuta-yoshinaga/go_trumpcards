@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
@@ -30,7 +31,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SpiderResponse } from '../types/card';
 import { SpiderPhase } from '../types/phases';
@@ -148,6 +149,11 @@ function SpiderPageContent() {
     isPlaying: !!isPlayingForKbd,
     disabled: loading,
   });
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    handleReset();
+  }, [handleReset, hideActionLog]);
 
   const currentDifficulty = state?.difficulty ?? 1;
 
@@ -450,21 +456,13 @@ function SpiderPageContent() {
                   <option value={4}>{t('difficulty4')}</option>
                 </select>
               </div>
-              <div data-tutorial="spd-reset-button">
-                <button
-                  type="button"
-                  className={btnOutline}
-                  onClick={() =>
-                    requestConfirm(() => {
-                      hideActionLog();
-                      return handleReset();
-                    })
-                  }
-                  disabled={loading}
-                >
-                  {tc('button.reset')}
-                </button>
-              </div>
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="spd-reset-button"
+              />
             </div>
           </GameFooter>
         </>

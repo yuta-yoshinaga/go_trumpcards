@@ -149,7 +149,7 @@ describe('BaccaratPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByText('プレイヤーの勝ち！')).toBeInTheDocument());
     expect(screen.getByText('配当: 200')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
   });
 
   it('shows end phase with banker wins', async () => {
@@ -210,43 +210,27 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  // ── ConfirmDialog on reset ─────────────────────────────────────────────────
+  // ── Next game button at end phase ──────────────────────────────────────────
 
-  it('shows confirm dialog when reset button is clicked', async () => {
+  it('next game button does not show confirm dialog', async () => {
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<BaccaratPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-  });
-
-  it('dismisses confirm dialog on cancel', async () => {
-    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
-    renderWithProviders(<BaccaratPage />);
-    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
-
-    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
-
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
-  it('executes reset on confirm', async () => {
+  it('next game button executes reset directly', async () => {
     mockExec
       .mockResolvedValueOnce(betPhaseState)
       .mockResolvedValueOnce(endPhasePlayerWins)
@@ -255,10 +239,9 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
