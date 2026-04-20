@@ -18,27 +18,22 @@ test.describe('Badugi E2E', () => {
     const endResetButton = page.getByRole('button', { name: '次のゲーム' });
     const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
     const callButton = page.getByRole('button', { name: 'コール', exact: true });
+    const foldButton = page.getByRole('button', { name: 'フォールド', exact: true });
     const standButton = page.getByRole('button', { name: 'スタンド', exact: true });
-    const anyButton = endResetButton.or(standButton).or(checkButton).or(callButton);
 
     let roundEnded = false;
     for (let round = 0; round < 30; round++) {
-      // Wait for any actionable button to become visible (CPU may be thinking).
-      await expect(anyButton.first()).toBeVisible({ timeout: 10_000 });
-
+      // Instant check — if no action is currently available (CPU thinking,
+      // animation playing, …), waitForLoaded below lets the page settle.
       if (await endResetButton.isVisible()) {
         roundEnded = true;
         break;
       }
-
-      // Draw phase: スタンド (no exchanges).
       if ((await standButton.isVisible()) && (await standButton.isEnabled())) {
         await standButton.click();
         await waitForLoaded(page);
         continue;
       }
-
-      // Betting phase: prefer check, fall back to call.
       if ((await checkButton.isVisible()) && (await checkButton.isEnabled())) {
         await checkButton.click();
         await waitForLoaded(page);
@@ -49,8 +44,14 @@ test.describe('Badugi E2E', () => {
         await waitForLoaded(page);
         continue;
       }
+      if ((await foldButton.isVisible()) && (await foldButton.isEnabled())) {
+        await foldButton.click();
+        await waitForLoaded(page);
+        continue;
+      }
 
-      // None of the buttons are actionable right now — let the page settle.
+      // Nothing actionable yet — wait briefly for the next state change.
+      await page.waitForTimeout(500);
       await waitForLoaded(page);
     }
 
