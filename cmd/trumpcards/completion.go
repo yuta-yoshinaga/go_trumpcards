@@ -30,28 +30,41 @@ func completionSubcommands() []string {
 
 // runCompletion outputs a shell completion script for the given shell name.
 // Returns 0 on success, 1 on error.
-func runCompletion(args []string) int {
-	return runCompletionTo(args, os.Stdout, os.Stderr)
+func runCompletion(args []string, stdoutIsTTY, noHint bool) int {
+	return runCompletionTo(args, os.Stdout, os.Stderr, stdoutIsTTY, noHint)
 }
 
 // runCompletionTo is the testable core of runCompletion: it writes the script
 // to stdout and any diagnostic messages to stderr.
-func runCompletionTo(args []string, stdout, stderr io.Writer) int {
+//
+// Install hints are emitted only when stdout is a TTY and --no-hint was not
+// passed. This keeps `trumpcards completion bash > file` output pure while
+// preserving the onboarding comment for users who run it interactively
+// (`source <(…)` is a pipe, so hints stay out of the shell session too).
+// See issue #1450.
+func runCompletionTo(args []string, stdout, stderr io.Writer, stdoutIsTTY, noHint bool) int {
 	if len(args) != 1 {
 		_, _ = fmt.Fprintln(stderr, i18n.T("cliCompletionUsage"))
 		return 1
 	}
 	shell := args[0]
+	showHint := stdoutIsTTY && !noHint
 	var err error
 	switch shell {
 	case "bash":
-		writeInstallHint(stdout, shell)
+		if showHint {
+			writeInstallHint(stdout, shell)
+		}
 		err = writeBashCompletion(stdout)
 	case "zsh":
-		writeInstallHint(stdout, shell)
+		if showHint {
+			writeInstallHint(stdout, shell)
+		}
 		err = writeZshCompletion(stdout)
 	case "fish":
-		writeInstallHint(stdout, shell)
+		if showHint {
+			writeInstallHint(stdout, shell)
+		}
 		err = writeFishCompletion(stdout)
 	default:
 		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliCompletionUnsupportedShell", "shell", shell))

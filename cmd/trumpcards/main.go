@@ -117,10 +117,13 @@ func run() int {
 	}
 
 	// Language detection: --lang > LANG env > default "ja".
-	// An explicit --lang with an unsupported value is a hard error (exit 2);
-	// an unsupported LANG env value emits a one-line warning and falls back to "ja"
-	// (suppress with TRUMPCARDS_QUIET=1).
+	// Both --lang and LANG env with unsupported values emit a one-line warning
+	// on stderr and fall back to the detected/default locale (suppress with
+	// TRUMPCARDS_QUIET=1). Aligning --lang with LANG env behavior matches the
+	// "Warning: ... defaulting to ja" message users already see, and prevents
+	// typos from tripping `set -e` scripts. See issue #1448.
 	detectedLang := "ja"
+	quiet := os.Getenv("TRUMPCARDS_QUIET") != ""
 	var langEnvWarn string // deferred until SetLang is called so i18n resolves
 	if envLang := os.Getenv("LANG"); envLang != "" {
 		prefix := envLang
@@ -129,22 +132,27 @@ func run() int {
 		}
 		if supportedLangs[prefix] {
 			detectedLang = prefix
-		} else if os.Getenv("TRUMPCARDS_QUIET") == "" {
+		} else if !quiet {
 			langEnvWarn = envLang
 		}
 	}
+	var langFlagWarn string
 	if *lang != "" {
 		if !supportedLangs[*lang] {
-			i18n.SetLang(detectedLang)
-			fmt.Fprintln(os.Stderr, i18n.Tf("cliUnsupportedLang", "lang", *lang))
-			fmt.Fprintln(os.Stderr, i18n.T("cliSupportedLangs"))
-			return 2
+			if !quiet {
+				langFlagWarn = *lang
+			}
+		} else {
+			detectedLang = *lang
 		}
-		detectedLang = *lang
 	}
 	i18n.SetLang(detectedLang)
 	if langEnvWarn != "" {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliLangEnvFallback", "lang", langEnvWarn))
+	}
+	if langFlagWarn != "" {
+		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnsupportedLang", "lang", langFlagWarn))
+		fmt.Fprintln(os.Stderr, i18n.T("cliSupportedLangs"))
 	}
 	// Build game commands from the registry (single source of truth).
 	commands := buildGameCommands()
@@ -161,7 +169,15 @@ func run() int {
 		return 0
 	}
 	commands["completion"] = func() int {
-		return runCompletion(flag.Args()[1:])
+		var noHint bool
+		fs, code, ok := parseSubFlags("completion", func(f *flag.FlagSet) {
+			f.BoolVar(&noHint, "no-hint", false, "Suppress installation hint comments (also implied when stdout is not a TTY)")
+		})
+		if !ok {
+			return code
+		}
+		stdoutIsTTY := term.IsTerminal(int(os.Stdout.Fd()))
+		return runCompletion(fs.Args(), stdoutIsTTY, noHint)
 	}
 	commands["help"] = func() int {
 		return runHelpCommand(flag.Args()[1:], helpText, os.Stdout, os.Stderr)
@@ -177,19 +193,23 @@ func run() int {
 		}
 		updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 		updater.SetAutoConfirm(yes)
+		updater.SetCancelledIsSuccess(false) // report user cancel as exit 75
 		updater.SetProgressIsTTY(term.IsTerminal(int(os.Stderr.Fd())))
 		if err := updater.Exec(); err != nil {
-			return 1
+			return updateExitCode(err)
 		}
 		return 0
 	}
 	commands["web"] = func() int {
 		var port int
 		var host string
+		var quiet bool
 		fs, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
 			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
 			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
 			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
+			f.BoolVar(&quiet, "quiet", false, "Suppress human-friendly startup/shutdown messages (structured slog still emitted)")
+			f.BoolVar(&quiet, "q", false, "Suppress human-friendly startup/shutdown messages (shorthand)")
 		})
 		if !ok {
 			return code
@@ -204,8 +224,15 @@ func run() int {
 		if host != "" {
 			_ = os.Setenv("HOST", host)
 		}
+		// Default to quiet when stderr is not a TTY (systemd, docker, pipe).
+		// See issue #1452: human-friendly text is noise for log shippers, but
+		// slog always fires so the lifecycle is still observable.
+		if !quiet && !term.IsTerminal(int(os.Stderr.Fd())) {
+			quiet = true
+		}
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()
+		w.SetQuiet(quiet)
 		if err := w.Exec(); err != nil {
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliWebStartFailed", "err", err.Error()))
 			if errors.Is(err, syscall.EADDRINUSE) {
@@ -250,9 +277,12 @@ func run() int {
 	}
 
 	// No argument: start interactive multi-game mode (defaults to blackjack).
+	// Startup banner goes to stderr so it matches `trumpcards web` (which also
+	// uses stderr for info logs) and leaves stdout free for future
+	// machine-readable output. See issue #1451.
 	startGame := "blackjack"
-	fmt.Println(i18n.Tf("cliStartupBanner", "version", version))
-	fmt.Println(i18n.Tf("cliStartupGame", "game", startGame))
+	fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupBanner", "version", version))
+	fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupGame", "game", startGame))
 	manager := ui.NewGameManager(startGame)
 	ui.RunInteractiveCuiLoop(manager)
 	return 0
@@ -263,17 +293,20 @@ func run() int {
 var builtinSubcommandHelp = map[string][]string{
 	"web": {
 		"USAGE:",
-		"  trumpcards web [--port PORT] [--host HOST]",
+		"  trumpcards web [--port PORT] [--host HOST] [--quiet]",
 		"",
 		"FLAGS:",
 		"  -p, --port PORT   Port number (default: 8080; 0 = OS-assigned ephemeral; env PORT)",
 		"      --host HOST   Bind address (default: 127.0.0.1; use 0.0.0.0 to expose; env HOST)",
+		"  -q, --quiet       Suppress human-friendly startup/shutdown messages",
+		"                    (implied when stderr is not a TTY; structured slog logs still emitted)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards web",
 		"  trumpcards web --port 3000",
 		"  trumpcards web --port 0            # start on any free port; see startup log for actual port",
 		"  trumpcards web --host 0.0.0.0",
+		"  trumpcards web --quiet             # systemd / docker friendly",
 		"  HOST=0.0.0.0 PORT=3000 trumpcards web",
 	},
 	"update": {
@@ -283,16 +316,31 @@ var builtinSubcommandHelp = map[string][]string{
 		"FLAGS:",
 		"  -y, --yes   Skip confirmation prompt (required for non-interactive stdin)",
 		"",
+		"EXIT CODES:",
+		"   0  Success (already latest or updated)",
+		"   2  Usage error (non-interactive without --yes)",
+		"   3  Network / release API failure",
+		"   4  No binary for this platform",
+		"   5  Archive extraction failure",
+		"   6  Binary apply failure (permissions, disk, integrity)",
+		"  75  User declined the prompt",
+		"   1  Unexpected error",
+		"",
 		"EXAMPLES:",
 		"  trumpcards update",
 		"  trumpcards update --yes",
 	},
 	"completion": {
 		"USAGE:",
-		"  trumpcards completion <bash|zsh|fish>",
+		"  trumpcards completion <bash|zsh|fish> [--no-hint]",
+		"",
+		"FLAGS:",
+		"      --no-hint   Suppress installation hint comments in the output",
+		"                  (implied when stdout is not a TTY, e.g. shell redirection)",
 		"",
 		"EXAMPLES:",
 		"  source <(trumpcards completion bash)",
+		"  trumpcards completion bash > /etc/bash_completion.d/trumpcards",
 		"  trumpcards completion zsh > \"${fpath[1]}/_trumpcards\"",
 		"  trumpcards completion fish > ~/.config/fish/completions/trumpcards.fish",
 	},
@@ -396,6 +444,40 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(fs.Args(), " ")))
 	}
 	return fs, 0, true
+}
+
+// updateExitCode maps a non-nil error from update.Updater.Exec() to a CLI
+// exit code. The mapping follows POSIX / BSD sysexits.h conventions where
+// practical so automation (CI, cron, package scripts) can distinguish
+// retryable failures (network) from terminal ones (no asset, apply failed).
+// Returned codes:
+//
+//	2  — usage error: non-interactive stdin without --yes
+//	3  — network / release API failure (retry later)
+//	4  — no binary for this platform (no retry without a new release)
+//	5  — archive extraction failure
+//	6  — binary apply failure (permissions, disk, integrity)
+//	75 — user declined the prompt (EX_TEMPFAIL)
+//	1  — any other unexpected error
+//
+// See issue #1449.
+func updateExitCode(err error) int {
+	switch {
+	case errors.Is(err, update.ErrNonInteractive):
+		return 2
+	case errors.Is(err, update.ErrNetwork), errors.Is(err, update.ErrAPIStatus):
+		return 3
+	case errors.Is(err, update.ErrNoAsset):
+		return 4
+	case errors.Is(err, update.ErrExtract):
+		return 5
+	case errors.Is(err, update.ErrApply):
+		return 6
+	case errors.Is(err, update.ErrUserCancelled):
+		return 75
+	default:
+		return 1
+	}
 }
 
 // hasHelpFlag reports whether args contains a help flag. It accepts all four

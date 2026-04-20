@@ -32,7 +32,7 @@
   "inputReadError": "入力の読み取り中にエラーが発生しました: {{error}}",
   "cliUnknownGame": "エラー: 不明なゲーム「{{name}}」",
   "didYouMean": "もしかして「{{name}}」ですか？",
-  "cliUnsupportedLang": "警告: サポートされていない言語「{{lang}}」です。ja をデフォルトとして使用します",
+  "cliUnsupportedLang": "警告: サポートされていない言語「{{lang}}」です。ja をデフォルトとして使用します (TRUMPCARDS_QUIET=1 で抑止可能)",
   "emptyInputHint": "'help' でコマンド一覧を表示します。",
   "cliStartupBanner": "trumpcards {{version}} - インタラクティブモード",
   "cliStartupGame": "{{game}} を開始します。'switch <game>' でゲームを切り替え、'games' で一覧を表示できます。",

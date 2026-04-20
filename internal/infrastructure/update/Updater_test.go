@@ -46,7 +46,39 @@ func TestExec_AlreadyLatest(t *testing.T) {
 	assert.Contains(t, out.String(), "v1.2.3")
 }
 
-func TestExec_UserCancels(t *testing.T) {
+// TestExec_UserCancels_Default verifies the default behavior (kept for
+// backwards compatibility): cancellation returns nil. Callers that want a
+// distinct exit code should call SetCancelledIsSuccess(false) — see
+// TestExec_UserCancels_AsSentinelError below.
+func TestExec_UserCancels_Default(t *testing.T) {
+	release := ghRelease{TagName: "v2.0.0"}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	out := &bytes.Buffer{}
+	u := &Updater{
+		currentVersion:     "1.0.0",
+		repoOwner:          "test",
+		repoName:           "test",
+		reader:             strings.NewReader("n\n"),
+		writer:             out,
+		errWriter:          &bytes.Buffer{},
+		httpClient:         &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+		cancelledIsSuccess: true,
+	}
+
+	err := u.Exec()
+	require.NoError(t, err)
+	assert.Contains(t, out.String(), "v2.0.0")
+}
+
+// TestExec_UserCancels_AsSentinelError verifies that with
+// SetCancelledIsSuccess(false), an "n" response returns ErrUserCancelled so
+// the CLI can map it to exit code 75 (EX_TEMPFAIL). See issue #1449.
+func TestExec_UserCancels_AsSentinelError(t *testing.T) {
 	release := ghRelease{TagName: "v2.0.0"}
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -64,10 +96,11 @@ func TestExec_UserCancels(t *testing.T) {
 		errWriter:      &bytes.Buffer{},
 		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
 	}
+	u.SetCancelledIsSuccess(false)
 
 	err := u.Exec()
-	require.NoError(t, err)
-	assert.Contains(t, out.String(), "v2.0.0")
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, ErrUserCancelled), "want ErrUserCancelled, got %v", err)
 }
 
 func TestExec_UserAccepts(t *testing.T) {
@@ -94,6 +127,7 @@ func TestExec_UserAccepts(t *testing.T) {
 	err := u.Exec()
 	require.Error(t, err)
 	assert.Contains(t, out.String(), "[y/N]")
+	assert.True(t, errors.Is(err, ErrNoAsset), "missing asset must wrap ErrNoAsset; got %v", err)
 }
 
 func TestExec_AutoConfirmSkipsPrompt(t *testing.T) {
@@ -147,6 +181,55 @@ func TestExec_FetchError(t *testing.T) {
 	err := u.Exec()
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "500")
+	assert.True(t, errors.Is(err, ErrAPIStatus), "HTTP 500 must wrap ErrAPIStatus; got %v", err)
+}
+
+// TestExec_NetworkError_WrapsErrNetwork verifies that a transport-level
+// failure (unreachable host) surfaces as ErrNetwork so the CLI can map it
+// to an exit code that signals "retry later". See issue #1449.
+func TestExec_NetworkError_WrapsErrNetwork(t *testing.T) {
+	// Set up a server, immediately close it to force a dial failure.
+	srv := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	srv.Close()
+
+	u := &Updater{
+		currentVersion: "1.0.0",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         strings.NewReader(""),
+		writer:         &bytes.Buffer{},
+		errWriter:      &bytes.Buffer{},
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+	}
+
+	err := u.Exec()
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, ErrNetwork), "dial failure must wrap ErrNetwork; got %v", err)
+}
+
+// TestExec_NonInteractiveEOF_WrapsErrNonInteractive verifies that an EOF on
+// stdin without --yes surfaces as ErrNonInteractive so the CLI can map it
+// to exit 2 (usage error). See issue #1449.
+func TestExec_NonInteractiveEOF_WrapsErrNonInteractive(t *testing.T) {
+	release := ghRelease{TagName: "v2.0.0"}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	u := &Updater{
+		currentVersion: "1.0.0",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         strings.NewReader(""), // immediate EOF
+		writer:         &bytes.Buffer{},
+		errWriter:      &bytes.Buffer{},
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+	}
+	err := u.Exec()
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, ErrNonInteractive), "EOF must wrap ErrNonInteractive; got %v", err)
 }
 
 func TestExec_NonInteractiveEOF_ReturnsErrorWithHint(t *testing.T) {
