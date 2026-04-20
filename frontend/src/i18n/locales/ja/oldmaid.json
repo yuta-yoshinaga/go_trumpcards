@@ -60,7 +60,6 @@
   "reorder": {
     "selectCardToMove": "並び替えるカード: {{card}}",
     "deselectCard": "{{card}} の選択を解除",
-    "moveHere": "{{card}} をここ（{{to}}番目）に移動",
-    "instructions": "カードをタップして選択し、移動先をタップしてください"
+    "moveHere": "{{card}} をここ（{{to}}番目）に移動"
   }
 }

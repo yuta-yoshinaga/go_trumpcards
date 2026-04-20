@@ -312,4 +312,36 @@ describe('OldMaidPlayerArea tap-to-move reorder', () => {
     fireEvent.click(cardButtons()[2]);
     expect(onReorder).not.toHaveBeenCalled();
   });
+
+  it('does not crash when cards shrink while a selection is active', () => {
+    const { rerender } = render(
+      <OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={vi.fn()} />,
+    );
+    // Select last card (index 2)
+    fireEvent.click(cardButtons()[2]);
+    expect(cardButtons()[2]).toHaveAttribute('aria-pressed', 'true');
+
+    // Cards shrink (pair discarded) — selectedForMove is now stale (2 >= new length 1).
+    // Render must not crash on the aria-label IIFE during the window before
+    // the cleanup effect resets selectedForMove.
+    const oneCard = [makeCard('SPADE', 1)];
+    rerender(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(oneCard)} onReorder={vi.fn()} />);
+    expect(cardButtons()).toHaveLength(1);
+  });
+
+  it('resets stale selection instead of reordering with an invalid index', () => {
+    const onReorder = vi.fn();
+    const { rerender } = render(
+      <OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={onReorder} />,
+    );
+    // Select the last index, then shrink cards so the selection is out of bounds.
+    fireEvent.click(cardButtons()[2]);
+    const oneCard = [makeCard('SPADE', 1)];
+    rerender(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(oneCard)} onReorder={onReorder} />);
+
+    // Tapping the only remaining card with a stale selectedForMove must reset,
+    // not fire an onReorder call with a bogus indices array.
+    fireEvent.click(cardButtons()[0]);
+    expect(onReorder).not.toHaveBeenCalled();
+  });
 });

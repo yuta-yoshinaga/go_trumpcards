@@ -62,7 +62,9 @@ export function OldMaidPlayerArea({
       setSelectedForMove(i);
       return;
     }
-    if (selectedForMove === i) {
+    // Reset if stale: selection index may outlive the cards it pointed at
+    // when pairs are discarded between taps.
+    if (selectedForMove === i || selectedForMove >= player.cards.length) {
       setSelectedForMove(null);
       return;
     }
@@ -182,9 +184,10 @@ export function OldMaidPlayerArea({
               if (selectedForMove === i) {
                 return t('reorder.deselectCard', { card: cardAlt(card) });
               }
-              // biome-ignore lint/style/noNonNullAssertion: guard above checks player.cards
-              const movingCard = player.cards![selectedForMove];
-              return t('reorder.moveHere', { card: cardAlt(movingCard), to: i + 1 });
+              // Guard against stale selectedForMove: if cards shrink between
+              // render and useEffect cleanup, the index may be out of bounds.
+              const movingCard = player.cards?.[selectedForMove];
+              return movingCard ? t('reorder.moveHere', { card: cardAlt(movingCard), to: i + 1 }) : '';
             })();
             return (
               <button

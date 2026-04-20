@@ -7,6 +7,11 @@ import { useEffect } from 'react';
  * `beforeunload`. SPA in-app navigation is intentionally not intercepted to
  * keep the hook independent of the router context; the guard is paired with
  * the existing `GameResetDialog` for explicit reset flows.
+ *
+ * Note: modern browsers ignore the custom `confirmMessage` and display a
+ * generic "Changes you made may not be saved" prompt. The argument still
+ * drives the hook contract and is used by tests; the message you pass is
+ * no longer shown to the user by the browser.
  */
 export function useGameLeaveGuard(active: boolean, confirmMessage: string) {
   useEffect(() => {
