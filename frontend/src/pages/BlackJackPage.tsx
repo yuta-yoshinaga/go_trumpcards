@@ -41,6 +41,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameLeaveGuard } from '../hooks/useGameLeaveGuard';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -177,6 +178,12 @@ function BlackJackPageContent() {
   }, [exec]);
 
   const phase = state?.phase ?? BjPhase.BET;
+  const isRoundInProgress =
+    phase === BjPhase.DEAL ||
+    phase === BjPhase.EARLY_SURRENDER ||
+    phase === BjPhase.INSURANCE ||
+    phase === BjPhase.ACTION;
+  useGameLeaveGuard(isRoundInProgress, tc('button.confirmLeaveRoundMessage'));
   const hands = state?.hands ?? [];
   const currentHandIdx = state?.currentHandIdx ?? 0;
   const currentHand = hands[currentHandIdx];

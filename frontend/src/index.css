@@ -52,11 +52,15 @@
   --color-ds-success-hover: #3d9a6b;
   --color-ds-warning: #e8923a;
   --color-ds-warning-hover: #d4832e;
-  --color-ds-error: #c95555;
-  --color-ds-error-hover: #b54949;
+  --color-ds-error: #b83a3a;
+  --color-ds-error-hover: #a03030;
   --color-ds-info: #5b8fb9;
   --color-ds-border: rgba(212, 168, 83, 0.15);
   --color-ds-border-subtle: rgba(139, 154, 175, 0.12);
+  /* Card back: must pop against felt backgrounds */
+  --color-ds-card-back-border: rgba(255, 255, 255, 0.4);
+  --shadow-ds-card-back: 0 1px 4px rgba(0, 0, 0, 0.5);
+  --shadow-ds-accent-glow: 0 0 10px rgba(212, 168, 83, 0.6);
   /* Poker action button colors (from DESIGN.md game-specific palette) */
   --color-poker-call: #059669;
   --color-poker-call-hover: #047857;

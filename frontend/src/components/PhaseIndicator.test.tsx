@@ -14,10 +14,12 @@ describe('PhaseIndicator', () => {
     const turnSpan = screen.getByText('あなたのターン');
     expect(turnSpan).toHaveClass(
       'text-ds-success',
-      'animate-pulse',
+      'motion-safe:animate-pulse',
       'font-bold',
       'text-base',
       'bg-ds-success/20',
+      'ring-2',
+      'ring-ds-success/40',
       'px-2',
       'py-0.5',
       'rounded-full',

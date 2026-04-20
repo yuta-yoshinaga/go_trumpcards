@@ -884,9 +884,11 @@ describe('OldMaidPage', () => {
 
   it('human cards are draggable when game is active', async () => {
     await startGame();
+    // Reorder now wraps each card in a tap-target button with the draggable attribute
     const humanCards = screen.getAllByAltText(/♠ A|♥ 2|ジョーカー/);
     for (const card of humanCards) {
-      expect(card).toHaveAttribute('draggable', 'true');
+      const draggableAncestor = card.closest('[draggable]');
+      expect(draggableAncestor).toHaveAttribute('draggable', 'true');
     }
   });
 
@@ -895,7 +897,8 @@ describe('OldMaidPage', () => {
     await startGame();
     const humanCards = screen.getAllByAltText(/♠ A|♥ 2|ジョーカー/);
     for (const card of humanCards) {
-      expect(card).not.toHaveAttribute('draggable', 'true');
+      const draggableAncestor = card.closest('[draggable="true"]');
+      expect(draggableAncestor).toBeNull();
     }
   });
 
