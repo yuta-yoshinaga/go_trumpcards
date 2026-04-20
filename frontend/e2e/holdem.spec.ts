@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_QUICK, waitForLoaded } from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
 
 test.describe("Texas Hold'em E2E", () => {
   test('plays a full round: reset → check/call through rounds → showdown → reset', async ({ page }) => {
@@ -20,7 +20,7 @@ test.describe("Texas Hold'em E2E", () => {
       const callButton = page.getByRole('button', { name: 'コール', exact: true });
 
       // Check if we've reached the end
-      if (await isVisibleWithin(endResetButton, TIMEOUT_QUICK)) {
+      if (await endResetButton.isVisible()) {
         const checkVisible = await checkButton.isVisible();
         const callVisible = await callButton.isVisible();
         if (!checkVisible && !callVisible) {
