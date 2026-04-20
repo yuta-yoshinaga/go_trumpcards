@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -50,5 +51,46 @@ func TestGetListenAddr(t *testing.T) {
 				t.Errorf("getListenAddr() = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+// TestNewTrumpCardsWeb_DefaultsForQuietMode guards issue #1452: quiet must
+// default to false (interactive behavior preserved) and the stderr sink must
+// be non-nil so Exec can write without NPE.
+func TestNewTrumpCardsWeb_DefaultsForQuietMode(t *testing.T) {
+	w := NewTrumpCardsWeb()
+	if w.quiet {
+		t.Error("quiet must default to false so interactive users still see the banner")
+	}
+	if w.stderr == nil {
+		t.Error("stderr sink must be initialized; nil would NPE in Exec")
+	}
+}
+
+// TestSetQuiet_TogglesFlag verifies the setter round-trips correctly. The
+// actual gating of free-text output is exercised via the interactive vs
+// non-interactive paths in the main package tests — here we only check the
+// state of the flag so the unit test stays hermetic (no network / signals).
+func TestSetQuiet_TogglesFlag(t *testing.T) {
+	w := NewTrumpCardsWeb()
+	w.SetQuiet(true)
+	if !w.quiet {
+		t.Fatal("SetQuiet(true) did not enable quiet mode")
+	}
+	w.SetQuiet(false)
+	if w.quiet {
+		t.Fatal("SetQuiet(false) did not disable quiet mode")
+	}
+}
+
+// TestSetStderr_RedirectsSink verifies the free-text sink is injectable.
+// Tests that don't want to read from os.Stderr (most of them) can point
+// SetStderr at a bytes.Buffer and still cover the emit paths.
+func TestSetStderr_RedirectsSink(t *testing.T) {
+	w := NewTrumpCardsWeb()
+	var buf bytes.Buffer
+	w.SetStderr(&buf)
+	if w.stderr != &buf {
+		t.Fatal("SetStderr did not redirect the sink")
 	}
 }

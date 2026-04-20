@@ -32,7 +32,7 @@
   "inputReadError": "Error reading input: {{error}}",
   "cliUnknownGame": "Error: unknown game \"{{name}}\"",
   "didYouMean": "Did you mean \"{{name}}\"?",
-  "cliUnsupportedLang": "Warning: unsupported language \"{{lang}}\", defaulting to ja",
+  "cliUnsupportedLang": "Warning: unsupported language \"{{lang}}\", defaulting to ja (set TRUMPCARDS_QUIET=1 to silence)",
   "emptyInputHint": "Type 'help' for available commands.",
   "cliStartupBanner": "trumpcards {{version}} - Interactive Mode",
   "cliStartupGame": "Starting with {{game}}. Type 'switch <game>' to change, 'games' to list all.",
