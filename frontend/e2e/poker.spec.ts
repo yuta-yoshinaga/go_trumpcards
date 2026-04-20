@@ -29,16 +29,25 @@ test.describe('Poker E2E', () => {
       await waitForLoaded(page);
     }
 
-    // SECOND_BET phase: チェック or コール
-    if (await isVisibleWithin(checkButton, TIMEOUT_ACTION)) {
-      await checkButton.click();
-    } else if (await isVisibleWithin(callButton, TIMEOUT_ACTION)) {
-      await callButton.click();
+    // SECOND_BET phase: check/call repeatedly until end-state 次のゲーム appears.
+    // A single check/call may not conclude the hand if a CPU re-raises.
+    const endResetButton = page.getByRole('button', { name: '次のゲーム' });
+    for (let i = 0; i < 20; i++) {
+      if (await endResetButton.isVisible()) break;
+      if (await isVisibleWithin(checkButton, TIMEOUT_ACTION)) {
+        await checkButton.click();
+        await waitForLoaded(page);
+        continue;
+      }
+      if (await isVisibleWithin(callButton, TIMEOUT_ACTION)) {
+        await callButton.click();
+        await waitForLoaded(page);
+        continue;
+      }
+      await waitForLoaded(page);
     }
-    await waitForLoaded(page);
 
     // END phase: 次のゲーム should be visible
-    const endResetButton = page.getByRole('button', { name: '次のゲーム' });
     await expect(endResetButton).toBeVisible({ timeout: 10_000 });
 
     // Start another round (end state: no confirm dialog)

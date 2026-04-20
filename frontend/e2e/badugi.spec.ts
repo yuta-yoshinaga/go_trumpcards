@@ -14,20 +14,17 @@ test.describe('Badugi E2E', () => {
     // Play through up to 4 betting rounds + 3 draw rounds with generous retry.
     const endResetButton = page.getByRole('button', { name: '次のゲーム' });
     let roundEnded = false;
-    for (let round = 0; round < 20; round++) {
+    for (let round = 0; round < 30; round++) {
+      // End state reached — break immediately. Action buttons briefly overlapping
+      // with 次のゲーム during phase transition would otherwise race the break.
+      if (await endResetButton.isVisible()) {
+        roundEnded = true;
+        break;
+      }
+
       const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
       const callButton = page.getByRole('button', { name: 'コール', exact: true });
       const standButton = page.getByRole('button', { name: 'スタンド', exact: true });
-
-      if (await endResetButton.isVisible()) {
-        const checkVisible = await checkButton.isVisible();
-        const callVisible = await callButton.isVisible();
-        const standVisible = await standButton.isVisible();
-        if (!checkVisible && !callVisible && !standVisible) {
-          roundEnded = true;
-          break;
-        }
-      }
 
       // Draw phase has Stand button visible — click it (no exchanges).
       if (await isVisibleWithin(standButton, TIMEOUT_ACTION)) {

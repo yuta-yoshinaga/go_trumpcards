@@ -19,14 +19,10 @@ test.describe('Omaha E2E', () => {
       const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
       const callButton = page.getByRole('button', { name: 'コール', exact: true });
 
-      // Check if we've reached the end
+      // End state reached — break immediately.
       if (await endResetButton.isVisible()) {
-        const checkVisible = await checkButton.isVisible();
-        const callVisible = await callButton.isVisible();
-        if (!checkVisible && !callVisible) {
-          roundEnded = true;
-          break;
-        }
+        roundEnded = true;
+        break;
       }
 
       // Try check first, then call
