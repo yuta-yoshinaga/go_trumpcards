@@ -49,16 +49,20 @@ var (
 
 // Updater checks GitHub Releases for the latest version and self-updates the binary.
 type Updater struct {
-	currentVersion     string
-	repoOwner          string
-	repoName           string
-	reader             io.Reader
-	writer             io.Writer
-	errWriter          io.Writer
-	httpClient         *http.Client
-	autoConfirm        bool
-	progressIsTTY      bool
-	reportCancelledAsError bool // when true, return ErrUserCancelled on user cancellation
+	currentVersion string
+	repoOwner      string
+	repoName       string
+	reader         io.Reader
+	writer         io.Writer
+	errWriter      io.Writer
+	httpClient     *http.Client
+	autoConfirm    bool
+	progressIsTTY  bool
+	// reportCancelledAsError: when true, Exec returns ErrUserCancelled on
+	// a declined prompt. The zero value (false) preserves the legacy
+	// behavior of returning nil, so library callers who never call the
+	// setter keep their old contract.
+	reportCancelledAsError bool
 }
 
 // SetAutoConfirm enables or disables the automatic confirmation of updates,
