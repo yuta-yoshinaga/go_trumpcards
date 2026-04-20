@@ -19,7 +19,7 @@ test.describe('Badugi E2E', () => {
     const checkButton = page.getByRole('button', { name: 'チェック', exact: true });
     const callButton = page.getByRole('button', { name: 'コール', exact: true });
     const foldButton = page.getByRole('button', { name: 'フォールド', exact: true });
-    const standButton = page.getByRole('button', { name: 'スタンド', exact: true });
+    const standButton = page.getByRole('button', { name: /スタンド/ });
 
     // Up to 4 bet rounds + 3 draw rounds × (1 human + 3 CPU) polls. Budget
     // is generous since CI scheduling can stretch CPU turns.
