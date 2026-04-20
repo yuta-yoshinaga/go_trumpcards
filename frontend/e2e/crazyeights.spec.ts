@@ -22,13 +22,17 @@ test.describe('Crazy Eights E2E', () => {
     const drawButton = page.getByRole('button', { name: '引く' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     const suitSpade = page.getByRole('button', { name: '♠', exact: true });
+    const endResetButton = page.getByRole('button', { name: '次のゲーム' });
     const handCards = page.locator('button[aria-pressed]:has(img)');
 
     // Play through several interactions to verify phase transitions
     const MAX_TURNS = 80;
     let interactions = 0;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
-      await expect(playButton.or(drawButton).or(nextRoundButton).or(suitSpade).first()).toBeVisible({
+      // Break cleanly once the game reaches end state (only 次のゲーム remains).
+      if (await endResetButton.isVisible()) break;
+
+      await expect(playButton.or(drawButton).or(nextRoundButton).or(suitSpade).or(endResetButton).first()).toBeVisible({
         timeout: 10_000,
       });
 
