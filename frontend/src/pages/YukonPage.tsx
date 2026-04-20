@@ -447,8 +447,8 @@ function YukonPageContent() {
                                   className={`${focusRingWhite} rounded-lg transition-all ${
                                     isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                                   } ${isDragSrc ? 'opacity-50' : ''} ${
-                                    hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''
-                                  } ${hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
+                                    hintFrom ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''
+                                  } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
                                   onClick={() => {
                                     if (selectedSource) {
                                       if (isLast) {

@@ -56,5 +56,11 @@
   "hint": {
     "drawFromEdge": "Try drawing from the edges of the hand",
     "drawAny": "Few cards left — any position is fine"
+  },
+  "reorder": {
+    "selectCardToMove": "Select card to move: {{card}}",
+    "deselectCard": "Deselect {{card}}",
+    "moveHere": "Move {{card}} to position {{to}}",
+    "instructions": "Tap a card to select, then tap the destination"
   }
 }

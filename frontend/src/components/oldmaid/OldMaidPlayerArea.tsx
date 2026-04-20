@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { playerAreaBase } from '../../styles/gameStyles';
 import type { OldMaidPlayerData } from '../../types/card';
+import { cardAlt } from '../../utils/cardAlt';
 import { playerName } from '../../utils/playerUtils';
 import { CardBack, CardImage } from '../CardImage';
 import { StatusBadge } from '../StatusBadge';
@@ -43,13 +44,34 @@ export function OldMaidPlayerArea({
   const { t: tc } = useTranslation('common');
   const { cardWidth } = useCardDimensions();
   const [focusedCardIdx, setFocusedCardIdx] = useState<number | null>(null);
+  const [selectedForMove, setSelectedForMove] = useState<number | null>(null);
   const cardCount = player.cards?.length ?? 0;
 
   useEffect(() => {
     if (focusedCardIdx !== null && focusedCardIdx >= cardCount) {
       setFocusedCardIdx(null);
     }
-  }, [cardCount, focusedCardIdx]);
+    if (selectedForMove !== null && selectedForMove >= cardCount) {
+      setSelectedForMove(null);
+    }
+  }, [cardCount, focusedCardIdx, selectedForMove]);
+
+  const handleCardTap = (i: number) => {
+    if (!onReorder || !player.cards || gameEndFlag) return;
+    if (selectedForMove === null) {
+      setSelectedForMove(i);
+      return;
+    }
+    if (selectedForMove === i) {
+      setSelectedForMove(null);
+      return;
+    }
+    const indices = player.cards.map((_, idx) => idx);
+    const [moved] = indices.splice(selectedForMove, 1);
+    indices.splice(i, 0, moved);
+    onReorder(indices);
+    setSelectedForMove(null);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!onReorder || !player.cards || player.cards.length === 0) return;
@@ -136,43 +158,77 @@ export function OldMaidPlayerArea({
           : {})}
       >
         {player.isFinished ? null : player.isHuman ? (
-          player.cards?.map((card, i) => (
-            <CardImage
-              key={`${card.design}-${card.value}`}
-              card={card}
-              width={cardWidth}
-              className={focusedCardIdx === i && onReorder ? 'ring-2 ring-ds-info' : undefined}
-              draggable={!gameEndFlag && !!onReorder}
-              onDragStart={(e: React.DragEvent) => {
-                e.dataTransfer.setData('oldmaidCardIndex', String(i));
-              }}
-              onDragOver={(e: React.DragEvent) => e.preventDefault()}
-              onDrop={(e: React.DragEvent) => {
-                e.preventDefault();
-                const fromStr = e.dataTransfer.getData('oldmaidCardIndex');
-                if (!fromStr || !onReorder || !player.cards) return;
-                const from = Number(fromStr);
-                if (from === i) return;
-                const indices = player.cards.map((_, idx) => idx);
-                indices.splice(from, 1);
-                indices.splice(i, 0, from);
-                onReorder(indices);
-              }}
-            />
-          ))
+          player.cards?.map((card, i) => {
+            if (!onReorder) {
+              return (
+                <CardImage
+                  key={`${card.design}-${card.value}`}
+                  card={card}
+                  width={cardWidth}
+                  className={focusedCardIdx === i ? 'ring-2 ring-ds-info' : undefined}
+                />
+              );
+            }
+            const isSelectedForMove = selectedForMove === i;
+            const ringClass = isSelectedForMove
+              ? 'ring-2 ring-ds-warning -translate-y-2'
+              : focusedCardIdx === i
+                ? 'ring-2 ring-ds-info'
+                : '';
+            const tapAriaLabel = (() => {
+              if (selectedForMove === null) {
+                return t('reorder.selectCardToMove', { card: cardAlt(card) });
+              }
+              if (selectedForMove === i) {
+                return t('reorder.deselectCard', { card: cardAlt(card) });
+              }
+              // biome-ignore lint/style/noNonNullAssertion: guard above checks player.cards
+              const movingCard = player.cards![selectedForMove];
+              return t('reorder.moveHere', { card: cardAlt(movingCard), to: i + 1 });
+            })();
+            return (
+              <button
+                key={`${card.design}-${card.value}`}
+                type="button"
+                onClick={() => handleCardTap(i)}
+                aria-pressed={isSelectedForMove}
+                aria-label={tapAriaLabel}
+                className={`bg-transparent p-0 border-0 cursor-pointer leading-none transition-transform ${ringClass}`}
+                draggable={!gameEndFlag}
+                onDragStart={(e: React.DragEvent) => {
+                  e.dataTransfer.setData('oldmaidCardIndex', String(i));
+                }}
+                onDragOver={(e: React.DragEvent) => e.preventDefault()}
+                onDrop={(e: React.DragEvent) => {
+                  e.preventDefault();
+                  const fromStr = e.dataTransfer.getData('oldmaidCardIndex');
+                  if (!fromStr || !player.cards) return;
+                  const from = Number(fromStr);
+                  if (from === i) return;
+                  const indices = player.cards.map((_, idx) => idx);
+                  indices.splice(from, 1);
+                  indices.splice(i, 0, from);
+                  onReorder(indices);
+                  setSelectedForMove(null);
+                }}
+              >
+                <CardImage card={card} width={cardWidth} />
+              </button>
+            );
+          })
         ) : showSelectable ? (
           <>
             {Array.from({ length: showCount }, (_, i) => {
               const isHighlighted = isTarget && !player.isHuman && i === highlightedCardIdx;
               const cardStyle: React.CSSProperties = {
-                border: isHighlighted ? '2px solid #D4A853' : '2px solid transparent',
+                border: isHighlighted ? '2px solid var(--color-ds-accent)' : '2px solid transparent',
                 borderRadius: 4,
                 cursor: 'pointer',
                 transition: 'transform 0.2s, border-color 0.2s, box-shadow 0.2s',
                 ...(isHighlighted
                   ? {
                       transform: 'translateY(-8px)',
-                      boxShadow: '0 0 10px rgba(212, 168, 83, 0.6)',
+                      boxShadow: 'var(--shadow-ds-accent-glow)',
                     }
                   : {}),
               };

@@ -38,4 +38,11 @@ describe('ErrorAlert', () => {
     expect(btn.className).toContain('min-h-[44px]');
     expect(btn.className).toContain('min-w-[44px]');
   });
+
+  it('uses fully opaque error background (no alpha) for WCAG AA contrast', () => {
+    render(<ErrorAlert message="error" />);
+    const alert = screen.getByRole('alert');
+    expect(alert.className).toContain('bg-ds-error');
+    expect(alert.className).not.toContain('bg-ds-error/90');
+  });
 });

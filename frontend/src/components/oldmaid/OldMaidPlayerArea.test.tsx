@@ -59,14 +59,14 @@ describe('OldMaidPlayerArea compactNonTarget', () => {
 describe('OldMaidPlayerArea CPU highlight', () => {
   const selectableProps = { ...defaultProps, isTarget: true, isHumanTurn: true };
 
-  it('applies gold border and glow to highlighted card', () => {
+  it('applies gold accent border and glow to highlighted card via tokens', () => {
     render(<OldMaidPlayerArea {...selectableProps} player={makeCpuPlayer(3)} highlightedCardIdx={1} />);
     // Selectable cards are rendered as buttons; style is on the img inside
     const buttons = screen.getAllByRole('button');
     const imgs = buttons.map((btn) => btn.querySelector('img')!);
-    // Highlighted card (index 1) should have gold border and box-shadow
-    expect(imgs[1]).toHaveStyle({ border: '2px solid #D4A853' });
-    expect(imgs[1]).toHaveStyle({ boxShadow: '0 0 10px rgba(212, 168, 83, 0.6)' });
+    // Highlighted card (index 1) should reference design tokens via CSS custom properties
+    expect(imgs[1]?.getAttribute('style')).toContain('var(--color-ds-accent)');
+    expect(imgs[1]?.getAttribute('style')).toContain('var(--shadow-ds-accent-glow)');
     // Non-highlighted card (index 0) should have transparent border
     expect(imgs[0]).toHaveStyle({ border: '2px solid transparent' });
   });
@@ -95,15 +95,20 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     expect(screen.queryByTestId('human-card-container')).toBeNull();
   });
 
+  function cardButtons() {
+    // Select only tap-to-move buttons (wrap CardImage), ignoring suspect/control buttons.
+    return screen.getAllByRole('button').filter((btn) => btn.querySelector('img[alt]:not([alt=""])') !== null);
+  }
+
   it('ArrowRight moves focus indicator to the right', () => {
     const onReorder = vi.fn();
     render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={onReorder} />);
     const container = screen.getByTestId('human-card-container');
     fireEvent.keyDown(container, { key: 'ArrowRight' });
     // First ArrowRight from null -> index 0
-    const images = screen.getAllByRole('img');
-    expect(images[0]).toHaveClass('ring-2', 'ring-ds-info');
-    expect(images[1]).not.toHaveClass('ring-2');
+    const btns = cardButtons();
+    expect(btns[0]).toHaveClass('ring-2', 'ring-ds-info');
+    expect(btns[1]).not.toHaveClass('ring-2');
   });
 
   it('ArrowLeft moves focus indicator to the left', () => {
@@ -114,9 +119,9 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     fireEvent.keyDown(container, { key: 'ArrowRight' });
     fireEvent.keyDown(container, { key: 'ArrowRight' });
     fireEvent.keyDown(container, { key: 'ArrowLeft' });
-    const images = screen.getAllByRole('img');
-    expect(images[0]).toHaveClass('ring-2', 'ring-ds-info');
-    expect(images[1]).not.toHaveClass('ring-2');
+    const btns = cardButtons();
+    expect(btns[0]).toHaveClass('ring-2', 'ring-ds-info');
+    expect(btns[1]).not.toHaveClass('ring-2');
   });
 
   it('ArrowLeft from null sets focus to index 0', () => {
@@ -124,8 +129,7 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={onReorder} />);
     const container = screen.getByTestId('human-card-container');
     fireEvent.keyDown(container, { key: 'ArrowLeft' });
-    const images = screen.getAllByRole('img');
-    expect(images[0]).toHaveClass('ring-2', 'ring-ds-info');
+    expect(cardButtons()[0]).toHaveClass('ring-2', 'ring-ds-info');
   });
 
   it('focus does not go below 0', () => {
@@ -135,8 +139,7 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     fireEvent.keyDown(container, { key: 'ArrowRight' }); // -> 0
     fireEvent.keyDown(container, { key: 'ArrowLeft' }); // clamp at 0
     fireEvent.keyDown(container, { key: 'ArrowLeft' }); // still 0
-    const images = screen.getAllByRole('img');
-    expect(images[0]).toHaveClass('ring-2', 'ring-ds-info');
+    expect(cardButtons()[0]).toHaveClass('ring-2', 'ring-ds-info');
   });
 
   it('focus does not go past the last card', () => {
@@ -147,10 +150,10 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     for (let i = 0; i < 5; i++) {
       fireEvent.keyDown(container, { key: 'ArrowRight' });
     }
-    const images = screen.getAllByRole('img');
-    expect(images[2]).toHaveClass('ring-2', 'ring-ds-info');
-    expect(images[0]).not.toHaveClass('ring-2');
-    expect(images[1]).not.toHaveClass('ring-2');
+    const btns = cardButtons();
+    expect(btns[2]).toHaveClass('ring-2', 'ring-ds-info');
+    expect(btns[0]).not.toHaveClass('ring-2');
+    expect(btns[1]).not.toHaveClass('ring-2');
   });
 
   it('Escape clears focus', () => {
@@ -159,9 +162,8 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     const container = screen.getByTestId('human-card-container');
     fireEvent.keyDown(container, { key: 'ArrowRight' }); // -> 0
     fireEvent.keyDown(container, { key: 'Escape' });
-    const images = screen.getAllByRole('img');
-    for (const img of images) {
-      expect(img).not.toHaveClass('ring-2');
+    for (const btn of cardButtons()) {
+      expect(btn).not.toHaveClass('ring-2');
     }
   });
 
@@ -239,9 +241,75 @@ describe('OldMaidPlayerArea keyboard reordering', () => {
     fireEvent.keyDown(container, { key: 'ArrowUp' });
     expect(onReorder).not.toHaveBeenCalled();
     // No focus should be set
-    const images = screen.getAllByRole('img');
-    for (const img of images) {
-      expect(img).not.toHaveClass('ring-2');
+    for (const btn of cardButtons()) {
+      expect(btn).not.toHaveClass('ring-2');
     }
+  });
+});
+
+describe('OldMaidPlayerArea tap-to-move reorder', () => {
+  const threeCards = [makeCard('SPADE', 1), makeCard('HEART', 5), makeCard('DIAMOND', 10)];
+
+  function cardButtons() {
+    return screen.getAllByRole('button').filter((btn) => btn.querySelector('img[alt]:not([alt=""])') !== null);
+  }
+
+  it('wraps human cards in tap-target buttons when onReorder is provided', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={vi.fn()} />);
+    expect(cardButtons()).toHaveLength(3);
+  });
+
+  it('renders plain images (no buttons) when onReorder is not provided', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} />);
+    // No card-wrapping buttons when reorder is disabled
+    const imgs = screen.getAllByRole('img');
+    expect(imgs).toHaveLength(3);
+    const btns = screen.queryAllByRole('button').filter((btn) => btn.querySelector('img[alt]:not([alt=""])'));
+    expect(btns).toHaveLength(0);
+  });
+
+  it('first tap selects a card and sets aria-pressed', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={vi.fn()} />);
+    const btns = cardButtons();
+    fireEvent.click(btns[0]);
+    // After click, card 0 is selected; re-query because aria-pressed may have been added
+    const updated = cardButtons();
+    expect(updated[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(updated[1]).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('tapping the selected card again deselects it without calling onReorder', () => {
+    const onReorder = vi.fn();
+    render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={onReorder} />);
+    const btns = cardButtons();
+    fireEvent.click(btns[0]);
+    fireEvent.click(cardButtons()[0]);
+    expect(onReorder).not.toHaveBeenCalled();
+    expect(cardButtons()[0]).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('tapping a second card moves the selected card to that index', () => {
+    const onReorder = vi.fn();
+    render(<OldMaidPlayerArea {...defaultProps} player={makeHumanPlayer(threeCards)} onReorder={onReorder} />);
+    const btns = cardButtons();
+    fireEvent.click(btns[0]); // select index 0
+    fireEvent.click(cardButtons()[2]); // move to index 2
+    expect(onReorder).toHaveBeenCalledWith([1, 2, 0]);
+  });
+
+  it('does not trigger reorder when gameEndFlag is true', () => {
+    const onReorder = vi.fn();
+    render(
+      <OldMaidPlayerArea
+        {...defaultProps}
+        player={makeHumanPlayer(threeCards)}
+        onReorder={onReorder}
+        gameEndFlag={true}
+      />,
+    );
+    const btns = cardButtons();
+    fireEvent.click(btns[0]);
+    fireEvent.click(cardButtons()[2]);
+    expect(onReorder).not.toHaveBeenCalled();
   });
 });

@@ -56,5 +56,11 @@
   "hint": {
     "drawFromEdge": "手札の端から引くことを推奨",
     "drawAny": "残り枚数が少ないためどこから引いてもOK"
+  },
+  "reorder": {
+    "selectCardToMove": "並び替えるカード: {{card}}",
+    "deselectCard": "{{card}} の選択を解除",
+    "moveHere": "{{card}} をここ（{{to}}番目）に移動",
+    "instructions": "カードをタップして選択し、移動先をタップしてください"
   }
 }
