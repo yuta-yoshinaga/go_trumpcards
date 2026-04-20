@@ -58,7 +58,7 @@ type Updater struct {
 	httpClient         *http.Client
 	autoConfirm        bool
 	progressIsTTY      bool
-	cancelledIsSuccess bool // when true, ErrUserCancelled is returned as nil
+	reportCancelledAsError bool // when true, return ErrUserCancelled on user cancellation
 }
 
 // SetAutoConfirm enables or disables the automatic confirmation of updates,
@@ -97,12 +97,12 @@ type ghAsset struct {
 	BrowserDownloadURL string `json:"browser_download_url"`
 }
 
-// SetCancelledIsSuccess controls how a user-declined prompt is reported.
-// When true (the default, for backwards compatibility), Exec returns nil on
-// cancellation. When false, Exec returns ErrUserCancelled so callers can map
+// SetReportCancelledAsError controls how a user-declined prompt is reported.
+// When false (the default, for backwards compatibility), Exec returns nil on
+// cancellation. When true, Exec returns ErrUserCancelled so callers can map
 // it to a dedicated exit code (e.g. 75 / EX_TEMPFAIL).
-func (u *Updater) SetCancelledIsSuccess(v bool) {
-	u.cancelledIsSuccess = v
+func (u *Updater) SetReportCancelledAsError(v bool) {
+	u.reportCancelledAsError = v
 }
 
 // Exec runs the self-update flow.
@@ -164,10 +164,10 @@ func (u *Updater) Exec() error {
 		ans := strings.ToLower(strings.TrimSpace(answer))
 		if ans != "y" && ans != "yes" {
 			_, _ = fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
-			if u.cancelledIsSuccess {
-				return nil
+			if u.reportCancelledAsError {
+				return ErrUserCancelled
 			}
-			return ErrUserCancelled
+			return nil
 		}
 	}
 

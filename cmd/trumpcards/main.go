@@ -193,7 +193,7 @@ func run() int {
 		}
 		updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
 		updater.SetAutoConfirm(yes)
-		updater.SetCancelledIsSuccess(false) // report user cancel as exit 75
+		updater.SetReportCancelledAsError(true) // report user cancel as exit 75
 		updater.SetProgressIsTTY(term.IsTerminal(int(os.Stderr.Fd())))
 		if err := updater.Exec(); err != nil {
 			return updateExitCode(err)
@@ -203,13 +203,13 @@ func run() int {
 	commands["web"] = func() int {
 		var port int
 		var host string
-		var quiet bool
+		webQuiet := quiet // inherit TRUMPCARDS_QUIET env var as default
 		fs, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
 			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
 			f.IntVar(&port, "p", 0, "Port number for the web server (shorthand)")
 			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
-			f.BoolVar(&quiet, "quiet", false, "Suppress human-friendly startup/shutdown messages (structured slog still emitted)")
-			f.BoolVar(&quiet, "q", false, "Suppress human-friendly startup/shutdown messages (shorthand)")
+			f.BoolVar(&webQuiet, "quiet", webQuiet, "Suppress human-friendly startup/shutdown messages (structured slog still emitted)")
+			f.BoolVar(&webQuiet, "q", webQuiet, "Suppress human-friendly startup/shutdown messages (shorthand)")
 		})
 		if !ok {
 			return code
@@ -227,12 +227,12 @@ func run() int {
 		// Default to quiet when stderr is not a TTY (systemd, docker, pipe).
 		// See issue #1452: human-friendly text is noise for log shippers, but
 		// slog always fires so the lifecycle is still observable.
-		if !quiet && !term.IsTerminal(int(os.Stderr.Fd())) {
-			quiet = true
+		if !webQuiet && !term.IsTerminal(int(os.Stderr.Fd())) {
+			webQuiet = true
 		}
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()
-		w.SetQuiet(quiet)
+		w.SetQuiet(webQuiet)
 		if err := w.Exec(); err != nil {
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliWebStartFailed", "err", err.Error()))
 			if errors.Is(err, syscall.EADDRINUSE) {
@@ -281,8 +281,10 @@ func run() int {
 	// uses stderr for info logs) and leaves stdout free for future
 	// machine-readable output. See issue #1451.
 	startGame := "blackjack"
-	fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupBanner", "version", version))
-	fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupGame", "game", startGame))
+	if !quiet {
+		fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupBanner", "version", version))
+		fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupGame", "game", startGame))
+	}
 	manager := ui.NewGameManager(startGame)
 	ui.RunInteractiveCuiLoop(manager)
 	return 0

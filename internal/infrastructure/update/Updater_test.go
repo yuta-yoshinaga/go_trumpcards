@@ -48,7 +48,7 @@ func TestExec_AlreadyLatest(t *testing.T) {
 
 // TestExec_UserCancels_Default verifies the default behavior (kept for
 // backwards compatibility): cancellation returns nil. Callers that want a
-// distinct exit code should call SetCancelledIsSuccess(false) — see
+// distinct exit code should call SetReportCancelledAsError(true) — see
 // TestExec_UserCancels_AsSentinelError below.
 func TestExec_UserCancels_Default(t *testing.T) {
 	release := ghRelease{TagName: "v2.0.0"}
@@ -60,14 +60,15 @@ func TestExec_UserCancels_Default(t *testing.T) {
 
 	out := &bytes.Buffer{}
 	u := &Updater{
-		currentVersion:     "1.0.0",
-		repoOwner:          "test",
-		repoName:           "test",
-		reader:             strings.NewReader("n\n"),
-		writer:             out,
-		errWriter:          &bytes.Buffer{},
-		httpClient:         &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
-		cancelledIsSuccess: true,
+		currentVersion: "1.0.0",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         strings.NewReader("n\n"),
+		writer:         out,
+		errWriter:      &bytes.Buffer{},
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+		// reportCancelledAsError is false by default — old callers via NewUpdater
+		// get nil (no error) on cancellation, preserving backwards compatibility.
 	}
 
 	err := u.Exec()
@@ -76,7 +77,7 @@ func TestExec_UserCancels_Default(t *testing.T) {
 }
 
 // TestExec_UserCancels_AsSentinelError verifies that with
-// SetCancelledIsSuccess(false), an "n" response returns ErrUserCancelled so
+// SetReportCancelledAsError(true), an "n" response returns ErrUserCancelled so
 // the CLI can map it to exit code 75 (EX_TEMPFAIL). See issue #1449.
 func TestExec_UserCancels_AsSentinelError(t *testing.T) {
 	release := ghRelease{TagName: "v2.0.0"}
@@ -96,7 +97,7 @@ func TestExec_UserCancels_AsSentinelError(t *testing.T) {
 		errWriter:      &bytes.Buffer{},
 		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
 	}
-	u.SetCancelledIsSuccess(false)
+	u.SetReportCancelledAsError(true)
 
 	err := u.Exec()
 	require.Error(t, err)
