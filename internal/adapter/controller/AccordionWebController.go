@@ -64,8 +64,6 @@ func newAccordionDefaultOutput(msg string) *AccordionWebOutput {
 
 func accordionDispatch(bc *baseController, w http.ResponseWriter, ai usecase.AccordionInteractorIF, param AccordionWebInput, newDefault func(string) *AccordionWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, ai.Reset())
 	case "m", "move":
 		return accordionMoveDispatch(bc, w, ai, param, newDefault)
 	case "g", "giveup":
@@ -79,7 +77,7 @@ func accordionDispatch(bc *baseController, w http.ResponseWriter, ai usecase.Acc
 		}
 		bc.writePresenterResponse(w, ai.UndoN(*param.N))
 	default:
-		return dispatchHintAndLog(param.Command, bc, w, ai.Hint, ai.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ai.Reset, ai.Hint, ai.ActionLog)
 	}
 	return true
 }

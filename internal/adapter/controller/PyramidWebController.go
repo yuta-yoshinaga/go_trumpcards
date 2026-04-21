@@ -69,8 +69,6 @@ func newPyramidDefaultOutput(msg string) *PyramidWebOutput {
 
 func pyramidDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PyramidInteractorIF, param PyramidWebInput, newDefault func(string) *PyramidWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, pi.Reset())
 	case "d", "draw":
 		bc.writePresenterResponse(w, pi.Draw())
 	case "rm", "remove":
@@ -86,7 +84,7 @@ func pyramidDispatch(bc *baseController, w http.ResponseWriter, pi usecase.Pyram
 		}
 		bc.writePresenterResponse(w, pi.UndoN(*param.N))
 	default:
-		return dispatchHintAndLog(param.Command, bc, w, pi.Hint, pi.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, pi.Reset, pi.Hint, pi.ActionLog)
 	}
 	return true
 }

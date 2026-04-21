@@ -60,8 +60,6 @@ func newPaiGowDefaultOutput(msg string) *PaiGowWebOutput {
 
 func paiGowDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PaiGowInteractorIF, param PaiGowWebInput, _ func(string) *PaiGowWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, pi.Reset())
 	case "b", "bet":
 		bc.writePresenterResponse(w, pi.Bet(param.Amount))
 	case "s", "set":
@@ -69,7 +67,7 @@ func paiGowDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PaiGow
 		low1 := deref(param.Low1)
 		bc.writePresenterResponse(w, pi.SetHands(low0, low1))
 	default:
-		return dispatchLog(param.Command, bc, w, pi.ActionLog)
+		return dispatchResetAndLog(param.Command, bc, w, pi.Reset, pi.ActionLog)
 	}
 	return true
 }

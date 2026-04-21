@@ -4,7 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // KlondikeGame クロンダイクゲームインタフェース
 type KlondikeGame interface {
-	BaseGame
+	SolitaireGame
 	// Reset ゲームを初期化する
 	Reset()
 	// ResetWithConfig 指定設定でゲームを初期化する
@@ -19,21 +19,8 @@ type KlondikeGame interface {
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) error
 	// MoveTableauToFoundation タブローからファンデーションにカードを移動する
 	MoveTableauToFoundation(col int) error
-	// GiveUp ギブアップする
-	GiveUp()
 	// GetHint ヒントを取得する
 	GetHint() *domain.KlondikeHint
-	// AutoComplete 自動完了を実行する
-	AutoComplete() error
-	// Undo 操作を元に戻す
-	Undo() error
-
-	// CanUndo 元に戻す操作が可能かを返す
-	CanUndo() bool
-	// UndoToEscape 膠着状態から抜けるために必要なアンドゥ回数を返す
-	UndoToEscape() int
-	// UndoN n回連続でアンドゥを実行する
-	UndoN(n int) error
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.KlondikePhase
 	// GetMoveCount 移動回数を取得する

@@ -183,12 +183,18 @@ func init() {
 			return usecase.RestorePageOneInteractor(data, new(presenter.PageOneWebPresenter))
 		},
 		controller.NewPageOneWebControllerWithProvider)
-	games.RegisterKVGame("trash", games.CategoryClassic,
-		func() usecase.TrashInteractorIF {
+	// Proof-of-concept migration to the issue #1458 WorkerBinding pattern.
+	// The remaining games can be migrated incrementally without breaking
+	// the mixed use of Bind()/RegisterKVGame.
+	games.WorkerBinding[usecase.TrashInteractorIF, controller.TrashWebInput, *controller.TrashWebOutput]{
+		Name:     "trash",
+		Category: games.CategoryClassic,
+		NewInteractor: func() usecase.TrashInteractorIF {
 			return usecase.NewTrashInteractor(domain.NewDefaultTrash(), new(presenter.TrashWebPresenter))
 		},
-		func(data []byte) (usecase.TrashInteractorIF, error) {
+		RestoreInteractor: func(data []byte) (usecase.TrashInteractorIF, error) {
 			return usecase.RestoreTrashInteractor(data, new(presenter.TrashWebPresenter))
 		},
-		controller.NewTrashWebControllerWithProvider)
+		NewControllerWithProvider: controller.NewTrashWebControllerWithProvider,
+	}.Bind()
 }

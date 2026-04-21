@@ -64,8 +64,6 @@ func newFreeCellDefaultOutput(msg string) *FreeCellWebOutput {
 
 func freeCellDispatch(bc *baseController, w http.ResponseWriter, fi usecase.FreeCellInteractorIF, param FreeCellWebInput, newDefault func(string) *FreeCellWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, fi.Reset())
 	case "m", "move":
 		return freeCellMoveDispatch(bc, w, fi, param, newDefault)
 	case "g", "giveup":
@@ -81,7 +79,7 @@ func freeCellDispatch(bc *baseController, w http.ResponseWriter, fi usecase.Free
 		}
 		bc.writePresenterResponse(w, fi.UndoN(*param.N))
 	default:
-		return dispatchHintAndLog(param.Command, bc, w, fi.Hint, fi.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, fi.Reset, fi.Hint, fi.ActionLog)
 	}
 	return true
 }

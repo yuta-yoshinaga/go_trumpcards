@@ -60,8 +60,6 @@ func newYukonDefaultOutput(msg string) *YukonWebOutput {
 
 func yukonDispatch(bc *baseController, w http.ResponseWriter, yi usecase.YukonInteractorIF, param YukonWebInput, newDefault func(string) *YukonWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, yi.Reset())
 	case "m", "move":
 		return yukonMoveDispatch(bc, w, yi, param, newDefault)
 	case "g", "giveup":
@@ -77,7 +75,7 @@ func yukonDispatch(bc *baseController, w http.ResponseWriter, yi usecase.YukonIn
 		}
 		bc.writePresenterResponse(w, yi.UndoN(*param.N))
 	default:
-		return dispatchHintAndLog(param.Command, bc, w, yi.Hint, yi.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, yi.Reset, yi.Hint, yi.ActionLog)
 	}
 	return true
 }

@@ -51,8 +51,6 @@ func newPokerSquaresDefaultOutput(msg string) *PokerSquaresWebOutput {
 
 func pokerSquaresDispatch(bc *baseController, w http.ResponseWriter, pi usecase.PokerSquaresInteractorIF, param PokerSquaresWebInput, newDefault func(string) *PokerSquaresWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, pi.Reset())
 	case "p", "place":
 		if param.Row == nil || param.Col == nil {
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: row and col are required."))
@@ -64,7 +62,7 @@ func pokerSquaresDispatch(bc *baseController, w http.ResponseWriter, pi usecase.
 	case "g", "giveup":
 		bc.writePresenterResponse(w, pi.GiveUp())
 	default:
-		return dispatchLog(param.Command, bc, w, pi.ActionLog)
+		return dispatchResetAndLog(param.Command, bc, w, pi.Reset, pi.ActionLog)
 	}
 	return true
 }

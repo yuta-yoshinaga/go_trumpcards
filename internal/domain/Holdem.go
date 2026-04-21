@@ -58,6 +58,7 @@ const (
 // Holdem テキサスホールデムクラス
 type Holdem struct {
 	communityCardBettingBase
+	tournamentBase  // handCount / rebuyCounts / addonUsed, shared across poker variants (issue #1463)
 	trumpCards      *TrumpCards
 	players         []*HoldemPlayer
 	communityCards  []*Card
@@ -72,10 +73,7 @@ type Holdem struct {
 	vpipTracked     []bool // 当該ハンドでVPIP済みかどうか
 	pfrTracked      []bool // 当該ハンドでPFR済みかどうか
 	threeBetTracked []bool // 当該ハンドで3Bet追跡済みかどうか
-	handCount       int    // ハンド数 (トーナメントモード用)
 	lastCpuError    error  // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
-	rebuyCounts     []int  // プレイヤーごとのリバイ回数
-	addonUsed       []bool // プレイヤーごとのアドオン使用フラグ
 	rebuyPhaseType  int    // 0=none, 1=rebuy pending, 2=addon pending
 	actionLog       []*ActionLogEntry
 	humanProfile    *BettingHumanProfile
@@ -84,7 +82,7 @@ type Holdem struct {
 
 // NewHoldem コンストラクタ
 func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemConfig) *Holdem {
-	return &Holdem{
+	h := &Holdem{
 		communityCardBettingBase: communityCardBettingBase{
 			actedFlags: make([]bool, len(players)),
 		},
@@ -98,11 +96,11 @@ func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemCon
 		vpipTracked:     make([]bool, len(players)),
 		pfrTracked:      make([]bool, len(players)),
 		threeBetTracked: make([]bool, len(players)),
-		rebuyCounts:     make([]int, len(players)),
-		addonUsed:       make([]bool, len(players)),
 		config:          config,
 		phase:           HoldemPhaseInit,
 	}
+	h.initTournamentState(len(players))
+	return h
 }
 
 // NewDefaultHoldem returns Holdem with the default table size and DefaultHoldemConfig.
@@ -892,7 +890,5 @@ func (h *Holdem) Resize(players []*HoldemPlayer) {
 	h.vpipTracked = make([]bool, n)
 	h.pfrTracked = make([]bool, n)
 	h.threeBetTracked = make([]bool, n)
-	h.rebuyCounts = make([]int, n)
-	h.addonUsed = make([]bool, n)
-	h.handCount = 0
+	h.initTournamentState(n)
 }
