@@ -7,14 +7,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/worker"
 )
 
-// WorkerBinding captures the ingredients needed to wire a game into a
-// Cloudflare Worker. Lives under the js && wasm build tag because the
-// SnapshotIF constraint comes from the worker package, which is only
-// available when building Cloudflare Worker binaries.
-//
-// A game's per-category file (casino/classic/solo.go) can construct a
-// WorkerBinding and call Bind() to replace the multi-line
-// RegisterKVGame call with a single declaration. See issue #1458.
+// WorkerBinding captures the ingredients needed to wire a game into a Cloudflare Worker.
 type WorkerBinding[I worker.SnapshotIF, P controller.WebInput, O any] struct {
 	Name     string
 	Category Category

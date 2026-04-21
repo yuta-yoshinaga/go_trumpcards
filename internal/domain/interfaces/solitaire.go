@@ -1,14 +1,6 @@
 package interfaces
 
-// SolitaireGame groups the methods shared by the solitaire-family interfaces
-// (Klondike, Spider, FreeCell, FortyThieves, Yukon, Scorpion). Extracted per
-// issue #1461 to reduce duplication across the 10+ solitaire interfaces.
-//
-// Games missing one of these methods (e.g. Pyramid has no AutoComplete,
-// Canfield has no UndoToEscape) do not embed SolitaireGame — they keep
-// their current method lists. Adding a partial-SolitaireGame variant would
-// introduce combinatorial interface sprawl without clear benefit, so the
-// pragmatic choice is "embed when the full set applies".
+// SolitaireGame groups the undo/give-up/autocomplete methods shared by solitaire-family interfaces.
 type SolitaireGame interface {
 	BaseGame
 	// GiveUp marks the current game as abandoned.

@@ -28,7 +28,7 @@ func dispatchHintAndLog(cmd string, bc *baseController, w http.ResponseWriter, h
 // dispatchResetAndLog handles "r"/"reset" and "log"/"l" for games whose reset
 // takes no arguments — resetFn is typically interactor.Reset. Games that need
 // configurable reset (ResetWithConfig, etc.) keep their own case and should
-// fall through to dispatchLog instead.
+// fall through to dispatchLog or dispatchResetStepLog instead.
 func dispatchResetAndLog(cmd string, bc *baseController, w http.ResponseWriter, resetFn, actionLogFn func() string) bool {
 	switch cmd {
 	case "r", "reset":
@@ -72,7 +72,7 @@ type resetStepLogger interface {
 // commands that recur across most simple game dispatchers. Returns true if
 // the command was handled. Games that need a custom reset (e.g. ResetWithConfig)
 // should intercept "r"/"reset" themselves before falling through to this helper.
-func dispatchResetStepLog[I resetStepLogger](cmd string, bc *baseController, w http.ResponseWriter, i I) bool {
+func dispatchResetStepLog(cmd string, bc *baseController, w http.ResponseWriter, i resetStepLogger) bool {
 	switch cmd {
 	case "r", "reset":
 		bc.writePresenterResponse(w, i.Reset())

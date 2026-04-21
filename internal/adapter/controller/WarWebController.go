@@ -75,7 +75,8 @@ func warDispatch(
 	param WarWebInput,
 	_ func(string) *WarWebOutput,
 ) bool {
-	if param.Command == "r" || param.Command == "reset" {
+	switch param.Command {
+	case "r", "reset":
 		bc.writePresenterResponse(w, wi.ResetWithConfig(param.ToConfig()))
 		return true
 	}
