@@ -10,10 +10,10 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -271,28 +271,14 @@ function HeartsPageContent() {
                 )}
 
                 {/* Current trick */}
-                {state.currentTrick.length > 0 && (
-                  <div className="my-3 p-3 rounded bg-black/40" data-tutorial="ht-trick-display">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('currentTrick')}</div>
-                    <div className="flex gap-2">
-                      {state.currentTrick.map((trickCard) => (
-                        <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                          <AnimatedCard
-                            card={trickCard.card}
-                            width={cardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
-                          <div className="text-game-text-muted text-xs mt-1">
-                            {playerName(
-                              state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
-                              state.players[trickCard.playerIdx]?.isHuman ?? false,
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <TrickDisplay
+                  currentTrick={state.currentTrick}
+                  players={state.players}
+                  cardWidth={cardWidth}
+                  label={t('currentTrick')}
+                  dataTutorial="ht-trick-display"
+                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </div>
 
               {/* Right: info sidebar */}

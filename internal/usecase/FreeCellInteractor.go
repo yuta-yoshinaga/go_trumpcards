@@ -40,12 +40,17 @@ type FreeCellInteractorIF interface {
 type FreeCellInteractor struct {
 	GameBase[interfaces.FreeCellGame]
 	fp presenter.FreeCellPresenter
+	solitaireActions[interfaces.FreeCellGame]
 }
 
 // NewFreeCellInteractor コンストラクタ
 func NewFreeCellInteractor(f interfaces.FreeCellGame, fp presenter.FreeCellPresenter) *FreeCellInteractor {
 	mustNotNil("FreeCellInteractor", map[string]any{"f": f, "fp": fp})
-	return &FreeCellInteractor{GameBase: GameBase[interfaces.FreeCellGame]{Game: f}, fp: fp}
+	return &FreeCellInteractor{
+		GameBase:         GameBase[interfaces.FreeCellGame]{Game: f},
+		fp:               fp,
+		solitaireActions: newSolitaireActions[interfaces.FreeCellGame](f, fp),
+	}
 }
 
 // Reset ゲーム初期化
@@ -78,19 +83,9 @@ func (fi *FreeCellInteractor) MoveFreeCellToFoundation(cell int) string {
 	return execAndPresent(fi.Game, fi.fp, func() error { return fi.Game.MoveFreeCellToFoundation(cell) })
 }
 
-// GiveUp ギブアップ
-func (fi *FreeCellInteractor) GiveUp() string {
-	return runAndPresent(fi.Game, fi.fp, fi.Game.GiveUp)
-}
-
 // Hint ヒント取得
 func (fi *FreeCellInteractor) Hint() string {
 	return fi.fp.HintOutput(fi.Game)
-}
-
-// AutoComplete オートコンプリート
-func (fi *FreeCellInteractor) AutoComplete() string {
-	return execAndPresent(fi.Game, fi.fp, fi.Game.AutoComplete)
 }
 
 // ActionLog 棋譜を出力する
@@ -98,19 +93,13 @@ func (fi *FreeCellInteractor) ActionLog() string {
 	return fi.fp.ActionLogOutput(fi.Game)
 }
 
-// Undo アンドゥ
-func (fi *FreeCellInteractor) Undo() string {
-	return execAndPresent(fi.Game, fi.fp, fi.Game.Undo)
-}
-
-// UndoN n回連続アンドゥ
-func (fi *FreeCellInteractor) UndoN(n int) string {
-	return execAndPresent(fi.Game, fi.fp, func() error { return fi.Game.UndoN(n) })
-}
-
 // RestoreFreeCellInteractor deserialises JSON into a FreeCellInteractor.
 func RestoreFreeCellInteractor(data []byte, fp presenter.FreeCellPresenter) (*FreeCellInteractor, error) {
 	return restoreAndBuild[domain.FreeCell](data, func(g *domain.FreeCell) *FreeCellInteractor {
-		return &FreeCellInteractor{GameBase: GameBase[interfaces.FreeCellGame]{Game: g}, fp: fp}
+		return &FreeCellInteractor{
+			GameBase:         GameBase[interfaces.FreeCellGame]{Game: g},
+			fp:               fp,
+			solitaireActions: newSolitaireActions[interfaces.FreeCellGame](g, fp),
+		}
 	})
 }
