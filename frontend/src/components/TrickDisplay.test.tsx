@@ -54,7 +54,7 @@ describe('TrickDisplay', () => {
     expect(screen.getByText('CPU 7')).toBeInTheDocument();
   });
 
-  it('forwards onCardDealComplete to each AnimatedCard', () => {
+  it('renders correctly when onCardDealComplete is provided', () => {
     const onDeal = vi.fn();
     render(
       <TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" onCardDealComplete={onDeal} />,

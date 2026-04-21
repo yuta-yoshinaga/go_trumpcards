@@ -50,6 +50,7 @@ func TestSolitaireActions(t *testing.T) {
 			result := tt.callMethod(sa)
 			assert.Equal(t, tt.name+" output", result)
 			mg.AssertExpectations(t)
+			mp.AssertExpectations(t)
 		})
 
 		if tt.returnsErr {
@@ -65,6 +66,8 @@ func TestSolitaireActions(t *testing.T) {
 
 				result := tt.callMethod(sa)
 				assert.Equal(t, tt.name+" error output", result)
+				mg.AssertExpectations(t)
+				mp.AssertExpectations(t)
 			})
 		}
 	}
