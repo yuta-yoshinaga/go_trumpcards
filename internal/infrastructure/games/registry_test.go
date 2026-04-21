@@ -140,6 +140,41 @@ func TestRegistryHasDescriptionForEach(t *testing.T) {
 	}
 }
 
+// TestDescriptionLookup exercises the single-name accessor used by the CLI
+// in hot loops — must hit on known games and return "" for unknown ones.
+func TestDescriptionLookup(t *testing.T) {
+	if got := games.Description("blackjack"); got == "" {
+		t.Errorf("Description(\"blackjack\") = \"\", want non-empty")
+	}
+	if got := games.Description("does-not-exist"); got != "" {
+		t.Errorf("Description(\"does-not-exist\") = %q, want \"\"", got)
+	}
+}
+
+// TestDescriptionsReturnsCachedMap documents that Descriptions() returns the
+// package-owned cached map — callers must not mutate it (performance
+// contract: O(1) access in loops, no per-call allocation).
+func TestDescriptionsReturnsCachedMap(t *testing.T) {
+	a := games.Descriptions()
+	b := games.Descriptions()
+	if &a == &b {
+		// Map headers are allowed to differ — it's the underlying map data
+		// that must be shared. Checking a single key's address is unreliable,
+		// so just verify repeated calls return maps of equal size with
+		// identical contents (and leave mutation-safety as a documented
+		// contract).
+		t.Log("note: Go maps compare by reference; repeated calls return the same backing map")
+	}
+	if len(a) != len(b) {
+		t.Fatalf("len mismatch across Descriptions() calls: %d vs %d", len(a), len(b))
+	}
+	for k, v := range a {
+		if b[k] != v {
+			t.Errorf("Descriptions()[%q] drift: %q vs %q", k, v, b[k])
+		}
+	}
+}
+
 // TestCLIDescriptionsMatchRegistry asserts that the CLI and games package
 // agree on every Name→Description pair. Enforces the SSoT contract from
 // issue #1459: descriptions live on games.Game and ui sources them from

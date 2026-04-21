@@ -22,9 +22,10 @@ type GameRegistryEntry struct {
 }
 
 // Description returns the display description for this entry, sourced from
-// the games package SSoT.
+// the games package SSoT. Uses the single-entry lookup so calling this in a
+// loop does not repeatedly touch the descriptions map.
 func (e GameRegistryEntry) Description() string {
-	return games.Descriptions()[e.Name]
+	return games.Description(e.Name)
 }
 
 // cuiEntry builds a generic CUI game from a controller and a help spec.

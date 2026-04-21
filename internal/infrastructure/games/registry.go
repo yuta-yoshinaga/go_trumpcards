@@ -169,15 +169,30 @@ func ByCategory(cat Category) []Game {
 	return out
 }
 
-// Descriptions returns Name→Description for every registered game. Used by
-// the CLI layer so it does not have to carry a second copy of the metadata
-// (issue #1459 SSoT).
-func Descriptions() map[string]string {
+// descriptionCache holds Name→Description for every registered game. Built
+// once at package load from the static registry; safe to return by reference
+// because the registry is never mutated after init.
+var descriptionCache = func() map[string]string {
 	m := make(map[string]string, len(registry))
 	for _, g := range registry {
 		m[g.Name] = g.Description
 	}
 	return m
+}()
+
+// Descriptions returns Name→Description for every registered game (issue
+// #1459 SSoT). The returned map is the package's cached copy — callers must
+// not mutate it. Previously this allocated a fresh map on every call, which
+// turned entry.Description() lookups in CLI loops into O(N²) work.
+func Descriptions() map[string]string {
+	return descriptionCache
+}
+
+// Description returns the description for a single game by name, or "" if
+// name is unknown. O(1) via the cached descriptions map; safe to call in
+// tight loops.
+func Description(name string) string {
+	return descriptionCache[name]
 }
 
 // find locates a game by name; returns nil if not found.
