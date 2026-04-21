@@ -1,6 +1,7 @@
 package games
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
@@ -65,13 +66,24 @@ func TestCategoryString(t *testing.T) {
 		CategoryCasino:  "casino",
 		CategoryClassic: "classic",
 		CategorySolo:    "solo",
-		Category(99):    "Category(99)",
 	}
 	for cat, want := range cases {
 		if got := cat.String(); got != want {
 			t.Errorf("Category(%d).String() = %q, want %q", int(cat), got, want)
 		}
 	}
+}
+
+// TestCategoryStringPanicsOnUnknown asserts that String() panics on an
+// undefined Category value so API misuse surfaces immediately — matching
+// BindWebController/BindWorker's panic-on-misuse policy.
+func TestCategoryStringPanicsOnUnknown(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expected panic on unknown Category, got none")
+		}
+	}()
+	_ = Category(99).String()
 }
 
 func TestAllEntriesAreValid(t *testing.T) {
@@ -112,6 +124,18 @@ func TestRegistryMatchesCLI(t *testing.T) {
 	for i, name := range cliNames {
 		if all[i].Name != name {
 			t.Errorf("order mismatch at index %d: CLI=%q, registry=%q", i, name, all[i].Name)
+		}
+	}
+}
+
+// TestCLIRegistryHasDescriptionForEach asserts that every CLI gameRegistry
+// entry carries a non-empty Description. Empty descriptions are a common
+// drift symptom: someone copy-pastes a new entry, forgets to fill it, and
+// the CLI silently ships a blank name in its listings.
+func TestCLIRegistryHasDescriptionForEach(t *testing.T) {
+	for name, desc := range ui.GameDescriptions() {
+		if strings.TrimSpace(desc) == "" {
+			t.Errorf("game %q has empty Description in ui.gameRegistry", name)
 		}
 	}
 }

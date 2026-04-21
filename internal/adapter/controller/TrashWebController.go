@@ -57,8 +57,6 @@ func newTrashDefaultOutput(msg string) *TrashWebOutput {
 
 func trashDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TrashInteractorIF, param TrashWebInput, newDefault func(string) *TrashWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, ti.Reset())
 	case "d", "draw":
 		bc.writePresenterResponse(w, ti.Draw())
 	case "p", "place", "placeWild":
@@ -70,7 +68,7 @@ func trashDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TrashIn
 	case "cpu":
 		bc.writePresenterResponse(w, ti.CpuStep())
 	default:
-		return dispatchLog(param.Command, bc, w, ti.ActionLog)
+		return dispatchResetAndLog(param.Command, bc, w, ti.Reset, ti.ActionLog)
 	}
 	return true
 }

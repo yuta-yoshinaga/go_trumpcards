@@ -46,8 +46,6 @@ func newVideoPokerDefaultOutput(msg string) *VideoPokerWebOutput {
 
 func videoPokerDispatch(bc *baseController, w http.ResponseWriter, vi usecase.VideoPokerInteractorIF, param VideoPokerWebInput, _ func(string) *VideoPokerWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, vi.Reset())
 	case "b", "bet":
 		bc.writePresenterResponse(w, vi.Bet(param.Amount))
 	case "h", "hold":
@@ -57,7 +55,7 @@ func videoPokerDispatch(bc *baseController, w http.ResponseWriter, vi usecase.Vi
 		}
 		bc.writePresenterResponse(w, vi.Hold(indices))
 	default:
-		return dispatchLog(param.Command, bc, w, vi.ActionLog)
+		return dispatchResetAndLog(param.Command, bc, w, vi.Reset, vi.ActionLog)
 	}
 	return true
 }

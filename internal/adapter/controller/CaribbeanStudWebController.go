@@ -52,8 +52,6 @@ func newCaribbeanStudDefaultOutput(msg string) *CaribbeanStudWebOutput {
 
 func caribbeanStudDispatch(bc *baseController, w http.ResponseWriter, ci usecase.CaribbeanStudInteractorIF, param CaribbeanStudWebInput, _ func(string) *CaribbeanStudWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, ci.Reset())
 	case "b", "bet":
 		jackpot := deref(param.JackpotBet)
 		bc.writePresenterResponse(w, ci.Bet(param.Amount, jackpot))
@@ -62,7 +60,7 @@ func caribbeanStudDispatch(bc *baseController, w http.ResponseWriter, ci usecase
 	case "f", "fold":
 		bc.writePresenterResponse(w, ci.Fold())
 	default:
-		return dispatchLog(param.Command, bc, w, ci.ActionLog)
+		return dispatchResetAndLog(param.Command, bc, w, ci.Reset, ci.ActionLog)
 	}
 	return true
 }

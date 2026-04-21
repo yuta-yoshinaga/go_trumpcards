@@ -50,8 +50,6 @@ func newLetItRideDefaultOutput(msg string) *LetItRideWebOutput {
 
 func letItRideDispatch(bc *baseController, w http.ResponseWriter, li usecase.LetItRideInteractorIF, param LetItRideWebInput, _ func(string) *LetItRideWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, li.Reset())
 	case "b", "bet":
 		bc.writePresenterResponse(w, li.Bet(param.Amount))
 	case "p", "pull":
@@ -59,7 +57,7 @@ func letItRideDispatch(bc *baseController, w http.ResponseWriter, li usecase.Let
 	case "l", "letitride":
 		bc.writePresenterResponse(w, li.LetItRide())
 	default:
-		return dispatchLog(param.Command, bc, w, li.ActionLog)
+		return dispatchResetAndLog(param.Command, bc, w, li.Reset, li.ActionLog)
 	}
 	return true
 }

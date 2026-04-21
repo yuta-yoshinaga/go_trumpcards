@@ -53,10 +53,8 @@ type Omaha struct {
 	vpipTracked     []bool
 	pfrTracked      []bool
 	threeBetTracked []bool
-	handCount       int
+	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
 	lastCpuError    error
-	rebuyCounts     []int
-	addonUsed       []bool
 	rebuyPhaseType  int
 	actionLog       []*ActionLogEntry
 	humanProfile    *BettingHumanProfile
@@ -65,7 +63,7 @@ type Omaha struct {
 
 // NewOmaha コンストラクタ
 func NewOmaha(trumpCards *TrumpCards, players []*OmahaPlayer, config OmahaConfig) *Omaha {
-	return &Omaha{
+	o := &Omaha{
 		communityCardBettingBase: communityCardBettingBase{
 			actedFlags: make([]bool, len(players)),
 		},
@@ -79,11 +77,11 @@ func NewOmaha(trumpCards *TrumpCards, players []*OmahaPlayer, config OmahaConfig
 		vpipTracked:     make([]bool, len(players)),
 		pfrTracked:      make([]bool, len(players)),
 		threeBetTracked: make([]bool, len(players)),
-		rebuyCounts:     make([]int, len(players)),
-		addonUsed:       make([]bool, len(players)),
 		config:          config,
 		phase:           OmahaPhaseInit,
 	}
+	o.initTournamentState(len(players))
+	return o
 }
 
 // NewDefaultOmaha returns Omaha with the default table size and DefaultOmahaConfig.
@@ -1441,7 +1439,5 @@ func (o *Omaha) Resize(players []*OmahaPlayer) {
 	o.vpipTracked = make([]bool, n)
 	o.pfrTracked = make([]bool, n)
 	o.threeBetTracked = make([]bool, n)
-	o.rebuyCounts = make([]int, n)
-	o.addonUsed = make([]bool, n)
-	o.handCount = 0
+	o.initTournamentState(n)
 }

@@ -88,19 +88,13 @@ var gameRegistry = []GameRegistryEntry{
 			})
 	}},
 	{Name: "sevens", Description: "Sevens (7並べ)", NewCui: func() cuiGame {
-		return newCuiGame(
+		return cuiEntry(
 			controller.NewSevensCuiController(usecase.NewSevensInteractor(
 				domain.NewDefaultSevens(), new(presenter.SevensCuiPresenter))),
-			[]string{
-				i18n.T("sevens.helpTitle"),
-				"",
-				i18n.T("gameCommands"),
-				i18n.T("sevens.helpPlay"),
-				"",
-				i18n.T("session"),
-				"  r [tunnel] [joker=N] [strategy] [passes=N]  reset with options",
-				i18n.T("quitEntry"),
-				i18n.T("helpEntry"),
+			CuiHelpSpec{
+				TitleKey:      "sevens.helpTitle",
+				CommandKeys:   []string{"sevens.helpPlay"},
+				ResetOverride: "  r [tunnel] [joker=N] [strategy] [passes=N]  reset with options",
 			})
 	}},
 	{Name: "doubt", Description: "Doubt (ダウト)", NewCui: func() cuiGame { return NewDoubtCui() }},

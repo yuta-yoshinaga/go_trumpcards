@@ -30,7 +30,10 @@ const (
 	CategorySolo
 )
 
-// String returns the lowercase worker name (casino/classic/solo).
+// String returns the lowercase worker name (casino/classic/solo). Panics on
+// an unknown value — consistent with BindWebController/BindWorker, which also
+// panic on API misuse. A silent fallback would mask bugs such as reading an
+// uninitialised Category or forgetting a case after adding a new value.
 func (c Category) String() string {
 	switch c {
 	case CategoryCasino:
@@ -39,8 +42,9 @@ func (c Category) String() string {
 		return "classic"
 	case CategorySolo:
 		return "solo"
+	default:
+		panic(fmt.Sprintf("games: unknown Category %d", int(c)))
 	}
-	return fmt.Sprintf("Category(%d)", int(c))
 }
 
 // WebController is the minimal handler interface implemented by every

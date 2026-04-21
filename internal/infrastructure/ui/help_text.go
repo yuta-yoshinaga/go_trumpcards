@@ -21,6 +21,12 @@ type CuiHelpSpec struct {
 	// ExtraSettingLines are literal lines appended after SettingKeys in the
 	// settings section. Used for settings not yet in i18n.
 	ExtraSettingLines []string
+	// ResetOverride, when non-empty, replaces the default i18n.T("resetEntry")
+	// line in the session section. Used by games whose reset command accepts
+	// options (e.g. Sevens: "r [tunnel] [joker=N] [strategy] [passes=N]").
+	// Extracted per issue #1460 so such games can use the standard template
+	// instead of bypassing BuildCuiHelp with a raw []string.
+	ResetOverride string
 }
 
 // BuildCuiHelp assembles standard CUI help text from spec. Order:
@@ -45,10 +51,14 @@ func BuildCuiHelp(spec CuiHelpSpec) []string {
 		}
 		lines = append(lines, spec.ExtraSettingLines...)
 	}
+	resetLine := i18n.T("resetEntry")
+	if spec.ResetOverride != "" {
+		resetLine = spec.ResetOverride
+	}
 	lines = append(lines,
 		"",
 		i18n.T("session"),
-		i18n.T("resetEntry"),
+		resetLine,
 		i18n.T("quitEntry"),
 		i18n.T("helpEntry"),
 	)

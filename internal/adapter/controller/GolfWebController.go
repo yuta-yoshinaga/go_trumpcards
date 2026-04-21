@@ -58,8 +58,6 @@ func newGolfDefaultOutput(msg string) *GolfWebOutput {
 
 func golfDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GolfInteractorIF, param GolfWebInput, newDefault func(string) *GolfWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, gi.Reset())
 	case "d", "draw":
 		bc.writePresenterResponse(w, gi.Draw())
 	case "rm", "remove":
@@ -79,7 +77,7 @@ func golfDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GolfInte
 		}
 		bc.writePresenterResponse(w, gi.UndoN(*param.N))
 	default:
-		return dispatchHintAndLog(param.Command, bc, w, gi.Hint, gi.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, gi.Reset, gi.Hint, gi.ActionLog)
 	}
 	return true
 }

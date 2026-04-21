@@ -53,8 +53,6 @@ func newThreeCardDefaultOutput(msg string) *ThreeCardWebOutput {
 
 func threeCardDispatch(bc *baseController, w http.ResponseWriter, ti usecase.ThreeCardInteractorIF, param ThreeCardWebInput, _ func(string) *ThreeCardWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, ti.Reset())
 	case "b", "bet":
 		ppBet := deref(param.PairPlusBet)
 		bc.writePresenterResponse(w, ti.Bet(param.Amount, ppBet))
@@ -63,7 +61,7 @@ func threeCardDispatch(bc *baseController, w http.ResponseWriter, ti usecase.Thr
 	case "f", "fold":
 		bc.writePresenterResponse(w, ti.Fold())
 	default:
-		return dispatchLog(param.Command, bc, w, ti.ActionLog)
+		return dispatchResetAndLog(param.Command, bc, w, ti.Reset, ti.ActionLog)
 	}
 	return true
 }
