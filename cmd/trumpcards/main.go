@@ -513,7 +513,7 @@ func buildHelpText() string {
 GAMES:
 `)
 	for _, entry := range ui.GameRegistry() {
-		fmt.Fprintf(&sb, "  %-16s %s\n", entry.Name, entry.Description)
+		fmt.Fprintf(&sb, "  %-16s %s\n", entry.Name, entry.Description())
 	}
 	sb.WriteString(`
 COMMANDS:

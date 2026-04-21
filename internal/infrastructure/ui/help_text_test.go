@@ -134,6 +134,24 @@ func TestBuildCuiHelp_settingsOnlyExtraLines(t *testing.T) {
 	assertLines(t, got, want)
 }
 
+func TestBuildCuiHelp_bodyShortCircuitsScaffold(t *testing.T) {
+	// Body wins over every other field — used by games whose help is
+	// hand-authored and does not fit the standard scaffold (issue #1460).
+	body := []string{
+		"Canasta (カナスタ) Help",
+		"",
+		"Game Commands:",
+		"  ds                   draw from stock",
+	}
+	got := BuildCuiHelp(CuiHelpSpec{
+		Body:        body,
+		TitleKey:    "hearts.helpTitle", // ignored
+		CommandKeys: []string{"hearts.helpPass"},
+		SettingKeys: []string{"hearts.helpSetLimit"},
+	})
+	assertLines(t, got, body)
+}
+
 func assertLines(t *testing.T, got, want []string) {
 	t.Helper()
 	if len(got) != len(want) {
