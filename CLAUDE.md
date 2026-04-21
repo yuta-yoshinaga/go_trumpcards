@@ -136,12 +136,12 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 | **classic** | `cmd/workers/classic/main.go` | Trick-taking & matching (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist, pageone, trash) |
 | **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, scorpion, accordion, pokersquares) |
 
-The worker entry points (`cmd/workers/{casino,classic,solo}/main.go`) are thin shells that blank-import the matching `internal/infrastructure/games/<category>` sub-package and call `games.RegisterCategory(mux, games.Category…)`. The registry itself (`internal/infrastructure/games/registry.go`) stores only `{Name, Category}` for each game; the Web-server factories live in `games_server.go` (excluded from WASM via build tags) and the Worker bindings live in per-category sub-packages — this split is what keeps each Cloudflare Worker binary under the 1 MB gzipped free-tier limit by letting TinyGo dead-code-eliminate the games from the other two categories.
+The worker entry points (`cmd/workers/{casino,classic,solo}/main.go`) are thin shells that blank-import the matching `internal/infrastructure/games/<category>` sub-package and call `games.RegisterCategory(mux, games.Category…)`. The registry itself (`internal/infrastructure/games/registry.go`) stores `{Name, Category, Description}` for each game (the description SSoT — `ui.gameRegistry` reads it from here); the Web-server factories live in `games_server.go` (excluded from WASM via build tags) and the Worker bindings live in per-category sub-packages — this split is what keeps each Cloudflare Worker binary under the 1 MB gzipped free-tier limit by letting TinyGo dead-code-eliminate the games from the other two categories.
 
 **When adding/modifying a game, always update:**
-1. `internal/infrastructure/games/registry.go` — `{Name, Category}` entry (selects the worker)
-2. `internal/infrastructure/games/games_server.go` — `BindWebController("<name>", …)` for the HTTP server factory
-3. `internal/infrastructure/games/{casino,classic,solo}/<category>.go` — `games.BindWorker("<name>", …)` for the KV-backed worker route (must match the `Category`)
+1. `internal/infrastructure/games/registry.go` — `{Name, Category, Description}` entry (selects the worker; Description is the CLI display title)
+2. `internal/infrastructure/games/games_server.go` — `BindWebControllerFor("<name>", …)` for the HTTP server factory
+3. `internal/infrastructure/games/{casino,classic,solo}/<category>.go` — `games.RegisterKVGame("<name>", games.Category…, …)` for the KV-backed worker route (must match the `Category`)
 4. `frontend/src/api/gameApi.ts` `workerUrl` — must match the `Category`
 
 Build: `make build-worker-{solo,casino,classic}` or `make build-workers` (requires TinyGo).

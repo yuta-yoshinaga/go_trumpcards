@@ -298,14 +298,9 @@ func init() {
 			return usecase.NewAccordionInteractor(domain.NewDefaultAccordion(), new(presenter.AccordionWebPresenter))
 		},
 		controller.NewAccordionWebController)
-	// Proof-of-concept migration to the issue #1458 WebBinding pattern.
-	// The remaining games can be migrated incrementally without breaking
-	// the mixed use of Bind()/BindWebControllerFor.
-	WebBinding[usecase.TrashInteractorIF, controller.TrashWebInput, *controller.TrashWebOutput]{
-		Name: "trash",
-		NewInteractor: func() usecase.TrashInteractorIF {
+	BindWebControllerFor("trash",
+		func() usecase.TrashInteractorIF {
 			return usecase.NewTrashInteractor(domain.NewDefaultTrash(), new(presenter.TrashWebPresenter))
 		},
-		NewController: controller.NewTrashWebController,
-	}.Bind()
+		controller.NewTrashWebController)
 }

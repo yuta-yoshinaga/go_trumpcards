@@ -65,6 +65,11 @@ type Game struct {
 	// Category selects which Cloudflare Worker hosts the game.
 	Category Category
 
+	// Description is the human-readable short title used by CLI listings and
+	// help. Kept on Game itself (not in the CLI-only ui package) so that the
+	// Name→Description mapping has a single source of truth (issue #1459).
+	Description string
+
 	// NewWebController returns a fresh controller bound to the default
 	// in-memory session provider. Populated only on non-WASM builds via
 	// games_server.go; nil in Cloudflare Worker binaries.
@@ -81,64 +86,64 @@ type Game struct {
 // place where a game is declared; the per-build tag init functions attach
 // the matching factories.
 var registry = []*Game{
-	{Name: "blackjack", Category: CategoryCasino},
-	{Name: "poker", Category: CategoryCasino},
-	{Name: "oldmaid", Category: CategoryClassic},
-	{Name: "daifugo", Category: CategoryClassic},
-	{Name: "sevens", Category: CategoryClassic},
-	{Name: "doubt", Category: CategoryClassic},
-	{Name: "holdem", Category: CategoryCasino},
-	{Name: "omaha", Category: CategoryCasino},
-	{Name: "shortdeck", Category: CategoryCasino},
-	{Name: "pineapple", Category: CategoryCasino},
-	{Name: "hearts", Category: CategoryClassic},
-	{Name: "memory", Category: CategorySolo},
-	{Name: "klondike", Category: CategorySolo},
-	{Name: "freecell", Category: CategorySolo},
-	{Name: "baccarat", Category: CategoryCasino},
-	{Name: "spades", Category: CategoryClassic},
-	{Name: "crazyeights", Category: CategoryClassic},
-	{Name: "ginrummy", Category: CategorySolo},
-	{Name: "canasta", Category: CategorySolo},
-	{Name: "spider", Category: CategorySolo},
-	{Name: "napoleon", Category: CategoryClassic},
-	{Name: "indianpoker", Category: CategoryCasino},
-	{Name: "videopoker", Category: CategoryCasino},
-	{Name: "deuceswild", Category: CategoryCasino},
-	{Name: "jokerpoker", Category: CategoryCasino},
-	{Name: "euchre", Category: CategoryClassic},
-	{Name: "pyramid", Category: CategorySolo},
-	{Name: "tripeaks", Category: CategorySolo},
-	{Name: "cribbage", Category: CategorySolo},
-	{Name: "threecard", Category: CategoryCasino},
-	{Name: "ohhell", Category: CategoryClassic},
-	{Name: "bridge", Category: CategoryClassic},
-	{Name: "speed", Category: CategoryClassic},
-	{Name: "gofish", Category: CategoryClassic},
-	{Name: "pinochle", Category: CategoryClassic},
-	{Name: "golf", Category: CategorySolo},
-	{Name: "pigtail", Category: CategoryClassic},
-	{Name: "sevencardstud", Category: CategoryCasino},
-	{Name: "clocksolitaire", Category: CategorySolo},
-	{Name: "durak", Category: CategoryClassic},
-	{Name: "fortythieves", Category: CategorySolo},
-	{Name: "paigow", Category: CategoryCasino},
-	{Name: "twotenjack", Category: CategoryClassic},
-	{Name: "caribbeanstud", Category: CategoryCasino},
-	{Name: "war", Category: CategoryClassic},
-	{Name: "canfield", Category: CategorySolo},
-	{Name: "fiftyone", Category: CategoryClassic},
-	{Name: "yukon", Category: CategorySolo},
-	{Name: "whist", Category: CategoryClassic},
-	{Name: "letitride", Category: CategoryCasino},
-	{Name: "pokersquares", Category: CategorySolo},
-	{Name: "pageone", Category: CategoryClassic},
-	{Name: "reddog", Category: CategoryCasino},
-	{Name: "badugi", Category: CategoryCasino},
-	{Name: "razz", Category: CategoryCasino},
-	{Name: "scorpion", Category: CategorySolo},
-	{Name: "accordion", Category: CategorySolo},
-	{Name: "trash", Category: CategoryClassic},
+	{Name: "blackjack", Category: CategoryCasino, Description: "BlackJack (ブラックジャック)"},
+	{Name: "poker", Category: CategoryCasino, Description: "5-card Draw Poker (ポーカー)"},
+	{Name: "oldmaid", Category: CategoryClassic, Description: "Old Maid (ババ抜き)"},
+	{Name: "daifugo", Category: CategoryClassic, Description: "Daifugo / Great Fool (大富豪)"},
+	{Name: "sevens", Category: CategoryClassic, Description: "Sevens (7並べ)"},
+	{Name: "doubt", Category: CategoryClassic, Description: "Doubt (ダウト)"},
+	{Name: "holdem", Category: CategoryCasino, Description: "Texas Hold'em (テキサスホールデム)"},
+	{Name: "omaha", Category: CategoryCasino, Description: "Omaha Hold'em (オマハホールデム)"},
+	{Name: "shortdeck", Category: CategoryCasino, Description: "Short Deck (6+ Hold'em) (ショートデック)"},
+	{Name: "pineapple", Category: CategoryCasino, Description: "Pineapple Poker (パイナップルポーカー)"},
+	{Name: "hearts", Category: CategoryClassic, Description: "Hearts (ハーツ)"},
+	{Name: "memory", Category: CategorySolo, Description: "Memory / Concentration (神経衰弱)"},
+	{Name: "klondike", Category: CategorySolo, Description: "Klondike Solitaire (ソリティア)"},
+	{Name: "freecell", Category: CategorySolo, Description: "FreeCell (フリーセル)"},
+	{Name: "baccarat", Category: CategoryCasino, Description: "Baccarat (バカラ)"},
+	{Name: "spades", Category: CategoryClassic, Description: "Spades (スペード)"},
+	{Name: "crazyeights", Category: CategoryClassic, Description: "Crazy Eights (クレイジーエイト)"},
+	{Name: "ginrummy", Category: CategorySolo, Description: "Gin Rummy (ジンラミー)"},
+	{Name: "canasta", Category: CategorySolo, Description: "Canasta (カナスタ)"},
+	{Name: "spider", Category: CategorySolo, Description: "Spider Solitaire (スパイダーソリティア)"},
+	{Name: "napoleon", Category: CategoryClassic, Description: "Napoleon (ナポレオン)"},
+	{Name: "indianpoker", Category: CategoryCasino, Description: "Indian Poker (インディアンポーカー)"},
+	{Name: "videopoker", Category: CategoryCasino, Description: "Video Poker Jacks or Better (ビデオポーカー)"},
+	{Name: "deuceswild", Category: CategoryCasino, Description: "Deuces Wild (デューシーズワイルド)"},
+	{Name: "jokerpoker", Category: CategoryCasino, Description: "Joker Poker (ジョーカーポーカー)"},
+	{Name: "euchre", Category: CategoryClassic, Description: "Euchre (ユーカー)"},
+	{Name: "pyramid", Category: CategorySolo, Description: "Pyramid (ピラミッド)"},
+	{Name: "tripeaks", Category: CategorySolo, Description: "TriPeaks (トリピークス)"},
+	{Name: "cribbage", Category: CategorySolo, Description: "Cribbage (クリベッジ)"},
+	{Name: "threecard", Category: CategoryCasino, Description: "Three Card Poker (スリーカードポーカー)"},
+	{Name: "ohhell", Category: CategoryClassic, Description: "Oh Hell (オー・ヘル)"},
+	{Name: "bridge", Category: CategoryClassic, Description: "Contract Bridge (コントラクトブリッジ)"},
+	{Name: "speed", Category: CategoryClassic, Description: "Speed (スピード)"},
+	{Name: "gofish", Category: CategoryClassic, Description: "Go Fish (ゴーフィッシュ)"},
+	{Name: "pinochle", Category: CategoryClassic, Description: "Pinochle (ピノクル)"},
+	{Name: "golf", Category: CategorySolo, Description: "Golf Solitaire (ゴルフ)"},
+	{Name: "pigtail", Category: CategoryClassic, Description: "Pig's Tail (ブタのしっぽ)"},
+	{Name: "sevencardstud", Category: CategoryCasino, Description: "Seven Card Stud (セブンカードスタッド)"},
+	{Name: "clocksolitaire", Category: CategorySolo, Description: "Clock Solitaire (クロックソリティア)"},
+	{Name: "durak", Category: CategoryClassic, Description: "Durak / Fool (ドゥラーク)"},
+	{Name: "fortythieves", Category: CategorySolo, Description: "Forty Thieves (フォーティシーブス)"},
+	{Name: "paigow", Category: CategoryCasino, Description: "Pai Gow Poker (パイガオポーカー)"},
+	{Name: "twotenjack", Category: CategoryClassic, Description: "Two Ten Jack (ツーテンジャック)"},
+	{Name: "caribbeanstud", Category: CategoryCasino, Description: "Caribbean Stud Poker (カリビアンスタッドポーカー)"},
+	{Name: "war", Category: CategoryClassic, Description: "War (戦争)"},
+	{Name: "canfield", Category: CategorySolo, Description: "Canfield Solitaire (キャンフィールド)"},
+	{Name: "fiftyone", Category: CategoryClassic, Description: "Fifty-one (フィフティワン)"},
+	{Name: "yukon", Category: CategorySolo, Description: "Yukon Solitaire (ユーコン)"},
+	{Name: "whist", Category: CategoryClassic, Description: "Whist (ホイスト)"},
+	{Name: "letitride", Category: CategoryCasino, Description: "Let It Ride (レット・イット・ライド)"},
+	{Name: "pokersquares", Category: CategorySolo, Description: "Poker Squares (ポーカー・スクエアズ)"},
+	{Name: "pageone", Category: CategoryClassic, Description: "Page One (ページワン)"},
+	{Name: "reddog", Category: CategoryCasino, Description: "Red Dog (レッドドッグ)"},
+	{Name: "badugi", Category: CategoryCasino, Description: "Badugi (バドゥーギ)"},
+	{Name: "razz", Category: CategoryCasino, Description: "Razz (ラズ)"},
+	{Name: "scorpion", Category: CategorySolo, Description: "Scorpion (スコーピオン)"},
+	{Name: "accordion", Category: CategorySolo, Description: "Accordion (アコーディオン)"},
+	{Name: "trash", Category: CategoryClassic, Description: "Trash (トラッシュ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.
@@ -162,6 +167,32 @@ func ByCategory(cat Category) []Game {
 		}
 	}
 	return out
+}
+
+// descriptionCache holds Name→Description for every registered game. Built
+// once at package load from the static registry; safe to return by reference
+// because the registry is never mutated after init.
+var descriptionCache = func() map[string]string {
+	m := make(map[string]string, len(registry))
+	for _, g := range registry {
+		m[g.Name] = g.Description
+	}
+	return m
+}()
+
+// Descriptions returns Name→Description for every registered game (issue
+// #1459 SSoT). The returned map is the package's cached copy — callers must
+// not mutate it. Previously this allocated a fresh map on every call, which
+// turned entry.Description() lookups in CLI loops into O(N²) work.
+func Descriptions() map[string]string {
+	return descriptionCache
+}
+
+// Description returns the description for a single game by name, or "" if
+// name is unknown. O(1) via the cached descriptions map; safe to call in
+// tight loops.
+func Description(name string) string {
+	return descriptionCache[name]
 }
 
 // find locates a game by name; returns nil if not found.
