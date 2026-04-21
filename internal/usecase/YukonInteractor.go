@@ -34,12 +34,17 @@ type YukonInteractorIF interface {
 type YukonInteractor struct {
 	GameBase[interfaces.YukonGame]
 	yp presenter.YukonPresenter
+	solitaireActions[interfaces.YukonGame]
 }
 
 // NewYukonInteractor コンストラクタ
 func NewYukonInteractor(y interfaces.YukonGame, yp presenter.YukonPresenter) *YukonInteractor {
 	mustNotNil("YukonInteractor", map[string]any{"y": y, "yp": yp})
-	return &YukonInteractor{GameBase: GameBase[interfaces.YukonGame]{Game: y}, yp: yp}
+	return &YukonInteractor{
+		GameBase:         GameBase[interfaces.YukonGame]{Game: y},
+		yp:               yp,
+		solitaireActions: newSolitaireActions[interfaces.YukonGame](y, yp),
+	}
 }
 
 // Reset ゲーム初期化
@@ -59,19 +64,9 @@ func (yi *YukonInteractor) MoveTableauToFoundation(col int) string {
 	return execAndPresent(yi.Game, yi.yp, func() error { return yi.Game.MoveTableauToFoundation(col) })
 }
 
-// GiveUp ギブアップ
-func (yi *YukonInteractor) GiveUp() string {
-	return runAndPresent(yi.Game, yi.yp, yi.Game.GiveUp)
-}
-
 // Hint ヒント取得
 func (yi *YukonInteractor) Hint() string {
 	return yi.yp.HintOutput(yi.Game)
-}
-
-// AutoComplete オートコンプリート
-func (yi *YukonInteractor) AutoComplete() string {
-	return execAndPresent(yi.Game, yi.yp, yi.Game.AutoComplete)
 }
 
 // ActionLog 棋譜を出力する
@@ -79,19 +74,13 @@ func (yi *YukonInteractor) ActionLog() string {
 	return yi.yp.ActionLogOutput(yi.Game)
 }
 
-// Undo アンドゥ
-func (yi *YukonInteractor) Undo() string {
-	return execAndPresent(yi.Game, yi.yp, yi.Game.Undo)
-}
-
-// UndoN n回連続アンドゥ
-func (yi *YukonInteractor) UndoN(n int) string {
-	return execAndPresent(yi.Game, yi.yp, func() error { return yi.Game.UndoN(n) })
-}
-
 // RestoreYukonInteractor deserialises JSON into a YukonInteractor.
 func RestoreYukonInteractor(data []byte, yp presenter.YukonPresenter) (*YukonInteractor, error) {
 	return restoreAndBuild[domain.Yukon](data, func(g *domain.Yukon) *YukonInteractor {
-		return &YukonInteractor{GameBase: GameBase[interfaces.YukonGame]{Game: g}, yp: yp}
+		return &YukonInteractor{
+			GameBase:         GameBase[interfaces.YukonGame]{Game: g},
+			yp:               yp,
+			solitaireActions: newSolitaireActions[interfaces.YukonGame](g, yp),
+		}
 	})
 }

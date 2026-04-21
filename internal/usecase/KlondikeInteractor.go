@@ -42,12 +42,17 @@ type KlondikeInteractorIF interface {
 type KlondikeInteractor struct {
 	GameBase[interfaces.KlondikeGame]
 	kp presenter.KlondikePresenter
+	solitaireActions[interfaces.KlondikeGame]
 }
 
 // NewKlondikeInteractor コンストラクタ
 func NewKlondikeInteractor(k interfaces.KlondikeGame, kp presenter.KlondikePresenter) *KlondikeInteractor {
 	mustNotNil("KlondikeInteractor", map[string]any{"k": k, "kp": kp})
-	return &KlondikeInteractor{GameBase: GameBase[interfaces.KlondikeGame]{Game: k}, kp: kp}
+	return &KlondikeInteractor{
+		GameBase:         GameBase[interfaces.KlondikeGame]{Game: k},
+		kp:               kp,
+		solitaireActions: newSolitaireActions[interfaces.KlondikeGame](k, kp),
+	}
 }
 
 // Reset ゲーム初期化
@@ -85,19 +90,9 @@ func (ki *KlondikeInteractor) MoveTableauToFoundation(col int) string {
 	return execAndPresent(ki.Game, ki.kp, func() error { return ki.Game.MoveTableauToFoundation(col) })
 }
 
-// GiveUp ギブアップ
-func (ki *KlondikeInteractor) GiveUp() string {
-	return runAndPresent(ki.Game, ki.kp, ki.Game.GiveUp)
-}
-
 // Hint ヒント取得
 func (ki *KlondikeInteractor) Hint() string {
 	return ki.kp.HintOutput(ki.Game)
-}
-
-// AutoComplete オートコンプリート
-func (ki *KlondikeInteractor) AutoComplete() string {
-	return execAndPresent(ki.Game, ki.kp, ki.Game.AutoComplete)
 }
 
 // ActionLog 棋譜を出力する
@@ -105,19 +100,13 @@ func (ki *KlondikeInteractor) ActionLog() string {
 	return ki.kp.ActionLogOutput(ki.Game)
 }
 
-// Undo アンドゥ
-func (ki *KlondikeInteractor) Undo() string {
-	return execAndPresent(ki.Game, ki.kp, ki.Game.Undo)
-}
-
-// UndoN n回連続アンドゥ
-func (ki *KlondikeInteractor) UndoN(n int) string {
-	return execAndPresent(ki.Game, ki.kp, func() error { return ki.Game.UndoN(n) })
-}
-
 // RestoreKlondikeInteractor deserialises JSON into a KlondikeInteractor.
 func RestoreKlondikeInteractor(data []byte, kp presenter.KlondikePresenter) (*KlondikeInteractor, error) {
 	return restoreAndBuild[domain.Klondike](data, func(g *domain.Klondike) *KlondikeInteractor {
-		return &KlondikeInteractor{GameBase: GameBase[interfaces.KlondikeGame]{Game: g}, kp: kp}
+		return &KlondikeInteractor{
+			GameBase:         GameBase[interfaces.KlondikeGame]{Game: g},
+			kp:               kp,
+			solitaireActions: newSolitaireActions[interfaces.KlondikeGame](g, kp),
+		}
 	})
 }

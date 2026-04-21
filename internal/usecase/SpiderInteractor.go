@@ -36,12 +36,17 @@ type SpiderInteractorIF interface {
 type SpiderInteractor struct {
 	GameBase[interfaces.SpiderGame]
 	sp presenter.SpiderPresenter
+	solitaireActions[interfaces.SpiderGame]
 }
 
 // NewSpiderInteractor コンストラクタ
 func NewSpiderInteractor(s interfaces.SpiderGame, sp presenter.SpiderPresenter) *SpiderInteractor {
 	mustNotNil("SpiderInteractor", map[string]any{"s": s, "sp": sp})
-	return &SpiderInteractor{GameBase: GameBase[interfaces.SpiderGame]{Game: s}, sp: sp}
+	return &SpiderInteractor{
+		GameBase:         GameBase[interfaces.SpiderGame]{Game: s},
+		sp:               sp,
+		solitaireActions: newSolitaireActions[interfaces.SpiderGame](s, sp),
+	}
 }
 
 // Reset ゲーム初期化
@@ -64,19 +69,9 @@ func (si *SpiderInteractor) MoveTableauToTableau(fromCol, cardIndex, toCol int) 
 	return execAndPresent(si.Game, si.sp, func() error { return si.Game.MoveTableauToTableau(fromCol, cardIndex, toCol) })
 }
 
-// GiveUp ギブアップ
-func (si *SpiderInteractor) GiveUp() string {
-	return runAndPresent(si.Game, si.sp, si.Game.GiveUp)
-}
-
 // Hint ヒント取得
 func (si *SpiderInteractor) Hint() string {
 	return si.sp.HintOutput(si.Game)
-}
-
-// AutoComplete オートコンプリート
-func (si *SpiderInteractor) AutoComplete() string {
-	return execAndPresent(si.Game, si.sp, si.Game.AutoComplete)
 }
 
 // ActionLog 棋譜を出力する
@@ -84,19 +79,13 @@ func (si *SpiderInteractor) ActionLog() string {
 	return si.sp.ActionLogOutput(si.Game)
 }
 
-// Undo アンドゥ
-func (si *SpiderInteractor) Undo() string {
-	return execAndPresent(si.Game, si.sp, si.Game.Undo)
-}
-
-// UndoN n回連続アンドゥ
-func (si *SpiderInteractor) UndoN(n int) string {
-	return execAndPresent(si.Game, si.sp, func() error { return si.Game.UndoN(n) })
-}
-
 // RestoreSpiderInteractor deserialises JSON into a SpiderInteractor.
 func RestoreSpiderInteractor(data []byte, sp presenter.SpiderPresenter) (*SpiderInteractor, error) {
 	return restoreAndBuild[domain.Spider](data, func(g *domain.Spider) *SpiderInteractor {
-		return &SpiderInteractor{GameBase: GameBase[interfaces.SpiderGame]{Game: g}, sp: sp}
+		return &SpiderInteractor{
+			GameBase:         GameBase[interfaces.SpiderGame]{Game: g},
+			sp:               sp,
+			solitaireActions: newSolitaireActions[interfaces.SpiderGame](g, sp),
+		}
 	})
 }

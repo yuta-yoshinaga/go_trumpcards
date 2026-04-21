@@ -34,12 +34,17 @@ type ScorpionInteractorIF interface {
 type ScorpionInteractor struct {
 	GameBase[interfaces.ScorpionGame]
 	sp presenter.ScorpionPresenter
+	solitaireActions[interfaces.ScorpionGame]
 }
 
 // NewScorpionInteractor コンストラクタ
 func NewScorpionInteractor(s interfaces.ScorpionGame, sp presenter.ScorpionPresenter) *ScorpionInteractor {
 	mustNotNil("ScorpionInteractor", map[string]any{"s": s, "sp": sp})
-	return &ScorpionInteractor{GameBase: GameBase[interfaces.ScorpionGame]{Game: s}, sp: sp}
+	return &ScorpionInteractor{
+		GameBase:         GameBase[interfaces.ScorpionGame]{Game: s},
+		sp:               sp,
+		solitaireActions: newSolitaireActions[interfaces.ScorpionGame](s, sp),
+	}
 }
 
 // Reset ゲーム初期化
@@ -59,19 +64,9 @@ func (si *ScorpionInteractor) MoveTableauToTableau(fromCol, cardIndex, toCol int
 	})
 }
 
-// GiveUp ギブアップ
-func (si *ScorpionInteractor) GiveUp() string {
-	return runAndPresent(si.Game, si.sp, si.Game.GiveUp)
-}
-
 // Hint ヒント取得
 func (si *ScorpionInteractor) Hint() string {
 	return si.sp.HintOutput(si.Game)
-}
-
-// AutoComplete オートコンプリート
-func (si *ScorpionInteractor) AutoComplete() string {
-	return execAndPresent(si.Game, si.sp, si.Game.AutoComplete)
 }
 
 // ActionLog 棋譜を出力する
@@ -79,19 +74,13 @@ func (si *ScorpionInteractor) ActionLog() string {
 	return si.sp.ActionLogOutput(si.Game)
 }
 
-// Undo アンドゥ
-func (si *ScorpionInteractor) Undo() string {
-	return execAndPresent(si.Game, si.sp, si.Game.Undo)
-}
-
-// UndoN n回連続アンドゥ
-func (si *ScorpionInteractor) UndoN(n int) string {
-	return execAndPresent(si.Game, si.sp, func() error { return si.Game.UndoN(n) })
-}
-
 // RestoreScorpionInteractor deserialises JSON into a ScorpionInteractor.
 func RestoreScorpionInteractor(data []byte, sp presenter.ScorpionPresenter) (*ScorpionInteractor, error) {
 	return restoreAndBuild[domain.Scorpion](data, func(g *domain.Scorpion) *ScorpionInteractor {
-		return &ScorpionInteractor{GameBase: GameBase[interfaces.ScorpionGame]{Game: g}, sp: sp}
+		return &ScorpionInteractor{
+			GameBase:         GameBase[interfaces.ScorpionGame]{Game: g},
+			sp:               sp,
+			solitaireActions: newSolitaireActions[interfaces.ScorpionGame](g, sp),
+		}
 	})
 }
