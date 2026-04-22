@@ -29,8 +29,8 @@ test.describe('Seven Bridge E2E', () => {
       .click();
 
     // Meld or discard controls should appear during the play phase
-    const meldBtn = page.getByRole('button', { name: /メルド|Meld/ }).first();
-    const discardBtn = page.getByRole('button', { name: /捨てる|Discard/ }).first();
-    await expect(meldBtn.or(discardBtn)).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    const meldBtn = page.getByRole('button', { name: /メルド|Meld/ });
+    const discardBtn = page.getByRole('button', { name: /捨てる|Discard/ });
+    await expect(meldBtn.or(discardBtn).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
   });
 });
