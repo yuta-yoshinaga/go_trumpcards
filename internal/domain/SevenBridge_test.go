@@ -444,8 +444,12 @@ func TestSevenBridge_PlayerDiscard_FallbackWhenStuck(t *testing.T) {
 	g := newTestSevenBridge()
 	g.Reset()
 	g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 3, true)})
+	// Two illegal cards — the hand has no legal discard, but we keep 2 cards so the
+	// "no-meld-last-card" guard doesn't fire and we exercise the illegal-discard
+	// relaxation path.
 	setHand(g.GetPlayer(0), []*domain.Card{
-		domain.NewCard(domain.CardDesignSpade, 13, true), // illegal but only option
+		domain.NewCard(domain.CardDesignSpade, 13, true),
+		domain.NewCard(domain.CardDesignClover, 12, true),
 	})
 	g.SetPhase(domain.SevenBridgePhasePlay)
 	g.SetCurrentPlayerIdx(0)
@@ -753,6 +757,7 @@ func TestSevenBridge_CpuPlay_WinsByEmptyingHand(t *testing.T) {
 		domain.NewCard(domain.CardDesignClover, 8, true),
 		domain.NewCard(domain.CardDesignHeart, 8, true),
 	})
+	setHand(g.GetPlayer(0), nil) // clear loser hand so round end doesn't tip into GameEnd
 	g.SetPhase(domain.SevenBridgePhasePlay)
 	g.SetCurrentPlayerIdx(1)
 	g.CpuPlay()
@@ -880,6 +885,7 @@ func TestSevenBridge_GetActionLog(t *testing.T) {
 		domain.NewCard(domain.CardDesignSpade, 3, true),
 		domain.NewCard(domain.CardDesignClover, 3, true),
 		domain.NewCard(domain.CardDesignHeart, 3, true),
+		domain.NewCard(domain.CardDesignDiamond, 10, true), // filler so meld doesn't empty the hand
 	})
 	g.SetPhase(domain.SevenBridgePhasePlay)
 	g.SetCurrentPlayerIdx(0)
@@ -905,14 +911,17 @@ func TestSevenBridge_CpuPlay_ShouldClaimAcrossDifficulties(t *testing.T) {
 		g := newTestSevenBridgeDifficulty(d)
 		g.Reset()
 		g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 9, true)})
+		// Extra filler card so a successful Pon claim (empties hand → round end) doesn't
+		// fire — we want the phase to end up in Play for this assertion.
 		setHand(g.GetPlayer(1), []*domain.Card{
 			domain.NewCard(domain.CardDesignSpade, 9, true),
 			domain.NewCard(domain.CardDesignClover, 9, true),
+			domain.NewCard(domain.CardDesignDiamond, 2, true),
 		})
 		g.SetPhase(domain.SevenBridgePhaseDraw)
 		g.SetCurrentPlayerIdx(1)
 		// Force a draw-pile card so falling through to stock draw still succeeds.
-		g.SetDrawPile([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 2, true)})
+		g.SetDrawPile([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 3, true)})
 		g.CpuPlay()
 		// Either claimed (meld) or drew from stock — in any case the phase transitions to Play.
 		assert.Equal(t, domain.SevenBridgePhasePlay, g.GetPhase())
@@ -1133,6 +1142,105 @@ func TestSevenBridge_CpuDiscard_NilTop(t *testing.T) {
 	g.SetCurrentPlayerIdx(1)
 	g.CpuPlay()
 	assert.NotNil(t, g.GetDiscardTop())
+}
+
+// --- Review-fix regression tests ---
+
+func TestSevenBridge_Meld_EmptiesHandFinishesRound(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	setHand(g.GetPlayer(0), []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 3, true),
+		domain.NewCard(domain.CardDesignClover, 3, true),
+		domain.NewCard(domain.CardDesignHeart, 3, true),
+	})
+	setHand(g.GetPlayer(1), nil) // clear so loser penalty doesn't push the game to GameEnd
+	g.SetPhase(domain.SevenBridgePhasePlay)
+	g.SetCurrentPlayerIdx(0)
+
+	require.NoError(t, g.PlayerMeld([]int{0, 1, 2}))
+
+	assert.Equal(t, 0, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, domain.SevenBridgePhaseRoundEnd, g.GetPhase())
+	assert.Equal(t, 0, g.GetRoundWinnerIdx())
+}
+
+func TestSevenBridge_Layoff_EmptiesHandFinishesRound(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	g.GetPlayer(1).AppendMeld([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 3, true),
+		domain.NewCard(domain.CardDesignSpade, 4, true),
+		domain.NewCard(domain.CardDesignSpade, 5, true),
+	})
+	setHand(g.GetPlayer(0), []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, true),
+	})
+	setHand(g.GetPlayer(1), nil) // clear so loser penalty doesn't push the game to GameEnd
+	g.SetPhase(domain.SevenBridgePhasePlay)
+	g.SetCurrentPlayerIdx(0)
+
+	require.NoError(t, g.PlayerLayoff(1, 0, 0))
+
+	assert.Equal(t, 0, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, domain.SevenBridgePhaseRoundEnd, g.GetPhase())
+	assert.Equal(t, 0, g.GetRoundWinnerIdx())
+}
+
+func TestSevenBridge_ClaimPon_EmptiesHandFinishesRound(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 9, true)})
+	setHand(g.GetPlayer(0), []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 9, true),
+		domain.NewCard(domain.CardDesignClover, 9, true),
+	})
+	setHand(g.GetPlayer(1), nil) // clear so loser penalty doesn't push the game to GameEnd
+	g.SetPhase(domain.SevenBridgePhaseDraw)
+	g.SetCurrentPlayerIdx(0)
+
+	require.NoError(t, g.PlayerClaimPon([]int{0, 1}))
+
+	assert.Equal(t, 0, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, domain.SevenBridgePhaseRoundEnd, g.GetPhase())
+	assert.Equal(t, 0, g.GetRoundWinnerIdx())
+}
+
+func TestSevenBridge_ClaimChi_EmptiesHandFinishesRound(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)})
+	setHand(g.GetPlayer(0), []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 6, true),
+		domain.NewCard(domain.CardDesignSpade, 7, true),
+	})
+	setHand(g.GetPlayer(1), nil) // clear so loser penalty doesn't push the game to GameEnd
+	g.SetPhase(domain.SevenBridgePhaseDraw)
+	g.SetCurrentPlayerIdx(0)
+
+	require.NoError(t, g.PlayerClaimChi([]int{0, 1}))
+
+	assert.Equal(t, 0, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, domain.SevenBridgePhaseRoundEnd, g.GetPhase())
+	assert.Equal(t, 0, g.GetRoundWinnerIdx())
+}
+
+func TestSevenBridge_Discard_RejectsLastCardWithoutMeld(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, true)})
+	setHand(g.GetPlayer(0), []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, true),
+	})
+	g.SetPhase(domain.SevenBridgePhasePlay)
+	g.SetCurrentPlayerIdx(0)
+
+	err := g.PlayerDiscard(0)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+	// Hand and phase unchanged.
+	assert.Equal(t, 1, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, domain.SevenBridgePhasePlay, g.GetPhase())
 }
 
 func TestSevenBridge_CpuDraw_FromDiscardViaChi(t *testing.T) {

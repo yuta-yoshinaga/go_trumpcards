@@ -370,7 +370,13 @@ function SevenBridgePageContent() {
                     <span>{t('layoffTarget')}:</span>
                     <select
                       value={layoffTarget}
-                      onChange={(e) => setLayoffTarget(Number(e.target.value))}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (!Number.isNaN(val)) {
+                          setLayoffTarget(val);
+                          setLayoffMeldIdx(0);
+                        }
+                      }}
                       className="border rounded px-1 text-xs bg-white text-black"
                     >
                       {layoffPlayers.map((p) => (

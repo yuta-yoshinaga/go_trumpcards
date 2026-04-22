@@ -296,6 +296,10 @@ func (g *SevenBridge) applyPonClaim(cardIndices []int) error {
 
 	g.appendLog(g.currentPlayerIdx, "pon", fmt.Sprintf("%s calls Pon on %s", g.playerName(g.currentPlayerIdx), cardStr(claimed)), []*Card{claimed, c1, c2})
 	g.claimedThisTurn = true
+	if player.GetCardsSize() == 0 {
+		g.finishRound(g.currentPlayerIdx)
+		return nil
+	}
 	g.phase = SevenBridgePhasePlay
 	return nil
 }
@@ -339,6 +343,10 @@ func (g *SevenBridge) applyChiClaim(cardIndices []int) error {
 
 	g.appendLog(g.currentPlayerIdx, "chi", fmt.Sprintf("%s calls Chi on %s", g.playerName(g.currentPlayerIdx), cardStr(claimed)), []*Card{claimed, c1, c2})
 	g.claimedThisTurn = true
+	if player.GetCardsSize() == 0 {
+		g.finishRound(g.currentPlayerIdx)
+		return nil
+	}
 	g.phase = SevenBridgePhasePlay
 	return nil
 }
@@ -393,6 +401,9 @@ func (g *SevenBridge) applyMeld(cardIndices []int) error {
 	}
 
 	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards", g.playerName(g.currentPlayerIdx), len(cards)), cards)
+	if player.GetCardsSize() == 0 {
+		g.finishRound(g.currentPlayerIdx)
+	}
 	return nil
 }
 
@@ -435,6 +446,9 @@ func (g *SevenBridge) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error
 	player.RemoveCard(cardIndex)
 
 	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", g.playerName(g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	if player.GetCardsSize() == 0 {
+		g.finishRound(g.currentPlayerIdx)
+	}
 	return nil
 }
 
@@ -456,6 +470,12 @@ func (g *SevenBridge) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
 		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+	}
+	// メルド無しで最後の 1 枚を捨てて上がる不正ルートを人間プレイヤー側で禁止する。
+	// CPU は chooseCpuDiscard の合法手優先と applyLayoff/applyMeld の上がり判定で
+	// このゾンビ状態に入る前にターンを抜けるため対象外。
+	if player.GetIsHuman() && player.GetCardsSize() == 1 && player.GetMeldCount() == 0 {
+		return NewDomainError(ErrInvalidPlay, "上がりには最低 1 つのメルドが必要です")
 	}
 	card := player.GetCard(cardIndex)
 
@@ -729,6 +749,9 @@ func (g *SevenBridge) findLayoffTarget(card *Card) (int, int, bool) {
 
 // finishRound 上がり／山切れの最終スコアリング
 func (g *SevenBridge) finishRound(winnerIdx int) {
+	if g.phase == SevenBridgePhaseRoundEnd || g.phase == SevenBridgePhaseGameEnd {
+		return
+	}
 	g.roundWinnerIdx = winnerIdx
 	loserTotal := 0
 	if winnerIdx >= 0 {
