@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { presidentApi } from '../api/gameApi';
-import type { Card, PresidentAction, PresidentConfigInput, PresidentResponse } from '../types/card';
+import { type PresidentConfigInput, presidentApi } from '../api/gameApi';
+import type { Card, PresidentAction, PresidentResponse } from '../types/card';
 import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder';
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';
@@ -113,7 +113,7 @@ export function usePresidentGame() {
   }, [callApi]);
 
   const handleConfigChange = useCallback((key: keyof PresidentConfigInput, value: boolean | number) => {
-    setConfigInput((prev) => ({ ...prev, [key]: value }));
+    setConfigInput((prev: PresidentConfigInput) => ({ ...prev, [key]: value }));
   }, []);
 
   const handlePlay = useCallback(() => {
