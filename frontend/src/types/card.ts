@@ -1011,6 +1011,47 @@ export interface GinRummyConfig {
   pointLimit: number;
 }
 
+// --- Seven Bridge (セブンブリッジ) ---
+
+/** A meld (set or run) shared across players in Seven Bridge. */
+export interface SevenBridgeMeld {
+  cards: Card[];
+}
+
+/** Seven Bridge player data with hand, melds and scores. */
+export interface SevenBridgePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  melds: SevenBridgeMeld[];
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+/** Seven Bridge game configuration. */
+export interface SevenBridgeConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** Full Seven Bridge game state returned from the API. */
+export interface SevenBridgeResponse {
+  players: SevenBridgePlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  roundWinnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: SevenBridgeConfig;
+}
+
 /** Full Gin Rummy game state returned from the API. */
 export interface GinRummyResponse {
   players: GinRummyPlayerData[];

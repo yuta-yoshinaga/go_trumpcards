@@ -35,6 +35,7 @@ import type {
   PyramidResponse,
   RedDogResponse,
   ScorpionResponse,
+  SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
@@ -89,6 +90,7 @@ import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
+import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
@@ -162,6 +164,7 @@ const hintFactories = {
   yukon: (s) => getYukonHint(s as YukonResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
+  sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   trash: (s) => getTrashHint(s as TrashResponse),
 } satisfies Record<string, HintFn>;
 

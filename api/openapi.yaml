@@ -52,6 +52,8 @@ tags:
     description: Page One (ページワン) game
   - name: ginrummy
     description: Gin Rummy (ジンラミー) game
+  - name: sevenbridge
+    description: Seven Bridge (セブンブリッジ) game
   - name: canasta
     description: Canasta (カナスタ) game
   - name: pinochle
@@ -1825,6 +1827,96 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GinRummyResponse'
+
+  /sevenbridge/exec:
+    post:
+      tags:
+        - sevenbridge
+      summary: Execute a Seven Bridge game command
+      description: |
+        Send a command to advance the Seven Bridge (セブンブリッジ) game session
+        identified by `sessionId`. Seven Bridge is a 2-player rummy-family game
+        using a standard 52-card deck. Each player is dealt 7 cards; the first
+        `7` in the remaining deck starts the discard pile. A turn consists of a
+        Draw phase (stock, Pon, or Chi) followed by a Play phase (meld, layoff,
+        discard). The discard rule allows only a `7`, the same rank as the top
+        discard, or a rank ±1 away. First to the configured point limit wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Draw      | `0`   | Draw from stock or claim discard (Pon/Chi) |
+        | Play      | `1`   | Meld, layoff, and discard |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | A player reached the point limit |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `drawstock`   | `ds`    | Draw one card from the stock |
+        | `pon`         |         | Claim discard to form a set (`cardIndices` = 2) |
+        | `chi`         |         | Claim discard to form a run (`cardIndices` = 2) |
+        | `meld`        | `m`     | Lay down a meld (`cardIndices` ≥ 3) |
+        | `layoff`      | `lo`    | Add one card to an existing meld (`targetPlayerIdx`, `meldIdx`, `cardIndex`) |
+        | `discard`     | `d`     | Discard a card (`cardIndex`) |
+        | `nextround`   | `nr`    | Start the next round |
+        | `log`         | `l`     | View action log |
+      operationId: sevenbridgeExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevenBridgeRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              pon:
+                summary: Claim discard with two same-rank cards
+                value:
+                  command: pon
+                  cardIndices: [0, 1]
+                  sessionId: my-session-001
+              meld:
+                summary: Meld a set of three
+                value:
+                  command: meld
+                  cardIndices: [0, 1, 2]
+                  sessionId: my-session-001
+              layoff:
+                summary: Add a card to opponent's meld
+                value:
+                  command: layoff
+                  targetPlayerIdx: 1
+                  meldIdx: 0
+                  cardIndex: 2
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 3
+                value:
+                  command: discard
+                  cardIndex: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenBridgeResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevenBridgeResponse'
 
   /canasta/exec:
     post:
@@ -9623,6 +9715,124 @@ components:
     # -------------------------------------------------------------------------
     # Gin Rummy
     # -------------------------------------------------------------------------
+    SevenBridgeRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Seven Bridge command. Accepted values: `reset` (`r`),
+            `drawstock` (`ds`), `pon`, `chi`, `meld` (`m`),
+            `layoff` (`lo`), `discard` (`d`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, pon, chi, meld, m, layoff, lo, discard, d, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard (for `discard` / `layoff`).
+          example: 2
+        cardIndices:
+          type: array
+          description: Card indices for `pon`, `chi`, or `meld`.
+          items:
+            type: integer
+          example: [0, 1, 2]
+        targetPlayerIdx:
+          type: integer
+          description: Target player's index for `layoff`.
+          example: 1
+        meldIdx:
+          type: integer
+          description: Target meld index within the player for `layoff`.
+          example: 0
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    SevenBridgeResponse:
+      type: object
+      description: Current state of the Seven Bridge game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              melds:
+                type: array
+                description: Melds laid down by this player
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Play, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        roundWinnerIdx:
+          type: integer
+          description: Index of the last round winner (-1 for stock-out / not decided)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
     GinRummyRequest:
       type: object
       required:

@@ -1,0 +1,54 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "play": "Play",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "drawPile": "Stock: {{count}}",
+  "discardTop": "Discard top",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "drawStockButton": "Draw from stock",
+  "ponButton": "Pon",
+  "chiButton": "Chi",
+  "meldButton": "Meld",
+  "discardButton": "Discard",
+  "layoffButton": "Layoff",
+  "layoffTarget": "Target",
+  "nextRound": "Next round",
+  "yourMelds": "Your melds",
+  "drawPhase": "Draw from the stock or claim the discard with Pon/Chi.",
+  "playPhase": "Meld, layoff, or discard.",
+  "roundEndMessage": "Round over.",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "frontendHint": {
+    "sevenbridgePon": "You can claim the discard with Pon.",
+    "sevenbridgeChi": "You can claim the discard with Chi.",
+    "sevenbridgeMeld": "You have a completed meld in hand."
+  },
+  "tutorial": {
+    "drawArea": "Watch the discard pile and opponent melds.",
+    "playerHand": "Your hand. Select cards to meld or discard.",
+    "meldButton": "Play 3+ cards as a set or run.",
+    "discardButton": "Discard one card. 7s can always be discarded.",
+    "resetButton": "Reset to start a new game."
+  }
+}

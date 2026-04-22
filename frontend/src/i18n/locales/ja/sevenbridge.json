@@ -1,0 +1,54 @@
+{
+  "phase": {
+    "draw": "ドロー",
+    "play": "プレイ",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardTop": "捨て札",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "drawStockButton": "山札から引く",
+  "ponButton": "ポン",
+  "chiButton": "チー",
+  "meldButton": "メルド",
+  "discardButton": "捨てる",
+  "layoffButton": "レイオフ",
+  "layoffTarget": "追加先",
+  "nextRound": "次のラウンド",
+  "yourMelds": "あなたのメルド",
+  "drawPhase": "山札を引くか、捨て札をポン／チーで取得してください",
+  "playPhase": "メルド・レイオフ・ディスカードを行ってください",
+  "roundEndMessage": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "frontendHint": {
+    "sevenbridgePon": "ポンで捨て札を取れます",
+    "sevenbridgeChi": "チーで捨て札を取れます",
+    "sevenbridgeMeld": "メルドが完成しています"
+  },
+  "tutorial": {
+    "drawArea": "捨て札と相手のメルド状況を確認します。",
+    "playerHand": "あなたの手札です。カードを選択してメルドやディスカードに使います。",
+    "meldButton": "3枚以上のセット／ランを場に出せます。",
+    "discardButton": "手札から1枚選んで捨てます。7は常に捨てられます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

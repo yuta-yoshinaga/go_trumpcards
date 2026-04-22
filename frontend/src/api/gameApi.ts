@@ -45,6 +45,7 @@ import type {
   PyramidResponse,
   RedDogResponse,
   ScorpionResponse,
+  SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
@@ -127,6 +128,7 @@ const workerUrl: Record<string, string> = {
   yukon: WORKER_SOLO,
   scorpion: WORKER_SOLO,
   accordion: WORKER_SOLO,
+  sevenbridge: WORKER_SOLO,
   trash: WORKER_CLASSIC,
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
@@ -1051,6 +1053,44 @@ export const accordionApi = {
     }),
 };
 
+/** Configuration options for Seven Bridge game settings. */
+export interface SevenBridgeConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** Command verbs accepted by the Seven Bridge /sevenbridge/exec endpoint. */
+export type SevenBridgeCommand =
+  | 'reset'
+  | 'drawstock'
+  | 'pon'
+  | 'chi'
+  | 'meld'
+  | 'layoff'
+  | 'discard'
+  | 'nextround'
+  | 'log';
+
+/** API client for the Seven Bridge /sevenbridge/exec endpoint. */
+export const sevenBridgeApi = {
+  exec: (
+    command: SevenBridgeCommand,
+    cardIndex?: number,
+    config?: SevenBridgeConfigInput,
+    cardIndices?: number[],
+    targetPlayerIdx?: number,
+    meldIdx?: number,
+  ) =>
+    gameExec<SevenBridgeResponse>('sevenbridge', {
+      command,
+      cardIndex,
+      cardIndices,
+      targetPlayerIdx,
+      meldIdx,
+      config,
+    }),
+};
+
 /** Command verbs accepted by the Trash /trash/exec endpoint. */
 export type TrashCommand = 'reset' | 'draw' | 'place' | 'cpu' | 'log';
 
@@ -1193,6 +1233,7 @@ const games = [
   'yukon',
   'scorpion',
   'accordion',
+  'sevenbridge',
   'trash',
   'whist',
   'letitride',
