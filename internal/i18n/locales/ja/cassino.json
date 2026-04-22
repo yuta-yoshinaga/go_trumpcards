@@ -1,0 +1,10 @@
+{
+  "helpTitle": "Cassino (カッシーノ)",
+  "helpTake": "  t <h> <t...> [b <bi>...] 手札h番で場札(と必要ならビルド)を捕獲",
+  "helpBuild": "  b <h> <value> <t...>     手札hと場札でビルドを作成",
+  "helpTrail": "  tr <h>                   手札hを場に置く (捕獲しない)",
+  "helpNext": "  n                        次のラウンドを開始する",
+  "helpLog": "  log | l                  棋譜を表示",
+  "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetRule": "  sr <rule> <0|1>          ルール切替 (sr list で一覧表示)"
+}

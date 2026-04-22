@@ -199,4 +199,12 @@ func init() {
 			return usecase.RestorePresidentInteractor(data, new(presenter.PresidentWebPresenter))
 		},
 		controller.NewPresidentWebControllerWithProvider)
+	games.RegisterKVGame("cassino", games.CategoryClassic,
+		func() usecase.CassinoInteractorIF {
+			return usecase.NewCassinoInteractor(domain.NewDefaultCassino(), new(presenter.CassinoWebPresenter))
+		},
+		func(data []byte) (usecase.CassinoInteractorIF, error) {
+			return usecase.RestoreCassinoInteractor(data, new(presenter.CassinoWebPresenter))
+		},
+		controller.NewCassinoWebControllerWithProvider)
 }

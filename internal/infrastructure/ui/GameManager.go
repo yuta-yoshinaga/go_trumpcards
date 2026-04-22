@@ -985,6 +985,25 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "cassino", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCassinoCuiController(usecase.NewCassinoInteractor(
+				domain.NewDefaultCassino(), new(presenter.CassinoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "cassino.helpTitle",
+				CommandKeys: []string{
+					"cassino.helpTake",
+					"cassino.helpBuild",
+					"cassino.helpTrail",
+					"cassino.helpNext",
+					"cassino.helpLog",
+				},
+				SettingKeys: []string{
+					"cassino.helpSetDifficulty",
+					"cassino.helpSetRule",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

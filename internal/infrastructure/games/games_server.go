@@ -313,4 +313,9 @@ func init() {
 			return usecase.NewPresidentInteractor(domain.NewDefaultPresident(), new(presenter.PresidentWebPresenter))
 		},
 		controller.NewPresidentWebController)
+	BindWebControllerFor("cassino",
+		func() usecase.CassinoInteractorIF {
+			return usecase.NewCassinoInteractor(domain.NewDefaultCassino(), new(presenter.CassinoWebPresenter))
+		},
+		controller.NewCassinoWebController)
 }
