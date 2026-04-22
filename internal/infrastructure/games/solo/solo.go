@@ -150,4 +150,12 @@ func init() {
 			return usecase.RestoreAccordionInteractor(data, new(presenter.AccordionWebPresenter))
 		},
 		controller.NewAccordionWebControllerWithProvider)
+	games.RegisterKVGame("sevenbridge", games.CategorySolo,
+		func() usecase.SevenBridgeInteractorIF {
+			return usecase.NewSevenBridgeInteractor(domain.NewDefaultSevenBridge(), new(presenter.SevenBridgeWebPresenter))
+		},
+		func(data []byte) (usecase.SevenBridgeInteractorIF, error) {
+			return usecase.RestoreSevenBridgeInteractor(data, new(presenter.SevenBridgeWebPresenter))
+		},
+		controller.NewSevenBridgeWebControllerWithProvider)
 }

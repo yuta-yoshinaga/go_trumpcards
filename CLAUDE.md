@@ -28,7 +28,7 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # deuceswild, jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, caribbeanstud, ohhell,
 # bridge, speed, gofish, canasta, pinochle, golf, pigtail, sevencardstud,
 # clocksolitaire, durak, fortythieves, paigow, war, canfield, fiftyone, yukon, whist,
-# letitride, pokersquares, pageone, reddog, razz, badugi, scorpion, accordion, trash
+# letitride, pokersquares, pageone, reddog, razz, badugi, scorpion, accordion, trash, sevenbridge
 go run ./cmd/trumpcards games      # List all available games
 go run ./cmd/trumpcards games --short  # List game names only (for scripting)
 go run ./cmd/trumpcards update     # Self-update to the latest version

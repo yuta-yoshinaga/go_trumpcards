@@ -50,6 +50,7 @@ import { PyramidPage } from './pages/PyramidPage';
 import { RazzPage } from './pages/RazzPage';
 import { RedDogPage } from './pages/RedDogPage';
 import { ScorpionPage } from './pages/ScorpionPage';
+import { SevenBridgePage } from './pages/SevenBridgePage';
 import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
@@ -120,6 +121,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/yukon': <YukonPage />,
   '/scorpion': <ScorpionPage />,
   '/accordion': <AccordionPage />,
+  '/sevenbridge': <SevenBridgePage />,
   '/trash': <TrashPage />,
   '/whist': <WhistPage />,
   '/poker-squares': <PokerSquaresPage />,

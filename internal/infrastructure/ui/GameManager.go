@@ -950,6 +950,24 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "sevenbridge", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSevenBridgeCuiController(usecase.NewSevenBridgeInteractor(
+				domain.NewDefaultSevenBridge(), new(presenter.SevenBridgeCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sevenbridge.helpTitle",
+				CommandKeys: []string{
+					"sevenbridge.helpDrawStock",
+					"sevenbridge.helpPon",
+					"sevenbridge.helpChi",
+					"sevenbridge.helpMeld",
+					"sevenbridge.helpLayoff",
+					"sevenbridge.helpDiscard",
+					"sevenbridge.helpNextRound",
+				},
+				SettingKeys: []string{"sevenbridge.helpSetDifficulty", "sevenbridge.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

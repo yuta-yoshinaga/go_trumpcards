@@ -303,4 +303,9 @@ func init() {
 			return usecase.NewTrashInteractor(domain.NewDefaultTrash(), new(presenter.TrashWebPresenter))
 		},
 		controller.NewTrashWebController)
+	BindWebControllerFor("sevenbridge",
+		func() usecase.SevenBridgeInteractorIF {
+			return usecase.NewSevenBridgeInteractor(domain.NewDefaultSevenBridge(), new(presenter.SevenBridgeWebPresenter))
+		},
+		controller.NewSevenBridgeWebController)
 }

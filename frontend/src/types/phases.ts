@@ -225,6 +225,14 @@ export const GinRummyPhase = {
   GAME_END: 4,
 } as const;
 
+/** Seven Bridge phase constants (sync: internal/domain/SevenBridge.go). */
+export const SevenBridgePhase = {
+  DRAW: 0,
+  PLAY: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Baccarat bet type constants (sync: internal/domain/Baccarat.go). */
 export const BaccaratBetType = {
   PLAYER: 0,
