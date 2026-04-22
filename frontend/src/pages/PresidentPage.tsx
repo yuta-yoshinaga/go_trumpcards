@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import type { presidentApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -25,9 +24,13 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePresidentGame } from '../hooks/usePresidentGame';
 import type { PresidentResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
-
-type PresidentArgs = Parameters<typeof presidentApi.exec>;
+import {
+  formatPresidentState,
+  PRESIDENT_HELP,
+  type PresidentCliArgs,
+  parsePresidentCommand,
+} from '../utils/cli/commands/presidentCommands';
+import type { CliGameConfig } from '../utils/cli/types';
 
 const DIFFICULTY_OPTIONS = [
   { value: '0', label: 'Easy' },
@@ -106,43 +109,12 @@ function PresidentPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('president');
-  const cliConfig: CliGameConfig<PresidentResponse, PresidentArgs> = useMemo(
+  const cliConfig: CliGameConfig<PresidentResponse, PresidentCliArgs> = useMemo(
     () => ({
       gameName: 'president',
-      parseCommand: (input: string): CliParseResult<PresidentArgs> => {
-        const parts = input.trim().toLowerCase().split(/\s+/).filter(Boolean);
-        const cmd = parts[0] ?? '';
-        if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
-        if (cmd === 'p' || cmd === 'play') {
-          const indices = parts.slice(1).map((s) => Number.parseInt(s, 10));
-          if (indices.some((n) => Number.isNaN(n))) {
-            return { error: 'Usage: p [idx ...]' };
-          }
-          return { args: ['play', indices] };
-        }
-        if (cmd === 'log' || cmd === 'l') return { args: ['log'] };
-        return { error: `Unknown command: ${cmd}` };
-      },
-      formatResponse: (s: PresidentResponse) => {
-        const lines: string[] = [];
-        lines.push(`Turn: ${s.gameEndFlag ? 'End' : `Player ${s.currentTurn}`}`);
-        if (s.revolutionActive) lines.push('*** REVOLUTION ACTIVE ***');
-        for (const p of s.players) {
-          const tag = p.isHuman ? 'You' : `CPU${p.id}`;
-          const status = p.isFinished ? `rank=${p.rank}` : `${p.cardCount} cards`;
-          lines.push(`${tag}: ${status}`);
-        }
-        if (s.tableCards.length > 0) {
-          lines.push(`Table: ${s.tableCards.map((c) => `${c.value}${c.design}`).join(' ')}`);
-        }
-        if (s.message) lines.push(s.message);
-        return lines.join('\n');
-      },
-      helpText: [
-        'p [idx ...] - Play cards at indices (no index = pass)',
-        'r/reset    - Reset game',
-        'l/log      - Show action log',
-      ],
+      parseCommand: parsePresidentCommand,
+      formatResponse: formatPresidentState,
+      helpText: [...PRESIDENT_HELP],
     }),
     [],
   );
