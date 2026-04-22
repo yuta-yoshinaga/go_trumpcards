@@ -3,7 +3,6 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"sort"
 )
 
@@ -116,13 +115,6 @@ func (p *President) Reset() {
 	resetPlayers(p.players, func(pl *PresidentPlayer) {
 		pl.SetRank(-1)
 	})
-
-	// プレイ順をランダムにする (初回のみ; 2回目以降は席順維持)
-	if !hasPrevRanks {
-		rand.Shuffle(len(p.players), func(i, j int) {
-			p.players[i], p.players[j] = p.players[j], p.players[i]
-		})
-	}
 
 	// 全カードを配る (ジョーカーなし)
 	dealAllCards(p.trumpCards, p.players)
