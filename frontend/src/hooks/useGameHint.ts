@@ -32,6 +32,7 @@ import type {
   PinochleResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PresidentResponse,
   PyramidResponse,
   RedDogResponse,
   ScorpionResponse,
@@ -86,6 +87,7 @@ import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
+import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
@@ -166,6 +168,7 @@ const hintFactories = {
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   trash: (s) => getTrashHint(s as TrashResponse),
+  president: (s) => getPresidentHint(s as PresidentResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

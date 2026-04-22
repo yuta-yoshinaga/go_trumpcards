@@ -46,6 +46,7 @@ import { PineapplePage } from './pages/PineapplePage';
 import { PinochlePage } from './pages/PinochlePage';
 import { PokerPage } from './pages/PokerPage';
 import { PokerSquaresPage } from './pages/PokerSquaresPage';
+import { PresidentPage } from './pages/PresidentPage';
 import { PyramidPage } from './pages/PyramidPage';
 import { RazzPage } from './pages/RazzPage';
 import { RedDogPage } from './pages/RedDogPage';
@@ -127,6 +128,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/poker-squares': <PokerSquaresPage />,
   '/pageone': <PageOnePage />,
   '/reddog': <RedDogPage />,
+  '/president': <PresidentPage />,
 };
 
 /** Root application component with router and game page routes. */

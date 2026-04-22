@@ -43,6 +43,7 @@ import pineapple from '../../../docs/manual/cui/pineapple.md?raw';
 import pinochle from '../../../docs/manual/cui/pinochle.md?raw';
 import poker from '../../../docs/manual/cui/poker.md?raw';
 import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
+import president from '../../../docs/manual/cui/president.md?raw';
 import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
@@ -124,6 +125,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,
   '/trash': trash,
+  '/president': president,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

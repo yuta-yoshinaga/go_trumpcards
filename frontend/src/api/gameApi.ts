@@ -42,6 +42,7 @@ import type {
   PinochleResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PresidentResponse,
   PyramidResponse,
   RedDogResponse,
   ScorpionResponse,
@@ -133,6 +134,7 @@ const workerUrl: Record<string, string> = {
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
+  president: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1151,6 +1153,23 @@ export const fortyThievesApi = {
   ) => gameExec<FortyThievesResponse>('fortythieves', { command, from, to, n }),
 };
 
+/** Configuration options for President game settings. */
+export interface PresidentConfigInput {
+  revolutionEnabled?: boolean;
+  cardExchangeEnabled?: boolean;
+  passFieldFlushEnabled?: boolean;
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the President /president/exec endpoint. */
+export type PresidentCommand = 'reset' | 'play' | 'log';
+
+/** API client for the President /president/exec endpoint. */
+export const presidentApi = {
+  exec: (command: PresidentCommand, indices?: number[], config?: PresidentConfigInput) =>
+    gameExec<PresidentResponse>('president', { command, indices, config }),
+};
+
 export type { FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
@@ -1240,6 +1259,7 @@ const games = [
   'pokersquares',
   'pageone',
   'reddog',
+  'president',
 ] as const;
 type Game = (typeof games)[number];
 
