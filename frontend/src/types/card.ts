@@ -2605,3 +2605,51 @@ export interface RedDogResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+/** President player data. */
+export interface PresidentPlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  rank: number;
+  cardCount: number;
+  cards: Card[];
+}
+
+/** A play or pass action in President. */
+export interface PresidentAction {
+  playerIdx: number;
+  playedCards: Card[] | null; // null = pass
+}
+
+/** Card exchange action in President. */
+export interface PresidentExchangeAction {
+  fromPlayerIdx: number;
+  toPlayerIdx: number;
+  cards: Card[];
+}
+
+/** President game rule configuration. */
+export interface PresidentConfig {
+  revolutionEnabled: boolean;
+  cardExchangeEnabled: boolean;
+  passFieldFlushEnabled: boolean;
+  cpuDifficulty: number;
+}
+
+/** Full President game state returned from the API. */
+export interface PresidentResponse {
+  players: PresidentPlayerData[];
+  currentTurn: number;
+  tableCards: Card[];
+  lastPlayPlayerIdx: number;
+  gameEndFlag: boolean;
+  revolutionActive: boolean;
+  config: PresidentConfig;
+  exchangeActions: PresidentExchangeAction[];
+  cpuActions: PresidentAction[];
+  humanAction: PresidentAction | null;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}

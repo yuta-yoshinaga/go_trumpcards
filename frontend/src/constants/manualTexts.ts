@@ -42,6 +42,7 @@ import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
 import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
+import president from '../../../docs/manual/web/president.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
@@ -123,4 +124,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,
   '/trash': trash,
+  '/president': president,
 };

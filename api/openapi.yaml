@@ -54,6 +54,8 @@ tags:
     description: Gin Rummy (ジンラミー) game
   - name: sevenbridge
     description: Seven Bridge (セブンブリッジ) game
+  - name: president
+    description: President / Scum (プレジデント) game
   - name: canasta
     description: Canasta (カナスタ) game
   - name: pinochle
@@ -5698,6 +5700,65 @@ paths:
                   messageParams:
                     type: object
                     additionalProperties: { type: string }
+
+  /president/exec:
+    post:
+      tags:
+        - president
+      summary: Execute a President (Scum) game command
+      description: |
+        Send a command to advance the President / Scum (プレジデント) game
+        session identified by `sessionId`. President is a 4-player going-out
+        game using a standard 52-card deck (no jokers). Card strength
+        `3 < 4 < ... < K < A < 2` (2 strongest). Plays are singles, pairs,
+        triples, or quads of the same rank and must beat the table play.
+        Quads trigger revolution (strength inverts). At the start of each
+        subsequent round, card exchange swaps the best cards from Scum to
+        President (2 cards) and Vice Scum to Vice President (1 card).
+
+        | Command  | Aliases | Description |
+        |----------|---------|-------------|
+        | `reset`  | `r`     | Start / restart a game |
+        | `play`   | `p`     | Play cards at `indices` (empty = pass) |
+        | `log`    | `l`     | View action log |
+      operationId: presidentExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresidentRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play two cards (pair)
+                value:
+                  command: play
+                  indices: [0, 1]
+                  sessionId: my-session-001
+              pass:
+                summary: Pass
+                value:
+                  command: play
+                  indices: []
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresidentResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresidentResponse'
 
 components:
   schemas:
@@ -13665,3 +13726,117 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template.
+
+    PresidentRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: President command. Accepted values. `reset` (`r`), `play` (`p`), `log` (`l`).
+          enum: [reset, r, play, p, log, l]
+          example: reset
+        indices:
+          type: array
+          description: Card indices to play (empty / omitted = pass). Used with `play`.
+          items:
+            type: integer
+          example: [0, 1]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            revolutionEnabled:
+              type: boolean
+            cardExchangeEnabled:
+              type: boolean
+            passFieldFlushEnabled:
+              type: boolean
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PresidentResponse:
+      type: object
+      description: Current state of the President (Scum) game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              isHuman: { type: boolean }
+              isFinished: { type: boolean }
+              rank: { type: integer }
+              cardCount: { type: integer }
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        currentTurn:
+          type: integer
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        lastPlayPlayerIdx:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        revolutionActive:
+          type: boolean
+        config:
+          type: object
+          properties:
+            revolutionEnabled: { type: boolean }
+            cardExchangeEnabled: { type: boolean }
+            passFieldFlushEnabled: { type: boolean }
+            cpuDifficulty: { type: integer }
+        exchangeActions:
+          type: array
+          items:
+            type: object
+            properties:
+              fromPlayerIdx: { type: integer }
+              toPlayerIdx: { type: integer }
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        cpuActions:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx: { type: integer }
+              playedCards:
+                type: array
+                nullable: true
+                items:
+                  $ref: '#/components/schemas/Card'
+        humanAction:
+          type: object
+          nullable: true
+          properties:
+            playerIdx: { type: integer }
+            playedCards:
+              type: array
+              nullable: true
+              items:
+                $ref: '#/components/schemas/Card'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string

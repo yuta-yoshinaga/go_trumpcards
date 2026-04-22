@@ -968,6 +968,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"sevenbridge.helpSetDifficulty", "sevenbridge.helpSetLimit"},
 			})
 	}},
+	{Name: "president", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPresidentCuiController(usecase.NewPresidentInteractor(
+				domain.NewDefaultPresident(), new(presenter.PresidentCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "president.helpTitle",
+				CommandKeys: []string{
+					"president.helpPlay",
+					"president.helpPass",
+					"president.helpLog",
+				},
+				SettingKeys: []string{
+					"president.helpSetDifficulty",
+					"president.helpSetRule",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

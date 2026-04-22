@@ -308,4 +308,9 @@ func init() {
 			return usecase.NewSevenBridgeInteractor(domain.NewDefaultSevenBridge(), new(presenter.SevenBridgeWebPresenter))
 		},
 		controller.NewSevenBridgeWebController)
+	BindWebControllerFor("president",
+		func() usecase.PresidentInteractorIF {
+			return usecase.NewPresidentInteractor(domain.NewDefaultPresident(), new(presenter.PresidentWebPresenter))
+		},
+		controller.NewPresidentWebController)
 }
