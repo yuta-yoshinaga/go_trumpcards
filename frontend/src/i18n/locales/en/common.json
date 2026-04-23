@@ -135,6 +135,14 @@
     "message": "Round complete. {{details}}",
     "entry": "{{name}}: +{{round}} (total {{total}})"
   },
+  "roundResultsAnnouncement": {
+    "message": "Showdown results. {{details}}",
+    "entryMucked": "{{name}}: mucked",
+    "entryHand": "{{name}}: {{handName}}",
+    "entryHandWithKickers": "{{name}}: {{handName}}, kicker {{kickers}}",
+    "entryHandWon": "{{name}}: {{handName}}, +{{amount}} chips",
+    "entryHandWithKickersWon": "{{name}}: {{handName}}, kicker {{kickers}}, +{{amount}} chips"
+  },
   "stalemateEscape": "Escape (undo {{count}} moves)",
   "status": {
     "folded": "Folded",
