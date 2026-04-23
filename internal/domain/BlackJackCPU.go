@@ -244,13 +244,15 @@ func (b *BlackJack) resolvePayoutsCpu() {
 	dealerScore := b.dealer.GetScore()
 	dealerBJ := b.dealer.GetCardsSize() == 2 && dealerScore == 21
 
-	for _, cpu := range b.cpuPlayers {
+	for cpuIdx, cpu := range b.cpuPlayers {
 		// CPUインシュランスの精算
 		if cpu.GetInsuranceBet() > 0 {
 			if dealerBJ {
 				cpu.GetPlayer().AddChips(cpu.GetInsuranceBet() * 3)
 			}
 		}
+		// CPU action log uses positive indices starting at 1 (0 is reserved for the human)
+		cpuLogIdx := cpuIdx + 1
 		for _, hand := range cpu.GetHands() {
 			if hand.GetCardsSize() == 0 {
 				continue
@@ -259,7 +261,10 @@ func (b *BlackJack) resolvePayoutsCpu() {
 				continue
 			}
 			result := b.judgeCpuHand(hand)
-			b.payoutHandWithVariant(cpu.GetPlayer(), hand, hand.IsFromSplit(), result)
+			bonus := b.payoutHandWithVariant(cpu.GetPlayer(), hand, hand.IsFromSplit(), result)
+			if bonus != nil {
+				b.appendLog(cpuLogIdx, "bonus", bonus.NameKey, nil)
+			}
 		}
 	}
 }

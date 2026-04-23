@@ -40,6 +40,7 @@ type BlackJackVariantConfig struct {
 }
 
 // SpanishDeckValues はスパニッシュデッキ (10を除く) のカード値リスト
+// (read-only — 内容を変更しないこと。Goにconst sliceがないためvarで宣言)
 var SpanishDeckValues = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13}
 
 // SpanishDeckCardCount はスパニッシュデッキ1組の枚数 (12ランク × 4スート = 48)
@@ -122,27 +123,27 @@ func spanish21BonusEval(hand *BlackJackHand, _ *Card) *BJBonusPayout {
 }
 
 // isSixSevenEight は手札が 6・7・8 の3枚構成か (順不同) 判定する
+// 呼び出し元 (spanish21BonusEval) は BlackJackHand.GetCards() の結果を渡すため、
+// cards に nil 要素は含まれない前提。
 func isSixSevenEight(cards []*Card) bool {
 	if len(cards) != 3 {
 		return false
 	}
 	seen := make(map[int]bool, 3)
 	for _, c := range cards {
-		if c == nil {
-			return false
-		}
 		seen[c.GetValue()] = true
 	}
 	return seen[6] && seen[7] && seen[8]
 }
 
 // isTripleSevens は手札が 7-7-7 の3枚構成か判定する
+// 呼び出し元の前提は isSixSevenEight と同じ (nil 要素なし)。
 func isTripleSevens(cards []*Card) bool {
 	if len(cards) != 3 {
 		return false
 	}
 	for _, c := range cards {
-		if c == nil || c.GetValue() != 7 {
+		if c.GetValue() != 7 {
 			return false
 		}
 	}

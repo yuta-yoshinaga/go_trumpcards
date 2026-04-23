@@ -126,7 +126,7 @@ interface BlackJackPageProps {
 }
 
 /** Renders the BlackJack game page with betting, action, and end phases. */
-export function BlackJackPage({ variant = 'blackjack' }: BlackJackPageProps = {}) {
+export function BlackJackPage({ variant = 'blackjack' }: BlackJackPageProps) {
   return (
     <TutorialWrapper gameName={variant} steps={BJ_TUTORIAL_STEPS}>
       <BlackJackPageContent variant={variant} />

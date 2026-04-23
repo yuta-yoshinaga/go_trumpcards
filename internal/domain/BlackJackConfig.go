@@ -74,6 +74,12 @@ func (c BlackJackConfig) Validate() error {
 			return fmt.Errorf("deck penetration must be 50 or 75, got %d", c.DeckPenetration)
 		}
 	}
+	switch c.Variant {
+	case BJVariantStandard, BJVariantSpanish21:
+		// ok
+	default:
+		return fmt.Errorf("unknown blackjack variant %q", c.Variant)
+	}
 	return nil
 }
 

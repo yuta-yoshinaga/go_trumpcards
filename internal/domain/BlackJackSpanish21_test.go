@@ -167,6 +167,26 @@ func TestSpanish21BonusNotPaidOnNaturalBJ(t *testing.T) {
 	assert.Equal(t, 900+250, bj.GetPlayer().GetChips())
 }
 
+// TestSpanish21BonusFallsThroughOnNonQualifyingWin は Spanish 21 で勝利したが
+// ボーナス対象外 (3-card 21 で 6-7-8 や 7-7-7 ではない) のケースで、
+// 通常の 1:1 配当にフォールバックすることを検証する
+func TestSpanish21BonusFallsThroughOnNonQualifyingWin(t *testing.T) {
+	bj := NewSpanish21BlackJack()
+	bj.GetPlayer().SetChips(900)
+
+	// 3-card 21: 7-5-9 (ボーナス対象外)
+	hand := NewBlackJackHand()
+	hand.AddCard(NewCard(CardDesignSpade, 7, false))
+	hand.AddCard(NewCard(CardDesignClover, 5, false))
+	hand.AddCard(NewCard(CardDesignHeart, 9, false))
+	hand.SetBet(100)
+
+	bonus := bj.payoutHandWithVariant(bj.GetPlayer(), hand, false, GameResultWin)
+	assert.Nil(t, bonus, "non-qualifying 21 must not receive bonus")
+	// 通常の 2x 配当 = 200
+	assert.Equal(t, 900+200, bj.GetPlayer().GetChips())
+}
+
 // TestStandardBlackJackNoBonusPayout は標準BJでボーナスが発動しないことを検証する
 func TestStandardBlackJackNoBonusPayout(t *testing.T) {
 	bj := NewDefaultBlackJack()

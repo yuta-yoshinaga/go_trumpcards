@@ -61,6 +61,28 @@ func TestResolveBlackJackVariant(t *testing.T) {
 	})
 }
 
+func TestBlackJackConfigValidateVariant(t *testing.T) {
+	t.Run("standard variant accepted", func(t *testing.T) {
+		c := DefaultBlackJackConfig()
+		c.Variant = BJVariantStandard
+		assert.NoError(t, c.Validate())
+	})
+
+	t.Run("spanish21 variant accepted", func(t *testing.T) {
+		c := DefaultBlackJackConfig()
+		c.Variant = BJVariantSpanish21
+		assert.NoError(t, c.Validate())
+	})
+
+	t.Run("unknown variant rejected", func(t *testing.T) {
+		c := DefaultBlackJackConfig()
+		c.Variant = BlackJackVariantName("bogus")
+		err := c.Validate()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "unknown blackjack variant")
+	})
+}
+
 func TestSpanish21BonusEval(t *testing.T) {
 	makeHand := func(cards ...*Card) *BlackJackHand {
 		h := NewBlackJackHand()
