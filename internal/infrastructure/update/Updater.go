@@ -135,8 +135,8 @@ func (u *Updater) SetCheckOnly(v bool) {
 //
 // Errors are wrapped with sentinel categories from this package (ErrNetwork,
 // ErrAPIStatus, ErrNoAsset, ErrExtract, ErrApply, ErrNonInteractive,
-// ErrUserCancelled) so the caller can pick a meaningful exit code via
-// errors.Is. See issue #1449.
+// ErrUserCancelled, ErrUpdateAvailable) so the caller can pick a meaningful
+// exit code via errors.Is. See issues #1449, #1484.
 func (u *Updater) Exec() error {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", u.repoOwner, u.repoName)
 	resp, err := u.httpClient.Get(url) //nolint:noctx // simple GET to GitHub API

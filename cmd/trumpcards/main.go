@@ -197,7 +197,7 @@ func run() int {
 		// while keeping human-friendly text on stderr. Install mode keeps its
 		// legacy "writer=stderr" so `trumpcards update --yes 2>/dev/null` still
 		// silences progress without swallowing the exit code. See issue #1484.
-		writer := io.Writer(os.Stderr)
+		var writer io.Writer = os.Stderr
 		if check {
 			writer = os.Stdout
 		}
