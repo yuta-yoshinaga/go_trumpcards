@@ -1004,6 +1004,24 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "spanish21", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBlackJackCuiController(usecase.NewBlackJackInteractor(
+				domain.NewSpanish21BlackJack(), new(presenter.BlackJackCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spanish21.helpTitle",
+				CommandKeys: []string{
+					"blackjack.helpBet",
+					"blackjack.helpHit",
+					"blackjack.helpStand",
+					"blackjack.helpDouble",
+					"blackjack.helpSplit",
+					"blackjack.helpInsurance",
+					"blackjack.helpDeclineInsurance",
+				},
+				SettingKeys: []string{"blackjack.helpSetCpuCount"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1052,6 +1070,8 @@ var GameAliases = map[string]string{
 	"pgp":    "paigow",
 	"lir":    "letitride",
 	"ride":   "letitride",
+	"sp21":   "spanish21",
+	"s21":    "spanish21",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

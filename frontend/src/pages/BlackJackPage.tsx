@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
-import { blackjackApi } from '../api/gameApi';
+import { blackjackApi, spanish21Api } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
@@ -117,19 +117,31 @@ const BJ_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
+/** Variant identifier shared by BlackJack and Spanish 21 (which reuses this page). */
+export type BlackJackVariant = 'blackjack' | 'spanish21';
+
+interface BlackJackPageProps {
+  /** Variant of BlackJack to render. Defaults to 'blackjack'. */
+  variant?: BlackJackVariant;
+}
+
 /** Renders the BlackJack game page with betting, action, and end phases. */
-export function BlackJackPage() {
+export function BlackJackPage({ variant = 'blackjack' }: BlackJackPageProps) {
   return (
-    <TutorialWrapper gameName="blackjack" steps={BJ_TUTORIAL_STEPS}>
-      <BlackJackPageContent />
+    <TutorialWrapper gameName={variant} steps={BJ_TUTORIAL_STEPS}>
+      <BlackJackPageContent variant={variant} />
     </TutorialWrapper>
   );
 }
 
 /** Inner content of the BlackJack page, wrapped by TutorialProvider. */
-function BlackJackPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog } = useGamePageSetup('blackjack');
-  const phaseNames = usePhaseNames('blackjack', BJ_PHASE_KEYS);
+function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
+  const apiClient = variant === 'spanish21' ? spanish21Api : blackjackApi;
+  const gamePath = variant === 'spanish21' ? '/spanish21' : '/';
+  const navTitleKey = variant === 'spanish21' ? 'nav.spanish21' : 'nav.blackjack';
+  const themeKey: 'blackjack' | 'spanish21' = variant === 'spanish21' ? 'spanish21' : 'blackjack';
+  const { t, tc, actionLog, showActionLog, hideActionLog } = useGamePageSetup(variant);
+  const phaseNames = usePhaseNames(variant, BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
   const { playSound } = useSound();
 
@@ -158,18 +170,18 @@ function BlackJackPageContent() {
     setDeckPenetration(res.deckPenetration);
     setSurrenderRule(res.surrenderRule);
   }, []);
-  const { state, loading, error, exec, retry } = useGameApi(blackjackApi.exec, { onSuccess });
+  const { state, loading, error, exec, retry } = useGameApi(apiClient.exec, { onSuccess });
 
   // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('blackjack');
-  const bjCliConfig: CliGameConfig<BlackJackResponse, Parameters<typeof blackjackApi.exec>> = useMemo(
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(variant);
+  const bjCliConfig: CliGameConfig<BlackJackResponse, Parameters<typeof apiClient.exec>> = useMemo(
     () => ({
-      gameName: 'blackjack',
+      gameName: variant,
       parseCommand: parseBlackjackCommand,
       formatResponse: formatBlackjackState,
       helpText: BLACKJACK_HELP,
     }),
-    [],
+    [variant],
   );
   const { handleCommand } = useCliGame(exec, bjCliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -247,8 +259,11 @@ function BlackJackPageContent() {
   if (!state) return <BlackJackSkeleton />;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.blackjack.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.blackjack')} />
+    <div
+      className={`flex-1 flex flex-col min-h-0 ${gameTheme[themeKey]?.bg ?? gameTheme.blackjack.bg}`}
+      aria-busy={loading}
+    >
+      <GamePageHeading title={tc(navTitleKey)} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator
         phaseName={phaseNames[phase] ?? t('phase.bet')}
@@ -265,7 +280,7 @@ function BlackJackPageContent() {
         </span>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
-        <ManualButton gamePath="/" />
+        <ManualButton gamePath={gamePath} />
         <span>
           {t('deck')} {state.deckCount}
           {t('deckUnit')}
@@ -300,7 +315,22 @@ function BlackJackPageContent() {
                     {t('payoutRef.title')}
                   </summary>
                   <ul className="text-ds-text-muted text-sm space-y-1 px-4 pb-3">
-                    {(['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const).map((key) => (
+                    {(variant === 'spanish21'
+                      ? ([
+                          'blackjack',
+                          'win',
+                          'insurance',
+                          'push',
+                          'surrender',
+                          'bust',
+                          'bonusFiveCard21',
+                          'bonusSixCard21',
+                          'bonusSevenCard21',
+                          'bonus678',
+                          'bonus777',
+                        ] as const)
+                      : (['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const)
+                    ).map((key) => (
                       <li key={key}>{t(`payoutRef.${key}`)}</li>
                     ))}
                   </ul>
@@ -376,7 +406,7 @@ function BlackJackPageContent() {
           </div>
 
           {/* Sticky footer: player hand + result + buttons */}
-          <GameFooter className={`${gameTheme.blackjack.footer} px-4 py-3`}>
+          <GameFooter className={`${gameTheme[themeKey]?.footer ?? gameTheme.blackjack.footer} px-4 py-3`}>
             {/* Player hands */}
             {phase !== BjPhase.BET && hands.length > 0 && (
               <div className="mb-2" data-tutorial="bj-player-hand">

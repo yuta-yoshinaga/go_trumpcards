@@ -80,6 +80,7 @@ Go + Clean Architecture で実装した60種類のトランプゲーム。CLI �
 | セブンブリッジ (Seven Bridge) | `sevenbridge` | [CUI](docs/manual/cui/sevenbridge.md) / [Web](docs/manual/web/sevenbridge.md) |
 | プレジデント (President / Scum) | `president` | [CUI](docs/manual/cui/president.md) / [Web](docs/manual/web/president.md) |
 | カッシーノ (Cassino) | `cassino` | [CUI](docs/manual/cui/cassino.md) / [Web](docs/manual/web/cassino.md) |
+| スパニッシュ21 (Spanish 21) | `spanish21` | [CUI](docs/manual/cui/spanish21.md) / [Web](docs/manual/web/spanish21.md) |
 
 ## Demo
 

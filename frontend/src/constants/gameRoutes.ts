@@ -21,6 +21,7 @@ export const gameCategories: readonly GameCategory[] = [
     icon: '🎰',
     routes: [
       { path: '/', labelKey: 'nav.blackjack', icon: '🃏' },
+      { path: '/spanish21', labelKey: 'nav.spanish21', icon: '🇪🇸' },
       { path: '/baccarat', labelKey: 'nav.baccarat', icon: '💎' },
       { path: '/threecard', labelKey: 'nav.threecard', icon: '🎴' },
       { path: '/caribbeanstud', labelKey: 'nav.caribbeanstud', icon: '🏝️' },

@@ -54,6 +54,7 @@ import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
 import spades from '../../../docs/manual/cui/spades.md?raw';
+import spanish21 from '../../../docs/manual/cui/spanish21.md?raw';
 import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
@@ -113,6 +114,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/spanish21': spanish21,
   '/speed': speed,
   '/spider': spider,
   '/threecard': threecard,

@@ -318,4 +318,9 @@ func init() {
 			return usecase.NewCassinoInteractor(domain.NewDefaultCassino(), new(presenter.CassinoWebPresenter))
 		},
 		controller.NewCassinoWebController)
+	BindWebControllerFor("spanish21",
+		func() usecase.BlackJackInteractorIF {
+			return usecase.NewBlackJackInteractor(domain.NewSpanish21BlackJack(), new(presenter.BlackJackWebPresenter))
+		},
+		controller.NewBlackJackWebController)
 }

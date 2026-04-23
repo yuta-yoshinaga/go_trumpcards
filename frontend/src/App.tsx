@@ -57,6 +57,7 @@ import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
 import { SpadesPage } from './pages/SpadesPage';
+import { Spanish21Page } from './pages/Spanish21Page';
 import { SpeedPage } from './pages/SpeedPage';
 import { SpiderPage } from './pages/SpiderPage';
 import { ThreeCardPage } from './pages/ThreeCardPage';
@@ -106,6 +107,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/videopoker': <VideoPokerPage />,
   '/deuceswild': <DeucesWildPage />,
   '/jokerpoker': <JokerPokerPage />,
+  '/spanish21': <Spanish21Page />,
   '/threecard': <ThreeCardPage />,
   '/caribbeanstud': <CaribbeanStudPage />,
   '/paigow': <PaiGowPage />,

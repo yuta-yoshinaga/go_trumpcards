@@ -1,0 +1,141 @@
+{
+  "phase": {
+    "bet": "ベット",
+    "deal": "ディール",
+    "insurance": "インシュランス",
+    "action": "アクション",
+    "earlySurrender": "アーリーサレンダー",
+    "end": "結果"
+  },
+  "player": "プレイヤー:",
+  "deck": "デッキ:",
+  "deckUnit": "デッキ",
+  "dealerHand": "ディーラー手札",
+  "score": "スコア",
+  "playerHand": "プレイヤー手札",
+  "hand": "ハンド {{idx}}",
+  "insurance": "インシュランス:",
+  "suggestion": "推奨:",
+  "suggest": {
+    "hit": "ヒット",
+    "stand": "スタンド",
+    "double": "ダブルダウン",
+    "split": "スプリット",
+    "surrender": "サレンダー",
+    "decline": "辞退"
+  },
+  "button": {
+    "hit": "ヒット",
+    "stand": "スタンド",
+    "doubleDown": "ダブルダウン",
+    "split": "スプリット",
+    "surrender": "サレンダー",
+    "insurance": "インシュランス",
+    "decline": "辞退",
+    "bet": "ベット",
+    "earlySurrender": "アーリーサレンダー",
+    "continue": "続行"
+  },
+  "betAmount": "ベット額:",
+  "deckCount": "デッキ数:",
+  "cpuCount": "CPU人数:",
+  "cpuUnit": "人",
+  "hint": "ヒント",
+  "counting": "カウント",
+  "countingSystem": "カウンティング方式",
+  "countingSystemNames": {
+    "0": "Hi-Lo",
+    "1": "KO",
+    "2": "Zen Count",
+    "3": "Omega II"
+  },
+  "trueCountNA": "TC=N/A",
+  "advancedSettings": "詳細設定",
+  "sideBetActive": "サイドベットあり",
+  "sideBetLabel": {
+    "pp": "PP (ペアベット):",
+    "t3": "21+3:"
+  },
+  "sideBetTooltip": {
+    "pp": "Perfect Pairs: 最初の2枚がペアなら配当",
+    "t3": "21+3: 最初の2枚+ディーラー1枚でポーカー役が成立すれば配当"
+  },
+  "soft17Tooltip": "H17=ソフト17でヒット / S17=ソフト17でスタンド",
+  "dasTooltip": "DAS=スプリット後にダブルダウン可",
+  "das": "DAS",
+  "surrenderRule": "サレンダー:",
+  "surrenderRuleNames": {
+    "0": "レイト",
+    "1": "アーリー",
+    "2": "無効"
+  },
+  "penetration": "ペネトレーション:",
+  "handCount": "ハンド数:",
+  "handCountUnit": "ハンド",
+  "autoAdvance": "自動進行:",
+  "autoAdvanceSec": "{{sec}}秒",
+  "sideBet": {
+    "perfectPairs": "Perfect Pairs",
+    "twentyOnePlus3": "21+3",
+    "win": "{{name}} WIN +{{payout}}",
+    "lose": "{{name}} LOSE -{{amount}}"
+  },
+  "status": {
+    "bust": "BUST",
+    "bustTooltip": "バスト: 手札の合計が21を超えました",
+    "dd": "DD",
+    "ddTooltip": "ダブルダウン: ベットを2倍にして1枚カードをドロー",
+    "bj": "BJ",
+    "bjTooltip": "ブラックジャック: 最初の2枚でAと10点のカード",
+    "sur": "SUR",
+    "surTooltip": "サレンダー: ハンドを放棄してベットの半額を回収"
+  },
+  "tutorial": {
+    "betControls": "ここでベット額を設定します。スライダーを動かしてベット額を調整してください。",
+    "betButton": "ベット額を決めたら、このボタンを押してゲームを開始します。",
+    "dealerHand": "ディーラーの手札です。1枚は裏向きで、もう1枚が表向きです。",
+    "playerHand": "あなたの手札です。カードの合計点数を確認しましょう。",
+    "actionButtons": "ヒット（カードを引く）かスタンド（引かない）を選びます。21に近づけるのが目標です。",
+    "resultMessage": "ゲームの結果が表示されます。勝敗と獲得チップを確認しましょう。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hintReason": {
+    "hitReason": "カードの合計が低いのでヒット推奨",
+    "standReason": "現在のスコアで勝てる可能性が高いのでスタンド推奨",
+    "doubleReason": "有利な状況なのでダブルダウン推奨",
+    "doubleStandReason": "ダブルダウンが可能ならダブル、不可ならスタンド推奨",
+    "splitReason": "同じカードなのでスプリット推奨",
+    "surrenderReason": "不利な状況なのでサレンダー推奨",
+    "declineReason": "インシュランスは期待値がマイナスなので辞退推奨"
+  },
+  "betGuide": "ベットしてゲーム開始 (10のカードを抜いた48枚デッキ・プレイヤー21は常勝)",
+  "payoutRef": {
+    "title": "配当表 (Spanish 21 ボーナス)",
+    "blackjack": "ブラックジャック (3:2、両者BJでもプレイヤー勝ち)",
+    "win": "通常勝利 (1:1)、プレイヤー21は常に勝利",
+    "insurance": "インシュランス (2:1)",
+    "push": "プッシュ (引き分け: 返金)",
+    "surrender": "サレンダー (ベットの半額返金)",
+    "bust": "バスト (21超過: 負け)",
+    "bonusFiveCard21": "5枚で21 (3:2)",
+    "bonusSixCard21": "6枚で21 (2:1)",
+    "bonusSevenCard21": "7枚以上で21 (3:1)",
+    "bonus678": "6-7-8 (3:2 / 同スート 2:1 / 全スペード 3:1)",
+    "bonus777": "7-7-7 (3:2 / 同スート 2:1 / 全スペード 3:1)"
+  },
+  "bonus": {
+    "fivecard21": "5-card 21 ボーナス",
+    "sixcard21": "6-card 21 ボーナス",
+    "sevencard21": "7+card 21 ボーナス",
+    "678": {
+      "mixed": "6-7-8 (異なるスート)",
+      "samesuit": "6-7-8 (同一スート)",
+      "spade": "6-7-8 (全スペード)"
+    },
+    "777": {
+      "mixed": "7-7-7 (異なるスート)",
+      "samesuit": "7-7-7 (同一スート)",
+      "spade": "7-7-7 (全スペード)"
+    }
+  }
+}

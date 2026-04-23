@@ -117,6 +117,7 @@ type HintFn = (state: unknown) => HintResult | null;
 const hintFactories = {
   baccarat: (s) => getBaccaratHint(s as BaccaratResponse),
   blackjack: (s) => getBlackjackHint(s as BlackJackResponse),
+  spanish21: (s) => getBlackjackHint(s as BlackJackResponse),
   poker: (s) => getPokerHint(s as PokerResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),

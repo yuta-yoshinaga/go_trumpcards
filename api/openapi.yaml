@@ -58,6 +58,8 @@ tags:
     description: President / Scum (プレジデント) game
   - name: cassino
     description: Cassino (カッシーノ) game
+  - name: spanish21
+    description: Spanish 21 (スパニッシュ21) — BlackJack variant with 48-card deck and bonus payouts
   - name: canasta
     description: Canasta (カナスタ) game
   - name: pinochle
@@ -5830,6 +5832,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CassinoResponse'
+
+  /spanish21/exec:
+    post:
+      tags:
+        - spanish21
+      summary: Execute a Spanish 21 game command
+      description: |
+        Send a command to advance the Spanish 21 (スパニッシュ21) game session
+        identified by `sessionId`. Spanish 21 is a BlackJack variant that uses
+        a 48-card Spanish deck (10s removed; J/Q/K stay), where the player's 21
+        always wins (including over dealer 21 and dealer natural BJ), and where
+        winning hands earn bonus payouts: 5-card 21 (3:2), 6-card 21 (2:1),
+        7+ card 21 (3:1), 6-7-8 (3:2 mixed / 2:1 same suit / 3:1 all spades),
+        and 7-7-7 (3:2 / 2:1 / 3:1 by suit). Bonuses are forfeit on doubled
+        hands and on natural BlackJack (which still pays 3:2). All other
+        commands and phases match `/blackjack/exec`.
+
+        See the BlackJack endpoint for the full command reference; the request
+        and response payloads are byte-for-byte compatible.
+      operationId: spanish21Exec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlackJackRequest'
+            examples:
+              reset:
+                summary: Start a new Spanish 21 game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlackJackResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlackJackResponse'
 
 components:
   schemas:
