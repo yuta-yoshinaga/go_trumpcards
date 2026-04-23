@@ -11,6 +11,7 @@ import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
 import canfield from '../../../docs/manual/cui/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
+import cassino from '../../../docs/manual/cui/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/cui/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/cui/crazyeights.md?raw';
 import cribbage from '../../../docs/manual/cui/cribbage.md?raw';
@@ -126,6 +127,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/accordion': accordion,
   '/trash': trash,
   '/president': president,
+  '/cassino': cassino,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

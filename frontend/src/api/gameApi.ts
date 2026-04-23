@@ -8,6 +8,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CassinoResponse,
   ClockSolitaireResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -135,6 +136,7 @@ const workerUrl: Record<string, string> = {
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
   president: WORKER_CLASSIC,
+  cassino: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1170,6 +1172,32 @@ export const presidentApi = {
     gameExec<PresidentResponse>('president', { command, indices, config }),
 };
 
+/** Configuration options for Cassino game settings. */
+export interface CassinoConfigInput {
+  targetScore?: number;
+  multiBuildEnabled?: boolean;
+  sweepBonusEnabled?: boolean;
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the Cassino /cassino/exec endpoint. */
+export type CassinoCommand = 'reset' | 'take' | 'build' | 'trail' | 'next' | 'log';
+
+/** Extra payload fields for the Cassino /cassino/exec endpoint. */
+export interface CassinoExecParams {
+  handIndex?: number;
+  tableIndices?: number[];
+  buildIndices?: number[];
+  declaredValue?: number;
+  config?: CassinoConfigInput;
+}
+
+/** API client for the Cassino /cassino/exec endpoint. */
+export const cassinoApi = {
+  exec: (command: CassinoCommand, params?: CassinoExecParams) =>
+    gameExec<CassinoResponse>('cassino', { command, ...(params ?? {}) }),
+};
+
 export type { FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
@@ -1260,6 +1288,7 @@ const games = [
   'pageone',
   'reddog',
   'president',
+  'cassino',
 ] as const;
 type Game = (typeof games)[number];
 

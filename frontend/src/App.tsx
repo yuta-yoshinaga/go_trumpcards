@@ -14,6 +14,7 @@ import { BridgePage } from './pages/BridgePage';
 import { CanastaPage } from './pages/CanastaPage';
 import { CanfieldPage } from './pages/CanfieldPage';
 import { CaribbeanStudPage } from './pages/CaribbeanStudPage';
+import { CassinoPage } from './pages/CassinoPage';
 import { ClockSolitairePage } from './pages/ClockSolitairePage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { CribbagePage } from './pages/CribbagePage';
@@ -129,6 +130,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/pageone': <PageOnePage />,
   '/reddog': <RedDogPage />,
   '/president': <PresidentPage />,
+  '/cassino': <CassinoPage />,
 };
 
 /** Root application component with router and game page routes. */

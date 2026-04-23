@@ -7,6 +7,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CassinoResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoResponse,
@@ -60,6 +61,7 @@ import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
+import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
@@ -169,6 +171,7 @@ const hintFactories = {
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   trash: (s) => getTrashHint(s as TrashResponse),
   president: (s) => getPresidentHint(s as PresidentResponse),
+  cassino: (s) => getCassinoHint(s as CassinoResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */
