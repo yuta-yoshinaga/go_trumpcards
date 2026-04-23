@@ -31,13 +31,14 @@ var BJValidPenetrations = []int{50, 75}
 
 // BlackJackConfig ブラックジャックゲーム設定
 type BlackJackConfig struct {
-	DealerHitsSoft17 bool `json:"dh"` // ディーラーがソフト17でヒットするか (H17 vs S17)
-	CpuPlayerCount   int  `json:"cp"` // CPUプレイヤー数 (0-3)
-	CountingEnabled  bool `json:"ce"` // カウンティング表示有効
-	DoubleAfterSplit bool `json:"ds"` // スプリット後のダブルダウン許可 (DAS)
-	CountingSystem   int  `json:"cs"` // カウンティングシステム (0=Hi-Lo, 1=KO, 2=Zen, 3=Omega II)
-	DeckPenetration  int  `json:"dp"` // デッキペネトレーション率(%) (50 or 75, 0=デフォルト75)
-	SurrenderRule    int  `json:"sr"` // サレンダールール (0=Late, 1=Early, 2=None)
+	DealerHitsSoft17 bool                 `json:"dh"`           // ディーラーがソフト17でヒットするか (H17 vs S17)
+	CpuPlayerCount   int                  `json:"cp"`           // CPUプレイヤー数 (0-3)
+	CountingEnabled  bool                 `json:"ce"`           // カウンティング表示有効
+	DoubleAfterSplit bool                 `json:"ds"`           // スプリット後のダブルダウン許可 (DAS)
+	CountingSystem   int                  `json:"cs"`           // カウンティングシステム (0=Hi-Lo, 1=KO, 2=Zen, 3=Omega II)
+	DeckPenetration  int                  `json:"dp"`           // デッキペネトレーション率(%) (50 or 75, 0=デフォルト75)
+	SurrenderRule    int                  `json:"sr"`           // サレンダールール (0=Late, 1=Early, 2=None)
+	Variant          BlackJackVariantName `json:"vr,omitempty"` // バリアント識別子 ("" or "spanish21")
 }
 
 // DefaultBlackJackConfig デフォルト設定 (全機能無効)

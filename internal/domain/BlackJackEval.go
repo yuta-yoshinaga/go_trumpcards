@@ -106,6 +106,10 @@ func (b *BlackJack) judgeHandCore(hand *BlackJackHand, fromSplit bool) GameResul
 	if dealerScore > 21 {
 		return GameResultWin
 	}
+	// スパニッシュ21等: プレイヤー21は常に勝利 (ディーラー21でも勝ち)
+	if playerScore == 21 && b.variant != nil && b.variant.Player21AlwaysWins {
+		return GameResultWin
+	}
 	if playerScore > dealerScore {
 		return GameResultWin
 	}
@@ -122,6 +126,10 @@ func (b *BlackJack) judgeHandCore(hand *BlackJackHand, fromSplit bool) GameResul
 	}
 	if dealerBJ && !playerBJ {
 		return GameResultLose
+	}
+	// 両者BJ時、バリアントによってはプレイヤー勝利
+	if playerBJ && dealerBJ && b.variant != nil && b.variant.PlayerBJBeatsDealerBJ {
+		return GameResultWin
 	}
 
 	return GameResultDraw
@@ -143,6 +151,24 @@ func payoutHand(player *BlackJackPlayer, hand *BlackJackHand, fromSplit bool, re
 	case GameResultLose:
 		// 没収（何もしない、既に減算済み）
 	}
+}
+
+// payoutHandWithVariant はバリアント対応の精算ロジック
+// 勝利かつバリアントがボーナス対象の場合、通常配当に代えてボーナス倍率で支払う
+// (ナチュラルBJ・ダブルダウン後はボーナス対象外)
+// 戻り値: 適用されたボーナス (nil = ボーナス未適用)
+func (b *BlackJack) payoutHandWithVariant(player *BlackJackPlayer, hand *BlackJackHand, fromSplit bool, result GameResult) *BJBonusPayout {
+	if result == GameResultWin && b.variant != nil && b.variant.BonusEval != nil &&
+		!hand.IsBlackJack() && !hand.IsDoubled() {
+		if bonus := b.variant.BonusEval(hand, b.dealer.GetCard(0)); bonus != nil {
+			bet := hand.GetBet()
+			// Num:Den の利益 (例 3:2 → bet*3/2) + ベット返却
+			player.AddChips(bet + bet*bonus.MultiplierNum/bonus.MultiplierDen)
+			return bonus
+		}
+	}
+	payoutHand(player, hand, fromSplit, result)
+	return nil
 }
 
 // judgeHand 個別ハンドの勝敗判定（人間プレイヤー用: スプリット由来ならBJ抑制）
@@ -177,13 +203,16 @@ func (b *BlackJack) resolvePayouts() {
 		// ディーラーがBJでなければインシュランスは没収（何もしない）
 	}
 
-	for _, hand := range b.playerHands {
+	for i, hand := range b.playerHands {
 		if hand.IsSurrendered() {
 			// サレンダー: 半額返却済み（PlayerSurrender内で処理）
 			continue
 		}
 		result := b.judgeHand(hand)
-		payoutHand(b.player, hand, hand.IsFromSplit(), result)
+		bonus := b.payoutHandWithVariant(b.player, hand, hand.IsFromSplit(), result)
+		if bonus != nil {
+			b.appendLog(i, "bonus", bonus.NameKey, nil)
+		}
 	}
 }
 

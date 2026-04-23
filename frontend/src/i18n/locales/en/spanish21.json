@@ -1,0 +1,141 @@
+{
+  "phase": {
+    "bet": "Bet",
+    "deal": "Deal",
+    "insurance": "Insurance",
+    "action": "Action",
+    "earlySurrender": "Early Surrender",
+    "end": "Result"
+  },
+  "player": "Player:",
+  "deck": "Deck:",
+  "deckUnit": "deck(s)",
+  "dealerHand": "Dealer Hand",
+  "score": "Score",
+  "playerHand": "Player Hand",
+  "hand": "Hand {{idx}}",
+  "insurance": "Insurance:",
+  "suggestion": "Suggested:",
+  "suggest": {
+    "hit": "Hit",
+    "stand": "Stand",
+    "double": "Double Down",
+    "split": "Split",
+    "surrender": "Surrender",
+    "decline": "Decline"
+  },
+  "button": {
+    "hit": "Hit",
+    "stand": "Stand",
+    "doubleDown": "Double Down",
+    "split": "Split",
+    "surrender": "Surrender",
+    "insurance": "Insurance",
+    "decline": "Decline",
+    "bet": "Bet",
+    "earlySurrender": "Early Surrender",
+    "continue": "Continue"
+  },
+  "betAmount": "Bet Amount:",
+  "deckCount": "Decks:",
+  "cpuCount": "CPU Players:",
+  "cpuUnit": "",
+  "hint": "Hint",
+  "counting": "Count",
+  "countingSystem": "Counting System",
+  "countingSystemNames": {
+    "0": "Hi-Lo",
+    "1": "KO",
+    "2": "Zen Count",
+    "3": "Omega II"
+  },
+  "trueCountNA": "TC=N/A",
+  "advancedSettings": "Advanced Settings",
+  "sideBetActive": "Side Bets",
+  "sideBetLabel": {
+    "pp": "PP (Pair Bet):",
+    "t3": "21+3:"
+  },
+  "sideBetTooltip": {
+    "pp": "Perfect Pairs: pays if your first two cards are a pair",
+    "t3": "21+3: pays if your first two cards + dealer upcard form a poker hand"
+  },
+  "soft17Tooltip": "H17=dealer hits soft 17 / S17=dealer stands on soft 17",
+  "dasTooltip": "DAS=Double After Split allowed",
+  "das": "DAS",
+  "surrenderRule": "Surrender:",
+  "surrenderRuleNames": {
+    "0": "Late",
+    "1": "Early",
+    "2": "None"
+  },
+  "penetration": "Penetration:",
+  "handCount": "Hands:",
+  "handCountUnit": "",
+  "autoAdvance": "Auto Advance:",
+  "autoAdvanceSec": "{{sec}}s",
+  "sideBet": {
+    "perfectPairs": "Perfect Pairs",
+    "twentyOnePlus3": "21+3",
+    "win": "{{name}} WIN +{{payout}}",
+    "lose": "{{name}} LOSE -{{amount}}"
+  },
+  "status": {
+    "bust": "BUST",
+    "bustTooltip": "Bust: hand total exceeds 21",
+    "dd": "DD",
+    "ddTooltip": "Double Down: bet doubled, one card drawn",
+    "bj": "BJ",
+    "bjTooltip": "BlackJack: Ace and a 10-value card on first two cards",
+    "sur": "SUR",
+    "surTooltip": "Surrender: forfeit hand and reclaim half the bet"
+  },
+  "tutorial": {
+    "betControls": "Set your bet amount here. Adjust the slider to choose how much to wager.",
+    "betButton": "Once you've set your bet, press this button to start the game.",
+    "dealerHand": "This is the dealer's hand. One card is face down, and one is face up.",
+    "playerHand": "This is your hand. Check the total point value of your cards.",
+    "actionButtons": "Choose Hit (draw a card) or Stand (keep your hand). The goal is to get close to 21.",
+    "resultMessage": "The game result is displayed here. Check the outcome and chips won or lost.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hintReason": {
+    "hitReason": "Your total is low — hit recommended",
+    "standReason": "You have a good chance of winning — stand recommended",
+    "doubleReason": "Favorable situation — double down recommended",
+    "doubleStandReason": "Double if allowed, otherwise stand",
+    "splitReason": "Matching cards — split recommended",
+    "surrenderReason": "Unfavorable situation — surrender recommended",
+    "declineReason": "Insurance has negative expected value — decline recommended"
+  },
+  "betGuide": "Place your bet to start (48-card Spanish deck — no 10s — and player 21 always wins)",
+  "payoutRef": {
+    "title": "Payouts (Spanish 21 bonuses)",
+    "blackjack": "Blackjack (3:2, player BJ beats dealer BJ)",
+    "win": "Regular Win (1:1) — player 21 always wins",
+    "insurance": "Insurance (2:1)",
+    "push": "Push (Tie: bet returned)",
+    "surrender": "Surrender (half bet returned)",
+    "bust": "Bust (over 21: lose)",
+    "bonusFiveCard21": "5-card 21 (3:2)",
+    "bonusSixCard21": "6-card 21 (2:1)",
+    "bonusSevenCard21": "7+ card 21 (3:1)",
+    "bonus678": "6-7-8 (mixed 3:2 / same suit 2:1 / spades 3:1)",
+    "bonus777": "7-7-7 (mixed 3:2 / same suit 2:1 / spades 3:1)"
+  },
+  "bonus": {
+    "fivecard21": "5-card 21 bonus",
+    "sixcard21": "6-card 21 bonus",
+    "sevencard21": "7+card 21 bonus",
+    "678": {
+      "mixed": "6-7-8 (mixed suits)",
+      "samesuit": "6-7-8 (same suit)",
+      "spade": "6-7-8 (all spades)"
+    },
+    "777": {
+      "mixed": "7-7-7 (mixed suits)",
+      "samesuit": "7-7-7 (same suit)",
+      "spade": "7-7-7 (all spades)"
+    }
+  }
+}

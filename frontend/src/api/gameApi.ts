@@ -77,6 +77,7 @@ const WORKER_SOLO = import.meta.env.VITE_WORKER_SOLO_URL || '';
 /** Maps each game to its Worker base URL. */
 const workerUrl: Record<string, string> = {
   blackjack: WORKER_CASINO,
+  spanish21: WORKER_CASINO,
   baccarat: WORKER_CASINO,
   poker: WORKER_CASINO,
   holdem: WORKER_CASINO,
@@ -172,34 +173,39 @@ export interface BlackJackBetOptions {
   handCount?: number;
 }
 
+/** Type alias for BlackJack/Spanish21 exec command. */
+export type BlackJackCommand =
+  | 'reset'
+  | 'hit'
+  | 'stand'
+  | 'bet'
+  | 'doubledown'
+  | 'split'
+  | 'insurance'
+  | 'declineinsurance'
+  | 'surrender'
+  | 'togglehint'
+  | 'setdeckcount'
+  | 'togglesoft17'
+  | 'togglecounting'
+  | 'toggledas'
+  | 'setcountingsystem'
+  | 'setpenetration'
+  | 'setcpucount'
+  | 'earlysurrender'
+  | 'declineearlysurrender'
+  | 'setsurrenderrule';
+
 /** API client for the BlackJack /blackjack/exec endpoint. */
 export const blackjackApi = {
-  exec: (
-    command:
-      | 'reset'
-      | 'hit'
-      | 'stand'
-      | 'bet'
-      | 'doubledown'
-      | 'split'
-      | 'insurance'
-      | 'declineinsurance'
-      | 'surrender'
-      | 'togglehint'
-      | 'setdeckcount'
-      | 'togglesoft17'
-      | 'togglecounting'
-      | 'toggledas'
-      | 'setcountingsystem'
-      | 'setpenetration'
-      | 'setcpucount'
-      | 'earlysurrender'
-      | 'declineearlysurrender'
-      | 'setsurrenderrule',
-    amount?: number,
-    config?: BlackJackConfigInput,
-    betOptions?: BlackJackBetOptions,
-  ) => gameExec<BlackJackResponse>('blackjack', { command, amount, ...config, ...betOptions }),
+  exec: (command: BlackJackCommand, amount?: number, config?: BlackJackConfigInput, betOptions?: BlackJackBetOptions) =>
+    gameExec<BlackJackResponse>('blackjack', { command, amount, ...config, ...betOptions }),
+};
+
+/** API client for the Spanish 21 /spanish21/exec endpoint (shares BlackJack response shape). */
+export const spanish21Api = {
+  exec: (command: BlackJackCommand, amount?: number, config?: BlackJackConfigInput, betOptions?: BlackJackBetOptions) =>
+    gameExec<BlackJackResponse>('spanish21', { command, amount, ...config, ...betOptions }),
 };
 
 /** Configuration options for Poker game settings. */
@@ -1289,6 +1295,7 @@ const games = [
   'reddog',
   'president',
   'cassino',
+  'spanish21',
 ] as const;
 type Game = (typeof games)[number];
 

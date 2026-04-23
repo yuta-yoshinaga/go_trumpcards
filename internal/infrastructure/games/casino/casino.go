@@ -166,4 +166,12 @@ func init() {
 			return usecase.RestoreBadugiInteractor(data, new(presenter.BadugiWebPresenter))
 		},
 		controller.NewBadugiWebControllerWithProvider)
+	games.RegisterKVGame("spanish21", games.CategoryCasino,
+		func() usecase.BlackJackInteractorIF {
+			return usecase.NewBlackJackInteractor(domain.NewSpanish21BlackJack(), new(presenter.BlackJackWebPresenter))
+		},
+		func(data []byte) (usecase.BlackJackInteractorIF, error) {
+			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
+		},
+		controller.NewBlackJackWebControllerWithProvider)
 }

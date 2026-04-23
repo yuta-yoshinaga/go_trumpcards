@@ -53,6 +53,7 @@ import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
 import spades from '../../../docs/manual/web/spades.md?raw';
+import spanish21 from '../../../docs/manual/web/spanish21.md?raw';
 import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
@@ -111,6 +112,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/spanish21': spanish21,
   '/speed': speed,
   '/spider': spider,
   '/threecard': threecard,

@@ -259,7 +259,7 @@ func (b *BlackJack) resolvePayoutsCpu() {
 				continue
 			}
 			result := b.judgeCpuHand(hand)
-			payoutHand(cpu.GetPlayer(), hand, hand.IsFromSplit(), result)
+			b.payoutHandWithVariant(cpu.GetPlayer(), hand, hand.IsFromSplit(), result)
 		}
 	}
 }
