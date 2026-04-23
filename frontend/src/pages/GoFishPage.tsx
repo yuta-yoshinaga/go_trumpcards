@@ -177,15 +177,31 @@ function GoFishPageContent() {
 
             {/* CPU player areas */}
             <div data-tutorial="gf-cpu-area">
-              {cpuPlayers.map((p) => (
-                <GoFishPlayerArea
-                  key={p.id}
-                  player={p}
-                  isSelected={selectedTarget === p.id}
-                  onSelect={handleSelectTarget}
-                  disabled={!isHumanTurn || loading}
-                />
-              ))}
+              {cpuPlayers.map((p) => {
+                // Surface a transient bubble on whichever player was just
+                // targeted by the most recent ask. `turnNumber` guarantees a
+                // fresh triggerKey even when two consecutive asks have the
+                // same rank and target. See issue #1490.
+                const isLastTargeted = state.lastAsk !== null && state.lastAsk.targetIdx === p.id;
+                const askAnnotation =
+                  isLastTargeted && state.lastAsk
+                    ? {
+                        rank: state.lastAsk.rank,
+                        receivedCount: state.lastAsk.cardsReceived.length,
+                        triggerKey: `${state.turnNumber}-${state.lastAsk.playerIdx}-${state.lastAsk.targetIdx}-${state.lastAsk.rank}`,
+                      }
+                    : undefined;
+                return (
+                  <GoFishPlayerArea
+                    key={p.id}
+                    player={p}
+                    isSelected={selectedTarget === p.id}
+                    onSelect={handleSelectTarget}
+                    disabled={!isHumanTurn || loading}
+                    askAnnotation={askAnnotation}
+                  />
+                );
+              })}
             </div>
 
             {/* Rank selector */}

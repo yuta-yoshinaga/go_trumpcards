@@ -6,7 +6,14 @@ import type { OldMaidPlayerData } from '../../types/card';
 import { cardAlt } from '../../utils/cardAlt';
 import { playerName } from '../../utils/playerUtils';
 import { CardBack, CardImage } from '../CardImage';
+import { CpuActionBubble } from '../CpuActionBubble';
 import { StatusBadge } from '../StatusBadge';
+
+/** Optional transient announcement bubble rendered at the top of a player area. */
+export interface PlayerAreaBubble {
+  message: string;
+  triggerKey: string | number;
+}
 
 /** CSS class for Old Maid player area layout. */
 export const playerAreaClass = `${playerAreaBase} p-2 flex-[1_1_140px] min-w-[120px]`;
@@ -24,6 +31,11 @@ interface PlayerAreaProps {
   onReorder?: (indices: number[]) => void;
   /** When true, non-target CPU players hide card back images to save space. */
   compactNonTarget?: boolean;
+  /**
+   * When set, a transient floating bubble is shown at the top of the area
+   * (e.g. "just drew a card") with live-region semantics for screen readers.
+   */
+  bubble?: PlayerAreaBubble;
 }
 
 /** Renders a player area for Old Maid with draw targets, hand display, and reorder support. */
@@ -39,6 +51,7 @@ export function OldMaidPlayerArea({
   onDraw,
   onReorder,
   compactNonTarget,
+  bubble,
 }: PlayerAreaProps) {
   const { t } = useTranslation('oldmaid');
   const { t: tc } = useTranslation('common');
@@ -130,8 +143,13 @@ export function OldMaidPlayerArea({
   return (
     <div
       id={`player-area-${player.id}`}
-      className={`${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}
+      className={`relative ${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}
     >
+      {bubble && (
+        <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
+          <CpuActionBubble message={bubble.message} triggerKey={bubble.triggerKey} />
+        </div>
+      )}
       <div className="text-white font-bold mb-1 text-sm">
         {playerName(player.id, player.isHuman)}
         {player.isFinished && <StatusBadge variant="success">{tc('status.finished')}</StatusBadge>}
