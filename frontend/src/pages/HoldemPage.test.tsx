@@ -931,6 +931,26 @@ describe('HoldemPage', () => {
     expect(screen.queryByTestId('hud-stats')).not.toBeInTheDocument();
   });
 
+  // Regression: HUD must stay hidden below md (768px) so the 375×667 iPhone SE
+  // viewport doesn't lose card/chip space to stats. See issue #1488.
+  it('HUD stats span carries `hidden md:inline` so mobile viewports suppress it', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: [
+        humanPlayer(),
+        cpuPlayer(1, { totalHands: 5, vpip: 60, pfr: 20, threeBet: 10, af: '2.5' }),
+        cpuPlayer(2),
+      ],
+    });
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => {
+      const statsElem = screen.getByTestId('hud-stats');
+      expect(statsElem.className).toContain('hidden');
+      expect(statsElem.className).toContain('md:inline');
+      expect(statsElem.className).not.toContain('sm:inline');
+    });
+  });
+
   // ---- SB/BB info bar ----
   it('shows SB/BB in info bar', async () => {
     mockExec.mockResolvedValue(preFlopState);
