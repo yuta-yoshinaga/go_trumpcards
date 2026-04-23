@@ -135,6 +135,14 @@
     "message": "ラウンド終了。{{details}}",
     "entry": "{{name}}: +{{round}} (合計 {{total}})"
   },
+  "roundResultsAnnouncement": {
+    "message": "ショウダウン結果。{{details}}",
+    "entryMucked": "{{name}}: マック",
+    "entryHand": "{{name}}: {{handName}}",
+    "entryHandWithKickers": "{{name}}: {{handName}}、キッカー {{kickers}}",
+    "entryHandWon": "{{name}}: {{handName}}、+{{amount}}チップ",
+    "entryHandWithKickersWon": "{{name}}: {{handName}}、キッカー {{kickers}}、+{{amount}}チップ"
+  },
   "stalemateEscape": "脱出する ({{count}}手戻る)",
   "status": {
     "folded": "フォールド",
