@@ -183,17 +183,28 @@ func run() int {
 		return runHelpCommand(flag.Args()[1:], helpText, os.Stdout, os.Stderr)
 	}
 	commands["update"] = func() int {
-		var yes bool
+		var yes, check bool
 		_, code, ok := parseSubFlags("update", func(f *flag.FlagSet) {
 			f.BoolVar(&yes, "yes", false, "Skip confirmation prompt")
 			f.BoolVar(&yes, "y", false, "Skip confirmation prompt (shorthand)")
+			f.BoolVar(&check, "check", false, "Check for an update without installing (prints latest tag, status, current to stdout)")
+			f.BoolVar(&check, "dry-run", false, "Alias for --check")
 		})
 		if !ok {
 			return code
 		}
-		updater := update.NewUpdater(version, os.Stdin, os.Stderr, os.Stderr)
+		// --check writes machine-readable output to stdout (for CI / scripts)
+		// while keeping human-friendly text on stderr. Install mode keeps its
+		// legacy "writer=stderr" so `trumpcards update --yes 2>/dev/null` still
+		// silences progress without swallowing the exit code. See issue #1484.
+		writer := io.Writer(os.Stderr)
+		if check {
+			writer = os.Stdout
+		}
+		updater := update.NewUpdater(version, os.Stdin, writer, os.Stderr)
 		updater.SetAutoConfirm(yes)
 		updater.SetReportCancelledAsError(true) // report user cancel as exit 75
+		updater.SetCheckOnly(check)
 		updater.SetProgressIsTTY(term.IsTerminal(int(os.Stderr.Fd())))
 		if err := updater.Exec(); err != nil {
 			return updateExitCode(err)
@@ -314,23 +325,34 @@ var builtinSubcommandHelp = map[string][]string{
 	"update": {
 		"USAGE:",
 		"  trumpcards update [--yes]",
+		"  trumpcards update --check",
 		"",
 		"FLAGS:",
-		"  -y, --yes   Skip confirmation prompt (required for non-interactive stdin)",
+		"  -y, --yes     Skip confirmation prompt (required for non-interactive stdin)",
+		"      --check   Check for an update without installing. Writes a tab-separated",
+		"                summary '<latest-tag>\\t<status>\\t<current>' (status: latest |",
+		"                available | dev) to stdout, and a human-friendly message to",
+		"                stderr. Never prompts, never downloads. Safe in CI / cron.",
+		"      --dry-run Alias for --check.",
 		"",
 		"EXIT CODES:",
-		"   0  Success (already latest or updated)",
+		"   0  Success (already latest or updated; --check: already latest or dev build)",
 		"   2  Usage error (non-interactive without --yes)",
 		"   3  Network / release API failure",
 		"   4  No binary for this platform",
 		"   5  Archive extraction failure",
 		"   6  Binary apply failure (permissions, disk, integrity)",
+		"  10  --check: a newer version is available (non-error signal for scripts)",
 		"  75  User declined the prompt",
 		"   1  Unexpected error",
 		"",
 		"EXAMPLES:",
 		"  trumpcards update",
 		"  trumpcards update --yes",
+		"  trumpcards update --check                   # prints latest tag to stdout; exits 10 when newer",
+		"  trumpcards update --check | cut -f1          # latest tag only (e.g. v2.3.1)",
+		"  if trumpcards update --check; then           # exit 0 means already latest",
+		"    echo 'up to date'; fi",
 	},
 	"completion": {
 		"USAGE:",
@@ -459,10 +481,11 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 //	4  — no binary for this platform (no retry without a new release)
 //	5  — archive extraction failure
 //	6  — binary apply failure (permissions, disk, integrity)
+//	10 — --check: a newer release is available (non-error signal)
 //	75 — user declined the prompt (EX_TEMPFAIL)
 //	1  — any other unexpected error
 //
-// See issue #1449.
+// See issues #1449, #1484.
 func updateExitCode(err error) int {
 	switch {
 	case errors.Is(err, update.ErrNonInteractive):
@@ -475,6 +498,8 @@ func updateExitCode(err error) int {
 		return 5
 	case errors.Is(err, update.ErrApply):
 		return 6
+	case errors.Is(err, update.ErrUpdateAvailable):
+		return 10
 	case errors.Is(err, update.ErrUserCancelled):
 		return 75
 	default:
@@ -544,6 +569,7 @@ EXAMPLES:
   trumpcards games --short --aliases  List game names including aliases
   trumpcards update              Self-update to the latest version
   trumpcards update --yes        Update without confirmation prompt
+  trumpcards update --check      Report whether an update is available (exit 10 if yes)
   trumpcards --version-short     Print just the version number (e.g. 1.2.3)
   NO_COLOR=1 trumpcards hearts   Play Hearts without color output
   trumpcards web                 Start the web GUI server (binds to 127.0.0.1)

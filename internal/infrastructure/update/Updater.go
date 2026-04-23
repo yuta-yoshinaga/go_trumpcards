@@ -45,6 +45,12 @@ var (
 	// ErrUserCancelled indicates the user answered the prompt with a
 	// non-affirmative response (empty, "n", "no").
 	ErrUserCancelled = errors.New("update: user declined")
+	// ErrUpdateAvailable is returned only in check-only mode (SetCheckOnly)
+	// when the release API reports a newer version than the current build.
+	// Callers map it to a dedicated exit code (e.g. 10) so CI / cron can tell
+	// "update exists" apart from "already latest" (nil) and "couldn't check"
+	// (ErrNetwork / ErrAPIStatus). See issue #1484.
+	ErrUpdateAvailable = errors.New("update: new version available")
 )
 
 // Updater checks GitHub Releases for the latest version and self-updates the binary.
@@ -63,6 +69,11 @@ type Updater struct {
 	// behavior of returning nil, so library callers who never call the
 	// setter keep their old contract.
 	reportCancelledAsError bool
+	// checkOnly: when true, Exec fetches the release info, writes a
+	// machine-readable one-line summary to writer and a human-friendly
+	// message to errWriter, then returns without prompting or downloading.
+	// See issue #1484.
+	checkOnly bool
 }
 
 // SetAutoConfirm enables or disables the automatic confirmation of updates,
@@ -109,6 +120,17 @@ func (u *Updater) SetReportCancelledAsError(v bool) {
 	u.reportCancelledAsError = v
 }
 
+// SetCheckOnly toggles check-only (dry-run) mode. When enabled, Exec fetches
+// the latest release metadata, writes a tab-separated summary line
+// (`<latest>\t<status>\t<current>`) to writer and a human-friendly message to
+// errWriter, then returns without prompting or downloading. The return value
+// distinguishes "already latest" (nil) from "update available"
+// (ErrUpdateAvailable) so CI / cron scripts can branch on exit code. See
+// issue #1484.
+func (u *Updater) SetCheckOnly(v bool) {
+	u.checkOnly = v
+}
+
 // Exec runs the self-update flow.
 //
 // Errors are wrapped with sentinel categories from this package (ErrNetwork,
@@ -140,6 +162,12 @@ func (u *Updater) Exec() error {
 
 	latestVersion := strings.TrimPrefix(release.TagName, "v")
 	currentClean := strings.TrimPrefix(u.currentVersion, "v")
+
+	// Check-only (--check / --dry-run) short-circuit: report status and return.
+	// Never prompts, never downloads. See issue #1484.
+	if u.checkOnly {
+		return u.reportCheckOnly(release.TagName, latestVersion, currentClean)
+	}
 
 	// If current version is not "dev" and matches latest, already up to date.
 	if currentClean != "dev" && currentClean == latestVersion {
@@ -199,6 +227,32 @@ func (u *Updater) Exec() error {
 // to treat that as the default-no path, not a hard I/O failure.
 func isBlankLineScanErr(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "unexpected newline")
+}
+
+// reportCheckOnly emits the machine-readable status line to writer plus a
+// human-friendly message to errWriter, and returns the sentinel expected by
+// the CLI exit-code mapper (nil = latest, ErrUpdateAvailable = newer exists).
+//
+// Output format on writer (stable; safe for shell parsing with `cut -f1`):
+//
+//	<latest-tag>\t<status>\t<current>
+//
+// Status is one of: "latest", "available", "dev".
+func (u *Updater) reportCheckOnly(latestTag, latestClean, currentClean string) error {
+	switch currentClean {
+	case "dev":
+		_, _ = fmt.Fprintf(u.writer, "%s\tdev\t%s\n", latestTag, u.currentVersion)
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateCheckDev", "version", latestTag))
+		return nil
+	case latestClean:
+		_, _ = fmt.Fprintf(u.writer, "%s\tlatest\t%s\n", latestTag, u.currentVersion)
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateAlreadyLatest", "version", latestTag))
+		return nil
+	default:
+		_, _ = fmt.Fprintf(u.writer, "%s\tavailable\t%s\n", latestTag, u.currentVersion)
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateCheckAvailable", "current", u.currentVersion, "version", latestTag))
+		return ErrUpdateAvailable
+	}
 }
 
 // progressReader wraps an io.Reader to display download progress.

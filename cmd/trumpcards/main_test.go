@@ -540,10 +540,12 @@ func TestUpdateExitCodeMapping(t *testing.T) {
 		{"extract failure", update.ErrExtract, 5},
 		{"apply failure", update.ErrApply, 6},
 		{"user cancelled", update.ErrUserCancelled, 75},
+		{"update available", update.ErrUpdateAvailable, 10},
 		{"unknown error", errors.New("surprise"), 1},
 		// Wrapping preserves the category.
 		{"wrapped network", fmt.Errorf("dial: %w", update.ErrNetwork), 3},
 		{"wrapped apply", fmt.Errorf("chmod: %w", update.ErrApply), 6},
+		{"wrapped update available", fmt.Errorf("check: %w", update.ErrUpdateAvailable), 10},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
