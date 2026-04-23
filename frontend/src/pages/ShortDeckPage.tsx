@@ -125,7 +125,7 @@ function StatTooltip({ id, label, tooltipText }: { id: string; label: string; to
 function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; threeBet: number; af: string }) {
   const { t } = useTranslation('shortdeck');
   return (
-    <span className="ml-2 text-ds-info text-[0.8em] hidden sm:inline" data-testid="hud-stats">
+    <span className="ml-2 text-ds-info text-[0.8em] hidden md:inline" data-testid="hud-stats">
       <StatTooltip id="tooltip-vpip" label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:{vpip}%{' '}
       <StatTooltip id="tooltip-pfr" label={t('stats.pfr')} tooltipText={t('stats.pfrTooltip')} />:{pfr}%{' '}
       <StatTooltip id="tooltip-3bet" label={t('stats.threeBet')} tooltipText={t('stats.threeBetTooltip')} />:{threeBet}%{' '}
