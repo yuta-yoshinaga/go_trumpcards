@@ -10,6 +10,7 @@ import bridge from '../../../docs/manual/web/bridge.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
 import canfield from '../../../docs/manual/web/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
+import cassino from '../../../docs/manual/web/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
@@ -125,4 +126,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/accordion': accordion,
   '/trash': trash,
   '/president': president,
+  '/cassino': cassino,
 };

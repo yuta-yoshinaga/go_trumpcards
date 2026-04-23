@@ -56,6 +56,8 @@ tags:
     description: Seven Bridge (セブンブリッジ) game
   - name: president
     description: President / Scum (プレジデント) game
+  - name: cassino
+    description: Cassino (カッシーノ) game
   - name: canasta
     description: Canasta (カナスタ) game
   - name: pinochle
@@ -5759,6 +5761,75 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PresidentResponse'
+
+  /cassino/exec:
+    post:
+      tags:
+        - cassino
+      summary: Execute a Cassino game command
+      description: |
+        Send a command to advance the Cassino (カッシーノ) game session
+        identified by `sessionId`. Cassino is a 4-player fishing-style game
+        using a standard 52-card deck (no jokers). On each turn the player
+        plays one hand card and either takes table cards (sum or rank match),
+        creates / extends a build, or trails the card. First to 21 cumulative
+        points wins.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `take`  | `t`     | Take table cards / builds with the played hand card |
+        | `build` | `b`     | Create or extend a build of declared value |
+        | `trail` | `tr`    | Place the played hand card on the table without capture |
+        | `next`  | `n`     | Start the next round |
+        | `log`   | `l`     | View action log |
+      operationId: cassinoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CassinoRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              take:
+                summary: Take table cards
+                value:
+                  command: take
+                  handIndex: 0
+                  tableIndices: [0, 1]
+                  sessionId: my-session-001
+              build:
+                summary: Build value 8
+                value:
+                  command: build
+                  handIndex: 0
+                  tableIndices: [1]
+                  declaredValue: 8
+                  sessionId: my-session-001
+              trail:
+                summary: Trail a card
+                value:
+                  command: trail
+                  handIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CassinoResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CassinoResponse'
 
 components:
   schemas:
@@ -13832,6 +13903,185 @@ components:
               nullable: true
               items:
                 $ref: '#/components/schemas/Card'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    CassinoRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Cassino command. Accepted values. `reset` (`r`), `take` (`t`), `build` (`b`), `trail` (`tr`), `next` (`n`), `log` (`l`).
+          enum: [reset, r, take, t, build, b, trail, tr, next, n, log, l]
+          example: take
+        handIndex:
+          type: integer
+          description: Hand card index for take / build / trail.
+          example: 0
+        tableIndices:
+          type: array
+          description: Table card indices selected for take / build.
+          items:
+            type: integer
+          example: [0, 1]
+        buildIndices:
+          type: array
+          description: Build indices selected for take.
+          items:
+            type: integer
+        declaredValue:
+          type: integer
+          description: Build declared value (2..10) when command is `build`.
+          minimum: 2
+          maximum: 10
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            targetScore:
+              type: integer
+              minimum: 1
+              maximum: 999
+            multiBuildEnabled:
+              type: boolean
+            sweepBonusEnabled:
+              type: boolean
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CassinoResponse:
+      type: object
+      description: Current state of the Cassino game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              isHuman: { type: boolean }
+              cardCount: { type: integer }
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              capturedCount: { type: integer }
+              sweepCount: { type: integer }
+              totalScore: { type: integer }
+        currentTurn:
+          type: integer
+        tableCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        builds:
+          type: array
+          items:
+            type: object
+            properties:
+              ownerIdx: { type: integer }
+              value: { type: integer }
+              groups:
+                type: array
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Card'
+              isMulti: { type: boolean }
+        lastCaptureIdx:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        phase:
+          type: string
+          description: Current game phase (`dealing`, `playerTurn`, `roundEnd`, `gameEnd`).
+        config:
+          type: object
+          properties:
+            targetScore: { type: integer }
+            multiBuildEnabled: { type: boolean }
+            sweepBonusEnabled: { type: boolean }
+            cpuDifficulty: { type: integer }
+        cpuActions:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx: { type: integer }
+              type: { type: string }
+              playedCard:
+                nullable: true
+                $ref: '#/components/schemas/Card'
+              capturedCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              buildValue: { type: integer }
+              isSweep: { type: boolean }
+        humanAction:
+          type: object
+          nullable: true
+          properties:
+            playerIdx: { type: integer }
+            type: { type: string }
+            playedCard:
+              nullable: true
+              $ref: '#/components/schemas/Card'
+            capturedCards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+            buildValue: { type: integer }
+            isSweep: { type: boolean }
+        remainingDeck:
+          type: integer
+        packsDealt:
+          type: integer
+        roundWinners:
+          type: array
+          items:
+            type: integer
+        lastRoundDetail:
+          type: object
+          nullable: true
+          properties:
+            cards:
+              type: object
+              additionalProperties:
+                type: integer
+            spades:
+              type: object
+              additionalProperties:
+                type: integer
+            aces:
+              type: object
+              additionalProperties:
+                type: integer
+            hasBigCasino: { type: integer }
+            hasLittleCasino: { type: integer }
+            sweeps:
+              type: object
+              additionalProperties:
+                type: integer
+            gained:
+              type: object
+              additionalProperties:
+                type: integer
         message:
           type: string
         messageCode:

@@ -1,0 +1,10 @@
+{
+  "helpTitle": "Cassino",
+  "helpTake": "  t <h> <t...> [b <bi>...] take using hand card h (and builds if given)",
+  "helpBuild": "  b <h> <value> <t...>     build declared value from hand h + table cards",
+  "helpTrail": "  tr <h>                   trail hand card h (no capture)",
+  "helpNext": "  n                        start next round",
+  "helpLog": "  log | l                  show action log",
+  "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetRule": "  sr <rule> <0|1>          toggle local rule (sr list to show all)"
+}
