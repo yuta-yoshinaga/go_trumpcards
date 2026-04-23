@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -18,6 +19,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { NapoleonSkeleton } from '../components/skeleton/NapoleonSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -34,7 +36,7 @@ import {
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -191,6 +193,15 @@ function NapoleonPageContent() {
 
   const phaseNames = usePhaseNames('napoleon', NAPOLEON_PHASE_KEYS);
 
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void apiExec('reset', undefined, undefined, undefined, undefined, undefined, undefined, {
+      cpuDifficulty: napoleonConfig.cpuDifficulty,
+      pointLimit: napoleonConfig.pointLimit,
+      minBid: napoleonConfig.minBid,
+    });
+  }, [apiExec, hideActionLog, napoleonConfig.cpuDifficulty, napoleonConfig.pointLimit, napoleonConfig.minBid]);
+
   if (!state) return <NapoleonSkeleton />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
@@ -346,28 +357,14 @@ function NapoleonPageContent() {
                 )}
 
                 {/* Current trick */}
-                {state.currentTrick.length > 0 && (
-                  <div className="my-3 p-3 rounded bg-black/40" data-tutorial="np-trick-display">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('currentTrick')}</div>
-                    <div className="flex gap-2">
-                      {state.currentTrick.map((trickCard) => (
-                        <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                          <AnimatedCard
-                            card={trickCard.card}
-                            width={cardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
-                          <div className="text-game-text-muted text-xs mt-1">
-                            {playerName(
-                              state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
-                              state.players[trickCard.playerIdx]?.isHuman ?? false,
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <TrickDisplay
+                  currentTrick={state.currentTrick}
+                  players={state.players}
+                  cardWidth={cardWidth}
+                  label={t('currentTrick')}
+                  dataTutorial="np-trick-display"
+                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </div>
 
               {/* Right: info sidebar */}
@@ -705,24 +702,13 @@ function NapoleonPageContent() {
               )}
 
               {/* Reset */}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="np-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return apiExec('reset', undefined, undefined, undefined, undefined, undefined, undefined, {
-                      cpuDifficulty: napoleonConfig.cpuDifficulty,
-                      pointLimit: napoleonConfig.pointLimit,
-                      minBid: napoleonConfig.minBid,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="np-reset-button"
+              />
             </div>
           </GameFooter>
         </>

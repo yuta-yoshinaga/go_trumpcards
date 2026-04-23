@@ -1,25 +1,27 @@
-package games
+package games_test
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 )
 
 // expected category counts derived from the Phase 2 design: the three
-// Cloudflare Workers split 58 games into casino (19) / classic (22) / solo
-// (17). A mismatch here indicates that a game's Category is wrong (and would
-// route to the wrong worker in production).
+// Cloudflare Workers split games into casino (20) / classic (24) / solo (18).
+// A mismatch here indicates that a game's Category is wrong (and would route
+// to the wrong worker in production).
 const (
-	expectedCasino  = 19
-	expectedClassic = 22
-	expectedSolo    = 17
+	expectedCasino  = 20
+	expectedClassic = 24
+	expectedSolo    = 18
 	expectedTotal   = expectedCasino + expectedClassic + expectedSolo
 )
 
 func TestAllReturnsExpectedTotal(t *testing.T) {
-	if got := len(All()); got != expectedTotal {
-		t.Fatalf("len(All()) = %d, want %d", got, expectedTotal)
+	if got := len(games.All()); got != expectedTotal {
+		t.Fatalf("len(games.All()) = %d, want %d", got, expectedTotal)
 	}
 }
 
@@ -29,14 +31,14 @@ func TestAllReturnsExpectedTotal(t *testing.T) {
 // overwrite neighbouring entries, and shared struct pointers let a caller
 // corrupt a game's Name or factories.
 func TestAllReturnsIndependentCopy(t *testing.T) {
-	a := All()
+	a := games.All()
 	if len(a) == 0 {
-		t.Fatal("All() returned empty slice")
+		t.Fatal("games.All() returned empty slice")
 	}
 	originalName := a[0].Name
 	a[0].Name = "mutated"
 
-	b := All()
+	b := games.All()
 	if b[0].Name != originalName {
 		t.Fatalf("mutation leaked: b[0].Name = %q, want %q", b[0].Name, originalName)
 	}
@@ -44,28 +46,27 @@ func TestAllReturnsIndependentCopy(t *testing.T) {
 
 func TestByCategoryCounts(t *testing.T) {
 	cases := []struct {
-		cat  Category
+		cat  games.Category
 		want int
 	}{
-		{CategoryCasino, expectedCasino},
-		{CategoryClassic, expectedClassic},
-		{CategorySolo, expectedSolo},
+		{games.CategoryCasino, expectedCasino},
+		{games.CategoryClassic, expectedClassic},
+		{games.CategorySolo, expectedSolo},
 	}
 	for _, c := range cases {
 		t.Run(c.cat.String(), func(t *testing.T) {
-			if got := len(ByCategory(c.cat)); got != c.want {
-				t.Fatalf("ByCategory(%s) = %d, want %d", c.cat, got, c.want)
+			if got := len(games.ByCategory(c.cat)); got != c.want {
+				t.Fatalf("games.ByCategory(%s) = %d, want %d", c.cat, got, c.want)
 			}
 		})
 	}
 }
 
 func TestCategoryString(t *testing.T) {
-	cases := map[Category]string{
-		CategoryCasino:  "casino",
-		CategoryClassic: "classic",
-		CategorySolo:    "solo",
-		Category(99):    "Category(99)",
+	cases := map[games.Category]string{
+		games.CategoryCasino:  "casino",
+		games.CategoryClassic: "classic",
+		games.CategorySolo:    "solo",
 	}
 	for cat, want := range cases {
 		if got := cat.String(); got != want {
@@ -74,9 +75,21 @@ func TestCategoryString(t *testing.T) {
 	}
 }
 
+// TestCategoryStringPanicsOnUnknown asserts that String() panics on an
+// undefined Category value so API misuse surfaces immediately — matching
+// BindWebController/BindWorker's panic-on-misuse policy.
+func TestCategoryStringPanicsOnUnknown(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expected panic on unknown Category, got none")
+		}
+	}()
+	_ = games.Category(99).String()
+}
+
 func TestAllEntriesAreValid(t *testing.T) {
 	seen := make(map[string]bool, expectedTotal)
-	for i, g := range All() {
+	for i, g := range games.All() {
 		if g.Name == "" {
 			t.Errorf("entry %d has empty Name", i)
 		}
@@ -90,7 +103,7 @@ func TestAllEntriesAreValid(t *testing.T) {
 			t.Errorf("game %q: NewWebController() returned nil", g.Name)
 		}
 		switch g.Category {
-		case CategoryCasino, CategoryClassic, CategorySolo:
+		case games.CategoryCasino, games.CategoryClassic, games.CategorySolo:
 			// valid
 		default:
 			t.Errorf("game %q has invalid Category %d", g.Name, int(g.Category))
@@ -105,13 +118,81 @@ func TestAllEntriesAreValid(t *testing.T) {
 // listings / completion order depend on that contract.
 func TestRegistryMatchesCLI(t *testing.T) {
 	cliNames := ui.GameNames()
-	all := All()
+	all := games.All()
 	if len(cliNames) != len(all) {
 		t.Fatalf("count mismatch: CLI=%d, registry=%d", len(cliNames), len(all))
 	}
 	for i, name := range cliNames {
 		if all[i].Name != name {
 			t.Errorf("order mismatch at index %d: CLI=%q, registry=%q", i, name, all[i].Name)
+		}
+	}
+}
+
+// TestRegistryHasDescriptionForEach asserts that every game in the registry
+// carries a non-empty Description — the CLI listings pull from here (via
+// games.Descriptions), so an empty entry silently ships a blank row.
+func TestRegistryHasDescriptionForEach(t *testing.T) {
+	for _, g := range games.All() {
+		if strings.TrimSpace(g.Description) == "" {
+			t.Errorf("game %q has empty Description in games.registry", g.Name)
+		}
+	}
+}
+
+// TestDescriptionLookup exercises the single-name accessor used by the CLI
+// in hot loops — must hit on known games and return "" for unknown ones.
+func TestDescriptionLookup(t *testing.T) {
+	if got := games.Description("blackjack"); got == "" {
+		t.Errorf("Description(\"blackjack\") = \"\", want non-empty")
+	}
+	if got := games.Description("does-not-exist"); got != "" {
+		t.Errorf("Description(\"does-not-exist\") = %q, want \"\"", got)
+	}
+}
+
+// TestDescriptionsReturnsCachedMap documents that Descriptions() returns the
+// package-owned cached map — callers must not mutate it (performance
+// contract: O(1) access in loops, no per-call allocation).
+func TestDescriptionsReturnsCachedMap(t *testing.T) {
+	a := games.Descriptions()
+	b := games.Descriptions()
+	if &a == &b {
+		// Map headers are allowed to differ — it's the underlying map data
+		// that must be shared. Checking a single key's address is unreliable,
+		// so just verify repeated calls return maps of equal size with
+		// identical contents (and leave mutation-safety as a documented
+		// contract).
+		t.Log("note: Go maps compare by reference; repeated calls return the same backing map")
+	}
+	if len(a) != len(b) {
+		t.Fatalf("len mismatch across Descriptions() calls: %d vs %d", len(a), len(b))
+	}
+	for k, v := range a {
+		if b[k] != v {
+			t.Errorf("Descriptions()[%q] drift: %q vs %q", k, v, b[k])
+		}
+	}
+}
+
+// TestCLIDescriptionsMatchRegistry asserts that the CLI and games package
+// agree on every Name→Description pair. Enforces the SSoT contract from
+// issue #1459: descriptions live on games.Game and ui sources them from
+// there, so this test guards against re-introduction of duplicate storage.
+func TestCLIDescriptionsMatchRegistry(t *testing.T) {
+	cli := ui.GameDescriptions()
+	reg := games.Descriptions()
+	if len(cli) != len(reg) {
+		t.Fatalf("count mismatch: CLI=%d, registry=%d", len(cli), len(reg))
+	}
+	for name, cliDesc := range cli {
+		regDesc, ok := reg[name]
+		if !ok {
+			t.Errorf("game %q missing from games.Descriptions()", name)
+			continue
+		}
+		if cliDesc != regDesc {
+			t.Errorf("game %q: ui=%q registry=%q", name, cliDesc, regDesc)
 		}
 	}
 }

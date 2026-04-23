@@ -45,15 +45,9 @@ func newClockSolitaireDefaultOutput(msg string) *ClockSolitaireWebOutput {
 }
 
 func clockSolitaireDispatch(bc *baseController, w http.ResponseWriter, ci usecase.ClockSolitaireInteractorIF, param ClockSolitaireWebInput, _ func(string) *ClockSolitaireWebOutput) bool {
-	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, ci.Reset())
-	case "s", "step":
-		bc.writePresenterResponse(w, ci.Step())
-	case "a", "autoplay":
+	if param.Command == "a" || param.Command == "autoplay" {
 		bc.writePresenterResponse(w, ci.AutoPlay())
-	default:
-		return dispatchLog(param.Command, bc, w, ci.ActionLog)
+		return true
 	}
-	return true
+	return dispatchResetStepLog(param.Command, bc, w, ci)
 }

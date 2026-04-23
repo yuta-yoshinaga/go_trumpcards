@@ -12,7 +12,7 @@ export function ErrorAlert({ message, onRetry }: ErrorAlertProps) {
   return (
     <div
       role="alert"
-      className="bg-ds-error/90 text-white text-center px-4 py-2 text-sm font-bold mb-2 rounded-lg flex items-center justify-center gap-2"
+      className="bg-ds-error text-white text-center px-4 py-2 text-sm font-bold mb-2 rounded-lg flex items-center justify-center gap-2"
     >
       <span>{message}</span>
       {onRetry && (

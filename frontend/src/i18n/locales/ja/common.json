@@ -76,7 +76,11 @@
     "badugi": "バドゥーギ",
     "scorpion": "スコーピオン",
     "accordion": "アコーディオン",
-    "trash": "トラッシュ"
+    "sevenbridge": "セブンブリッジ",
+    "trash": "トラッシュ",
+    "president": "プレジデント",
+    "cassino": "カッシーノ",
+    "spanish21": "スパニッシュ21"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -116,10 +120,12 @@
   },
   "button": {
     "reset": "リセット",
+    "nextGame": "次のゲーム",
     "pass": "パス",
     "cancel": "キャンセル",
     "confirmReset": "リセット確認",
     "confirmResetMessage": "本当にゲームをリセットしますか？",
+    "confirmLeaveRoundMessage": "ページを離れると現在のラウンドが破棄されます。続けますか？",
     "confirm": "確認",
     "hint": "ヒント",
     "retry": "再試行",

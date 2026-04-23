@@ -70,8 +70,6 @@ func newFortyThievesDefaultOutput(msg string) *FortyThievesWebOutput {
 
 func fortyThievesDispatch(bc *baseController, w http.ResponseWriter, fi usecase.FortyThievesInteractorIF, param FortyThievesWebInput, newDefault func(string) *FortyThievesWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, fi.Reset())
 	case "d", "draw":
 		bc.writePresenterResponse(w, fi.Draw())
 	case "m", "move":
@@ -89,7 +87,7 @@ func fortyThievesDispatch(bc *baseController, w http.ResponseWriter, fi usecase.
 		}
 		bc.writePresenterResponse(w, fi.UndoN(*param.N))
 	default:
-		return dispatchHintAndLog(param.Command, bc, w, fi.Hint, fi.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, fi.Reset, fi.Hint, fi.ActionLog)
 	}
 	return true
 }

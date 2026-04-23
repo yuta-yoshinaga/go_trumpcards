@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { oldmaidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -30,7 +31,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CpuAction, OldMaidResponse } from '../types/card';
@@ -155,6 +156,11 @@ function OldMaidPageContent() {
     bindings: actionBindings,
     enabled: isHumanTurnForKbd && !loading,
   });
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    handleReset();
+  }, [handleReset, hideActionLog]);
 
   if (!displayState) return <OldMaidSkeleton />;
 
@@ -358,21 +364,14 @@ function OldMaidPageContent() {
               >
                 {t('button.settings')}
               </button>
-              <span data-tutorial="om-reset-button">
-                <button
-                  type="button"
-                  className={`${btnOutline} min-w-[80px]`}
-                  disabled={loading}
-                  onClick={() =>
-                    requestConfirm(() => {
-                      hideActionLog();
-                      handleReset();
-                    })
-                  }
-                >
-                  {tc('button.reset')}
-                </button>
-              </span>
+              <GameResetButton
+                isGameEnd={!!state.gameEndFlag}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="om-reset-button"
+                className="min-w-[80px]"
+              />
               <span data-tutorial="om-draw-button">
                 <button
                   type="button"

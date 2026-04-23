@@ -529,7 +529,7 @@ describe('KlondikePage', () => {
   it('playing buttons not shown when game is over', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     // Draw, hint, autocomplete, giveup buttons should not be visible
     expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
@@ -540,7 +540,7 @@ describe('KlondikePage', () => {
   it('reset button always visible', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
   });
 
   it('displays message with messageCode', async () => {
@@ -630,7 +630,7 @@ describe('KlondikePage', () => {
   it('game clear hides playing-only footer buttons', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     // Footer should not have draw/hint/autocomplete/giveup
     const footerButtons = screen.getAllByRole('button').filter((btn) => btn.closest('.shrink-0.border-t'));
@@ -653,8 +653,7 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
 
     mockExec.mockResolvedValue(playingState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
 
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
   });

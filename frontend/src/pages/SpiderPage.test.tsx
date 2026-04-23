@@ -198,7 +198,7 @@ describe('SpiderPage', () => {
   it('playing buttons not shown when game is over', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '自動完成' })).not.toBeInTheDocument();
@@ -208,7 +208,7 @@ describe('SpiderPage', () => {
   it('reset button always visible', async () => {
     mockExec.mockResolvedValue(gameOverState);
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
   });
 
   it('shows confirm dialog when reset button is clicked', async () => {
@@ -388,8 +388,7 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
 
     mockExec.mockResolvedValue(playingState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
 
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
   });

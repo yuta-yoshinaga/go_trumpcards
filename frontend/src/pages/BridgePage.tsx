@@ -8,12 +8,14 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BridgeSkeleton } from '../components/skeleton/BridgeSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { CPU_DIFFICULTY_OPTIONS, useBridgeGame } from '../hooks/useBridgeGame';
@@ -24,7 +26,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -183,6 +185,13 @@ function BridgePageContent() {
 
   const phaseNames = usePhaseNames('bridge', BRIDGE_PHASE_KEYS);
 
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void apiExec('reset', undefined, undefined, undefined, undefined, {
+      cpuDifficulty: bridgeConfig.cpuDifficulty,
+    });
+  }, [apiExec, hideActionLog, bridgeConfig.cpuDifficulty]);
+
   if (!state) return <BridgeSkeleton />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
@@ -319,28 +328,14 @@ function BridgePageContent() {
                 )}
 
                 {/* Current trick */}
-                {state.currentTrick.length > 0 && (
-                  <div className="my-3 p-3 rounded bg-black/40" data-tutorial="br-trick-display">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('currentTrick')}</div>
-                    <div className="flex gap-2">
-                      {state.currentTrick.map((trickCard) => (
-                        <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                          <AnimatedCard
-                            card={trickCard.card}
-                            width={cardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
-                          <div className="text-game-text-muted text-xs mt-1">
-                            {playerName(
-                              state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
-                              state.players[trickCard.playerIdx]?.isHuman ?? false,
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <TrickDisplay
+                  currentTrick={state.currentTrick}
+                  players={state.players}
+                  cardWidth={cardWidth}
+                  label={t('currentTrick')}
+                  dataTutorial="br-trick-display"
+                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
 
                 {/* Dummy hand */}
                 {state.openingLeadDone && state.dummyHand && state.dummyHand.length > 0 && (
@@ -616,22 +611,13 @@ function BridgePageContent() {
               )}
 
               {/* Reset */}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="br-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return apiExec('reset', undefined, undefined, undefined, undefined, {
-                      cpuDifficulty: bridgeConfig.cpuDifficulty,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="br-reset-button"
+              />
             </div>
           </GameFooter>
         </>

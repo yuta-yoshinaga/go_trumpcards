@@ -78,12 +78,7 @@ func warDispatch(
 	switch param.Command {
 	case "r", "reset":
 		bc.writePresenterResponse(w, wi.ResetWithConfig(param.ToConfig()))
-	case "s", "step":
-		bc.writePresenterResponse(w, wi.Step())
-	case "log", "l":
-		bc.writePresenterResponse(w, wi.ActionLog())
-	default:
-		return false
+		return true
 	}
-	return true
+	return dispatchResetStepLog(param.Command, bc, w, wi)
 }

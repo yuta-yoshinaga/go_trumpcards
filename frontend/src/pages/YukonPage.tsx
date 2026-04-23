@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
@@ -30,7 +31,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { YukonResponse } from '../types/card';
 import { YukonPhase } from '../types/phases';
@@ -218,12 +219,10 @@ function YukonPageContent() {
   });
 
   // Action handlers
-  const handleReset = useCallback(() => {
-    requestConfirm(() => {
-      void apiExec('reset');
-      playSound('shuffle');
-    });
-  }, [apiExec, requestConfirm, playSound]);
+  const handleManualReset = useCallback(() => {
+    void apiExec('reset');
+    playSound('shuffle');
+  }, [apiExec, playSound]);
 
   const handleGiveUp = useCallback(() => {
     void apiExec('giveup');
@@ -448,8 +447,8 @@ function YukonPageContent() {
                                   className={`${focusRingWhite} rounded-lg transition-all ${
                                     isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
                                   } ${isDragSrc ? 'opacity-50' : ''} ${
-                                    hintFrom ? 'ring-2 ring-ds-info animate-pulse' : ''
-                                  } ${hintTo ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
+                                    hintFrom ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''
+                                  } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
                                   onClick={() => {
                                     if (selectedSource) {
                                       if (isLast) {
@@ -511,9 +510,13 @@ function YukonPageContent() {
             />
 
             <GameFooter>
-              <button type="button" className={btnPrimary} onClick={handleReset} data-tutorial="yk-reset-button">
-                {t('common:reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="yk-reset-button"
+              />
 
               {isPlaying && (
                 <>

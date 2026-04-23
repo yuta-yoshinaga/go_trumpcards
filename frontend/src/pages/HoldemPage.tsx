@@ -14,6 +14,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -35,7 +36,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -174,6 +175,11 @@ function HoldemPageContent() {
   useEffect(() => {
     exec('reset');
   }, [exec]);
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void exec('reset', undefined, { cpuMetaAI });
+  }, [exec, hideActionLog, cpuMetaAI]);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -537,21 +543,14 @@ function HoldemPageContent() {
                 </div>
               </div>
             </details>
-            <div className="text-center" data-tutorial="he-reset-button">
-              <button
-                type="button"
-                className={`${btnOutline} min-w-[90px]`}
-                disabled={loading}
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    exec('reset', undefined, { cpuMetaAI });
-                  })
-                }
-              >
-                {tc('button.reset')}
-              </button>
-            </div>
+            <GameResetButton
+              isGameEnd={phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="he-reset-button"
+              className="min-w-[90px]"
+            />
           </GameFooter>
         </>
       )}

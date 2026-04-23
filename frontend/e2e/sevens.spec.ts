@@ -5,10 +5,10 @@ test.describe('Sevens E2E', () => {
   test('plays a full game: reset → play or pass each turn → end → reset', async ({ page }) => {
     await navigateTo(page, '/sevens');
 
-    // Click リセット to start
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await expect(resetButton).toBeVisible();
-    await resetButton.click();
+    // Click リセット to start (mid-game: confirm dialog)
+    const midResetButton = page.getByRole('button', { name: 'リセット' });
+    await expect(midResetButton).toBeVisible();
+    await midResetButton.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
@@ -43,9 +43,9 @@ test.describe('Sevens E2E', () => {
 
     expect(gameEnded).toBe(true);
 
-    // Reset for next game
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
+    // Reset for next game (end state: no confirm dialog)
+    const endResetButton = page.getByRole('button', { name: '次のゲーム' });
+    await endResetButton.click();
     await waitForLoaded(page);
   });
 });

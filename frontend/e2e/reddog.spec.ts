@@ -14,7 +14,7 @@ test.describe('Red Dog E2E', () => {
     // After bet, the game may go to SPREAD_DECISION or skip to END (pair/consecutive)
     const raiseButton = page.getByRole('button', { name: 'レイズ' });
     const stayButton = page.getByRole('button', { name: 'ステイ' });
-    const resetButton = page.getByRole('button', { name: 'リセット' });
+    const resetButton = page.getByRole('button', { name: '次のゲーム' });
 
     if (await isVisibleWithin(raiseButton, TIMEOUT_TRANSITION)) {
       // SPREAD_DECISION phase: choose stay
@@ -22,12 +22,11 @@ test.describe('Red Dog E2E', () => {
       await waitForLoaded(page);
     }
 
-    // END phase: リセット button should be visible
+    // END phase: 次のゲーム button should be visible
     await expect(resetButton).toBeVisible({ timeout: TIMEOUT_ACTION });
 
     // Reset back to bet phase
     await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
     await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
   });
@@ -35,7 +34,9 @@ test.describe('Red Dog E2E', () => {
   test('raise flow when spread decision appears', async ({ page }) => {
     await navigateTo(page, '/reddog');
 
-    // Retry until we get a spread decision (pair/consecutive auto-resolves)
+    // Retry until we get a spread decision. Pair → PairThird (no visible
+    // button to advance) and consecutive → push/END. In either non-spread
+    // case, navigate away to fully reset the backend session.
     for (let attempt = 0; attempt < 20; attempt++) {
       const betButton = page.getByRole('button', { name: 'ベット' });
       await expect(betButton).toBeVisible({ timeout: TIMEOUT_ACTION });
@@ -49,22 +50,25 @@ test.describe('Red Dog E2E', () => {
         await waitForLoaded(page);
 
         // END phase
-        const resetButton = page.getByRole('button', { name: 'リセット' });
+        const resetButton = page.getByRole('button', { name: '次のゲーム' });
         await expect(resetButton).toBeVisible({ timeout: TIMEOUT_ACTION });
 
         await resetButton.click();
-        await page.getByRole('button', { name: '確認' }).click();
         await waitForLoaded(page);
         await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
         return;
       }
 
-      // Auto-resolved (pair/consecutive) — reset and try again
-      const resetButton = page.getByRole('button', { name: 'リセット' });
-      await expect(resetButton).toBeVisible({ timeout: TIMEOUT_ACTION });
-      await resetButton.click();
-      await page.getByRole('button', { name: '確認' }).click();
-      await waitForLoaded(page);
+      // Non-spread path: could be auto-END (consecutive) or stuck PairThird
+      // (no visible button). Re-navigate to reset the session either way.
+      const nextGameButton = page.getByRole('button', { name: '次のゲーム' });
+      if (await isVisibleWithin(nextGameButton, TIMEOUT_ACTION)) {
+        await nextGameButton.click();
+        await waitForLoaded(page);
+      } else {
+        // Stuck in PairThird — reload the page to restart the session.
+        await navigateTo(page, '/reddog');
+      }
     }
 
     // If we never got a spread in 20 attempts, still pass (extremely unlikely)

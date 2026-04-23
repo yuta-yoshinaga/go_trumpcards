@@ -8,11 +8,12 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -23,7 +24,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { HeartsResponse } from '../types/card';
@@ -169,6 +170,15 @@ function HeartsPageContent() {
 
   const phaseNames = usePhaseNames('hearts', HEARTS_PHASE_KEYS);
 
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void exec('reset', undefined, undefined, {
+      cpuDifficulty: heartsConfig.cpuDifficulty,
+      pointLimit: heartsConfig.pointLimit,
+      omnibusJD: heartsConfig.omnibusJD,
+    });
+  }, [exec, hideActionLog, heartsConfig.cpuDifficulty, heartsConfig.pointLimit, heartsConfig.omnibusJD]);
+
   if (!state) return <HeartsSkeleton />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
@@ -261,28 +271,14 @@ function HeartsPageContent() {
                 )}
 
                 {/* Current trick */}
-                {state.currentTrick.length > 0 && (
-                  <div className="my-3 p-3 rounded bg-black/40" data-tutorial="ht-trick-display">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('currentTrick')}</div>
-                    <div className="flex gap-2">
-                      {state.currentTrick.map((trickCard) => (
-                        <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                          <AnimatedCard
-                            card={trickCard.card}
-                            width={cardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
-                          <div className="text-game-text-muted text-xs mt-1">
-                            {playerName(
-                              state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
-                              state.players[trickCard.playerIdx]?.isHuman ?? false,
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <TrickDisplay
+                  currentTrick={state.currentTrick}
+                  players={state.players}
+                  cardWidth={cardWidth}
+                  label={t('currentTrick')}
+                  dataTutorial="ht-trick-display"
+                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </div>
 
               {/* Right: info sidebar */}
@@ -468,24 +464,13 @@ function HeartsPageContent() {
                   {t('nextRound')}
                 </button>
               )}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="ht-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return exec('reset', undefined, undefined, {
-                      cpuDifficulty: heartsConfig.cpuDifficulty,
-                      pointLimit: heartsConfig.pointLimit,
-                      omnibusJD: heartsConfig.omnibusJD,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="ht-reset-button"
+              />
             </div>
           </GameFooter>
         </>

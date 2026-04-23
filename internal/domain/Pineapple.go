@@ -53,10 +53,8 @@ type Pineapple struct {
 	vpipTracked     []bool
 	pfrTracked      []bool
 	threeBetTracked []bool
-	handCount       int
+	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
 	lastCpuError    error
-	rebuyCounts     []int
-	addonUsed       []bool
 	rebuyPhaseType  int
 	actionLog       []*ActionLogEntry
 	humanProfile    *BettingHumanProfile
@@ -66,7 +64,7 @@ type Pineapple struct {
 
 // NewPineapple コンストラクタ
 func NewPineapple(trumpCards *TrumpCards, players []*PineapplePlayer, config PineappleConfig) *Pineapple {
-	return &Pineapple{
+	p := &Pineapple{
 		communityCardBettingBase: communityCardBettingBase{
 			actedFlags: make([]bool, len(players)),
 		},
@@ -80,12 +78,12 @@ func NewPineapple(trumpCards *TrumpCards, players []*PineapplePlayer, config Pin
 		vpipTracked:     make([]bool, len(players)),
 		pfrTracked:      make([]bool, len(players)),
 		threeBetTracked: make([]bool, len(players)),
-		rebuyCounts:     make([]int, len(players)),
-		addonUsed:       make([]bool, len(players)),
 		discardDone:     make([]bool, len(players)),
 		config:          config,
 		phase:           PineapplePhaseInit,
 	}
+	p.initTournamentState(len(players))
+	return p
 }
 
 // NewDefaultPineapple returns Pineapple with the default table size and
@@ -1221,8 +1219,6 @@ func (p *Pineapple) Resize(players []*PineapplePlayer) {
 	p.vpipTracked = make([]bool, n)
 	p.pfrTracked = make([]bool, n)
 	p.threeBetTracked = make([]bool, n)
-	p.rebuyCounts = make([]int, n)
-	p.addonUsed = make([]bool, n)
 	p.discardDone = make([]bool, n)
-	p.handCount = 0
+	p.initTournamentState(n)
 }

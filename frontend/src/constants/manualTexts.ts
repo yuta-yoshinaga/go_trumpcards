@@ -10,6 +10,7 @@ import bridge from '../../../docs/manual/web/bridge.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
 import canfield from '../../../docs/manual/web/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
+import cassino from '../../../docs/manual/web/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
@@ -42,14 +43,17 @@ import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
 import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
+import president from '../../../docs/manual/web/president.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
+import sevenbridge from '../../../docs/manual/web/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
 import spades from '../../../docs/manual/web/spades.md?raw';
+import spanish21 from '../../../docs/manual/web/spanish21.md?raw';
 import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
@@ -108,6 +112,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/spanish21': spanish21,
   '/speed': speed,
   '/spider': spider,
   '/threecard': threecard,
@@ -119,6 +124,9 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/whist': whist,
   '/yukon': yukon,
   '/scorpion': scorpion,
+  '/sevenbridge': sevenbridge,
   '/accordion': accordion,
   '/trash': trash,
+  '/president': president,
+  '/cassino': cassino,
 };

@@ -169,4 +169,11 @@ describe('CardBack', () => {
     render(<CardBack />);
     expect(screen.getByRole('img')).toHaveStyle({ width: '80px', maxWidth: '100%' });
   });
+
+  it('uses design tokens for border and shadow (not hardcoded colors)', () => {
+    render(<CardBack />);
+    const styleAttr = screen.getByRole('img').getAttribute('style') ?? '';
+    expect(styleAttr).toContain('var(--color-ds-card-back-border)');
+    expect(styleAttr).toContain('var(--shadow-ds-card-back)');
+  });
 });

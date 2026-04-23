@@ -76,7 +76,11 @@
     "badugi": "Badugi",
     "scorpion": "Scorpion",
     "accordion": "Accordion",
-    "trash": "Trash"
+    "sevenbridge": "Seven Bridge",
+    "trash": "Trash",
+    "president": "President",
+    "cassino": "Cassino",
+    "spanish21": "Spanish 21"
   },
   "sound": {
     "mute": "Mute sound",
@@ -116,10 +120,12 @@
   },
   "button": {
     "reset": "Reset",
+    "nextGame": "Next Game",
     "pass": "Pass",
     "cancel": "Cancel",
     "confirmReset": "Confirm Reset",
     "confirmResetMessage": "Are you sure you want to reset the game?",
+    "confirmLeaveRoundMessage": "Leaving this page will discard the current round. Continue?",
     "confirm": "Confirm",
     "hint": "Hint",
     "retry": "Retry",

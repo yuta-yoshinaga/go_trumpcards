@@ -303,4 +303,24 @@ func init() {
 			return usecase.NewTrashInteractor(domain.NewDefaultTrash(), new(presenter.TrashWebPresenter))
 		},
 		controller.NewTrashWebController)
+	BindWebControllerFor("sevenbridge",
+		func() usecase.SevenBridgeInteractorIF {
+			return usecase.NewSevenBridgeInteractor(domain.NewDefaultSevenBridge(), new(presenter.SevenBridgeWebPresenter))
+		},
+		controller.NewSevenBridgeWebController)
+	BindWebControllerFor("president",
+		func() usecase.PresidentInteractorIF {
+			return usecase.NewPresidentInteractor(domain.NewDefaultPresident(), new(presenter.PresidentWebPresenter))
+		},
+		controller.NewPresidentWebController)
+	BindWebControllerFor("cassino",
+		func() usecase.CassinoInteractorIF {
+			return usecase.NewCassinoInteractor(domain.NewDefaultCassino(), new(presenter.CassinoWebPresenter))
+		},
+		controller.NewCassinoWebController)
+	BindWebControllerFor("spanish21",
+		func() usecase.BlackJackInteractorIF {
+			return usecase.NewBlackJackInteractor(domain.NewSpanish21BlackJack(), new(presenter.BlackJackWebPresenter))
+		},
+		controller.NewBlackJackWebController)
 }

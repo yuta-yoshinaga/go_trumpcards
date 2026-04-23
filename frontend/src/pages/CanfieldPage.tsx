@@ -7,6 +7,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
@@ -431,14 +432,14 @@ function CanfieldPageContent() {
               </button>
             </>
           )}
-          <button
-            type="button"
-            className={`${btnDanger} ${focusRingWhite}`}
-            onClick={() => requestConfirm(handleReset)}
-            data-tutorial="cf-reset-button"
-          >
-            {tc('button.reset')}
-          </button>
+          <GameResetButton
+            isGameEnd={isEnded}
+            onReset={handleReset}
+            requestConfirm={requestConfirm}
+            loading={loading}
+            dataTutorial="cf-reset-button"
+            className={focusRingWhite}
+          />
         </div>
       </GameFooter>
 

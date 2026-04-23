@@ -64,8 +64,6 @@ func newBaccaratDefaultOutput(msg string) *BaccaratWebOutput {
 
 func baccaratDispatch(bc *baseController, w http.ResponseWriter, bi usecase.BaccaratInteractorIF, param BaccaratWebInput, _ func(string) *BaccaratWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, bi.Reset())
 	case "b", "bet":
 		bt := deref(param.BetType)
 		ppBet := deref(param.PlayerPairBet)
@@ -74,7 +72,7 @@ func baccaratDispatch(bc *baseController, w http.ResponseWriter, bi usecase.Bacc
 	case "ch", "clearhistory":
 		bc.writePresenterResponse(w, bi.ClearHistory())
 	default:
-		return dispatchLog(param.Command, bc, w, bi.ActionLog)
+		return dispatchResetAndLog(param.Command, bc, w, bi.Reset, bi.ActionLog)
 	}
 	return true
 }

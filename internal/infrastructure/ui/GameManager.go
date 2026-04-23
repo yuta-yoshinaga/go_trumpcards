@@ -9,14 +9,23 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// GameRegistryEntry holds a game's name, description, and CUI constructor.
+// GameRegistryEntry holds a game's name and CUI constructor.
+// Description lives on games.Game (issue #1459 SSoT); use Description() to
+// look it up for a given entry.
 type GameRegistryEntry struct {
-	Name        string
-	Description string
-	NewCui      func() cuiGame
+	Name   string
+	NewCui func() cuiGame
+}
+
+// Description returns the display description for this entry, sourced from
+// the games package SSoT. Uses the single-entry lookup so calling this in a
+// loop does not repeatedly touch the descriptions map.
+func (e GameRegistryEntry) Description() string {
+	return games.Description(e.Name)
 }
 
 // cuiEntry builds a generic CUI game from a controller and a help spec.
@@ -25,12 +34,12 @@ func cuiEntry(ctrl CuiExecer, spec CuiHelpSpec) cuiGame {
 	return newCuiGame(ctrl, BuildCuiHelp(spec))
 }
 
-// gameRegistry is the single source of truth for all games. Each entry wires
-// the game's controller/interactor/presenter and declares its help text
-// inline — this file is the one place to look to see or add a game.
-// Order determines display order in help, games list, and completion.
+// gameRegistry wires each game's CUI constructor. Name and Description are
+// carried by the games package (see internal/infrastructure/games/registry.go)
+// — this slice only holds the CLI-specific NewCui factory. Order mirrors the
+// games registry; drift is enforced by TestRegistryMatchesCLI.
 var gameRegistry = []GameRegistryEntry{
-	{Name: "blackjack", Description: "BlackJack (ブラックジャック)", NewCui: func() cuiGame {
+	{Name: "blackjack", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewBlackJackCuiController(usecase.NewBlackJackInteractor(
 				domain.NewDefaultBlackJack(), new(presenter.BlackJackCuiPresenter))),
@@ -48,7 +57,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"blackjack.helpSetCpuCount"},
 			})
 	}},
-	{Name: "poker", Description: "5-card Draw Poker (ポーカー)", NewCui: func() cuiGame {
+	{Name: "poker", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPokerCuiController(usecase.NewPokerInteractor(
 				domain.NewDefaultPoker(), new(presenter.PokerCuiPresenter))),
@@ -67,7 +76,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"poker.helpBettingLimit", "poker.helpLowball"},
 			})
 	}},
-	{Name: "oldmaid", Description: "Old Maid (ババ抜き)", NewCui: func() cuiGame {
+	{Name: "oldmaid", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewOldMaidCuiController(usecase.NewOldMaidInteractor(
 				domain.NewDefaultOldMaid(), new(presenter.OldMaidCuiPresenter))),
@@ -77,7 +86,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"oldmaid.helpSetMode", "oldmaid.helpSetPlacement", "oldmaid.helpSetMemoryAI"},
 			})
 	}},
-	{Name: "daifugo", Description: "Daifugo / Great Fool (大富豪)", NewCui: func() cuiGame {
+	{Name: "daifugo", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewDaifugoCuiController(usecase.NewDaifugoInteractor(
 				domain.NewDefaultDaifugo(), new(presenter.DaifugoCuiPresenter))),
@@ -87,24 +96,18 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"daifugo.helpSetDifficulty", "daifugo.helpSetJoker", "daifugo.helpSetRule"},
 			})
 	}},
-	{Name: "sevens", Description: "Sevens (7並べ)", NewCui: func() cuiGame {
-		return newCuiGame(
+	{Name: "sevens", NewCui: func() cuiGame {
+		return cuiEntry(
 			controller.NewSevensCuiController(usecase.NewSevensInteractor(
 				domain.NewDefaultSevens(), new(presenter.SevensCuiPresenter))),
-			[]string{
-				i18n.T("sevens.helpTitle"),
-				"",
-				i18n.T("gameCommands"),
-				i18n.T("sevens.helpPlay"),
-				"",
-				i18n.T("session"),
-				"  r [tunnel] [joker=N] [strategy] [passes=N]  reset with options",
-				i18n.T("quitEntry"),
-				i18n.T("helpEntry"),
+			CuiHelpSpec{
+				TitleKey:      "sevens.helpTitle",
+				CommandKeys:   []string{"sevens.helpPlay"},
+				ResetOverride: "  r [tunnel] [joker=N] [strategy] [passes=N]  reset with options",
 			})
 	}},
-	{Name: "doubt", Description: "Doubt (ダウト)", NewCui: func() cuiGame { return NewDoubtCui() }},
-	{Name: "holdem", Description: "Texas Hold'em (テキサスホールデム)", NewCui: func() cuiGame {
+	{Name: "doubt", NewCui: func() cuiGame { return NewDoubtCui() }},
+	{Name: "holdem", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewHoldemCuiController(usecase.NewHoldemInteractor(
 				domain.NewDefaultHoldem(), new(presenter.HoldemCuiPresenter))),
@@ -133,7 +136,7 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
-	{Name: "omaha", Description: "Omaha Hold'em (オマハホールデム)", NewCui: func() cuiGame {
+	{Name: "omaha", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewOmahaCuiController(usecase.NewOmahaInteractor(
 				domain.NewDefaultOmaha(), new(presenter.OmahaCuiPresenter))),
@@ -162,7 +165,7 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
-	{Name: "shortdeck", Description: "Short Deck (6+ Hold'em) (ショートデック)", NewCui: func() cuiGame {
+	{Name: "shortdeck", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShortDeckCuiController(usecase.NewShortDeckInteractor(
 				domain.NewDefaultShortDeck(), new(presenter.ShortDeckCuiPresenter))),
@@ -191,7 +194,7 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
-	{Name: "pineapple", Description: "Pineapple Poker (パイナップルポーカー)", NewCui: func() cuiGame {
+	{Name: "pineapple", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPineappleCuiController(usecase.NewPineappleInteractor(
 				domain.NewDefaultPineapple(), new(presenter.PineappleCuiPresenter))),
@@ -221,7 +224,7 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
-	{Name: "hearts", Description: "Hearts (ハーツ)", NewCui: func() cuiGame {
+	{Name: "hearts", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewHeartsCuiController(usecase.NewHeartsInteractor(
 				domain.NewDefaultHearts(), new(presenter.HeartsCuiPresenter))),
@@ -232,7 +235,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"hearts.helpSetDifficulty", "hearts.helpSetLimit"},
 			})
 	}},
-	{Name: "memory", Description: "Memory / Concentration (神経衰弱)", NewCui: func() cuiGame {
+	{Name: "memory", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewMemoryCuiController(usecase.NewMemoryInteractor(
 				domain.NewDefaultMemory(), new(presenter.MemoryCuiPresenter))),
@@ -243,7 +246,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"memory.helpSetDifficulty"},
 			})
 	}},
-	{Name: "klondike", Description: "Klondike Solitaire (ソリティア)", NewCui: func() cuiGame {
+	{Name: "klondike", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewKlondikeCuiController(usecase.NewKlondikeInteractor(
 				domain.NewDefaultKlondike(), new(presenter.KlondikeCuiPresenter))),
@@ -262,7 +265,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "freecell", Description: "FreeCell (フリーセル)", NewCui: func() cuiGame {
+	{Name: "freecell", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewFreeCellCuiController(usecase.NewFreeCellInteractor(
 				domain.NewDefaultFreeCell(), new(presenter.FreeCellCuiPresenter))),
@@ -282,7 +285,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "baccarat", Description: "Baccarat (バカラ)", NewCui: func() cuiGame {
+	{Name: "baccarat", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewBaccaratCuiController(usecase.NewBaccaratInteractor(
 				domain.NewDefaultBaccarat(), new(presenter.BaccaratCuiPresenter))),
@@ -295,7 +298,7 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
-	{Name: "spades", Description: "Spades (スペード)", NewCui: func() cuiGame {
+	{Name: "spades", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpadesCuiController(usecase.NewSpadesInteractor(
 				domain.NewDefaultSpades(), new(presenter.SpadesCuiPresenter))),
@@ -306,7 +309,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"spades.helpSetDifficulty", "spades.helpSetLimit"},
 			})
 	}},
-	{Name: "crazyeights", Description: "Crazy Eights (クレイジーエイト)", NewCui: func() cuiGame {
+	{Name: "crazyeights", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewCrazyEightsCuiController(usecase.NewCrazyEightsInteractor(
 				domain.NewDefaultCrazyEights(), new(presenter.CrazyEightsCuiPresenter))),
@@ -317,7 +320,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"crazyeights.helpSetDifficulty", "crazyeights.helpSetLimit"},
 			})
 	}},
-	{Name: "ginrummy", Description: "Gin Rummy (ジンラミー)", NewCui: func() cuiGame {
+	{Name: "ginrummy", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewGinRummyCuiController(usecase.NewGinRummyInteractor(
 				domain.NewDefaultGinRummy(), new(presenter.GinRummyCuiPresenter))),
@@ -335,11 +338,11 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"ginrummy.helpSetDifficulty", "ginrummy.helpSetLimit"},
 			})
 	}},
-	{Name: "canasta", Description: "Canasta (カナスタ)", NewCui: func() cuiGame {
-		return newCuiGame(
+	{Name: "canasta", NewCui: func() cuiGame {
+		return cuiEntry(
 			controller.NewCanastaCuiController(usecase.NewCanastaInteractor(
 				domain.NewDefaultCanasta(), new(presenter.CanastaCuiPresenter))),
-			[]string{
+			CuiHelpSpec{Body: []string{
 				"Canasta (カナスタ) Help",
 				"",
 				"Game Commands:",
@@ -360,9 +363,9 @@ var gameRegistry = []GameRegistryEntry{
 				"  r / reset            reset game",
 				"  q / quit             quit",
 				"  ? / help             show help",
-			})
+			}})
 	}},
-	{Name: "spider", Description: "Spider Solitaire (スパイダーソリティア)", NewCui: func() cuiGame {
+	{Name: "spider", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpiderCuiController(usecase.NewSpiderInteractor(
 				domain.NewDefaultSpider(), new(presenter.SpiderCuiPresenter))),
@@ -378,7 +381,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "napoleon", Description: "Napoleon (ナポレオン)", NewCui: func() cuiGame {
+	{Name: "napoleon", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewNapoleonCuiController(usecase.NewNapoleonInteractor(
 				domain.NewDefaultNapoleon(), new(presenter.NapoleonCuiPresenter))),
@@ -396,7 +399,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"napoleon.helpSetDifficulty", "napoleon.helpSetLimit", "napoleon.helpSetMinBid"},
 			})
 	}},
-	{Name: "indianpoker", Description: "Indian Poker (インディアンポーカー)", NewCui: func() cuiGame {
+	{Name: "indianpoker", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewIndianPokerCuiController(usecase.NewIndianPokerInteractor(
 				domain.NewDefaultIndianPoker(), new(presenter.IndianPokerCuiPresenter))),
@@ -413,7 +416,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"indianpoker.helpAnte", "indianpoker.helpBettingLimit", "indianpoker.helpMetaAI"},
 			})
 	}},
-	{Name: "videopoker", Description: "Video Poker Jacks or Better (ビデオポーカー)", NewCui: func() cuiGame {
+	{Name: "videopoker", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewVideoPokerCuiController(usecase.NewVideoPokerInteractor(
 				domain.NewDefaultVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
@@ -423,7 +426,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
-	{Name: "deuceswild", Description: "Deuces Wild (デューシーズワイルド)", NewCui: func() cuiGame {
+	{Name: "deuceswild", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewVideoPokerCuiController(usecase.NewVideoPokerInteractor(
 				domain.NewDeucesWildVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
@@ -433,7 +436,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
-	{Name: "jokerpoker", Description: "Joker Poker (ジョーカーポーカー)", NewCui: func() cuiGame {
+	{Name: "jokerpoker", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewVideoPokerCuiController(usecase.NewVideoPokerInteractor(
 				domain.NewJokerPokerVideoPoker(), new(presenter.VideoPokerCuiPresenter))),
@@ -443,7 +446,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
-	{Name: "euchre", Description: "Euchre (ユーカー)", NewCui: func() cuiGame {
+	{Name: "euchre", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewEuchreCuiController(usecase.NewEuchreInteractor(
 				domain.NewDefaultEuchre(), new(presenter.EuchreCuiPresenter))),
@@ -464,7 +467,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"euchre.helpSetDifficulty", "euchre.helpSetLimit"},
 			})
 	}},
-	{Name: "pyramid", Description: "Pyramid (ピラミッド)", NewCui: func() cuiGame {
+	{Name: "pyramid", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPyramidCuiController(usecase.NewPyramidInteractor(
 				domain.NewDefaultPyramid(), new(presenter.PyramidCuiPresenter))),
@@ -482,7 +485,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "tripeaks", Description: "TriPeaks (トリピークス)", NewCui: func() cuiGame {
+	{Name: "tripeaks", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewTriPeaksCuiController(usecase.NewTriPeaksInteractor(
 				domain.NewDefaultTriPeaks(), new(presenter.TriPeaksCuiPresenter))),
@@ -497,7 +500,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "cribbage", Description: "Cribbage (クリベッジ)", NewCui: func() cuiGame {
+	{Name: "cribbage", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewCribbageCuiController(usecase.NewCribbageInteractor(
 				domain.NewDefaultCribbage(), new(presenter.CribbageCuiPresenter))),
@@ -508,7 +511,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"cribbage.helpSetDifficulty", "cribbage.helpSetLimit"},
 			})
 	}},
-	{Name: "threecard", Description: "Three Card Poker (スリーカードポーカー)", NewCui: func() cuiGame {
+	{Name: "threecard", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewThreeCardCuiController(usecase.NewThreeCardInteractor(
 				domain.NewDefaultThreeCard(), new(presenter.ThreeCardCuiPresenter))),
@@ -518,7 +521,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
-	{Name: "ohhell", Description: "Oh Hell (オー・ヘル)", NewCui: func() cuiGame {
+	{Name: "ohhell", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewOhHellCuiController(usecase.NewOhHellInteractor(
 				domain.NewDefaultOhHell(), new(presenter.OhHellCuiPresenter))),
@@ -529,11 +532,11 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"ohhell.helpSetDifficulty", "ohhell.helpSetMaxHand"},
 			})
 	}},
-	{Name: "bridge", Description: "Contract Bridge (コントラクトブリッジ)", NewCui: func() cuiGame {
-		return newCuiGame(
+	{Name: "bridge", NewCui: func() cuiGame {
+		return cuiEntry(
 			controller.NewBridgeCuiController(usecase.NewBridgeInteractor(
 				domain.NewDefaultBridge(), new(presenter.BridgeCuiPresenter))),
-			[]string{
+			CuiHelpSpec{Body: []string{
 				"=== Contract Bridge ===",
 				"",
 				"Game Commands:",
@@ -551,9 +554,9 @@ var gameRegistry = []GameRegistryEntry{
 				"  r                        reset game",
 				"  q                        quit",
 				"  help                     show this help",
-			})
+			}})
 	}},
-	{Name: "speed", Description: "Speed (スピード)", NewCui: func() cuiGame {
+	{Name: "speed", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSpeedCuiController(usecase.NewSpeedInteractor(
 				domain.NewDefaultSpeed(), new(presenter.SpeedCuiPresenter))),
@@ -563,7 +566,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"speed.helpSetDifficulty"},
 			})
 	}},
-	{Name: "gofish", Description: "Go Fish (ゴーフィッシュ)", NewCui: func() cuiGame {
+	{Name: "gofish", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewGoFishCuiController(usecase.NewGoFishInteractor(
 				domain.NewDefaultGoFish(), new(presenter.GoFishCuiPresenter))),
@@ -573,7 +576,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"gofish.helpSetDifficulty"},
 			})
 	}},
-	{Name: "pinochle", Description: "Pinochle (ピノクル)", NewCui: func() cuiGame {
+	{Name: "pinochle", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPinochleCuiController(usecase.NewPinochleInteractor(
 				domain.NewDefaultPinochle(), new(presenter.PinochleCuiPresenter))),
@@ -592,7 +595,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"pinochle.helpSetDifficulty", "pinochle.helpSetLimit"},
 			})
 	}},
-	{Name: "golf", Description: "Golf Solitaire (ゴルフ)", NewCui: func() cuiGame {
+	{Name: "golf", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewGolfCuiController(usecase.NewGolfInteractor(
 				domain.NewDefaultGolf(), new(presenter.GolfCuiPresenter))),
@@ -602,7 +605,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "pigtail", Description: "Pig's Tail (ブタのしっぽ)", NewCui: func() cuiGame {
+	{Name: "pigtail", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPigsTailCuiController(usecase.NewPigsTailInteractor(
 				domain.NewDefaultPigsTail(), new(presenter.PigsTailCuiPresenter))),
@@ -611,7 +614,7 @@ var gameRegistry = []GameRegistryEntry{
 				CommandKeys: []string{"pigtail.helpAction"},
 			})
 	}},
-	{Name: "sevencardstud", Description: "Seven Card Stud (セブンカードスタッド)", NewCui: func() cuiGame {
+	{Name: "sevencardstud", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(
 				domain.NewDefaultSevenCardStud(), new(presenter.SevenCardStudCuiPresenter))),
@@ -642,7 +645,7 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
-	{Name: "clocksolitaire", Description: "Clock Solitaire (クロックソリティア)", NewCui: func() cuiGame {
+	{Name: "clocksolitaire", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewClockSolitaireCuiController(usecase.NewClockSolitaireInteractor(
 				domain.NewDefaultClockSolitaire(), new(presenter.ClockSolitaireCuiPresenter))),
@@ -652,11 +655,11 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "durak", Description: "Durak / Fool (ドゥラーク)", NewCui: func() cuiGame {
-		return newCuiGame(
+	{Name: "durak", NewCui: func() cuiGame {
+		return cuiEntry(
 			controller.NewDurakCuiController(usecase.NewDurakInteractor(
 				domain.NewDefaultDurak(), new(presenter.DurakCuiPresenter))),
-			[]string{
+			CuiHelpSpec{Body: []string{
 				i18n.T("durak.helpTitle"),
 				"",
 				i18n.T("gameCommands"),
@@ -669,9 +672,9 @@ var gameRegistry = []GameRegistryEntry{
 				"  l                        action log",
 				"",
 				i18n.T("commonCommands"),
-			})
+			}})
 	}},
-	{Name: "fortythieves", Description: "Forty Thieves (フォーティシーブス)", NewCui: func() cuiGame {
+	{Name: "fortythieves", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewFortyThievesCuiController(usecase.NewFortyThievesInteractor(
 				domain.NewDefaultFortyThieves(), new(presenter.FortyThievesCuiPresenter))),
@@ -690,7 +693,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "paigow", Description: "Pai Gow Poker (パイガオポーカー)", NewCui: func() cuiGame {
+	{Name: "paigow", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPaiGowCuiController(usecase.NewPaiGowInteractor(
 				domain.NewDefaultPaiGow(), new(presenter.PaiGowCuiPresenter))),
@@ -700,7 +703,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
-	{Name: "twotenjack", Description: "Two Ten Jack (ツーテンジャック)", NewCui: func() cuiGame {
+	{Name: "twotenjack", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewTwoTenJackCuiController(usecase.NewTwoTenJackInteractor(
 				domain.NewDefaultTwoTenJack(), new(presenter.TwoTenJackCuiPresenter))),
@@ -716,7 +719,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"twotenjack.helpSetDifficulty", "twotenjack.helpSetLimit"},
 			})
 	}},
-	{Name: "caribbeanstud", Description: "Caribbean Stud Poker (カリビアンスタッドポーカー)", NewCui: func() cuiGame {
+	{Name: "caribbeanstud", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewCaribbeanStudCuiController(usecase.NewCaribbeanStudInteractor(
 				domain.NewDefaultCaribbeanStud(), new(presenter.CaribbeanStudCuiPresenter))),
@@ -726,7 +729,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
-	{Name: "war", Description: "War (戦争)", NewCui: func() cuiGame {
+	{Name: "war", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewWarCuiController(usecase.NewWarInteractor(
 				domain.NewDefaultWar(), new(presenter.WarCuiPresenter))),
@@ -736,7 +739,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"war.helpSetMax"},
 			})
 	}},
-	{Name: "canfield", Description: "Canfield Solitaire (キャンフィールド)", NewCui: func() cuiGame {
+	{Name: "canfield", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewCanfieldCuiController(usecase.NewCanfieldInteractor(
 				domain.NewDefaultCanfield(), new(presenter.CanfieldCuiPresenter))),
@@ -757,7 +760,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "fiftyone", Description: "Fifty-one (フィフティワン)", NewCui: func() cuiGame {
+	{Name: "fiftyone", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewFiftyOneCuiController(usecase.NewFiftyOneInteractor(
 				domain.NewDefaultFiftyOne(), new(presenter.FiftyOneCuiPresenter))),
@@ -767,7 +770,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"fiftyone.helpSetDifficulty"},
 			})
 	}},
-	{Name: "yukon", Description: "Yukon Solitaire (ユーコン)", NewCui: func() cuiGame {
+	{Name: "yukon", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewYukonCuiController(usecase.NewYukonInteractor(
 				domain.NewDefaultYukon(), new(presenter.YukonCuiPresenter))),
@@ -784,7 +787,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "whist", Description: "Whist (ホイスト)", NewCui: func() cuiGame {
+	{Name: "whist", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewWhistCuiController(usecase.NewWhistInteractor(
 				domain.NewDefaultWhist(), new(presenter.WhistCuiPresenter))),
@@ -795,7 +798,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"whist.helpSetDifficulty", "whist.helpSetLimit"},
 			})
 	}},
-	{Name: "letitride", Description: "Let It Ride (レット・イット・ライド)", NewCui: func() cuiGame {
+	{Name: "letitride", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewLetItRideCuiController(usecase.NewLetItRideInteractor(
 				domain.NewDefaultLetItRide(), new(presenter.LetItRideCuiPresenter))),
@@ -805,11 +808,11 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
-	{Name: "pokersquares", Description: "Poker Squares (ポーカー・スクエアズ)", NewCui: func() cuiGame {
-		return newCuiGame(
+	{Name: "pokersquares", NewCui: func() cuiGame {
+		return cuiEntry(
 			controller.NewPokerSquaresCuiController(usecase.NewPokerSquaresInteractor(
 				domain.NewDefaultPokerSquares(), new(presenter.PokerSquaresCuiPresenter))),
-			[]string{
+			CuiHelpSpec{Body: []string{
 				"Poker Squares (ポーカー・スクエアズ)",
 				"",
 				i18n.T("gameCommands"),
@@ -822,9 +825,9 @@ var gameRegistry = []GameRegistryEntry{
 				i18n.T("resetEntry"),
 				i18n.T("quitEntry"),
 				i18n.T("helpEntry"),
-			})
+			}})
 	}},
-	{Name: "pageone", Description: "Page One (ページワン)", NewCui: func() cuiGame {
+	{Name: "pageone", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewPageOneCuiController(usecase.NewPageOneInteractor(
 				domain.NewDefaultPageOne(), new(presenter.PageOneCuiPresenter))),
@@ -841,7 +844,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"pageone.helpSetDifficulty", "pageone.helpSetLimit"},
 			})
 	}},
-	{Name: "reddog", Description: "Red Dog (レッドドッグ)", NewCui: func() cuiGame {
+	{Name: "reddog", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewRedDogCuiController(usecase.NewRedDogInteractor(
 				domain.NewDefaultRedDog(), new(presenter.RedDogCuiPresenter))),
@@ -851,7 +854,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
-	{Name: "badugi", Description: "Badugi (バドゥーギ)", NewCui: func() cuiGame {
+	{Name: "badugi", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewBadugiCuiController(usecase.NewBadugiInteractor(
 				domain.NewDefaultBadugi(), new(presenter.BadugiCuiPresenter))),
@@ -870,7 +873,7 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"badugi.helpBettingLimit", "badugi.helpCpuCount"},
 			})
 	}},
-	{Name: "razz", Description: "Razz (ラズ)", NewCui: func() cuiGame {
+	{Name: "razz", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewSevenCardStudCuiController(usecase.NewSevenCardStudInteractor(
 				domain.NewDefaultRazz(), new(presenter.SevenCardStudCuiPresenter))),
@@ -901,7 +904,7 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
-	{Name: "scorpion", Description: "Scorpion (スコーピオン)", NewCui: func() cuiGame {
+	{Name: "scorpion", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewScorpionCuiController(usecase.NewScorpionInteractor(
 				domain.NewDefaultScorpion(), new(presenter.ScorpionCuiPresenter))),
@@ -918,7 +921,7 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
-	{Name: "accordion", Description: "Accordion (アコーディオン)", NewCui: func() cuiGame {
+	{Name: "accordion", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewAccordionCuiController(usecase.NewAccordionInteractor(
 				domain.NewDefaultAccordion(), new(presenter.AccordionCuiPresenter))),
@@ -933,7 +936,7 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
-	{Name: "trash", Description: "Trash (トラッシュ)", NewCui: func() cuiGame {
+	{Name: "trash", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewTrashCuiController(usecase.NewTrashInteractor(
 				domain.NewDefaultTrash(), new(presenter.TrashCuiPresenter))),
@@ -945,6 +948,78 @@ var gameRegistry = []GameRegistryEntry{
 					"trash.helpCpu",
 					"trash.helpLog",
 				},
+			})
+	}},
+	{Name: "sevenbridge", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSevenBridgeCuiController(usecase.NewSevenBridgeInteractor(
+				domain.NewDefaultSevenBridge(), new(presenter.SevenBridgeCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "sevenbridge.helpTitle",
+				CommandKeys: []string{
+					"sevenbridge.helpDrawStock",
+					"sevenbridge.helpPon",
+					"sevenbridge.helpChi",
+					"sevenbridge.helpMeld",
+					"sevenbridge.helpLayoff",
+					"sevenbridge.helpDiscard",
+					"sevenbridge.helpNextRound",
+				},
+				SettingKeys: []string{"sevenbridge.helpSetDifficulty", "sevenbridge.helpSetLimit"},
+			})
+	}},
+	{Name: "president", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPresidentCuiController(usecase.NewPresidentInteractor(
+				domain.NewDefaultPresident(), new(presenter.PresidentCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "president.helpTitle",
+				CommandKeys: []string{
+					"president.helpPlay",
+					"president.helpPass",
+					"president.helpLog",
+				},
+				SettingKeys: []string{
+					"president.helpSetDifficulty",
+					"president.helpSetRule",
+				},
+			})
+	}},
+	{Name: "cassino", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCassinoCuiController(usecase.NewCassinoInteractor(
+				domain.NewDefaultCassino(), new(presenter.CassinoCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "cassino.helpTitle",
+				CommandKeys: []string{
+					"cassino.helpTake",
+					"cassino.helpBuild",
+					"cassino.helpTrail",
+					"cassino.helpNext",
+					"cassino.helpLog",
+				},
+				SettingKeys: []string{
+					"cassino.helpSetDifficulty",
+					"cassino.helpSetRule",
+				},
+			})
+	}},
+	{Name: "spanish21", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBlackJackCuiController(usecase.NewBlackJackInteractor(
+				domain.NewSpanish21BlackJack(), new(presenter.BlackJackCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spanish21.helpTitle",
+				CommandKeys: []string{
+					"blackjack.helpBet",
+					"blackjack.helpHit",
+					"blackjack.helpStand",
+					"blackjack.helpDouble",
+					"blackjack.helpSplit",
+					"blackjack.helpInsurance",
+					"blackjack.helpDeclineInsurance",
+				},
+				SettingKeys: []string{"blackjack.helpSetCpuCount"},
 			})
 	}},
 }
@@ -966,14 +1041,12 @@ func GameNames() []string {
 	return names
 }
 
-// GameDescriptions returns a map of game names to their display descriptions,
-// derived from gameRegistry. Returns a fresh copy on each call.
+// GameDescriptions returns a map of game names to their display descriptions.
+// Descriptions are sourced from the games package (issue #1459 SSoT); this
+// wrapper exists so CLI call sites don't have to import the games package
+// directly.
 func GameDescriptions() map[string]string {
-	m := make(map[string]string, len(gameRegistry))
-	for _, e := range gameRegistry {
-		m[e.Name] = e.Description
-	}
-	return m
+	return games.Descriptions()
 }
 
 // GameAliases maps short alias names to their canonical game names.
@@ -997,6 +1070,8 @@ var GameAliases = map[string]string{
 	"pgp":    "paigow",
 	"lir":    "letitride",
 	"ride":   "letitride",
+	"sp21":   "spanish21",
+	"s21":    "spanish21",
 }
 
 // cuiGame is implemented by each *Cui struct to expose its controller and help lines.

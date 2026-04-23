@@ -13,6 +13,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -32,7 +33,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
+import { btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -162,6 +163,10 @@ function PokerPageContent() {
   const phase = state?.phase ?? PokerPhase.INIT;
   const isBettingPhase = phase === PokerPhase.DEAL || phase === PokerPhase.SECOND_BET;
   const isEnd = phase === PokerPhase.END;
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void exec('reset', undefined, undefined, { bettingLimit, isLowball, cpuMetaAI });
+  }, [exec, hideActionLog, bettingLimit, isLowball, cpuMetaAI]);
   const humanPlayer = state?.players?.find((p) => p.isHuman);
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
@@ -451,20 +456,14 @@ function PokerPageContent() {
               ]}
             />
             <div className="text-center mt-2">
-              <button
-                type="button"
-                className={`${btnOutline} min-w-[90px]`}
-                disabled={loading}
-                data-tutorial="pk-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    exec('reset', undefined, undefined, { bettingLimit, isLowball, cpuMetaAI });
-                  })
-                }
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={isEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="pk-reset-button"
+                className="min-w-[90px]"
+              />
             </div>
           </GameFooter>
         </>

@@ -60,8 +60,6 @@ func newTriPeaksDefaultOutput(msg string) *TriPeaksWebOutput {
 
 func triPeaksDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TriPeaksInteractorIF, param TriPeaksWebInput, newDefault func(string) *TriPeaksWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, ti.Reset())
 	case "d", "draw":
 		bc.writePresenterResponse(w, ti.Draw())
 	case "rm", "remove":
@@ -81,7 +79,7 @@ func triPeaksDispatch(bc *baseController, w http.ResponseWriter, ti usecase.TriP
 		}
 		bc.writePresenterResponse(w, ti.UndoN(*param.N))
 	default:
-		return dispatchHintAndLog(param.Command, bc, w, ti.Hint, ti.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ti.Reset, ti.Hint, ti.ActionLog)
 	}
 	return true
 }

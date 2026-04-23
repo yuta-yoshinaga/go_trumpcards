@@ -44,8 +44,6 @@ func newRedDogDefaultOutput(msg string) *RedDogWebOutput {
 
 func redDogDispatch(bc *baseController, w http.ResponseWriter, ri usecase.RedDogInteractorIF, param RedDogWebInput, _ func(string) *RedDogWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, ri.Reset())
 	case "b", "bet":
 		bc.writePresenterResponse(w, ri.Bet(param.Amount))
 	case "raise":
@@ -53,7 +51,7 @@ func redDogDispatch(bc *baseController, w http.ResponseWriter, ri usecase.RedDog
 	case "s", "stay":
 		bc.writePresenterResponse(w, ri.Stay())
 	default:
-		return dispatchLog(param.Command, bc, w, ri.ActionLog)
+		return dispatchResetAndLog(param.Command, bc, w, ri.Reset, ri.ActionLog)
 	}
 	return true
 }

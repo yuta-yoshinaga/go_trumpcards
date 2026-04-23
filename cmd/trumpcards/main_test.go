@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/update"
 )
 
 func init() {
@@ -239,6 +241,108 @@ func TestRunWebRejectsExplicitInvalidPort(t *testing.T) {
 	}
 }
 
+// TestRunUnsupportedLangFlagFallsBackAndWarns verifies issue #1448: an
+// unsupported --lang value must warn on stderr and fall back (not exit 2).
+// This matches the behavior of an unsupported LANG env var and keeps `set -e`
+// scripts from tripping on typos.
+func TestRunUnsupportedLangFlagFallsBackAndWarns(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origQuiet, quietWasSet := os.LookupEnv("TRUMPCARDS_QUIET")
+	origLang, langWasSet := os.LookupEnv("LANG")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if quietWasSet {
+			_ = os.Setenv("TRUMPCARDS_QUIET", origQuiet)
+		} else {
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+		}
+		if langWasSet {
+			_ = os.Setenv("LANG", origLang)
+		} else {
+			_ = os.Unsetenv("LANG")
+		}
+		i18n.SetLang("ja") // restore test default
+	}()
+
+	cases := []struct {
+		name      string
+		quiet     bool
+		wantWarn  bool
+		wantLang  string // expected post-run i18n lang (falls back to "ja")
+		wantExit  int
+		wantWords []string
+	}{
+		{
+			name:      "warn and fall back when TRUMPCARDS_QUIET unset",
+			quiet:     false,
+			wantWarn:  true,
+			wantLang:  "ja",
+			wantExit:  0,
+			wantWords: []string{"fr"}, // offending value must appear
+		},
+		{
+			name:     "silent when TRUMPCARDS_QUIET=1",
+			quiet:    true,
+			wantWarn: false,
+			wantLang: "ja",
+			wantExit: 0,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_ = os.Unsetenv("LANG") // isolate from caller env
+			if tc.quiet {
+				_ = os.Setenv("TRUMPCARDS_QUIET", "1")
+			} else {
+				_ = os.Unsetenv("TRUMPCARDS_QUIET")
+			}
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			// Use `games --short` which exits 0 and doesn't hang on stdin,
+			// but still exercises the --lang validation block.
+			os.Args = []string{"trumpcards", "--lang", "fr", "games", "--short"}
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != tc.wantExit {
+				t.Errorf("exit = %d, want %d (stderr=%q)", exit, tc.wantExit, errBuf.String())
+			}
+			hasWarn := strings.Contains(errBuf.String(), "fr")
+			if hasWarn != tc.wantWarn {
+				t.Errorf("warning on stderr: got=%v, want=%v (stderr=%q)", hasWarn, tc.wantWarn, errBuf.String())
+			}
+			for _, w := range tc.wantWords {
+				if !strings.Contains(errBuf.String(), w) {
+					t.Errorf("stderr missing %q: %q", w, errBuf.String())
+				}
+			}
+			// The fallback must produce a usable locale — `games --short`
+			// still prints game names to stdout, exit 0.
+			if outBuf.Len() == 0 {
+				t.Errorf("expected non-empty stdout from `games --short` after fallback")
+			}
+		})
+	}
+}
+
 func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 	// Redirect stderr and stdout through os.Pipe so we can capture what
 	// run() writes when it encounters an unknown top-level flag.
@@ -417,5 +521,35 @@ func TestCliAliasesWithoutShortKeyRemoved(t *testing.T) {
 	// and was removed; ensure it hasn't crept back into either locale.
 	if got := i18n.T("cliAliasesWithoutShort"); got != "cliAliasesWithoutShort" && got != "" {
 		t.Errorf("i18n key 'cliAliasesWithoutShort' should be removed but still resolves to: %q", got)
+	}
+}
+
+// TestUpdateExitCodeMapping verifies that every sentinel error from the
+// updater maps to a distinct, documented exit code. Callers depend on this
+// mapping for retry / fallback logic. See issue #1449.
+func TestUpdateExitCodeMapping(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		want int
+	}{
+		{"non-interactive", update.ErrNonInteractive, 2},
+		{"network failure", update.ErrNetwork, 3},
+		{"api status", update.ErrAPIStatus, 3},
+		{"no asset", update.ErrNoAsset, 4},
+		{"extract failure", update.ErrExtract, 5},
+		{"apply failure", update.ErrApply, 6},
+		{"user cancelled", update.ErrUserCancelled, 75},
+		{"unknown error", errors.New("surprise"), 1},
+		// Wrapping preserves the category.
+		{"wrapped network", fmt.Errorf("dial: %w", update.ErrNetwork), 3},
+		{"wrapped apply", fmt.Errorf("chmod: %w", update.ErrApply), 6},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := updateExitCode(tt.err); got != tt.want {
+				t.Errorf("updateExitCode(%v) = %d, want %d", tt.err, got, tt.want)
+			}
+		})
 	}
 }

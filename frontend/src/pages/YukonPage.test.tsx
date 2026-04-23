@@ -144,7 +144,7 @@ describe('YukonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: /reset|リセット/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /next game|次のゲーム/i }).length).toBeGreaterThan(0);
   });
 
   it('undo button fires undo command when canUndo is true', async () => {

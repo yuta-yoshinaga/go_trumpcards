@@ -59,8 +59,6 @@ func newScorpionDefaultOutput(msg string) *ScorpionWebOutput {
 
 func scorpionDispatch(bc *baseController, w http.ResponseWriter, si usecase.ScorpionInteractorIF, param ScorpionWebInput, newDefault func(string) *ScorpionWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, si.Reset())
 	case "d", "deal":
 		bc.writePresenterResponse(w, si.Deal())
 	case "m", "move":
@@ -78,7 +76,7 @@ func scorpionDispatch(bc *baseController, w http.ResponseWriter, si usecase.Scor
 		}
 		bc.writePresenterResponse(w, si.UndoN(*param.N))
 	default:
-		return dispatchHintAndLog(param.Command, bc, w, si.Hint, si.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, si.Reset, si.Hint, si.ActionLog)
 	}
 	return true
 }

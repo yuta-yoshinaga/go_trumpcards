@@ -163,12 +163,10 @@ describe('BadugiPage', () => {
     expect(screen.queryByRole('button', { name: /チェック/ })).toBeNull();
   });
 
-  it('shows reset confirmation dialog', async () => {
+  it('shows next game button at end phase', async () => {
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.END, gameEndFlag: true }));
     renderWithProviders(<BadugiPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: /リセット/ })).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: /リセット/ }));
-    await waitFor(() => expect(screen.getByRole('button', { name: /確認/ })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
   });
 
   it('toggles betting limit and reissues reset with the new config', async () => {
@@ -180,8 +178,7 @@ describe('BadugiPage', () => {
 
     const limitSelect = await screen.findByLabelText(/リミット/);
     fireEvent.change(limitSelect, { target: { value: '2' } });
-    fireEvent.click(screen.getByRole('button', { name: /リセット/ }));
-    fireEvent.click(screen.getByRole('button', { name: /確認/ }));
+    fireEvent.click(screen.getByRole('button', { name: /次のゲーム/ }));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenLastCalledWith('reset', undefined, undefined, { bettingLimit: 2, cpuMetaAI: false }),

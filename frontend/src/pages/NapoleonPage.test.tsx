@@ -959,8 +959,7 @@ describe('NapoleonPage', () => {
     await waitFor(() => expect(screen.getByText('\u68cb\u8b5c')).toBeInTheDocument());
 
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '\u30ea\u30bb\u30c3\u30c8' }));
-    fireEvent.click(screen.getByRole('button', { name: '\u78ba\u8a8d' }));
+    fireEvent.click(screen.getByRole('button', { name: '\u6b21\u306e\u30b2\u30fc\u30e0' }));
 
     await waitFor(() => expect(screen.queryByText('\u68cb\u8b5c')).not.toBeInTheDocument());
   });

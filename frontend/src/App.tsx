@@ -14,6 +14,7 @@ import { BridgePage } from './pages/BridgePage';
 import { CanastaPage } from './pages/CanastaPage';
 import { CanfieldPage } from './pages/CanfieldPage';
 import { CaribbeanStudPage } from './pages/CaribbeanStudPage';
+import { CassinoPage } from './pages/CassinoPage';
 import { ClockSolitairePage } from './pages/ClockSolitairePage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { CribbagePage } from './pages/CribbagePage';
@@ -46,14 +47,17 @@ import { PineapplePage } from './pages/PineapplePage';
 import { PinochlePage } from './pages/PinochlePage';
 import { PokerPage } from './pages/PokerPage';
 import { PokerSquaresPage } from './pages/PokerSquaresPage';
+import { PresidentPage } from './pages/PresidentPage';
 import { PyramidPage } from './pages/PyramidPage';
 import { RazzPage } from './pages/RazzPage';
 import { RedDogPage } from './pages/RedDogPage';
 import { ScorpionPage } from './pages/ScorpionPage';
+import { SevenBridgePage } from './pages/SevenBridgePage';
 import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
 import { SpadesPage } from './pages/SpadesPage';
+import { Spanish21Page } from './pages/Spanish21Page';
 import { SpeedPage } from './pages/SpeedPage';
 import { SpiderPage } from './pages/SpiderPage';
 import { ThreeCardPage } from './pages/ThreeCardPage';
@@ -103,6 +107,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/videopoker': <VideoPokerPage />,
   '/deuceswild': <DeucesWildPage />,
   '/jokerpoker': <JokerPokerPage />,
+  '/spanish21': <Spanish21Page />,
   '/threecard': <ThreeCardPage />,
   '/caribbeanstud': <CaribbeanStudPage />,
   '/paigow': <PaiGowPage />,
@@ -120,11 +125,14 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/yukon': <YukonPage />,
   '/scorpion': <ScorpionPage />,
   '/accordion': <AccordionPage />,
+  '/sevenbridge': <SevenBridgePage />,
   '/trash': <TrashPage />,
   '/whist': <WhistPage />,
   '/poker-squares': <PokerSquaresPage />,
   '/pageone': <PageOnePage />,
   '/reddog': <RedDogPage />,
+  '/president': <PresidentPage />,
+  '/cassino': <CassinoPage />,
 };
 
 /** Root application component with router and game page routes. */

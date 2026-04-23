@@ -50,27 +50,28 @@ const BJCpuBetAmount = 50
 
 // BlackJack ブラックジャッククラス
 type BlackJack struct {
-	trumpCards         *TrumpCards         // トランプカード
-	player             *BlackJackPlayer    // プレイヤー
-	dealer             *BlackJackPlayer    // ディーラー
-	gameEndFlag        bool                // ゲーム終了フラグ
-	phase              int                 // 現在のフェーズ
-	playerHands        []*BlackJackHand    // プレイヤーハンド（スプリット対応）
-	currentHandIdx     int                 // 現在操作中のハンドインデックス
-	insuranceBet       int                 // インシュランスベット額
-	insuranceAvailable bool                // インシュランス可能フラグ
-	deckCount          int                 // デッキ数
-	hintEnabled        bool                // ヒント有効フラグ
-	config             BlackJackConfig     // ゲーム設定
-	runningCount       int                 // ランニングカウント
-	holeCardCounted    bool                // ホールカードをカウント済みか
-	deckCountChanged   bool                // デッキ数変更フラグ（シュー再構築判定用）
-	cpuPlayers         []*BlackJackCpuSeat // CPUプレイヤー
-	perfectPairsBet    int                 // Perfect Pairsサイドベット額
-	twentyOnePlus3Bet  int                 // 21+3サイドベット額
-	sideBetResults     []*BJSideBetResult  // サイドベット結果
-	multiHandCount     int                 // マルチハンド数（0=デフォルト1）
-	actionLog          []*ActionLogEntry   // 棋譜
+	trumpCards         *TrumpCards             // トランプカード
+	player             *BlackJackPlayer        // プレイヤー
+	dealer             *BlackJackPlayer        // ディーラー
+	gameEndFlag        bool                    // ゲーム終了フラグ
+	phase              int                     // 現在のフェーズ
+	playerHands        []*BlackJackHand        // プレイヤーハンド（スプリット対応）
+	currentHandIdx     int                     // 現在操作中のハンドインデックス
+	insuranceBet       int                     // インシュランスベット額
+	insuranceAvailable bool                    // インシュランス可能フラグ
+	deckCount          int                     // デッキ数
+	hintEnabled        bool                    // ヒント有効フラグ
+	config             BlackJackConfig         // ゲーム設定
+	variant            *BlackJackVariantConfig // バリアント設定 (nil = 標準BJ)
+	runningCount       int                     // ランニングカウント
+	holeCardCounted    bool                    // ホールカードをカウント済みか
+	deckCountChanged   bool                    // デッキ数変更フラグ（シュー再構築判定用）
+	cpuPlayers         []*BlackJackCpuSeat     // CPUプレイヤー
+	perfectPairsBet    int                     // Perfect Pairsサイドベット額
+	twentyOnePlus3Bet  int                     // 21+3サイドベット額
+	sideBetResults     []*BJSideBetResult      // サイドベット結果
+	multiHandCount     int                     // マルチハンド数（0=デフォルト1）
+	actionLog          []*ActionLogEntry       // 棋譜
 }
 
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
@@ -80,6 +81,19 @@ func NewDefaultBlackJack() *BlackJack {
 	bj.dealer.SetChips(BJDefaultChips)
 	bj.deckCount = BJDefaultDecks
 	bj.config = DefaultBlackJackConfig()
+	return bj
+}
+
+// NewSpanish21BlackJack スパニッシュ21バリアントのブラックジャックを生成するファクトリ関数
+func NewSpanish21BlackJack() *BlackJack {
+	variant := Spanish21Variant()
+	bj := NewBlackJack(variant.DeckBuilder(BJDefaultDecks), NewBlackJackPlayer(), NewBlackJackPlayer())
+	bj.player.SetChips(BJDefaultChips)
+	bj.dealer.SetChips(BJDefaultChips)
+	bj.deckCount = BJDefaultDecks
+	bj.config = DefaultBlackJackConfig()
+	bj.config.Variant = variant.Name
+	bj.variant = variant
 	return bj
 }
 
@@ -128,7 +142,11 @@ func (b *BlackJack) Reset() {
 		b.deckCountChanged ||
 		b.trumpCards.GetRemainingCount()*100 < b.trumpCards.GetTotalCount()*(100-pen) // ペネトレーション率に基づく
 	if needReshuffle {
-		b.trumpCards = NewTrumpCardsWithDecks(b.deckCount, 0)
+		if b.variant != nil && b.variant.DeckBuilder != nil {
+			b.trumpCards = b.variant.DeckBuilder(b.deckCount)
+		} else {
+			b.trumpCards = NewTrumpCardsWithDecks(b.deckCount, 0)
+		}
 		// 山札シャッフル
 		for i := 0; i < 10; i++ {
 			b.trumpCards.Shuffle()
@@ -611,8 +629,18 @@ func (b *BlackJack) SetConfig(config BlackJackConfig) error {
 	if config.CountingSystem != b.config.CountingSystem {
 		b.runningCount = 0
 	}
+	// バリアント変更時はデッキ再構築フラグを立てる
+	if config.Variant != b.config.Variant {
+		b.deckCountChanged = true
+		b.variant = ResolveBlackJackVariant(config.Variant)
+	}
 	b.config = config
 	return nil
+}
+
+// GetVariant バリアント設定取得 (nil = 標準BJ)
+func (b *BlackJack) GetVariant() *BlackJackVariantConfig {
+	return b.variant
 }
 
 // GetCpuPlayers CPUプレイヤー一覧
@@ -815,6 +843,7 @@ func (b *BlackJack) UnmarshalJSON(data []byte) error {
 	b.deckCount = j.DeckCount
 	b.hintEnabled = j.HintEnabled
 	b.config = j.Config
+	b.variant = ResolveBlackJackVariant(b.config.Variant)
 	b.runningCount = j.RunningCount
 	b.holeCardCounted = j.HoleCardCounted
 	b.deckCountChanged = j.DeckCountChanged

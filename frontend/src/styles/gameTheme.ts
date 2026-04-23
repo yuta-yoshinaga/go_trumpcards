@@ -2,6 +2,7 @@
 export const gameTheme: Record<string, { bg: string; footer: string }> = {
   // Table games
   blackjack: { bg: 'bg-game-bg-green-bright', footer: 'bg-game-bg-green-bright-dark border-white/20' },
+  spanish21: { bg: 'bg-game-bg-green-bright', footer: 'bg-game-bg-green-bright-dark border-white/20' },
   baccarat: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   threecard: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   paigow: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },

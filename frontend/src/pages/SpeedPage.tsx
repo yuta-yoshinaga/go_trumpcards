@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { speedApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -140,6 +141,10 @@ function SpeedPageContent() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [cliEnabled, keyboardActive, loading]);
+
+  const handleManualReset = useCallback(() => {
+    void gameExec('reset', undefined, undefined, speedConfig);
+  }, [gameExec, speedConfig]);
 
   if (!state || state.players.length < 2) return <SpeedSkeleton />;
 
@@ -318,13 +323,12 @@ function SpeedPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-            <button
-              type="button"
-              onClick={() => requestConfirm(() => gameExec('reset', undefined, undefined, speedConfig))}
-              className="btn btn-sm btn-warning"
-            >
-              {tc('button.reset')}
-            </button>
+            <GameResetButton
+              isGameEnd={!!isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
           </GameFooter>
         </>
       )}

@@ -53,7 +53,7 @@
 | `--accent-hover` | `#E0B86A` | Accent hover state |
 | `--success` | `#4CAF7D` | Active status, win states |
 | `--warning` | `#E8923A` | Waiting status, insurance (shifted orange to distinguish from gold accent) |
-| `--error` | `#C95555` | Bust, fold, out states |
+| `--error` | `#B83A3A` | Bust, fold, out states (WCAG AA 5.2:1 on white text) |
 | `--info` | `#5B8FB9` | Tips, informational |
 | `--border` | `rgba(212, 168, 83, 0.15)` | Accent-tinted borders |
 | `--border-subtle` | `rgba(139, 154, 175, 0.12)` | Subtle structural borders |
@@ -76,7 +76,7 @@
 | `--text-on-accent` | `#1A1A1A` | Dark text on accent backgrounds (7.2:1 contrast on #D4A853, WCAG AA) |
 | `--success-hover` | `#3D9A6B` | Success button hover |
 | `--warning-hover` | `#D4832E` | Warning button hover |
-| `--error-hover` | `#B54949` | Error button hover |
+| `--error-hover` | `#A03030` | Error button hover |
 | `--surface-elevated-hover` | `#2A3A4F` | Elevated surface hover |
 
 ### Game-specific palette (poker action buttons)

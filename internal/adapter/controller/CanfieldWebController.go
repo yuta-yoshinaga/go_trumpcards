@@ -70,8 +70,6 @@ func newCanfieldDefaultOutput(msg string) *CanfieldWebOutput {
 
 func canfieldDispatch(bc *baseController, w http.ResponseWriter, ci usecase.CanfieldInteractorIF, param CanfieldWebInput, newDefault func(string) *CanfieldWebOutput) bool {
 	switch param.Command {
-	case "r", "reset":
-		bc.writePresenterResponse(w, ci.Reset())
 	case "d", "draw":
 		bc.writePresenterResponse(w, ci.Draw())
 	case "m", "move":
@@ -89,7 +87,7 @@ func canfieldDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Canf
 		}
 		bc.writePresenterResponse(w, ci.UndoN(*param.N))
 	default:
-		return dispatchHintAndLog(param.Command, bc, w, ci.Hint, ci.ActionLog)
+		return dispatchResetHintAndLog(param.Command, bc, w, ci.Reset, ci.Hint, ci.ActionLog)
 	}
 	return true
 }

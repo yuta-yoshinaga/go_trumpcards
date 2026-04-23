@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -26,7 +27,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BaccaratResponse, BaccaratSideBetResult } from '../types/card';
@@ -434,16 +435,13 @@ function BaccaratPageContent() {
             )}
             {isEndPhase && (
               <div className="flex justify-center gap-2 pb-2">
-                <div data-tutorial="bac-reset-button">
-                  <button
-                    type="button"
-                    className={btnOutline}
-                    onClick={() => requestConfirm(handleReset)}
-                    disabled={loading}
-                  >
-                    {t('button.reset')}
-                  </button>
-                </div>
+                <GameResetButton
+                  isGameEnd={isEndPhase}
+                  onReset={handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="bac-reset-button"
+                />
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                   {tc('actionLog.view')}
                 </button>

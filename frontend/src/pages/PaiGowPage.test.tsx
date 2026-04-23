@@ -202,7 +202,7 @@ describe('PaiGowPage', () => {
     renderWithProviders(<PaiGowPage />);
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
   });
 
   it('shows end phase with dealer wins', async () => {
@@ -246,31 +246,29 @@ describe('PaiGowPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('shows confirm dialog when reset button is clicked', async () => {
+  it('next game button in end phase triggers reset immediately', async () => {
     mockExec.mockResolvedValue(endPhasePlayerWins);
     renderWithProviders(<PaiGowPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(betPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('dismisses confirm dialog on cancel', async () => {
+  it('next game button shows no confirm dialog at end phase', async () => {
     mockExec.mockResolvedValue(endPhasePlayerWins);
     renderWithProviders(<PaiGowPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 

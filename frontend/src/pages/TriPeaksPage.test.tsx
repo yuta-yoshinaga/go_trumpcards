@@ -240,4 +240,15 @@ describe('TriPeaksPage', () => {
     fireEvent.click(screen.getByTestId('stalemate-escape-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo_n', undefined, undefined, 4));
   });
+
+  it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
+  });
 });

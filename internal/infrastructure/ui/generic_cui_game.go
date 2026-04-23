@@ -8,6 +8,9 @@ type genericCuiGame struct {
 }
 
 // newCuiGame creates a genericCuiGame from a controller and help lines.
+// Package-internal: only cuiEntry calls this now. New CUI wiring must go
+// through cuiEntry(ctrl, CuiHelpSpec{...}) — use CuiHelpSpec.Body when the
+// help content does not fit the structured scaffold (issue #1460).
 func newCuiGame(controller CuiExecer, helpLines []string) *genericCuiGame {
 	return &genericCuiGame{controller: controller, helpLines: helpLines}
 }

@@ -5,9 +5,9 @@ test.describe('Two Ten Jack E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
     await navigateTo(page, '/twotenjack');
 
-    const resetButton = page.getByRole('button', { name: 'リセット' });
-    await expect(resetButton).toBeVisible();
-    await resetButton.click();
+    const midResetButton = page.getByRole('button', { name: 'リセット' });
+    await expect(midResetButton).toBeVisible();
+    await midResetButton.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
@@ -26,6 +26,7 @@ test.describe('Two Ten Jack E2E', () => {
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     const handCards = page.locator('button[aria-pressed]:has(img)');
+    const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     const MAX_TURNS = 80;
     let interactions = 0;
@@ -38,7 +39,7 @@ test.describe('Two Ten Jack E2E', () => {
           .or(playButton)
           .or(nextTrickButton)
           .or(nextRoundButton)
-          .or(resetButton)
+          .or(anyResetButton)
           .first(),
       ).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
 
@@ -88,9 +89,14 @@ test.describe('Two Ten Jack E2E', () => {
 
     expect(interactions).toBeGreaterThan(0);
 
-    // Reset again to verify the game restarts cleanly.
-    await resetButton.click();
-    await page.getByRole('button', { name: '確認' }).click();
+    // Reset again to verify the game restarts cleanly. Button could be mid-game or end state.
+    const midVisible = await midResetButton.isVisible();
+    if (midVisible) {
+      await midResetButton.click();
+      await page.getByRole('button', { name: '確認' }).click();
+    } else {
+      await page.getByRole('button', { name: '次のゲーム' }).click();
+    }
     await waitForLoaded(page);
     await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
   });

@@ -1,0 +1,8 @@
+{
+  "helpTitle": "President / Scum",
+  "helpPlay": "  p [idx ...]          play cards (no index = pass)",
+  "helpPass": "  p                    pass",
+  "helpLog": "  log | l              show action log",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetRule": "  sr <rule> <0|1>      toggle local rule (sr list to show all)"
+}

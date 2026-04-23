@@ -191,4 +191,20 @@ func init() {
 			return usecase.RestoreTrashInteractor(data, new(presenter.TrashWebPresenter))
 		},
 		controller.NewTrashWebControllerWithProvider)
+	games.RegisterKVGame("president", games.CategoryClassic,
+		func() usecase.PresidentInteractorIF {
+			return usecase.NewPresidentInteractor(domain.NewDefaultPresident(), new(presenter.PresidentWebPresenter))
+		},
+		func(data []byte) (usecase.PresidentInteractorIF, error) {
+			return usecase.RestorePresidentInteractor(data, new(presenter.PresidentWebPresenter))
+		},
+		controller.NewPresidentWebControllerWithProvider)
+	games.RegisterKVGame("cassino", games.CategoryClassic,
+		func() usecase.CassinoInteractorIF {
+			return usecase.NewCassinoInteractor(domain.NewDefaultCassino(), new(presenter.CassinoWebPresenter))
+		},
+		func(data []byte) (usecase.CassinoInteractorIF, error) {
+			return usecase.RestoreCassinoInteractor(data, new(presenter.CassinoWebPresenter))
+		},
+		controller.NewCassinoWebControllerWithProvider)
 }

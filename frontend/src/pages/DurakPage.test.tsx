@@ -233,4 +233,15 @@ describe('DurakPage', () => {
     renderWithProviders(<DurakPage />);
     await waitFor(() => expect(screen.getByTestId('hint-tooltip')).toBeInTheDocument());
   });
+
+  it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<DurakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, defaultConfig));
+    expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
+  });
 });

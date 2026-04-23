@@ -8,12 +8,13 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { WhistSkeleton } from '../components/skeleton/WhistSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -24,7 +25,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useWhistGame } from '../hooks/useWhistGame';
 import { useSound } from '../providers/SoundProvider';
-import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { WhistResponse } from '../types/card';
@@ -154,6 +155,14 @@ function WhistPageContent() {
 
   const phaseNames = usePhaseNames('whist', WHIST_PHASE_KEYS);
 
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    void dispatch('reset', undefined, {
+      cpuDifficulty: whistConfig.cpuDifficulty,
+      pointLimit: whistConfig.pointLimit,
+    });
+  }, [dispatch, hideActionLog, whistConfig.cpuDifficulty, whistConfig.pointLimit]);
+
   if (!state) return <WhistSkeleton />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
@@ -235,28 +244,14 @@ function WhistPageContent() {
               {/* Left: game play area */}
               <div>
                 {/* Current trick */}
-                {state.currentTrick.length > 0 && (
-                  <div className="my-3 p-3 rounded bg-black/40" data-tutorial="wh-trick-display">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('currentTrick')}</div>
-                    <div className="flex gap-2">
-                      {state.currentTrick.map((trickCard) => (
-                        <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                          <AnimatedCard
-                            card={trickCard.card}
-                            width={cardWidth}
-                            onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
-                          />
-                          <div className="text-game-text-muted text-xs mt-1">
-                            {playerName(
-                              state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
-                              state.players[trickCard.playerIdx]?.isHuman ?? false,
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <TrickDisplay
+                  currentTrick={state.currentTrick}
+                  players={state.players}
+                  cardWidth={cardWidth}
+                  label={t('currentTrick')}
+                  dataTutorial="wh-trick-display"
+                  onCardDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
+                />
               </div>
 
               {/* Right: info sidebar */}
@@ -441,23 +436,13 @@ function WhistPageContent() {
                   {t('nextRound')}
                 </button>
               )}
-              <button
-                type="button"
-                className={btnOutline}
-                data-tutorial="wh-reset-button"
-                onClick={() =>
-                  requestConfirm(() => {
-                    hideActionLog();
-                    return dispatch('reset', undefined, {
-                      cpuDifficulty: whistConfig.cpuDifficulty,
-                      pointLimit: whistConfig.pointLimit,
-                    });
-                  })
-                }
-                disabled={loading}
-              >
-                {tc('button.reset')}
-              </button>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="wh-reset-button"
+              />
             </div>
           </GameFooter>
         </>

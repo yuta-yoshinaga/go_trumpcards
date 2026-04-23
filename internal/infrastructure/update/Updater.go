@@ -19,6 +19,34 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+// Well-known update failure categories. Callers wrap process-level exit codes
+// around these so CI / cron / package scripts can tell a retryable network
+// failure apart from a non-retryable "no binary for this platform". See
+// issue #1449.
+var (
+	// ErrNetwork indicates a transport-level failure talking to the release
+	// registry (DNS, connection refused, TLS, timeout). Typically retryable.
+	ErrNetwork = errors.New("update: network failure")
+	// ErrAPIStatus indicates the release registry returned a non-2xx status.
+	// May be retryable depending on the code (e.g. 5xx yes, 404 no).
+	ErrAPIStatus = errors.New("update: release API returned non-OK status")
+	// ErrNoAsset indicates no release asset matched the current OS/arch.
+	// Not retryable without a new release.
+	ErrNoAsset = errors.New("update: no asset for this platform")
+	// ErrExtract indicates an archive (tar.gz / zip) failed to decompress or
+	// did not contain the expected binary. Not retryable.
+	ErrExtract = errors.New("update: failed to extract archive")
+	// ErrApply indicates the final binary swap failed (permissions, disk
+	// full, integrity check). Not retryable without fixing the environment.
+	ErrApply = errors.New("update: failed to apply binary")
+	// ErrNonInteractive indicates --yes was not given and stdin was closed
+	// (EOF before any answer). Resolve by re-running with --yes.
+	ErrNonInteractive = errors.New("update: non-interactive stdin without --yes")
+	// ErrUserCancelled indicates the user answered the prompt with a
+	// non-affirmative response (empty, "n", "no").
+	ErrUserCancelled = errors.New("update: user declined")
+)
+
 // Updater checks GitHub Releases for the latest version and self-updates the binary.
 type Updater struct {
 	currentVersion string
@@ -30,6 +58,11 @@ type Updater struct {
 	httpClient     *http.Client
 	autoConfirm    bool
 	progressIsTTY  bool
+	// reportCancelledAsError: when true, Exec returns ErrUserCancelled on
+	// a declined prompt. The zero value (false) preserves the legacy
+	// behavior of returning nil, so library callers who never call the
+	// setter keep their old contract.
+	reportCancelledAsError bool
 }
 
 // SetAutoConfirm enables or disables the automatic confirmation of updates,
@@ -68,26 +101,41 @@ type ghAsset struct {
 	BrowserDownloadURL string `json:"browser_download_url"`
 }
 
+// SetReportCancelledAsError controls how a user-declined prompt is reported.
+// When false (the default, for backwards compatibility), Exec returns nil on
+// cancellation. When true, Exec returns ErrUserCancelled so callers can map
+// it to a dedicated exit code (e.g. 75 / EX_TEMPFAIL).
+func (u *Updater) SetReportCancelledAsError(v bool) {
+	u.reportCancelledAsError = v
+}
+
 // Exec runs the self-update flow.
+//
+// Errors are wrapped with sentinel categories from this package (ErrNetwork,
+// ErrAPIStatus, ErrNoAsset, ErrExtract, ErrApply, ErrNonInteractive,
+// ErrUserCancelled) so the caller can pick a meaningful exit code via
+// errors.Is. See issue #1449.
 func (u *Updater) Exec() error {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", u.repoOwner, u.repoName)
 	resp, err := u.httpClient.Get(url) //nolint:noctx // simple GET to GitHub API
 	if err != nil {
 		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", err.Error()))
-		return err
+		return fmt.Errorf("%w: %w", ErrNetwork, err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("HTTP %d", resp.StatusCode)
 		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", errMsg))
-		return errors.New(errMsg)
+		return fmt.Errorf("%w: %s", ErrAPIStatus, errMsg)
 	}
 
 	var release ghRelease
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
 		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", err.Error()))
-		return err
+		// A malformed body from the API is still an API-level failure as
+		// far as callers are concerned — they can't fix the upstream.
+		return fmt.Errorf("%w: %w", ErrAPIStatus, err)
 	}
 
 	latestVersion := strings.TrimPrefix(release.TagName, "v")
@@ -108,7 +156,7 @@ func (u *Updater) Exec() error {
 		_, scanErr := fmt.Fscanln(u.reader, &answer)
 		if errors.Is(scanErr, io.EOF) {
 			_, _ = fmt.Fprintln(u.errWriter, i18n.T("updateNonInteractive"))
-			return errors.New("non-interactive stdin: --yes required")
+			return ErrNonInteractive
 		}
 		// Fscanln returns a non-EOF error when it reads a blank line (no token)
 		// or only whitespace; treat that as the empty-input default path (cancel).
@@ -120,6 +168,9 @@ func (u *Updater) Exec() error {
 		ans := strings.ToLower(strings.TrimSpace(answer))
 		if ans != "y" && ans != "yes" {
 			_, _ = fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
+			if u.reportCancelledAsError {
+				return ErrUserCancelled
+			}
 			return nil
 		}
 	}
@@ -128,7 +179,7 @@ func (u *Updater) Exec() error {
 	assetName, assetURL := u.findAsset(release.Assets)
 	if assetURL == "" {
 		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateNoAsset", "os", runtime.GOOS, "arch", runtime.GOARCH))
-		return fmt.Errorf("no matching asset for %s/%s", runtime.GOOS, runtime.GOARCH)
+		return fmt.Errorf("%w: %s/%s", ErrNoAsset, runtime.GOOS, runtime.GOARCH)
 	}
 
 	_, _ = fmt.Fprintln(u.writer, i18n.Tf("updateDownloading", "version", release.TagName))
@@ -193,11 +244,13 @@ func formatBytes(b int64) string {
 	}
 }
 
-// downloadAndApply downloads the asset and applies the update.
+// downloadAndApply downloads the asset and applies the update. Errors are
+// wrapped with sentinel categories so callers can distinguish network,
+// extract, and apply failures.
 func (u *Updater) downloadAndApply(assetName, assetURL string) error {
 	assetResp, err := u.httpClient.Get(assetURL) //nolint:noctx // downloading release asset
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %w", ErrNetwork, err)
 	}
 	defer func() { _ = assetResp.Body.Close() }()
 
@@ -218,26 +271,32 @@ func (u *Updater) downloadAndApply(assetName, assetURL string) error {
 		binaryReader, err := u.extractFromTarGzStream(body)
 		if err != nil {
 			endProgress()
-			return err
+			return fmt.Errorf("%w: %w", ErrExtract, err)
 		}
 		endProgress()
-		return selfupdate.Apply(binaryReader, selfupdate.Options{})
+		if err := selfupdate.Apply(binaryReader, selfupdate.Options{}); err != nil {
+			return fmt.Errorf("%w: %w", ErrApply, err)
+		}
+		return nil
 	}
 
 	// For zip, we need io.ReaderAt so we must read the entire archive into memory.
 	assetData, err := io.ReadAll(body)
 	if err != nil {
 		endProgress()
-		return err
+		return fmt.Errorf("%w: %w", ErrNetwork, err)
 	}
 	endProgress()
 
 	binaryName := "trumpcards.exe"
 	binaryReader, err := u.extractFromZip(assetData, binaryName)
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %w", ErrExtract, err)
 	}
-	return selfupdate.Apply(binaryReader, selfupdate.Options{})
+	if err := selfupdate.Apply(binaryReader, selfupdate.Options{}); err != nil {
+		return fmt.Errorf("%w: %w", ErrApply, err)
+	}
+	return nil
 }
 
 // findAsset finds a matching release asset for the current OS/arch.

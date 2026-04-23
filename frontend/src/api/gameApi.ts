@@ -8,6 +8,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CassinoResponse,
   ClockSolitaireResponse,
   CrazyEightsResponse,
   CribbageResponse,
@@ -42,9 +43,11 @@ import type {
   PinochleResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PresidentResponse,
   PyramidResponse,
   RedDogResponse,
   ScorpionResponse,
+  SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
@@ -74,6 +77,7 @@ const WORKER_SOLO = import.meta.env.VITE_WORKER_SOLO_URL || '';
 /** Maps each game to its Worker base URL. */
 const workerUrl: Record<string, string> = {
   blackjack: WORKER_CASINO,
+  spanish21: WORKER_CASINO,
   baccarat: WORKER_CASINO,
   poker: WORKER_CASINO,
   holdem: WORKER_CASINO,
@@ -127,10 +131,13 @@ const workerUrl: Record<string, string> = {
   yukon: WORKER_SOLO,
   scorpion: WORKER_SOLO,
   accordion: WORKER_SOLO,
+  sevenbridge: WORKER_SOLO,
   trash: WORKER_CLASSIC,
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
+  president: WORKER_CLASSIC,
+  cassino: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -166,34 +173,39 @@ export interface BlackJackBetOptions {
   handCount?: number;
 }
 
+/** Type alias for BlackJack/Spanish21 exec command. */
+export type BlackJackCommand =
+  | 'reset'
+  | 'hit'
+  | 'stand'
+  | 'bet'
+  | 'doubledown'
+  | 'split'
+  | 'insurance'
+  | 'declineinsurance'
+  | 'surrender'
+  | 'togglehint'
+  | 'setdeckcount'
+  | 'togglesoft17'
+  | 'togglecounting'
+  | 'toggledas'
+  | 'setcountingsystem'
+  | 'setpenetration'
+  | 'setcpucount'
+  | 'earlysurrender'
+  | 'declineearlysurrender'
+  | 'setsurrenderrule';
+
 /** API client for the BlackJack /blackjack/exec endpoint. */
 export const blackjackApi = {
-  exec: (
-    command:
-      | 'reset'
-      | 'hit'
-      | 'stand'
-      | 'bet'
-      | 'doubledown'
-      | 'split'
-      | 'insurance'
-      | 'declineinsurance'
-      | 'surrender'
-      | 'togglehint'
-      | 'setdeckcount'
-      | 'togglesoft17'
-      | 'togglecounting'
-      | 'toggledas'
-      | 'setcountingsystem'
-      | 'setpenetration'
-      | 'setcpucount'
-      | 'earlysurrender'
-      | 'declineearlysurrender'
-      | 'setsurrenderrule',
-    amount?: number,
-    config?: BlackJackConfigInput,
-    betOptions?: BlackJackBetOptions,
-  ) => gameExec<BlackJackResponse>('blackjack', { command, amount, ...config, ...betOptions }),
+  exec: (command: BlackJackCommand, amount?: number, config?: BlackJackConfigInput, betOptions?: BlackJackBetOptions) =>
+    gameExec<BlackJackResponse>('blackjack', { command, amount, ...config, ...betOptions }),
+};
+
+/** API client for the Spanish 21 /spanish21/exec endpoint (shares BlackJack response shape). */
+export const spanish21Api = {
+  exec: (command: BlackJackCommand, amount?: number, config?: BlackJackConfigInput, betOptions?: BlackJackBetOptions) =>
+    gameExec<BlackJackResponse>('spanish21', { command, amount, ...config, ...betOptions }),
 };
 
 /** Configuration options for Poker game settings. */
@@ -1051,6 +1063,44 @@ export const accordionApi = {
     }),
 };
 
+/** Configuration options for Seven Bridge game settings. */
+export interface SevenBridgeConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** Command verbs accepted by the Seven Bridge /sevenbridge/exec endpoint. */
+export type SevenBridgeCommand =
+  | 'reset'
+  | 'drawstock'
+  | 'pon'
+  | 'chi'
+  | 'meld'
+  | 'layoff'
+  | 'discard'
+  | 'nextround'
+  | 'log';
+
+/** API client for the Seven Bridge /sevenbridge/exec endpoint. */
+export const sevenBridgeApi = {
+  exec: (
+    command: SevenBridgeCommand,
+    cardIndex?: number,
+    config?: SevenBridgeConfigInput,
+    cardIndices?: number[],
+    targetPlayerIdx?: number,
+    meldIdx?: number,
+  ) =>
+    gameExec<SevenBridgeResponse>('sevenbridge', {
+      command,
+      cardIndex,
+      cardIndices,
+      targetPlayerIdx,
+      meldIdx,
+      config,
+    }),
+};
+
 /** Command verbs accepted by the Trash /trash/exec endpoint. */
 export type TrashCommand = 'reset' | 'draw' | 'place' | 'cpu' | 'log';
 
@@ -1109,6 +1159,49 @@ export const fortyThievesApi = {
     to?: FortyThievesMoveZone,
     n?: number,
   ) => gameExec<FortyThievesResponse>('fortythieves', { command, from, to, n }),
+};
+
+/** Configuration options for President game settings. */
+export interface PresidentConfigInput {
+  revolutionEnabled?: boolean;
+  cardExchangeEnabled?: boolean;
+  passFieldFlushEnabled?: boolean;
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the President /president/exec endpoint. */
+export type PresidentCommand = 'reset' | 'play' | 'log';
+
+/** API client for the President /president/exec endpoint. */
+export const presidentApi = {
+  exec: (command: PresidentCommand, indices?: number[], config?: PresidentConfigInput) =>
+    gameExec<PresidentResponse>('president', { command, indices, config }),
+};
+
+/** Configuration options for Cassino game settings. */
+export interface CassinoConfigInput {
+  targetScore?: number;
+  multiBuildEnabled?: boolean;
+  sweepBonusEnabled?: boolean;
+  cpuDifficulty?: number;
+}
+
+/** Command verbs accepted by the Cassino /cassino/exec endpoint. */
+export type CassinoCommand = 'reset' | 'take' | 'build' | 'trail' | 'next' | 'log';
+
+/** Extra payload fields for the Cassino /cassino/exec endpoint. */
+export interface CassinoExecParams {
+  handIndex?: number;
+  tableIndices?: number[];
+  buildIndices?: number[];
+  declaredValue?: number;
+  config?: CassinoConfigInput;
+}
+
+/** API client for the Cassino /cassino/exec endpoint. */
+export const cassinoApi = {
+  exec: (command: CassinoCommand, params?: CassinoExecParams) =>
+    gameExec<CassinoResponse>('cassino', { command, ...(params ?? {}) }),
 };
 
 export type { FortyThievesMoveZone };
@@ -1193,12 +1286,16 @@ const games = [
   'yukon',
   'scorpion',
   'accordion',
+  'sevenbridge',
   'trash',
   'whist',
   'letitride',
   'pokersquares',
   'pageone',
   'reddog',
+  'president',
+  'cassino',
+  'spanish21',
 ] as const;
 type Game = (typeof games)[number];
 

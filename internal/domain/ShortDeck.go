@@ -53,10 +53,8 @@ type ShortDeck struct {
 	vpipTracked     []bool
 	pfrTracked      []bool
 	threeBetTracked []bool
-	handCount       int
+	tournamentBase  // handCount / rebuyCounts / addonUsed (issue #1463)
 	lastCpuError    error
-	rebuyCounts     []int
-	addonUsed       []bool
 	rebuyPhaseType  int
 	actionLog       []*ActionLogEntry
 	humanProfile    *BettingHumanProfile
@@ -65,7 +63,7 @@ type ShortDeck struct {
 
 // NewShortDeck コンストラクタ
 func NewShortDeck(trumpCards *TrumpCards, players []*ShortDeckPlayer, config ShortDeckConfig) *ShortDeck {
-	return &ShortDeck{
+	sd := &ShortDeck{
 		communityCardBettingBase: communityCardBettingBase{
 			actedFlags: make([]bool, len(players)),
 		},
@@ -79,11 +77,11 @@ func NewShortDeck(trumpCards *TrumpCards, players []*ShortDeckPlayer, config Sho
 		vpipTracked:     make([]bool, len(players)),
 		pfrTracked:      make([]bool, len(players)),
 		threeBetTracked: make([]bool, len(players)),
-		rebuyCounts:     make([]int, len(players)),
-		addonUsed:       make([]bool, len(players)),
 		config:          config,
 		phase:           ShortDeckPhaseInit,
 	}
+	sd.initTournamentState(len(players))
+	return sd
 }
 
 // NewDefaultShortDeck returns ShortDeck with the default table size and
@@ -1407,7 +1405,5 @@ func (sd *ShortDeck) Resize(players []*ShortDeckPlayer) {
 	sd.vpipTracked = make([]bool, n)
 	sd.pfrTracked = make([]bool, n)
 	sd.threeBetTracked = make([]bool, n)
-	sd.rebuyCounts = make([]int, n)
-	sd.addonUsed = make([]bool, n)
-	sd.handCount = 0
+	sd.initTournamentState(n)
 }

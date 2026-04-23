@@ -312,7 +312,7 @@ func TestGameRegistry_DescriptionsMatchGameDescriptions(t *testing.T) {
 	for _, entry := range GameRegistry() {
 		desc, ok := descs[entry.Name]
 		assert.True(t, ok, "GameDescriptions must contain %q", entry.Name)
-		assert.Equal(t, entry.Description, desc)
+		assert.Equal(t, entry.Description(), desc)
 	}
 }
 

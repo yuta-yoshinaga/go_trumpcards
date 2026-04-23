@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
@@ -31,7 +32,7 @@ import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { KlondikeResponse } from '../types/card';
 import { KlondikePhase, KlondikeScoringMode } from '../types/phases';
@@ -173,6 +174,14 @@ function KlondikePageContent() {
     isPlaying: !!isPlayingForKbd,
     disabled: loading,
   });
+
+  const handleManualReset = useCallback(() => {
+    hideActionLog();
+    resetTimer();
+    setDrawCountSetting(1);
+    setScoringModeSetting(0);
+    handleReset();
+  }, [handleReset, hideActionLog, resetTimer]);
 
   const actionBindings = useMemo(
     () => [
@@ -626,24 +635,13 @@ function KlondikePageContent() {
                 <option value={0}>{t('scoringNone')}</option>
                 <option value={1}>{t('scoringVegas')}</option>
               </select>
-              <div data-tutorial="kl-reset-button">
-                <button
-                  type="button"
-                  className={btnOutline}
-                  onClick={() =>
-                    requestConfirm(() => {
-                      hideActionLog();
-                      resetTimer();
-                      setDrawCountSetting(1);
-                      setScoringModeSetting(0);
-                      return handleReset();
-                    })
-                  }
-                  disabled={loading}
-                >
-                  {tc('button.reset')}
-                </button>
-              </div>
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="kl-reset-button"
+              />
             </div>
           </GameFooter>
         </>

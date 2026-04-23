@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
@@ -26,7 +27,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
-import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CaribbeanStudResponse } from '../types/card';
@@ -377,14 +378,12 @@ function CaribbeanStudPageContent() {
             )}
             {isEndPhase && (
               <div className="flex justify-center gap-2 pb-2">
-                <button
-                  type="button"
-                  className={btnOutline}
-                  onClick={() => requestConfirm(handleReset)}
-                  disabled={loading}
-                >
-                  {t('button.reset')}
-                </button>
+                <GameResetButton
+                  isGameEnd={isEndPhase}
+                  onReset={handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                />
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                   {tc('actionLog.view')}
                 </button>

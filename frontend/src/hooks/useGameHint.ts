@@ -7,6 +7,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CassinoResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoResponse,
@@ -32,9 +33,11 @@ import type {
   PinochleResponse,
   PokerResponse,
   PokerSquaresResponse,
+  PresidentResponse,
   PyramidResponse,
   RedDogResponse,
   ScorpionResponse,
+  SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
@@ -58,6 +61,7 @@ import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
+import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
@@ -85,10 +89,12 @@ import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
+import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
+import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
@@ -111,6 +117,7 @@ type HintFn = (state: unknown) => HintResult | null;
 const hintFactories = {
   baccarat: (s) => getBaccaratHint(s as BaccaratResponse),
   blackjack: (s) => getBlackjackHint(s as BlackJackResponse),
+  spanish21: (s) => getBlackjackHint(s as BlackJackResponse),
   poker: (s) => getPokerHint(s as PokerResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),
@@ -162,7 +169,10 @@ const hintFactories = {
   yukon: (s) => getYukonHint(s as YukonResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
+  sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   trash: (s) => getTrashHint(s as TrashResponse),
+  president: (s) => getPresidentHint(s as PresidentResponse),
+  cassino: (s) => getCassinoHint(s as CassinoResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

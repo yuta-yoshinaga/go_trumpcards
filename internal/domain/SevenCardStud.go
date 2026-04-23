@@ -75,10 +75,8 @@ type SevenCardStud struct {
 	vpipTracked      []bool
 	pfrTracked       []bool
 	threeBetTracked  []bool
-	handCount        int
+	tournamentBase   // handCount / rebuyCounts / addonUsed (issue #1463)
 	lastCpuError     error
-	rebuyCounts      []int
-	addonUsed        []bool
 	rebuyPhaseType   int
 	actionLog        []*ActionLogEntry
 	humanProfile     *BettingHumanProfile
@@ -90,7 +88,7 @@ type SevenCardStud struct {
 // NewSevenCardStud コンストラクタ
 func NewSevenCardStud(trumpCards *TrumpCards, players []*SevenCardStudPlayer, config SevenCardStudConfig) *SevenCardStud {
 	n := len(players)
-	return &SevenCardStud{
+	s := &SevenCardStud{
 		trumpCards:       trumpCards,
 		players:          players,
 		sidePots:         make([]SidePot, 0),
@@ -101,12 +99,12 @@ func NewSevenCardStud(trumpCards *TrumpCards, players []*SevenCardStudPlayer, co
 		vpipTracked:      make([]bool, n),
 		pfrTracked:       make([]bool, n),
 		threeBetTracked:  make([]bool, n),
-		rebuyCounts:      make([]int, n),
-		addonUsed:        make([]bool, n),
 		config:           config,
 		phase:            SevenCardStudPhaseInit,
 		bringInPlayerIdx: -1,
 	}
+	s.initTournamentState(n)
+	return s
 }
 
 // NewRazz Razz (A-5 ローボール) コンストラクタ
@@ -992,9 +990,7 @@ func (s *SevenCardStud) Resize(players []*SevenCardStudPlayer) {
 	s.vpipTracked = make([]bool, n)
 	s.pfrTracked = make([]bool, n)
 	s.threeBetTracked = make([]bool, n)
-	s.rebuyCounts = make([]int, n)
-	s.addonUsed = make([]bool, n)
-	s.handCount = 0
+	s.initTournamentState(n)
 }
 
 // --- JSON ---

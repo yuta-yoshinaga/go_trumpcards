@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -25,14 +26,29 @@ type gameEntry struct {
 
 // TrumpCardsWeb トランプカードゲームWebクラス
 type TrumpCardsWeb struct {
-	games []gameEntry
+	games  []gameEntry
+	quiet  bool      // when true, suppress human-friendly startup/shutdown messages
+	stderr io.Writer // injectable for tests; defaults to os.Stderr
 }
 
 // NewTrumpCardsWeb コンストラクタ
 func NewTrumpCardsWeb() *TrumpCardsWeb {
-	web := &TrumpCardsWeb{}
+	web := &TrumpCardsWeb{stderr: os.Stderr}
 	web.registerAll()
 	return web
+}
+
+// SetQuiet toggles suppression of the free-text startup/shutdown messages.
+// Structured slog logs are emitted regardless — this setter only controls
+// the human-friendly lines meant for interactive terminals. See issue #1452.
+func (web *TrumpCardsWeb) SetQuiet(v bool) {
+	web.quiet = v
+}
+
+// SetStderr overrides the stderr sink used for free-text messages. Test
+// helper; production code relies on the default os.Stderr.
+func (web *TrumpCardsWeb) SetStderr(w io.Writer) {
+	web.stderr = w
 }
 
 // registerAll builds the per-game controllers from the central registry in
@@ -88,8 +104,14 @@ func (web *TrumpCardsWeb) Exec() error {
 		slog.Error("server listen error", "error", err)
 		return fmt.Errorf("failed to listen on %s: %w", srv.Addr, err)
 	}
-	fmt.Fprintln(os.Stderr, i18n.Tf("webServerRunning", "addr", ln.Addr().String()))
-	fmt.Fprintln(os.Stderr, i18n.T("webServerStop"))
+	// Free-text messages go to the configurable stderr sink (defaults to
+	// os.Stderr). Structured slog events fire regardless so systemd / docker
+	// / log shippers still see every lifecycle event. See issue #1452.
+	slog.Info("web server listening", "addr", ln.Addr().String())
+	if !web.quiet {
+		_, _ = fmt.Fprintln(web.stderr, i18n.Tf("webServerRunning", "addr", ln.Addr().String()))
+		_, _ = fmt.Fprintln(web.stderr, i18n.T("webServerStop"))
+	}
 
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.Serve(ln) }()
@@ -102,7 +124,9 @@ func (web *TrumpCardsWeb) Exec() error {
 			runErr = fmt.Errorf("server error: %w", err)
 		}
 	case <-ctx.Done():
-		fmt.Fprintln(os.Stderr, "\n"+i18n.T("webServerShutdown"))
+		if !web.quiet {
+			_, _ = fmt.Fprintln(web.stderr, "\n"+i18n.T("webServerShutdown"))
+		}
 		slog.Info("shutting down server")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
@@ -114,7 +138,9 @@ func (web *TrumpCardsWeb) Exec() error {
 	for _, g := range web.games {
 		g.controller.Stop()
 	}
-	fmt.Fprintln(os.Stderr, i18n.T("webServerStopped"))
+	if !web.quiet {
+		_, _ = fmt.Fprintln(web.stderr, i18n.T("webServerStopped"))
+	}
 	slog.Info("server stopped")
 	return runErr
 }

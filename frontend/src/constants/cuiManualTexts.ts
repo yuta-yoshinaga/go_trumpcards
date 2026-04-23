@@ -11,6 +11,7 @@ import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
 import canfield from '../../../docs/manual/cui/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
+import cassino from '../../../docs/manual/cui/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/cui/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/cui/crazyeights.md?raw';
 import cribbage from '../../../docs/manual/cui/cribbage.md?raw';
@@ -43,14 +44,17 @@ import pineapple from '../../../docs/manual/cui/pineapple.md?raw';
 import pinochle from '../../../docs/manual/cui/pinochle.md?raw';
 import poker from '../../../docs/manual/cui/poker.md?raw';
 import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
+import president from '../../../docs/manual/cui/president.md?raw';
 import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
+import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
 import spades from '../../../docs/manual/cui/spades.md?raw';
+import spanish21 from '../../../docs/manual/cui/spanish21.md?raw';
 import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
@@ -110,6 +114,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/spanish21': spanish21,
   '/speed': speed,
   '/spider': spider,
   '/threecard': threecard,
@@ -120,8 +125,11 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/whist': whist,
   '/yukon': yukon,
   '/scorpion': scorpion,
+  '/sevenbridge': sevenbridge,
   '/accordion': accordion,
   '/trash': trash,
+  '/president': president,
+  '/cassino': cassino,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

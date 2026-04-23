@@ -40,12 +40,17 @@ type FortyThievesInteractorIF interface {
 type FortyThievesInteractor struct {
 	GameBase[interfaces.FortyThievesGame]
 	ftp presenter.FortyThievesPresenter
+	solitaireActions[interfaces.FortyThievesGame]
 }
 
 // NewFortyThievesInteractor コンストラクタ
 func NewFortyThievesInteractor(ft interfaces.FortyThievesGame, ftp presenter.FortyThievesPresenter) *FortyThievesInteractor {
 	mustNotNil("FortyThievesInteractor", map[string]any{"ft": ft, "ftp": ftp})
-	return &FortyThievesInteractor{GameBase: GameBase[interfaces.FortyThievesGame]{Game: ft}, ftp: ftp}
+	return &FortyThievesInteractor{
+		GameBase:         GameBase[interfaces.FortyThievesGame]{Game: ft},
+		ftp:              ftp,
+		solitaireActions: newSolitaireActions[interfaces.FortyThievesGame](ft, ftp),
+	}
 }
 
 // Reset ゲーム初期化
@@ -78,19 +83,9 @@ func (fi *FortyThievesInteractor) MoveTableauToFoundation(col int) string {
 	return execAndPresent(fi.Game, fi.ftp, func() error { return fi.Game.MoveTableauToFoundation(col) })
 }
 
-// GiveUp ギブアップ
-func (fi *FortyThievesInteractor) GiveUp() string {
-	return runAndPresent(fi.Game, fi.ftp, fi.Game.GiveUp)
-}
-
 // Hint ヒント取得
 func (fi *FortyThievesInteractor) Hint() string {
 	return fi.ftp.HintOutput(fi.Game)
-}
-
-// AutoComplete オートコンプリート
-func (fi *FortyThievesInteractor) AutoComplete() string {
-	return execAndPresent(fi.Game, fi.ftp, fi.Game.AutoComplete)
 }
 
 // ActionLog 棋譜を出力する
@@ -98,19 +93,13 @@ func (fi *FortyThievesInteractor) ActionLog() string {
 	return fi.ftp.ActionLogOutput(fi.Game)
 }
 
-// Undo アンドゥ
-func (fi *FortyThievesInteractor) Undo() string {
-	return execAndPresent(fi.Game, fi.ftp, fi.Game.Undo)
-}
-
-// UndoN n回連続アンドゥ
-func (fi *FortyThievesInteractor) UndoN(n int) string {
-	return execAndPresent(fi.Game, fi.ftp, func() error { return fi.Game.UndoN(n) })
-}
-
 // RestoreFortyThievesInteractor deserialises JSON into a FortyThievesInteractor.
 func RestoreFortyThievesInteractor(data []byte, ftp presenter.FortyThievesPresenter) (*FortyThievesInteractor, error) {
 	return restoreAndBuild[domain.FortyThieves](data, func(g *domain.FortyThieves) *FortyThievesInteractor {
-		return &FortyThievesInteractor{GameBase: GameBase[interfaces.FortyThievesGame]{Game: g}, ftp: ftp}
+		return &FortyThievesInteractor{
+			GameBase:         GameBase[interfaces.FortyThievesGame]{Game: g},
+			ftp:              ftp,
+			solitaireActions: newSolitaireActions[interfaces.FortyThievesGame](g, ftp),
+		}
 	})
 }

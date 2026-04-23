@@ -21,6 +21,7 @@ export const gameCategories: readonly GameCategory[] = [
     icon: '🎰',
     routes: [
       { path: '/', labelKey: 'nav.blackjack', icon: '🃏' },
+      { path: '/spanish21', labelKey: 'nav.spanish21', icon: '🇪🇸' },
       { path: '/baccarat', labelKey: 'nav.baccarat', icon: '💎' },
       { path: '/threecard', labelKey: 'nav.threecard', icon: '🎴' },
       { path: '/caribbeanstud', labelKey: 'nav.caribbeanstud', icon: '🏝️' },
@@ -69,6 +70,8 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/doubt', labelKey: 'nav.doubt', icon: '🤥' },
       { path: '/durak', labelKey: 'nav.durak', icon: '🃏' },
       { path: '/daifugo', labelKey: 'nav.daifugo', icon: '💰' },
+      { path: '/president', labelKey: 'nav.president', icon: '🎩' },
+      { path: '/cassino', labelKey: 'nav.cassino', icon: '🎣' },
       { path: '/sevens', labelKey: 'nav.sevens', icon: '7️⃣' },
       { path: '/crazyeights', labelKey: 'nav.crazyeights', icon: '8️⃣' },
       { path: '/pageone', labelKey: 'nav.pageone', icon: '📄' },
@@ -108,6 +111,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/ginrummy', labelKey: 'nav.ginrummy', icon: '🫐' },
       { path: '/canasta', labelKey: 'nav.canasta', icon: '🃏' },
       { path: '/cribbage', labelKey: 'nav.cribbage', icon: '📌' },
+      { path: '/sevenbridge', labelKey: 'nav.sevenbridge', icon: '7️⃣' },
     ],
   },
 ] as const;

@@ -82,20 +82,20 @@ func TestWriteInstallHint_UnsupportedShell(t *testing.T) {
 
 func TestRunCompletion_NoArgs(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	code := runCompletionTo(nil, &stdout, &stderr)
+	code := runCompletionTo(nil, &stdout, &stderr, false, false)
 	assert.Equal(t, 1, code)
 	assert.Contains(t, stderr.String(), "trumpcards completion")
 }
 
 func TestRunCompletion_ExtraArgs(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	code := runCompletionTo([]string{"bash", "extra"}, &stdout, &stderr)
+	code := runCompletionTo([]string{"bash", "extra"}, &stdout, &stderr, false, false)
 	assert.Equal(t, 1, code)
 }
 
 func TestRunCompletion_UnsupportedShell(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	code := runCompletionTo([]string{"powershell"}, &stdout, &stderr)
+	code := runCompletionTo([]string{"powershell"}, &stdout, &stderr, false, false)
 	assert.Equal(t, 1, code)
 	assert.Contains(t, stderr.String(), "powershell")
 }
@@ -111,7 +111,7 @@ func TestRunCompletion_UnsupportedShell_DidYouMean(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
-			code := runCompletionTo([]string{tt.input}, &stdout, &stderr)
+			code := runCompletionTo([]string{tt.input}, &stdout, &stderr, false, false)
 			assert.Equal(t, 1, code)
 			assert.Contains(t, stderr.String(), tt.want, "expected suggestion %q for input %q", tt.want, tt.input)
 		})
@@ -120,7 +120,7 @@ func TestRunCompletion_UnsupportedShell_DidYouMean(t *testing.T) {
 
 func TestRunCompletion_UnsupportedShell_NoSuggestion(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	code := runCompletionTo([]string{"powershell"}, &stdout, &stderr)
+	code := runCompletionTo([]string{"powershell"}, &stdout, &stderr, false, false)
 	assert.Equal(t, 1, code)
 	// "powershell" is too far from any supported shell — no Did-you-mean line.
 	assert.NotContains(t, stderr.String(), "Did you mean")
@@ -131,10 +131,45 @@ func TestRunCompletion_ValidShells(t *testing.T) {
 	for _, shell := range []string{"bash", "zsh", "fish"} {
 		t.Run(shell, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
-			code := runCompletionTo([]string{shell}, &stdout, &stderr)
+			// Non-TTY default: no hint emitted, only the script body.
+			code := runCompletionTo([]string{shell}, &stdout, &stderr, false, false)
 			assert.Equal(t, 0, code)
 			assert.NotEmpty(t, stdout.String())
 			assert.Empty(t, stderr.String())
+		})
+	}
+}
+
+// TestRunCompletion_HintEmittedOnlyForTTY verifies issue #1450: the install
+// hint pollutes redirected output (`> file`) but is useful on interactive
+// terminals. The hint is gated on stdout being a TTY.
+func TestRunCompletion_HintEmittedOnlyForTTY(t *testing.T) {
+	tests := []struct {
+		name        string
+		stdoutIsTTY bool
+		noHint      bool
+		wantHint    bool
+	}{
+		{"non-TTY, hint not requested -> no hint (redirect path)", false, false, false},
+		{"TTY, hint not suppressed -> hint shown (onboarding)", true, false, true},
+		{"TTY but --no-hint -> no hint (explicit override)", true, true, false},
+		{"non-TTY + --no-hint -> no hint (consistent)", false, true, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, shell := range []string{"bash", "zsh", "fish"} {
+				var stdout, stderr bytes.Buffer
+				code := runCompletionTo([]string{shell}, &stdout, &stderr, tt.stdoutIsTTY, tt.noHint)
+				assert.Equal(t, 0, code, shell)
+				body := stdout.String()
+				// The completion script itself must always be present.
+				assert.Contains(t, body, "trumpcards", "shell=%s body missing script", shell)
+				// The install hint always starts with "# " and references "source" or "fpath".
+				hasHint := strings.Contains(body, "# To load completions")
+				if hasHint != tt.wantHint {
+					t.Errorf("shell=%s hint emitted=%v, want=%v\nbody=%s", shell, hasHint, tt.wantHint, body)
+				}
+			}
 		})
 	}
 }
