@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { indianpokerApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -287,7 +287,9 @@ describe('IndianPokerPage', () => {
   it('shows won chips when wonAmount > 0', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<IndianPokerPage />);
-    await waitFor(() => expect(screen.getByText(/\+200チップ/)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(within(screen.getByTestId('round-results-visible')).getByText(/\+200チップ/)).toBeInTheDocument(),
+    );
   });
 
   it('does not show won chips when wonAmount is 0', async () => {
@@ -706,7 +708,7 @@ describe('IndianPokerPage', () => {
     });
     renderWithProviders(<IndianPokerPage />);
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
-    expect(screen.getByText(/\+100チップ/)).toBeInTheDocument();
+    expect(within(screen.getByTestId('round-results-visible')).getByText(/\+100チップ/)).toBeInTheDocument();
   });
 
   // ---- cpuMetaAI toggle ----
