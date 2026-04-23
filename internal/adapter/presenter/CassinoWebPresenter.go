@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -97,12 +98,33 @@ func (cwp *CassinoWebPresenter) Output(cg interfaces.CassinoGame, lastErr error)
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if cg.GetGameEndFlag() {
+		// Plain `Message` is provided as an English fallback; clients that
+		// understand `cassino.result.scores` + `messageParams.scores` should
+		// render the localised version instead.
 		resObj.Message = cwp.buildResultMessage(cg)
 		resObj.MessageCode = "cassino.result.scores"
-		resObj.MessageParams = map[string]string{"phase": cassinoPhaseLabel(cg.GetPhase())}
+		resObj.MessageParams = map[string]string{
+			"phase":  cg.GetPhase(),
+			"scores": cwp.encodeScoresParam(cg),
+		}
 	}
 
 	return marshalOrError(resObj)
+}
+
+// encodeScoresParam packs final scores into a stable, locale-free string the
+// frontend can split (e.g. "0:11,1:7,2:5,3:3"). The frontend re-formats it
+// using the active i18n locale.
+func (cwp *CassinoWebPresenter) encodeScoresParam(cg interfaces.CassinoGame) string {
+	parts := make([]string, 0, cg.GetPlayerCnt())
+	for i := 0; i < cg.GetPlayerCnt(); i++ {
+		p := cg.GetPlayer(i)
+		if p == nil {
+			continue
+		}
+		parts = append(parts, fmt.Sprintf("%d:%d", i, p.GetTotalScore()))
+	}
+	return strings.Join(parts, ",")
 }
 
 // cassinoActionToOutput converts a domain action to a WebOutput representation.
@@ -124,9 +146,11 @@ func cassinoActionToOutput(a *domain.CassinoAction) *controller.CassinoWebOutput
 	}
 }
 
-// buildResultMessage ゲーム終了時の総合結果メッセージ。
+// buildResultMessage ゲーム終了時のフォールバック (英語) メッセージ。
+// クライアントが messageCode を理解する場合はこのメッセージを使わず i18n
+// 経由で表示する想定。
 func (cwp *CassinoWebPresenter) buildResultMessage(cg interfaces.CassinoGame) string {
-	msg := "ゲーム終了！ "
+	msg := "Game over. "
 	for i := 0; i < cg.GetPlayerCnt(); i++ {
 		p := cg.GetPlayer(i)
 		if p == nil {
@@ -134,11 +158,11 @@ func (cwp *CassinoWebPresenter) buildResultMessage(cg interfaces.CassinoGame) st
 		}
 		var name string
 		if p.GetIsHuman() {
-			name = "あなた"
+			name = "You"
 		} else {
 			name = fmt.Sprintf("CPU %d", i)
 		}
-		msg += fmt.Sprintf("%s:%d点 ", name, p.GetTotalScore())
+		msg += fmt.Sprintf("%s:%dpt ", name, p.GetTotalScore())
 	}
 	return msg
 }

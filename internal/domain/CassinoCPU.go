@@ -40,7 +40,9 @@ func (c *Cassino) chooseCpuAction(playerIdx int) cpuPlan {
 func (c *Cassino) cpuEasyPlan(playerIdx int, hand []*Card) cpuPlan {
 	plans := c.enumerateCpuPlans(playerIdx, hand)
 	if len(plans) == 0 {
-		return c.trailFallbackPlan(playerIdx, hand)
+		// 通常 enumerateCpuPlans は手札があれば必ず trail を含むので
+		// ここは到達しないはず。安全策として最初の有効インデックスを trail。
+		return cpuPlan{Type: CassinoActionTrail, handIdx: 0}
 	}
 	return plans[rand.Intn(len(plans))]
 }
@@ -50,7 +52,7 @@ func (c *Cassino) cpuEasyPlan(playerIdx int, hand []*Card) cpuPlan {
 func (c *Cassino) cpuNormalPlan(playerIdx int, hand []*Card) cpuPlan {
 	plans := c.enumerateCpuPlans(playerIdx, hand)
 	if len(plans) == 0 {
-		return c.trailFallbackPlan(playerIdx, hand)
+		return cpuPlan{Type: CassinoActionTrail, handIdx: 0}
 	}
 	best := plans[0]
 	bestScore := c.scorePlan(playerIdx, hand, plans[0])
@@ -68,7 +70,7 @@ func (c *Cassino) cpuNormalPlan(playerIdx int, hand []*Card) cpuPlan {
 func (c *Cassino) cpuHardPlan(playerIdx int, hand []*Card) cpuPlan {
 	plans := c.enumerateCpuPlans(playerIdx, hand)
 	if len(plans) == 0 {
-		return c.trailFallbackPlan(playerIdx, hand)
+		return cpuPlan{Type: CassinoActionTrail, handIdx: 0}
 	}
 	best := plans[0]
 	bestScore := c.scorePlanHard(playerIdx, hand, plans[0])
@@ -100,7 +102,9 @@ func (c *Cassino) enumerateCpuPlans(playerIdx int, hand []*Card) []cpuPlan {
 			})
 		}
 		// build (自分がビルドを保有していない時のみ)
-		if !c.playerOwnsBuild(playerIdx) && c.config.MultiBuildEnabled {
+		// MultiBuildEnabled は複合ビルド(同値ビルドの合流)を許可するフラグであり、
+		// 単独ビルド作成自体は常に許可される (人間プレイヤーと対称)。
+		if !c.playerOwnsBuild(playerIdx) {
 			cands := EnumerateBuilds(card, handIdx, hand, c.round.tableCards)
 			for _, b := range cands {
 				plans = append(plans, cpuPlan{
@@ -120,18 +124,6 @@ func (c *Cassino) enumerateCpuPlans(playerIdx int, hand []*Card) []cpuPlan {
 		}
 	}
 	return plans
-}
-
-// trailFallbackPlan は 1 枚目の手札を trail する緊急手。
-// 実際には enumerateCpuPlans が 0 になることは手札があれば起きないが念のため。
-func (c *Cassino) trailFallbackPlan(playerIdx int, hand []*Card) cpuPlan {
-	_ = playerIdx
-	for i, card := range hand {
-		if card != nil {
-			return cpuPlan{Type: CassinoActionTrail, handIdx: i}
-		}
-	}
-	return cpuPlan{Type: CassinoActionTrail, handIdx: 0}
 }
 
 // scorePlan はプランの期待得点。take は捕獲カードで実質得点換算、

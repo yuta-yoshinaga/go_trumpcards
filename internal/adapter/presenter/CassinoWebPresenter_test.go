@@ -56,7 +56,9 @@ func TestCassinoWebPresenter_Output(t *testing.T) {
 		raw := p.Output(cg, nil)
 		var out controller.CassinoWebOutput
 		require.NoError(t, json.Unmarshal([]byte(raw), &out))
-		assert.Contains(t, out.Message, "ゲーム終了")
+		assert.Contains(t, out.Message, "Game over")
+		assert.Equal(t, "cassino.result.scores", out.MessageCode)
+		assert.Contains(t, out.MessageParams, "scores")
 	})
 
 	t.Run("builds serialise", func(t *testing.T) {

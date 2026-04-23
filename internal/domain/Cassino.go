@@ -3,6 +3,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 )
 
 // CassinoPlayerCnt カシノのプレイヤー数 (4人固定)
@@ -625,22 +626,22 @@ func (c *Cassino) playerOwnsBuild(playerIdx int) bool {
 	return false
 }
 
+// sortIndicesDescending returns a copy of idxs sorted in descending order.
+// Used to delete by index from the back so earlier deletes don't shift later
+// targets.
+func sortIndicesDescending(idxs []int) []int {
+	out := make([]int, len(idxs))
+	copy(out, idxs)
+	sort.Sort(sort.Reverse(sort.IntSlice(out)))
+	return out
+}
+
 // removeTableCardsByIndex は降順に並び替えてから tableCards を削除する。
 func (c *Cassino) removeTableCardsByIndex(idxs []int) {
 	if len(idxs) == 0 {
 		return
 	}
-	sorted := make([]int, len(idxs))
-	copy(sorted, idxs)
-	// 降順ソート (簡易バブル)
-	for i := 0; i < len(sorted); i++ {
-		for j := i + 1; j < len(sorted); j++ {
-			if sorted[j] > sorted[i] {
-				sorted[i], sorted[j] = sorted[j], sorted[i]
-			}
-		}
-	}
-	for _, idx := range sorted {
+	for _, idx := range sortIndicesDescending(idxs) {
 		if idx >= 0 && idx < len(c.round.tableCards) {
 			c.round.tableCards = append(c.round.tableCards[:idx], c.round.tableCards[idx+1:]...)
 		}
@@ -652,16 +653,7 @@ func (c *Cassino) removeBuildsByIndex(idxs []int) {
 	if len(idxs) == 0 {
 		return
 	}
-	sorted := make([]int, len(idxs))
-	copy(sorted, idxs)
-	for i := 0; i < len(sorted); i++ {
-		for j := i + 1; j < len(sorted); j++ {
-			if sorted[j] > sorted[i] {
-				sorted[i], sorted[j] = sorted[j], sorted[i]
-			}
-		}
-	}
-	for _, idx := range sorted {
+	for _, idx := range sortIndicesDescending(idxs) {
 		if idx >= 0 && idx < len(c.round.builds) {
 			c.round.builds = append(c.round.builds[:idx], c.round.builds[idx+1:]...)
 		}
@@ -880,10 +872,10 @@ func (c *Cassino) UnmarshalJSON(data []byte) error {
 		len(j.ActionLog) > cassinoMaxSliceLen {
 		return fmt.Errorf("cassino: input array exceeds maximum allowed size")
 	}
-	c.trumpCards = j.TrumpCards
-	if c.trumpCards == nil {
-		c.trumpCards = NewTrumpCards(0)
+	if j.TrumpCards == nil {
+		return fmt.Errorf("cassino: missing trump cards in state")
 	}
+	c.trumpCards = j.TrumpCards
 	c.players = j.Players
 	if c.players == nil {
 		c.players = make([]*CassinoPlayer, 0)

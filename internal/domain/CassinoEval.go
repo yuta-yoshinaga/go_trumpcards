@@ -205,12 +205,18 @@ func dfsPartition(chosen []*Card, used []bool, target int, groups *[][]int, orig
 			continue
 		}
 		sum := 0
+		over := false
 		for i := 0; i < n; i++ {
-			if mask&(1<<i) != 0 {
-				sum += CassinoCardValue(remainCards[i])
+			if mask&(1<<i) == 0 {
+				continue
+			}
+			sum += CassinoCardValue(remainCards[i])
+			if sum > target {
+				over = true
+				break
 			}
 		}
-		if sum != target {
+		if over || sum != target {
 			continue
 		}
 		// このマスクを使って再帰

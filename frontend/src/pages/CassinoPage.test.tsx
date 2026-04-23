@@ -202,6 +202,53 @@ describe('CassinoPage', () => {
     await waitFor(() => expect(screen.getByTestId('build-0')).toBeInTheDocument());
   });
 
+  it('toggles a build selection and includes it in take', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        builds: [{ ownerIdx: 1, value: 8, groups: [[card('SPADE', 3), card('HEART', 5)]], isMulti: false }],
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 1,
+            cards: [card('HEART', 8)],
+            capturedCount: 0,
+            sweepCount: 0,
+            totalScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 4, cards: [], capturedCount: 0, sweepCount: 0, totalScore: 0 },
+        ],
+        tableCards: [],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('build-0')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('build-0'));
+    fireEvent.click(screen.getByTestId('take-button'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('take', {
+        handIndex: 0,
+        tableIndices: [],
+        buildIndices: [0],
+      }),
+    );
+  });
+
+  it('toggles sweepBonusEnabled setting', async () => {
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    const sweep = screen.getByRole('checkbox', { name: /スイープボーナス|Sweep Bonus/ });
+    expect(sweep).toBeChecked();
+    fireEvent.click(sweep);
+    await waitFor(() => expect(sweep).not.toBeChecked());
+  });
+
   it('renders CLI terminal when CLI mode is enabled via localStorage', async () => {
     localStorage.setItem('cli-mode-cassino', 'true');
     renderWithProviders(<CassinoPage />);

@@ -114,7 +114,12 @@ func newCassinoDefaultOutput(msg string) *CassinoWebOutput {
 	}
 }
 
-func cassinoDispatch(bc *baseController, w http.ResponseWriter, ci usecase.CassinoInteractorIF, param CassinoWebInput, _ func(string) *CassinoWebOutput) bool {
+// cassinoMaxIndices caps client-supplied index slices for take / build commands.
+// 52 is the absolute physical maximum (single deck), and using 64 provides a
+// modest safety margin while still being well within reasonable request size.
+const cassinoMaxIndices = 64
+
+func cassinoDispatch(bc *baseController, w http.ResponseWriter, ci usecase.CassinoInteractorIF, param CassinoWebInput, defaultOutput func(string) *CassinoWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
 		if param.Config != nil {
@@ -125,8 +130,16 @@ func cassinoDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Cassi
 	case "n", "next":
 		bc.writePresenterResponse(w, ci.NextRound())
 	case "t", "take":
+		if len(param.TableIndices) > cassinoMaxIndices || len(param.BuildIndices) > cassinoMaxIndices {
+			bc.writeJsonResponse(w, http.StatusBadRequest, defaultOutput("too many indices"))
+			return true
+		}
 		bc.writePresenterResponse(w, ci.Take(param.HandIndex, param.TableIndices, param.BuildIndices))
 	case "b", "build":
+		if len(param.TableIndices) > cassinoMaxIndices {
+			bc.writeJsonResponse(w, http.StatusBadRequest, defaultOutput("too many table indices"))
+			return true
+		}
 		bc.writePresenterResponse(w, ci.Build(param.HandIndex, param.TableIndices, param.DeclaredValue))
 	case "tr", "trail":
 		bc.writePresenterResponse(w, ci.Trail(param.HandIndex))

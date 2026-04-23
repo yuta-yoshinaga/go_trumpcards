@@ -109,10 +109,20 @@ func (ci *CassinoInteractor) ActionLog() string {
 	return ci.cp.ActionLogOutput(ci.Game)
 }
 
+// cassinoMaxCpuIterations は runCpuTurns の防御的な反復上限。
+// 通常 1 ラウンドで CPU が動くのは数十回 (高々 16 ターン × 数ラウンド) で、
+// 1000 を超えるなら CpuPlay または NextRound が手番を進めていない可能性が高い。
+const cassinoMaxCpuIterations = 1000
+
 // runCpuTurns ゲームが終わるか人間の手番になるまで CPU ターンを回す。
 // ラウンド境界に到達した場合は自動的に NextRound し、続行する。
+// 万一進行が止まった場合に備えて反復上限 (cassinoMaxCpuIterations) を設けて
+// 無限ループを防ぐ。
 func (ci *CassinoInteractor) runCpuTurns() {
-	for !ci.Game.GetGameEndFlag() && !ci.Game.IsHumanTurn() {
+	for i := 0; i < cassinoMaxCpuIterations; i++ {
+		if ci.Game.GetGameEndFlag() || ci.Game.IsHumanTurn() {
+			return
+		}
 		ci.Game.CpuPlay()
 		// Round 終了後に NextRound を自動実行 (ゲーム終了で無ければ)
 		if !ci.Game.GetGameEndFlag() && ci.Game.GetPhase() != "playerTurn" {

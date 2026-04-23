@@ -182,10 +182,28 @@ func TestCassinoInteractor_Snapshot(t *testing.T) {
 func TestRestoreCassinoInteractor(t *testing.T) {
 	ppMock := new(presenter.MockCassinoPresenter)
 	ppMock.On("Output", mock.Anything, mock.Anything).Return("x")
-	ci := usecase.NewCassinoInteractor(newTestCassino(), ppMock)
+	game := newTestCassino()
+	game.Reset() // mid-game state with shuffled deck + dealt hands
+	ci := usecase.NewCassinoInteractor(game, ppMock)
+
 	raw, err := ci.Snapshot()
 	assert.NoError(t, err)
+
 	restored, err := usecase.RestoreCassinoInteractor(raw, ppMock)
 	assert.NoError(t, err)
 	assert.NotNil(t, restored)
+
+	// State assertions: restored snapshot must match the original.
+	originalCfg := ci.GetConfig()
+	restoredCfg := restored.GetConfig()
+	assert.Equal(t, originalCfg, restoredCfg)
+}
+
+func TestRestoreCassinoInteractor_RejectsNilTrumpCards(t *testing.T) {
+	ppMock := new(presenter.MockCassinoPresenter)
+	// Hand-crafted snapshot without "tc" field — UnmarshalJSON should error.
+	raw := []byte(`{"pl":[],"cf":{"ts":21,"mb":true,"sb":true,"di":1},"ph":"playerTurn","ct":0,"tb":[],"bl":[],"lc":-1,"al":[]}`)
+	restored, err := usecase.RestoreCassinoInteractor(raw, ppMock)
+	assert.Error(t, err)
+	assert.Nil(t, restored)
 }
