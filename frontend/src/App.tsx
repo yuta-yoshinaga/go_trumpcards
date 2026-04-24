@@ -17,6 +17,7 @@ import { CaribbeanStudPage } from './pages/CaribbeanStudPage';
 import { CassinoPage } from './pages/CassinoPage';
 import { ClockSolitairePage } from './pages/ClockSolitairePage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
+import { CrazyPineapplePage } from './pages/CrazyPineapplePage';
 import { CribbagePage } from './pages/CribbagePage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DeucesWildPage } from './pages/DeucesWildPage';
@@ -83,6 +84,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/holdem': <HoldemPage />,
   '/omaha': <OmahaPage />,
   '/pineapple': <PineapplePage />,
+  '/crazypineapple': <CrazyPineapplePage />,
   '/sevencardstud': <SevenCardStudPage />,
   '/razz': <RazzPage />,
   '/badugi': <BadugiPage />,

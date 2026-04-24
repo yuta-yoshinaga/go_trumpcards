@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { pineappleApi } from '../api/gameApi';
+import { crazyPineappleApi, pineappleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
@@ -129,8 +129,20 @@ function StatTooltip({ id, label, tooltipText }: { id: string; label: string; to
   );
 }
 
-function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; threeBet: number; af: string }) {
-  const { t } = useTranslation('pineapple');
+function HudStats({
+  namespace,
+  vpip,
+  pfr,
+  threeBet,
+  af,
+}: {
+  namespace: string;
+  vpip: number;
+  pfr: number;
+  threeBet: number;
+  af: string;
+}) {
+  const { t } = useTranslation(namespace);
   return (
     <span className="ml-2 text-ds-info text-[0.8em] hidden md:inline" data-testid="hud-stats">
       <StatTooltip id="tooltip-vpip" label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:{vpip}%{' '}
@@ -141,40 +153,45 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
   );
 }
 
+/** Variant of the Pineapple page: standard "pineapple" or the Crazy Pineapple
+ * variant (discard happens after the flop betting round instead of before). */
+export type PineappleVariant = 'pineapple' | 'crazypineapple';
+
 /** Renders the Pineapple Poker game page with community cards, discard phase, betting, and showdown. */
-export function PineapplePage() {
+export function PineapplePage({ variant = 'pineapple' }: { variant?: PineappleVariant } = {}) {
   return (
-    <TutorialWrapper gameName="pineapple" steps={PN_TUTORIAL_STEPS}>
-      <PineapplePageContent />
+    <TutorialWrapper gameName={variant} steps={PN_TUTORIAL_STEPS}>
+      <PineapplePageContent variant={variant} />
     </TutorialWrapper>
   );
 }
 
 /** Inner content of the Pineapple Poker page, wrapped by TutorialProvider. */
-function PineapplePageContent() {
+function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
+  const apiClient = variant === 'crazypineapple' ? crazyPineappleApi : pineappleApi;
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('pineapple');
-  const phaseNames = usePhaseNames('pineapple', PINEAPPLE_PHASE_KEYS);
+    useGamePageSetup(variant);
+  const phaseNames = usePhaseNames(variant, PINEAPPLE_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
-  const { state, loading, error, exec: apiExec, retry } = useGameApi(pineappleApi.exec);
+  const { state, loading, error, exec: apiExec, retry } = useGameApi(apiClient.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
-  const { hint, hintEnabled, setHintEnabled } = useGameHint('pineapple', state);
+  const { hint, hintEnabled, setHintEnabled } = useGameHint(variant, state);
   const [selectedDiscard, setSelectedDiscard] = useState<number | null>(null);
   const turnStartRef = useRef(0);
   // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pineapple');
-  const cliConfig: CliGameConfig<PineappleResponse, Parameters<typeof pineappleApi.exec>> = useMemo(
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(variant);
+  const cliConfig: CliGameConfig<PineappleResponse, Parameters<typeof apiClient.exec>> = useMemo(
     () => ({
-      gameName: 'pineapple',
+      gameName: variant,
       parseCommand: parsePineappleCommand,
       formatResponse: formatPineappleState,
       helpText: PINEAPPLE_HELP,
     }),
-    [],
+    [variant],
   );
   const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -260,7 +277,7 @@ function PineapplePageContent() {
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.holdem.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.pineapple')} />
+      <GamePageHeading title={tc(`nav.${variant}`)} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct || canDiscard}>
         <span data-tutorial="pn-pot-display">
@@ -280,7 +297,7 @@ function PineapplePageContent() {
         )}
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
-        <ManualButton gamePath="/pineapple" />
+        <ManualButton gamePath={`/${variant}`} />
       </PhaseIndicator>
 
       {cliEnabled ? (
@@ -320,7 +337,7 @@ function PineapplePageContent() {
                   showHandName={isShowdown}
                   extraInfo={
                     p.totalHands > 0 ? (
-                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
+                      <HudStats namespace={variant} vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
                     ) : undefined
                   }
                 />
@@ -379,6 +396,7 @@ function PineapplePageContent() {
                   </span>
                   {humanPlayer.totalHands > 0 && (
                     <HudStats
+                      namespace={variant}
                       vpip={humanPlayer.vpip}
                       pfr={humanPlayer.pfr}
                       threeBet={humanPlayer.threeBet}

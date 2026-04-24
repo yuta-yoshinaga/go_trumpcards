@@ -13,6 +13,7 @@ import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
+import crazypineapple from '../../../docs/manual/web/crazypineapple.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
@@ -100,6 +101,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/pageone': pageone,
   '/paigow': paigow,
   '/pineapple': pineapple,
+  '/crazypineapple': crazypineapple,
   '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/poker': poker,

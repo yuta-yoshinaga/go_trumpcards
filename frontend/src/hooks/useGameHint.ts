@@ -63,6 +63,7 @@ import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
+import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
@@ -125,6 +126,7 @@ const hintFactories = {
   omaha: (s) => getOmahaHint(s as OmahaResponse),
   shortdeck: (s) => getShortDeckHint(s as ShortDeckResponse),
   pineapple: (s) => getPineappleHint(s as PineappleResponse),
+  crazypineapple: (s) => getCrazyPineappleHint(s as PineappleResponse),
   videopoker: (s) => getVideoPokerHint(s as VideoPokerResponse),
   deuceswild: (s) => getDeucesWildHint(s as VideoPokerResponse),
   jokerpoker: (s) => getJokerPokerHint(s as VideoPokerResponse),

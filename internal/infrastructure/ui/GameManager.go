@@ -224,6 +224,36 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "crazypineapple", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPineappleCuiController(usecase.NewPineappleInteractor(
+				domain.NewDefaultCrazyPineapple(), new(presenter.PineappleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "crazypineapple.helpTitle",
+				CommandKeys: []string{
+					"crazypineapple.helpFold",
+					"crazypineapple.helpCheck",
+					"crazypineapple.helpCall",
+					"crazypineapple.helpBet",
+					"crazypineapple.helpRaise",
+					"crazypineapple.helpAllIn",
+				},
+				ExtraCommandLines: []string{
+					"  d <index>            discard",
+					"  rb                   rebuy",
+					"  sr                   skip rebuy",
+					"  ad                   add-on",
+					"  sa                   skip add-on",
+				},
+				SettingKeys: []string{"crazypineapple.helpBettingLimit", "crazypineapple.helpTournament"},
+				ExtraSettingLines: []string{
+					"  sb <amount>          small blind (>=1)",
+					"  bb <amount>          big blind (>=2)",
+					"  lh <hands>           blind level-up hands (>=1)",
+					"  ts [4|6|9]           table size",
+				},
+			})
+	}},
 	{Name: "hearts", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewHeartsCuiController(usecase.NewHeartsInteractor(

@@ -96,6 +96,8 @@ tags:
     description: Contract Bridge (コントラクトブリッジ) game
   - name: pineapple
     description: Pineapple Poker (パイナップルポーカー) game
+  - name: crazypineapple
+    description: Crazy Pineapple Poker (クレイジーパイナップル) game — Pineapple variant where the discard happens after the flop betting round
   - name: speed
     description: Speed (スピード) game
   - name: gofish
@@ -3315,6 +3317,62 @@ paths:
                 summary: Go all-in
                 value:
                   command: allin
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PineappleResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PineappleResponse'
+
+  /crazypineapple/exec:
+    post:
+      tags:
+        - crazypineapple
+      summary: Execute a Crazy Pineapple Poker game command
+      description: |
+        Send a command to advance the Crazy Pineapple Poker
+        (クレイジーパイナップル) game session identified by `sessionId`.
+        Crazy Pineapple is a Pineapple variant that shares the same request
+        and response schemas (`PineappleRequest` / `PineappleResponse`) and
+        the same command set (fold/check/call/bet/raise/allin/discard/
+        rebuy/skiprebuy/addon/skipaddon/quit).
+
+        The key rule difference is **discard timing**: Crazy Pineapple
+        performs the discard phase *after* the flop betting round (before
+        the turn is dealt), whereas Pineapple discards immediately after
+        the flop is dealt (before flop betting). Hand-strength evaluation,
+        equity calculations, rebuy/addon, muck/show, table sizes (4/6/9-max)
+        and CPU play styles (TAG/LAP/TAP/LAG/GTO) are identical to Pineapple.
+
+        Phase, command and field semantics are otherwise identical to
+        `/pineapple/exec` — see that endpoint's description for the full
+        phase table and field reference.
+      operationId: crazyPineappleExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PineappleRequest'
+            examples:
+              reset:
+                summary: Start a new Crazy Pineapple game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              discardAfterFlopBetting:
+                summary: Discard hole card at index 1 (allowed only after flop betting)
+                value:
+                  command: discard
+                  cardIdx: 1
                   sessionId: my-session-001
       responses:
         '200':

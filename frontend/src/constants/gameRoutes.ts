@@ -39,6 +39,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/omaha', labelKey: 'nav.omaha', icon: '4️⃣' },
       { path: '/shortdeck', labelKey: 'nav.shortdeck', icon: '6️⃣' },
       { path: '/pineapple', labelKey: 'nav.pineapple', icon: '🍍' },
+      { path: '/crazypineapple', labelKey: 'nav.crazypineapple', icon: '🤪' },
       { path: '/sevencardstud', labelKey: 'nav.sevencardstud', icon: '7️⃣' },
       { path: '/razz', labelKey: 'nav.razz', icon: '🃏' },
       { path: '/badugi', labelKey: 'nav.badugi', icon: '🪷' },
