@@ -22,6 +22,10 @@
     "miss": "{{asker}} asked {{target}} for rank {{rank}} → Go Fish!",
     "bookFormed": "Book complete! Rank {{rank}}"
   },
+  "bubble": {
+    "askHit": "{{rank}} → +{{count}}",
+    "askMiss": "{{rank}}? → Go Fish!"
+  },
   "result": {
     "humanWin": "Game over! You win!",
     "cpuWin": "Game over! CPU {{cpuId}} wins!"

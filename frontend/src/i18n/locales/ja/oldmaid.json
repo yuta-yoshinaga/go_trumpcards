@@ -61,5 +61,9 @@
     "selectCardToMove": "並び替えるカード: {{card}}",
     "deselectCard": "{{card}} の選択を解除",
     "moveHere": "{{card}} をここ（{{to}}番目）に移動"
+  },
+  "bubble": {
+    "drewFrom": "← {{from}} から",
+    "drewAndPaired": "← {{from}} から (ペア成立)"
   }
 }

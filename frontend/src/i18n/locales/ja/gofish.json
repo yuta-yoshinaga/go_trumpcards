@@ -22,6 +22,10 @@
     "miss": "{{asker}} が {{target}} にランク {{rank}} を要求 → Go Fish!",
     "bookFormed": "ブック完成！ ランク {{rank}}"
   },
+  "bubble": {
+    "askHit": "{{rank}} → {{count}}枚！",
+    "askMiss": "{{rank}}? → Go Fish!"
+  },
   "result": {
     "humanWin": "ゲーム終了！ あなたの勝ち！",
     "cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
