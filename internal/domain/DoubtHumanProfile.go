@@ -132,7 +132,7 @@ func (p *DoubtHumanProfile) AdaptStrength() float64 {
 // RecordHesitation 迷い時間(ms)を記録する (Welford's online algorithm)
 // ms <= 0 の場合は何もしない (CUI等で計測不可の場合)
 func (p *DoubtHumanProfile) RecordHesitation(ms int) {
-	welfordUpdate(ms, &p.HesitationCount, &p.HesitationMean, &p.HesitationM2)
+	welfordUpdate(&p.HesitationCount, &p.HesitationMean, &p.HesitationM2, ms)
 }
 
 // HesitationStdDev 迷い時間の標準偏差を返す (データ不足の場合0)
@@ -142,7 +142,7 @@ func (p *DoubtHumanProfile) HesitationStdDev() float64 {
 
 // HesitationZScore 指定msの迷い時間のz-scoreを返す (データ不足の場合0)
 func (p *DoubtHumanProfile) HesitationZScore(ms int) float64 {
-	return welfordZScore(ms, p.HesitationCount, p.HesitationMean, p.HesitationM2)
+	return welfordZScore(p.HesitationCount, p.HesitationMean, p.HesitationM2, ms)
 }
 
 // HesitationBoost 指定msの迷い時間に対するダウト確率ブーストを返す

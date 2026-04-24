@@ -7,7 +7,7 @@ import (
 
 // Welford's algorithm must be numerically stable — a sanity property test
 // that the shared helpers match a two-pass mean/variance on well-behaved
-// input. See issue #1486.
+// input.
 func TestWelfordUpdate_MatchesTwoPass(t *testing.T) {
 	samples := []int{450, 520, 610, 300, 780, 900, 1100, 420, 560, 680}
 
@@ -28,7 +28,7 @@ func TestWelfordUpdate_MatchesTwoPass(t *testing.T) {
 	var count int
 	var mean, m2 float64
 	for _, s := range samples {
-		welfordUpdate(s, &count, &mean, &m2)
+		welfordUpdate(&count, &mean, &m2, s)
 	}
 	gotSD := welfordStdDev(count, m2)
 
@@ -57,7 +57,7 @@ func TestWelfordUpdate_IgnoresNonPositive(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var count int
 			var mean, m2 float64
-			welfordUpdate(tt.sample, &count, &mean, &m2)
+			welfordUpdate(&count, &mean, &m2, tt.sample)
 			if count != 0 || mean != 0 || m2 != 0 {
 				t.Errorf("non-positive sample %d mutated accumulators: count=%d mean=%f m2=%f",
 					tt.sample, count, mean, m2)
@@ -78,7 +78,7 @@ func TestWelfordStdDev_InsufficientData(t *testing.T) {
 
 // welfordZScore must return 0 when the accumulator has no variance signal.
 func TestWelfordZScore_InsufficientData(t *testing.T) {
-	if got := welfordZScore(500, 1, 500, 0); got != 0 {
+	if got := welfordZScore(1, 500, 0, 500); got != 0 {
 		t.Errorf("single-sample z-score = %f, want 0", got)
 	}
 }
@@ -112,7 +112,7 @@ func TestHesitationBoost_MinimumSamples(t *testing.T) {
 	var count int
 	var mean, m2 float64
 	for i := 0; i < hesitationMinPlays-1; i++ {
-		welfordUpdate(500+i*100, &count, &mean, &m2)
+		welfordUpdate(&count, &mean, &m2, 500+i*100)
 	}
 	if got := hesitationBoost(count, mean, m2, 5000); got != 0 {
 		t.Errorf("hesitationBoost with count=%d = %f, want 0 (below hesitationMinPlays=%d)",
@@ -126,11 +126,47 @@ func TestHesitationBoost_CapsAtMax(t *testing.T) {
 	var count int
 	var mean, m2 float64
 	for _, s := range []int{500, 510, 490, 505, 495} {
-		welfordUpdate(s, &count, &mean, &m2)
+		welfordUpdate(&count, &mean, &m2, s)
 	}
 	// 100x the mean → z-score in the tens; boost must still clamp.
 	got := hesitationBoost(count, mean, m2, 50_000)
 	if got != maxHesitationBoost {
 		t.Errorf("hesitationBoost(huge-ms) = %f, want capped at %f", got, maxHesitationBoost)
+	}
+}
+
+// hesitationBoost must return 0 when the z-score sits at or below the
+// configured threshold — a player who didn't visibly hesitate gives the
+// CPU no signal, even if enough samples exist. Covers the branch that the
+// "cap" and "minimum samples" tests miss.
+func TestHesitationBoost_BelowThreshold(t *testing.T) {
+	var count int
+	var mean, m2 float64
+	for _, s := range []int{500, 510, 490, 505, 495} {
+		welfordUpdate(&count, &mean, &m2, s)
+	}
+	// 501 ms is barely above the ~500 ms cluster — z-score well below 1.0.
+	if got := hesitationBoost(count, mean, m2, 501); got != 0 {
+		t.Errorf("hesitationBoost(barely-above-mean) = %f, want 0 (z <= threshold)", got)
+	}
+}
+
+// hesitationBoost must return a positive, uncapped value when the z-score
+// is moderately above the threshold — the linear ramp before the max clamp
+// needs coverage too.
+func TestHesitationBoost_PositiveBelowCap(t *testing.T) {
+	var count int
+	var mean, m2 float64
+	for _, s := range []int{500, 510, 490, 505, 495} {
+		welfordUpdate(&count, &mean, &m2, s)
+	}
+	// ~520 ms is ≈2 stddevs above the tight cluster around 500 — above the
+	// 1.0 threshold but nowhere near the boost cap.
+	got := hesitationBoost(count, mean, m2, 520)
+	if got <= 0 {
+		t.Errorf("hesitationBoost(520) = %f, want positive", got)
+	}
+	if got >= maxHesitationBoost {
+		t.Errorf("hesitationBoost(520) = %f, must stay strictly below cap %f", got, maxHesitationBoost)
 	}
 }

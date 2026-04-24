@@ -11,7 +11,6 @@ const (
 )
 
 // Meta-AI adaptation tuning constants, shared by every HumanProfile.
-// See issue #1486 — previously scattered across DoubtHumanProfile.go.
 const (
 	// hesitationMinPlays 迷い時間ブーストを有効にするための最小データ点数
 	hesitationMinPlays = 3
@@ -35,11 +34,9 @@ const (
 //   - A bounded linear ramp from GamesPlayed → adapt strength.
 //   - A z-score-based probability boost once enough samples exist.
 //
-// Previously each profile carried its own copy of these methods — 5 × 3 =
-// 15 identical bodies that drifted slightly (e.g. `IndianPoker` used
-// `min(...)` while the other two used a manual `if` clamp). Extracting them
-// here removes the drift risk while leaving each profile's public API (and
-// JSON shape) untouched. See issue #1486.
+// All helpers below group the Welford accumulator triple (count, mean, m2)
+// first and put the per-call sample `ms` last, so call sites can skim
+// signatures consistently.
 
 // welfordUpdate applies one sample of Welford's online algorithm to the
 // given streaming accumulators. Samples where ms <= 0 are ignored (used by
@@ -47,7 +44,7 @@ const (
 //
 // Mutates *count, *mean, and *m2 in place so that the caller's JSON-tagged
 // fields remain the source of truth.
-func welfordUpdate(ms int, count *int, mean, m2 *float64) {
+func welfordUpdate(count *int, mean, m2 *float64, ms int) {
 	if ms <= 0 {
 		return
 	}
@@ -70,7 +67,7 @@ func welfordStdDev(count int, m2 float64) float64 {
 
 // welfordZScore returns (ms - mean) / stddev for the current sample against
 // the accumulator, or 0 when the stddev is 0 (insufficient data).
-func welfordZScore(ms int, count int, mean, m2 float64) float64 {
+func welfordZScore(count int, mean, m2 float64, ms int) float64 {
 	sd := welfordStdDev(count, m2)
 	if sd == 0 {
 		return 0
@@ -89,7 +86,7 @@ func hesitationBoost(count int, mean, m2 float64, ms int) float64 {
 	if count < hesitationMinPlays {
 		return 0
 	}
-	z := welfordZScore(ms, count, mean, m2)
+	z := welfordZScore(count, mean, m2, ms)
 	if z <= hesitationZThreshold {
 		return 0
 	}

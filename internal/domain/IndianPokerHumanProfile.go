@@ -115,7 +115,7 @@ func (p *IndianPokerHumanProfile) RecordFoldToBet(folded bool) {
 // RecordHesitation 迷い時間(ms)を記録する (Welford's online algorithm)
 // ms <= 0 の場合は何もしない (CUI等で計測不可の場合)
 func (p *IndianPokerHumanProfile) RecordHesitation(ms int) {
-	welfordUpdate(ms, &p.HesitationCount, &p.HesitationMean, &p.HesitationM2)
+	welfordUpdate(&p.HesitationCount, &p.HesitationMean, &p.HesitationM2, ms)
 }
 
 // BluffRate 指定ブラケットのアグレッシブ率を返す (データなしの場合0.5)
@@ -146,7 +146,7 @@ func (p *IndianPokerHumanProfile) HesitationStdDev() float64 {
 
 // HesitationZScore 指定msの迷い時間のz-scoreを返す (データ不足の場合0)
 func (p *IndianPokerHumanProfile) HesitationZScore(ms int) float64 {
-	return welfordZScore(ms, p.HesitationCount, p.HesitationMean, p.HesitationM2)
+	return welfordZScore(p.HesitationCount, p.HesitationMean, p.HesitationM2, ms)
 }
 
 // HesitationBoost 指定msの迷い時間に対するコール確率ブーストを返す
