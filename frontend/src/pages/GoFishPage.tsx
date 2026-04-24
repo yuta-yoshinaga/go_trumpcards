@@ -182,13 +182,19 @@ function GoFishPageContent() {
                 // targeted by the most recent ask. `turnNumber` guarantees a
                 // fresh triggerKey even when two consecutive asks have the
                 // same rank and target. See issue #1490.
-                const isLastTargeted = state.lastAsk !== null && state.lastAsk.targetIdx === p.id;
+                //
+                // `cardsReceived` is serialized by the Go backend with
+                // `omitempty`, so on a miss the field is absent entirely —
+                // using `?.length ?? 0` instead of `.length` avoids the
+                // TypeError that otherwise crashes the page before CPU turns
+                // finish.
+                const lastAsk = state.lastAsk;
                 const askAnnotation =
-                  isLastTargeted && state.lastAsk
+                  lastAsk && lastAsk.targetIdx === p.id
                     ? {
-                        rank: state.lastAsk.rank,
-                        receivedCount: state.lastAsk.cardsReceived.length,
-                        triggerKey: `${state.turnNumber}-${state.lastAsk.playerIdx}-${state.lastAsk.targetIdx}-${state.lastAsk.rank}`,
+                        rank: lastAsk.rank,
+                        receivedCount: lastAsk.cardsReceived?.length ?? 0,
+                        triggerKey: `${state.turnNumber}-${lastAsk.playerIdx}-${lastAsk.targetIdx}-${lastAsk.rank}`,
                       }
                     : undefined;
                 return (

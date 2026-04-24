@@ -43,11 +43,12 @@ export function GoFishPlayerArea({ player, isSelected, onSelect, disabled, askAn
 
   return (
     <div className="relative">
-      {bubbleMessage && (
-        <div className="absolute -top-2 right-2 z-10">
-          <CpuActionBubble message={bubbleMessage} triggerKey={askAnnotation?.triggerKey} />
-        </div>
-      )}
+      {/* Always mount CpuActionBubble so its sr-only live region stays in the
+          DOM across renders. Without this, unmounting would cause screen
+          readers to miss announcements that land between mounts. */}
+      <div className="absolute -top-2 right-2 z-10">
+        <CpuActionBubble message={bubbleMessage} triggerKey={askAnnotation?.triggerKey} />
+      </div>
       <button
         type="button"
         onClick={() => onSelect(player.id)}

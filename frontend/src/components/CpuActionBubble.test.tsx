@@ -66,4 +66,34 @@ describe('CpuActionBubble', () => {
     render(<CpuActionBubble message="" triggerKey="k" />);
     expect(screen.queryByTestId('cpu-action-bubble')).not.toBeInTheDocument();
   });
+
+  // Regression: a mid-visibility clear of triggerKey / message used to leave
+  // the bubble on screen forever because the effect early-returned before
+  // setting visible=false. See PR #1498 review.
+  it('hides immediately when triggerKey clears mid-visibility', () => {
+    const { rerender } = render(<CpuActionBubble message="hello" triggerKey="k1" durationMs={5000} />);
+    expect(screen.getByTestId('cpu-action-bubble')).toBeInTheDocument();
+    rerender(<CpuActionBubble message="hello" triggerKey={undefined} durationMs={5000} />);
+    expect(screen.queryByTestId('cpu-action-bubble')).not.toBeInTheDocument();
+    expect(screen.getByTestId('cpu-action-bubble-live')).toBeInTheDocument();
+  });
+
+  it('hides immediately when message clears mid-visibility', () => {
+    const { rerender } = render(<CpuActionBubble message="hello" triggerKey="k1" durationMs={5000} />);
+    expect(screen.getByTestId('cpu-action-bubble')).toBeInTheDocument();
+    rerender(<CpuActionBubble message={undefined} triggerKey="k1" durationMs={5000} />);
+    expect(screen.queryByTestId('cpu-action-bubble')).not.toBeInTheDocument();
+  });
+
+  // The sr-only live region must stay mounted across every state transition
+  // so assistive tech doesn't miss announcements that land between mounts.
+  it('keeps the sr-only live region mounted after auto-dismiss', () => {
+    render(<CpuActionBubble message="hi" triggerKey="k" durationMs={100} />);
+    expect(screen.getByTestId('cpu-action-bubble')).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(screen.queryByTestId('cpu-action-bubble')).not.toBeInTheDocument();
+    expect(screen.getByTestId('cpu-action-bubble-live')).toBeInTheDocument();
+  });
 });

@@ -45,9 +45,13 @@ describe('GoFishPlayerArea', () => {
     expect(screen.getByRole('button')).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('does not render an ask bubble when askAnnotation is absent', () => {
+  it('does not render a visible ask bubble when askAnnotation is absent', () => {
     renderWithProviders(<GoFishPlayerArea player={cpuPlayer} isSelected={false} onSelect={vi.fn()} disabled={false} />);
+    // Visible bubble must be absent…
     expect(screen.queryByTestId('cpu-action-bubble')).not.toBeInTheDocument();
+    // …but the sr-only live region stays mounted so announcements aren't
+    // missed between mounts (see PR #1498 review).
+    expect(screen.getByTestId('cpu-action-bubble-live')).toBeInTheDocument();
   });
 
   it('renders hit bubble with count when askAnnotation.receivedCount > 0', () => {

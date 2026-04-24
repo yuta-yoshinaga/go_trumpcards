@@ -30,7 +30,14 @@ export function CpuActionBubble({ message, triggerKey, durationMs = 2500, classN
   const reduced = useReducedMotion();
 
   useEffect(() => {
-    if (triggerKey === undefined || !message) return;
+    // When the upstream event is gone (triggerKey cleared or message emptied),
+    // hide the bubble eagerly rather than waiting for the timer — otherwise a
+    // mid-visibility prop clear would leave the bubble on screen indefinitely.
+    if (triggerKey === undefined || !message) {
+      clearTimeout(timerRef.current);
+      setVisible(false);
+      return;
+    }
     setVisible(true);
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setVisible(false), durationMs);

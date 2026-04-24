@@ -145,11 +145,12 @@ export function OldMaidPlayerArea({
       id={`player-area-${player.id}`}
       className={`relative ${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}
     >
-      {bubble && (
-        <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
-          <CpuActionBubble message={bubble.message} triggerKey={bubble.triggerKey} />
-        </div>
-      )}
+      {/* Always mount CpuActionBubble so its sr-only live region stays in the
+          DOM across renders. Without this, unmounting would cause screen
+          readers to miss announcements that land between mounts. */}
+      <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
+        <CpuActionBubble message={bubble?.message} triggerKey={bubble?.triggerKey} />
+      </div>
       <div className="text-white font-bold mb-1 text-sm">
         {playerName(player.id, player.isHuman)}
         {player.isFinished && <StatusBadge variant="success">{tc('status.finished')}</StatusBadge>}
