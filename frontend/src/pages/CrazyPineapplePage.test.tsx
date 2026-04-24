@@ -1,8 +1,8 @@
-import { waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyPineappleApi, pineappleApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
-import type { PineappleResponse } from '../types/card';
+import type { HoldemPlayerData, PineappleResponse } from '../types/card';
 import { CrazyPineapplePage } from './CrazyPineapplePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -13,6 +13,53 @@ vi.mock('../api/gameApi', () => ({
 
 const mockCrazyExec = vi.mocked(crazyPineappleApi.exec);
 const mockPineappleExec = vi.mocked(pineappleApi.exec);
+
+const humanPlayer = (overrides: Partial<HoldemPlayerData> = {}): HoldemPlayerData => ({
+  id: 0,
+  isHuman: true,
+  cards: [
+    { design: 'SPADE', value: 1 },
+    { design: 'HEART', value: 13 },
+    { design: 'DIAMOND', value: 7 },
+  ],
+  chips: 980,
+  currentBet: 0,
+  folded: false,
+  allIn: false,
+  handRank: 0,
+  handName: '',
+  bestHand: [],
+  playStyleName: '',
+  totalHands: 0,
+  vpip: 0,
+  pfr: 0,
+  threeBet: 0,
+  af: '-',
+  ...overrides,
+});
+
+const cpuPlayer = (id: number, overrides: Partial<HoldemPlayerData> = {}): HoldemPlayerData => ({
+  id,
+  isHuman: false,
+  cards: [
+    { design: 'DIAMOND', value: 2 },
+    { design: 'CLOVER', value: 7 },
+  ],
+  chips: 1000,
+  currentBet: 0,
+  folded: false,
+  allIn: false,
+  handRank: 0,
+  handName: '',
+  bestHand: [],
+  playStyleName: '',
+  totalHands: 0,
+  vpip: 0,
+  pfr: 0,
+  threeBet: 0,
+  af: '-',
+  ...overrides,
+});
 
 const initState: PineappleResponse = {
   players: [],
@@ -55,6 +102,25 @@ const initState: PineappleResponse = {
   discardDone: [],
 };
 
+/** Discard phase state — set after the flop betting round in Crazy Pineapple. */
+const discardState: PineappleResponse = {
+  ...initState,
+  players: [humanPlayer(), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+  pot: 60,
+  dealerIdx: 3,
+  currentTurn: 0,
+  phase: 8,
+  isDiscardPhase: true,
+  discardDone: [false, true, true, true],
+  communityCards: [
+    { design: 'SPADE', value: 10 },
+    { design: 'HEART', value: 5 },
+    { design: 'DIAMOND', value: 8 },
+  ],
+  message: '',
+  handCount: 1,
+};
+
 describe('CrazyPineapplePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -68,5 +134,15 @@ describe('CrazyPineapplePage', () => {
       expect(mockCrazyExec).toHaveBeenCalledWith('reset');
     });
     expect(mockPineappleExec).not.toHaveBeenCalled();
+  });
+
+  it('renders discard controls during discard phase (after flop betting in Crazy mode)', async () => {
+    mockCrazyExec.mockResolvedValue(discardState);
+    renderWithProviders(<CrazyPineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    // The discard prompt comes from the crazypineapple i18n namespace, which
+    // mirrors the pineapple namespace key. This confirms the variant is wired
+    // through useGamePageSetup → useTranslation('crazypineapple').
+    expect(screen.getByText('捨てるカードを選択してください')).toBeInTheDocument();
   });
 });

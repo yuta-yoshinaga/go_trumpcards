@@ -129,8 +129,20 @@ function StatTooltip({ id, label, tooltipText }: { id: string; label: string; to
   );
 }
 
-function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; threeBet: number; af: string }) {
-  const { t } = useTranslation('pineapple');
+function HudStats({
+  namespace,
+  vpip,
+  pfr,
+  threeBet,
+  af,
+}: {
+  namespace: string;
+  vpip: number;
+  pfr: number;
+  threeBet: number;
+  af: string;
+}) {
+  const { t } = useTranslation(namespace);
   return (
     <span className="ml-2 text-ds-info text-[0.8em] hidden md:inline" data-testid="hud-stats">
       <StatTooltip id="tooltip-vpip" label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:{vpip}%{' '}
@@ -325,7 +337,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   showHandName={isShowdown}
                   extraInfo={
                     p.totalHands > 0 ? (
-                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
+                      <HudStats namespace={variant} vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
                     ) : undefined
                   }
                 />
@@ -384,6 +396,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   </span>
                   {humanPlayer.totalHands > 0 && (
                     <HudStats
+                      namespace={variant}
                       vpip={humanPlayer.vpip}
                       pfr={humanPlayer.pfr}
                       threeBet={humanPlayer.threeBet}

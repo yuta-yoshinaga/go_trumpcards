@@ -338,9 +338,10 @@ func (p *Pineapple) DiscardCard(cardIdx int) error {
 	p.discardDone[humanIdx] = true
 	p.appendLog(humanIdx, "discard", "discard", nil)
 
-	// 全員ディスカード済みならフロップベッティングへ
+	// 全員ディスカード済みならディスカード後のベッティングへ
+	// (通常 Pineapple = フロップベッティング、Crazy Pineapple = ターンベッティング)
 	if p.allDiscardDone() {
-		p.startFlopBetting()
+		p.startBettingAfterDiscard()
 	}
 
 	return p.runCpuActions()
@@ -374,11 +375,11 @@ func (p *Pineapple) allDiscardDone() bool {
 	return true
 }
 
-// startFlopBetting ディスカード完了後のベッティングラウンドを開始する。
+// startBettingAfterDiscard ディスカード完了後のベッティングラウンドを開始する。
 // 通常 Pineapple ではフロップベッティングへ、Crazy Pineapple ではターンを
 // 配ってターンベッティングへ進む（ディスカードがフロップベッティングの
 // 後に行われたため）。
-func (p *Pineapple) startFlopBetting() {
+func (p *Pineapple) startBettingAfterDiscard() {
 	if p.discardAfterFlopBetting {
 		p.phase = PineapplePhaseTurn
 		if card := p.trumpCards.DrawCard(); card != nil {
@@ -610,9 +611,11 @@ func (p *Pineapple) enterDiscardPhase() {
 		p.appendLog(i, "discard", "discard", nil)
 	}
 
-	// 全員ディスカード済み (人間なし or 人間がフォールド/オールイン) ならフロップベッティングへ
+	// 全員ディスカード済み (人間なし or 人間がフォールド/オールイン) なら
+	// ディスカード後のベッティングへ
+	// (通常 Pineapple = フロップベッティング、Crazy Pineapple = ターンベッティング)
 	if p.allDiscardDone() {
-		p.startFlopBetting()
+		p.startBettingAfterDiscard()
 	}
 }
 
