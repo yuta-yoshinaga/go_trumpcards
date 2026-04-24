@@ -4,6 +4,7 @@ import type {
   BaccaratResponse,
   BadugiResponse,
   BlackJackResponse,
+  CalculationResponse,
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
@@ -58,6 +59,7 @@ import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
+import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
@@ -171,6 +173,7 @@ const hintFactories = {
   yukon: (s) => getYukonHint(s as YukonResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
+  calculation: (s) => getCalculationHint(s as CalculationResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   trash: (s) => getTrashHint(s as TrashResponse),
   president: (s) => getPresidentHint(s as PresidentResponse),

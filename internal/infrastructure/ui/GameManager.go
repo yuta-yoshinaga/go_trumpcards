@@ -1052,6 +1052,24 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"blackjack.helpSetCpuCount"},
 			})
 	}},
+	{Name: "calculation", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCalculationCuiController(usecase.NewCalculationInteractor(
+				domain.NewDefaultCalculation(), new(presenter.CalculationCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "calculation.helpTitle",
+				CommandKeys: []string{
+					"calculation.helpStockToFoundation",
+					"calculation.helpStockToWaste",
+					"calculation.helpWasteToFoundation",
+					"calculation.helpGiveUp",
+					"calculation.helpHint",
+					"calculation.helpAutoComplete",
+					"calculation.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

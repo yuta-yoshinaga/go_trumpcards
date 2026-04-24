@@ -136,6 +136,8 @@ tags:
     description: Accordion (アコーディオン) game - compression solitaire where piles merge onto the 1st or 3rd pile to the left
   - name: trash
     description: Trash (トラッシュ / ガベージ) game - 2-player matching game where each player flips 10 face-down cards into position 1..10 using wilds
+  - name: calculation
+    description: Calculation (カルキュレーション) game - arithmetic-progression solitaire where 4 foundations (A,2,3,4) build up mod-13 with step sizes +1/+2/+3/+4
 
 paths:
   /blackjack/exec:
@@ -5941,6 +5943,119 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BlackJackResponse'
+
+  /calculation/exec:
+    post:
+      tags:
+        - calculation
+      summary: Execute a Calculation game command
+      description: |
+        Send a command to advance the Calculation (カルキュレーション) game session
+        identified by `sessionId`. Calculation is a single-player arithmetic
+        solitaire using a standard 52-card deck. Four foundations start with A,
+        2, 3, 4 and must be built up to K following arithmetic-progression rules
+        with step sizes `+1`, `+2`, `+3`, `+4` respectively (mod 13). The
+        remaining 48 cards form a single stock. On each turn the player takes
+        the stock top and either plays it onto a foundation (if its value
+        matches the foundation's next-expected value) or places it onto any of
+        four waste piles (no ordering constraints). Waste-pile tops can later
+        be played to foundations.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All 4 foundations have reached K |
+        | GameOver   | `2`   | Player gave up or reached a stalemate |
+
+        | Command        | Aliases     | Description |
+        |----------------|-------------|-------------|
+        | `reset`        | `r`         | Start / restart a game |
+        | `move`         | `m`         | Move a card (requires `from` and `to` zones) |
+        | `giveup`       | `g`         | Give up the current game |
+        | `hint`         | `h`         | Return a hint (stock/waste → foundation), if any |
+        | `autocomplete` | `ac`        | Auto-play all legal waste→foundation moves |
+        | `undo`         | `u`         | Undo the last action |
+        | `undo_n`       | —           | Undo the last `n` actions |
+        | `log`          | `l`         | View action log |
+
+        Move zones:
+        * `from`: `{zone: "stock"}` or `{zone: "waste", idx: 0..3}`
+        * `to`: `{zone: "foundation", idx: 0..3}` or `{zone: "waste", idx: 0..3}`
+      operationId: calculationExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/CalculationMoveZone'
+                to:
+                  $ref: '#/components/schemas/CalculationMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              moveStockToFoundation:
+                summary: Play the stock top to foundation 0
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: stock
+                  to:
+                    zone: foundation
+                    idx: 0
+              moveStockToWaste:
+                summary: Park the stock top on waste pile 2
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: stock
+                  to:
+                    zone: waste
+                    idx: 2
+              moveWasteToFoundation:
+                summary: Play waste 1 top to foundation 3
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: waste
+                    idx: 1
+                  to:
+                    zone: foundation
+                    idx: 3
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculationResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculationResponse'
 
 components:
   schemas:
@@ -14193,6 +14308,82 @@ components:
               type: object
               additionalProperties:
                 type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # Calculation
+    # -------------------------------------------------------------------------
+    CalculationMoveZone:
+      type: object
+      description: Source or target zone for a Calculation card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (stock, waste, foundation)
+          enum: [stock, waste, foundation]
+        idx:
+          type: integer
+          description: Pile index (required for waste/foundation; ignored for stock)
+    CalculationHint:
+      type: object
+      description: Suggested best move for Calculation
+      properties:
+        fromZone:
+          type: string
+          enum: [stock, waste]
+        wasteIdx:
+          type: integer
+          description: Waste pile index (-1 if fromZone is `stock`)
+        foundationIdx:
+          type: integer
+          description: Target foundation index (0..3)
+    CalculationResponse:
+      type: object
+      description: Response payload for /calculation/exec
+      properties:
+        foundations:
+          type: array
+          description: Four foundation piles indexed 0..3 with step sizes +1, +2, +3, +4 respectively.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        wastes:
+          type: array
+          description: Four waste piles indexed 0..3.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        stockCount:
+          type: integer
+        stockTop:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+          description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
+        hint:
+          $ref: '#/components/schemas/CalculationHint'
         message:
           type: string
         messageCode:

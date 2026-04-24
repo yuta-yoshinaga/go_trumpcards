@@ -1,0 +1,50 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "カルキュレーション",
+  "stock": "ストック",
+  "waste": "ウェイスト",
+  "foundation": "ファンデーション",
+  "foundations": "ファンデーション",
+  "moveCount": "手数",
+  "stockCount": "残り",
+  "stockTop": "次のカード",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "autoComplete": "オートコンプリート",
+  "selectSource": "移動元を選択してください",
+  "selectTarget": "移動先を選択してください",
+  "deselect": "キャンセル",
+  "draw": "ドロー",
+  "empty": "空",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "stalemate": "手詰まりです",
+  "stepLabels": {
+    "f0": "+1",
+    "f1": "+2",
+    "f2": "+3",
+    "f3": "+4"
+  },
+  "landscapeBanner": "横向き画面推奨",
+  "frontendHint": {
+    "calculationStock": "ストックのカードをファンデーションに置けます",
+    "calculationWaste": "ウェイストのカードをファンデーションに置けます"
+  },
+  "tutorial": {
+    "foundations": "上段の4つがファンデーション。A, 2, 3, 4 から始まり、それぞれ+1, +2, +3, +4 ずつ増やしてK(13)まで積み上げます。",
+    "stockWaste": "ストックから1枚ずつ引いて、ファンデーションかウェイストに置きます。ウェイストは4つあり、好きな順序で置けます。",
+    "controls": "操作ボタン。ヒント・ギブアップ・元に戻すなどが行えます。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "calculation": "カルキュレーション"
+  }
+}

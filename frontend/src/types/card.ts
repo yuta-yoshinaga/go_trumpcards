@@ -2334,6 +2334,36 @@ export interface FortyThievesMoveZone {
   cardIndex?: number;
 }
 
+/** A suggested move hint in Calculation. */
+export interface CalculationHint {
+  fromZone: string;
+  wasteIdx: number;
+  foundationIdx: number;
+}
+
+/** Full Calculation game state returned from the API. */
+export interface CalculationResponse {
+  foundations: Card[][];
+  wastes: Card[][];
+  stockCount: number;
+  stockTop?: Card;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: CalculationHint;
+}
+
+/** Source or target zone for a Calculation card move. */
+export interface CalculationMoveZone {
+  zone: 'stock' | 'waste' | 'foundation';
+  idx?: number;
+}
+
 /** Single Fifty-one player state from the API. */
 export interface FiftyOnePlayerData {
   id: number;

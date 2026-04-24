@@ -7,6 +7,7 @@ import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
+import calculation from '../../../docs/manual/web/calculation.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
 import canfield from '../../../docs/manual/web/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
@@ -71,6 +72,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/': blackjack,
   '/baccarat': baccarat,
   '/bridge': bridge,
+  '/calculation': calculation,
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,

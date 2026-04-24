@@ -8,6 +8,7 @@ import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
+import calculation from '../../../docs/manual/cui/calculation.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
 import canfield from '../../../docs/manual/cui/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
@@ -72,6 +73,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/': blackjack,
   '/baccarat': baccarat,
   '/bridge': bridge,
+  '/calculation': calculation,
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,

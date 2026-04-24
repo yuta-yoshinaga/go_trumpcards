@@ -11,6 +11,7 @@ import { BaccaratPage } from './pages/BaccaratPage';
 import { BadugiPage } from './pages/BadugiPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
+import { CalculationPage } from './pages/CalculationPage';
 import { CanastaPage } from './pages/CanastaPage';
 import { CanfieldPage } from './pages/CanfieldPage';
 import { CaribbeanStudPage } from './pages/CaribbeanStudPage';
@@ -123,6 +124,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/fiftyone': <FiftyOnePage />,
   '/clocksolitaire': <ClockSolitairePage />,
   '/fortythieves': <FortyThievesPage />,
+  '/calculation': <CalculationPage />,
   '/canfield': <CanfieldPage />,
   '/yukon': <YukonPage />,
   '/scorpion': <ScorpionPage />,
