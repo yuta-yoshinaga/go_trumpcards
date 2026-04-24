@@ -5,6 +5,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
+import { DaifugoCpuCompact } from '../components/daifugo/DaifugoCpuCompact';
 import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
 import { DaifugoHumanArea } from '../components/daifugo/DaifugoHumanArea';
 import { DaifugoRulesBadges } from '../components/daifugo/DaifugoRulesBadges';
@@ -23,7 +24,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { DaifugoSkeleton } from '../components/skeleton/DaifugoSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCardSwipeSelection } from '../hooks/useCardSwipeSelection';
 import { useCliGame } from '../hooks/useCliGame';
@@ -137,6 +138,7 @@ function DaifugoPageContent() {
   } = useGameHint('daifugo', state);
 
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { playSound } = useSound();
 
   const isHumanTurnForKbd = !!state && !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
@@ -234,11 +236,19 @@ function DaifugoPageContent() {
                 },
               ]}
             />
-            <div className="flex gap-2.5 flex-wrap mb-2.5">
-              {cpuPlayers.map((player) => (
-                <DaifugoCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
-              ))}
-            </div>
+            {isMobile ? (
+              <div className="flex gap-1.5 mb-2 overflow-x-auto">
+                {cpuPlayers.map((player) => (
+                  <DaifugoCpuCompact key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex gap-2.5 flex-wrap mb-2.5">
+                {cpuPlayers.map((player) => (
+                  <DaifugoCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
+                ))}
+              </div>
+            )}
 
             {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop target; keyboard play uses select+button */}
             <div
