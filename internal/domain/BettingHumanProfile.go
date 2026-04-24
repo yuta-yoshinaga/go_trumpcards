@@ -2,7 +2,6 @@ package domain
 
 import (
 	"encoding/json"
-	"math"
 )
 
 // BettingHumanProfileBracketData はブラケット別アグレッシブ行動のJSON出力形式
@@ -115,15 +114,7 @@ func (p *BettingHumanProfile) RecordFoldToBet(folded bool) {
 // RecordHesitation 迷い時間(ms)を記録する (Welford's online algorithm)
 // ms <= 0 の場合は何もしない (CUI等で計測不可の場合)
 func (p *BettingHumanProfile) RecordHesitation(ms int) {
-	if ms <= 0 {
-		return
-	}
-	p.HesitationCount++
-	x := float64(ms)
-	delta := x - p.HesitationMean
-	p.HesitationMean += delta / float64(p.HesitationCount)
-	delta2 := x - p.HesitationMean
-	p.HesitationM2 += delta * delta2
+	welfordUpdate(&p.HesitationCount, &p.HesitationMean, &p.HesitationM2, ms)
 }
 
 // BluffRate 指定ブラケットのアグレッシブ率を返す (データなしの場合0.5)
@@ -144,44 +135,22 @@ func (p *BettingHumanProfile) FoldRate() float64 {
 
 // AdaptStrength 適応強度を返す (0.0 ~ 0.2)
 func (p *BettingHumanProfile) AdaptStrength() float64 {
-	games := p.GamesPlayed
-	if games > metaAIMaxAdaptGames {
-		games = metaAIMaxAdaptGames
-	}
-	return float64(games) * metaAIAdaptPerGame
+	return computeAdaptStrength(p.GamesPlayed)
 }
 
 // HesitationStdDev 迷い時間の標準偏差を返す (データ不足の場合0)
 func (p *BettingHumanProfile) HesitationStdDev() float64 {
-	if p.HesitationCount < 2 {
-		return 0
-	}
-	return math.Sqrt(p.HesitationM2 / float64(p.HesitationCount-1))
+	return welfordStdDev(p.HesitationCount, p.HesitationM2)
 }
 
 // HesitationZScore 指定msの迷い時間のz-scoreを返す (データ不足の場合0)
 func (p *BettingHumanProfile) HesitationZScore(ms int) float64 {
-	sd := p.HesitationStdDev()
-	if sd == 0 {
-		return 0
-	}
-	return (float64(ms) - p.HesitationMean) / sd
+	return welfordZScore(p.HesitationCount, p.HesitationMean, p.HesitationM2, ms)
 }
 
 // HesitationBoost 指定msの迷い時間に対するコール確率ブーストを返す
 func (p *BettingHumanProfile) HesitationBoost(ms int) float64 {
-	if p.HesitationCount < hesitationMinPlays {
-		return 0
-	}
-	z := p.HesitationZScore(ms)
-	if z <= hesitationZThreshold {
-		return 0
-	}
-	boost := (z - hesitationZThreshold) * hesitationWeight
-	if boost > maxHesitationBoost {
-		return maxHesitationBoost
-	}
-	return boost
+	return hesitationBoost(p.HesitationCount, p.HesitationMean, p.HesitationM2, ms)
 }
 
 // AdjustedCallChance ブラフ率と迷い時間に基づいて調整済みコール確率を返す
