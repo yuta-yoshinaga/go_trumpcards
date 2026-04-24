@@ -237,7 +237,7 @@ function DaifugoPageContent() {
               ]}
             />
             {isMobile ? (
-              <div className="flex gap-1.5 mb-2 overflow-x-auto">
+              <div className="flex gap-1.5 mb-2 overflow-x-auto py-3">
                 {cpuPlayers.map((player) => (
                   <DaifugoCpuCompact key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
                 ))}

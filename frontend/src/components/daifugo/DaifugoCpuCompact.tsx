@@ -8,14 +8,14 @@ import { StatusBadge } from '../StatusBadge';
 export function DaifugoCpuCompact({ player, isCurrentTurn }: { player: DaifugoPlayerData; isCurrentTurn: boolean }) {
   const { t } = useTranslation('daifugo');
   const conditionalClass = player.isFinished
-    ? finishedPlayerClass
+    ? `${finishedPlayerClass} border-2 border-transparent`
     : isCurrentTurn
       ? activeTurnClass
-      : 'border border-white/10';
+      : 'border-2 border-white/10';
   return (
     <div
       id={`player-area-${player.id}`}
-      className={`flex items-center gap-1.5 rounded-[8px] px-2 py-1 text-xs whitespace-nowrap bg-black/20 ${conditionalClass}`}
+      className={`flex flex-shrink-0 items-center gap-1.5 rounded-[8px] px-2 py-1 text-xs whitespace-nowrap bg-black/20 ${conditionalClass}`}
     >
       <span className="text-white font-bold">{playerName(player.id, player.isHuman)}</span>
       {player.isFinished ? (
