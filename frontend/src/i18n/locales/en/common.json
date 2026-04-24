@@ -81,7 +81,8 @@
     "trash": "Trash",
     "president": "President",
     "cassino": "Cassino",
-    "spanish21": "Spanish 21"
+    "spanish21": "Spanish 21",
+    "calculation": "Calculation"
   },
   "sound": {
     "mute": "Mute sound",
@@ -346,6 +347,12 @@
     "clocksolitaire.playing": "Playing",
     "clocksolitaire.gameClear": "Game Clear! Steps: {{stepCount}}",
     "clocksolitaire.gameOver": "Game Over",
+    "calculation.playing": "Playing",
+    "calculation.stalemate": "Stalemate",
+    "calculation.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "calculation.gameOver": "Game Over",
+    "calculation.hintAvailable": "Hint available",
+    "calculation.noHint": "No hint available",
     "whist.result.team0Win": "Game Over! Team 0 wins!",
     "whist.result.team1Win": "Game Over! Team 1 wins!",
     "whist.playPhase.lead": "Lead a card",

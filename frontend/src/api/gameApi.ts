@@ -5,6 +5,8 @@ import type {
   BadugiResponse,
   BlackJackResponse,
   BridgeResponse,
+  CalculationMoveZone,
+  CalculationResponse,
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
@@ -95,6 +97,7 @@ const workerUrl: Record<string, string> = {
   sevencardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
   badugi: WORKER_CASINO,
+  calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
@@ -1180,6 +1183,16 @@ export const fortyThievesApi = {
   ) => gameExec<FortyThievesResponse>('fortythieves', { command, from, to, n }),
 };
 
+/** API client for the Calculation /calculation/exec endpoint. */
+export const calculationApi = {
+  exec: (
+    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
+    from?: CalculationMoveZone,
+    to?: CalculationMoveZone,
+    n?: number,
+  ) => gameExec<CalculationResponse>('calculation', { command, from, to, n }),
+};
+
 /** Configuration options for President game settings. */
 export interface PresidentConfigInput {
   revolutionEnabled?: boolean;
@@ -1302,6 +1315,7 @@ const games = [
   'pigtail',
   'clocksolitaire',
   'fortythieves',
+  'calculation',
   'canfield',
   'yukon',
   'scorpion',
