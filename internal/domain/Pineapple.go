@@ -60,6 +60,9 @@ type Pineapple struct {
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
 	discardDone     []bool // ディスカード済みフラグ
+	// discardAfterFlopBetting true にすると「Crazy Pineapple」モードとなり、
+	// ディスカードのタイミングがフロップ公開直後ではなくフロップベッティング終了後になる。
+	discardAfterFlopBetting bool
 }
 
 // NewPineapple コンストラクタ
@@ -92,6 +95,28 @@ func NewPineapple(trumpCards *TrumpCards, players []*PineapplePlayer, config Pin
 func NewDefaultPineapple() *Pineapple {
 	cfg := DefaultPineappleConfig()
 	return NewPineapple(NewTrumpCards(0), NewPineapplePlayersForTable(cfg.TableSize), cfg)
+}
+
+// NewCrazyPineapple コンストラクタ (Crazy Pineapple モード)。
+// 通常の Pineapple と同じ構造だが、ディスカードのタイミングがフロップ
+// ベッティング終了後（ターン配布前）に移動する。
+func NewCrazyPineapple(trumpCards *TrumpCards, players []*PineapplePlayer, config PineappleConfig) *Pineapple {
+	p := NewPineapple(trumpCards, players, config)
+	p.discardAfterFlopBetting = true
+	return p
+}
+
+// NewDefaultCrazyPineapple returns a Crazy Pineapple game with the default
+// table size and DefaultPineappleConfig. Counterpart to NewDefaultPineapple.
+func NewDefaultCrazyPineapple() *Pineapple {
+	cfg := DefaultPineappleConfig()
+	return NewCrazyPineapple(NewTrumpCards(0), NewPineapplePlayersForTable(cfg.TableSize), cfg)
+}
+
+// IsDiscardAfterFlopBetting reports whether this instance is running in
+// Crazy Pineapple mode (discard after flop betting round).
+func (p *Pineapple) IsDiscardAfterFlopBetting() bool {
+	return p.discardAfterFlopBetting
 }
 
 // Reset ゲーム初期化
@@ -349,9 +374,20 @@ func (p *Pineapple) allDiscardDone() bool {
 	return true
 }
 
-// startFlopBetting ディスカード完了後、フロップベッティングを開始する
+// startFlopBetting ディスカード完了後のベッティングラウンドを開始する。
+// 通常 Pineapple ではフロップベッティングへ、Crazy Pineapple ではターンを
+// 配ってターンベッティングへ進む（ディスカードがフロップベッティングの
+// 後に行われたため）。
 func (p *Pineapple) startFlopBetting() {
-	p.phase = PineapplePhaseFlop
+	if p.discardAfterFlopBetting {
+		p.phase = PineapplePhaseTurn
+		if card := p.trumpCards.DrawCard(); card != nil {
+			p.communityCards = append(p.communityCards, card)
+		}
+		p.appendLog(-1, "deal", "dealt turn", p.communityCards[3:])
+	} else {
+		p.phase = PineapplePhaseFlop
+	}
 
 	// ベッティングラウンド初期化
 	for _, pl := range p.players {
@@ -481,7 +517,7 @@ func (p *Pineapple) advancePhase() {
 
 	switch p.phase {
 	case PineapplePhasePreFlop:
-		// フロップカード3枚を配り、ディスカードフェーズへ
+		// フロップカード3枚を配る
 		for i := 0; i < 3; i++ {
 			card := p.trumpCards.DrawCard()
 			if card != nil {
@@ -489,9 +525,21 @@ func (p *Pineapple) advancePhase() {
 			}
 		}
 		p.appendLog(-1, "deal", "dealt flop", p.communityCards)
+		if p.discardAfterFlopBetting {
+			// Crazy Pineapple: ディスカードはフロップベッティング後。
+			// ここではフロップベッティングを開始する。
+			p.phase = PineapplePhaseFlop
+			break
+		}
+		// 通常 Pineapple: フロップ公開直後にディスカードへ。
 		p.enterDiscardPhase()
 		return
 	case PineapplePhaseFlop:
+		if p.discardAfterFlopBetting {
+			// Crazy Pineapple: フロップベッティング終了後にディスカード。
+			p.enterDiscardPhase()
+			return
+		}
 		p.phase = PineapplePhaseTurn
 		card := p.trumpCards.DrawCard()
 		if card != nil {
@@ -1048,34 +1096,35 @@ func (p *Pineapple) logAction(playerIdx, action, amount int) {
 
 // pineappleJSON is the JSON wire format for Pineapple.
 type pineappleJSON struct {
-	TrumpCards      *TrumpCards              `json:"tc"`
-	Players         []*PineapplePlayer       `json:"pl"`
-	CommunityCards  []*Card                  `json:"cc"`
-	Pot             int                      `json:"pt"`
-	SidePots        []SidePot                `json:"sp"`
-	DealerIdx       int                      `json:"di"`
-	CurrentTurn     int                      `json:"ct"`
-	Phase           int                      `json:"ph"`
-	Config          PineappleConfig          `json:"cf"`
-	GameEndFlag     bool                     `json:"ge"`
-	LastBet         int                      `json:"lb"`
-	MinRaise        int                      `json:"mr"`
-	RaiseCount      int                      `json:"rc"`
-	ActedFlags      []bool                   `json:"af"`
-	RoundResults    []HoldemResult           `json:"rr"`
-	CpuActions      []HoldemCpuAction        `json:"ca"`
-	StartingChips   []int                    `json:"sc"`
-	VPIPTracked     []bool                   `json:"vt"`
-	PFRTracked      []bool                   `json:"ft"`
-	ThreeBetTracked []bool                   `json:"tt"`
-	HandCount       int                      `json:"hc"`
-	RebuyCounts     []int                    `json:"rb"`
-	AddonUsed       []bool                   `json:"au"`
-	RebuyPhaseType  int                      `json:"rp"`
-	ActionLog       []*ActionLogEntry        `json:"al"`
-	Profile         *BettingHumanProfileData `json:"pf,omitempty"`
-	LastHumanPlayMs int                      `json:"hm"`
-	DiscardDone     []bool                   `json:"dd"`
+	TrumpCards              *TrumpCards              `json:"tc"`
+	Players                 []*PineapplePlayer       `json:"pl"`
+	CommunityCards          []*Card                  `json:"cc"`
+	Pot                     int                      `json:"pt"`
+	SidePots                []SidePot                `json:"sp"`
+	DealerIdx               int                      `json:"di"`
+	CurrentTurn             int                      `json:"ct"`
+	Phase                   int                      `json:"ph"`
+	Config                  PineappleConfig          `json:"cf"`
+	GameEndFlag             bool                     `json:"ge"`
+	LastBet                 int                      `json:"lb"`
+	MinRaise                int                      `json:"mr"`
+	RaiseCount              int                      `json:"rc"`
+	ActedFlags              []bool                   `json:"af"`
+	RoundResults            []HoldemResult           `json:"rr"`
+	CpuActions              []HoldemCpuAction        `json:"ca"`
+	StartingChips           []int                    `json:"sc"`
+	VPIPTracked             []bool                   `json:"vt"`
+	PFRTracked              []bool                   `json:"ft"`
+	ThreeBetTracked         []bool                   `json:"tt"`
+	HandCount               int                      `json:"hc"`
+	RebuyCounts             []int                    `json:"rb"`
+	AddonUsed               []bool                   `json:"au"`
+	RebuyPhaseType          int                      `json:"rp"`
+	ActionLog               []*ActionLogEntry        `json:"al"`
+	Profile                 *BettingHumanProfileData `json:"pf,omitempty"`
+	LastHumanPlayMs         int                      `json:"hm"`
+	DiscardDone             []bool                   `json:"dd"`
+	DiscardAfterFlopBetting bool                     `json:"cz,omitempty"`
 }
 
 // pineappleMaxSliceLen caps slice sizes during deserialisation.
@@ -1084,33 +1133,34 @@ const pineappleMaxSliceLen = 1000
 // MarshalJSON implements json.Marshaler.
 func (p *Pineapple) MarshalJSON() ([]byte, error) {
 	j := pineappleJSON{
-		TrumpCards:      p.trumpCards,
-		Players:         p.players,
-		CommunityCards:  p.communityCards,
-		Pot:             p.pot,
-		SidePots:        p.sidePots,
-		DealerIdx:       p.dealerIdx,
-		CurrentTurn:     p.currentTurn,
-		Phase:           p.phase,
-		Config:          p.config,
-		GameEndFlag:     p.gameEndFlag,
-		LastBet:         p.lastBet,
-		MinRaise:        p.minRaise,
-		RaiseCount:      p.raiseCount,
-		ActedFlags:      p.actedFlags,
-		RoundResults:    p.roundResults,
-		CpuActions:      p.cpuActions,
-		StartingChips:   p.startingChips,
-		VPIPTracked:     p.vpipTracked,
-		PFRTracked:      p.pfrTracked,
-		ThreeBetTracked: p.threeBetTracked,
-		HandCount:       p.handCount,
-		RebuyCounts:     p.rebuyCounts,
-		AddonUsed:       p.addonUsed,
-		RebuyPhaseType:  p.rebuyPhaseType,
-		ActionLog:       p.actionLog,
-		LastHumanPlayMs: p.lastHumanPlayMs,
-		DiscardDone:     p.discardDone,
+		TrumpCards:              p.trumpCards,
+		Players:                 p.players,
+		CommunityCards:          p.communityCards,
+		Pot:                     p.pot,
+		SidePots:                p.sidePots,
+		DealerIdx:               p.dealerIdx,
+		CurrentTurn:             p.currentTurn,
+		Phase:                   p.phase,
+		Config:                  p.config,
+		GameEndFlag:             p.gameEndFlag,
+		LastBet:                 p.lastBet,
+		MinRaise:                p.minRaise,
+		RaiseCount:              p.raiseCount,
+		ActedFlags:              p.actedFlags,
+		RoundResults:            p.roundResults,
+		CpuActions:              p.cpuActions,
+		StartingChips:           p.startingChips,
+		VPIPTracked:             p.vpipTracked,
+		PFRTracked:              p.pfrTracked,
+		ThreeBetTracked:         p.threeBetTracked,
+		HandCount:               p.handCount,
+		RebuyCounts:             p.rebuyCounts,
+		AddonUsed:               p.addonUsed,
+		RebuyPhaseType:          p.rebuyPhaseType,
+		ActionLog:               p.actionLog,
+		LastHumanPlayMs:         p.lastHumanPlayMs,
+		DiscardDone:             p.discardDone,
+		DiscardAfterFlopBetting: p.discardAfterFlopBetting,
 	}
 	if p.humanProfile != nil {
 		d := p.humanProfile.Export()
@@ -1203,6 +1253,7 @@ func (p *Pineapple) UnmarshalJSON(data []byte) error {
 	if p.discardDone == nil {
 		p.discardDone = make([]bool, 0)
 	}
+	p.discardAfterFlopBetting = j.DiscardAfterFlopBetting
 	if j.Profile != nil {
 		p.humanProfile = &BettingHumanProfile{}
 		p.humanProfile.Import(*j.Profile)

@@ -91,6 +91,7 @@ const workerUrl: Record<string, string> = {
   caribbeanstud: WORKER_CASINO,
   paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
+  crazypineapple: WORKER_CASINO,
   sevencardstud: WORKER_CASINO,
   razz: WORKER_CASINO,
   badugi: WORKER_CASINO,
@@ -442,6 +443,24 @@ export const pineappleApi = {
     profile?: unknown,
   ) =>
     gameExec<PineappleResponse>('pineapple', {
+      command,
+      amount,
+      humanPlayMs,
+      profile,
+      ...config,
+    }),
+};
+
+/** API client for the Crazy Pineapple Poker /crazypineapple/exec endpoint. */
+export const crazyPineappleApi = {
+  exec: (
+    command: HoldemLikeCommand | 'discard',
+    amount?: number,
+    config?: PineappleConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) =>
+    gameExec<PineappleResponse>('crazypineapple', {
       command,
       amount,
       humanPlayMs,
@@ -1245,6 +1264,7 @@ const games = [
   'omaha',
   'shortdeck',
   'pineapple',
+  'crazypineapple',
   'sevencardstud',
   'razz',
   'badugi',

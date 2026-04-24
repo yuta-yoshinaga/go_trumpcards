@@ -23,7 +23,7 @@ go run ./cmd/trumpcards --lang en          # Interactive mode in English
 go run ./cmd/trumpcards <game>             # Run a specific game (e.g., blackjack, poker, holdem)
 go run ./cmd/trumpcards --lang en <game>   # Run in English
 # Available games: blackjack, poker, oldmaid, daifugo, sevens, doubt, holdem, omaha,
-# shortdeck, pineapple, hearts, memory, klondike, freecell, baccarat, spades,
+# shortdeck, pineapple, crazypineapple, hearts, memory, klondike, freecell, baccarat, spades,
 # twotenjack, crazyeights, ginrummy, spider, napoleon, indianpoker, videopoker,
 # deuceswild, jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, caribbeanstud, ohhell,
 # bridge, speed, gofish, canasta, pinochle, golf, pigtail, sevencardstud,
@@ -132,7 +132,7 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 
 | Worker | Entry point | Games |
 |--------|-------------|-------|
-| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, caribbeanstud, sevencardstud, paigow, letitride, reddog, razz, badugi, spanish21) |
+| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, crazypineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, caribbeanstud, sevencardstud, paigow, letitride, reddog, razz, badugi, spanish21) |
 | **classic** | `cmd/workers/classic/main.go` | Trick-taking, matching & fishing (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist, pageone, trash, president, cassino) |
 | **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, scorpion, accordion, pokersquares) |
 

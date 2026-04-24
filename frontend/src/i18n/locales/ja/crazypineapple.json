@@ -1,0 +1,76 @@
+{
+  "phase": {
+    "preFlop": "プリフロップ",
+    "flop": "フロップ",
+    "turn": "ターン",
+    "river": "リバー",
+    "showdown": "ショーダウン",
+    "end": "結果",
+    "init": "初期化中",
+    "rebuy": "リバイ/アドオン",
+    "discard": "ディスカード"
+  },
+  "communityCards": "コミュニティカード",
+  "yourHand": "あなたの手札",
+  "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
+  "discard": {
+    "prompt": "1枚捨ててください。",
+    "select": "捨てるカードを選択してください"
+  },
+  "rebuy": {
+    "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
+    "accept": "リバイ",
+    "skip": "スキップ"
+  },
+  "addon": {
+    "prompt": "アドオンしますか? ({{chips}}チップ)",
+    "accept": "アドオン",
+    "skip": "スキップ"
+  },
+  "muck": {
+    "prompt": "マックしますか?",
+    "muck": "マック",
+    "show": "ショー"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR（プリフロップレイズ）: プリフロップでレイズした割合",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
+    "af": "AF",
+    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+  },
+  "learning": {
+    "title": "ラーニングモード",
+    "toggle": "ラーニングモード",
+    "equity": "エクイティ",
+    "potOdds": "ポットオッズ",
+    "plusEV": "+EV (期待値プラス)",
+    "minusEV": "-EV (期待値マイナス)",
+    "handOdds": "ハンドオッズ"
+  },
+  "settings": {
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+  },
+  "tutorial": {
+    "communityCards": "コミュニティカードです。全プレイヤー共有の5枚のカードが順次公開されます。",
+    "playerHand": "あなたのホールカード（3枚）です。フロップベッティング終了後に1枚捨て、残り2枚とコミュニティカードで最強の5枚を作ります。",
+    "actionButtons": "ベット・コール・レイズ・フォールドなどのアクションを選びます。",
+    "potDisplay": "現在のポットとブラインドレベルが表示されます。",
+    "cpuArea": "CPU対戦相手の情報です。ショーダウン時にカードが公開されます。",
+    "learningMode": "ラーニングモードでエクイティやポットオッズを確認できます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。",
+    "discardPhase": "ディスカードフェーズです。フロップベッティング後、3枚の手札から1枚選んで捨てます。"
+  },
+  "hint": {
+    "positiveEV": "期待値プラス — レイズ推奨",
+    "marginalEV": "期待値ほぼ均衡 — コール推奨",
+    "negativeEV": "期待値マイナス — フォールド推奨",
+    "strongHandRank": "強いハンド — レイズ推奨",
+    "decentHandRank": "まずまずのハンド — コール推奨",
+    "weakHandRank": "弱いハンド — フォールド推奨",
+    "discardWeakest": "最も弱いカードを捨てましょう"
+  }
+}

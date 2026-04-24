@@ -29,6 +29,7 @@ Go + Clean Architecture で実装した60種類のトランプゲーム。CLI �
 | オマハホールデム (Omaha Hold'em) | `omaha` | [CUI](docs/manual/cui/omaha.md) / [Web](docs/manual/web/omaha.md) |
 | ショートデック (Short Deck / 6+ Hold'em) | `shortdeck` | [CUI](docs/manual/cui/shortdeck.md) / [Web](docs/manual/web/shortdeck.md) |
 | パイナップルポーカー (Pineapple Poker) | `pineapple` | [CUI](docs/manual/cui/pineapple.md) / [Web](docs/manual/web/pineapple.md) |
+| クレイジーパイナップル (Crazy Pineapple Poker) | `crazypineapple` | [CUI](docs/manual/cui/crazypineapple.md) / [Web](docs/manual/web/crazypineapple.md) |
 | ハーツ (Hearts) | `hearts` | [CUI](docs/manual/cui/hearts.md) / [Web](docs/manual/web/hearts.md) |
 | 神経衰弱 (Memory) | `memory` | [CUI](docs/manual/cui/memory.md) / [Web](docs/manual/web/memory.md) |
 | クロンダイク (Klondike) | `klondike` | [CUI](docs/manual/cui/klondike.md) / [Web](docs/manual/web/klondike.md) |
