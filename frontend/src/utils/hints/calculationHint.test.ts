@@ -38,7 +38,7 @@ describe('getCalculationHint', () => {
     expect(hint).not.toBeNull();
     expect(hint?.reason).toBe('frontendHint.calculationStock');
     expect(hint?.targetAction).toBe('stock-to-f2');
-    expect(hint?.confidence).toBe('high');
+    expect(hint?.confidence).toBe('strong');
   });
 
   it('returns a waste hint when the backend indicates waste → foundation', () => {
@@ -46,6 +46,6 @@ describe('getCalculationHint', () => {
     expect(hint).not.toBeNull();
     expect(hint?.reason).toBe('frontendHint.calculationWaste');
     expect(hint?.targetAction).toBe('waste1-to-f0');
-    expect(hint?.confidence).toBe('high');
+    expect(hint?.confidence).toBe('strong');
   });
 });

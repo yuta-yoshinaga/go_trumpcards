@@ -13,12 +13,12 @@ export function getCalculationHint(state: CalculationResponse): HintResult | nul
     return {
       targetAction: `stock-to-f${state.hint.foundationIdx}`,
       reason: 'frontendHint.calculationStock',
-      confidence: 'high',
+      confidence: 'strong',
     };
   }
   return {
     targetAction: `waste${state.hint.wasteIdx}-to-f${state.hint.foundationIdx}`,
     reason: 'frontendHint.calculationWaste',
-    confidence: 'high',
+    confidence: 'strong',
   };
 }
