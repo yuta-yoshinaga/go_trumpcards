@@ -213,7 +213,11 @@ func (c *Calculation) GetHint() *CalculationHint {
 	return nil
 }
 
-// AutoComplete オートコンプリート（ストックが空の場合、残るウェイストをファンデーションに自動で送る）
+// AutoComplete オートコンプリート（ストックが空の場合、残るウェイストをファンデーションに自動で送る）。
+//
+// Undo 挙動: バッチ全体で 1 つだけスナップショットを取るため、Undo するとオート
+// コンプリート開始前の状態にまとめて戻る（個々のカード移動単位では戻らない）。
+// プレイヤー操作の「1 手」として扱う設計。
 func (c *Calculation) AutoComplete() error {
 	if c.phase != CalculationPhasePlaying {
 		return errors.New("game is not in playing phase")
@@ -339,10 +343,11 @@ func (c *Calculation) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return card.GetValue() == calculationNextValue(topCard.GetValue(), fIdx+1)
 }
 
-// calculationNextValue ファンデーションの次に置くべき値を返す（step は 1..4、V は 1..13）
+// calculationNextValue ファンデーションの次に置くべき値を返す（step は 1..4、V は 1..13）。
+// v+step は最大で 13+4 = 17 なので、mod 13 は一度の減算で十分（ループ不要）。
 func calculationNextValue(v, step int) int {
 	next := v + step
-	for next > CardValueMax {
+	if next > CardValueMax {
 		next -= CardValueMax
 	}
 	return next

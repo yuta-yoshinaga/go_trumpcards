@@ -141,28 +141,140 @@ describe('CalculationPage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
-  it('clicking deselect button clears source', async () => {
+  it('selecting stock and clicking a foundation dispatches a stock→foundation move', async () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
 
-    // Select stock by clicking the stock top button (find by aria-pressed=false initially).
-    const buttons = screen.getAllByRole('button');
-    const stockBtn = buttons.find((b) => b.getAttribute('aria-pressed') === 'false');
-    if (stockBtn) fireEvent.click(stockBtn);
+    fireEvent.click(screen.getByTestId('calc-stock-button'));
+    fireEvent.click(screen.getByLabelText(/Foundation 2 \+3/));
 
-    // After selection, a cancel button appears
-    const cancelBtn = screen.queryByRole('button', { name: 'キャンセル' });
-    if (cancelBtn) {
-      fireEvent.click(cancelBtn);
-      await waitFor(() => expect(screen.queryByRole('button', { name: 'キャンセル' })).toBeNull());
-    }
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'foundation', idx: 2 }),
+    );
   });
 
-  it('reset button opens confirmation dialog', async () => {
+  it('selecting stock and clicking an empty waste dispatches a stock→waste move', async () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+
+    fireEvent.click(screen.getByTestId('calc-stock-button'));
+    fireEvent.click(screen.getByTestId('calc-waste-button-1'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'waste', idx: 1 }));
+  });
+
+  it('selecting a waste and clicking a foundation dispatches a waste→foundation move', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      wastes: [[], [card('HEART', 4)], [], []],
+    });
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+
+    fireEvent.click(screen.getByTestId('calc-waste-button-1'));
+    fireEvent.click(screen.getByLabelText(/Foundation 1 \+2/));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 1 }, { zone: 'foundation', idx: 1 }),
+    );
+  });
+
+  it('clicking the same source twice toggles the selection off', async () => {
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const stockBtn = screen.getByTestId('calc-stock-button');
+    fireEvent.click(stockBtn);
+    expect(stockBtn).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(stockBtn);
+    expect(stockBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('cancel button clears the active selection', async () => {
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByTestId('calc-stock-button'));
+    const cancelBtn = await screen.findByRole('button', { name: 'キャンセル' });
+    fireEvent.click(cancelBtn);
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'キャンセル' })).toBeNull());
+  });
+
+  it('clicking different waste tops switches the selection', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      wastes: [[card('SPADE', 9)], [card('HEART', 5)], [], []],
+    });
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const w0 = screen.getByTestId('calc-waste-button-0');
+    const w1 = screen.getByTestId('calc-waste-button-1');
+    fireEvent.click(w0);
+    expect(w0).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(w1);
+    expect(w0).toHaveAttribute('aria-pressed', 'false');
+    expect(w1).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('renders the backend hint banner when state.hint is a stock hint', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      hint: { fromZone: 'stock', wasteIdx: -1, foundationIdx: 2 },
+    });
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument();
+  });
+
+  it('renders the backend hint banner when state.hint is a waste hint', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      wastes: [[card('SPADE', 5)], [], [], []],
+      hint: { fromZone: 'waste', wasteIdx: 0, foundationIdx: 1 },
+    });
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByText(/W0 → F1/)).toBeInTheDocument();
+  });
+
+  it('renders a stalemate escape button when the game is stalled', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      isStalemate: true,
+      canUndo: true,
+      undoToEscape: 2,
+    });
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('button', { name: /脱出する/ })).toBeInTheDocument();
+  });
+
+  it('reset confirmation dialog dispatches a reset when confirmed', async () => {
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+
     const resetBtn = screen.getAllByRole('button', { name: /reset|リセット/i })[0];
     fireEvent.click(resetBtn);
-    await waitFor(() => expect(screen.getByRole('button', { name: '確認' })).toBeInTheDocument());
+    const confirmBtn = await screen.findByRole('button', { name: '確認' });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('CLI toggle switches to the CLI terminal', async () => {
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const cliToggle = screen.getByRole('button', { name: 'CLIモードに切り替え' });
+    fireEvent.click(cliToggle);
+
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
   });
 });

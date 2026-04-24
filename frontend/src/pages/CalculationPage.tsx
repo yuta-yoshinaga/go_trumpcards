@@ -373,6 +373,7 @@ function CalculationPageContent() {
                     onClick={handleSelectStock}
                     disabled={!isPlaying || loading}
                     aria-pressed={sourceIsStock}
+                    data-testid="calc-stock-button"
                     className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${sourceIsStock ? 'ring-2 ring-ds-warning' : ''} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                   >
                     <AnimatedCard card={state.stockTop} width={cardWidth} />
@@ -414,6 +415,7 @@ function CalculationPageContent() {
                       }}
                       disabled={!isPlaying || loading || (!top && !canAcceptStock)}
                       aria-pressed={selected}
+                      data-testid={`calc-waste-button-${idx.toString()}`}
                       className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${isHintSource ? 'ring-2 ring-ds-success animate-pulse' : ''} ${canAcceptStock ? 'ring-2 ring-ds-info/70' : ''}`}
                     >
                       {top ? (
