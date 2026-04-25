@@ -252,7 +252,7 @@ function SpeedPageContent() {
                 role="status"
                 aria-live="polite"
               >
-                <p className="text-ds-warning font-bold text-base sm:text-lg animate-pulse">{t('stuckMessage')}</p>
+                <p className="text-ds-warning font-bold text-base sm:text-lg">{t('stuckMessage')}</p>
                 <button
                   type="button"
                   onClick={handleFlip}
@@ -262,7 +262,7 @@ function SpeedPageContent() {
                 >
                   {t('flipButton')}
                 </button>
-                <label className="flex items-center gap-2 text-xs text-ds-text-primary cursor-pointer min-h-[44px] px-1">
+                <label className="flex items-center gap-2 text-sm text-ds-text-primary cursor-pointer min-h-[44px] px-1">
                   <input
                     type="checkbox"
                     checked={speedConfig.autoFlip}
