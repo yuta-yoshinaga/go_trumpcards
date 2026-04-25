@@ -37,7 +37,8 @@ export function actionDesc(
 ): string {
   const p = players[action.playerIdx];
   const name = p ? playerName(p.id, p.isHuman) : `Player ${action.playerIdx}`;
-  return t('actionDesc', { name, count: action.cardCount, value: valueName(action.claimedValue) });
+  const key = action.hasTell ? 'actionDescWithTell' : 'actionDesc';
+  return t(key, { name, count: action.cardCount, value: valueName(action.claimedValue) });
 }
 
 /** Hook that manages Doubt game state, countdown timer, and player actions. */

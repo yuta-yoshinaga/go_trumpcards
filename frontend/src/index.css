@@ -232,24 +232,20 @@ input:not([type]):focus-visible {
 
 @keyframes sweat-drop {
   0% {
-    opacity: 0;
-    transform: translateY(-4px);
+    opacity: 0.6;
+    transform: translateY(-2px);
   }
-  30% {
+  50% {
     opacity: 1;
-    transform: translateY(0);
-  }
-  70% {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translateY(2px);
   }
   100% {
-    opacity: 0;
-    transform: translateY(4px);
+    opacity: 0.6;
+    transform: translateY(-2px);
   }
 }
 .animate-sweat-drop {
-  animation: sweat-drop 2s ease-in-out;
+  animation: sweat-drop 1.5s ease-in-out infinite;
 }
 
 /* Rotate chevron when sidebar category is open */

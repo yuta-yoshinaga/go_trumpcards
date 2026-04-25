@@ -936,6 +936,27 @@ describe('DoubtPage', () => {
     expect(screen.queryByLabelText('テル')).not.toBeInTheDocument();
   });
 
+  it('appends tell hint text to cpu action log when hasTell is true', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      cpuActions: [{ playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: true }],
+    };
+    mockExec.mockResolvedValue(s);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText(/緊張しているようだ/)).toBeInTheDocument());
+  });
+
+  it('does not append tell hint text to cpu action log when hasTell is false', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      cpuActions: [{ playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: false }],
+    };
+    mockExec.mockResolvedValue(s);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+    expect(screen.queryByText(/緊張しているようだ/)).not.toBeInTheDocument();
+  });
+
   // ── Settings panel ────────────────────────────────────────────────────────
 
   it('renders settings panel with default values', async () => {
