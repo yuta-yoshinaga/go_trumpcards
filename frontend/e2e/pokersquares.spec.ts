@@ -3,7 +3,7 @@ import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitFo
 
 test.describe('Poker Squares E2E', () => {
   test('places all 25 cards and reaches complete phase', async ({ page }) => {
-    await navigateTo(page, '/poker-squares');
+    await navigateTo(page, '/pokersquares');
 
     // Fill the 5x5 board in row-major order. Each click triggers an API call.
     for (let r = 0; r < 5; r++) {
@@ -29,7 +29,7 @@ test.describe('Poker Squares E2E', () => {
   });
 
   test('give up ends the game', async ({ page }) => {
-    await navigateTo(page, '/poker-squares');
+    await navigateTo(page, '/pokersquares');
 
     const giveUpButton = page.getByRole('button', { name: 'ギブアップ' });
     await expect(giveUpButton).toBeVisible({ timeout: TIMEOUT_TRANSITION });

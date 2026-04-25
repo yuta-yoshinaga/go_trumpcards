@@ -133,7 +133,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/sevenbridge': <SevenBridgePage />,
   '/trash': <TrashPage />,
   '/whist': <WhistPage />,
-  '/poker-squares': <PokerSquaresPage />,
+  '/pokersquares': <PokerSquaresPage />,
   '/pageone': <PageOnePage />,
   '/reddog': <RedDogPage />,
   '/president': <PresidentPage />,
