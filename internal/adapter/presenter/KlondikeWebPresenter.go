@@ -69,9 +69,9 @@ func (p *KlondikeWebPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 		switch phase {
 		case domain.KlondikePhasePlaying:
 			if k.IsStalemate() {
-				if n := k.UndoToEscape(); n > 0 {
+				if resObj.UndoToEscape > 0 {
 					resObj.MessageCode = "klondike.stalemateWithEscape"
-					resObj.MessageParams = map[string]string{"count": fmt.Sprintf("%d", n)}
+					resObj.MessageParams = map[string]string{"count": fmt.Sprintf("%d", resObj.UndoToEscape)}
 				} else {
 					resObj.MessageCode = "klondike.stalemate"
 				}
