@@ -14,6 +14,7 @@
   "playButton": "Play",
   "flipButton": "Flip",
   "stuckMessage": "Stuck! Press flip to turn over new center cards.",
+  "autoFlipInline": "Auto-flip",
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",

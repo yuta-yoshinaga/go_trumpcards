@@ -14,6 +14,7 @@
   "playButton": "出す",
   "flipButton": "めくる",
   "stuckMessage": "膠着状態です。めくるボタンを押してください。",
+  "autoFlipInline": "自動でめくる",
   "settings": {
     "title": "設定",
     "cpuDifficulty": "CPU難易度",
