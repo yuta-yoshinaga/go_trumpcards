@@ -85,5 +85,20 @@
   "webServerRunning": "サーバーが http://{{addr}} で起動しました",
   "webServerStop": "Ctrl+C で停止できます",
   "webServerShutdown": "サーバーをシャットダウン中...",
-  "webServerStopped": "サーバーを停止しました。"
+  "webServerStopped": "サーバーを停止しました。",
+  "tournament.helpRebuy": "  rb                   リバイ",
+  "tournament.helpSkipRebuy": "  sr                   リバイスキップ",
+  "tournament.helpAddOn": "  ad                   アドオン",
+  "tournament.helpSkipAddOn": "  sa                   アドオンスキップ",
+  "tournament.helpDiscard": "  d <index>            手札を捨てる",
+  "tournament.helpSmallBlind": "  sb <amount>          スモールブラインド (>=1)",
+  "tournament.helpBigBlind": "  bb <amount>          ビッグブラインド (>=2)",
+  "tournament.helpLevelUpHands": "  lh <hands>           ブラインドレベルアップ手数 (>=1)",
+  "tournament.helpTableSize": "  ts [4|6|9]           テーブルサイズ",
+  "stud.helpAnte": "  ante <amount>        アンテ (>=1)",
+  "stud.helpBringIn": "  bi <amount>          ブリングイン (>=1)",
+  "stud.helpSmallBet": "  sb <amount>          スモールベット (>=1)",
+  "stud.helpBigBet": "  bb <amount>          ビッグベット (>=1)",
+  "stud.helpLevelUpHands": "  lh <hands>           アンテレベルアップ手数 (>=1)",
+  "stud.helpTableSize": "  ts [2-7]             テーブルサイズ"
 }

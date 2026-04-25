@@ -3,6 +3,7 @@
 package ui
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -150,6 +151,109 @@ func TestBuildCuiHelp_bodyShortCircuitsScaffold(t *testing.T) {
 		SettingKeys: []string{"hearts.helpSetLimit"},
 	})
 	assertLines(t, got, body)
+}
+
+// TestPokerHelpUsesI18n covers issue #1511: tournament rebuy/blind and stud
+// ante/bring-in help lines must come from i18n keys so JA users see localized
+// text instead of the English literals that used to live in ExtraCommandLines /
+// ExtraSettingLines. Locale is restored to "en" (matching TestMain) at the end.
+func TestPokerHelpUsesI18n(t *testing.T) {
+	defer i18n.SetLang("en")
+
+	tests := []struct {
+		name        string
+		game        string // registry name
+		lang        string
+		mustContain []string
+	}{
+		{
+			name: "holdem JA shows tournament + blind translations",
+			game: "holdem",
+			lang: "ja",
+			mustContain: []string{
+				"リバイ",             // tournament.helpRebuy
+				"アドオン",            // tournament.helpAddOn
+				"スモールブラインド (>=1)", // tournament.helpSmallBlind
+				"ブラインドレベルアップ手数 (>=1)", // tournament.helpLevelUpHands
+				"テーブルサイズ",             // tournament.helpTableSize
+			},
+		},
+		{
+			name: "holdem EN keeps existing English wording",
+			game: "holdem",
+			lang: "en",
+			mustContain: []string{
+				"rebuy",
+				"add-on",
+				"small blind (>=1)",
+				"blind level-up hands (>=1)",
+				"table size",
+			},
+		},
+		{
+			name: "pineapple JA includes localized discard line",
+			game: "pineapple",
+			lang: "ja",
+			mustContain: []string{
+				"手札を捨てる", // tournament.helpDiscard
+				"リバイ",
+			},
+		},
+		{
+			// Pinned separately from pineapple so a copy-paste swap of
+			// tournamentRebuyAddOnKeys for pineappleRebuyAddOnKeys here would
+			// fail this case loudly instead of going unnoticed.
+			name: "crazypineapple JA includes the discard line too",
+			game: "crazypineapple",
+			lang: "ja",
+			mustContain: []string{
+				"手札を捨てる",
+				"リバイ",
+			},
+		},
+		{
+			name: "sevencardstud JA shows ante and bring-in translations",
+			game: "sevencardstud",
+			lang: "ja",
+			mustContain: []string{
+				"アンテ (>=1)",         // stud.helpAnte
+				"ブリングイン (>=1)",      // stud.helpBringIn
+				"スモールベット (>=1)",     // stud.helpSmallBet
+				"ビッグベット (>=1)",      // stud.helpBigBet
+				"アンテレベルアップ手数 (>=1)", // stud.helpLevelUpHands
+			},
+		},
+		{
+			name: "razz JA shares the stud ante block",
+			game: "razz",
+			lang: "ja",
+			mustContain: []string{
+				"アンテ (>=1)",
+				"ブリングイン (>=1)",
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			i18n.SetLang(tc.lang)
+			var entry *GameRegistryEntry
+			for i := range gameRegistry {
+				if gameRegistry[i].Name == tc.game {
+					entry = &gameRegistry[i]
+					break
+				}
+			}
+			if entry == nil {
+				t.Fatalf("game %q not found in registry", tc.game)
+			}
+			joined := strings.Join(entry.NewCui().HelpLines(), "\n")
+			for _, want := range tc.mustContain {
+				if !strings.Contains(joined, want) {
+					t.Errorf("help for %s (lang=%s) missing %q\nfull help:\n%s", tc.game, tc.lang, want, joined)
+				}
+			}
+		})
+	}
 }
 
 func assertLines(t *testing.T, got, want []string) {
