@@ -57,7 +57,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                   <label
                     key={item.id}
                     htmlFor={item.id}
-                    className="flex items-center gap-1 cursor-pointer relative group/tip"
+                    className="flex items-center gap-2 cursor-pointer relative group/tip min-h-[44px] px-1"
                   >
                     <input
                       id={item.id}
@@ -79,13 +79,13 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                     )}
                   </label>
                 ) : (
-                  <span key={item.id} className="flex items-center gap-1 relative group/tip">
+                  <span key={item.id} className="flex items-center gap-2 relative group/tip min-h-[44px]">
                     <label htmlFor={item.id}>{item.label}</label>
                     <select
                       id={item.id}
                       value={item.value}
                       onChange={(e) => item.onSelect?.(e.target.value)}
-                      className="bg-ds-surface-elevated text-ds-text-primary disabled:text-ds-text-muted disabled:opacity-70 rounded px-1 py-0.5"
+                      className="bg-ds-surface-elevated text-ds-text-primary disabled:text-ds-text-muted disabled:opacity-70 rounded px-2 py-2 min-h-[44px]"
                       disabled={item.disabled}
                       aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
                     >
