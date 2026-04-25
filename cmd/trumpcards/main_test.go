@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -639,6 +640,41 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 			wantRest: []string{},
 			wantLang: "ja",
 		},
+		{
+			name:     "--lang= (equals form, empty value) silently consumed",
+			args:     []string{"--lang="},
+			wantRest: []string{},
+			wantLang: "ja",
+		},
+		{
+			name:        "--lang followed by flag token treats it as lang value",
+			args:        []string{"--lang", "--no-color"},
+			wantRest:    []string{},
+			wantLang:    "ja", // "--no-color" is not a supported lang, falls back
+			wantNoColor: false, // --no-color was consumed as the lang value, not processed
+			wantWarn:    "--no-color",
+		},
+		{
+			name:        "--no-color=true disables both streams",
+			args:        []string{"--no-color=true"},
+			wantRest:    []string{},
+			wantLang:    "ja",
+			wantNoColor: true,
+		},
+		{
+			name:        "--no-color=false is consumed without disabling color",
+			args:        []string{"--no-color=false"},
+			wantRest:    []string{},
+			wantLang:    "ja",
+			wantNoColor: false,
+		},
+		{
+			name:        "-- stops flag scanning; remainder including -- passed through",
+			args:        []string{"--lang", "en", "--", "--no-color"},
+			wantRest:    []string{"--", "--no-color"},
+			wantLang:    "en",
+			wantNoColor: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -650,7 +686,7 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 			var stderr bytes.Buffer
 			got := applyTrailingGlobalFlags(tt.args, tt.quiet, &stderr)
 
-			if !equalStringSlices(got, tt.wantRest) {
+			if !slices.Equal(got, tt.wantRest) {
 				t.Errorf("rest = %#v, want %#v", got, tt.wantRest)
 			}
 			if i18n.Lang() != tt.wantLang {
@@ -671,14 +707,3 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 	}
 }
 
-func equalStringSlices(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}

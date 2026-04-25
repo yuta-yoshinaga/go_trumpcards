@@ -526,23 +526,34 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 	rest := make([]string, 0, len(args))
 	for i := 0; i < len(args); i++ {
 		a := args[i]
+		if a == "--" {
+			rest = append(rest, args[i:]...)
+			break
+		}
 		var langVal string
-		var haveLang, haveNoColor bool
+		var haveLang, haveNoColor, consumed bool
 		switch {
 		case a == "--lang" || a == "-lang":
-			haveLang = true
+			haveLang, consumed = true, true
 			if i+1 < len(args) {
 				langVal = args[i+1]
 				i++
 			}
 		case strings.HasPrefix(a, "--lang="):
 			langVal = strings.TrimPrefix(a, "--lang=")
-			haveLang = true
+			haveLang, consumed = true, true
 		case strings.HasPrefix(a, "-lang="):
 			langVal = strings.TrimPrefix(a, "-lang=")
-			haveLang = true
+			haveLang, consumed = true, true
 		case a == "--no-color" || a == "-no-color":
-			haveNoColor = true
+			haveNoColor, consumed = true, true
+		case strings.HasPrefix(a, "--no-color=") || strings.HasPrefix(a, "-no-color="):
+			val := a[strings.Index(a, "=")+1:]
+			b, err := strconv.ParseBool(val)
+			if err == nil {
+				consumed = true
+				haveNoColor = b
+			}
 		}
 		switch {
 		case haveLang:
@@ -559,7 +570,7 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 		case haveNoColor:
 			color.SetStdoutColor(false)
 			color.SetStderrColor(false)
-		default:
+		case !consumed:
 			rest = append(rest, a)
 		}
 	}
