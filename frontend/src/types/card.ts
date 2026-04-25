@@ -2752,3 +2752,48 @@ export interface CassinoResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+// --- Spite and Malice (スパイト・アンド・マリス) ---
+
+/** A single Spite & Malice player's view. Hand may contain `null` when
+ * the opponent's cards are hidden from view. */
+export interface SpiteAndMalicePlayerState {
+  hand: (Card | null)[];
+  goalTop?: Card;
+  goalSize: number;
+  sides: [Card[], Card[], Card[], Card[]];
+  isCpu: boolean;
+}
+
+/** Hint information for the next recommended Spite & Malice move. */
+export interface SpiteAndMaliceHint {
+  source: 'goal' | 'hand' | 'side';
+  index: number;
+  foundationIdx: number;
+  discard: boolean;
+}
+
+/** API response shape for a Spite & Malice game. */
+export interface SpiteAndMaliceResponse {
+  phase: number;
+  current: number;
+  players: [SpiteAndMalicePlayerState, SpiteAndMalicePlayerState];
+  foundations: Card[][];
+  foundationTops: number[];
+  stockSize: number;
+  completedSize: number;
+  moveCount: number;
+  winner: number;
+  goalSize: number;
+  cpuDifficulty: number;
+  hint?: SpiteAndMaliceHint;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+/** Source or target zone for a Spite & Malice move. */
+export interface SpiteAndMaliceMoveZone {
+  zone: 'hand' | 'goal' | 'side' | 'foundation';
+  idx?: number;
+}

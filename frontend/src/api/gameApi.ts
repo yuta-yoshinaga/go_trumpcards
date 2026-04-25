@@ -57,6 +57,8 @@ import type {
   SpeedConfig,
   SpeedResponse,
   SpiderResponse,
+  SpiteAndMaliceMoveZone,
+  SpiteAndMaliceResponse,
   ThreeCardResponse,
   TrashResponse,
   TriPeaksResponse,
@@ -142,6 +144,7 @@ const workerUrl: Record<string, string> = {
   reddog: WORKER_CASINO,
   president: WORKER_CLASSIC,
   cassino: WORKER_CLASSIC,
+  spiteandmalice: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1193,6 +1196,15 @@ export const calculationApi = {
   ) => gameExec<CalculationResponse>('calculation', { command, from, to, n }),
 };
 
+/** Command verbs accepted by the Spite & Malice /spiteandmalice/exec endpoint. */
+export type SpiteAndMaliceCommand = 'reset' | 'move' | 'discard' | 'cpu' | 'hint' | 'log';
+
+/** API client for the Spite & Malice /spiteandmalice/exec endpoint. */
+export const spiteAndMaliceApi = {
+  exec: (command: SpiteAndMaliceCommand, from?: SpiteAndMaliceMoveZone, to?: SpiteAndMaliceMoveZone) =>
+    gameExec<SpiteAndMaliceResponse>('spiteandmalice', { command, from, to }),
+};
+
 /** Configuration options for President game settings. */
 export interface PresidentConfigInput {
   revolutionEnabled?: boolean;
@@ -1330,6 +1342,7 @@ const games = [
   'president',
   'cassino',
   'spanish21',
+  'spiteandmalice',
 ] as const;
 type Game = (typeof games)[number];
 

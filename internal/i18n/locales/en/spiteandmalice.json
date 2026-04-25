@@ -1,0 +1,17 @@
+{
+  "helpTitle": "Spite and Malice",
+  "helpPlayHand": "  ph <h> <f>          play hand[h] to foundation <f> (f: 0..3)",
+  "helpPlayGoal": "  pg <f>              play goal pile top to foundation <f>",
+  "helpPlaySide": "  ps <s> <f>          play side[s] top to foundation <f> (s: 0..3)",
+  "helpDiscard": "  d <h> <s>           discard hand[h] to side[s] (ends turn)",
+  "helpCpu": "  cpu                 advance CPU's turn by one step",
+  "helpHint": "  h, hint             show a hint",
+  "promptHandIdx": "Hand index:",
+  "promptSideIdx": "Side pile index (0..3):",
+  "promptFoundationIdx": "Foundation index (0..3):",
+  "playing": "Playing",
+  "win": "You win! Moves: {{moveCount}}",
+  "lose": "CPU wins. Moves: {{moveCount}}",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint"
+}

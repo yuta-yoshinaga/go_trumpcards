@@ -59,6 +59,7 @@ import spades from '../../../docs/manual/cui/spades.md?raw';
 import spanish21 from '../../../docs/manual/cui/spanish21.md?raw';
 import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
+import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
@@ -134,6 +135,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/trash': trash,
   '/president': president,
   '/cassino': cassino,
+  '/spiteandmalice': spiteandmalice,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */
