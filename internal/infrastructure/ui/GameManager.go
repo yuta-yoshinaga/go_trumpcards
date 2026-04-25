@@ -46,11 +46,17 @@ var (
 		"tournament.helpSkipAddOn",
 	}
 	// pineappleRebuyAddOnKeys is the same row prefixed with the discard line
-	// only Pineapple variants surface.
-	pineappleRebuyAddOnKeys = append(
-		[]string{"tournament.helpDiscard"},
-		tournamentRebuyAddOnKeys...,
-	)
+	// only Pineapple variants surface. Spelled out as a flat literal (rather
+	// than `append([]string{...}, tournamentRebuyAddOnKeys...)`) so the keys
+	// don't depend on package-level init order and can't accidentally alias
+	// the shared slice.
+	pineappleRebuyAddOnKeys = []string{
+		"tournament.helpDiscard",
+		"tournament.helpRebuy",
+		"tournament.helpSkipRebuy",
+		"tournament.helpAddOn",
+		"tournament.helpSkipAddOn",
+	}
 	// holdemBlindKeys are the blind / level-up / table-size settings shared
 	// by holdem, omaha, shortdeck, pineapple, crazypineapple.
 	holdemBlindKeys = []string{

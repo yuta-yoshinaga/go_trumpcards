@@ -200,6 +200,18 @@ func TestPokerHelpUsesI18n(t *testing.T) {
 			},
 		},
 		{
+			// Pinned separately from pineapple so a copy-paste swap of
+			// tournamentRebuyAddOnKeys for pineappleRebuyAddOnKeys here would
+			// fail this case loudly instead of going unnoticed.
+			name: "crazypineapple JA includes the discard line too",
+			game: "crazypineapple",
+			lang: "ja",
+			mustContain: []string{
+				"手札を捨てる",
+				"リバイ",
+			},
+		},
+		{
 			name: "sevencardstud JA shows ante and bring-in translations",
 			game: "sevencardstud",
 			lang: "ja",
