@@ -79,7 +79,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                     )}
                   </label>
                 ) : (
-                  <span key={item.id} className="flex items-center gap-2 relative group/tip min-h-[44px]">
+                  <span key={item.id} className="flex items-center gap-2 relative group/tip min-h-[44px] px-1">
                     <label htmlFor={item.id}>{item.label}</label>
                     <select
                       id={item.id}

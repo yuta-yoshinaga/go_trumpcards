@@ -135,10 +135,12 @@ h3 {
    min-height enforces the 44px touch target baseline (DESIGN.md, WCAG 2.5.5).
    Components that already pass `min-h-[44px]` (e.g. NavBar mobile search) are
    unaffected; everything else now meets the threshold without per-component
-   overrides. */
+   overrides. `input:not([type])` covers bare `<input>` (defaults to text)
+   which the explicit selectors miss. */
 input[type="number"],
 input[type="text"],
-input[type="search"] {
+input[type="search"],
+input:not([type]) {
   background-color: var(--color-ds-surface-elevated);
   color: var(--color-ds-text-primary);
   border: 1px solid var(--color-ds-border-subtle);
@@ -153,7 +155,8 @@ input[type="radio"] {
 
 input[type="number"]:focus-visible,
 input[type="text"]:focus-visible,
-input[type="search"]:focus-visible {
+input[type="search"]:focus-visible,
+input:not([type]):focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px var(--color-ds-bg),
