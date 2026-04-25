@@ -54,7 +54,12 @@ func (p *YukonWebPresenter) Output(y interfaces.YukonGame, lastErr error) string
 		switch phase {
 		case domain.YukonPhasePlaying:
 			if y.IsStalemate() {
-				resObj.MessageCode = "yukon.stalemate"
+				if n := y.UndoToEscape(); n > 0 {
+					resObj.MessageCode = "yukon.stalemateWithEscape"
+					resObj.MessageParams = map[string]string{"count": fmt.Sprintf("%d", n)}
+				} else {
+					resObj.MessageCode = "yukon.stalemate"
+				}
 			} else {
 				resObj.MessageCode = "yukon.playing"
 			}
