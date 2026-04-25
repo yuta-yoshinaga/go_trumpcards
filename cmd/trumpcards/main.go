@@ -264,15 +264,23 @@ func run() int {
 		arg = canonical
 	}
 	if handler, ok := commands[arg]; ok {
-		// `<game> --help` / `<game> -h`: Go's flag package stops parsing at the first
-		// non-flag argument, so these trailing flags land in Args(). Intercept them
-		// and print that game's help instead of launching the game. Subcommands in
-		// subFlagCommands are handled by parseSubFlags (which catches flag.ErrHelp).
-		if !subFlagCommands[arg] && hasHelpFlag(flag.Args()[1:]) {
-			return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
-		}
-		if flag.NArg() > 1 && !subFlagCommands[arg] {
-			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(flag.Args()[1:], " ")))
+		if !subFlagCommands[arg] {
+			// Apply --lang / --no-color when they land after the game name so
+			// `trumpcards <game> --lang en` matches the prepositional form.
+			// Done before the help short-circuit so `<game> --lang en --help`
+			// renders help in the requested locale.
+			extras := applyTrailingGlobalFlags(flag.Args()[1:], quiet, os.Stderr)
+			// `<game> --help` / `<game> -h`: Go's flag package stops parsing at
+			// the first non-flag argument, so these trailing flags land in Args().
+			// Intercept them and print that game's help instead of launching the
+			// game. Subcommands in subFlagCommands are handled by parseSubFlags
+			// (which catches flag.ErrHelp).
+			if hasHelpFlag(extras) {
+				return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
+			}
+			if len(extras) > 0 {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(extras, " ")))
+			}
 		}
 		return handler()
 	}
@@ -507,6 +515,68 @@ func updateExitCode(err error) int {
 	}
 }
 
+// applyTrailingGlobalFlags scans args for global flags (`--lang`, `--no-color`)
+// that landed after the game name because Go's flag package stops parsing at
+// the first positional argument. Each recognized flag is applied to the runtime
+// (i18n locale / color streams) and stripped from the returned slice so the
+// caller's "extra args" warning fires only for genuinely unknown trailing
+// tokens. Unsupported `--lang` values fall back to the existing locale and emit
+// the usual cliUnsupportedLang warning on stderr (suppressed when quiet).
+func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []string {
+	rest := make([]string, 0, len(args))
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if a == "--" {
+			rest = append(rest, args[i:]...)
+			break
+		}
+		var langVal string
+		var haveLang, haveNoColor, consumed bool
+		switch {
+		case a == "--lang" || a == "-lang":
+			haveLang, consumed = true, true
+			if i+1 < len(args) {
+				langVal = args[i+1]
+				i++
+			}
+		case strings.HasPrefix(a, "--lang="):
+			langVal = strings.TrimPrefix(a, "--lang=")
+			haveLang, consumed = true, true
+		case strings.HasPrefix(a, "-lang="):
+			langVal = strings.TrimPrefix(a, "-lang=")
+			haveLang, consumed = true, true
+		case a == "--no-color" || a == "-no-color":
+			haveNoColor, consumed = true, true
+		case strings.HasPrefix(a, "--no-color=") || strings.HasPrefix(a, "-no-color="):
+			val := a[strings.Index(a, "=")+1:]
+			b, err := strconv.ParseBool(val)
+			if err == nil {
+				consumed = true
+				haveNoColor = b
+			}
+		}
+		switch {
+		case haveLang:
+			switch {
+			case supportedLangs[langVal]:
+				i18n.SetLang(langVal)
+			case langVal == "":
+				// Bare `--lang` with no value mirrors detectBootstrapLang's tolerant
+				// behavior — silently ignore rather than emit an empty-value warning.
+			case !quiet:
+				_, _ = fmt.Fprintln(stderr, i18n.Tf("cliUnsupportedLang", "lang", langVal))
+				_, _ = fmt.Fprintln(stderr, i18n.T("cliSupportedLangs"))
+			}
+		case haveNoColor:
+			color.SetStdoutColor(false)
+			color.SetStderrColor(false)
+		case !consumed:
+			rest = append(rest, a)
+		}
+	}
+	return rest
+}
+
 // hasHelpFlag reports whether args contains a help flag. It accepts all four
 // forms Go's flag package treats as equivalent for a help flag registered as
 // both "help" and "h": "-h", "--h", "-help", "--help".
@@ -564,6 +634,8 @@ EXAMPLES:
   trumpcards blackjack           Play BlackJack
   trumpcards blackjack --help    Show BlackJack's in-game commands
   trumpcards --lang en poker     Play Poker in English
+  trumpcards poker --lang en     Same — global flags also accepted after the game name
+  trumpcards blackjack --no-color  Play BlackJack with color disabled
   trumpcards games               List all available games
   trumpcards games --short       List game names only (for scripting)
   trumpcards games --short --aliases  List game names including aliases
