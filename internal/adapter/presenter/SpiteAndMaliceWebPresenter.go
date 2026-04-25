@@ -90,16 +90,11 @@ func (p *SpiteAndMaliceWebPresenter) buildBase(g interfaces.SpiteAndMaliceGame) 
 		if pl != nil {
 			player.IsCpu = pl.GetIsCpu()
 			hand := pl.GetHand()
-			// 相手の手札は伏せる (長さのみ返す)
-			if i == g.GetCurrent() || pl.GetIsCpu() {
-				player.Hand = make([]*controller.WebOutputCard, len(hand))
+			// 人間プレイヤーの手札のみ公開。CPU の手札は枚数だけ返す。
+			player.Hand = make([]*controller.WebOutputCard, len(hand))
+			if !pl.GetIsCpu() {
 				for k, c := range hand {
 					player.Hand[k] = cardToOutput(c)
-				}
-			} else {
-				player.Hand = make([]*controller.WebOutputCard, len(hand))
-				for k := range hand {
-					player.Hand[k] = nil
 				}
 			}
 			if top := pl.GoalTop(); top != nil {

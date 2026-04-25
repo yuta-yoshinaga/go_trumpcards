@@ -595,10 +595,8 @@ func (s *SpiteAndMalice) pickDiscardSide(p *SpiteAndMalicePlayer, card *Card) in
 	best := 0
 	bestDiff := 100
 	for side := range SpiteAndMaliceSideCnt {
+		// SideTop は前段のループで全てが非空であることを保証済み (空の山は既に return 済み)。
 		top := p.SideTop(side)
-		if top == nil {
-			return side
-		}
 		diff := intAbs(top.GetValue() - card.GetValue())
 		if diff < bestDiff {
 			bestDiff = diff

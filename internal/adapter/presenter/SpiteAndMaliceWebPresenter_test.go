@@ -108,31 +108,43 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "spiteandmalice.lose", out.MessageCode)
 	})
 
-	t.Run("opponent hand is hidden", func(t *testing.T) {
-		g := new(interfaces.MockSpiteAndMaliceGame)
-		g.On("GetPhase").Return(domain.SpiteAndMalicePhasePlaying).Maybe()
-		g.On("GetCurrent").Return(0).Maybe()
-		g.On("GetMoveCount").Return(0).Maybe()
-		g.On("GetWinner").Return(-1).Maybe()
-		g.On("GetStockSize").Return(0).Maybe()
-		g.On("GetCompletedSize").Return(0).Maybe()
-		g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
-		var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
-		g.On("GetFoundations").Return(foundations).Maybe()
-		for i := range domain.SpiteAndMaliceFoundationCnt {
-			g.On("GetFoundationTopValue", i).Return(0).Maybe()
+	// Regression test for the visibility bug from PR #1503 review:
+	// the CPU's hand must NEVER be revealed in the JSON output, regardless of
+	// whose turn it currently is.
+	t.Run("cpu hand stays hidden on both turns", func(t *testing.T) {
+		for _, current := range []int{domain.SpiteAndMaliceHumanIdx, domain.SpiteAndMaliceCpuIdx} {
+			g := new(interfaces.MockSpiteAndMaliceGame)
+			g.On("GetPhase").Return(domain.SpiteAndMalicePhasePlaying).Maybe()
+			g.On("GetCurrent").Return(current).Maybe()
+			g.On("GetMoveCount").Return(0).Maybe()
+			g.On("GetWinner").Return(-1).Maybe()
+			g.On("GetStockSize").Return(0).Maybe()
+			g.On("GetCompletedSize").Return(0).Maybe()
+			g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
+			var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
+			g.On("GetFoundations").Return(foundations).Maybe()
+			for i := range domain.SpiteAndMaliceFoundationCnt {
+				g.On("GetFoundationTopValue", i).Return(0).Maybe()
+			}
+			human := domain.NewSpiteAndMalicePlayer(false)
+			human.AddToHand(domain.NewCard(domain.CardDesignSpade, 5, false))
+			cpu := domain.NewSpiteAndMalicePlayer(true)
+			cpu.AddToHand(domain.NewCard(domain.CardDesignDiamond, 3, false))
+			cpu.AddToHand(domain.NewCard(domain.CardDesignHeart, 9, false))
+			g.On("GetPlayer", 0).Return(human).Maybe()
+			g.On("GetPlayer", 1).Return(cpu).Maybe()
+			raw := new(SpiteAndMaliceWebPresenter).Output(g, nil)
+			out := decodeSpiteAndMaliceWebOutput(t, raw)
+			// 人間の手札は常に公開
+			require.Len(t, out.Players[0].Hand, 1)
+			require.NotNil(t, out.Players[0].Hand[0])
+			assert.Equal(t, 5, out.Players[0].Hand[0].Value)
+			// CPU の手札は枚数のみ (要素は nil) — どちらのターンでも
+			require.Len(t, out.Players[1].Hand, 2)
+			for _, c := range out.Players[1].Hand {
+				assert.Nil(t, c, "current=%d: cpu hand element must be nil", current)
+			}
 		}
-		human := domain.NewSpiteAndMalicePlayer(false)
-		human.AddToHand(domain.NewCard(domain.CardDesignSpade, 5, false))
-		opp := domain.NewSpiteAndMalicePlayer(false) // 相手も非 CPU にして隠蔽経路を通す
-		opp.AddToHand(domain.NewCard(domain.CardDesignHeart, 9, false))
-		g.On("GetPlayer", 0).Return(human).Maybe()
-		g.On("GetPlayer", 1).Return(opp).Maybe()
-		raw := new(SpiteAndMaliceWebPresenter).Output(g, nil)
-		out := decodeSpiteAndMaliceWebOutput(t, raw)
-		// opp は current (0) でないため hand は nil 要素で埋められる
-		require.Len(t, out.Players[1].Hand, 1)
-		assert.Nil(t, out.Players[1].Hand[0])
 	})
 
 	t.Run("nil player", func(t *testing.T) {

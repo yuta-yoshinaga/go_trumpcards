@@ -50,6 +50,42 @@ func TestSpiteAndMaliceCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, assert.AnError.Error())
 	})
 
+	// human hand visible / cpu hand hidden — verifies the bug from PR #1503
+	// review (presenters used to leak the CPU's hand on every turn).
+	t.Run("hides cpu hand and shows human hand on human turn", func(t *testing.T) {
+		g := new(interfaces.MockSpiteAndMaliceGame)
+		setupSpiteAndMaliceCuiMockDefaults(g)
+		result := new(SpiteAndMaliceCuiPresenter).Output(g, nil)
+		// 人間の手札 (SPADE 5) は公開
+		assert.Contains(t, result, "SPADE 5")
+		// CPU の手札 (DIAMOND 3) は非公開、枚数のみ
+		assert.NotContains(t, result, "DIAMOND 3")
+		assert.Contains(t, result, "手札: 1枚")
+	})
+
+	t.Run("hides cpu hand even on cpu turn", func(t *testing.T) {
+		g := new(interfaces.MockSpiteAndMaliceGame)
+		g.On("GetPhase").Return(domain.SpiteAndMalicePhasePlaying).Maybe()
+		g.On("GetMoveCount").Return(0).Maybe()
+		g.On("GetCurrent").Return(domain.SpiteAndMaliceCpuIdx).Maybe()
+		g.On("GetWinner").Return(-1).Maybe()
+		g.On("GetStockSize").Return(50).Maybe()
+		g.On("GetCompletedSize").Return(0).Maybe()
+		var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
+		g.On("GetFoundations").Return(foundations).Maybe()
+		human := domain.NewSpiteAndMalicePlayer(false)
+		human.AddToHand(domain.NewCard(domain.CardDesignSpade, 5, false))
+		cpu := domain.NewSpiteAndMalicePlayer(true)
+		cpu.AddToHand(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		g.On("GetPlayer", 0).Return(human).Maybe()
+		g.On("GetPlayer", 1).Return(cpu).Maybe()
+		result := new(SpiteAndMaliceCuiPresenter).Output(g, nil)
+		// CPU のターンであっても、人間の手札は公開され続ける
+		assert.Contains(t, result, "SPADE 5")
+		// CPU の手札は依然として非公開
+		assert.NotContains(t, result, "DIAMOND 3")
+	})
+
 	t.Run("human wins", func(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
 		g.On("GetPhase").Return(domain.SpiteAndMalicePhaseGameOver).Maybe()

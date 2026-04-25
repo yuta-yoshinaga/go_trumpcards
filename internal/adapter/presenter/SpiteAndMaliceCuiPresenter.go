@@ -49,9 +49,9 @@ func (p *SpiteAndMaliceCuiPresenter) Output(g interfaces.SpiteAndMaliceGame, las
 			}
 			b.WriteString("\n")
 
-			// 手札 (自分のターン or 相手が CPU なら表示)
+			// 手札 (人間プレイヤーのみ表示。CPU の手札は伏せて枚数だけ出す)
 			hand := pl.GetHand()
-			if i == g.GetCurrent() || pl.GetIsCpu() {
+			if !pl.GetIsCpu() {
 				b.WriteString("  手札: ")
 				if len(hand) == 0 {
 					b.WriteString("(empty)")
