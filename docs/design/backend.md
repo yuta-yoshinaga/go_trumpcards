@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全62ゲーム)](#12-ゲームドメイン-全62ゲーム)
+  - [1.2 ゲームドメイン (全65ゲーム)](#12-ゲームドメイン-全65ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -71,6 +71,14 @@
   - [3.38 PokerSquares フェーズ遷移](#338-pokersquares-フェーズ遷移)
   - [3.39 RedDog フェーズ遷移](#339-reddog-フェーズ遷移)
   - [3.40 Scorpion フェーズ遷移](#340-scorpion-フェーズ遷移)
+  - [3.41 Trash フェーズ遷移](#341-trash-フェーズ遷移)
+  - [3.42 SpiteAndMalice フェーズ遷移](#342-spiteandmalice-フェーズ遷移)
+  - [3.43 Accordion フェーズ遷移](#343-accordion-フェーズ遷移)
+  - [3.44 Badugi フェーズ遷移](#344-badugi-フェーズ遷移)
+  - [3.45 Calculation フェーズ遷移](#345-calculation-フェーズ遷移)
+  - [3.46 Cassino フェーズ遷移](#346-cassino-フェーズ遷移)
+  - [3.47 PageOne フェーズ遷移](#347-pageone-フェーズ遷移)
+  - [3.48 SevenBridge フェーズ遷移](#348-sevenbridge-フェーズ遷移)
 
 ---
 
@@ -138,7 +146,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全62ゲーム)
+### 1.2 ゲームドメイン (全65ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1483,7 +1491,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全62ゲーム共通)**
+**Interactor パターン (全65ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -2217,6 +2225,8 @@ sequenceDiagram
 
 ### 3.1 BlackJack フェーズ遷移
 
+Spanish 21 は同一のフェーズ遷移を共有します (`NewSpanish21BlackJack` は 1〜9 を除いた 48 枚デッキで BlackJack 構造体を生成する)。
+
 ```mermaid
 stateDiagram-v2
     [*] --> Bet : Reset()
@@ -2439,6 +2449,8 @@ stateDiagram-v2
 
 ### 3.14 VideoPoker フェーズ遷移
 
+Deuces Wild および Joker Poker も同一のフェーズ遷移を共有します (`NewDeucesWildVideoPoker` / `NewJokerPokerVideoPoker` は配当表とワイルド指定が異なるだけで構造体は VideoPoker と共通)。
+
 ```mermaid
 stateDiagram-v2
     [*] --> Bet : Reset()
@@ -2567,6 +2579,8 @@ stateDiagram-v2
 
 ### 3.21 Pineapple フェーズ遷移
 
+Crazy Pineapple も同一のフェーズ遷移を共有します (`NewCrazyPineapple` は Discard タイミングが異なる Pineapple バリアント — フロップ後ではなくターン後にディスカードする)。
+
 ```mermaid
 stateDiagram-v2
     [*] --> Init : Reset()
@@ -2688,6 +2702,8 @@ stateDiagram-v2
 ```
 
 ### 3.27 SevenCardStud フェーズ遷移
+
+Razz も同一のフェーズ遷移を共有します (`NewDefaultRazz` は SevenCardStud の Lo (A-5) 評価バリアントで、構造体・インタラクタを共通利用)。
 
 ```mermaid
 stateDiagram-v2
@@ -2979,4 +2995,155 @@ Trash 固有のアクション: `Draw()` / `PlaceWild(pos)` / `CpuStep()` / `Res
 各プレイヤーは10枚の裏向きカード (ポジション1〜10) を持ち、山札から引いたカードを対応するポジションと交換しつつチェーン化。
 K/Joker はワイルドで任意スロット配置、J/Q はターン終了。山札が尽きた場合は捨て札の一番上を残して残りを再シャッフル。
 
-**注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。
+### 3.42 SpiteAndMalice フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : PlayFromHand / PlayFromGoal / PlayFromSide
+    Playing --> Playing : Discard() (ターン終了)
+    Playing --> Playing : DrawHand() (手札補充)
+    Playing --> Playing : CpuStep() (CPUターン)
+    Playing --> GameOver : ゴールパイルを出し切った
+    GameOver --> [*]
+
+    note right of Playing : SpiteAndMalicePhasePlaying = 0
+    note right of GameOver : SpiteAndMalicePhaseGameOver = 1
+```
+
+SpiteAndMalice 固有のアクション: `PlayFromHand` / `PlayFromGoal` / `PlayFromSide` / `Discard` / `DrawHand` / `CpuStep` / `Reset()`。2人プレイヤー (人間 vs CPU)、52枚×2デッキ (104枚) を共有ストックとして使用。
+各プレイヤーは伏せたゴールパイル (5〜30 枚, 既定 20) と 4 列のサイドパイル、最大 5 枚の手札を持つ。中央には 4 つの共有ファウンデーションがあり、A から始まり昇順、Q (12) で完成して `completed` に回収。K はワイルドで任意のランクとしてプレイ可能。手札 5 枚をディスカード (サイドパイルへ) するとターンが交代し、共有ストックが尽きた場合は `completed` をシャッフルしてストックを補充。ゴールパイルを最初に出し切ったプレイヤーが勝利。
+
+### 3.43 Accordion フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : Move() (隣 / 3 つ前 へカードを重ねる)
+    Playing --> Playing : Undo() / GetHint()
+    Playing --> GameClear : 1 山に集約された
+    Playing --> GameOver : GiveUp()
+    Playing --> GameOver : 手詰まり検出 (合法手なし)
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : AccordionPhasePlaying = 0
+    note right of GameClear : AccordionPhaseGameClear = 1
+    note right of GameOver : AccordionPhaseGameOver = 2
+```
+
+Accordion 固有のアクション: `Move(from, to)` / `Undo` / `GiveUp` / `GetHint` / `Reset()`。1 デッキ 52 枚を一列に並べ、隣 (1 つ前) もしくは 3 つ前のカードと「同スートまたは同ランク」のときだけ重ねていくシングルプレイヤーソリティア。最終的に 1 山に集約できればゲームクリア、合法手がなくなった時点でゲームオーバー。
+
+### 3.44 Badugi フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Init : NewBadugi()
+    Init --> Deal : Reset() (アンティ徴収 + 4枚配布)
+    Deal --> Bet : 第1ベッティングラウンド (Bet/Call/Raise/Fold)
+    Bet --> Draw : 全員アクション完了 → ドロー宣言
+    Draw --> Bet : 各シート 0〜4 枚交換 (drawIndex 1..3)
+    Bet --> Showdown : 第3ドロー後のベッティング完了
+    Bet --> Showdown : 1人以外 Fold
+    Showdown --> End : ハンド評価 + ポット配分
+    End --> Deal : 次ハンド (Reset)
+    End --> [*] : ゲーム終了
+
+    note right of Init : BadugiPhaseInit = 0
+    note right of Deal : BadugiPhaseDeal = 1
+    note right of Bet : BadugiPhaseBet = 2
+    note right of Draw : BadugiPhaseDraw = 3
+    note right of Showdown : BadugiPhaseShowdown = 4
+    note right of End : BadugiPhaseEnd = 5
+```
+
+Badugi はトリプルドロー A-5 ロー (バドゥギ役) のポーカー。各プレイヤーに伏せて 4 枚配り、ベット → ドロー → ベットを 3 サイクル繰り返してショーダウン。`drawIndex` (1..3) でどのドローラウンドかを区別する。
+
+### 3.45 Calculation フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : MoveStockToFoundation(idx) (配置可能なら昇順でファウンデーションへ)
+    Playing --> Playing : MoveStockToWaste(idx) (4 列のウェイストパイルへ退避)
+    Playing --> Playing : MoveWasteToFoundation(wasteIdx, foundIdx)
+    Playing --> Playing : Undo() / GetHint()
+    Playing --> GameClear : 4 ファウンデーションが完成 (各 13 枚)
+    Playing --> GameOver : GiveUp()
+    Playing --> GameOver : 手詰まり (合法手なし)
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : CalculationPhasePlaying = 0
+    note right of GameClear : CalculationPhaseGameClear = 1
+    note right of GameOver : CalculationPhaseGameOver = 2
+```
+
+Calculation 固有のアクション: `MoveStockToFoundation` / `MoveStockToWaste` / `MoveWasteToFoundation` / `Undo` / `GiveUp` / `GetHint` / `Reset()`。1 デッキ 52 枚のうち A・2・3・4 を 4 つのファウンデーション基底とし、それぞれ +1, +2, +3, +4 ステップで昇順 (mod 13) に積み上げるシングルプレイヤーソリティア。ストックから引いたカードはファウンデーションか 4 列のウェイストパイルのいずれかに置く。
+
+### 3.46 Cassino フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Dealing : Reset() / NewRound() (4 枚ハンド + 4 枚テーブル配布)
+    Dealing --> PlayerTurn : 配札完了
+    PlayerTurn --> PlayerTurn : Trail / Capture / Build (ターン交代)
+    PlayerTurn --> PlayerTurn : CpuStep() (CPU ターン)
+    PlayerTurn --> Dealing : 全員手札 0 → 再配布 (山札残あり)
+    PlayerTurn --> RoundEnd : 山札・手札ともに尽きた
+    RoundEnd --> Dealing : NewRound() (継続)
+    RoundEnd --> GameEnd : TargetScore 到達
+    GameEnd --> [*]
+
+    note right of Dealing : CassinoPhaseDealing = "dealing"
+    note right of PlayerTurn : CassinoPhasePlayerTurn = "playerTurn"
+    note right of RoundEnd : CassinoPhaseRoundEnd = "roundEnd"
+    note right of GameEnd : CassinoPhaseGameEnd = "gameEnd"
+```
+
+Cassino のフェーズ定数は文字列 (string) で定義されている点が他のゲームと異なる。固有アクション: `Trail(handIdx)` / `Capture(handIdx, [tableIdxs])` / `Build(handIdx, [tableIdxs], targetValue)` / `CpuStep()` / `NewRound()` / `Reset()`。手札と場札の合計でキャプチャやビルドを行うトリック系で、ラウンド終了時に最も多く取ったカード・スペード・特定札 (Big/Little Casino, Aces) でポイントを獲得し、TargetScore に達するとゲーム終了。
+
+### 3.47 PageOne フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Play : Reset()
+    Play --> Play : Discard / Draw / EatPenalty (通常プレイ)
+    Play --> MustDeclare : Discard 後に手札が 1 枚になった
+    MustDeclare --> Play : Declare("ページワン!")
+    MustDeclare --> Play : Declare 失敗 (ペナルティ後通常進行)
+    Play --> RoundEnd : 手札 0 (上がり) / 山札枯渇でラウンド終了
+    RoundEnd --> Play : NewRound() (継続)
+    RoundEnd --> GameEnd : 終了条件達成
+    GameEnd --> [*]
+
+    note right of Play : PageOnePhasePlay = 0
+    note right of MustDeclare : PageOnePhaseMustDeclare = 1
+    note right of RoundEnd : PageOnePhaseRoundEnd = 2
+    note right of GameEnd : PageOnePhaseGameEnd = 3
+```
+
+PageOne (ページワン) は UNO に近い手札削りゲーム。手札が 1 枚になったタイミングで「ページワン宣言」が必須となり、`MustDeclare` フェーズに遷移。宣言を忘れて次ターンに移ろうとするとペナルティ。
+
+### 3.48 SevenBridge フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draw : Reset()
+    Draw --> Play : DrawFromStock / Pon / Chi
+    Play --> Play : Meld / Layoff / DiscardWithoutMeld
+    Play --> Draw : Discard (ターン交代)
+    Play --> RoundEnd : 手札 0 / 山札枯渇
+    RoundEnd --> Draw : NewRound() (継続)
+    RoundEnd --> GameEnd : 終了条件達成
+    GameEnd --> [*]
+
+    note right of Draw : SevenBridgePhaseDraw = 0
+    note right of Play : SevenBridgePhasePlay = 1
+    note right of RoundEnd : SevenBridgePhaseRoundEnd = 2
+    note right of GameEnd : SevenBridgePhaseGameEnd = 3
+```
+
+SevenBridge (セブンブリッジ) はラミー系の手札削りゲーム。`Draw` フェーズで山札 / 鳴き (ポン・チー) のどちらかから 1 枚得て `Play` フェーズへ遷移、メルド作成・レイオフ・ディスカードを経てターンが交代する。
+
+**注:** OldMaid・Daifugo・Sevens・President はターン制で進行する手札削り系のため、明示的なフェーズ定数を持ちません (currentTurn が巡回し、全プレイヤーの手札が 0 枚またはランクが確定するまで進行)。

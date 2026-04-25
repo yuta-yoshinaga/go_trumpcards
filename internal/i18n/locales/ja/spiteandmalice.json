@@ -1,0 +1,17 @@
+{
+  "helpTitle": "Spite and Malice (スパイト・アンド・マリス)",
+  "helpPlayHand": "  ph <h> <f>          手札<h>番目をファウンデーション<f>に出す (f: 0..3)",
+  "helpPlayGoal": "  pg <f>              ゴールパイルのトップをファウンデーション<f>に出す",
+  "helpPlaySide": "  ps <s> <f>          サイド<s>のトップをファウンデーション<f>に出す (s: 0..3)",
+  "helpDiscard": "  d <h> <s>           手札<h>をサイド<s>にディスカード (ターン終了)",
+  "helpCpu": "  cpu                 CPUのターンを1ステップ進める",
+  "helpHint": "  h, hint             ヒントを表示",
+  "promptHandIdx": "手札のインデックスを入力してください:",
+  "promptSideIdx": "サイドパイルのインデックス (0..3) を入力してください:",
+  "promptFoundationIdx": "ファウンデーションのインデックス (0..3) を入力してください:",
+  "playing": "プレイ中",
+  "win": "あなたの勝ち！ 手数: {{moveCount}}",
+  "lose": "CPUの勝ち 手数: {{moveCount}}",
+  "hintAvailable": "ヒントがあります",
+  "noHint": "ヒントはありません"
+}

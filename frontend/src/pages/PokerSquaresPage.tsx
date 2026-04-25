@@ -118,7 +118,7 @@ function PokerSquaresPageContent() {
         )}
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
-        <ManualButton gamePath="/poker-squares" />
+        <ManualButton gamePath="/pokersquares" />
       </PhaseIndicator>
 
       {cliEnabled ? (

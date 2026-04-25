@@ -7,12 +7,14 @@ import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
+import calculation from '../../../docs/manual/web/calculation.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
 import canfield from '../../../docs/manual/web/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
+import crazypineapple from '../../../docs/manual/web/crazypineapple.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
@@ -56,6 +58,7 @@ import spades from '../../../docs/manual/web/spades.md?raw';
 import spanish21 from '../../../docs/manual/web/spanish21.md?raw';
 import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
+import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
@@ -70,6 +73,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/': blackjack,
   '/baccarat': baccarat,
   '/bridge': bridge,
+  '/calculation': calculation,
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
@@ -100,10 +104,11 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/pageone': pageone,
   '/paigow': paigow,
   '/pineapple': pineapple,
+  '/crazypineapple': crazypineapple,
   '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/poker': poker,
-  '/poker-squares': pokersquares,
+  '/pokersquares': pokersquares,
   '/pyramid': pyramid,
   '/razz': razz,
   '/badugi': badugi,
@@ -129,4 +134,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/trash': trash,
   '/president': president,
   '/cassino': cassino,
+  '/spiteandmalice': spiteandmalice,
 };

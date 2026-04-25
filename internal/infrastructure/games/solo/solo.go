@@ -158,4 +158,12 @@ func init() {
 			return usecase.RestoreSevenBridgeInteractor(data, new(presenter.SevenBridgeWebPresenter))
 		},
 		controller.NewSevenBridgeWebControllerWithProvider)
+	games.RegisterKVGame("calculation", games.CategorySolo,
+		func() usecase.CalculationInteractorIF {
+			return usecase.NewCalculationInteractor(domain.NewDefaultCalculation(), new(presenter.CalculationWebPresenter))
+		},
+		func(data []byte) (usecase.CalculationInteractorIF, error) {
+			return usecase.RestoreCalculationInteractor(data, new(presenter.CalculationWebPresenter))
+		},
+		controller.NewCalculationWebControllerWithProvider)
 }

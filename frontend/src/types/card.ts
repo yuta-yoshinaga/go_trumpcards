@@ -2334,6 +2334,36 @@ export interface FortyThievesMoveZone {
   cardIndex?: number;
 }
 
+/** A suggested move hint in Calculation. */
+export interface CalculationHint {
+  fromZone: string;
+  wasteIdx: number;
+  foundationIdx: number;
+}
+
+/** Full Calculation game state returned from the API. */
+export interface CalculationResponse {
+  foundations: Card[][];
+  wastes: Card[][];
+  stockCount: number;
+  stockTop?: Card;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: CalculationHint;
+}
+
+/** Source or target zone for a Calculation card move. */
+export interface CalculationMoveZone {
+  zone: 'stock' | 'waste' | 'foundation';
+  idx?: number;
+}
+
 /** Single Fifty-one player state from the API. */
 export interface FiftyOnePlayerData {
   id: number;
@@ -2721,4 +2751,49 @@ export interface CassinoResponse {
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
+}
+
+// --- Spite and Malice (スパイト・アンド・マリス) ---
+
+/** A single Spite & Malice player's view. Hand may contain `null` when
+ * the opponent's cards are hidden from view. */
+export interface SpiteAndMalicePlayerState {
+  hand: (Card | null)[];
+  goalTop?: Card;
+  goalSize: number;
+  sides: [Card[], Card[], Card[], Card[]];
+  isCpu: boolean;
+}
+
+/** Hint information for the next recommended Spite & Malice move. */
+export interface SpiteAndMaliceHint {
+  source: 'goal' | 'hand' | 'side';
+  index: number;
+  foundationIdx: number;
+  discard: boolean;
+}
+
+/** API response shape for a Spite & Malice game. */
+export interface SpiteAndMaliceResponse {
+  phase: number;
+  current: number;
+  players: [SpiteAndMalicePlayerState, SpiteAndMalicePlayerState];
+  foundations: Card[][];
+  foundationTops: number[];
+  stockSize: number;
+  completedSize: number;
+  moveCount: number;
+  winner: number;
+  goalSize: number;
+  cpuDifficulty: number;
+  hint?: SpiteAndMaliceHint;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+/** Source or target zone for a Spite & Malice move. */
+export interface SpiteAndMaliceMoveZone {
+  zone: 'hand' | 'goal' | 'side' | 'foundation';
+  idx?: number;
 }

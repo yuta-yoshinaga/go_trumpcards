@@ -61,5 +61,9 @@
     "selectCardToMove": "Select card to move: {{card}}",
     "deselectCard": "Deselect {{card}}",
     "moveHere": "Move {{card}} to position {{to}}"
+  },
+  "bubble": {
+    "drewFrom": "← from {{from}}",
+    "drewAndPaired": "← from {{from}} (paired)"
   }
 }

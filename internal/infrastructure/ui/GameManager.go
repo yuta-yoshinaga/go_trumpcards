@@ -224,6 +224,36 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "crazypineapple", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPineappleCuiController(usecase.NewPineappleInteractor(
+				domain.NewDefaultCrazyPineapple(), new(presenter.PineappleCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "crazypineapple.helpTitle",
+				CommandKeys: []string{
+					"crazypineapple.helpFold",
+					"crazypineapple.helpCheck",
+					"crazypineapple.helpCall",
+					"crazypineapple.helpBet",
+					"crazypineapple.helpRaise",
+					"crazypineapple.helpAllIn",
+				},
+				ExtraCommandLines: []string{
+					"  d <index>            discard",
+					"  rb                   rebuy",
+					"  sr                   skip rebuy",
+					"  ad                   add-on",
+					"  sa                   skip add-on",
+				},
+				SettingKeys: []string{"crazypineapple.helpBettingLimit", "crazypineapple.helpTournament"},
+				ExtraSettingLines: []string{
+					"  sb <amount>          small blind (>=1)",
+					"  bb <amount>          big blind (>=2)",
+					"  lh <hands>           blind level-up hands (>=1)",
+					"  ts [4|6|9]           table size",
+				},
+			})
+	}},
 	{Name: "hearts", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewHeartsCuiController(usecase.NewHeartsInteractor(
@@ -1020,6 +1050,41 @@ var gameRegistry = []GameRegistryEntry{
 					"blackjack.helpDeclineInsurance",
 				},
 				SettingKeys: []string{"blackjack.helpSetCpuCount"},
+			})
+	}},
+	{Name: "calculation", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCalculationCuiController(usecase.NewCalculationInteractor(
+				domain.NewDefaultCalculation(), new(presenter.CalculationCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "calculation.helpTitle",
+				CommandKeys: []string{
+					"calculation.helpStockToFoundation",
+					"calculation.helpStockToWaste",
+					"calculation.helpWasteToFoundation",
+					"calculation.helpGiveUp",
+					"calculation.helpHint",
+					"calculation.helpAutoComplete",
+					"calculation.helpUndo",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "spiteandmalice", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpiteAndMaliceCuiController(usecase.NewSpiteAndMaliceInteractor(
+				domain.NewDefaultSpiteAndMalice(), new(presenter.SpiteAndMaliceCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spiteandmalice.helpTitle",
+				CommandKeys: []string{
+					"spiteandmalice.helpPlayHand",
+					"spiteandmalice.helpPlayGoal",
+					"spiteandmalice.helpPlaySide",
+					"spiteandmalice.helpDiscard",
+					"spiteandmalice.helpCpu",
+					"spiteandmalice.helpHint",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
 }

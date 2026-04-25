@@ -481,21 +481,23 @@ describe('OmahaPage', () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<OmahaPage />);
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
-    expect(screen.getByText(/あなた: ワンペア/)).toBeInTheDocument();
+    expect(within(screen.getByTestId('round-results-visible')).getByText(/あなた: ワンペア/)).toBeInTheDocument();
   });
 
   it('shows "CPU X" for non-human player in results', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<OmahaPage />);
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
-    expect(screen.getByText(/CPU 1: ツーペア/)).toBeInTheDocument();
+    expect(within(screen.getByTestId('round-results-visible')).getByText(/CPU 1: ツーペア/)).toBeInTheDocument();
   });
 
   it('shows hand name in results when present', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<OmahaPage />);
-    await waitFor(() => expect(screen.getByText(/: ワンペア/)).toBeInTheDocument());
-    expect(screen.getByText(/: ツーペア/)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(within(screen.getByTestId('round-results-visible')).getByText(/: ワンペア/)).toBeInTheDocument(),
+    );
+    expect(within(screen.getByTestId('round-results-visible')).getByText(/: ツーペア/)).toBeInTheDocument();
   });
 
   it('does not show hand name in results when empty', async () => {
@@ -513,7 +515,9 @@ describe('OmahaPage', () => {
   it('shows won chips when wonAmount > 0', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<OmahaPage />);
-    await waitFor(() => expect(screen.getByText(/\+200チップ/)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(within(screen.getByTestId('round-results-visible')).getByText(/\+200チップ/)).toBeInTheDocument(),
+    );
   });
 
   it('does not show won chips when wonAmount is 0', async () => {

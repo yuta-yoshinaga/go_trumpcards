@@ -178,6 +178,33 @@ describe('DaifugoPage', () => {
     });
   });
 
+  it('renders compact CPU row on mobile viewport', async () => {
+    const originalInnerWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const { container } = renderWithProviders(<DaifugoPage />);
+      await waitFor(() => {
+        expect(screen.getByText('CPU 1')).toBeInTheDocument();
+        expect(screen.getByText('4枚')).toBeInTheDocument();
+      });
+      // On mobile the CPU row uses the compact flex+overflow layout; the
+      // desktop CPU card (DaifugoCpuArea with flex-[1_1_180px]) must not render
+      // for any CPU. The human area (player-area-0) still uses playerAreaClass.
+      for (const cpuId of [1, 2, 3]) {
+        const cpuNode = container.querySelector(`#player-area-${cpuId}`);
+        expect(cpuNode?.className ?? '').not.toMatch(/flex-\[1_1_180px\]/);
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: originalInnerWidth,
+      });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('shows empty table message when tableCards is empty', async () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('（なし）')).toBeInTheDocument());

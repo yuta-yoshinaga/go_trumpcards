@@ -1,0 +1,50 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameOver": "Game Over",
+    "playerTurn": "Your turn",
+    "cpuTurn": "CPU's turn"
+  },
+  "title": "Spite and Malice",
+  "label": {
+    "you": "YOU",
+    "cpu": "CPU",
+    "goal": "Goal",
+    "side": "Side",
+    "hand": "Hand",
+    "foundation": "Foundation",
+    "stock": "Stock",
+    "completed": "Completed"
+  },
+  "moveCount": "Moves",
+  "endTurn": "End turn",
+  "discard": "Discard",
+  "selectSource": "Select a card to play",
+  "selectFoundation": "Select a foundation",
+  "selectSide": "Select a side pile to discard to",
+  "deselect": "Cancel",
+  "empty": "(empty)",
+  "win": "You win! Moves: {{moveCount}}",
+  "lose": "CPU wins. Moves: {{moveCount}}",
+  "playing": "Playing",
+  "noHint": "No hint",
+  "hintAvailable": "Hint available",
+  "frontendHint": {
+    "goalToFoundation": "You can play the top of your goal pile to a foundation",
+    "handToFoundation": "You can play a card from your hand to a foundation",
+    "sideToFoundation": "You can play a side pile top to a foundation",
+    "discard": "No play available. Discard a card to a side pile to end your turn."
+  },
+  "tutorial": {
+    "opponent": "Top row is the CPU. You can see how many cards are in their hand and the top of their goal pile.",
+    "foundations": "Center foundations are shared. Any player can build A through Q in sequence. The K is wild and counts as any rank.",
+    "goal": "Your goal pile — the visible top card. The first player to empty their goal pile wins.",
+    "hand": "Your hand. Play onto a foundation, or discard to a side pile to end your turn.",
+    "sides": "Your side piles. Discard here at end-of-turn; you can replay them onto foundations later.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "spiteandmalice": "Spite and Malice"
+  },
+  "landscapeBanner": "Landscape orientation recommended"
+}

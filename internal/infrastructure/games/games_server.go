@@ -63,6 +63,11 @@ func init() {
 			return usecase.NewPineappleInteractor(domain.NewDefaultPineapple(), new(presenter.PineappleWebPresenter))
 		},
 		controller.NewPineappleWebController)
+	BindWebControllerFor("crazypineapple",
+		func() usecase.PineappleInteractorIF {
+			return usecase.NewPineappleInteractor(domain.NewDefaultCrazyPineapple(), new(presenter.PineappleWebPresenter))
+		},
+		controller.NewPineappleWebController)
 	BindWebControllerFor("hearts",
 		func() usecase.HeartsInteractorIF {
 			return usecase.NewHeartsInteractor(domain.NewDefaultHearts(), new(presenter.HeartsWebPresenter))
@@ -323,4 +328,14 @@ func init() {
 			return usecase.NewBlackJackInteractor(domain.NewSpanish21BlackJack(), new(presenter.BlackJackWebPresenter))
 		},
 		controller.NewBlackJackWebController)
+	BindWebControllerFor("calculation",
+		func() usecase.CalculationInteractorIF {
+			return usecase.NewCalculationInteractor(domain.NewDefaultCalculation(), new(presenter.CalculationWebPresenter))
+		},
+		controller.NewCalculationWebController)
+	BindWebControllerFor("spiteandmalice",
+		func() usecase.SpiteAndMaliceInteractorIF {
+			return usecase.NewSpiteAndMaliceInteractor(domain.NewDefaultSpiteAndMalice(), new(presenter.SpiteAndMaliceWebPresenter))
+		},
+		controller.NewSpiteAndMaliceWebController)
 }

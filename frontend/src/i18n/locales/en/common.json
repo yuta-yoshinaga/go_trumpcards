@@ -52,6 +52,7 @@
     "shortdeck": "Short Deck",
     "threecard": "Three Card Poker",
     "pineapple": "Pineapple Poker",
+    "crazypineapple": "Crazy Pineapple Poker",
     "ohhell": "Oh Hell",
     "speed": "Speed",
     "gofish": "Go Fish",
@@ -80,7 +81,9 @@
     "trash": "Trash",
     "president": "President",
     "cassino": "Cassino",
-    "spanish21": "Spanish 21"
+    "spanish21": "Spanish 21",
+    "calculation": "Calculation",
+    "spiteandmalice": "Spite and Malice"
   },
   "sound": {
     "mute": "Mute sound",
@@ -134,6 +137,14 @@
   "roundScoreAnnouncement": {
     "message": "Round complete. {{details}}",
     "entry": "{{name}}: +{{round}} (total {{total}})"
+  },
+  "roundResultsAnnouncement": {
+    "message": "Showdown results. {{details}}",
+    "entryMucked": "{{name}}: mucked",
+    "entryHand": "{{name}}: {{handName}}",
+    "entryHandWithKickers": "{{name}}: {{handName}}, kicker {{kickers}}",
+    "entryHandWon": "{{name}}: {{handName}}, +{{amount}} chips",
+    "entryHandWithKickersWon": "{{name}}: {{handName}}, kicker {{kickers}}, +{{amount}} chips"
   },
   "stalemateEscape": "Escape (undo {{count}} moves)",
   "status": {
@@ -337,6 +348,12 @@
     "clocksolitaire.playing": "Playing",
     "clocksolitaire.gameClear": "Game Clear! Steps: {{stepCount}}",
     "clocksolitaire.gameOver": "Game Over",
+    "calculation.playing": "Playing",
+    "calculation.stalemate": "Stalemate",
+    "calculation.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "calculation.gameOver": "Game Over",
+    "calculation.hintAvailable": "Hint available",
+    "calculation.noHint": "No hint available",
     "whist.result.team0Win": "Game Over! Team 0 wins!",
     "whist.result.team1Win": "Game Over! Team 1 wins!",
     "whist.playPhase.lead": "Lead a card",

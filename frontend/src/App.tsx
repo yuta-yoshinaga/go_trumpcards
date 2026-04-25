@@ -11,12 +11,14 @@ import { BaccaratPage } from './pages/BaccaratPage';
 import { BadugiPage } from './pages/BadugiPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
+import { CalculationPage } from './pages/CalculationPage';
 import { CanastaPage } from './pages/CanastaPage';
 import { CanfieldPage } from './pages/CanfieldPage';
 import { CaribbeanStudPage } from './pages/CaribbeanStudPage';
 import { CassinoPage } from './pages/CassinoPage';
 import { ClockSolitairePage } from './pages/ClockSolitairePage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
+import { CrazyPineapplePage } from './pages/CrazyPineapplePage';
 import { CribbagePage } from './pages/CribbagePage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DeucesWildPage } from './pages/DeucesWildPage';
@@ -60,6 +62,7 @@ import { SpadesPage } from './pages/SpadesPage';
 import { Spanish21Page } from './pages/Spanish21Page';
 import { SpeedPage } from './pages/SpeedPage';
 import { SpiderPage } from './pages/SpiderPage';
+import { SpiteAndMalicePage } from './pages/SpiteAndMalicePage';
 import { ThreeCardPage } from './pages/ThreeCardPage';
 import { TrashPage } from './pages/TrashPage';
 import { TriPeaksPage } from './pages/TriPeaksPage';
@@ -83,6 +86,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/holdem': <HoldemPage />,
   '/omaha': <OmahaPage />,
   '/pineapple': <PineapplePage />,
+  '/crazypineapple': <CrazyPineapplePage />,
   '/sevencardstud': <SevenCardStudPage />,
   '/razz': <RazzPage />,
   '/badugi': <BadugiPage />,
@@ -121,6 +125,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/fiftyone': <FiftyOnePage />,
   '/clocksolitaire': <ClockSolitairePage />,
   '/fortythieves': <FortyThievesPage />,
+  '/calculation': <CalculationPage />,
   '/canfield': <CanfieldPage />,
   '/yukon': <YukonPage />,
   '/scorpion': <ScorpionPage />,
@@ -128,11 +133,12 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/sevenbridge': <SevenBridgePage />,
   '/trash': <TrashPage />,
   '/whist': <WhistPage />,
-  '/poker-squares': <PokerSquaresPage />,
+  '/pokersquares': <PokerSquaresPage />,
   '/pageone': <PageOnePage />,
   '/reddog': <RedDogPage />,
   '/president': <PresidentPage />,
   '/cassino': <CassinoPage />,
+  '/spiteandmalice': <SpiteAndMalicePage />,
 };
 
 /** Root application component with router and game page routes. */

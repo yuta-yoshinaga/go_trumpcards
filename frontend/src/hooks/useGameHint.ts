@@ -4,6 +4,7 @@ import type {
   BaccaratResponse,
   BadugiResponse,
   BlackJackResponse,
+  CalculationResponse,
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
@@ -44,6 +45,7 @@ import type {
   SpadesResponse,
   SpeedResponse,
   SpiderResponse,
+  SpiteAndMaliceResponse,
   ThreeCardResponse,
   TrashResponse,
   TriPeaksResponse,
@@ -58,11 +60,13 @@ import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
+import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
+import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
@@ -100,6 +104,7 @@ import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
+import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
@@ -125,6 +130,7 @@ const hintFactories = {
   omaha: (s) => getOmahaHint(s as OmahaResponse),
   shortdeck: (s) => getShortDeckHint(s as ShortDeckResponse),
   pineapple: (s) => getPineappleHint(s as PineappleResponse),
+  crazypineapple: (s) => getCrazyPineappleHint(s as PineappleResponse),
   videopoker: (s) => getVideoPokerHint(s as VideoPokerResponse),
   deuceswild: (s) => getDeucesWildHint(s as VideoPokerResponse),
   jokerpoker: (s) => getJokerPokerHint(s as VideoPokerResponse),
@@ -169,10 +175,12 @@ const hintFactories = {
   yukon: (s) => getYukonHint(s as YukonResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
+  calculation: (s) => getCalculationHint(s as CalculationResponse),
   sevenbridge: (s) => getSevenbridgeHint(s as SevenBridgeResponse),
   trash: (s) => getTrashHint(s as TrashResponse),
   president: (s) => getPresidentHint(s as PresidentResponse),
   cassino: (s) => getCassinoHint(s as CassinoResponse),
+  spiteandmalice: (s) => getSpiteAndMaliceHint(s as SpiteAndMaliceResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

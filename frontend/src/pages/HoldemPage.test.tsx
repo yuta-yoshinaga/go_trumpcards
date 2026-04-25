@@ -454,7 +454,7 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
     // Human (playerIdx 0) → "あなた: ワンペア"
-    expect(screen.getByText(/あなた: ワンペア/)).toBeInTheDocument();
+    expect(within(screen.getByTestId('round-results-visible')).getByText(/あなた: ワンペア/)).toBeInTheDocument();
   });
 
   it('shows "CPU X" for non-human player in results', async () => {
@@ -462,14 +462,16 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
     // CPU (playerIdx 1) → "CPU 1: ツーペア"
-    expect(screen.getByText(/CPU 1: ツーペア/)).toBeInTheDocument();
+    expect(within(screen.getByTestId('round-results-visible')).getByText(/CPU 1: ツーペア/)).toBeInTheDocument();
   });
 
   it('shows hand name in results when present', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByText(/: ワンペア/)).toBeInTheDocument());
-    expect(screen.getByText(/: ツーペア/)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(within(screen.getByTestId('round-results-visible')).getByText(/: ワンペア/)).toBeInTheDocument(),
+    );
+    expect(within(screen.getByTestId('round-results-visible')).getByText(/: ツーペア/)).toBeInTheDocument();
   });
 
   it('does not show hand name in results when empty', async () => {
@@ -489,7 +491,9 @@ describe('HoldemPage', () => {
   it('shows won chips when wonAmount > 0', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByText(/\+200チップ/)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(within(screen.getByTestId('round-results-visible')).getByText(/\+200チップ/)).toBeInTheDocument(),
+    );
   });
 
   it('does not show won chips when wonAmount is 0', async () => {
@@ -929,6 +933,26 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
     expect(screen.queryByTestId('hud-stats')).not.toBeInTheDocument();
+  });
+
+  // Regression: HUD must stay hidden below md (768px) so the 375×667 iPhone SE
+  // viewport doesn't lose card/chip space to stats. See issue #1488.
+  it('HUD stats span carries `hidden md:inline` so mobile viewports suppress it', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: [
+        humanPlayer(),
+        cpuPlayer(1, { totalHands: 5, vpip: 60, pfr: 20, threeBet: 10, af: '2.5' }),
+        cpuPlayer(2),
+      ],
+    });
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => {
+      const statsElem = screen.getByTestId('hud-stats');
+      expect(statsElem.className).toContain('hidden');
+      expect(statsElem.className).toContain('md:inline');
+      expect(statsElem.className).not.toContain('sm:inline');
+    });
   });
 
   // ---- SB/BB info bar ----

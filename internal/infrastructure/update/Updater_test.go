@@ -350,6 +350,168 @@ func TestFindAsset(t *testing.T) {
 	}
 }
 
+// TestSetCheckOnly verifies the accessor toggle works and starts false.
+func TestSetCheckOnly(t *testing.T) {
+	u := NewUpdater("1.0.0", nil, &bytes.Buffer{}, &bytes.Buffer{})
+	assert.False(t, u.checkOnly)
+	u.SetCheckOnly(true)
+	assert.True(t, u.checkOnly)
+	u.SetCheckOnly(false)
+	assert.False(t, u.checkOnly)
+}
+
+// TestExec_CheckOnly_NewerAvailable verifies that check-only mode returns
+// ErrUpdateAvailable, writes a tab-separated "available" line to writer,
+// and does NOT prompt or download. See issue #1484.
+func TestExec_CheckOnly_NewerAvailable(t *testing.T) {
+	release := ghRelease{TagName: "v2.0.0"}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	out := &bytes.Buffer{}
+	errOut := &bytes.Buffer{}
+	u := &Updater{
+		currentVersion: "1.0.0",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         strings.NewReader(""),
+		writer:         out,
+		errWriter:      errOut,
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+	}
+	u.SetCheckOnly(true)
+
+	err := u.Exec()
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, ErrUpdateAvailable), "want ErrUpdateAvailable, got %v", err)
+	assert.Equal(t, "v2.0.0\tavailable\t1.0.0\n", out.String())
+	assert.Contains(t, errOut.String(), "v2.0.0")
+}
+
+// TestExec_CheckOnly_AlreadyLatest verifies that check-only reports "latest"
+// and returns nil when current version matches the release tag.
+func TestExec_CheckOnly_AlreadyLatest(t *testing.T) {
+	release := ghRelease{TagName: "v1.2.3"}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	out := &bytes.Buffer{}
+	errOut := &bytes.Buffer{}
+	u := &Updater{
+		currentVersion: "1.2.3",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         strings.NewReader(""),
+		writer:         out,
+		errWriter:      errOut,
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+	}
+	u.SetCheckOnly(true)
+
+	err := u.Exec()
+	require.NoError(t, err)
+	assert.Equal(t, "v1.2.3\tlatest\t1.2.3\n", out.String())
+	assert.Contains(t, errOut.String(), "v1.2.3")
+}
+
+// TestExec_CheckOnly_DevBuild verifies that a "dev" build reports status=dev
+// (never "available"), so developer machines don't spuriously exit 10.
+func TestExec_CheckOnly_DevBuild(t *testing.T) {
+	release := ghRelease{TagName: "v2.0.0"}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	out := &bytes.Buffer{}
+	errOut := &bytes.Buffer{}
+	u := &Updater{
+		currentVersion: "dev",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         strings.NewReader(""),
+		writer:         out,
+		errWriter:      errOut,
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+	}
+	u.SetCheckOnly(true)
+
+	err := u.Exec()
+	require.NoError(t, err)
+	assert.Equal(t, "v2.0.0\tdev\tdev\n", out.String())
+	assert.Contains(t, errOut.String(), "v2.0.0")
+}
+
+// TestExec_CheckOnly_DoesNotPrompt verifies that check-only mode never reads
+// from stdin, so scripts piping into it don't hang or get ErrNonInteractive.
+func TestExec_CheckOnly_DoesNotPrompt(t *testing.T) {
+	release := ghRelease{TagName: "v2.0.0"}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	// Reader that panics if Read is ever called.
+	reader := &panicReader{t: t}
+	out := &bytes.Buffer{}
+	u := &Updater{
+		currentVersion: "1.0.0",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         reader,
+		writer:         out,
+		errWriter:      &bytes.Buffer{},
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+	}
+	u.SetCheckOnly(true)
+
+	err := u.Exec()
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, ErrUpdateAvailable))
+}
+
+// TestExec_CheckOnly_NetworkFailure verifies that network errors still wrap
+// ErrNetwork even in check-only mode (caller can map to exit 3).
+func TestExec_CheckOnly_NetworkFailure(t *testing.T) {
+	// Point at a closed server to force a connection refused.
+	srv := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}))
+	srv.Close() // close immediately to trigger connection error
+
+	out := &bytes.Buffer{}
+	u := &Updater{
+		currentVersion: "1.0.0",
+		repoOwner:      "test",
+		repoName:       "test",
+		reader:         strings.NewReader(""),
+		writer:         out,
+		errWriter:      &bytes.Buffer{},
+		httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+	}
+	u.SetCheckOnly(true)
+
+	err := u.Exec()
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, ErrNetwork), "want ErrNetwork, got %v", err)
+	assert.Empty(t, out.String(), "writer should not receive a status line on network failure")
+}
+
+// panicReader fails the test if Read is invoked.
+type panicReader struct{ t *testing.T }
+
+func (p *panicReader) Read(_ []byte) (int, error) {
+	p.t.Helper()
+	p.t.Fatalf("check-only mode must not read stdin")
+	return 0, nil
+}
+
 func TestFormatBytes(t *testing.T) {
 	tests := []struct {
 		input    int64

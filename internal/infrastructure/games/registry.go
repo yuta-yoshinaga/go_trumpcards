@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 58 games. Cheap; no references to game code.
+//     Category) for all 65 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -96,6 +96,7 @@ var registry = []*Game{
 	{Name: "omaha", Category: CategoryCasino, Description: "Omaha Hold'em (オマハホールデム)"},
 	{Name: "shortdeck", Category: CategoryCasino, Description: "Short Deck (6+ Hold'em) (ショートデック)"},
 	{Name: "pineapple", Category: CategoryCasino, Description: "Pineapple Poker (パイナップルポーカー)"},
+	{Name: "crazypineapple", Category: CategoryCasino, Description: "Crazy Pineapple Poker (クレイジーパイナップル)"},
 	{Name: "hearts", Category: CategoryClassic, Description: "Hearts (ハーツ)"},
 	{Name: "memory", Category: CategorySolo, Description: "Memory / Concentration (神経衰弱)"},
 	{Name: "klondike", Category: CategorySolo, Description: "Klondike Solitaire (ソリティア)"},
@@ -148,6 +149,8 @@ var registry = []*Game{
 	{Name: "president", Category: CategoryClassic, Description: "President / Scum (プレジデント)"},
 	{Name: "cassino", Category: CategoryClassic, Description: "Cassino (カッシーノ)"},
 	{Name: "spanish21", Category: CategoryCasino, Description: "Spanish 21 (スパニッシュ21)"},
+	{Name: "calculation", Category: CategorySolo, Description: "Calculation (カルキュレーション)"},
+	{Name: "spiteandmalice", Category: CategoryClassic, Description: "Spite and Malice (スパイト・アンド・マリス)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

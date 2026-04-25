@@ -8,12 +8,14 @@ import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
+import calculation from '../../../docs/manual/cui/calculation.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
 import canfield from '../../../docs/manual/cui/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
 import cassino from '../../../docs/manual/cui/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/cui/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/cui/crazyeights.md?raw';
+import crazypineapple from '../../../docs/manual/cui/crazypineapple.md?raw';
 import cribbage from '../../../docs/manual/cui/cribbage.md?raw';
 import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
@@ -57,6 +59,7 @@ import spades from '../../../docs/manual/cui/spades.md?raw';
 import spanish21 from '../../../docs/manual/cui/spanish21.md?raw';
 import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
+import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
@@ -71,6 +74,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/': blackjack,
   '/baccarat': baccarat,
   '/bridge': bridge,
+  '/calculation': calculation,
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
@@ -102,10 +106,11 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/pageone': pageone,
   '/paigow': paigow,
   '/pineapple': pineapple,
+  '/crazypineapple': crazypineapple,
   '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/poker': poker,
-  '/poker-squares': pokersquares,
+  '/pokersquares': pokersquares,
   '/pyramid': pyramid,
   '/razz': razz,
   '/badugi': badugi,
@@ -130,6 +135,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/trash': trash,
   '/president': president,
   '/cassino': cassino,
+  '/spiteandmalice': spiteandmalice,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

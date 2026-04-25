@@ -62,6 +62,14 @@ func init() {
 			return usecase.RestorePineappleInteractor(data, new(presenter.PineappleWebPresenter))
 		},
 		controller.NewPineappleWebControllerWithProvider)
+	games.RegisterKVGame("crazypineapple", games.CategoryCasino,
+		func() usecase.PineappleInteractorIF {
+			return usecase.NewPineappleInteractor(domain.NewDefaultCrazyPineapple(), new(presenter.PineappleWebPresenter))
+		},
+		func(data []byte) (usecase.PineappleInteractorIF, error) {
+			return usecase.RestorePineappleInteractor(data, new(presenter.PineappleWebPresenter))
+		},
+		controller.NewPineappleWebControllerWithProvider)
 	games.RegisterKVGame("baccarat", games.CategoryCasino,
 		func() usecase.BaccaratInteractorIF {
 			return usecase.NewBaccaratInteractor(domain.NewDefaultBaccarat(), new(presenter.BaccaratWebPresenter))

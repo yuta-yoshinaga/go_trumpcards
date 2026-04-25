@@ -230,31 +230,56 @@ function OldMaidPageContent() {
 
             {/* CPU row */}
             <div className="flex gap-2 flex-wrap mb-2 justify-center" data-tutorial="om-cpu-area">
-              {cpuPlayers.map((player) => (
-                <OldMaidPlayerArea
-                  key={player.id}
-                  player={player}
-                  isTarget={state.nextDrawTargetIdx === player.id}
-                  isHumanTurn={isHumanTurn}
-                  gameEndFlag={state.gameEndFlag}
-                  loading={loading}
-                  highlightedCardIdx={state.nextDrawTargetIdx === player.id ? state.cpuHighlightedCardIdx : -1}
-                  isSuspect={suspectPins.has(player.id)}
-                  compactNonTarget={isMobile}
-                  onToggleSuspect={() =>
-                    setSuspectPins((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(player.id)) {
-                        next.delete(player.id);
-                      } else {
-                        next.add(player.id);
-                      }
-                      return next;
-                    })
-                  }
-                  onDraw={(drawIdx) => gameExec('draw', drawIdx)}
-                />
-              ))}
+              {cpuPlayers.map((player) => {
+                // Surface a transient bubble on the CPU that just drew so the
+                // player can visually track who acted without reading the log.
+                // See issue #1490.
+                const isDrawer =
+                  !state.gameEndFlag && state.hasDrawn && state.lastDrawPlayerIdx === player.id && !player.isHuman;
+                const bubble = isDrawer
+                  ? {
+                      message:
+                        state.lastDiscardedPairs > 0
+                          ? t('bubble.drewAndPaired', {
+                              from: findPlayerName(state.players, state.lastDrawFromIdx),
+                            })
+                          : t('bubble.drewFrom', {
+                              from: findPlayerName(state.players, state.lastDrawFromIdx),
+                            }),
+                      // Prepend the monotonic drawHistory length so identical
+                      // back-to-back draws (same player, same target, same
+                      // card bouncing back, e.g. Joker) still re-trigger the
+                      // animation. Go Fish gets this for free via turnNumber.
+                      triggerKey: `${state.drawHistory?.length ?? 0}-${state.lastDrawPlayerIdx}-${state.lastDrawFromIdx}-${state.lastDrawCard?.design ?? 'x'}-${state.lastDrawCard?.value ?? 0}`,
+                    }
+                  : undefined;
+                return (
+                  <OldMaidPlayerArea
+                    key={player.id}
+                    player={player}
+                    isTarget={state.nextDrawTargetIdx === player.id}
+                    isHumanTurn={isHumanTurn}
+                    gameEndFlag={state.gameEndFlag}
+                    loading={loading}
+                    highlightedCardIdx={state.nextDrawTargetIdx === player.id ? state.cpuHighlightedCardIdx : -1}
+                    isSuspect={suspectPins.has(player.id)}
+                    compactNonTarget={isMobile}
+                    onToggleSuspect={() =>
+                      setSuspectPins((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(player.id)) {
+                          next.delete(player.id);
+                        } else {
+                          next.add(player.id);
+                        }
+                        return next;
+                      })
+                    }
+                    onDraw={(drawIdx) => gameExec('draw', drawIdx)}
+                    bubble={bubble}
+                  />
+                );
+              })}
             </div>
 
             {/* Discarded Area */}

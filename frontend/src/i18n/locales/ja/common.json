@@ -52,6 +52,7 @@
     "shortdeck": "ショートデック",
     "threecard": "スリーカードポーカー",
     "pineapple": "パイナップルポーカー",
+    "crazypineapple": "クレイジーパイナップル",
     "ohhell": "オー・ヘル",
     "speed": "スピード",
     "gofish": "Go Fish",
@@ -80,7 +81,9 @@
     "trash": "トラッシュ",
     "president": "プレジデント",
     "cassino": "カッシーノ",
-    "spanish21": "スパニッシュ21"
+    "spanish21": "スパニッシュ21",
+    "calculation": "カルキュレーション",
+    "spiteandmalice": "スパイト・アンド・マリス"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -134,6 +137,14 @@
   "roundScoreAnnouncement": {
     "message": "ラウンド終了。{{details}}",
     "entry": "{{name}}: +{{round}} (合計 {{total}})"
+  },
+  "roundResultsAnnouncement": {
+    "message": "ショウダウン結果。{{details}}",
+    "entryMucked": "{{name}}: マック",
+    "entryHand": "{{name}}: {{handName}}",
+    "entryHandWithKickers": "{{name}}: {{handName}}、キッカー {{kickers}}",
+    "entryHandWon": "{{name}}: {{handName}}、+{{amount}}チップ",
+    "entryHandWithKickersWon": "{{name}}: {{handName}}、キッカー {{kickers}}、+{{amount}}チップ"
   },
   "stalemateEscape": "脱出する ({{count}}手戻る)",
   "status": {
@@ -337,6 +348,12 @@
     "clocksolitaire.playing": "プレイ中",
     "clocksolitaire.gameClear": "ゲームクリア！ ステップ数: {{stepCount}}",
     "clocksolitaire.gameOver": "ゲームオーバー",
+    "calculation.playing": "プレイ中",
+    "calculation.stalemate": "手詰まりです",
+    "calculation.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "calculation.gameOver": "ゲームオーバー",
+    "calculation.hintAvailable": "ヒントがあります",
+    "calculation.noHint": "ヒントはありません",
     "whist.result.team0Win": "ゲーム終了！ チーム0の勝ち！",
     "whist.result.team1Win": "ゲーム終了！ チーム1の勝ち！",
     "whist.playPhase.lead": "リードしてください",

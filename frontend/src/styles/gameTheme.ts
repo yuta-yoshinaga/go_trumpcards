@@ -50,6 +50,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   fortythieves: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   canfield: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   pokersquares: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  calculation: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   // Counting/Rummy — unified to blue
   ginrummy: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   canasta: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },

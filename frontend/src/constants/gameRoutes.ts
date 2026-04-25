@@ -39,6 +39,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/omaha', labelKey: 'nav.omaha', icon: '4️⃣' },
       { path: '/shortdeck', labelKey: 'nav.shortdeck', icon: '6️⃣' },
       { path: '/pineapple', labelKey: 'nav.pineapple', icon: '🍍' },
+      { path: '/crazypineapple', labelKey: 'nav.crazypineapple', icon: '🤪' },
       { path: '/sevencardstud', labelKey: 'nav.sevencardstud', icon: '7️⃣' },
       { path: '/razz', labelKey: 'nav.razz', icon: '🃏' },
       { path: '/badugi', labelKey: 'nav.badugi', icon: '🪷' },
@@ -82,6 +83,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/war', labelKey: 'nav.war', icon: '⚔️' },
       { path: '/fiftyone', labelKey: 'nav.fiftyone', icon: '5️⃣' },
       { path: '/trash', labelKey: 'nav.trash', icon: '🗑️' },
+      { path: '/spiteandmalice', labelKey: 'nav.spiteandmalice', icon: '😈' },
     ],
   },
   {
@@ -101,7 +103,8 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/yukon', labelKey: 'nav.yukon', icon: '🏔️' },
       { path: '/scorpion', labelKey: 'nav.scorpion', icon: '🦂' },
       { path: '/accordion', labelKey: 'nav.accordion', icon: '🪗' },
-      { path: '/poker-squares', labelKey: 'nav.pokersquares', icon: '🔢' },
+      { path: '/pokersquares', labelKey: 'nav.pokersquares', icon: '🔢' },
+      { path: '/calculation', labelKey: 'nav.calculation', icon: '🧮' },
     ],
   },
   {
