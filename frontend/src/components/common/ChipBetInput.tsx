@@ -53,7 +53,7 @@ export function ChipBetInput({
           onChange(Math.max(min, Math.min(parsed, max)));
         }}
         disabled={disabled}
-        className={`${widthClass} px-2 py-1 rounded text-sm`}
+        className={`${widthClass} px-3 py-2 rounded text-base min-h-[44px]`}
       />
     </div>
   );

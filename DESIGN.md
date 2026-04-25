@@ -134,6 +134,17 @@ These use design system tokens for game UX color-coding. They are scoped to poke
 | 2xl | 48px | Large section spacing |
 | 3xl | 64px | Page section padding |
 
+## Interactive Element Minimum Size
+
+All interactive controls (buttons, links, checkbox/radio labels, selects, text/number inputs) must hit a 44×44 CSS px tap target — WCAG 2.5.5 AAA. The 24×24 fallback (WCAG 2.2 AA) is reserved for inline glyphs that cannot be visually enlarged without breaking layout, and even then the surrounding hit area should be padded to 44px.
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `tap-target-min` | 44px | Primary minimum for all tappable controls (buttons, labels wrapping checkbox/radio, select, text/number inputs) |
+| `tap-target-aa-min` | 24px | Fallback for inline icon-only triggers; only acceptable when the surrounding label/parent provides ≥44px tap area |
+
+Visual size of a checkbox or radio dot may stay at ~16-20px so the element still reads as a "checkbox" — but the wrapping `<label>` must carry `min-h-[44px]` so the entire row is tappable. Buttons follow this rule by default via `buttonStyles.ts:base` (`min-h-[44px]`). Selects and number inputs in card-game settings panels expand vertically to meet the threshold.
+
 ## Layout
 - **Approach:** Grid-disciplined — strict alignment for game UI, consistent card grid sizing
 - **Grid:** Desktop: sidebar (240px fixed) + fluid main. Mobile: single column with hamburger nav

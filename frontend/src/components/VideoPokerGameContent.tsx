@@ -270,7 +270,7 @@ export function VideoPokerGameContent({
               </div>
             )}
             <div className="flex justify-center pb-2">
-              <label className="text-white text-sm flex items-center gap-1">
+              <label className="text-white text-sm flex items-center gap-2 min-h-[44px]">
                 <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
                 {tc('hint.toggle', { ns: 'tutorial' })}
               </label>

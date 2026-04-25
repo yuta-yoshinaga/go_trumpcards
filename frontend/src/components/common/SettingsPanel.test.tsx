@@ -350,6 +350,36 @@ describe('SettingsPanel', () => {
     expect(select.options).toHaveLength(0);
   });
 
+  it('checkbox label meets the 44px minimum touch target (WCAG 2.5.5)', () => {
+    // Issue #1510: tap area for checkbox rows must be at least 44px so the
+    // 16px native checkbox does not become a "miss me" target on mobile.
+    const { container } = render(
+      <SettingsPanel
+        title="Settings"
+        groups={[{ items: [{ type: 'checkbox', id: 'cb1', label: 'Tap me', checked: false }] }]}
+      />,
+    );
+    const label = container.querySelector('label[for="cb1"]') as HTMLLabelElement;
+    expect(label.className).toContain('min-h-[44px]');
+  });
+
+  it('select wrapper meets the 44px minimum touch target (WCAG 2.5.5)', () => {
+    // Issue #1510: dropdowns at 22-24px high are below WCAG 2.2 AA. Aligning
+    // them with the 44px button baseline removes the visual hierarchy mismatch.
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[
+          {
+            items: [{ type: 'select', id: 'sel1', label: 'Pick', value: '1', options: [{ value: '1', label: 'One' }] }],
+          },
+        ]}
+      />,
+    );
+    const select = screen.getByLabelText('Pick');
+    expect(select.className).toContain('min-h-[44px]');
+  });
+
   it('renders multiple groups with mixed titled and untitled', () => {
     const groups: SettingsGroup[] = [
       { items: [{ type: 'checkbox', id: 'c1', label: 'Untitled item', checked: false }] },

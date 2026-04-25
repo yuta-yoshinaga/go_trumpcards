@@ -650,7 +650,7 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 			name:        "--lang followed by flag token treats it as lang value",
 			args:        []string{"--lang", "--no-color"},
 			wantRest:    []string{},
-			wantLang:    "ja", // "--no-color" is not a supported lang, falls back
+			wantLang:    "ja",  // "--no-color" is not a supported lang, falls back
 			wantNoColor: false, // --no-color was consumed as the lang value, not processed
 			wantWarn:    "--no-color",
 		},
@@ -706,4 +706,3 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 		})
 	}
 }
-
