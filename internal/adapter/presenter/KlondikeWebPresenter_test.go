@@ -142,17 +142,35 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 }
 
 func TestKlondikeWebPresenter_Output_Stalemate(t *testing.T) {
-	kg := new(interfaces.MockKlondikeGame)
-	setupKlondikeWebMockDefaults(kg)
-	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
-	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "UndoToEscape")
-	kg.On("IsStalemate").Return(true)
-	kg.On("UndoToEscape").Return(-1)
+	t.Run("no escape available", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeWebMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "UndoToEscape")
+		kg.On("IsStalemate").Return(true)
+		kg.On("UndoToEscape").Return(-1)
 
-	p := new(KlondikeWebPresenter)
-	result := parseKlondikeOutput(t, p.Output(kg, nil))
-	assert.True(t, result.IsStalemate)
-	assert.Equal(t, "klondike.stalemate", result.MessageCode)
+		p := new(KlondikeWebPresenter)
+		result := parseKlondikeOutput(t, p.Output(kg, nil))
+		assert.True(t, result.IsStalemate)
+		assert.Equal(t, "klondike.stalemate", result.MessageCode)
+		assert.Empty(t, result.MessageParams)
+	})
+
+	t.Run("escape available with positive count", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeWebMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "UndoToEscape")
+		kg.On("IsStalemate").Return(true)
+		kg.On("UndoToEscape").Return(3)
+
+		p := new(KlondikeWebPresenter)
+		result := parseKlondikeOutput(t, p.Output(kg, nil))
+		assert.True(t, result.IsStalemate)
+		assert.Equal(t, "klondike.stalemateWithEscape", result.MessageCode)
+		assert.Equal(t, "3", result.MessageParams["count"])
+	})
 }
 
 func TestKlondikeWebPresenter_HintOutput(t *testing.T) {

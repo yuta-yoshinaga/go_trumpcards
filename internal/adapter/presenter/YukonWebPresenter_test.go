@@ -51,7 +51,7 @@ func TestYukonWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "yukon.playing", result.MessageCode)
 	})
 
-	t.Run("stalemate", func(t *testing.T) {
+	t.Run("stalemate with escape available", func(t *testing.T) {
 		yg := new(interfaces.MockYukonGame)
 		setupYukonWebMockDefaults(yg)
 		yg.ExpectedCalls = nil
@@ -67,8 +67,30 @@ func TestYukonWebPresenter_Output(t *testing.T) {
 
 		p := new(YukonWebPresenter)
 		result := parseYukonOutput(t, p.Output(yg, nil))
+		assert.Equal(t, "yukon.stalemateWithEscape", result.MessageCode)
+		assert.Equal(t, "3", result.MessageParams["count"])
+		assert.True(t, result.IsStalemate)
+	})
+
+	t.Run("stalemate without escape available", func(t *testing.T) {
+		yg := new(interfaces.MockYukonGame)
+		setupYukonWebMockDefaults(yg)
+		yg.ExpectedCalls = nil
+		yg.On("GetPhase").Return(domain.YukonPhasePlaying).Maybe()
+		yg.On("GetMoveCount").Return(5).Maybe()
+		yg.On("CanUndo").Return(false).Maybe()
+		yg.On("IsStalemate").Return(true).Maybe()
+		yg.On("UndoToEscape").Return(-1).Maybe()
+		var tableau [domain.YukonTableauCnt][]*domain.KlondikeTableauCard
+		yg.On("GetTableau").Return(tableau).Maybe()
+		var foundation [domain.YukonFoundationCnt][]*domain.Card
+		yg.On("GetFoundation").Return(foundation).Maybe()
+
+		p := new(YukonWebPresenter)
+		result := parseYukonOutput(t, p.Output(yg, nil))
 		assert.Equal(t, "yukon.stalemate", result.MessageCode)
 		assert.True(t, result.IsStalemate)
+		assert.Empty(t, result.MessageParams)
 	})
 
 	t.Run("game clear", func(t *testing.T) {

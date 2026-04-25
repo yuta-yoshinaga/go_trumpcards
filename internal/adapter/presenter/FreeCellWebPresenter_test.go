@@ -11,6 +11,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func TestFreeCellWebPresenterOutputPlaying(t *testing.T) {
@@ -76,6 +77,33 @@ func TestFreeCellWebPresenterOutputStalemate(t *testing.T) {
 	assert.True(t, out.IsStalemate)
 	assert.Equal(t, -1, out.UndoToEscape)
 	assert.Equal(t, "freecell.stalemate", out.MessageCode)
+	assert.Empty(t, out.MessageParams)
+}
+
+func TestFreeCellWebPresenterOutputStalemateWithEscape(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	fg := new(interfaces.MockFreeCellGame)
+	fg.On("GetPhase").Return(domain.FreeCellPhasePlaying).Maybe()
+	fg.On("GetMoveCount").Return(7).Maybe()
+	fg.On("CanUndo").Return(true).Maybe()
+	fg.On("IsStalemate").Return(true).Maybe()
+	fg.On("UndoToEscape").Return(4).Maybe()
+	var tableau [domain.FreeCellTableauCnt][]*domain.Card
+	fg.On("GetTableau").Return(tableau).Maybe()
+	var freeCells [domain.FreeCellCellCnt]*domain.Card
+	fg.On("GetFreeCells").Return(freeCells).Maybe()
+	var foundation [domain.FreeCellFoundationCnt][]*domain.Card
+	fg.On("GetFoundation").Return(foundation).Maybe()
+
+	result := p.Output(fg, nil)
+
+	var out controller.FreeCellWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.True(t, out.IsStalemate)
+	assert.Equal(t, 4, out.UndoToEscape)
+	assert.Equal(t, "freecell.stalemateWithEscape", out.MessageCode)
+	assert.Equal(t, "4", out.MessageParams["count"])
 }
 
 func TestFreeCellWebPresenterOutputError(t *testing.T) {
