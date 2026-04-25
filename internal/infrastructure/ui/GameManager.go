@@ -34,6 +34,43 @@ func cuiEntry(ctrl CuiExecer, spec CuiHelpSpec) cuiGame {
 	return newCuiGame(ctrl, BuildCuiHelp(spec))
 }
 
+// Shared poker-family help keys live here so a label change (e.g. renaming
+// "small blind" wording) updates every entry that uses them. See issue #1511.
+var (
+	// tournamentRebuyAddOnKeys covers the rebuy / add-on row used by every
+	// tournament-capable poker game.
+	tournamentRebuyAddOnKeys = []string{
+		"tournament.helpRebuy",
+		"tournament.helpSkipRebuy",
+		"tournament.helpAddOn",
+		"tournament.helpSkipAddOn",
+	}
+	// pineappleRebuyAddOnKeys is the same row prefixed with the discard line
+	// only Pineapple variants surface.
+	pineappleRebuyAddOnKeys = append(
+		[]string{"tournament.helpDiscard"},
+		tournamentRebuyAddOnKeys...,
+	)
+	// holdemBlindKeys are the blind / level-up / table-size settings shared
+	// by holdem, omaha, shortdeck, pineapple, crazypineapple.
+	holdemBlindKeys = []string{
+		"tournament.helpSmallBlind",
+		"tournament.helpBigBlind",
+		"tournament.helpLevelUpHands",
+		"tournament.helpTableSize",
+	}
+	// studAnteKeys are the ante / bring-in settings shared by sevencardstud
+	// and razz (both render through the SevenCardStud controller).
+	studAnteKeys = []string{
+		"stud.helpAnte",
+		"stud.helpBringIn",
+		"stud.helpSmallBet",
+		"stud.helpBigBet",
+		"stud.helpLevelUpHands",
+		"stud.helpTableSize",
+	}
+)
+
 // gameRegistry wires each game's CUI constructor. Name and Description are
 // carried by the games package (see internal/infrastructure/games/registry.go)
 // — this slice only holds the CLI-specific NewCui factory. Order mirrors the
@@ -113,27 +150,17 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultHoldem(), new(presenter.HoldemCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey: "holdem.helpTitle",
-				CommandKeys: []string{
+				CommandKeys: append([]string{
 					"holdem.helpFold",
 					"holdem.helpCheck",
 					"holdem.helpCall",
 					"holdem.helpBet",
 					"holdem.helpRaise",
 					"holdem.helpAllIn",
-				},
-				ExtraCommandLines: []string{
-					"  rb                   rebuy",
-					"  sr                   skip rebuy",
-					"  ad                   add-on",
-					"  sa                   skip add-on",
-				},
-				SettingKeys: []string{"holdem.helpBettingLimit", "holdem.helpTournament"},
-				ExtraSettingLines: []string{
-					"  sb <amount>          small blind (>=1)",
-					"  bb <amount>          big blind (>=2)",
-					"  lh <hands>           blind level-up hands (>=1)",
-					"  ts [4|6|9]           table size",
-				},
+				}, tournamentRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"holdem.helpBettingLimit", "holdem.helpTournament",
+				}, holdemBlindKeys...),
 			})
 	}},
 	{Name: "omaha", NewCui: func() cuiGame {
@@ -142,27 +169,17 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultOmaha(), new(presenter.OmahaCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey: "omaha.helpTitle",
-				CommandKeys: []string{
+				CommandKeys: append([]string{
 					"omaha.helpFold",
 					"omaha.helpCheck",
 					"omaha.helpCall",
 					"omaha.helpBet",
 					"omaha.helpRaise",
 					"omaha.helpAllIn",
-				},
-				ExtraCommandLines: []string{
-					"  rb                   rebuy",
-					"  sr                   skip rebuy",
-					"  ad                   add-on",
-					"  sa                   skip add-on",
-				},
-				SettingKeys: []string{"omaha.helpBettingLimit", "omaha.helpTournament"},
-				ExtraSettingLines: []string{
-					"  sb <amount>          small blind (>=1)",
-					"  bb <amount>          big blind (>=2)",
-					"  lh <hands>           blind level-up hands (>=1)",
-					"  ts [4|6|9]           table size",
-				},
+				}, tournamentRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"omaha.helpBettingLimit", "omaha.helpTournament",
+				}, holdemBlindKeys...),
 			})
 	}},
 	{Name: "shortdeck", NewCui: func() cuiGame {
@@ -171,27 +188,17 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultShortDeck(), new(presenter.ShortDeckCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey: "shortdeck.helpTitle",
-				CommandKeys: []string{
+				CommandKeys: append([]string{
 					"shortdeck.helpFold",
 					"shortdeck.helpCheck",
 					"shortdeck.helpCall",
 					"shortdeck.helpBet",
 					"shortdeck.helpRaise",
 					"shortdeck.helpAllIn",
-				},
-				ExtraCommandLines: []string{
-					"  rb                   rebuy",
-					"  sr                   skip rebuy",
-					"  ad                   add-on",
-					"  sa                   skip add-on",
-				},
-				SettingKeys: []string{"shortdeck.helpBettingLimit", "shortdeck.helpTournament"},
-				ExtraSettingLines: []string{
-					"  sb <amount>          small blind (>=1)",
-					"  bb <amount>          big blind (>=2)",
-					"  lh <hands>           blind level-up hands (>=1)",
-					"  ts [4|6|9]           table size",
-				},
+				}, tournamentRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"shortdeck.helpBettingLimit", "shortdeck.helpTournament",
+				}, holdemBlindKeys...),
 			})
 	}},
 	{Name: "pineapple", NewCui: func() cuiGame {
@@ -200,28 +207,17 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultPineapple(), new(presenter.PineappleCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey: "pineapple.helpTitle",
-				CommandKeys: []string{
+				CommandKeys: append([]string{
 					"pineapple.helpFold",
 					"pineapple.helpCheck",
 					"pineapple.helpCall",
 					"pineapple.helpBet",
 					"pineapple.helpRaise",
 					"pineapple.helpAllIn",
-				},
-				ExtraCommandLines: []string{
-					"  d <index>            discard",
-					"  rb                   rebuy",
-					"  sr                   skip rebuy",
-					"  ad                   add-on",
-					"  sa                   skip add-on",
-				},
-				SettingKeys: []string{"pineapple.helpBettingLimit", "pineapple.helpTournament"},
-				ExtraSettingLines: []string{
-					"  sb <amount>          small blind (>=1)",
-					"  bb <amount>          big blind (>=2)",
-					"  lh <hands>           blind level-up hands (>=1)",
-					"  ts [4|6|9]           table size",
-				},
+				}, pineappleRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"pineapple.helpBettingLimit", "pineapple.helpTournament",
+				}, holdemBlindKeys...),
 			})
 	}},
 	{Name: "crazypineapple", NewCui: func() cuiGame {
@@ -230,28 +226,17 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultCrazyPineapple(), new(presenter.PineappleCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey: "crazypineapple.helpTitle",
-				CommandKeys: []string{
+				CommandKeys: append([]string{
 					"crazypineapple.helpFold",
 					"crazypineapple.helpCheck",
 					"crazypineapple.helpCall",
 					"crazypineapple.helpBet",
 					"crazypineapple.helpRaise",
 					"crazypineapple.helpAllIn",
-				},
-				ExtraCommandLines: []string{
-					"  d <index>            discard",
-					"  rb                   rebuy",
-					"  sr                   skip rebuy",
-					"  ad                   add-on",
-					"  sa                   skip add-on",
-				},
-				SettingKeys: []string{"crazypineapple.helpBettingLimit", "crazypineapple.helpTournament"},
-				ExtraSettingLines: []string{
-					"  sb <amount>          small blind (>=1)",
-					"  bb <amount>          big blind (>=2)",
-					"  lh <hands>           blind level-up hands (>=1)",
-					"  ts [4|6|9]           table size",
-				},
+				}, pineappleRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"crazypineapple.helpBettingLimit", "crazypineapple.helpTournament",
+				}, holdemBlindKeys...),
 			})
 	}},
 	{Name: "hearts", NewCui: func() cuiGame {
@@ -650,29 +635,17 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultSevenCardStud(), new(presenter.SevenCardStudCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey: "sevencardstud.helpTitle",
-				CommandKeys: []string{
+				CommandKeys: append([]string{
 					"sevencardstud.helpFold",
 					"sevencardstud.helpCheck",
 					"sevencardstud.helpCall",
 					"sevencardstud.helpBet",
 					"sevencardstud.helpRaise",
 					"sevencardstud.helpAllIn",
-				},
-				ExtraCommandLines: []string{
-					"  rb                   rebuy",
-					"  sr                   skip rebuy",
-					"  ad                   add-on",
-					"  sa                   skip add-on",
-				},
-				SettingKeys: []string{"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament"},
-				ExtraSettingLines: []string{
-					"  ante <amount>        ante (>=1)",
-					"  bi <amount>          bring-in (>=1)",
-					"  sb <amount>          small bet (>=1)",
-					"  bb <amount>          big bet (>=1)",
-					"  lh <hands>           ante level-up hands (>=1)",
-					"  ts [2-7]             table size",
-				},
+				}, tournamentRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament",
+				}, studAnteKeys...),
 			})
 	}},
 	{Name: "clocksolitaire", NewCui: func() cuiGame {
@@ -909,29 +882,17 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultRazz(), new(presenter.SevenCardStudCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey: "razz.helpTitle",
-				CommandKeys: []string{
+				CommandKeys: append([]string{
 					"sevencardstud.helpFold",
 					"sevencardstud.helpCheck",
 					"sevencardstud.helpCall",
 					"sevencardstud.helpBet",
 					"sevencardstud.helpRaise",
 					"sevencardstud.helpAllIn",
-				},
-				ExtraCommandLines: []string{
-					"  rb                   rebuy",
-					"  sr                   skip rebuy",
-					"  ad                   add-on",
-					"  sa                   skip add-on",
-				},
-				SettingKeys: []string{"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament"},
-				ExtraSettingLines: []string{
-					"  ante <amount>        ante (>=1)",
-					"  bi <amount>          bring-in (>=1)",
-					"  sb <amount>          small bet (>=1)",
-					"  bb <amount>          big bet (>=1)",
-					"  lh <hands>           ante level-up hands (>=1)",
-					"  ts [2-7]             table size",
-				},
+				}, tournamentRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"sevencardstud.helpBettingLimit", "sevencardstud.helpTournament",
+				}, studAnteKeys...),
 			})
 	}},
 	{Name: "scorpion", NewCui: func() cuiGame {
