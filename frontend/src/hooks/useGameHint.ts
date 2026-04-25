@@ -45,6 +45,7 @@ import type {
   SpadesResponse,
   SpeedResponse,
   SpiderResponse,
+  SpiteAndMaliceResponse,
   ThreeCardResponse,
   TrashResponse,
   TriPeaksResponse,
@@ -103,6 +104,7 @@ import { getShortDeckHint } from '../utils/hints/shortdeckHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
+import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
@@ -178,6 +180,7 @@ const hintFactories = {
   trash: (s) => getTrashHint(s as TrashResponse),
   president: (s) => getPresidentHint(s as PresidentResponse),
   cassino: (s) => getCassinoHint(s as CassinoResponse),
+  spiteandmalice: (s) => getSpiteAndMaliceHint(s as SpiteAndMaliceResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

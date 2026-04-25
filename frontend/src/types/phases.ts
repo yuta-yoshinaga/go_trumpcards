@@ -475,6 +475,12 @@ export const TrashPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Spite & Malice phase constants (sync: internal/domain/SpiteAndMalice.go). */
+export const SpiteAndMalicePhase = {
+  PLAYING: 0,
+  GAME_OVER: 1,
+} as const;
+
 /** Whist phase constants (sync: internal/domain/Whist.go). */
 export const WhistPhase = {
   PLAY: 0,

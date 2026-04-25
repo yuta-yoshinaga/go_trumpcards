@@ -1,0 +1,605 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { spiteAndMaliceApi } from '../api/gameApi';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { GamePageHeading } from '../components/GamePageHeading';
+import { GameResetButton } from '../components/GameResetButton';
+import { GameResetDialog } from '../components/GameResetDialog';
+import { LandscapeBanner } from '../components/LandscapeBanner';
+import { ManualButton } from '../components/ManualButton';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
+import { PhaseIndicator } from '../components/PhaseIndicator';
+import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
+import { TutorialButton } from '../components/tutorial/TutorialButton';
+import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useSound } from '../providers/SoundProvider';
+import { btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
+import { gameTheme } from '../styles/gameTheme';
+import type { Card, SpiteAndMaliceResponse } from '../types/card';
+import { SpiteAndMalicePhase } from '../types/phases';
+import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
+
+const samRunner = spiteAndMaliceApi;
+
+const SAM_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="sam-opponent"]', messageKey: 'tutorial.opponent', placement: 'bottom', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="sam-foundations"]',
+    messageKey: 'tutorial.foundations',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  { target: '[data-tutorial="sam-goal"]', messageKey: 'tutorial.goal', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="sam-hand"]', messageKey: 'tutorial.hand', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="sam-sides"]', messageKey: 'tutorial.sides', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="sam-reset"]', messageKey: 'tutorial.resetButton', placement: 'top', advanceOn: 'next' },
+];
+
+type ApiArgs = Parameters<typeof samRunner.exec>;
+
+function parseSamCommand(input: string): CliParseResult<ApiArgs> {
+  const parts = input.trim().split(/\s+/);
+  const cmd = parts[0]?.toLowerCase();
+  const intArg = (s: string | undefined): number | null => {
+    if (s === undefined) return null;
+    const n = Number.parseInt(s, 10);
+    return Number.isFinite(n) ? n : null;
+  };
+  switch (cmd) {
+    case 'r':
+    case 'reset':
+      return { args: ['reset'] };
+    case 'cpu':
+      return { args: ['cpu'] };
+    case 'l':
+    case 'log':
+      return { args: ['log'] };
+    case 'h':
+    case 'hint':
+      return { args: ['hint'] };
+    case 'ph': {
+      const h = intArg(parts[1]);
+      const f = intArg(parts[2]);
+      if (h === null || f === null) return { error: 'Usage: ph <handIdx> <foundationIdx>' };
+      return { args: ['move', { zone: 'hand', idx: h }, { zone: 'foundation', idx: f }] };
+    }
+    case 'pg': {
+      const f = intArg(parts[1]);
+      if (f === null) return { error: 'Usage: pg <foundationIdx>' };
+      return { args: ['move', { zone: 'goal' }, { zone: 'foundation', idx: f }] };
+    }
+    case 'ps': {
+      const s = intArg(parts[1]);
+      const f = intArg(parts[2]);
+      if (s === null || f === null) return { error: 'Usage: ps <sideIdx> <foundationIdx>' };
+      return { args: ['move', { zone: 'side', idx: s }, { zone: 'foundation', idx: f }] };
+    }
+    case 'd':
+    case 'discard': {
+      const h = intArg(parts[1]);
+      const s = intArg(parts[2]);
+      if (h === null || s === null) return { error: 'Usage: d <handIdx> <sideIdx>' };
+      return { args: ['discard', { zone: 'hand', idx: h }, { zone: 'side', idx: s }] };
+    }
+    default:
+      return { error: `Unknown command: ${cmd}` };
+  }
+}
+
+function formatSamState(state: SpiteAndMaliceResponse): string {
+  const lines: string[] = [];
+  lines.push(`Phase: ${state.phase}  Turn: ${state.current === 0 ? 'YOU' : 'CPU'}  Moves: ${state.moveCount}`);
+  lines.push(`Foundations tops: ${state.foundationTops.map((v, i) => `F${i}=${v === 0 ? '-' : v}`).join('  ')}`);
+  lines.push(`Stock: ${state.stockSize}  Completed: ${state.completedSize}`);
+  for (let i = 0; i < state.players.length; i++) {
+    const p = state.players[i];
+    const goalTop = p.goalTop ? `${p.goalTop.design[0]}${p.goalTop.value}` : '-';
+    lines.push(`${p.isCpu ? 'CPU' : 'YOU'}: goal[${goalTop} x${p.goalSize}]  hand=${p.hand.length}`);
+  }
+  if (state.message) lines.push(state.message);
+  return lines.join('\n');
+}
+
+/** Spite & Malice (Cat and Mouse) page — a 2-player race game vs CPU. */
+export function SpiteAndMalicePage() {
+  return (
+    <TutorialWrapper gameName="spiteandmalice" steps={SAM_TUTORIAL_STEPS}>
+      <SpiteAndMalicePageContent />
+    </TutorialWrapper>
+  );
+}
+
+type Selection = { kind: 'hand'; idx: number } | { kind: 'goal' } | { kind: 'side'; idx: number } | null;
+
+function SpiteAndMalicePageContent() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('spiteandmalice');
+  const { playSound } = useSound();
+  const runApi = useCallback((...args: ApiArgs) => samRunner.exec(...args), []);
+  const gameApi = useGameApi<SpiteAndMaliceResponse, ApiArgs>(runApi);
+  const { state, loading, error, retry } = gameApi;
+  const apiCall = gameApi.exec;
+
+  const [selection, setSelection] = useState<Selection>(null);
+
+  useEffect(() => {
+    void apiCall('reset');
+  }, [apiCall]);
+
+  useEffect(() => {
+    if (!state) return;
+    if (state.phase === SpiteAndMalicePhase.GAME_OVER) return;
+    if (state.current !== 1) return;
+    const timer = setTimeout(() => {
+      void apiCall('cpu');
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [state, apiCall]);
+
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spiteandmalice');
+  const samCliConfig: CliGameConfig<SpiteAndMaliceResponse, ApiArgs> = useMemo(
+    () => ({
+      gameName: 'spiteandmalice',
+      parseCommand: parseSamCommand,
+      formatResponse: formatSamState,
+      helpText: [
+        'ph <h> <f>     Play hand[h] to foundation f',
+        'pg <f>         Play goal pile top to foundation f',
+        'ps <s> <f>     Play side[s] top to foundation f',
+        'd <h> <s>      Discard hand[h] to side[s] (ends turn)',
+        'cpu            Advance CPU turn',
+        'h              Hint',
+        'r              Reset',
+        'l              Action log',
+      ],
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(apiCall, samCliConfig, state, { addInput, addOutput, addError, clearLog });
+
+  const { hint: currentHint, hintEnabled, setHintEnabled } = useGameHint('spiteandmalice', state);
+  const { cardWidth } = useCardDimensions();
+
+  const handleResetAction = useCallback(() => {
+    setSelection(null);
+    void apiCall('reset');
+    playSound('shuffle');
+  }, [apiCall, playSound]);
+
+  const isHumanTurn = state ? state.current === 0 : false;
+  const isGameOver = state ? state.phase === SpiteAndMalicePhase.GAME_OVER : false;
+
+  const handleSelectHand = useCallback(
+    (idx: number) => {
+      if (!isHumanTurn || isGameOver) return;
+      setSelection((prev) => (prev?.kind === 'hand' && prev.idx === idx ? null : { kind: 'hand', idx }));
+    },
+    [isHumanTurn, isGameOver],
+  );
+
+  const handleSelectGoal = useCallback(() => {
+    if (!isHumanTurn || isGameOver) return;
+    setSelection((prev) => (prev?.kind === 'goal' ? null : { kind: 'goal' }));
+  }, [isHumanTurn, isGameOver]);
+
+  const handleSelectSide = useCallback(
+    (idx: number) => {
+      if (!isHumanTurn || isGameOver) return;
+      setSelection((prev) => (prev?.kind === 'side' && prev.idx === idx ? null : { kind: 'side', idx }));
+    },
+    [isHumanTurn, isGameOver],
+  );
+
+  const handleFoundationClick = useCallback(
+    (fIdx: number) => {
+      if (!isHumanTurn || isGameOver || !selection) return;
+      if (selection.kind === 'hand') {
+        void apiCall('move', { zone: 'hand', idx: selection.idx }, { zone: 'foundation', idx: fIdx });
+      } else if (selection.kind === 'goal') {
+        void apiCall('move', { zone: 'goal' }, { zone: 'foundation', idx: fIdx });
+      } else {
+        void apiCall('move', { zone: 'side', idx: selection.idx }, { zone: 'foundation', idx: fIdx });
+      }
+      setSelection(null);
+      playSound('cardPlace');
+    },
+    [apiCall, selection, isHumanTurn, isGameOver, playSound],
+  );
+
+  const handleDiscardSide = useCallback(
+    (sideIdx: number) => {
+      if (!isHumanTurn || isGameOver) return;
+      if (selection?.kind !== 'hand') return;
+      void apiCall('discard', { zone: 'hand', idx: selection.idx }, { zone: 'side', idx: sideIdx });
+      setSelection(null);
+      playSound('cardPlace');
+    },
+    [apiCall, selection, isHumanTurn, isGameOver, playSound],
+  );
+
+  if (error) return <ErrorAlert message={error} onRetry={retry} />;
+  if (!state) return <KlondikeSkeleton />;
+
+  const phaseName = isGameOver ? t('phase.gameOver') : state.current === 1 ? t('phase.cpuTurn') : t('phase.playerTurn');
+
+  const opponent = state.players[1];
+  const human = state.players[0];
+
+  const isHintTarget = (action: string) => hintEnabled && currentHint?.targetAction === action;
+  const selectionIsHand = selection?.kind === 'hand';
+
+  return (
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.klondike.bg}`} aria-busy={loading}>
+      <GamePageHeading title={tc('nav.spiteandmalice')} />
+      <PhaseIndicator phaseName={phaseName}>
+        <span>
+          {tc('moveCount', { defaultValue: 'Moves' })}: {state.moveCount}
+        </span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        <TutorialButton />
+        <ManualButton gamePath="/spiteandmalice" />
+      </PhaseIndicator>
+
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={tc('settings.title', { ns: 'common' })}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: hintEnabled,
+                    onToggle: setHintEnabled,
+                  },
+                ],
+              },
+            ]}
+          />
+          <LandscapeBanner message={t('landscapeBanner', { defaultValue: '' })} />
+
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 space-y-4">
+            <PlayerSummary label={t('label.cpu')} player={opponent} cardWidth={cardWidth} dataTutorial="sam-opponent" />
+
+            <div className="flex items-center justify-center gap-2 sm:gap-4" data-tutorial="sam-foundations">
+              {state.foundations.map((pile, idx) => (
+                <FoundationPile
+                  key={`f-${idx}`}
+                  idx={idx}
+                  pile={pile}
+                  topValue={state.foundationTops[idx]}
+                  cardWidth={cardWidth}
+                  highlight={isHintTarget(`hand${selection?.kind === 'hand' ? selection.idx : ''}-to-f${idx}`)}
+                  selected={selection !== null}
+                  onClick={() => handleFoundationClick(idx)}
+                  label={t('label.foundation')}
+                />
+              ))}
+            </div>
+
+            <div className="text-center text-xs text-ds-secondary">
+              {t('label.stock')}: {state.stockSize} / {t('label.completed')}: {state.completedSize}
+            </div>
+
+            <div className="flex items-end justify-center gap-3" data-tutorial="sam-goal">
+              <GoalPile
+                top={human.goalTop}
+                size={human.goalSize}
+                cardWidth={cardWidth}
+                selected={selection?.kind === 'goal'}
+                onClick={handleSelectGoal}
+                label={t('label.goal')}
+              />
+            </div>
+
+            <HandRow
+              hand={human.hand}
+              cardWidth={cardWidth}
+              selectedIdx={selectionIsHand ? selection.idx : null}
+              onSelect={handleSelectHand}
+              dataTutorial="sam-hand"
+              hintEnabled={hintEnabled}
+              currentHint={currentHint}
+            />
+
+            <SideRow
+              sides={human.sides}
+              cardWidth={cardWidth}
+              cpuLabel={false}
+              onSelect={handleSelectSide}
+              onDiscard={handleDiscardSide}
+              selection={selection}
+              dataTutorial="sam-sides"
+              label={t('label.side')}
+              discardLabel={t('discard')}
+              discardEnabled={selectionIsHand}
+            />
+          </div>
+
+          <div>
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <ActionLogSection
+              isEndPhase={isGameOver}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <GameFooter>
+              <GameResetButton
+                isGameEnd={isGameOver}
+                onReset={handleResetAction}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="sam-reset"
+              />
+
+              {isGameOver && (
+                <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>
+                  {tc('showActionLog', { defaultValue: 'Show action log' })}
+                </button>
+              )}
+            </GameFooter>
+          </div>
+        </>
+      )}
+
+      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
+      {isGameOver && state.winner === 0 && <WinCelebration show={true} />}
+    </div>
+  );
+}
+
+function PlayerSummary({
+  label,
+  player,
+  cardWidth,
+  dataTutorial,
+}: {
+  label: string;
+  player: SpiteAndMaliceResponse['players'][number];
+  cardWidth: number;
+  dataTutorial: string;
+}) {
+  return (
+    <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
+      <span className="text-sm text-ds-secondary mb-1">
+        {label} (hand: {player.hand.length})
+      </span>
+      <div className="flex gap-2">
+        {player.goalTop ? (
+          <div className="flex flex-col items-center">
+            <span className="text-xs text-ds-secondary">CPU goal x{player.goalSize}</span>
+            <AnimatedCard card={player.goalTop} width={cardWidth} />
+          </div>
+        ) : (
+          <span className="text-xs text-ds-secondary">CPU goal: 0</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FoundationPile({
+  idx,
+  pile,
+  topValue,
+  cardWidth,
+  highlight,
+  selected,
+  onClick,
+  label,
+}: {
+  idx: number;
+  pile: Card[];
+  topValue: number;
+  cardWidth: number;
+  highlight: boolean;
+  selected: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
+  const ariaLabel = top ? `${label} ${idx + 1}: ${cardAlt(top)} (top=${topValue})` : `${label} ${idx + 1}: empty`;
+  const baseRing = highlight ? 'ring-2 ring-ds-info' : '';
+  const interactive = selected ? 'cursor-pointer hover:-translate-y-0.5' : 'cursor-default';
+  return (
+    <button
+      type="button"
+      data-hint-action={`hand-to-f${idx}`}
+      className={`relative ${focusRingWhite} rounded-lg transition-transform ${baseRing} ${interactive}`}
+      onClick={onClick}
+      disabled={!selected}
+      aria-label={ariaLabel}
+    >
+      {top ? <AnimatedCard card={top} width={cardWidth} /> : <FaceDownSlot label={`F${idx + 1}`} width={cardWidth} />}
+      <span className="absolute -top-2 -right-1 text-[10px] bg-ds-surface px-1 rounded text-ds-secondary">
+        {topValue === 0 ? '-' : topValue}
+      </span>
+    </button>
+  );
+}
+
+function FaceDownSlot({ label, width }: { label: string; width: number }) {
+  const height = Math.round(width * 1.4);
+  return (
+    <div
+      className="flex items-center justify-center bg-ds-surface/70 border border-dashed border-ds-secondary rounded-md text-ds-secondary text-sm"
+      style={{ width, height }}
+    >
+      {label}
+    </div>
+  );
+}
+
+function GoalPile({
+  top,
+  size,
+  cardWidth,
+  selected,
+  onClick,
+  label,
+}: {
+  top?: Card;
+  size: number;
+  cardWidth: number;
+  selected: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      data-hint-action="goal-to-f0"
+      className={`${focusRingWhite} flex flex-col items-center rounded-lg transition-transform ${selected ? 'ring-2 ring-ds-accent -translate-y-0.5' : ''}`}
+      onClick={onClick}
+      disabled={size === 0}
+      aria-label={top ? `${label} top: ${cardAlt(top)} (${size} left)` : `${label}: empty`}
+    >
+      <span className="text-xs text-ds-secondary mb-1">
+        {label} ({size})
+      </span>
+      {top ? <AnimatedCard card={top} width={cardWidth} /> : <FaceDownSlot label={label} width={cardWidth} />}
+    </button>
+  );
+}
+
+function HandRow({
+  hand,
+  cardWidth,
+  selectedIdx,
+  onSelect,
+  dataTutorial,
+  hintEnabled,
+  currentHint,
+}: {
+  hand: (Card | null)[];
+  cardWidth: number;
+  selectedIdx: number | null;
+  onSelect: (idx: number) => void;
+  dataTutorial: string;
+  hintEnabled: boolean;
+  currentHint: { targetAction: string } | null;
+}) {
+  return (
+    <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
+      <span className="text-sm text-ds-secondary mb-1">Hand</span>
+      <div className="flex gap-2 flex-wrap justify-center">
+        {hand.length === 0 ? (
+          <span className="text-xs text-ds-secondary">(empty)</span>
+        ) : (
+          hand.map((card, idx) => {
+            const selected = selectedIdx === idx;
+            const hint = hintEnabled && currentHint?.targetAction.startsWith(`hand${idx}-`);
+            const ring = selected ? 'ring-2 ring-ds-accent -translate-y-0.5' : hint ? 'ring-2 ring-ds-info' : '';
+            return (
+              <button
+                key={`hand-${idx}`}
+                type="button"
+                data-hint-action={`hand${idx}`}
+                className={`${focusRingWhite} relative rounded-lg transition-transform ${ring}`}
+                onClick={() => onSelect(idx)}
+                disabled={card === null}
+                aria-label={card ? `Hand ${idx + 1}: ${cardAlt(card)}` : `Hand ${idx + 1}: hidden`}
+              >
+                {card ? <AnimatedCard card={card} width={cardWidth} /> : <FaceDownSlot label="?" width={cardWidth} />}
+              </button>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SideRow({
+  sides,
+  cardWidth,
+  cpuLabel,
+  onSelect,
+  onDiscard,
+  selection,
+  dataTutorial,
+  label,
+  discardLabel,
+  discardEnabled,
+}: {
+  sides: [Card[], Card[], Card[], Card[]];
+  cardWidth: number;
+  cpuLabel: boolean;
+  onSelect: (idx: number) => void;
+  onDiscard: (idx: number) => void;
+  selection: Selection;
+  dataTutorial: string;
+  label: string;
+  discardLabel: string;
+  discardEnabled: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-2" data-tutorial={dataTutorial}>
+      <span className="text-sm text-ds-secondary">{cpuLabel ? `CPU ${label}` : label}</span>
+      <div className="grid grid-cols-4 gap-2">
+        {sides.map((pile, idx) => {
+          const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
+          const selected = selection?.kind === 'side' && selection.idx === idx;
+          const ring = selected ? 'ring-2 ring-ds-accent -translate-y-0.5' : '';
+          return (
+            <div key={`side-${idx}`} className="flex flex-col items-center gap-1">
+              <button
+                type="button"
+                data-hint-action={`side${idx}`}
+                className={`${focusRingWhite} rounded-lg transition-transform ${ring}`}
+                onClick={() => onSelect(idx)}
+                disabled={top === undefined}
+                aria-label={
+                  top ? `${label} ${idx + 1} top: ${cardAlt(top)} (${pile.length})` : `${label} ${idx + 1}: empty`
+                }
+              >
+                {top ? (
+                  <AnimatedCard card={top} width={cardWidth} />
+                ) : (
+                  <FaceDownSlot label={`S${idx + 1}`} width={cardWidth} />
+                )}
+              </button>
+              <span className="text-[10px] text-ds-secondary">
+                {label} {idx + 1} ({pile.length})
+              </span>
+              <button
+                type="button"
+                data-hint-action={`discard-${idx}`}
+                className={`${btnPrimary} text-xs px-2 py-1`}
+                onClick={() => onDiscard(idx)}
+                disabled={!discardEnabled}
+              >
+                {discardLabel}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

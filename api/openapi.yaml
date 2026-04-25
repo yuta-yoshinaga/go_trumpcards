@@ -138,6 +138,8 @@ tags:
     description: Trash (トラッシュ / ガベージ) game - 2-player matching game where each player flips 10 face-down cards into position 1..10 using wilds
   - name: calculation
     description: Calculation (カルキュレーション) game - arithmetic-progression solitaire where 4 foundations (A,2,3,4) build up mod-13 with step sizes +1/+2/+3/+4
+  - name: spiteandmalice
+    description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
 
 paths:
   /blackjack/exec:
@@ -6056,6 +6058,105 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CalculationResponse'
+
+  /spiteandmalice/exec:
+    post:
+      tags:
+        - spiteandmalice
+      summary: Execute a Spite and Malice game command
+      description: |
+        Send a command to advance the Spite and Malice (スパイト・アンド・マリス) game
+        session identified by `sessionId`. Spite and Malice is a 2-player race
+        card game (1 human vs 1 CPU). Each player has a goal pile (default 20
+        cards), a 5-card hand, and 4 personal side piles. Up to 4 shared
+        foundations build A → 2 → … → Q; K is wild. The first player to empty
+        their goal pile wins. A turn ends with a discard from hand to one side
+        pile.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameOver  | `1`   | A player has emptied their goal pile |
+
+        | Command   | Aliases | Description |
+        |-----------|---------|-------------|
+        | `reset`   | `r`     | Start / restart a game |
+        | `move`    | `m`     | Play a card to a foundation (requires `from` and `to`) |
+        | `discard` | `d`     | Discard from hand to side pile (ends turn) |
+        | `cpu`     | —       | Advance the CPU's turn by one step |
+        | `hint`    | `h`     | Return the recommended next move |
+        | `log`     | `l`     | View action log |
+
+        Move zones:
+        * `from`: `{zone: "hand", idx: i}` | `{zone: "goal"}` | `{zone: "side", idx: 0..3}`
+        * `to` (move): `{zone: "foundation", idx: 0..3}`
+        * `from` (discard): `{zone: "hand", idx: i}`
+        * `to` (discard): `{zone: "side", idx: 0..3}`
+      operationId: spiteandmaliceExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, discard, d, cpu, hint, h, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/SpiteAndMaliceMoveZone'
+                to:
+                  $ref: '#/components/schemas/SpiteAndMaliceMoveZone'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              playHand:
+                summary: Play hand[0] to foundation 1
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from: { zone: hand, idx: 0 }
+                  to: { zone: foundation, idx: 1 }
+              playGoal:
+                summary: Play the goal pile top to foundation 0
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from: { zone: goal }
+                  to: { zone: foundation, idx: 0 }
+              discard:
+                summary: Discard hand[2] to side 1 (ends turn)
+                value:
+                  command: discard
+                  sessionId: my-session-001
+                  from: { zone: hand, idx: 2 }
+                  to: { zone: side, idx: 1 }
+              cpu:
+                summary: Advance CPU turn by one step
+                value:
+                  command: cpu
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpiteAndMaliceResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpiteAndMaliceResponse'
 
 components:
   schemas:
@@ -14384,6 +14485,118 @@ components:
           description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
         hint:
           $ref: '#/components/schemas/CalculationHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # Spite and Malice
+    # -------------------------------------------------------------------------
+    SpiteAndMaliceMoveZone:
+      type: object
+      description: Source or target zone for a Spite & Malice card move/discard.
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier
+          enum: [hand, goal, side, foundation]
+        idx:
+          type: integer
+          description: Pile or hand index (required for hand/side/foundation; ignored for goal)
+    SpiteAndMaliceHint:
+      type: object
+      description: Recommended move for Spite & Malice
+      properties:
+        source:
+          type: string
+          enum: [goal, hand, side]
+        index:
+          type: integer
+          description: Source-pile index (-1 when source is goal)
+        foundationIdx:
+          type: integer
+          description: Target foundation index (0..3) — for `discard=true` this is the target side pile index instead.
+        discard:
+          type: boolean
+          description: If true, the recommendation is to discard `hand[index]` to side[foundationIdx] (ends turn).
+    SpiteAndMalicePlayer:
+      type: object
+      description: One Spite & Malice player's view. Hand entries may be `null`
+        when the opponent's cards are hidden.
+      properties:
+        hand:
+          type: array
+          items:
+            nullable: true
+            allOf:
+              - $ref: '#/components/schemas/Card'
+        goalTop:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Card'
+        goalSize:
+          type: integer
+        sides:
+          type: array
+          description: Four side piles indexed 0..3.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        isCpu:
+          type: boolean
+    SpiteAndMaliceResponse:
+      type: object
+      description: Response payload for /spiteandmalice/exec
+      properties:
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameOver"
+        current:
+          type: integer
+          description: Current player index (0=human, 1=cpu)
+        players:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            $ref: '#/components/schemas/SpiteAndMalicePlayer'
+        foundations:
+          type: array
+          description: Up to 4 shared foundation piles.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        foundationTops:
+          type: array
+          description: Effective top value for each foundation (0 if empty).
+          items:
+            type: integer
+        stockSize:
+          type: integer
+        completedSize:
+          type: integer
+        moveCount:
+          type: integer
+        winner:
+          type: integer
+          description: -1 while playing, 0 if human won, 1 if CPU won
+        goalSize:
+          type: integer
+          description: Goal pile size at game start (configurable)
+        cpuDifficulty:
+          type: integer
+          description: 0=easy, 1=normal, 2=hard
+        hint:
+          $ref: '#/components/schemas/SpiteAndMaliceHint'
         message:
           type: string
         messageCode:

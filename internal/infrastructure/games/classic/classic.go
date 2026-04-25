@@ -207,4 +207,12 @@ func init() {
 			return usecase.RestoreCassinoInteractor(data, new(presenter.CassinoWebPresenter))
 		},
 		controller.NewCassinoWebControllerWithProvider)
+	games.RegisterKVGame("spiteandmalice", games.CategoryClassic,
+		func() usecase.SpiteAndMaliceInteractorIF {
+			return usecase.NewSpiteAndMaliceInteractor(domain.NewDefaultSpiteAndMalice(), new(presenter.SpiteAndMaliceWebPresenter))
+		},
+		func(data []byte) (usecase.SpiteAndMaliceInteractorIF, error) {
+			return usecase.RestoreSpiteAndMaliceInteractor(data, new(presenter.SpiteAndMaliceWebPresenter))
+		},
+		controller.NewSpiteAndMaliceWebControllerWithProvider)
 }

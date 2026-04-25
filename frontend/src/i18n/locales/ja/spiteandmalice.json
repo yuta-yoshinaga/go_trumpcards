@@ -1,0 +1,50 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameOver": "ゲームオーバー",
+    "playerTurn": "あなたの番",
+    "cpuTurn": "CPUの番"
+  },
+  "title": "スパイト・アンド・マリス",
+  "label": {
+    "you": "あなた",
+    "cpu": "CPU",
+    "goal": "ゴール",
+    "side": "サイド",
+    "hand": "手札",
+    "foundation": "ファウンデーション",
+    "stock": "ストック",
+    "completed": "完成済み"
+  },
+  "moveCount": "手数",
+  "endTurn": "ターン終了",
+  "discard": "ディスカード",
+  "selectSource": "出すカードを選んでください",
+  "selectFoundation": "出すファウンデーションを選んでください",
+  "selectSide": "捨てるサイドパイルを選んでください",
+  "deselect": "キャンセル",
+  "empty": "空",
+  "win": "あなたの勝ち！ 手数: {{moveCount}}",
+  "lose": "CPUの勝ち 手数: {{moveCount}}",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "frontendHint": {
+    "goalToFoundation": "ゴールパイルのトップをファウンデーションに出せます",
+    "handToFoundation": "手札からファウンデーションに出せます",
+    "sideToFoundation": "サイドパイルからファウンデーションに出せます",
+    "discard": "プレイできる手がありません。サイドにディスカードしてターンを終えましょう"
+  },
+  "tutorial": {
+    "opponent": "上段がCPUの場。手札枚数とゴールパイルの一番上が見えます。",
+    "foundations": "中央の4つがファウンデーション。誰でも A から Q まで順に積めます。K はワイルドで好きな数として使えます。",
+    "goal": "あなたのゴールパイル。一番上のカードが見えています。先にこの山を出し切ったプレイヤーが勝ちです。",
+    "hand": "あなたの手札。ファウンデーションに出すか、サイドパイルにディスカードしてターンを終えます。",
+    "sides": "サイドパイル。ディスカードや、後からファウンデーションに出すための一時置き場です。",
+    "resetButton": "新しいゲームを始めるボタンです。"
+  },
+  "nav": {
+    "spiteandmalice": "スパイト・アンド・マリス"
+  },
+  "landscapeBanner": "横向き画面推奨"
+}

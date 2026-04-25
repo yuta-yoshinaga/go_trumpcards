@@ -1070,6 +1070,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "spiteandmalice", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSpiteAndMaliceCuiController(usecase.NewSpiteAndMaliceInteractor(
+				domain.NewDefaultSpiteAndMalice(), new(presenter.SpiteAndMaliceCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "spiteandmalice.helpTitle",
+				CommandKeys: []string{
+					"spiteandmalice.helpPlayHand",
+					"spiteandmalice.helpPlayGoal",
+					"spiteandmalice.helpPlaySide",
+					"spiteandmalice.helpDiscard",
+					"spiteandmalice.helpCpu",
+					"spiteandmalice.helpHint",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
