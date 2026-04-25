@@ -104,6 +104,6 @@ Also ensure `frontend/src/api/gameApi.ts` `workerUrl` maps the game to the corre
 
 ### TinyGo constraints
 
-- `go.mod` specifies `go 1.25.8` (TinyGo's latest supported Go version) with `toolchain go1.26.0` for local development
+- TinyGo 0.41.1 (Go 1.26 対応) を使用。`go.mod` の Go バージョンは `go 1.26.0` に統一済み
 - Mock files require `//go:build test` tag to exclude `testify/mock` from WASM builds
 - `net/http` method-prefixed routing (`"POST /path"`) is not supported; Worker entry points use plain `"/path"` patterns

@@ -58,6 +58,10 @@ Go 1.26 の代わりに TinyGo 0.40.1（Go 1.25 対応）を使用し、Wasm バ
 - **コールドスタート解消**: Workers はリクエスト駆動のため、Docker PaaS のようなスリープ→起動の遅延がない
 - **go-json-rest 依存の除去**: TinyGo 互換性のために `go-json-rest` を標準 `net/http` に置き換えた（PR #1012）。結果として外部依存が1つ減り、コードも約2,000行削減された
 - **モック ファイルのビルドタグ**: 全モックファイルに `//go:build test` タグを追加。TinyGo ビルドから `testify/mock` を除外するために必要だった
-- **Go バージョン制約**: TinyGo が Go 1.25 までしかサポートしないため、`go.mod` に `go 1.25.8` を指定。`toolchain go1.26.0` ディレクティブにより通常開発は Go 1.26 を使用
+- **Go バージョン制約**: ~~TinyGo が Go 1.25 までしかサポートしないため、`go.mod` に `go 1.25.8` を指定。`toolchain go1.26.0` ディレクティブにより通常開発は Go 1.26 を使用~~ → TinyGo 0.41.0（2026-04 リリース）で Go 1.26 サポートが追加されたため、`go.mod` を `go 1.26.0` に統一し `toolchain` ディレクティブを撤去（後述「更新履歴」を参照）
 - **メソッドプレフィックスルーティング不可**: TinyGo の `net/http` は Go 1.22 の `"POST /path"` パターンを未サポート。Workers エントリポイントでは通常の `"/path"` パターンを使用
 - **セッション管理**: `SessionProvider[T]` インターフェースにより、Docker 版（インメモリ `MemorySessionProvider`）と Workers 版（`KVSessionProvider` + Cloudflare KV）を統一的に扱う。KV 版はゲームドメインオブジェクトを JSON シリアライズして永続化し、TTL=1時間で自動削除される。KV 無料枠（書き込み 1,000回/日）のためデモ用途に限定。全26ゲーム対応済み（詳細は [ADR-0028](0028-kv-session-persistence.md) を参照）
+
+## 更新履歴
+
+- **2026-04-25**: TinyGo を `0.40.1` → `0.41.1` に更新。TinyGo 0.41.0 で Go 1.26 サポートが追加されたため、`go.mod` を `go 1.25.8` + `toolchain go1.26.0` のデュアル構成から `go 1.26.0` 単独に統一。CI ワークフロー（`deploy-cloudflare.yml`、`cloudflare-workers-build.yml`）の `setup-go` も `1.25` → `1.26` に揃えた
