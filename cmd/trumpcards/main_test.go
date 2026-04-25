@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/update"
@@ -554,4 +555,130 @@ func TestUpdateExitCodeMapping(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestApplyTrailingGlobalFlags exercises issue #1509: --lang / --no-color
+// must take effect even when they appear after the game name. The helper
+// strips recognized flags from args, applies them to the runtime, and leaves
+// genuinely unknown trailing tokens for the caller's extra-args warning.
+func TestApplyTrailingGlobalFlags(t *testing.T) {
+	// Restore globals after each subtest so the suite stays order-independent.
+	origLang := i18n.Lang()
+	origStdoutNo := color.NoColorStdout()
+	origStderrNo := color.NoColorStderr()
+	t.Cleanup(func() {
+		i18n.SetLang(origLang)
+		color.SetStdoutColor(!origStdoutNo)
+		color.SetStderrColor(!origStderrNo)
+	})
+
+	tests := []struct {
+		name        string
+		args        []string
+		quiet       bool
+		wantRest    []string
+		wantLang    string
+		wantNoColor bool
+		wantWarn    string // substring expected on stderr; empty = no output
+	}{
+		{
+			name:     "no flags -> args passthrough",
+			args:     []string{"foo", "bar"},
+			wantRest: []string{"foo", "bar"},
+			wantLang: "ja",
+		},
+		{
+			name:     "--lang en sets locale and is consumed",
+			args:     []string{"--lang", "en"},
+			wantRest: []string{},
+			wantLang: "en",
+		},
+		{
+			name:     "-lang en (single-dash form) accepted",
+			args:     []string{"-lang", "en"},
+			wantRest: []string{},
+			wantLang: "en",
+		},
+		{
+			name:     "--lang=en (equals form) accepted",
+			args:     []string{"--lang=en"},
+			wantRest: []string{},
+			wantLang: "en",
+		},
+		{
+			name:        "--no-color disables both streams",
+			args:        []string{"--no-color"},
+			wantRest:    []string{},
+			wantLang:    "ja",
+			wantNoColor: true,
+		},
+		{
+			name:     "unsupported --lang warns and falls back",
+			args:     []string{"--lang", "klingon"},
+			wantRest: []string{},
+			wantLang: "ja",
+			wantWarn: "klingon",
+		},
+		{
+			name:     "unsupported --lang stays silent under quiet",
+			args:     []string{"--lang", "klingon"},
+			quiet:    true,
+			wantRest: []string{},
+			wantLang: "ja",
+		},
+		{
+			name:        "mixed: known flags consumed, extras returned",
+			args:        []string{"foo", "--lang", "en", "--no-color", "bar"},
+			wantRest:    []string{"foo", "bar"},
+			wantLang:    "en",
+			wantNoColor: true,
+		},
+		{
+			name:     "trailing --lang without value is ignored, not consumed",
+			args:     []string{"--lang"},
+			wantRest: []string{},
+			wantLang: "ja",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Reset to a known baseline before each subtest.
+			i18n.SetLang("ja")
+			color.SetStdoutColor(true)
+			color.SetStderrColor(true)
+
+			var stderr bytes.Buffer
+			got := applyTrailingGlobalFlags(tt.args, tt.quiet, &stderr)
+
+			if !equalStringSlices(got, tt.wantRest) {
+				t.Errorf("rest = %#v, want %#v", got, tt.wantRest)
+			}
+			if i18n.Lang() != tt.wantLang {
+				t.Errorf("lang = %q, want %q", i18n.Lang(), tt.wantLang)
+			}
+			if color.NoColorStdout() != tt.wantNoColor || color.NoColorStderr() != tt.wantNoColor {
+				t.Errorf("no-color stdout/stderr = %v/%v, want both %v",
+					color.NoColorStdout(), color.NoColorStderr(), tt.wantNoColor)
+			}
+			if tt.wantWarn == "" {
+				if stderr.Len() != 0 {
+					t.Errorf("expected no stderr; got %q", stderr.String())
+				}
+			} else if !strings.Contains(stderr.String(), tt.wantWarn) {
+				t.Errorf("stderr missing %q: %q", tt.wantWarn, stderr.String())
+			}
+		})
+	}
+}
+
+func equalStringSlices(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }
