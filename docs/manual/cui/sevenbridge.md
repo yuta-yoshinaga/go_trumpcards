@@ -1,4 +1,4 @@
-# Seven Bridge (セブンブリッジ) CUI版 遊び方
+# セブンブリッジ（Seven Bridge・CUI版）遊び方
 
 ## ゲーム概要
 

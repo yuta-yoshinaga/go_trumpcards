@@ -9,8 +9,8 @@ HUD統計（VPIP%/PFR%/3Bet%/AF）が全プレイヤーに表示されます。�
 ## 起動方法
 
 ```sh
-go run ./cmd/cli web        # CLI経由でWebサーバーを起動
-go run ./cmd/server         # 直接Webサーバーを起動
+go run ./cmd/trumpcards web  # CLI経由でWebサーバーを起動
+go run ./cmd/server          # 直接Webサーバーを起動
 ```
 
 ブラウザで `http://localhost:8080` にアクセスし、ナビゲーションバーから「セブンカード・スタッド」を選択します。

@@ -108,7 +108,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/pigtail': pigtail,
   '/pinochle': pinochle,
   '/poker': poker,
-  '/poker-squares': pokersquares,
+  '/pokersquares': pokersquares,
   '/pyramid': pyramid,
   '/razz': razz,
   '/badugi': badugi,
