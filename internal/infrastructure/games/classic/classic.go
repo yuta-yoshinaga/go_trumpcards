@@ -231,4 +231,12 @@ func init() {
 			return usecase.RestoreShitheadInteractor(data, new(presenter.ShitheadWebPresenter))
 		},
 		controller.NewShitheadWebControllerWithProvider)
+	games.RegisterKVGame("nertz", games.CategoryClassic,
+		func() usecase.NertzInteractorIF {
+			return usecase.NewNertzInteractor(domain.NewDefaultNertz(), new(presenter.NertzWebPresenter))
+		},
+		func(data []byte) (usecase.NertzInteractorIF, error) {
+			return usecase.RestoreNertzInteractor(data, new(presenter.NertzWebPresenter))
+		},
+		controller.NewNertzWebControllerWithProvider)
 }

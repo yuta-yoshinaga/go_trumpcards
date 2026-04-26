@@ -1090,6 +1090,27 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "nertz", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewNertzCuiController(usecase.NewNertzInteractor(
+				domain.NewDefaultNertz(), new(presenter.NertzCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "nertz.helpTitle",
+				CommandKeys: []string{
+					"nertz.helpDraw",
+					"nertz.helpMoveNF",
+					"nertz.helpMoveNT",
+					"nertz.helpMoveWF",
+					"nertz.helpMoveWT",
+					"nertz.helpMoveTF",
+					"nertz.helpMoveTT",
+					"nertz.helpTick",
+					"nertz.helpUndo",
+					"nertz.helpNextRound",
+					"nertz.helpHint",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
