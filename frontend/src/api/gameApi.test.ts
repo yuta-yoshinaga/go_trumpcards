@@ -3030,7 +3030,19 @@ describe('gameApi', () => {
   });
 
   describe('shitheadApi.exec', () => {
-    const payload = { players: [], currentTurn: 0, currentSource: 'hand', discardPile: [], stockSize: 0, skipNext: false, sevenActive: false, gameEndFlag: false, config: {}, cpuActions: [], message: '' };
+    const payload = {
+      players: [],
+      currentTurn: 0,
+      currentSource: 'hand',
+      discardPile: [],
+      stockSize: 0,
+      skipNext: false,
+      sevenActive: false,
+      gameEndFlag: false,
+      config: {},
+      cpuActions: [],
+      message: '',
+    };
 
     it('calls with reset command', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
@@ -3055,7 +3067,14 @@ describe('gameApi', () => {
     });
 
     it('calls with reset command and config', async () => {
-      const config = { magicTwo: true, magicSeven: false, magicEight: true, magicTen: true, fourOfAKindBurn: true, cpuDifficulty: 2 };
+      const config = {
+        magicTwo: true,
+        magicSeven: false,
+        magicEight: true,
+        magicTen: true,
+        fourOfAKindBurn: true,
+        cpuDifficulty: 2,
+      };
       mockFetch.mockReturnValue(makeResponse(payload));
       await shitheadApi.exec('reset', { config });
       expect(mockFetch).toHaveBeenCalledWith(
