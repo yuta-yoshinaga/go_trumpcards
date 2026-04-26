@@ -1,0 +1,8 @@
+{
+  "helpTitle": "シットヘッド / カーマ",
+  "helpPlay": "  p <インデックス...>   手札からカードを出す (同じ値のみ複数可)",
+  "helpPickup": "  p                    場札を引き取る",
+  "helpLog": "  l                    棋譜を表示",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetRule": "  sr <rule> <0|1>      ルールを切替 (two/seven/eight/ten/fourburn)"
+}

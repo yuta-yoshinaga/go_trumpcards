@@ -223,4 +223,12 @@ func init() {
 			return usecase.RestoreSkatInteractor(data, new(presenter.SkatWebPresenter))
 		},
 		controller.NewSkatWebControllerWithProvider)
+	games.RegisterKVGame("shithead", games.CategoryClassic,
+		func() usecase.ShitheadInteractorIF {
+			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))
+		},
+		func(data []byte) (usecase.ShitheadInteractorIF, error) {
+			return usecase.RestoreShitheadInteractor(data, new(presenter.ShitheadWebPresenter))
+		},
+		controller.NewShitheadWebControllerWithProvider)
 }

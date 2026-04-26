@@ -1380,6 +1380,58 @@ export interface SkatResponse {
   hint?: SkatHint;
 }
 
+// --- Shithead / Karma (シットヘッド / カーマ) ---
+
+/** A Shithead player's per-game state. */
+export interface ShitheadPlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  rank: number;
+  handCount: number;
+  handCards: Card[];
+  faceUpCards: Card[];
+  faceDownCount: number;
+}
+
+/** A single Shithead action (play or pickup). */
+export interface ShitheadAction {
+  playerIdx: number;
+  source: string;
+  playedCards: Card[];
+  pickup: boolean;
+  burned: boolean;
+  skipped: boolean;
+}
+
+/** Shithead local rule configuration. */
+export interface ShitheadConfig {
+  magicTwo: boolean;
+  magicSeven: boolean;
+  magicEight: boolean;
+  magicTen: boolean;
+  fourOfAKindBurn: boolean;
+  cpuDifficulty: number;
+}
+
+/** Full Shithead game state returned from the API. */
+export interface ShitheadResponse {
+  players: ShitheadPlayerData[];
+  currentTurn: number;
+  currentSource: string;
+  discardPile: Card[];
+  stockSize: number;
+  skipNext: boolean;
+  sevenActive: boolean;
+  gameEndFlag: boolean;
+  config: ShitheadConfig;
+  cpuActions: ShitheadAction[];
+  humanAction?: ShitheadAction;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Spider Solitaire (スパイダーソリティア) ---
 
 /** A suggested move hint in Spider Solitaire. */

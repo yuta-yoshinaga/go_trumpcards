@@ -1,0 +1,38 @@
+{
+  "title": "Shithead / Karma",
+  "rules": {
+    "magicTwo": "2: Reset (next play can be anything)",
+    "magicSeven": "7: Next must be ≤ 7",
+    "magicEight": "8: Skip the next player",
+    "magicTen": "10: Burn the discard pile (same player goes again)",
+    "fourBurn": "Four cards of the same rank in a row burn the pile"
+  },
+  "labels": {
+    "hand": "Hand",
+    "faceUp": "Face-up cards",
+    "faceDown": "Face-down cards",
+    "discardPile": "Discard pile",
+    "stock": "Stock",
+    "currentSource": "Source",
+    "you": "You",
+    "shithead": "Shithead (loser)",
+    "rank": "Rank"
+  },
+  "actions": {
+    "play": "Play",
+    "pickup": "Pick up pile",
+    "blindPlay": "Play blind",
+    "reset": "Reset"
+  },
+  "phase": {
+    "play": "Play",
+    "gameEnd": "Game over"
+  },
+  "tutorial": {
+    "intro": "Shithead is a shedding game where you clear three layers: hand, face-up, then face-down (blind).",
+    "playerHand": "This is your hand. You may play multiple cards of the same value at once.",
+    "discardPile": "Match or beat the top card of the discard pile, or pick up the pile.",
+    "magicCards": "2 / 7 / 8 / 10 are magic cards that change the flow of play.",
+    "resetButton": "Reset to play again."
+  }
+}

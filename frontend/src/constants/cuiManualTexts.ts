@@ -54,6 +54,7 @@ import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
+import shithead from '../../../docs/manual/cui/shithead.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
 import skat from '../../../docs/manual/cui/skat.md?raw';
 import spades from '../../../docs/manual/cui/spades.md?raw';
@@ -138,6 +139,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/cassino': cassino,
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
+  '/shithead': shithead,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

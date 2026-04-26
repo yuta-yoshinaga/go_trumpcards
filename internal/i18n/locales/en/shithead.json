@@ -1,0 +1,8 @@
+{
+  "helpTitle": "Shithead / Karma",
+  "helpPlay": "  p <indices...>       play card(s) by hand index (same value only)",
+  "helpPickup": "  p                    pickup the entire discard pile",
+  "helpLog": "  l                    show action log",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetRule": "  sr <rule> <0|1>      toggle a rule (two/seven/eight/ten/fourburn)"
+}

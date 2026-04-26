@@ -39,6 +39,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   crazyeights: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   pageone: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   gofish: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  shithead: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   // Solitaire — unified to casino
   klondike: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   freecell: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },

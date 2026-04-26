@@ -53,6 +53,7 @@ import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import sevenbridge from '../../../docs/manual/web/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
+import shithead from '../../../docs/manual/web/shithead.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
 import skat from '../../../docs/manual/web/skat.md?raw';
 import spades from '../../../docs/manual/web/spades.md?raw';
@@ -137,4 +138,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/cassino': cassino,
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
+  '/shithead': shithead,
 };

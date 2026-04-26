@@ -57,6 +57,7 @@ import { ScorpionPage } from './pages/ScorpionPage';
 import { SevenBridgePage } from './pages/SevenBridgePage';
 import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
+import { ShitheadPage } from './pages/ShitheadPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
 import { SkatPage } from './pages/SkatPage';
 import { SpadesPage } from './pages/SpadesPage';
@@ -141,6 +142,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/cassino': <CassinoPage />,
   '/spiteandmalice': <SpiteAndMalicePage />,
   '/skat': <SkatPage />,
+  '/shithead': <ShitheadPage />,
 };
 
 /** Root application component with router and game page routes. */
