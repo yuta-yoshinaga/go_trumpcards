@@ -246,7 +246,7 @@ describe('useSkatGame', () => {
     const { result } = renderHook(() => useSkatGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
-    act(() => result.current.handleConfigChange('cpuDifficulty', 2));
+    act(() => result.current.handleConfigChange('cpuDifficulty', '2'));
     expect(result.current.skatConfig.cpuDifficulty).toBe(2);
   });
 });
