@@ -143,8 +143,7 @@ function SkatPageContent() {
           </div>
           {state.declarerIdx >= 0 && (
             <div data-tutorial="sk-declarer-info">
-              {t('declarer')}:{' '}
-              {state.players[state.declarerIdx]?.isHuman ? t('you') : `CPU ${state.declarerIdx}`}
+              {t('declarer')}: {state.players[state.declarerIdx]?.isHuman ? t('you') : `CPU ${state.declarerIdx}`}
               {state.gameType !== SkatGameType.NONE && (
                 <span className="ml-2">
                   | {t('gameType')}:{' '}
