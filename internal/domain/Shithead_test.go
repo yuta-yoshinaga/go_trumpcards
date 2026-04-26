@@ -201,8 +201,27 @@ func TestShitheadApplyPlay_EightSkipsNext(t *testing.T) {
 	err := s.PlayerPlay([]int{0})
 	require.NoError(t, err)
 	assert.True(t, s.GetHumanAction().Skipped)
-	// from 0, with skip, advance step=2 → CPU 2
+	// skip skips the next active player (player 1) → turn goes to player 2
 	assert.Equal(t, 2, s.GetCurrentTurn())
+}
+
+func TestShitheadAdvanceTurn_SkipOverFinishedPlayer(t *testing.T) {
+	// When the player immediately after current is already finished, skip must
+	// still apply to the next *active* player rather than counting raw positions.
+	s := newTestShithead(DefaultShitheadConfig())
+	resetEmpty(s)
+	s.GetPlayer(1).SetIsFinished(true)
+	// Player 0 plays an 8 (skip). Keep a backup card so player 0 stays in the game.
+	human := s.GetPlayer(0)
+	human.AddCard(NewCard(CardDesignSpade, 8, false))
+	human.AddCard(NewCard(CardDesignHeart, 4, false))
+	s.round.currentTurn = 0
+
+	err := s.PlayerPlay([]int{0})
+	require.NoError(t, err)
+	assert.True(t, s.GetHumanAction().Skipped)
+	// Next active after 0 is player 2 (player 1 is done); skip player 2 → player 3.
+	assert.Equal(t, 3, s.GetCurrentTurn())
 }
 
 func TestShitheadApplyPlay_SevenLocksLow(t *testing.T) {
@@ -408,6 +427,7 @@ func TestShitheadFaceDownPlay_PickupOnInvalid(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, s.GetHumanAction())
 	assert.True(t, s.GetHumanAction().Pickup)
+	assert.Equal(t, ShitheadSourceFaceDown, s.GetHumanAction().Source)
 	// Discard moved into hand (3 was taken into hand because not playable)
 	assert.True(t, human.GetCardsSize() >= 1)
 	assert.Empty(t, s.GetDiscardPile())

@@ -36,7 +36,7 @@ const (
 // ShitheadCpuAction CPUまたは人間の1ターン分の行動記録
 type ShitheadCpuAction struct {
 	PlayerIdx   int     // 行動したプレイヤーインデックス
-	Source      string  // 出した場所 (hand/faceup/facedown)。pickup の場合は ""
+	Source      string  // 出した場所 (hand/faceup/facedown)。通常のpickupは ""、facedownのblind失敗時は "facedown"
 	PlayedCards []*Card // 出したカード (pickup なら nil)
 	Pickup      bool    // 場札を引き取った (出せずにパス) かどうか
 	Burned      bool    // 場札焼却が発生したか
@@ -162,7 +162,12 @@ func shitheadRank(c *Card) int {
 	if c == nil {
 		return 0
 	}
-	v := c.GetValue()
+	return shitheadRankValue(c.GetValue())
+}
+
+// shitheadRankValue converts a raw card value to its effective rank.
+// Ace (value 1) is the strongest card and maps to rank 14.
+func shitheadRankValue(v int) int {
 	if v == 1 {
 		return 14
 	}
@@ -336,15 +341,20 @@ func (s *Shithead) cpuPickFromList(cards []*Card) ([]int, bool) {
 			nonMagic = append(nonMagic, v)
 		}
 	}
-	sort.Ints(nonMagic)
-	sort.Ints(magic)
+	sortByRank := func(vals []int) {
+		sort.Slice(vals, func(i, j int) bool {
+			return shitheadRankValue(vals[i]) < shitheadRankValue(vals[j])
+		})
+	}
+	sortByRank(nonMagic)
+	sortByRank(magic)
 	// Hard difficulty: only fall back to magic when no non-magic is playable
 	candidates := append(append([]int{}, nonMagic...), magic...)
 	if s.config.CpuDifficulty == ShitheadDifficultyEasy {
-		// Easy plays the lowest value regardless
+		// Easy plays the lowest rank regardless of magic status
 		all := append([]int{}, nonMagic...)
 		all = append(all, magic...)
-		sort.Ints(all)
+		sortByRank(all)
 		candidates = all
 	}
 	for _, v := range candidates {
@@ -448,6 +458,7 @@ func (s *Shithead) playFromFaceDown(idx int, p *ShitheadPlayer, fdIdx int, isHum
 	s.pickupDiscardForPlayer(idx)
 	s.recordAction(idx, &ShitheadCpuAction{
 		PlayerIdx: idx,
+		Source:    ShitheadSourceFaceDown,
 		Pickup:    true,
 	}, isHuman)
 	s.appendLog(idx, "facedown_pickup",
@@ -663,22 +674,26 @@ func (s *Shithead) maybeMarkFinished(idx int) {
 }
 
 // advanceTurn moves to the next active player, applying skip-next.
+// Skip skips the next *active* (unfinished) player, not a raw index offset.
 func (s *Shithead) advanceTurn() {
-	step := 1
-	if s.round.skipNext {
-		step = 2
-		s.round.skipNext = false
-	}
-	cur := s.round.currentTurn
 	n := len(s.players)
-	for i := 0; i < n; i++ {
-		next := ((cur+step+i)%n + n) % n
-		if !s.players[next].GetIsFinished() {
-			s.round.currentTurn = next
-			s.round.turnNumber++
-			return
+	cur := s.round.currentTurn
+	findNext := func(start int) int {
+		for i := 1; i <= n; i++ {
+			idx := (start + i) % n
+			if s.players[idx] != nil && !s.players[idx].GetIsFinished() {
+				return idx
+			}
 		}
+		return start
 	}
+	next := findNext(cur)
+	if s.round.skipNext {
+		s.round.skipNext = false
+		next = findNext(next)
+	}
+	s.round.currentTurn = next
+	s.round.turnNumber++
 }
 
 // checkGameEnd marks the game ended when only one (or zero) active players remain.
