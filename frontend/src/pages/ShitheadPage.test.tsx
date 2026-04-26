@@ -174,4 +174,50 @@ describe('ShitheadPage', () => {
     );
     await waitFor(() => expect(screen.getAllByText(/順位|シットヘッド/).length).toBeGreaterThan(0));
   });
+
+  it('shows magic seven indicator when sevenActive is true', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, sevenActive: true });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByText(/7: 次は7以下/)).toBeInTheDocument());
+  });
+
+  it('shows magic eight indicator when skipNext is true', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, skipNext: true });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByText(/8: 次プレイヤーをスキップ/)).toBeInTheDocument());
+  });
+
+  it('shows blind play button when currentSource is facedown', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, currentSource: 'facedown' });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByRole('button', { name: /ブラインドで出す/ })).toBeInTheDocument());
+  });
+
+  it('shows ? for joker design in discard pile description', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      discardPile: [{ design: 'JOKER', value: 0 }],
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => {
+      const matches = screen.getAllByText(/\?0/);
+      expect(matches.length).toBeGreaterThan(0);
+    });
+  });
 });
