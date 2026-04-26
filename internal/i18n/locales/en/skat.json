@@ -1,0 +1,12 @@
+{
+  "helpTitle": "Skat",
+  "helpBid": "  b <0|1>              bid step (0=pass, 1=accept)",
+  "helpPickSkat": "  ps <0|1>             pick up the skat (0=hand game)",
+  "helpDiscard": "  d <i> <j>            discard two cards into the skat",
+  "helpGame": "  g <type> [trump]     declare game (1=Suit 2=Grand 3=Null)",
+  "helpPlay": "  p <idx>              play a card",
+  "helpNext": "  n                    next trick",
+  "helpNextRound": "  nr                   next round",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetTarget": "  sl <n>               game-end target score"
+}

@@ -29,6 +29,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   pinochle: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   twotenjack: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   whist: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  skat: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   // Matching/Pass — unified to green
   oldmaid: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   doubt: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },

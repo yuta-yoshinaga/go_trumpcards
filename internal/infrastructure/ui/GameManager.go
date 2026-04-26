@@ -1054,6 +1054,25 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "skat", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSkatCuiController(usecase.NewSkatInteractor(
+				domain.NewDefaultSkat(), new(presenter.SkatCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "skat.helpTitle",
+				CommandKeys: []string{
+					"skat.helpBid",
+					"skat.helpPickSkat",
+					"skat.helpDiscard",
+					"skat.helpGame",
+					"skat.helpPlay",
+					"skat.helpNext",
+					"skat.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"skat.helpSetDifficulty", "skat.helpSetTarget"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

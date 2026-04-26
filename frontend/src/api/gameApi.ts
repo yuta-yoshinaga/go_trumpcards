@@ -53,6 +53,8 @@ import type {
   SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
+  SkatConfig as SkatConfigType,
+  SkatResponse,
   SpadesResponse,
   SpeedConfig,
   SpeedResponse,
@@ -145,6 +147,7 @@ const workerUrl: Record<string, string> = {
   president: WORKER_CLASSIC,
   cassino: WORKER_CLASSIC,
   spiteandmalice: WORKER_CLASSIC,
+  skat: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -888,6 +891,36 @@ export const napoleonApi = {
     }),
 };
 
+/** Configuration options for Skat game settings. */
+export interface SkatConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** API client for the Skat /skat/exec endpoint. */
+export const skatApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'pickskat' | 'discard' | 'game' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    args?: {
+      accept?: boolean;
+      pickup?: boolean;
+      discardA?: number;
+      discardB?: number;
+      gameType?: number;
+      trumpSuit?: number;
+      cardIndex?: number;
+      config?: SkatConfigInput;
+    },
+  ) =>
+    gameExec<SkatResponse>('skat', {
+      command,
+      ...(args || {}),
+    }),
+};
+
+// SkatConfigType import is used only for type re-export; ensure it's referenced.
+export type { SkatConfigType };
+
 /** Configuration options for Indian Poker game settings. */
 export interface IndianPokerConfigInput {
   ante?: number;
@@ -1343,6 +1376,7 @@ const games = [
   'cassino',
   'spanish21',
   'spiteandmalice',
+  'skat',
 ] as const;
 type Game = (typeof games)[number];
 

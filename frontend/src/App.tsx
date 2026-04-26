@@ -58,6 +58,7 @@ import { SevenBridgePage } from './pages/SevenBridgePage';
 import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
+import { SkatPage } from './pages/SkatPage';
 import { SpadesPage } from './pages/SpadesPage';
 import { Spanish21Page } from './pages/Spanish21Page';
 import { SpeedPage } from './pages/SpeedPage';
@@ -139,6 +140,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/president': <PresidentPage />,
   '/cassino': <CassinoPage />,
   '/spiteandmalice': <SpiteAndMalicePage />,
+  '/skat': <SkatPage />,
 };
 
 /** Root application component with router and game page routes. */

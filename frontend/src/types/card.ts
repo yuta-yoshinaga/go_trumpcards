@@ -1306,6 +1306,80 @@ export interface NapoleonResponse {
   hint?: NapoleonHint;
 }
 
+// --- Skat (スカート) ---
+
+/** A Skat player's per-round state. */
+export interface SkatPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  isDeclarer: boolean;
+  cardPoints: number;
+  roundsWon: number;
+  roundsLost: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Skat trick. */
+export interface SkatTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Skat game configuration. */
+export interface SkatConfig {
+  cpuDifficulty: number;
+  targetScore: number;
+}
+
+/** A suggested hint for Skat. */
+export interface SkatHint {
+  cardIndex?: number;
+  bid?: number;
+  gameType?: number;
+  trumpSuit?: number;
+  pickSkat?: boolean;
+  discardIndex?: number;
+  reason: string;
+}
+
+/** Full Skat game state returned from the API. */
+export interface SkatResponse {
+  players: SkatPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: SkatTrickCard[];
+  forehandIdx: number;
+  middlehandIdx: number;
+  rearhandIdx: number;
+  dealerIdx: number;
+  declarerIdx: number;
+  currentBid: number;
+  activeBidActorIdx: number;
+  gameType: number;
+  trumpSuit: number;
+  skat?: Card[];
+  originalSkat?: Card[];
+  pickedSkat: boolean;
+  declarerCardPoints: number;
+  defendersCardPoints: number;
+  winnerSide: number;
+  gameValue: number;
+  gameEndFlag: boolean;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: SkatConfig;
+  hint?: SkatHint;
+}
+
 // --- Spider Solitaire (スパイダーソリティア) ---
 
 /** A suggested move hint in Spider Solitaire. */
