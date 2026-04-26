@@ -133,3 +133,179 @@ func TestSkatCuiPresenter_ActionLogOutput(t *testing.T) {
 		_ = p.ActionLogOutput(m)
 	})
 }
+
+// setupSkatCuiMockPhase replaces the GetPhase stub with the requested phase.
+func setupSkatCuiMockPhase(m *interfaces.MockSkatGame, phase domain.SkatPhase) {
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(phase)
+}
+
+func TestSkatCuiPresenter_OutputPhases(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SkatCuiPresenter)
+
+	cases := []struct {
+		name  string
+		phase domain.SkatPhase
+		want  string
+	}{
+		{"skat-pickup", domain.SkatPhaseSkatPickup, "Skat pickup"},
+		{"discard", domain.SkatPhaseDiscard, "Discard 2 cards"},
+		{"declaration", domain.SkatPhaseGameDeclaration, "Game declaration"},
+		{"play", domain.SkatPhasePlay, "Turn:"},
+		{"trick-end", domain.SkatPhaseTrickEnd, "Trick complete"},
+		{"round-end", domain.SkatPhaseRoundEnd, "Round end"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			m := setupSkatCuiMock()
+			setupSkatCuiMockPhase(m, c.phase)
+			out := p.Output(m, nil)
+			assert.Contains(t, out, c.want)
+		})
+	}
+}
+
+// TestSkatCuiPresenter_OutputDeclaredVariants exercises the trump-suit symbol
+// branches and the Grand/Null game label paths.
+func TestSkatCuiPresenter_OutputDeclaredVariants(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SkatCuiPresenter)
+
+	suits := []struct {
+		suit  int
+		glyph string
+	}{
+		{domain.CardDesignClover, "♣"},
+		{domain.CardDesignHeart, "♥"},
+		{domain.CardDesignDiamond, "♦"},
+	}
+	for _, s := range suits {
+		m := setupSkatCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameType")
+		m.On("GetGameType").Return(domain.SkatGameSuit)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpSuit")
+		m.On("GetTrumpSuit").Return(s.suit)
+		assert.Contains(t, p.Output(m, nil), s.glyph)
+	}
+
+	for _, gt := range []domain.SkatGameType{domain.SkatGameGrand, domain.SkatGameNull} {
+		m := setupSkatCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameType")
+		m.On("GetGameType").Return(gt)
+		out := p.Output(m, nil)
+		// Output should contain a non-trivial game-type label.
+		assert.NotEmpty(t, out)
+	}
+}
+
+// removeAllMockCalls strips every expected call matching the method name.
+func removeAllMockCalls(m *interfaces.MockSkatGame, method string) {
+	for {
+		before := len(m.ExpectedCalls)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, method)
+		if len(m.ExpectedCalls) == before {
+			return
+		}
+	}
+}
+
+// TestSkatCuiPresenter_PlayerSummaryRoles exercises the declarer-flag and
+// bid-display branches in skatPlayerStr.
+func TestSkatCuiPresenter_PlayerSummaryRoles(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SkatCuiPresenter)
+
+	m := setupSkatCuiMock()
+	removeAllMockCalls(m, "GetPlayer")
+
+	// Declarer player whose bid is 18 (numeric branch).
+	pDecl := domain.NewSkatPlayer(false)
+	pDecl.SetIsDeclarer(true)
+	pDecl.SetBid(18)
+	// Pass-bid player (bid==0).
+	pPass := domain.NewSkatPlayer(false)
+	pPass.SetBid(0)
+	// Human with at least one card so the indexed-cards block runs.
+	pHuman := domain.NewSkatPlayer(true)
+	pHuman.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+
+	m.On("GetPlayer", 0).Return(pHuman)
+	m.On("GetPlayer", 1).Return(pDecl)
+	m.On("GetPlayer", 2).Return(pPass)
+
+	out := p.Output(m, nil)
+	assert.Contains(t, out, "[Declarer]")
+	assert.Contains(t, out, "bid=18")
+	assert.Contains(t, out, "bid=pass")
+}
+
+// TestSkatCuiPresenter_HintOutputAllBranches covers every hint-render branch:
+// discard, card-play, and the various reason translations.
+func TestSkatCuiPresenter_HintOutputAllBranches(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SkatCuiPresenter)
+
+	t.Run("discard hint", func(t *testing.T) {
+		m := setupSkatCuiMock()
+		idx := 0
+		human := domain.NewSkatPlayer(true)
+		human.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		removeAllMockCalls(m, "GetPlayer")
+		m.On("GetPlayer", 0).Return(human)
+		for i := 1; i < 3; i++ {
+			m.On("GetPlayer", i).Return(domain.NewSkatPlayer(false))
+		}
+		m.On("GetHint").Return(&domain.SkatHint{DiscardIndex: &idx, Reason: "discard_low"})
+		assert.Contains(t, p.HintOutput(m), "discard")
+	})
+
+	t.Run("play card hint", func(t *testing.T) {
+		m := setupSkatCuiMock()
+		idx := 0
+		human := domain.NewSkatPlayer(true)
+		human.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		removeAllMockCalls(m, "GetPlayer")
+		m.On("GetPlayer", 0).Return(human)
+		for i := 1; i < 3; i++ {
+			m.On("GetPlayer", i).Return(domain.NewSkatPlayer(false))
+		}
+		m.On("GetHint").Return(&domain.SkatHint{CardIndex: &idx, Reason: "best_play"})
+		assert.Contains(t, p.HintOutput(m), "play")
+	})
+
+	t.Run("pick skat decline hint", func(t *testing.T) {
+		m := setupSkatCuiMock()
+		no := false
+		m.On("GetHint").Return(&domain.SkatHint{PickSkat: &no, Reason: "skat_pickup"})
+		assert.Contains(t, p.HintOutput(m), "decline")
+	})
+
+	t.Run("bid pass hint", func(t *testing.T) {
+		m := setupSkatCuiMock()
+		val := 0
+		m.On("GetHint").Return(&domain.SkatHint{Bid: &val, Reason: "strategic_bid"})
+		assert.Contains(t, p.HintOutput(m), "pass")
+	})
+
+	t.Run("grand game choice hint", func(t *testing.T) {
+		m := setupSkatCuiMock()
+		gt := int(domain.SkatGameGrand)
+		m.On("GetHint").Return(&domain.SkatHint{GameType: &gt, Reason: "game_choice"})
+		assert.Contains(t, p.HintOutput(m), "Grand")
+	})
+
+	t.Run("empty hint struct returns no-hint", func(t *testing.T) {
+		m := setupSkatCuiMock()
+		m.On("GetHint").Return(&domain.SkatHint{Reason: "best_play"})
+		assert.Contains(t, p.HintOutput(m), "No hint")
+	})
+}

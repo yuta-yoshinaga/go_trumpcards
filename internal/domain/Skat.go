@@ -126,6 +126,7 @@ type skatRoundState struct {
 	trumpSuit        int          // chosen trump suit (suit games only)
 	skat             []*Card      // 2 face-down cards; possibly post-discard
 	originalSkat     []*Card      // pre-pickup skat snapshot for log
+	declarerHand     []*Card      // declarer hand snapshot at start of play (used for matadors at scoring time)
 	gameValue        int          // game value (positive when declarer wins)
 	declarerCardPts  int
 	defendersCardPts int
@@ -219,6 +220,7 @@ func (s *Skat) startRound() {
 	s.round.gameType = SkatGameNone
 	s.round.trumpSuit = 0
 	s.round.pickedSkat = false
+	s.round.declarerHand = nil
 	s.round.declarerCardPts = 0
 	s.round.defendersCardPts = 0
 	s.round.gameValue = 0
@@ -606,6 +608,16 @@ func (s *Skat) startPlay() {
 	s.round.currentPlayerIdx = s.round.forehandIdx
 	s.round.trickNumber = 1
 	s.round.currentTrick = nil
+	// Snapshot the declarer's full 10-card hand so matadors can be counted
+	// at scoring time, after the hand has been played out.
+	if s.round.declarerIdx >= 0 {
+		declarer := s.players[s.round.declarerIdx]
+		hand := make([]*Card, 0, declarer.GetCardsSize())
+		for i := 0; i < declarer.GetCardsSize(); i++ {
+			hand = append(hand, declarer.GetCard(i))
+		}
+		s.round.declarerHand = hand
+	}
 	s.round.phase = SkatPhasePlay
 }
 
@@ -810,8 +822,7 @@ func (s *Skat) gameBaseValue() int {
 
 // gameMultiplier computes a simplified multiplier = matadors + 1 + (hand bonus).
 func (s *Skat) gameMultiplier() int {
-	declarer := s.players[s.round.declarerIdx]
-	matadors := s.matadorsCount(declarer)
+	matadors := s.matadorsCount(s.round.declarerHand)
 	mult := matadors + 1
 	if !s.round.pickedSkat {
 		mult++ // hand bonus
@@ -821,14 +832,20 @@ func (s *Skat) gameMultiplier() int {
 
 // matadorsCount counts the consecutive trumps from the top of the trump order
 // the declarer holds (with) or lacks (without). See Skat rules.
-func (s *Skat) matadorsCount(p *SkatPlayer) int {
+//
+// The cards slice is the declarer's hand as it stood at the start of the play
+// phase — we cannot read the live SkatPlayer hand here because matadors is
+// computed at scoring time, after every card has been played out.
+func (s *Skat) matadorsCount(cards []*Card) int {
 	order := s.trumpOrder()
 	if len(order) == 0 {
 		return 0
 	}
 	hand := map[[2]int]bool{}
-	for i := 0; i < p.GetCardsSize(); i++ {
-		c := p.GetCard(i)
+	for _, c := range cards {
+		if c == nil {
+			continue
+		}
 		hand[[2]int{c.GetDesign(), c.GetValue()}] = true
 	}
 	// "With" matadors: consecutive top trumps the declarer holds.
@@ -1531,47 +1548,69 @@ func (s *Skat) cpuPickPlay(playerIdx int) int {
 	if len(valid) == 0 {
 		return 0
 	}
+	if playerIdx < 0 || playerIdx >= len(s.players) || s.players[playerIdx] == nil {
+		return 0
+	}
 	p := s.players[playerIdx]
-	// Heuristic: if we can win the trick with high-point card, do so; else play
-	// the lowest-point card.
+
+	// Determine the current winning card once. Reusing trickWinner() here keeps
+	// the comparison rules (trump beats non-trump, lead-suit-only otherwise,
+	// nullRank for null games) in a single source of truth.
+	var winnerCard *Card
+	leadSuit := -1
+	if len(s.round.currentTrick) > 0 {
+		leadSuit = s.effectiveSuit(s.round.currentTrick[0].Card)
+		wIdx := s.trickWinner()
+		for _, tc := range s.round.currentTrick {
+			if tc.PlayerIdx == wIdx {
+				winnerCard = tc.Card
+				break
+			}
+		}
+	}
+
+	// Heuristic: if we can win the trick, prefer the strongest winning card;
+	// otherwise play the lowest-point card.
 	bestWinIdx := -1
 	bestWinStrength := -1
 	worstIdx := valid[0]
 	worstScore := 1 << 30
 	for _, i := range valid {
 		c := p.GetCard(i)
-		strength := s.cardStrength(c)
 		score := skatCardPoints(c)
 		if score < worstScore {
 			worstScore = score
 			worstIdx = i
 		}
-		// Try to win: strength should beat the current trick winner.
-		if len(s.round.currentTrick) > 0 {
-			winnerCard := s.round.currentTrick[0].Card
-			winnerStrength := s.cardStrength(winnerCard)
-			leadIsTrump := s.isTrump(winnerCard)
-			for _, tc := range s.round.currentTrick[1:] {
-				if (s.isTrump(tc.Card) && !leadIsTrump) || (s.isTrump(tc.Card) == leadIsTrump && s.cardStrength(tc.Card) > winnerStrength) {
-					winnerStrength = s.cardStrength(tc.Card)
-					winnerCard = tc.Card
-				}
-			}
-			canBeat := false
-			cardIsTrump := s.isTrump(c)
-			if cardIsTrump && !s.isTrump(winnerCard) {
+		if winnerCard == nil {
+			continue
+		}
+		strength := s.cardStrength(c)
+		cardIsTrump := s.isTrump(c)
+		winnerIsTrump := s.isTrump(winnerCard)
+		canBeat := false
+		switch {
+		case cardIsTrump && !winnerIsTrump:
+			canBeat = true
+		case cardIsTrump && winnerIsTrump:
+			canBeat = strength > s.cardStrength(winnerCard)
+		case !cardIsTrump && winnerIsTrump:
+			canBeat = false
+		default:
+			// Both non-trump: must follow the lead suit to beat the winner.
+			if leadSuit >= 0 && c.GetDesign() == leadSuit && strength > s.cardStrength(winnerCard) {
 				canBeat = true
-			} else if cardIsTrump == s.isTrump(winnerCard) && strength > s.cardStrength(winnerCard) {
-				canBeat = true
-			}
-			if canBeat && strength > bestWinStrength {
-				bestWinStrength = strength
-				bestWinIdx = i
 			}
 		}
+		if canBeat && strength > bestWinStrength {
+			bestWinStrength = strength
+			bestWinIdx = i
+		}
 	}
-	if bestWinIdx >= 0 && rand.Intn(2) == 0 {
-		return bestWinIdx
+	if bestWinIdx >= 0 {
+		if s.config.CpuDifficulty == SkatCpuDifficultyHard || rand.Intn(2) == 0 {
+			return bestWinIdx
+		}
 	}
 	return worstIdx
 }
