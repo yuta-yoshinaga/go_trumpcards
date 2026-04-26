@@ -20,6 +20,7 @@ import {
   pyramidApi,
   sessionId,
   sevensApi,
+  shitheadApi,
   spadesApi,
   spiderApi,
   tripeaksApi,
@@ -3025,6 +3026,68 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(letitrideApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('shitheadApi.exec', () => {
+    const payload = {
+      players: [],
+      currentTurn: 0,
+      currentSource: 'hand',
+      discardPile: [],
+      stockSize: 0,
+      skipNext: false,
+      sevenActive: false,
+      gameEndFlag: false,
+      config: {},
+      cpuActions: [],
+      message: '',
+    };
+
+    it('calls with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await shitheadApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/shithead/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', sessionId }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with play command and indices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await shitheadApi.exec('play', { indices: [0, 1] });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/shithead/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'play', indices: [0, 1], sessionId }),
+        }),
+      );
+    });
+
+    it('calls with reset command and config', async () => {
+      const config = {
+        magicTwo: true,
+        magicSeven: false,
+        magicEight: true,
+        magicTen: true,
+        fourOfAKindBurn: true,
+        cpuDifficulty: 2,
+      };
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await shitheadApi.exec('reset', { config });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/shithead/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'reset', config, sessionId }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(shitheadApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 });

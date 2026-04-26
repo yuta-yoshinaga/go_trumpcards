@@ -140,6 +140,10 @@ tags:
     description: Calculation (カルキュレーション) game - arithmetic-progression solitaire where 4 foundations (A,2,3,4) build up mod-13 with step sizes +1/+2/+3/+4
   - name: spiteandmalice
     description: Spite and Malice (スパイト・アンド・マリス) game - 2-player race (1 human vs 1 CPU) to empty a goal pile by playing A→Q onto shared foundations; predecessor of Skip-Bo
+  - name: skat
+    description: Skat (スカート) game - Germany's national 3-player trick-taking game with a 32-card deck, ladder auction, and three game types (Suit / Grand / Null)
+  - name: shithead
+    description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
 
 paths:
   /blackjack/exec:

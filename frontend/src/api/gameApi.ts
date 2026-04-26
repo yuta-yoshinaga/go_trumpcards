@@ -52,6 +52,8 @@ import type {
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
+  ShitheadConfig as ShitheadConfigType,
+  ShitheadResponse,
   ShortDeckResponse,
   SkatConfig as SkatConfigType,
   SkatResponse,
@@ -148,6 +150,7 @@ const workerUrl: Record<string, string> = {
   cassino: WORKER_CLASSIC,
   spiteandmalice: WORKER_CLASSIC,
   skat: WORKER_CLASSIC,
+  shithead: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -921,6 +924,34 @@ export const skatApi = {
 // SkatConfigType import is used only for type re-export; ensure it's referenced.
 export type { SkatConfigType };
 
+/** Configuration options for Shithead game settings. */
+export interface ShitheadConfigInput {
+  magicTwo?: boolean;
+  magicSeven?: boolean;
+  magicEight?: boolean;
+  magicTen?: boolean;
+  fourOfAKindBurn?: boolean;
+  cpuDifficulty?: number;
+}
+
+/** API client for the Shithead /shithead/exec endpoint. */
+export const shitheadApi = {
+  exec: (
+    command: 'reset' | 'play' | 'log',
+    args?: {
+      indices?: number[];
+      config?: ShitheadConfigInput;
+    },
+  ) =>
+    gameExec<ShitheadResponse>('shithead', {
+      command,
+      ...(args || {}),
+    }),
+};
+
+// ShitheadConfigType import is used only for type re-export.
+export type { ShitheadConfigType };
+
 /** Configuration options for Indian Poker game settings. */
 export interface IndianPokerConfigInput {
   ante?: number;
@@ -1377,6 +1408,7 @@ const games = [
   'spanish21',
   'spiteandmalice',
   'skat',
+  'shithead',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -182,6 +182,7 @@ const hintFactories = {
   cassino: (s) => getCassinoHint(s as CassinoResponse),
   spiteandmalice: (s) => getSpiteAndMaliceHint(s as SpiteAndMaliceResponse),
   skat: () => null,
+  shithead: () => null,
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

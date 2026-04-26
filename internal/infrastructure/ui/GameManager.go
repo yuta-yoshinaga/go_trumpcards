@@ -1073,6 +1073,23 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"skat.helpSetDifficulty", "skat.helpSetTarget"},
 			})
 	}},
+	{Name: "shithead", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewShitheadCuiController(usecase.NewShitheadInteractor(
+				domain.NewDefaultShithead(), new(presenter.ShitheadCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "shithead.helpTitle",
+				CommandKeys: []string{
+					"shithead.helpPlay",
+					"shithead.helpPickup",
+					"shithead.helpLog",
+				},
+				SettingKeys: []string{
+					"shithead.helpSetDifficulty",
+					"shithead.helpSetRule",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

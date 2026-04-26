@@ -343,4 +343,9 @@ func init() {
 			return usecase.NewSkatInteractor(domain.NewDefaultSkat(), new(presenter.SkatWebPresenter))
 		},
 		controller.NewSkatWebController)
+	BindWebControllerFor("shithead",
+		func() usecase.ShitheadInteractorIF {
+			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))
+		},
+		controller.NewShitheadWebController)
 }
