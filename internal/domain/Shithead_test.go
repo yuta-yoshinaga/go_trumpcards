@@ -528,27 +528,33 @@ func TestShitheadAccessors(t *testing.T) {
 
 func TestShitheadGameLoopEndsEventually(t *testing.T) {
 	// Smoke test: with the default deck, drive CPU/human until game ends.
-	// The human always picks up to make sure the game progresses.
+	// The human always picks up so the CPUs steadily deplete their cards
+	// and one of them becomes the shithead — guarantees termination
+	// regardless of shuffle order.
 	s := NewDefaultShithead()
 	s.Reset()
 	for steps := 0; steps < 5000 && !s.GetGameEndFlag(); steps++ {
 		if s.IsHumanTurn() {
-			// Try to play first hand card if possible, else pickup.
-			human := s.GetPlayer(0)
-			if human.GetCardsSize() > 0 {
-				if err := s.PlayerPlay([]int{0}); err != nil {
-					_ = s.PlayerPlay(nil)
-				}
-			} else if human.GetFaceUpSize() > 0 {
-				if err := s.PlayerPlay([]int{0}); err != nil {
-					_ = s.PlayerPlay(nil)
-				}
-			} else {
-				_ = s.PlayerPlay([]int{0})
-			}
+			_ = s.PlayerPlay(nil)
 		} else {
 			s.CpuPlay()
 		}
 	}
 	assert.True(t, s.GetGameEndFlag(), "game should end within step budget")
+}
+
+// TestShitheadAdvanceTurn_SkipNextWithTwoActivePlayers guards a
+// regression where, with two players already finished, an 8's
+// skip-next caused advanceTurn to wrap and re-select the same player
+// — deadlocking the CPU/human game loop.
+func TestShitheadAdvanceTurn_SkipNextWithTwoActivePlayers(t *testing.T) {
+	s := newTestShithead(DefaultShitheadConfig())
+	resetEmpty(s)
+	s.GetPlayer(1).SetIsFinished(true)
+	s.GetPlayer(2).SetIsFinished(true)
+	s.round.currentTurn = 3
+	s.round.skipNext = true
+	s.advanceTurn()
+	assert.Equal(t, 0, s.GetCurrentTurn(), "must advance to P0, not back to P3")
+	assert.False(t, s.GetSkipNext(), "skipNext should be cleared")
 }

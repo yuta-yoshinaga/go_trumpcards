@@ -674,13 +674,19 @@ func (s *Shithead) maybeMarkFinished(idx int) {
 }
 
 // advanceTurn moves to the next active player, applying skip-next.
-// Skip skips the next *active* (unfinished) player, not a raw index offset.
+// Skip skips the next *active* (unfinished) player, not a raw index
+// offset. When only two active players remain, the skip effect is a
+// no-op so the same player doesn't take two turns in a row, which would
+// deadlock the CPU/human game loop after an 8 was just played.
 func (s *Shithead) advanceTurn() {
 	n := len(s.players)
 	cur := s.round.currentTurn
 	findNext := func(start int) int {
 		for i := 1; i <= n; i++ {
 			idx := (start + i) % n
+			if idx == cur {
+				continue
+			}
 			if s.players[idx] != nil && !s.players[idx].GetIsFinished() {
 				return idx
 			}
@@ -690,7 +696,9 @@ func (s *Shithead) advanceTurn() {
 	next := findNext(cur)
 	if s.round.skipNext {
 		s.round.skipNext = false
-		next = findNext(next)
+		if skipped := findNext(next); skipped != cur {
+			next = skipped
+		}
 	}
 	s.round.currentTurn = next
 	s.round.turnNumber++
