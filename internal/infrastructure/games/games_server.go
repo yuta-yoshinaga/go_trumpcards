@@ -338,4 +338,9 @@ func init() {
 			return usecase.NewSpiteAndMaliceInteractor(domain.NewDefaultSpiteAndMalice(), new(presenter.SpiteAndMaliceWebPresenter))
 		},
 		controller.NewSpiteAndMaliceWebController)
+	BindWebControllerFor("skat",
+		func() usecase.SkatInteractorIF {
+			return usecase.NewSkatInteractor(domain.NewDefaultSkat(), new(presenter.SkatWebPresenter))
+		},
+		controller.NewSkatWebController)
 }

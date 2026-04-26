@@ -84,6 +84,7 @@ Go + Clean Architecture で実装した65種類のトランプゲーム。CLI �
 | スパニッシュ21 (Spanish 21) | `spanish21` | [CUI](docs/manual/cui/spanish21.md) / [Web](docs/manual/web/spanish21.md) |
 | カルキュレーション (Calculation) | `calculation` | [CUI](docs/manual/cui/calculation.md) / [Web](docs/manual/web/calculation.md) |
 | スパイト・アンド・マリス (Spite and Malice) | `spiteandmalice` | [CUI](docs/manual/cui/spiteandmalice.md) / [Web](docs/manual/web/spiteandmalice.md) |
+| スカート (Skat) | `skat` | [CUI](docs/manual/cui/skat.md) / [Web](docs/manual/web/skat.md) |
 
 ## Demo
 

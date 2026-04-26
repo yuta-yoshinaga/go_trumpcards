@@ -55,6 +55,7 @@ import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/cui/sevens.md?raw';
 import shortdeck from '../../../docs/manual/cui/shortdeck.md?raw';
+import skat from '../../../docs/manual/cui/skat.md?raw';
 import spades from '../../../docs/manual/cui/spades.md?raw';
 import spanish21 from '../../../docs/manual/cui/spanish21.md?raw';
 import speed from '../../../docs/manual/cui/speed.md?raw';
@@ -136,6 +137,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/president': president,
   '/cassino': cassino,
   '/spiteandmalice': spiteandmalice,
+  '/skat': skat,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

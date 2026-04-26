@@ -247,6 +247,26 @@ export const SpiderPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Skat phase constants (sync: internal/domain/Skat.go). */
+export const SkatPhase = {
+  BID: 0,
+  SKAT_PICKUP: 1,
+  DISCARD: 2,
+  GAME_DECLARATION: 3,
+  PLAY: 4,
+  TRICK_END: 5,
+  ROUND_END: 6,
+  GAME_END: 7,
+} as const;
+
+/** Skat game type constants (sync: internal/domain/Skat.go). */
+export const SkatGameType = {
+  NONE: 0,
+  SUIT: 1,
+  GRAND: 2,
+  NULL: 3,
+} as const;
+
 /** Napoleon phase constants (sync: internal/domain/Napoleon.go). */
 export const NapoleonPhase = {
   BID: 0,

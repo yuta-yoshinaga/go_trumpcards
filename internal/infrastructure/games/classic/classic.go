@@ -215,4 +215,12 @@ func init() {
 			return usecase.RestoreSpiteAndMaliceInteractor(data, new(presenter.SpiteAndMaliceWebPresenter))
 		},
 		controller.NewSpiteAndMaliceWebControllerWithProvider)
+	games.RegisterKVGame("skat", games.CategoryClassic,
+		func() usecase.SkatInteractorIF {
+			return usecase.NewSkatInteractor(domain.NewDefaultSkat(), new(presenter.SkatWebPresenter))
+		},
+		func(data []byte) (usecase.SkatInteractorIF, error) {
+			return usecase.RestoreSkatInteractor(data, new(presenter.SkatWebPresenter))
+		},
+		controller.NewSkatWebControllerWithProvider)
 }
