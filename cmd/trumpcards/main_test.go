@@ -345,6 +345,118 @@ func TestRunUnsupportedLangFlagFallsBackAndWarns(t *testing.T) {
 	}
 }
 
+// TestRunPosixLocalePlaceholderEnvSuppressesWarn verifies issue #1534: LANG
+// values that are POSIX locale placeholders ("C", "POSIX", "C.UTF-8") do NOT
+// trigger the cliLangEnvFallback warning, because they are the default in
+// Docker base images, CI runners, and minimal Linux installs and signal
+// "no language preference" rather than a specific unsupported language.
+// Real unsupported languages (e.g. "fr_FR.UTF-8") still warn — the placeholder
+// suppression must be a pinpoint exception, not a general silencer.
+func TestRunPosixLocalePlaceholderEnvSuppressesWarn(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origQuiet, quietWasSet := os.LookupEnv("TRUMPCARDS_QUIET")
+	origLang, langWasSet := os.LookupEnv("LANG")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if quietWasSet {
+			_ = os.Setenv("TRUMPCARDS_QUIET", origQuiet)
+		} else {
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+		}
+		if langWasSet {
+			_ = os.Setenv("LANG", origLang)
+		} else {
+			_ = os.Unsetenv("LANG")
+		}
+		i18n.SetLang("ja")
+	}()
+
+	cases := []struct {
+		name     string
+		lang     string
+		wantWarn bool
+	}{
+		{"LANG=C suppresses warning", "C", false},
+		{"LANG=POSIX suppresses warning", "POSIX", false},
+		{"LANG=C.UTF-8 suppresses warning (Docker default)", "C.UTF-8", false},
+		{"LANG=C.utf8 suppresses warning (no hyphen variant)", "C.utf8", false},
+		{"LANG=POSIX.UTF-8 suppresses warning", "POSIX.UTF-8", false},
+		{"LANG=fr_FR.UTF-8 still warns (real unsupported language)", "fr_FR.UTF-8", true},
+		{"LANG=zz still warns (unknown prefix)", "zz", true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+			_ = os.Setenv("LANG", tc.lang)
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = []string{"trumpcards", "games", "--short"}
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != 0 {
+				t.Fatalf("exit = %d, want 0 (stderr=%q)", exit, errBuf.String())
+			}
+			// Detect the LANG-fallback warning specifically by looking for the
+			// offending value on stderr; other unrelated warnings would not
+			// embed `tc.lang`.
+			gotWarn := strings.Contains(errBuf.String(), tc.lang)
+			if gotWarn != tc.wantWarn {
+				t.Errorf("warning emitted: got=%v, want=%v (stderr=%q)", gotWarn, tc.wantWarn, errBuf.String())
+			}
+			if outBuf.Len() == 0 {
+				t.Errorf("expected non-empty stdout from `games --short`; got empty")
+			}
+		})
+	}
+}
+
+// TestIsPosixLocalePlaceholder unit-tests the predicate used to gate the
+// LANG-fallback warning. Kept separate from the integration test above so a
+// regression in the predicate is easy to localize.
+func TestIsPosixLocalePlaceholder(t *testing.T) {
+	tests := []struct {
+		prefix string
+		want   bool
+	}{
+		{"C", true},
+		{"POSIX", true},
+		// Predicate operates on the prefix (split at . / _ / -) so callers
+		// must strip the codeset themselves; the predicate sees only "C".
+		{"c", false},     // case-sensitive: real LANG values use uppercase
+		{"posix", false}, // ditto
+		{"en", false},
+		{"ja", false},
+		{"fr", false},
+		{"", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.prefix, func(t *testing.T) {
+			if got := isPosixLocalePlaceholder(tt.prefix); got != tt.want {
+				t.Errorf("isPosixLocalePlaceholder(%q) = %v, want %v", tt.prefix, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestRunUnknownTopLevelFlagIsI18nError(t *testing.T) {
 	// Redirect stderr and stdout through os.Pipe so we can capture what
 	// run() writes when it encounters an unknown top-level flag.
