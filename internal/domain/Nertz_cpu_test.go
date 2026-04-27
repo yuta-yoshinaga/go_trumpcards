@@ -162,6 +162,44 @@ func TestNertz_Tick_DoesNotMoveHumanPlayer(t *testing.T) {
 	assert.Equal(t, 1, human.NertzSize(), "Tick must not advance the human player")
 }
 
+// TestNertz_Tick_ShufflesCpuOrder guards against the PR #1528 review finding
+// that the fixed CPU iteration order let lower-indexed CPUs reach the shared
+// foundation first every tick. With 4 CPUs each holding the only playable
+// Ace of a different suit and a budget of 1 move/tick, the foundation order
+// records who played first per tick. Over enough ticks every CPU should
+// take the lead at least once if the order is randomised.
+func TestNertz_Tick_ShufflesCpuOrder(t *testing.T) {
+	leaderSeen := make(map[int]bool)
+	// Each iteration starts a fresh game so foundations are empty. Run many
+	// trials to make a flake from rand.Shuffle vanishingly unlikely.
+	for trial := 0; trial < 200; trial++ {
+		cfg := domain.DefaultNertzConfig()
+		cfg.PlayerCount = 5 // 1 human + 4 CPUs
+		cfg.CpuTickMoves = 1
+		g := domain.NewNertz(cfg)
+		g.Reset()
+		clearFoundations(g)
+		for _, p := range g.GetPlayers() {
+			clearPlayerPiles(p)
+		}
+		// Give each CPU a single Ace; nothing else is playable.
+		suits := []int{
+			domain.CardDesignSpade, domain.CardDesignHeart,
+			domain.CardDesignClover, domain.CardDesignDiamond,
+		}
+		for ci, suit := range suits {
+			g.GetPlayers()[ci+1].PushNertz(newNertzCard(suit, 1))
+		}
+		actions := g.Tick()
+		require.NotEmpty(t, actions)
+		leaderSeen[actions[0].PlayerIdx] = true
+		if len(leaderSeen) == len(suits) {
+			break
+		}
+	}
+	assert.Equal(t, len(leaderSeen), 4, "every CPU should take the lead at least once across 200 trials, got %d unique leaders", len(leaderSeen))
+}
+
 // TestNertz_FindCpuMove_NoOscillationBetweenEmptyColumns guards against the
 // PR #1528 review issue where step 6 (tableau→tableau) would shuffle a whole
 // column into an empty destination indefinitely. With an empty Nertz pile and

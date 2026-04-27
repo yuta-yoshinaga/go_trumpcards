@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 )
 
 // NertzPhase Nertz ゲームフェーズ
@@ -462,16 +463,24 @@ type NertzAction struct {
 
 // Tick CPU プレイヤーを1ラウンドぶん進める (各 CPU の手数は CpuTickMoves 上限)。
 // 適用されたアクション一覧を返す。フェーズが Playing でないときは何もしない。
+//
+// CPU の処理順は毎 tick 無作為化する。固定順だと低 index の CPU が共有
+// ファウンデーションへの送り込みで一貫した先行優位を持ってしまうため
+// (PR #1528 レビュー指摘)。
 func (g *Nertz) Tick() []*NertzAction {
 	if g.phase != NertzPhasePlaying {
 		return nil
 	}
 	budget := g.config.ResolvedCpuTickMoves()
 	out := make([]*NertzAction, 0, budget*len(g.players))
+	cpuOrder := make([]int, 0, len(g.players))
 	for i, p := range g.players {
-		if !p.GetIsCpu() {
-			continue
+		if p.GetIsCpu() {
+			cpuOrder = append(cpuOrder, i)
 		}
+	}
+	rand.Shuffle(len(cpuOrder), func(i, j int) { cpuOrder[i], cpuOrder[j] = cpuOrder[j], cpuOrder[i] })
+	for _, i := range cpuOrder {
 		for k := 0; k < budget; k++ {
 			if g.phase != NertzPhasePlaying {
 				return out
