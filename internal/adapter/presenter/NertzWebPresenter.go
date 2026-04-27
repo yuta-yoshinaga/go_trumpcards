@@ -78,6 +78,7 @@ func (p *NertzWebPresenter) buildBase(g interfaces.NertzGame) *controller.NertzW
 		DrawCount:     cfg.DrawCount,
 		TargetScore:   cfg.TargetScore,
 		CpuDifficulty: int(cfg.CpuDifficulty),
+		CpuTickMoves:  cfg.ResolvedCpuTickMoves(),
 		Players:       make([]*controller.NertzWebPlayer, 0),
 		Foundations:   make([]*controller.NertzWebFoundation, 0),
 	}

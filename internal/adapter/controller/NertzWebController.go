@@ -81,6 +81,7 @@ type NertzWebOutput struct {
 	DrawCount     int                   `json:"drawCount"`
 	TargetScore   int                   `json:"targetScore"`
 	CpuDifficulty int                   `json:"cpuDifficulty"`
+	CpuTickMoves  int                   `json:"cpuTickMoves"`
 	Players       []*NertzWebPlayer     `json:"players"`
 	Foundations   []*NertzWebFoundation `json:"foundations"`
 	Hint          *NertzWebHint         `json:"hint,omitempty"`

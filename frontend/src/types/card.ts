@@ -2991,6 +2991,8 @@ export interface NertzResponse {
   drawCount: number;
   targetScore: number;
   cpuDifficulty: number;
+  /** CPU per-tick budget (resolved from cpuDifficulty when 0). */
+  cpuTickMoves: number;
   players: NertzPlayerData[];
   foundations: NertzFoundationData[];
   hint?: NertzHint;

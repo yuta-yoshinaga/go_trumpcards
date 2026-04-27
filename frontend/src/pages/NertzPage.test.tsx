@@ -19,7 +19,7 @@ const baseConfig = {
   drawCount: 3,
   targetScore: 100,
   cpuDifficulty: 1,
-  cpuTickMoves: 0,
+  cpuTickMoves: 3,
 };
 
 const playingState: NertzResponse = {
