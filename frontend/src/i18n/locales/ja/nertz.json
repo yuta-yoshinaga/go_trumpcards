@@ -1,0 +1,56 @@
+{
+  "title": "Nertz / Pounce (ナーツ / パウンス)",
+  "labels": {
+    "round": "ラウンド",
+    "moveCount": "手数",
+    "score": "スコア",
+    "you": "あなた",
+    "cpu": "CPU",
+    "nertz": "ナッツ",
+    "tableau": "タブロー",
+    "waste": "ウェイスト",
+    "stock": "ストック",
+    "foundation": "ファウンデーション",
+    "remaining": "残り",
+    "size": "枚"
+  },
+  "actions": {
+    "play": "出す",
+    "draw": "ストックを引く",
+    "tick": "CPUを進める",
+    "nextRound": "次ラウンド",
+    "undo": "Undo",
+    "hint": "ヒント",
+    "reset": "リセット"
+  },
+  "phase": {
+    "playing": "プレイ中",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "messages": {
+    "selectSource": "ナッツ・ウェイスト・タブローのいずれかを選んでください",
+    "selectTarget": "移動先のファウンデーションかタブローを選んでください",
+    "win": "あなたの勝ち！",
+    "lose": "プレイヤー{{winner}}の勝ち",
+    "noHint": "ヒントはありません"
+  },
+  "settings": {
+    "title": "設定",
+    "playerCount": "プレイヤー数 (2〜6)",
+    "drawCount": "1ドロー / 3ドロー",
+    "targetScore": "目標スコア",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "簡単",
+    "normal": "普通",
+    "hard": "難しい"
+  },
+  "tutorial": {
+    "intro": "Nertzは複数プレイヤーが同時に進める対戦型ソリティアです。",
+    "nertzPile": "ここがあなたのナッツパイル。これを最初に出し切った人が勝ち。",
+    "tableau": "タブローは赤黒交互・降順で並べていきます。",
+    "foundations": "中央のファウンデーションは全員共有。Aから同スートで積み上げます。",
+    "stock": "ストックを引いてウェイスト経由で使えるカードを増やしましょう。",
+    "resetButton": "リセットでもう一度遊べます。"
+  }
+}

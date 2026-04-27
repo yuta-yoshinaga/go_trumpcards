@@ -2923,3 +2923,78 @@ export interface SpiteAndMaliceMoveZone {
   zone: 'hand' | 'goal' | 'side' | 'foundation';
   idx?: number;
 }
+
+// --- Nertz / Pounce (ナーツ / パウンス) ---
+
+/** Tableau card with face-up state in a Nertz player area. */
+export interface NertzTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** Nertz player view (per-player tableau, nertz pile, waste, and stock). */
+export interface NertzPlayerData {
+  name: string;
+  isCpu: boolean;
+  deckIdx: number;
+  score: number;
+  nertzSize: number;
+  nertzTop?: Card;
+  tableau: NertzTableauCard[][];
+  wasteTop?: Card;
+  wasteSize: number;
+  stockSize: number;
+}
+
+/** Nertz shared foundation pile. */
+export interface NertzFoundationData {
+  top?: Card;
+  suit: number;
+  size: number;
+}
+
+/** Nertz suggested move hint. */
+export interface NertzHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Nertz local rule configuration. */
+export interface NertzConfig {
+  playerCount: number;
+  drawCount: number;
+  targetScore: number;
+  cpuDifficulty: number;
+  cpuTickMoves: number;
+}
+
+/** Source or target zone for a Nertz move. */
+export interface NertzMoveZone {
+  zone: 'nertz' | 'waste' | 'tableau' | 'foundation';
+  col?: number;
+  idx?: number;
+  cardIndex?: number;
+}
+
+/** Full Nertz game state returned from the API. */
+export interface NertzResponse {
+  phase: number;
+  roundNo: number;
+  winnerIdx: number;
+  matchWinner: number;
+  moveCount: number;
+  canUndo: boolean;
+  playerCount: number;
+  drawCount: number;
+  targetScore: number;
+  cpuDifficulty: number;
+  players: NertzPlayerData[];
+  foundations: NertzFoundationData[];
+  hint?: NertzHint;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
