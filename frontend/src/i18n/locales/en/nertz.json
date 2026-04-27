@@ -11,6 +11,7 @@
     "waste": "Waste",
     "stock": "Stock",
     "foundation": "Foundation",
+    "foundationN": "Foundation {{n}}",
     "remaining": "left",
     "size": ""
   },

@@ -14,7 +14,10 @@ test.describe('Nertz / Pounce E2E', () => {
     });
 
     // The shared foundation grid renders the first foundation cell (F0).
-    await expect(page.getByLabel('Foundation 0').first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    // aria-label uses the localized template, so accept either ja or en.
+    await expect(page.getByLabel(/ファウンデーション0|Foundation 0/).first()).toBeVisible({
+      timeout: TIMEOUT_TRANSITION,
+    });
   });
 
   test('renders the human player tableau and stock controls', async ({ page }) => {

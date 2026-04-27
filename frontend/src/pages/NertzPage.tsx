@@ -206,6 +206,7 @@ function NertzPageContent() {
                 size={f.size}
                 onClick={() => handleFoundationClick(idx)}
                 disabled={!isHumanTurn || !selection}
+                ariaLabel={t('labels.foundationN', { n: idx, defaultValue: `Foundation ${idx}` })}
               />
             ))}
           </div>
@@ -323,9 +324,10 @@ interface FoundationCellProps {
   size: number;
   onClick: () => void;
   disabled: boolean;
+  ariaLabel: string;
 }
 
-function FoundationCell({ idx, top, size, onClick, disabled }: FoundationCellProps) {
+function FoundationCell({ idx, top, size, onClick, disabled, ariaLabel }: FoundationCellProps) {
   const cls = disabled
     ? 'bg-ds-surface text-ds-text-muted border-ds-border-subtle'
     : 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover';
@@ -335,7 +337,7 @@ function FoundationCell({ idx, top, size, onClick, disabled }: FoundationCellPro
       onClick={onClick}
       disabled={disabled}
       className={`min-w-[3rem] px-2 py-2 rounded border text-sm ${cls}`}
-      aria-label={`Foundation ${idx}`}
+      aria-label={ariaLabel}
     >
       <span className="block text-xs leading-none">F{idx}</span>
       <span className="block text-base font-bold">{top ? `${suitSymbol(top.design)}${top.value}` : '—'}</span>

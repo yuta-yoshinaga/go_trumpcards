@@ -16,6 +16,8 @@
   "promptTableauCol": "タブローの列番号 (0..3) を入力してください:",
   "promptTableauFromIdx": "タブロー内のカード位置を入力してください:",
   "promptTableauToCol": "移動先のタブロー列を入力してください:",
+  "labelHuman": "人間",
+  "labelCpu": "CPU",
   "playing": "プレイ中",
   "roundEnd": "ラウンド終了 (勝者: P{{winner}})",
   "win": "あなたの勝ち！",

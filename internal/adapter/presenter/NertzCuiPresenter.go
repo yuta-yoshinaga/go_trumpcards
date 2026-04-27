@@ -7,6 +7,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // NertzCuiPresenter Nertz / Pounce CUI プレゼンター
@@ -35,9 +36,9 @@ func (p *NertzCuiPresenter) Output(g interfaces.NertzGame, lastErr error) string
 			if pl == nil {
 				continue
 			}
-			label := "人間"
+			label := i18n.T("nertz.labelHuman")
 			if pl.GetIsCpu() {
-				label = "CPU"
+				label = i18n.T("nertz.labelCpu")
 			}
 			fmt.Fprintf(b, "[P%d %s %s] スコア: %d\n", i, label, pl.GetName(), pl.GetScore())
 			// ナッツパイル

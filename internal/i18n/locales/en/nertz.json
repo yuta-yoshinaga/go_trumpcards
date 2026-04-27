@@ -16,6 +16,8 @@
   "promptTableauCol": "Enter tableau column (0..3):",
   "promptTableauFromIdx": "Enter card position in tableau:",
   "promptTableauToCol": "Enter destination tableau column:",
+  "labelHuman": "You",
+  "labelCpu": "CPU",
   "playing": "Playing",
   "roundEnd": "Round ended (winner: P{{winner}})",
   "win": "You win!",

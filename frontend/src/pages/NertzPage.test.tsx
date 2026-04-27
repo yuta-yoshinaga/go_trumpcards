@@ -142,8 +142,8 @@ describe('NertzPage', () => {
     fireEvent.click(nertzBtn as HTMLElement);
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
-    // Click foundation 0
-    fireEvent.click(screen.getByLabelText('Foundation 0'));
+    // Click foundation 0 — aria-label uses the localized template (ja default in tests).
+    fireEvent.click(screen.getByLabelText(/ファウンデーション0|Foundation 0/));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('m', {
         playerIdx: 0,
