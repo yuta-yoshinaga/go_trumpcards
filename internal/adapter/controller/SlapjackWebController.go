@@ -10,8 +10,7 @@ import (
 // SlapjackWebInput スラップジャック Web 入力
 type SlapjackWebInput struct {
 	BaseWebInput
-	PlayerIdx *int               `json:"playerIdx,omitempty"`
-	Config    *SlapjackWebConfig `json:"config,omitempty"`
+	Config *SlapjackWebConfig `json:"config,omitempty"`
 }
 
 // SlapjackWebConfig スラップジャックの設定リクエスト
@@ -76,7 +75,9 @@ func slapjackDispatch(bc *baseController, w http.ResponseWriter, si usecase.Slap
 		bc.writePresenterResponse(w, si.Step())
 		return true
 	case "j", "slap":
-		bc.writePresenterResponse(w, si.Slap(derefDefault(param.PlayerIdx, 0)))
+		// Web エンドポイントは人間 (idx=0) の slap 専用。
+		// クライアント値は信用せずサーバ側で固定する (CPU を強制 slap させないため)。
+		bc.writePresenterResponse(w, si.Slap(0))
 		return true
 	case "tick":
 		bc.writePresenterResponse(w, si.Tick())

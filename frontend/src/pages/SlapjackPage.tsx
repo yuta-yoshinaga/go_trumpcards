@@ -30,8 +30,9 @@ import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 
 type SlapjackArgs = Parameters<typeof slapjackApi.exec>;
 
-/** CPU tick interval (ms) — drives CPU step + slap reaction polling. */
-const SLAPJACK_TICK_INTERVAL_MS = 200;
+/** CPU tick interval (ms) — drives CPU step + slap reaction polling.
+ * Hard difficulty has μ=300ms σ=120ms; 100ms keeps the distribution intact. */
+const SLAPJACK_TICK_INTERVAL_MS = 100;
 
 /** Tutorial steps for the Slapjack page. */
 const SJ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -78,7 +79,7 @@ function SlapjackPageContent() {
   } = useGameHint('slapjack', state);
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
-  const handleSlap = useCallback(() => execApi('slap', { playerIdx: 0 }), [execApi]);
+  const handleSlap = useCallback(() => execApi('slap'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
 
   useEffect(() => {
@@ -104,7 +105,7 @@ function SlapjackPageContent() {
         const cmd = input.trim().toLowerCase();
         if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
         if (cmd === 'step' || cmd === 's') return { args: ['step'] };
-        if (cmd === 'slap' || cmd === 'j') return { args: ['slap', { playerIdx: 0 }] };
+        if (cmd === 'slap' || cmd === 'j') return { args: ['slap'] };
         if (cmd === 'tick') return { args: ['tick'] };
         if (cmd === 'log' || cmd === 'l') return { args: ['log'] };
         return { error: `Unknown command: ${cmd}` };

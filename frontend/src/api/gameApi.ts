@@ -1121,10 +1121,7 @@ export interface SlapjackConfigInput {
 
 /** API client for the Slapjack /slapjack/exec endpoint. */
 export const slapjackApi = {
-  exec: (
-    command: 'reset' | 'step' | 'slap' | 'tick' | 'log',
-    args?: { playerIdx?: number; config?: SlapjackConfigInput },
-  ) =>
+  exec: (command: 'reset' | 'step' | 'slap' | 'tick' | 'log', args?: { config?: SlapjackConfigInput }) =>
     gameExec<SlapjackResponse>('slapjack', {
       command,
       ...(args || {}),

@@ -249,8 +249,12 @@ func (g *Slapjack) Step() error {
 		// 場のトップが J → CPU は slap を予約 (人間が先に slap する可能性も残す)
 		g.scheduleCpuSlap()
 	} else {
-		// 通常: 手番が相手に移る
-		g.currentTurnIdx = g.opponentIdx(g.currentTurnIdx)
+		// 通常: 手番が相手に移る。ただし相手のストックが空なら自分のままで続行する
+		// (相手が J を slap して復帰する余地を残す)。
+		nextIdx := g.opponentIdx(g.currentTurnIdx)
+		if g.players[nextIdx].HasStock() {
+			g.currentTurnIdx = nextIdx
+		}
 		g.maybeScheduleCpuStep()
 	}
 	g.checkStuck()
@@ -394,7 +398,8 @@ func (g *Slapjack) opponentIdx(idx int) int {
 	return 0
 }
 
-// cpuIdx CPU プレイヤーのインデックスを返す (固定で 1)。
+// cpuIdx CPU プレイヤーのインデックスを返す。
+// NewDefaultSlapjack の規約により player[0] = 人間, player[1] = CPU で固定。
 func (g *Slapjack) cpuIdx() int { return 1 }
 
 // endGame ゲームを終了し勝者を確定する。
@@ -408,13 +413,13 @@ func (g *Slapjack) endGame(winner int) {
 	}
 }
 
-// checkStuck 停滞検出 — 両者ストック空かつ場札も無いケースで終了させる
-// (実プレイ上はほぼ起きないが安全網)。
+// checkStuck 停滞検出 — 両者ストックが空でかつ場のトップが J でもないケースで
+// 終了させる (誰も flip できず slap も起き得ないので永久に進まないため)。
 func (g *Slapjack) checkStuck() {
 	if g.gameEndFlag {
 		return
 	}
-	if !g.players[0].HasStock() && !g.players[1].HasStock() && len(g.centerPile) == 0 {
+	if !g.players[0].HasStock() && !g.players[1].HasStock() && !g.IsTopJack() {
 		g.endGame(0)
 	}
 }

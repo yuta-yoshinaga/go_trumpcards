@@ -52,8 +52,9 @@ func TestSlapjackWebController(t *testing.T) {
 		{"reset with config", `{"command":"reset","config":{"cpuDifficulty":2},"sessionId":"s1"}`, http.StatusOK},
 		{"step", `{"command":"s","sessionId":"s1"}`, http.StatusOK},
 		{"step full word", `{"command":"step","sessionId":"s1"}`, http.StatusOK},
-		{"slap default playerIdx", `{"command":"j","sessionId":"s1"}`, http.StatusOK},
-		{"slap full word", `{"command":"slap","playerIdx":0,"sessionId":"s1"}`, http.StatusOK},
+		{"slap alias", `{"command":"j","sessionId":"s1"}`, http.StatusOK},
+		{"slap full word", `{"command":"slap","sessionId":"s1"}`, http.StatusOK},
+		{"slap ignores client playerIdx", `{"command":"slap","playerIdx":1,"sessionId":"s1"}`, http.StatusOK},
 		{"tick", `{"command":"tick","sessionId":"s1"}`, http.StatusOK},
 		{"log", `{"command":"log","sessionId":"s1"}`, http.StatusOK},
 		{"log alias", `{"command":"l","sessionId":"s1"}`, http.StatusOK},
@@ -82,4 +83,9 @@ func TestSlapjackWebController(t *testing.T) {
 		rec := execRequest(t, swc.Exec, &input)
 		rec.CodeIs(http.StatusBadRequest)
 	})
+
+	// Slap must always be invoked with playerIdx=0 (human) regardless of client input,
+	// to prevent a malicious client from triggering a CPU slap server-side.
+	siMock.AssertCalled(t, "Slap", 0)
+	siMock.AssertNotCalled(t, "Slap", 1)
 }

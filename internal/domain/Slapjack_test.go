@@ -402,3 +402,42 @@ func TestSlapjack_EndGame_InvalidWinnerIdx_NoFinishedFlag(t *testing.T) {
 	assert.False(t, g.GetPlayer(0).GetIsFinished())
 	assert.False(t, g.GetPlayer(1).GetIsFinished())
 }
+
+// 相手のストックが空でも非 J を出した時点では手番を渡さない
+// (空ストック側に Step を強制させて自動敗北させない — 相手が J を slap で復帰する余地を残す)。
+func TestSlapjack_Step_NonJack_OpponentEmpty_RetainsTurn(t *testing.T) {
+	g, _ := setupSlapjackWithStocks(t,
+		[]*Card{card(5), card(SlapjackJackValue)},
+		[]*Card{}, // CPU は空
+	)
+	assert.NoError(t, g.Step()) // human が 5 を出す
+	assert.False(t, g.IsTopJack())
+	assert.False(t, g.GetGameEndFlag())
+	assert.Equal(t, 0, g.GetCurrentTurnIdx(), "次プレイヤーが空のとき手番は維持される")
+	assert.Equal(t, SlapjackPendingNone, g.GetPending().Kind, "CPU step 予約はされない")
+
+	// 続けて human が J を出すと CPU は slap で復帰可能
+	assert.NoError(t, g.Step())
+	assert.True(t, g.IsTopJack())
+	assert.NoError(t, g.Slap(1)) // CPU が slap して pile を取得 → 復帰
+	assert.False(t, g.GetGameEndFlag())
+	assert.Greater(t, g.GetPlayer(1).GetStockSize(), 0)
+}
+
+// 両者ストックが空でも場のトップが J なら slap で決着し得るので
+// checkStuck では終了させない。
+func TestSlapjack_CheckStuck_BothEmpty_JackOnTop_NoEnd(t *testing.T) {
+	g, _ := setupSlapjackWithStocks(t, []*Card{}, []*Card{})
+	g.centerPile = []*Card{card(SlapjackJackValue)}
+	g.checkStuck()
+	assert.False(t, g.GetGameEndFlag(), "J が場にある間は slap で決着可能")
+}
+
+// 両者ストックが空で場にカードはあるが J ではないケースは進行不能 (誰も flip も slap もできない)。
+// この場合 checkStuck で終了させる。
+func TestSlapjack_CheckStuck_BothEmpty_NonJackOnTop_Ends(t *testing.T) {
+	g, _ := setupSlapjackWithStocks(t, []*Card{}, []*Card{})
+	g.centerPile = []*Card{card(5), card(7)}
+	g.checkStuck()
+	assert.True(t, g.GetGameEndFlag(), "非 J かつ両者空ならスタックなので終了")
+}

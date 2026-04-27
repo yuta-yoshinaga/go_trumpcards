@@ -99,12 +99,12 @@ describe('SlapjackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
   });
 
-  it('slap button calls exec with slap and playerIdx 0', async () => {
+  it('slap button calls exec with slap', async () => {
     mockExec.mockResolvedValueOnce(jackOnTopState);
     renderWithProviders(<SlapjackPage />);
     await waitFor(() => expect(screen.getByTestId('slap-button')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('slap-button'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('slap', { playerIdx: 0 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('slap'));
   });
 
   it('disables slap button when pile is empty', async () => {
@@ -137,5 +137,29 @@ describe('SlapjackPage', () => {
     });
     renderWithProviders(<SlapjackPage />);
     await waitFor(() => expect(screen.queryByTestId('step-button')).not.toBeInTheDocument());
+  });
+
+  it('renders the Jack-on-top callout and a flashing slap button', async () => {
+    mockExec.mockResolvedValueOnce(jackOnTopState);
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(screen.getByTestId('slap-button')).toBeInTheDocument());
+    const slap = screen.getByTestId('slap-button');
+    expect(slap).not.toBeDisabled();
+    expect(slap.className).toMatch(/animate-pulse/);
+  });
+
+  it('renders the game-end state with both buttons disabled when human wins', async () => {
+    mockExec.mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeDisabled());
+    expect(screen.getByTestId('slap-button')).toBeDisabled();
+  });
+
+  it('reset settings select fires reset with cpuDifficulty config', async () => {
+    renderWithProviders(<SlapjackPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    const select = screen.getByLabelText(/CPU/i) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2 } }));
   });
 });
