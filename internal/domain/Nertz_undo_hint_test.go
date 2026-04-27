@@ -40,6 +40,29 @@ func TestNertz_Undo_NoHistoryReturnsError(t *testing.T) {
 	assert.Error(t, g.Undo())
 }
 
+// TestNertz_Undo_HistoryCappedAtOne guards against the PR #1528 review
+// finding: every human action takes a JSON snapshot of players+foundations,
+// so an unbounded history would grow to several MB per long session. Undo
+// only ever exposes a single step, so the slice must hold at most one entry.
+func TestNertz_Undo_HistoryCappedAtOne(t *testing.T) {
+	g := nertzGameForTest(t)
+	clearFoundations(g)
+	human := g.GetPlayers()[0]
+	clearPlayerPiles(human)
+	for i := 0; i < 50; i++ {
+		// Each human action triggers takeSnapshot via the move path. We use
+		// DrawStock — fails when stock+waste both empty, but we just need
+		// the snapshot to fire on the success branch. Push then pop a card
+		// each iteration so DrawStock has something to move.
+		human.PushStock(newNertzCard(domain.CardDesignHeart, 5))
+		require.NoError(t, g.DrawStock(0))
+	}
+	assert.True(t, g.CanUndo(), "expected at least one entry available for undo")
+	// Pop the single entry and confirm history is now empty.
+	require.NoError(t, g.Undo())
+	assert.False(t, g.CanUndo(), "history must hold at most one snapshot")
+}
+
 func TestNertz_Undo_DoesNotRecordCpuActions(t *testing.T) {
 	g := nertzGameForTest(t)
 	clearFoundations(g)

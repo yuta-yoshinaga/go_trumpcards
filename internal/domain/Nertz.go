@@ -764,6 +764,11 @@ func (g *Nertz) appendLog(playerIdx int, actionType, detail string, cards []*Car
 // takeSnapshot 現在の人間プレイヤーの直前状態をスナップショット保存する。
 // 人間プレイヤー (playerIdx == 0) のアクションのみ Undo の対象とする。
 // CPU の手は Undo 不能 (リアルタイム性を保つため)。
+//
+// Undo は単一ステップのみサポートするため、履歴は最大1件に制限する。
+// (各スナップショットは players + foundations の JSON であり、長時間の
+// セッションで append し続けると 1 セッションあたり数 MB に到達する。
+// PR #1528 レビュー指摘。)
 func (g *Nertz) takeSnapshot(playerIdx int) {
 	if playerIdx != 0 {
 		return
@@ -776,13 +781,13 @@ func (g *Nertz) takeSnapshot(playerIdx int) {
 	if err != nil {
 		return
 	}
-	g.history = append(g.history, &nertzSnapshot{
+	g.history = []*nertzSnapshot{{
 		playersJSON:     pj,
 		foundationsJSON: fj,
 		phase:           g.phase,
 		moveCount:       g.moveCount,
 		winnerIdx:       g.winnerIdx,
-	})
+	}}
 }
 
 // CanUndo Undo 可能かどうか
