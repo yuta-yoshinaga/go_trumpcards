@@ -348,4 +348,9 @@ func init() {
 			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))
 		},
 		controller.NewShitheadWebController)
+	BindWebControllerFor("nertz",
+		func() usecase.NertzInteractorIF {
+			return usecase.NewNertzInteractor(domain.NewDefaultNertz(), new(presenter.NertzWebPresenter))
+		},
+		controller.NewNertzWebController)
 }

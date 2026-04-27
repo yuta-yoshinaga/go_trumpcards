@@ -35,6 +35,9 @@ import type {
   LetItRideResponse,
   MemoryResponse,
   NapoleonResponse,
+  NertzConfig as NertzConfigType,
+  NertzMoveZone,
+  NertzResponse,
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
@@ -151,6 +154,7 @@ const workerUrl: Record<string, string> = {
   spiteandmalice: WORKER_CLASSIC,
   skat: WORKER_CLASSIC,
   shithead: WORKER_CLASSIC,
+  nertz: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -952,6 +956,38 @@ export const shitheadApi = {
 // ShitheadConfigType import is used only for type re-export.
 export type { ShitheadConfigType };
 
+/** Configuration options for Nertz / Pounce game settings. */
+export interface NertzConfigInput {
+  playerCount?: number;
+  drawCount?: number;
+  targetScore?: number;
+  cpuDifficulty?: number;
+  cpuTickMoves?: number;
+}
+
+/** Source/target zone identifier for a Nertz move. */
+export type { NertzMoveZone };
+
+/** API client for the Nertz / Pounce /nertz/exec endpoint. */
+export const nertzApi = {
+  exec: (
+    command: 'reset' | 'nr' | 'tick' | 'd' | 'm' | 'u' | 'h' | 'log',
+    args?: {
+      playerIdx?: number;
+      from?: NertzMoveZone;
+      to?: NertzMoveZone;
+      config?: NertzConfigInput;
+    },
+  ) =>
+    gameExec<NertzResponse>('nertz', {
+      command,
+      ...(args || {}),
+    }),
+};
+
+// NertzConfigType import is used only for type re-export.
+export type { NertzConfigType };
+
 /** Configuration options for Indian Poker game settings. */
 export interface IndianPokerConfigInput {
   ante?: number;
@@ -1409,6 +1445,7 @@ const games = [
   'spiteandmalice',
   'skat',
   'shithead',
+  'nertz',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -26,6 +26,7 @@ import type {
   LetItRideResponse,
   MemoryResponse,
   NapoleonResponse,
+  NertzResponse,
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
@@ -85,6 +86,7 @@ import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
+import { getNertzHint } from '../utils/hints/nertzHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
@@ -183,6 +185,7 @@ const hintFactories = {
   spiteandmalice: (s) => getSpiteAndMaliceHint(s as SpiteAndMaliceResponse),
   skat: () => null,
   shithead: () => null,
+  nertz: (s) => getNertzHint(s as NertzResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

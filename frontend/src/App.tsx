@@ -39,6 +39,7 @@ import { KlondikePage } from './pages/KlondikePage';
 import { LetItRidePage } from './pages/LetItRidePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { NapoleonPage } from './pages/NapoleonPage';
+import { NertzPage } from './pages/NertzPage';
 import { OhHellPage } from './pages/OhHellPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
@@ -143,6 +144,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/spiteandmalice': <SpiteAndMalicePage />,
   '/skat': <SkatPage />,
   '/shithead': <ShitheadPage />,
+  '/nertz': <NertzPage />,
 };
 
 /** Root application component with router and game page routes. */

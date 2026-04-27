@@ -35,6 +35,7 @@ import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
+import nertz from '../../../docs/manual/web/nertz.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
@@ -139,4 +140,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
   '/shithead': shithead,
+  '/nertz': nertz,
 };

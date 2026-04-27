@@ -531,3 +531,11 @@ export const RedDogPhase = {
   PAIR_THIRD: 4,
   END: 5,
 } as const;
+
+/** Nertz / Pounce phase constants (sync: internal/domain/Nertz.go). */
+export const NertzPhase = {
+  IDLE: 0,
+  PLAYING: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
