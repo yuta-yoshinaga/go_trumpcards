@@ -57,6 +57,7 @@ import sevens from '../../../docs/manual/web/sevens.md?raw';
 import shithead from '../../../docs/manual/web/shithead.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
 import skat from '../../../docs/manual/web/skat.md?raw';
+import slapjack from '../../../docs/manual/web/slapjack.md?raw';
 import spades from '../../../docs/manual/web/spades.md?raw';
 import spanish21 from '../../../docs/manual/web/spanish21.md?raw';
 import speed from '../../../docs/manual/web/speed.md?raw';
@@ -141,4 +142,5 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/skat': skat,
   '/shithead': shithead,
   '/nertz': nertz,
+  '/slapjack': slapjack,
 };

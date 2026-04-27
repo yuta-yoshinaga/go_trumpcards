@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した68種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した69種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -87,6 +87,7 @@ Go + Clean Architecture で実装した68種類のトランプゲーム。CLI �
 | スカート (Skat) | `skat` | [CUI](docs/manual/cui/skat.md) / [Web](docs/manual/web/skat.md) |
 | シットヘッド / カーマ (Shithead) | `shithead` | [CUI](docs/manual/cui/shithead.md) / [Web](docs/manual/web/shithead.md) |
 | ナーツ / パウンス (Nertz / Pounce) | `nertz` | [CUI](docs/manual/cui/nertz.md) / [Web](docs/manual/web/nertz.md) |
+| スラップジャック (Slapjack) | `slapjack` | [CUI](docs/manual/cui/slapjack.md) / [Web](docs/manual/web/slapjack.md) |
 
 ## Demo
 

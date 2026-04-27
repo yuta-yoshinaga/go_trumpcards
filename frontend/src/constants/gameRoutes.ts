@@ -87,6 +87,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/skat', labelKey: 'nav.skat', icon: '🇩🇪' },
       { path: '/shithead', labelKey: 'nav.shithead', icon: '👑' },
       { path: '/nertz', labelKey: 'nav.nertz', icon: '🥜' },
+      { path: '/slapjack', labelKey: 'nav.slapjack', icon: '✋' },
     ],
   },
   {

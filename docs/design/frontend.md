@@ -1846,7 +1846,7 @@ classDiagram
         +table: [BlackJack, Spanish21, Baccarat, ThreeCard, CaribbeanStud, PaiGow, LetItRide, RedDog]
         +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, Razz, Badugi, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist]
-        +matching: [OldMaid, Doubt, Durak, Daifugo, President, Cassino, Sevens, CrazyEights, PageOne, Speed, GoFish, Pinochle, PigsTail, War, FiftyOne, Trash]
+        +matching: [OldMaid, Doubt, Durak, Daifugo, President, Cassino, Sevens, CrazyEights, PageOne, Speed, GoFish, Pinochle, PigsTail, War, FiftyOne, Trash, Slapjack]
         +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, Canfield, Yukon, Scorpion, Accordion, PokerSquares]
         +rummy: [GinRummy, Canasta, Cribbage, SevenBridge]
     }

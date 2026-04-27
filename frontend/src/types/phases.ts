@@ -539,3 +539,24 @@ export const NertzPhase = {
   ROUND_END: 2,
   GAME_END: 3,
 } as const;
+
+/** Slapjack phase constants (sync: internal/domain/Slapjack.go). */
+export const SlapjackPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Slapjack pending CPU action kind (sync: internal/domain/Slapjack.go). */
+export const SlapjackPendingKind = {
+  NONE: 0,
+  STEP: 1,
+  SLAP: 2,
+} as const;
+
+/** Slapjack last-event kind for UI feedback (sync: internal/domain/Slapjack.go). */
+export const SlapjackEventKind = {
+  NONE: 0,
+  STEP: 1,
+  SLAP_CORRECT: 2,
+  SLAP_WRONG: 3,
+} as const;
