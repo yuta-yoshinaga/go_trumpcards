@@ -34,6 +34,24 @@ var (
 // validator so the two cannot diverge.
 var supportedLangs = map[string]bool{"ja": true, "en": true}
 
+// posixLocalePlaceholders are POSIX placeholder locale prefixes that signal
+// "no language preference" rather than a specific unsupported language.
+// They are the default in Docker base images (debian-slim, distroless), CI
+// runners (GitHub Actions, GitLab CI), and minimal Linux installs, so warning
+// about them on every invocation creates noise without information value.
+// Treat them as silent fallback to the default locale, matching gettext's
+// convention. See issue #1534.
+var posixLocalePlaceholders = map[string]bool{"C": true, "POSIX": true}
+
+// isPosixLocalePlaceholder reports whether prefix is a POSIX locale
+// placeholder (e.g. the "C" in "C.UTF-8"). Comparison is case-sensitive
+// because real-world LANG values use the canonical uppercase forms ("C",
+// "POSIX"); a lowercase "c" is unusual enough that it is more likely a typo
+// for a real language code than the placeholder, so we let it warn through.
+func isPosixLocalePlaceholder(prefix string) bool {
+	return posixLocalePlaceholders[prefix]
+}
+
 // portInRange reports whether port is a valid TCP port number, with 0
 // reserved for "let the OS assign an ephemeral port" (POSIX convention).
 func portInRange(port int) bool {
@@ -130,9 +148,13 @@ func run() int {
 		if idx := strings.IndexAny(envLang, "_-."); idx >= 0 {
 			prefix = envLang[:idx]
 		}
-		if supportedLangs[prefix] {
+		switch {
+		case supportedLangs[prefix]:
 			detectedLang = prefix
-		} else if !quiet {
+		case isPosixLocalePlaceholder(prefix):
+			// C / POSIX / C.UTF-8 are placeholders, not language preferences;
+			// silently fall back to the default. See issue #1534.
+		case !quiet:
 			langEnvWarn = envLang
 		}
 	}
