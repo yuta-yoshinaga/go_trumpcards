@@ -405,6 +405,10 @@ function TableauColumn({ col, colIdx, selection, onSelectCard, onTarget, disable
           : disabled
             ? 'bg-ds-surface text-ds-text-muted border-ds-border-subtle'
             : 'bg-ds-surface-elevated text-ds-text-primary border-ds-border-subtle hover:bg-ds-surface-elevated-hover';
+        // Dual-purpose click: the bottom card acts as a drop target when a
+        // source is already selected (saves the user a second tap on an
+        // empty drop zone), otherwise tapping any card selects it as the
+        // move source. PR #1528 review noted this is non-obvious.
         return (
           <button
             key={`t-${colIdx}-${i}`}

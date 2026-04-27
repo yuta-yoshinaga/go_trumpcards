@@ -501,16 +501,20 @@ func (g *Nertz) Tick() []*NertzAction {
 // FindCpuMove playerIdx の CPU が次に行うべき手 (アクション記述子) を返す。
 // 該当する手がなければ nil。
 //
-// 優先度 (Easy 共通)::
+// 優先度 (全難易度共通)::
 //  1. ナッツパイル → ファウンデーション
 //  2. ウェイスト → ファウンデーション
 //  3. タブロー → ファウンデーション
 //  4. ナッツパイル → タブロー (空列以外を優先)
 //  5. ウェイスト → タブロー
-//  6. タブロー間移動 (空列を作る/埋める)
+//  6. タブロー間移動 (列単位; 空 toCol への進歩のない移動はスキップ)
 //  7. ストックから引く (リサイクル含む)
 //
-// Normal/Hard はこの基本順序を踏襲しつつ、Hard はナッツパイル削減を最大化する手を優先する。
+// 難易度 (NertzCpuDifficulty) による分岐は現状ない。Tick の per-tick budget
+// (Easy=1 / Normal=3 / Hard=5) でのみ強さが変わる。Hard で「ナッツパイル削減
+// を最大化する」「先読みスコアで最適手を選ぶ」拡張は将来課題 (PR #1528 レ
+// ビュー指摘)。step 6 の fromIdx は現状 0 固定で、部分スタック移動は実装し
+// ていない。
 func (g *Nertz) FindCpuMove(playerIdx int) *NertzAction {
 	if playerIdx < 0 || playerIdx >= len(g.players) {
 		return nil

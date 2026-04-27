@@ -56,7 +56,11 @@ func (p *NertzWebPresenter) HintOutput(g interfaces.NertzGame) string {
 	return marshalOrError(resObj)
 }
 
-// ActionLogOutput 棋譜を JSON 出力
+// ActionLogOutput 棋譜を JSON 出力。
+// プレイ中はログを意図的に空にする — リアルタイム進行中にクライアントへ
+// CPU の手数や狙いを露出させると不公平になるため、ラウンド/マッチ終了後にの
+// み完全ログを返す (他のリアルタイム系ゲームと同じ運用 / PR #1528 レビュー指
+// 摘)。
 func (p *NertzWebPresenter) ActionLogOutput(g interfaces.NertzGame) string {
 	if g.GetPhase() == domain.NertzPhasePlaying {
 		return actionLogToJSON(nil)

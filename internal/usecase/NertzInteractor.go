@@ -119,7 +119,12 @@ func (ni *NertzInteractor) MoveTableauToTableau(playerIdx, fromCol, fromIdx, toC
 	})
 }
 
-// Tick CPU を 1tick 進める
+// Tick CPU を 1tick 進める。
+//
+// 注: ドメインの Tick() は適用済み NertzAction のリストを返すが、現在のフロ
+// ントエンドは presenter が出すフルスナップショットから派生するためここでは
+// 破棄する。アニメーションキューを将来導入する際にこのリストを Web 出力に
+// 載せる予定 (PR #1528 レビュー指摘)。
 func (ni *NertzInteractor) Tick() string {
 	return runAndPresent(ni.Game, ni.np, func() { ni.Game.Tick() })
 }

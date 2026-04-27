@@ -102,7 +102,10 @@ func (p *NertzCuiPresenter) HintOutput(g interfaces.NertzGame) string {
 	return fmt.Sprintf("ヒント: %s → %s\n", from, to)
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput 棋譜をテキスト出力。
+// プレイ中はログを空にする — リアルタイム進行中に CPU の狙いを露出させない
+// ため、ラウンド/マッチ終了後にのみ完全ログを返す (Web 側と同じ運用 / PR
+// #1528 レビュー指摘)。
 func (p *NertzCuiPresenter) ActionLogOutput(g interfaces.NertzGame) string {
 	if g.GetPhase() == domain.NertzPhasePlaying {
 		return actionLogToText(nil)

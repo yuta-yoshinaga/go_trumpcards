@@ -9,12 +9,20 @@ import (
 type NertzCpuDifficulty int
 
 // Nertzの難易度定数
+//
+// 現状の Tick / FindCpuMove は同一の優先度ヒューリスティック (ナッツ→ウェイ
+// スト→タブロー → ファウンデーション、その後タブロー間移動、最後にストック
+// ドロー) を使い、難易度は ResolvedCpuTickMoves が返す 1tick あたりの手数のみ
+// に反映される。Hard は「先読みスコア」を使う設計だったが未実装のため、当面
+// は手数の差として現れる (PR #1528 レビュー指摘)。
 const (
-	// NertzCpuDifficultyEasy 1tickあたり1手のみ。優先度の低い手も含めて先頭から実行。
+	// NertzCpuDifficultyEasy 1tickあたり1手。
 	NertzCpuDifficultyEasy NertzCpuDifficulty = iota
-	// NertzCpuDifficultyNormal 1tickあたり最大3手。貪欲にナッツパイル/ファウンデーション優先。
+	// NertzCpuDifficultyNormal 1tickあたり最大3手。
 	NertzCpuDifficultyNormal
-	// NertzCpuDifficultyHard 1tickあたり最大5手。先読みスコアで最適手を選択。
+	// NertzCpuDifficultyHard 1tickあたり最大5手。
+	// (TODO: 真の "先読みスコア" による最適手選択を実装する。現状は Easy/Normal
+	// と同じヒューリスティックを高速回転させているだけ。)
 	NertzCpuDifficultyHard
 )
 
