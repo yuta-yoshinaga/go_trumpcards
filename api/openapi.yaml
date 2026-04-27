@@ -6286,6 +6286,621 @@ paths:
               schema:
                 $ref: '#/components/schemas/SpiteAndMaliceResponse'
 
+  /skat/exec:
+    post:
+      tags:
+        - skat
+      summary: Execute a Skat game command
+      description: |
+        Send a command to advance the Skat game session identified by
+        `sessionId`. Skat is Germany's national 3-player trick-taking game
+        with a 32-card deck (7..A in four suits), a ladder auction to
+        decide the declarer, and three game types (Suit / Grand / Null).
+
+        The round proceeds through these phases:
+
+        | Phase            | Value | Description |
+        |------------------|-------|-------------|
+        | Bid              | `0`   | Ladder auction |
+        | SkatPickup       | `1`   | Declarer chooses to pick up the skat |
+        | Discard          | `2`   | Declarer discards two cards back to the skat |
+        | GameDeclaration  | `3`   | Declarer picks game type and trump |
+        | Play             | `4`   | Trick play |
+        | TrickEnd         | `5`   | Trick won; awaiting next |
+        | RoundEnd         | `6`   | Round complete; scores updated |
+        | GameEnd          | `7`   | Match over (target score reached) |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a match (optional `config`) |
+        | `bid`         | `b`     | Accept or pass the current bid (`accept`: true/false) |
+        | `pickskat`    | `ps`    | Declarer picks up or skips the skat (`pickup`: true/false) |
+        | `discard`     | `d`     | Declarer discards two cards (`discardA`, `discardB`) |
+        | `game`        | `g`     | Declare game type (`gameType`) and optional `trumpSuit` |
+        | `play`        | `p`     | Play a card from hand (`cardIndex`) |
+        | `next`        | `n`     | Advance after trick end |
+        | `nextround`   | `nr`    | Start next round after round end |
+        | `hint`        |         | Get a CPU-style hint |
+        | `log`         | `l`     | View action log |
+      operationId: skatExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pickskat, ps, discard, d, game, g, play, p, next, n, nextround, nr, hint, log, l]
+                accept:
+                  type: boolean
+                  description: bid command — true to accept current bid, false to pass
+                pickup:
+                  type: boolean
+                  description: pickskat command — true to pick up, false to play "Hand"
+                discardA:
+                  type: integer
+                  description: discard command — index of first card to discard
+                discardB:
+                  type: integer
+                  description: discard command — index of second card to discard
+                gameType:
+                  type: integer
+                  description: game command — 0=Suit, 1=Grand, 2=Null
+                trumpSuit:
+                  type: integer
+                  description: game command (Suit only) — 0=Diamonds, 1=Hearts, 2=Spades, 3=Clubs
+                cardIndex:
+                  type: integer
+                  description: play command — index of card in hand to play
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0=easy, 1=normal, 2=hard
+                    targetScore:
+                      type: integer
+                      description: Match target score (default 1000)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new match
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bidAccept:
+                summary: Accept the current bid
+                value:
+                  command: bid
+                  accept: true
+                  sessionId: my-session-001
+              play:
+                summary: Play card at hand index 0
+                value:
+                  command: play
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phase:
+                    type: integer
+                  roundNumber:
+                    type: integer
+                  trickNumber:
+                    type: integer
+                  currentPlayerIdx:
+                    type: integer
+                  forehandIdx:
+                    type: integer
+                  middlehandIdx:
+                    type: integer
+                  rearhandIdx:
+                    type: integer
+                  dealerIdx:
+                    type: integer
+                  declarerIdx:
+                    type: integer
+                  currentBid:
+                    type: integer
+                  activeBidActorIdx:
+                    type: integer
+                  gameType:
+                    type: integer
+                  trumpSuit:
+                    type: integer
+                  pickedSkat:
+                    type: boolean
+                  declarerCardPoints:
+                    type: integer
+                  defendersCardPoints:
+                    type: integer
+                  winnerSide:
+                    type: integer
+                  gameValue:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  leadPlayerIdx:
+                    type: integer
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        cardCount:
+                          type: integer
+                        cards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        bid:
+                          type: integer
+                        isDeclarer:
+                          type: boolean
+                        cardPoints:
+                          type: integer
+                        cumulativeScore:
+                          type: integer
+                  currentTrick:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        playerIdx:
+                          type: integer
+                        card:
+                          $ref: '#/components/schemas/Card'
+                  skat:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  config:
+                    type: object
+                    properties:
+                      cpuDifficulty:
+                        type: integer
+                      targetScore:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /shithead/exec:
+    post:
+      tags:
+        - shithead
+      summary: Execute a Shithead / Karma game command
+      description: |
+        Send a command to advance the Shithead (Karma) session identified
+        by `sessionId`. Shithead is a 4-player shedding game with three
+        card layers per player — face-down (3), face-up (3), and the hand
+        — and configurable magic cards (2 / 7 / 8 / 10 plus four-of-a-kind
+        burn). The last player holding cards is the "shithead".
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game (optional `config`) |
+        | `play`  | `p`     | Play one or more cards (`indices`); empty array = pickup |
+        | `log`   | `l`     | View action log |
+      operationId: shitheadExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, log, l]
+                indices:
+                  type: array
+                  items:
+                    type: integer
+                  description: play command — indices of cards to play (empty array picks up the discard pile)
+                config:
+                  type: object
+                  properties:
+                    magicTwo:
+                      type: boolean
+                      description: 2 resets the pile rank
+                    magicSeven:
+                      type: boolean
+                      description: 7 forces next play to be 7 or lower
+                    magicEight:
+                      type: boolean
+                      description: 8 skips the next player
+                    magicTen:
+                      type: boolean
+                      description: 10 burns the discard pile
+                    fourOfAKindBurn:
+                      type: boolean
+                      description: Four cards of the same rank burn the pile
+                    cpuDifficulty:
+                      type: integer
+                      description: 0=easy, 1=normal, 2=hard
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play card indices 0 and 1 from hand
+                value:
+                  command: play
+                  indices: [0, 1]
+                  sessionId: my-session-001
+              pickup:
+                summary: Pick up the discard pile
+                value:
+                  command: play
+                  indices: []
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  currentTurn:
+                    type: integer
+                  currentSource:
+                    type: string
+                    description: "hand / faceUp / faceDown"
+                  stockSize:
+                    type: integer
+                  skipNext:
+                    type: boolean
+                  sevenActive:
+                    type: boolean
+                  gameEndFlag:
+                    type: boolean
+                  discardPile:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        isHuman:
+                          type: boolean
+                        isFinished:
+                          type: boolean
+                        rank:
+                          type: integer
+                        handCount:
+                          type: integer
+                        handCards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        faceUpCards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        faceDownCount:
+                          type: integer
+                  config:
+                    type: object
+                    properties:
+                      magicTwo:
+                        type: boolean
+                      magicSeven:
+                        type: boolean
+                      magicEight:
+                        type: boolean
+                      magicTen:
+                        type: boolean
+                      fourOfAKindBurn:
+                        type: boolean
+                      cpuDifficulty:
+                        type: integer
+                  cpuActions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        playerIdx:
+                          type: integer
+                        source:
+                          type: string
+                        playedCards:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Card'
+                        pickup:
+                          type: boolean
+                        burned:
+                          type: boolean
+                        skipped:
+                          type: boolean
+                  humanAction:
+                    nullable: true
+                    type: object
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /nertz/exec:
+    post:
+      tags:
+        - nertz
+      summary: Execute a Nertz / Pounce game command
+      description: |
+        Send a command to advance the Nertz (Pounce) session identified by
+        `sessionId`. Nertz is a real-time competitive solitaire (2–6
+        players) racing to empty a 13-card "Nertz pile" onto shared
+        Klondike-style foundations. Each player has a private tableau
+        (4 columns), waste, and stock; the foundations are shared.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Idle      | `0`   | Pre-reset |
+        | Playing   | `1`   | Round in progress |
+        | RoundEnd  | `2`   | Someone emptied their Nertz pile |
+        | GameEnd   | `3`   | Match target score reached |
+
+        | Command     | Aliases     | Description |
+        |-------------|-------------|-------------|
+        | `reset`     | `r`         | Start / restart a match (optional `config`) |
+        | `nextRound` | `nr`        | Start next round after RoundEnd |
+        | `tick`      |             | Advance pending CPU actions one step |
+        | `draw`      | `d`         | Draw `drawCount` cards from stock to waste (`playerIdx`) |
+        | `move`      | `m`         | Move a card between zones (see body) |
+        | `undo`      | `u`         | Undo the previous move (human only) |
+        | `hint`      |             | Get a hint for the current human player |
+        | `log`       | `l`         | View action log |
+
+        Move zones — supported `from.zone` → `to.zone` pairs:
+
+        | From      | To         | Required fields |
+        |-----------|------------|-----------------|
+        | nertz     | foundation | `to.idx` |
+        | nertz     | tableau    | `to.col` |
+        | waste     | foundation | `to.idx` |
+        | waste     | tableau    | `to.col` |
+        | tableau   | foundation | `from.col`, `to.idx` |
+        | tableau   | tableau    | `from.col`, `from.cardIndex`, `to.col` |
+      operationId: nertzExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, nextRound, nr, tick, draw, d, move, m, undo, u, hint, log, l]
+                playerIdx:
+                  type: integer
+                  description: 0 = human; CPUs are 1..N-1
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [nertz, waste, tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [foundation, tableau]
+                    col:
+                      type: integer
+                    idx:
+                      type: integer
+                config:
+                  type: object
+                  properties:
+                    playerCount:
+                      type: integer
+                      description: 2..6 players
+                    drawCount:
+                      type: integer
+                      description: Cards drawn from stock per draw (default 3)
+                    targetScore:
+                      type: integer
+                    cpuDifficulty:
+                      type: integer
+                      description: 0=easy, 1=normal, 2=hard
+                    cpuTickMoves:
+                      type: integer
+                      description: CPU actions resolved per tick
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new match
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw from stock to waste
+                value:
+                  command: draw
+                  playerIdx: 0
+                  sessionId: my-session-001
+              moveNertzToFoundation:
+                summary: Send Nertz top card to foundation 0
+                value:
+                  command: move
+                  playerIdx: 0
+                  from:
+                    zone: nertz
+                  to:
+                    zone: foundation
+                    idx: 0
+                  sessionId: my-session-001
+              moveTableauToTableau:
+                summary: Move card stack within tableau
+                value:
+                  command: move
+                  playerIdx: 0
+                  from:
+                    zone: tableau
+                    col: 1
+                    cardIndex: 0
+                  to:
+                    zone: tableau
+                    col: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phase:
+                    type: integer
+                  roundNo:
+                    type: integer
+                  winnerIdx:
+                    type: integer
+                  matchWinner:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  playerCount:
+                    type: integer
+                  drawCount:
+                    type: integer
+                  targetScore:
+                    type: integer
+                  cpuDifficulty:
+                    type: integer
+                  cpuTickMoves:
+                    type: integer
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        isCpu:
+                          type: boolean
+                        deckIdx:
+                          type: integer
+                        score:
+                          type: integer
+                        nertzSize:
+                          type: integer
+                        nertzTop:
+                          nullable: true
+                          allOf:
+                            - $ref: '#/components/schemas/Card'
+                        tableau:
+                          type: array
+                          items:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                card:
+                                  $ref: '#/components/schemas/Card'
+                                faceUp:
+                                  type: boolean
+                        wasteTop:
+                          nullable: true
+                          allOf:
+                            - $ref: '#/components/schemas/Card'
+                        wasteSize:
+                          type: integer
+                        stockSize:
+                          type: integer
+                  foundations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        top:
+                          nullable: true
+                          allOf:
+                            - $ref: '#/components/schemas/Card'
+                        suit:
+                          type: integer
+                        size:
+                          type: integer
+                  hint:
+                    nullable: true
+                    type: object
+                    properties:
+                      fromZone:
+                        type: string
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
 components:
   schemas:
     # -------------------------------------------------------------------------

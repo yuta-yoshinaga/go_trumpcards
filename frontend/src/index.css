@@ -97,7 +97,7 @@ textarea {
 
 /* Dark-themed select elements for game UI.
    min-height enforces the 44px touch target baseline (DESIGN.md, WCAG 2.5.5)
-   so dropdowns line up with btnPrimary/btnSecondary across all 65 games
+   so dropdowns line up with btnPrimary/btnSecondary across all 69 games
    without needing per-component min-h-[44px] classes. */
 select {
   background-color: var(--color-ds-surface-elevated);
