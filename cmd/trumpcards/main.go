@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/update"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/web"
@@ -56,6 +58,17 @@ func isPosixLocalePlaceholder(prefix string) bool {
 // reserved for "let the OS assign an ephemeral port" (POSIX convention).
 func portInRange(port int) bool {
 	return port >= 0 && port <= 65535
+}
+
+// validCategoryNames is the canonical set of `--category` filter values; the
+// strings must stay in lockstep with games.Category.String() so the predicate
+// neither drops a real category nor accepts a typo. See issue #1535.
+var validCategoryNames = map[string]bool{"casino": true, "classic": true, "solo": true}
+
+// validCategory reports whether s names a registered game category. Comparison
+// is case-sensitive to match games.Category.String()'s canonical lowercase form.
+func validCategory(s string) bool {
+	return validCategoryNames[s]
 }
 
 // flagSetVisited reports whether any of the named flags was explicitly set
@@ -179,15 +192,29 @@ func run() int {
 	// Build game commands from the registry (single source of truth).
 	commands := buildGameCommands()
 	commands["games"] = func() int {
-		var short, aliases bool
+		var short, aliases, asJSON bool
+		var category string
 		_, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
 			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
+			f.BoolVar(&asJSON, "json", false, "Emit machine-readable JSON (array of {name, category, description, aliases})")
+			f.StringVar(&category, "category", "", "Filter by category: casino|classic|solo")
 		})
 		if !ok {
 			return code
 		}
-		printGames(short, aliases, os.Stdout)
+		if category != "" && !validCategory(category) {
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidCategory", "category", category))
+			return 2
+		}
+		if asJSON {
+			if err := printGamesJSON(category, os.Stdout); err != nil {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliGamesJSONError", "err", err.Error()))
+				return 1
+			}
+			return 0
+		}
+		printGames(short, aliases, category, os.Stdout)
 		return 0
 	}
 	commands["completion"] = func() int {
@@ -400,17 +427,26 @@ var builtinSubcommandHelp = map[string][]string{
 	},
 	"games": {
 		"USAGE:",
-		"  trumpcards games [--short] [--aliases]",
+		"  trumpcards games [--short] [--aliases] [--json] [--category casino|classic|solo]",
 		"",
 		"FLAGS:",
-		"      --short     Print game names only (for scripting)",
-		"      --aliases   With --short, also print each alias on its own line",
-		"                  (long output always includes aliases inline)",
+		"      --short              Print game names only (for scripting)",
+		"      --aliases            With --short, also print each alias on its own line",
+		"                           (long output always includes aliases inline)",
+		"      --json               Emit machine-readable JSON: an array of",
+		"                           {name, category, description, aliases}.",
+		"                           aliases is always [] (never null) for stable schema.",
+		"      --category CAT       Restrict output to one Cloudflare Worker category:",
+		"                           casino, classic, or solo. Combinable with --short / --json.",
+		"                           Invalid value exits 2.",
 		"",
 		"EXAMPLES:",
 		"  trumpcards games",
 		"  trumpcards games --short",
 		"  trumpcards games --short --aliases",
+		"  trumpcards games --category casino",
+		"  trumpcards games --json | jq -r '.[] | select(.category==\"solo\") | .name'",
+		"  trumpcards games --json --category classic",
 	},
 	"help": {
 		"USAGE:",
@@ -661,6 +697,8 @@ EXAMPLES:
   trumpcards games               List all available games
   trumpcards games --short       List game names only (for scripting)
   trumpcards games --short --aliases  List game names including aliases
+  trumpcards games --json        Machine-readable list (name, category, description, aliases)
+  trumpcards games --category solo  Filter by Cloudflare Worker category (casino|classic|solo)
   trumpcards update              Self-update to the latest version
   trumpcards update --yes        Update without confirmation prompt
   trumpcards update --check      Report whether an update is available (exit 10 if yes)
@@ -743,8 +781,10 @@ func detectBootstrapLang(args []string, langEnv string) string {
 // and any aliases inline. With short=true, only canonical names are printed,
 // one per line — and if aliases is also true, every alias gets its own line.
 // The `aliases` flag is a no-op in long mode because aliases are always shown
-// inline there.
-func printGames(short, aliases bool, w io.Writer) {
+// inline there. If category is non-empty, output is restricted to games whose
+// games.Category matches; the caller is expected to have validated category
+// via validCategory before invoking. See issue #1535.
+func printGames(short, aliases bool, category string, w io.Writer) {
 	var reverseAliases map[string][]string
 	if !short || aliases {
 		reverseAliases = make(map[string][]string)
@@ -761,7 +801,11 @@ func printGames(short, aliases bool, w io.Writer) {
 		descs = ui.GameDescriptions()
 	}
 
+	categoryByName := gameCategoryByName()
 	for _, name := range ui.GameNames() {
+		if category != "" && categoryByName[name] != category {
+			continue
+		}
 		if short {
 			_, _ = fmt.Fprintln(w, name)
 			if aliases {
@@ -777,6 +821,60 @@ func printGames(short, aliases bool, w io.Writer) {
 			_, _ = fmt.Fprintln(w, line)
 		}
 	}
+}
+
+// gameCategoryByName builds Name→Category-string from the games registry.
+// The strings come from games.Category.String() so they stay in lockstep
+// with the SSoT and validCategory's accepted values.
+func gameCategoryByName() map[string]string {
+	all := games.All()
+	out := make(map[string]string, len(all))
+	for _, g := range all {
+		out[g.Name] = g.Category.String()
+	}
+	return out
+}
+
+// printGamesJSON emits a JSON array describing every game (or only games in
+// the given category, if non-empty). Each entry is `{name, category,
+// description, aliases}`. Aliases is always a non-nil slice so the JSON
+// shape is stable: scripts can rely on `.aliases | length` working without a
+// null guard. See issue #1535.
+func printGamesJSON(category string, w io.Writer) error {
+	type entry struct {
+		Name        string   `json:"name"`
+		Category    string   `json:"category"`
+		Description string   `json:"description"`
+		Aliases     []string `json:"aliases"`
+	}
+	reverseAliases := make(map[string][]string)
+	for alias, canonical := range ui.GameAliases {
+		reverseAliases[canonical] = append(reverseAliases[canonical], alias)
+	}
+	for k := range reverseAliases {
+		sort.Strings(reverseAliases[k])
+	}
+	all := games.All()
+	out := make([]entry, 0, len(all))
+	for _, g := range all {
+		cat := g.Category.String()
+		if category != "" && cat != category {
+			continue
+		}
+		al := reverseAliases[g.Name]
+		if al == nil {
+			al = []string{} // emit `[]`, never `null` — stable schema for scripts.
+		}
+		out = append(out, entry{
+			Name:        g.Name,
+			Category:    cat,
+			Description: g.Description,
+			Aliases:     al,
+		})
+	}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(out)
 }
 
 // buildGameCommands generates command handlers for all games from the registry.
