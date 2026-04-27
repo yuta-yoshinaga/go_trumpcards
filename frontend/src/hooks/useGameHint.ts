@@ -43,6 +43,7 @@ import type {
   SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
+  SlapjackResponse,
   SpadesResponse,
   SpeedResponse,
   SpiderResponse,
@@ -103,6 +104,7 @@ import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
+import { getSlapjackHint } from '../utils/hints/slapjackHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
@@ -186,6 +188,7 @@ const hintFactories = {
   skat: () => null,
   shithead: () => null,
   nertz: (s) => getNertzHint(s as NertzResponse),
+  slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

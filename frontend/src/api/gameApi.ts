@@ -60,6 +60,7 @@ import type {
   ShortDeckResponse,
   SkatConfig as SkatConfigType,
   SkatResponse,
+  SlapjackResponse,
   SpadesResponse,
   SpeedConfig,
   SpeedResponse,
@@ -155,6 +156,7 @@ const workerUrl: Record<string, string> = {
   skat: WORKER_CLASSIC,
   shithead: WORKER_CLASSIC,
   nertz: WORKER_CLASSIC,
+  slapjack: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1112,6 +1114,20 @@ export const warApi = {
     gameExec<WarResponse>('war', { command, ...config }),
 };
 
+/** Configuration options for Slapjack game settings. */
+export interface SlapjackConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Slapjack /slapjack/exec endpoint. */
+export const slapjackApi = {
+  exec: (command: 'reset' | 'step' | 'slap' | 'tick' | 'log', args?: { config?: SlapjackConfigInput }) =>
+    gameExec<SlapjackResponse>('slapjack', {
+      command,
+      ...(args || {}),
+    }),
+};
+
 /** API client for the Fifty-one /fiftyone/exec endpoint. */
 export const fiftyoneApi = {
   exec: (
@@ -1446,6 +1462,7 @@ const games = [
   'skat',
   'shithead',
   'nertz',
+  'slapjack',
 ] as const;
 type Game = (typeof games)[number];
 

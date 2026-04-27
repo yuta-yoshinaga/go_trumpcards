@@ -146,6 +146,8 @@ tags:
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
   - name: nertz
     description: Nertz / Pounce (ナーツ / パウンス) game - real-time multi-player competitive solitaire (2-6 players) racing to empty a 13-card Nertz pile onto shared Klondike-style foundations
+  - name: slapjack
+    description: Slapjack (スラップジャック) game - real-time reflex game where 1 human races a CPU to slap the centre pile when a Jack appears on top
 
 paths:
   /blackjack/exec:
@@ -4467,6 +4469,126 @@ paths:
                     bet: 0
                     result: 0
                     message: "unsupported command"
+
+  /slapjack/exec:
+    post:
+      tags:
+        - slapjack
+      summary: Execute a Slapjack game command
+      description: |
+        Send a command to advance the Slapjack game session identified by
+        `sessionId`. Slapjack is a real-time reflex game for a human vs CPU
+        played with a standard 52-card deck split evenly (26 cards each).
+        Players take turns flipping the top of their stock onto the centre
+        pile; whoever slaps first when a Jack appears on top wins the pile.
+        Wrong slaps cost the offender one card to the opponent.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Game is running |
+        | GameEnd  | `1`   | Game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game (optional `config.cpuDifficulty` 0-2) |
+        | `step`  | `s`     | Current player flips top of stock onto pile |
+        | `slap`  | `j`     | Slap the pile (J = win, otherwise penalty) |
+        | `tick`  |         | Advance the CPU's pending step / slap action |
+        | `log`   | `l`     | View action log |
+      operationId: slapjackExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, step, s, slap, j, tick, log, l]
+                playerIdx:
+                  type: integer
+                  description: 0 = human (slap only)
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0=easy, 1=normal, 2=hard
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              slap:
+                summary: Human slaps when J is on top
+                value:
+                  command: slap
+                  playerIdx: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phase:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerIdx:
+                    type: integer
+                  currentTurnIdx:
+                    type: integer
+                  isHumanTurn:
+                    type: boolean
+                  isTopJack:
+                    type: boolean
+                  centerPileSize:
+                    type: integer
+                  topCard:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        isHuman:
+                          type: boolean
+                        stockSize:
+                          type: integer
+                  cpuDifficulty:
+                    type: integer
+                  pendingKind:
+                    type: integer
+                  pendingDeadlineMs:
+                    type: integer
+                  lastEventKind:
+                    type: integer
+                  lastEventPlayerIdx:
+                    type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
 
   /war/exec:
     post:

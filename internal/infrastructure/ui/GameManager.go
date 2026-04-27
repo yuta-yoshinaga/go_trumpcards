@@ -1111,6 +1111,20 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "slapjack", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewSlapjackCuiController(usecase.NewSlapjackInteractor(
+				domain.NewDefaultSlapjack(), new(presenter.SlapjackCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "slapjack.helpTitle",
+				CommandKeys: []string{
+					"slapjack.helpStep",
+					"slapjack.helpSlap",
+					"slapjack.helpTick",
+				},
+				SettingKeys: []string{"slapjack.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

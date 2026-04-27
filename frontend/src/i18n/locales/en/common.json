@@ -86,7 +86,8 @@
     "spiteandmalice": "Spite and Malice",
     "skat": "Skat",
     "shithead": "Shithead",
-    "nertz": "Nertz / Pounce"
+    "nertz": "Nertz / Pounce",
+    "slapjack": "Slapjack"
   },
   "sound": {
     "mute": "Mute sound",
@@ -352,6 +353,8 @@
     "pigtail.result.cpuLose": "Game Over! CPU {{cpuId}} loses!",
     "war.result.humanWin": "Game Over! You win!",
     "war.result.cpuWin": "Game Over! CPU wins...",
+    "slapjack.result.humanWin": "Game Over! You win!",
+    "slapjack.result.cpuWin": "Game Over! CPU wins...",
     "fiftyone.result.humanWin": "Game Over! You win!",
     "fiftyone.result.cpuWin": "Game Over! CPU {{cpuId}} wins!",
     "clocksolitaire.playing": "Playing",

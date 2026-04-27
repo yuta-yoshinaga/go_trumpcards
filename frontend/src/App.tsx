@@ -61,6 +61,7 @@ import { SevensPage } from './pages/SevensPage';
 import { ShitheadPage } from './pages/ShitheadPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
 import { SkatPage } from './pages/SkatPage';
+import { SlapjackPage } from './pages/SlapjackPage';
 import { SpadesPage } from './pages/SpadesPage';
 import { Spanish21Page } from './pages/Spanish21Page';
 import { SpeedPage } from './pages/SpeedPage';
@@ -145,6 +146,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/skat': <SkatPage />,
   '/shithead': <ShitheadPage />,
   '/nertz': <NertzPage />,
+  '/slapjack': <SlapjackPage />,
 };
 
 /** Root application component with router and game page routes. */

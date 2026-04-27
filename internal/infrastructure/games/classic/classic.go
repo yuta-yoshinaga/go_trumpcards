@@ -239,4 +239,12 @@ func init() {
 			return usecase.RestoreNertzInteractor(data, new(presenter.NertzWebPresenter))
 		},
 		controller.NewNertzWebControllerWithProvider)
+	games.RegisterKVGame("slapjack", games.CategoryClassic,
+		func() usecase.SlapjackInteractorIF {
+			return usecase.NewSlapjackInteractor(domain.NewDefaultSlapjack(), new(presenter.SlapjackWebPresenter))
+		},
+		func(data []byte) (usecase.SlapjackInteractorIF, error) {
+			return usecase.RestoreSlapjackInteractor(data, new(presenter.SlapjackWebPresenter))
+		},
+		controller.NewSlapjackWebControllerWithProvider)
 }

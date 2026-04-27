@@ -86,7 +86,8 @@
     "spiteandmalice": "スパイト・アンド・マリス",
     "skat": "スカート",
     "shithead": "シットヘッド",
-    "nertz": "ナーツ"
+    "nertz": "ナーツ",
+    "slapjack": "スラップジャック"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -352,6 +353,8 @@
     "pigtail.result.cpuLose": "ゲーム終了！ CPU {{cpuId}}の負け！",
     "war.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "war.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
+    "slapjack.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "slapjack.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
     "fiftyone.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "fiftyone.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "clocksolitaire.playing": "プレイ中",
