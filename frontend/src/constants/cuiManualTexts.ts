@@ -36,6 +36,7 @@ import klondike from '../../../docs/manual/cui/klondike.md?raw';
 import letitride from '../../../docs/manual/cui/letitride.md?raw';
 import memory from '../../../docs/manual/cui/memory.md?raw';
 import napoleon from '../../../docs/manual/cui/napoleon.md?raw';
+import nertz from '../../../docs/manual/cui/nertz.md?raw';
 import ohhell from '../../../docs/manual/cui/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/cui/oldmaid.md?raw';
 import omaha from '../../../docs/manual/cui/omaha.md?raw';
@@ -140,6 +141,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/spiteandmalice': spiteandmalice,
   '/skat': skat,
   '/shithead': shithead,
+  '/nertz': nertz,
 };
 
 /** Returns true when CLI mode is enabled for the game at the given path. */

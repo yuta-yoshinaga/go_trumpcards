@@ -144,6 +144,8 @@ tags:
     description: Skat (スカート) game - Germany's national 3-player trick-taking game with a 32-card deck, ladder auction, and three game types (Suit / Grand / Null)
   - name: shithead
     description: Shithead / Karma (シットヘッド / カーマ) game - 4-player shedding game with three card layers (face-down / face-up / hand) and configurable magic cards (2/7/8/10 + four-of-a-kind burn)
+  - name: nertz
+    description: Nertz / Pounce (ナーツ / パウンス) game - real-time multi-player competitive solitaire (2-6 players) racing to empty a 13-card Nertz pile onto shared Klondike-style foundations
 
 paths:
   /blackjack/exec:
