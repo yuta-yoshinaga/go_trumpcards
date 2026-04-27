@@ -593,7 +593,11 @@ func (g *Nertz) FindCpuMove(playerIdx int) *NertzAction {
 		}
 	}
 
-	// 6. Tableau substack → another tableau col
+	// 6. Tableau substack → another tableau col.
+	// Skip whole-column moves into an empty destination when the Nertz pile
+	// can no longer refill the source column. Otherwise the CPU can swap a
+	// stack between two empty columns each tick forever (no card revealed,
+	// no nertz reduction) — see PR #1528 review.
 	for fromCol := 0; fromCol < NertzTableauCnt; fromCol++ {
 		col := p.GetTableauColumn(fromCol)
 		if len(col) == 0 {
@@ -604,18 +608,22 @@ func (g *Nertz) FindCpuMove(playerIdx int) *NertzAction {
 			if toCol == fromCol {
 				continue
 			}
-			if canPlaceOnNertzTableau(bottom, p.TableauTop(toCol)) {
-				cards := make([]*Card, len(col))
-				for i, tc := range col {
-					cards[i] = tc.Card
-				}
-				return &NertzAction{
-					PlayerIdx:  playerIdx,
-					ActionType: "moveTT",
-					FromZone:   NertzZoneTableau, FromCol: fromCol, FromIdx: 0,
-					ToZone: NertzZoneTableau, ToCol: toCol,
-					Cards: cards,
-				}
+			if !canPlaceOnNertzTableau(bottom, p.TableauTop(toCol)) {
+				continue
+			}
+			if p.TableauTop(toCol) == nil && p.NertzSize() == 0 {
+				continue
+			}
+			cards := make([]*Card, len(col))
+			for i, tc := range col {
+				cards[i] = tc.Card
+			}
+			return &NertzAction{
+				PlayerIdx:  playerIdx,
+				ActionType: "moveTT",
+				FromZone:   NertzZoneTableau, FromCol: fromCol, FromIdx: 0,
+				ToZone: NertzZoneTableau, ToCol: toCol,
+				Cards: cards,
 			}
 		}
 	}

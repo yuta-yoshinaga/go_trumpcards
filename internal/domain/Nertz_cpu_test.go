@@ -161,3 +161,27 @@ func TestNertz_Tick_DoesNotMoveHumanPlayer(t *testing.T) {
 	g.Tick()
 	assert.Equal(t, 1, human.NertzSize(), "Tick must not advance the human player")
 }
+
+// TestNertz_FindCpuMove_NoOscillationBetweenEmptyColumns guards against the
+// PR #1528 review issue where step 6 (tableau→tableau) would shuffle a whole
+// column into an empty destination indefinitely. With an empty Nertz pile and
+// no foundation/waste plays, the CPU must fall through to draw or return nil
+// rather than emit a moveTT that produces no progress.
+func TestNertz_FindCpuMove_NoOscillationBetweenEmptyColumns(t *testing.T) {
+	g := nertzGameForTest(t)
+	clearFoundations(g)
+	cpu := g.GetPlayers()[1]
+	clearPlayerPiles(cpu)
+	// Column 0 holds a single card, the rest are empty. Nertz pile is empty
+	// so a whole-column move into another empty column would be infinite.
+	cpu.PushTableau(0, &domain.NertzTableauCard{
+		Card:   newNertzCard(domain.CardDesignSpade, 5),
+		FaceUp: true,
+	})
+
+	move := g.FindCpuMove(1)
+	if move != nil {
+		assert.NotEqual(t, "moveTT", move.ActionType,
+			"CPU must not emit a moveTT when the move only swaps cards between empty columns")
+	}
+}
