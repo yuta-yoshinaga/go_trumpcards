@@ -102,7 +102,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
         <div className="mt-2 space-y-2 glass-panel rounded-lg p-3">
           {/* Side bets */}
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            <label htmlFor="bj-pp-bet" className="text-white text-sm" title={t('sideBetTooltip.pp')}>
+            <label htmlFor="bj-pp-bet" className="text-white text-sm">
               {t('sideBetLabel.pp')}
             </label>
             <input
@@ -115,8 +115,9 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               onChange={(e) => props.onPerfectPairsBetChange(Number(e.target.value))}
               className="w-20 px-2 py-1 rounded text-sm"
               disabled={props.loading}
+              aria-describedby="bj-pp-help"
             />
-            <label htmlFor="bj-t3-bet" className="text-white text-sm" title={t('sideBetTooltip.t3')}>
+            <label htmlFor="bj-t3-bet" className="text-white text-sm">
               {t('sideBetLabel.t3')}
             </label>
             <input
@@ -129,7 +130,12 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               onChange={(e) => props.onTwentyOnePlus3BetChange(Number(e.target.value))}
               className="w-20 px-2 py-1 rounded text-sm"
               disabled={props.loading}
+              aria-describedby="bj-t3-help"
             />
+          </div>
+          <div className="text-ds-text-muted text-xs text-center">
+            <p id="bj-pp-help">{t('sideBetTooltip.pp')}</p>
+            <p id="bj-t3-help">{t('sideBetTooltip.t3')}</p>
           </div>
           {/* Deck & CPU count */}
           <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -183,7 +189,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               className={props.dealerHitsSoft17 ? btnSuccess : btnWarning}
               disabled={props.loading}
               onClick={props.onToggleSoft17}
-              title={t('soft17Tooltip')}
+              aria-describedby="bj-soft17-help"
             >
               {props.dealerHitsSoft17 ? 'H17' : 'S17'}
             </button>
@@ -209,13 +215,16 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               ))}
             </select>
           </div>
+          <p id="bj-soft17-help" className="text-ds-text-muted text-xs text-center">
+            {t('soft17Tooltip')}
+          </p>
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <button
               type="button"
               className={props.doubleAfterSplit ? btnSuccess : btnWarning}
               disabled={props.loading}
               onClick={props.onToggleDAS}
-              title={t('dasTooltip')}
+              aria-describedby="bj-das-help"
             >
               {t('das')} {props.doubleAfterSplit ? 'ON' : 'OFF'}
             </button>
@@ -252,6 +261,9 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
               ))}
             </select>
           </div>
+          <p id="bj-das-help" className="text-ds-text-muted text-xs text-center">
+            {t('dasTooltip')}
+          </p>
         </div>
       </details>
 
