@@ -52,7 +52,7 @@ export function ChipBetInput({
   invalid,
   describedBy,
 }: ChipBetInputProps) {
-  const errorClasses = invalid ? 'bg-ds-error/40 border border-ds-error text-ds-error' : '';
+  const errorClasses = invalid ? 'bg-ds-error/40 border-ds-error text-ds-error' : '';
   return (
     <div className="flex items-center gap-2">
       <label htmlFor={id} className="text-white text-sm">
@@ -69,11 +69,11 @@ export function ChipBetInput({
         aria-describedby={describedBy}
         onChange={(e) => {
           const parsed = Number(e.target.value);
+          if (Number.isNaN(parsed)) return;
           if (!autoClamp) {
             onChange(parsed);
             return;
           }
-          if (Number.isNaN(parsed)) return;
           const upper = max ?? Number.POSITIVE_INFINITY;
           onChange(Math.max(min, Math.min(parsed, upper)));
         }}

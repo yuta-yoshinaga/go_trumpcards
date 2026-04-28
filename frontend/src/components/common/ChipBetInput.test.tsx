@@ -82,4 +82,34 @@ describe('ChipBetInput', () => {
     const input = screen.getByLabelText('Bet');
     expect(input).toHaveAttribute('aria-describedby', 'bet-help');
   });
+
+  it('clamps to min when max is omitted (no-limit mode with autoClamp=true)', () => {
+    const onChange = vi.fn();
+    render(<ChipBetInput id="bet" label="Bet" value={20} onChange={onChange} />);
+    fireEvent.change(screen.getByLabelText('Bet'), { target: { value: '5' } });
+    expect(onChange).toHaveBeenCalledWith(10);
+  });
+
+  it('passes large values through unbounded when max is omitted', () => {
+    const onChange = vi.fn();
+    render(<ChipBetInput id="bet" label="Bet" value={20} onChange={onChange} />);
+    fireEvent.change(screen.getByLabelText('Bet'), { target: { value: '999999999' } });
+    expect(onChange).toHaveBeenCalledWith(999999999);
+  });
+
+  it('does not invoke onChange when input parses to NaN under autoClamp=false', () => {
+    // Number("") === 0 (covered above), but Number("abc") === NaN. Without the guard
+    // running before the !autoClamp branch, callers would have to defensively check
+    // for NaN; this test pins the guard's placement.
+    const onChange = vi.fn();
+    const { container } = render(
+      <ChipBetInput id="bet" label="Bet" value={20} onChange={onChange} max={50} autoClamp={false} />,
+    );
+    const input = container.querySelector<HTMLInputElement>('#bet');
+    expect(input).not.toBeNull();
+    if (!input) return;
+    Object.defineProperty(input, 'value', { get: () => 'abc', configurable: true });
+    fireEvent.change(input);
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });
