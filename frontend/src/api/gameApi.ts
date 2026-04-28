@@ -35,6 +35,9 @@ import type {
   LetItRideResponse,
   MemoryResponse,
   NapoleonResponse,
+  NertzConfig as NertzConfigType,
+  NertzMoveZone,
+  NertzResponse,
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
@@ -52,7 +55,12 @@ import type {
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
+  ShitheadConfig as ShitheadConfigType,
+  ShitheadResponse,
   ShortDeckResponse,
+  SkatConfig as SkatConfigType,
+  SkatResponse,
+  SlapjackResponse,
   SpadesResponse,
   SpeedConfig,
   SpeedResponse,
@@ -145,6 +153,10 @@ const workerUrl: Record<string, string> = {
   president: WORKER_CLASSIC,
   cassino: WORKER_CLASSIC,
   spiteandmalice: WORKER_CLASSIC,
+  skat: WORKER_CLASSIC,
+  shithead: WORKER_CLASSIC,
+  nertz: WORKER_CLASSIC,
+  slapjack: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -888,6 +900,96 @@ export const napoleonApi = {
     }),
 };
 
+/** Configuration options for Skat game settings. */
+export interface SkatConfigInput {
+  cpuDifficulty?: number;
+  targetScore?: number;
+}
+
+/** API client for the Skat /skat/exec endpoint. */
+export const skatApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'pickskat' | 'discard' | 'game' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    args?: {
+      accept?: boolean;
+      pickup?: boolean;
+      discardA?: number;
+      discardB?: number;
+      gameType?: number;
+      trumpSuit?: number;
+      cardIndex?: number;
+      config?: SkatConfigInput;
+    },
+  ) =>
+    gameExec<SkatResponse>('skat', {
+      command,
+      ...(args || {}),
+    }),
+};
+
+// SkatConfigType import is used only for type re-export; ensure it's referenced.
+export type { SkatConfigType };
+
+/** Configuration options for Shithead game settings. */
+export interface ShitheadConfigInput {
+  magicTwo?: boolean;
+  magicSeven?: boolean;
+  magicEight?: boolean;
+  magicTen?: boolean;
+  fourOfAKindBurn?: boolean;
+  cpuDifficulty?: number;
+}
+
+/** API client for the Shithead /shithead/exec endpoint. */
+export const shitheadApi = {
+  exec: (
+    command: 'reset' | 'play' | 'log',
+    args?: {
+      indices?: number[];
+      config?: ShitheadConfigInput;
+    },
+  ) =>
+    gameExec<ShitheadResponse>('shithead', {
+      command,
+      ...(args || {}),
+    }),
+};
+
+// ShitheadConfigType import is used only for type re-export.
+export type { ShitheadConfigType };
+
+/** Configuration options for Nertz / Pounce game settings. */
+export interface NertzConfigInput {
+  playerCount?: number;
+  drawCount?: number;
+  targetScore?: number;
+  cpuDifficulty?: number;
+  cpuTickMoves?: number;
+}
+
+/** Source/target zone identifier for a Nertz move. */
+export type { NertzMoveZone };
+
+/** API client for the Nertz / Pounce /nertz/exec endpoint. */
+export const nertzApi = {
+  exec: (
+    command: 'reset' | 'nr' | 'tick' | 'd' | 'm' | 'u' | 'h' | 'log',
+    args?: {
+      playerIdx?: number;
+      from?: NertzMoveZone;
+      to?: NertzMoveZone;
+      config?: NertzConfigInput;
+    },
+  ) =>
+    gameExec<NertzResponse>('nertz', {
+      command,
+      ...(args || {}),
+    }),
+};
+
+// NertzConfigType import is used only for type re-export.
+export type { NertzConfigType };
+
 /** Configuration options for Indian Poker game settings. */
 export interface IndianPokerConfigInput {
   ante?: number;
@@ -1010,6 +1112,20 @@ export const jokerpokerApi = createVideoPokerApi('jokerpoker');
 export const warApi = {
   exec: (command: 'reset' | 'step' | 'log', config?: { maxRounds?: number }) =>
     gameExec<WarResponse>('war', { command, ...config }),
+};
+
+/** Configuration options for Slapjack game settings. */
+export interface SlapjackConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Slapjack /slapjack/exec endpoint. */
+export const slapjackApi = {
+  exec: (command: 'reset' | 'step' | 'slap' | 'tick' | 'log', args?: { config?: SlapjackConfigInput }) =>
+    gameExec<SlapjackResponse>('slapjack', {
+      command,
+      ...(args || {}),
+    }),
 };
 
 /** API client for the Fifty-one /fiftyone/exec endpoint. */
@@ -1343,6 +1459,10 @@ const games = [
   'cassino',
   'spanish21',
   'spiteandmalice',
+  'skat',
+  'shithead',
+  'nertz',
+  'slapjack',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -247,6 +247,26 @@ export const SpiderPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Skat phase constants (sync: internal/domain/Skat.go). */
+export const SkatPhase = {
+  BID: 0,
+  SKAT_PICKUP: 1,
+  DISCARD: 2,
+  GAME_DECLARATION: 3,
+  PLAY: 4,
+  TRICK_END: 5,
+  ROUND_END: 6,
+  GAME_END: 7,
+} as const;
+
+/** Skat game type constants (sync: internal/domain/Skat.go). */
+export const SkatGameType = {
+  NONE: 0,
+  SUIT: 1,
+  GRAND: 2,
+  NULL: 3,
+} as const;
+
 /** Napoleon phase constants (sync: internal/domain/Napoleon.go). */
 export const NapoleonPhase = {
   BID: 0,
@@ -510,4 +530,33 @@ export const RedDogPhase = {
   SPREAD_DECISION: 3,
   PAIR_THIRD: 4,
   END: 5,
+} as const;
+
+/** Nertz / Pounce phase constants (sync: internal/domain/Nertz.go). */
+export const NertzPhase = {
+  IDLE: 0,
+  PLAYING: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+/** Slapjack phase constants (sync: internal/domain/Slapjack.go). */
+export const SlapjackPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Slapjack pending CPU action kind (sync: internal/domain/Slapjack.go). */
+export const SlapjackPendingKind = {
+  NONE: 0,
+  STEP: 1,
+  SLAP: 2,
+} as const;
+
+/** Slapjack last-event kind for UI feedback (sync: internal/domain/Slapjack.go). */
+export const SlapjackEventKind = {
+  NONE: 0,
+  STEP: 1,
+  SLAP_CORRECT: 2,
+  SLAP_WRONG: 3,
 } as const;

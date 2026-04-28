@@ -47,7 +47,12 @@ func (p *SpiderWebPresenter) Output(s interfaces.SpiderGame, lastErr error) stri
 		switch phase {
 		case domain.SpiderPhasePlaying:
 			if s.IsStalemate() {
-				resObj.MessageCode = "spider.stalemate"
+				if resObj.UndoToEscape > 0 {
+					resObj.MessageCode = "spider.stalemateWithEscape"
+					resObj.MessageParams = map[string]string{"count": fmt.Sprintf("%d", resObj.UndoToEscape)}
+				} else {
+					resObj.MessageCode = "spider.stalemate"
+				}
 			} else {
 				resObj.MessageCode = "spider.playing"
 			}

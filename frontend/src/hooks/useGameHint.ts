@@ -26,6 +26,7 @@ import type {
   LetItRideResponse,
   MemoryResponse,
   NapoleonResponse,
+  NertzResponse,
   OhHellResponse,
   OldMaidResponse,
   OmahaResponse,
@@ -42,6 +43,7 @@ import type {
   SevenCardStudResponse,
   SevensResponse,
   ShortDeckResponse,
+  SlapjackResponse,
   SpadesResponse,
   SpeedResponse,
   SpiderResponse,
@@ -85,6 +87,7 @@ import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
+import { getNertzHint } from '../utils/hints/nertzHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
@@ -101,6 +104,7 @@ import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
+import { getSlapjackHint } from '../utils/hints/slapjackHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
@@ -181,6 +185,10 @@ const hintFactories = {
   president: (s) => getPresidentHint(s as PresidentResponse),
   cassino: (s) => getCassinoHint(s as CassinoResponse),
   spiteandmalice: (s) => getSpiteAndMaliceHint(s as SpiteAndMaliceResponse),
+  skat: () => null,
+  shithead: () => null,
+  nertz: (s) => getNertzHint(s as NertzResponse),
+  slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

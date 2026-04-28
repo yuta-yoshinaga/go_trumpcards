@@ -47,4 +47,12 @@ describe('ChipBetInput', () => {
     expect(input.step).toBe('5');
     expect(input.disabled).toBe(true);
   });
+
+  it('input meets the 44px minimum touch target (WCAG 2.5.5)', () => {
+    // Issue #1510: chip bet number inputs are tapped during fast bet entry
+    // (Baccarat / Three Card / Pai Gow); below 44px they're easy to miss.
+    render(<ChipBetInput id="bet" label="Bet" value={50} onChange={() => {}} max={500} />);
+    const input = screen.getByLabelText('Bet');
+    expect(input.className).toContain('min-h-[44px]');
+  });
 });

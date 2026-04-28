@@ -95,7 +95,7 @@ export function TutorialSuggestDialog({
         <p id="suggest-dialog-desc" className="text-ds-text-primary mb-4">
           {t('firstVisit.message')}
         </p>
-        <label className="flex items-center gap-2 text-sm text-ds-text-muted mb-4 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-ds-text-muted mb-4 cursor-pointer min-h-[44px]">
           <input
             type="checkbox"
             checked={dontShowAgain}

@@ -746,4 +746,84 @@ describe('useGameHint', () => {
     const { result } = renderHook(() => useGameHint('trash', state));
     expect(result.current.hint).toBeNull();
   });
+
+  it('routes slapjack through getSlapjackHint (slap when Jack is on top)', () => {
+    localStorage.setItem('hint_enabled_slapjack', 'true');
+    const state = {
+      phase: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      currentTurnIdx: 0,
+      isHumanTurn: true,
+      isTopJack: true,
+      centerPileSize: 1,
+      topCard: { design: 'SPADE' as const, value: 11 },
+      players: [
+        { name: 'You', isHuman: true, stockSize: 25 },
+        { name: 'CPU', isHuman: false, stockSize: 26 },
+      ],
+      cpuDifficulty: 1,
+      pendingKind: 0,
+      pendingDeadlineMs: 0,
+      lastEventKind: 0,
+      lastEventPlayerIdx: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('slapjack', state));
+    expect(result.current.hint?.targetAction).toBe('slap');
+    expect(result.current.hint?.reason).toBe('hint.slapJack');
+  });
+
+  it('routes slapjack through getSlapjackHint (step on human turn, non-Jack)', () => {
+    localStorage.setItem('hint_enabled_slapjack', 'true');
+    const state = {
+      phase: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      currentTurnIdx: 0,
+      isHumanTurn: true,
+      isTopJack: false,
+      centerPileSize: 0,
+      topCard: null,
+      players: [
+        { name: 'You', isHuman: true, stockSize: 26 },
+        { name: 'CPU', isHuman: false, stockSize: 26 },
+      ],
+      cpuDifficulty: 1,
+      pendingKind: 0,
+      pendingDeadlineMs: 0,
+      lastEventKind: 0,
+      lastEventPlayerIdx: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('slapjack', state));
+    expect(result.current.hint?.targetAction).toBe('step');
+    expect(result.current.hint?.reason).toBe('hint.flipCard');
+  });
+
+  it('returns null slapjack hint when game has ended', () => {
+    localStorage.setItem('hint_enabled_slapjack', 'true');
+    const state = {
+      phase: 1,
+      gameEndFlag: true,
+      winnerIdx: 0,
+      currentTurnIdx: 0,
+      isHumanTurn: false,
+      isTopJack: false,
+      centerPileSize: 0,
+      topCard: null,
+      players: [
+        { name: 'You', isHuman: true, stockSize: 52 },
+        { name: 'CPU', isHuman: false, stockSize: 0 },
+      ],
+      cpuDifficulty: 1,
+      pendingKind: 0,
+      pendingDeadlineMs: 0,
+      lastEventKind: 0,
+      lastEventPlayerIdx: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('slapjack', state));
+    expect(result.current.hint).toBeNull();
+  });
 });

@@ -57,7 +57,12 @@ func (p *FreeCellWebPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 		switch phase {
 		case domain.FreeCellPhasePlaying:
 			if f.IsStalemate() {
-				resObj.MessageCode = "freecell.stalemate"
+				if resObj.UndoToEscape > 0 {
+					resObj.MessageCode = "freecell.stalemateWithEscape"
+					resObj.MessageParams = map[string]string{"count": fmt.Sprintf("%d", resObj.UndoToEscape)}
+				} else {
+					resObj.MessageCode = "freecell.stalemate"
+				}
 			} else {
 				resObj.MessageCode = "freecell.playing"
 			}

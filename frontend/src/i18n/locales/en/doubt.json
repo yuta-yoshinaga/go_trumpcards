@@ -8,6 +8,7 @@
   "table": "Table",
   "tableCards": "Table Cards: {{count}}",
   "actionDesc": "{{name}} played {{count}} card(s) (claimed: {{value}})",
+  "actionDescWithTell": "{{name}} played {{count}} card(s) (claimed: {{value}}) — appears nervous…",
   "doubtQuestion": "Doubt?",
   "countdown": "{{sec}} sec left",
   "cpuDoubters": "CPU doubters: {{names}}",

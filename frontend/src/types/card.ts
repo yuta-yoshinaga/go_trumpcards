@@ -1306,6 +1306,132 @@ export interface NapoleonResponse {
   hint?: NapoleonHint;
 }
 
+// --- Skat (スカート) ---
+
+/** A Skat player's per-round state. */
+export interface SkatPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  isDeclarer: boolean;
+  cardPoints: number;
+  roundsWon: number;
+  roundsLost: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Skat trick. */
+export interface SkatTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Skat game configuration. */
+export interface SkatConfig {
+  cpuDifficulty: number;
+  targetScore: number;
+}
+
+/** A suggested hint for Skat. */
+export interface SkatHint {
+  cardIndex?: number;
+  bid?: number;
+  gameType?: number;
+  trumpSuit?: number;
+  pickSkat?: boolean;
+  discardIndex?: number;
+  reason: string;
+}
+
+/** Full Skat game state returned from the API. */
+export interface SkatResponse {
+  players: SkatPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: SkatTrickCard[];
+  forehandIdx: number;
+  middlehandIdx: number;
+  rearhandIdx: number;
+  dealerIdx: number;
+  declarerIdx: number;
+  currentBid: number;
+  activeBidActorIdx: number;
+  gameType: number;
+  trumpSuit: number;
+  skat?: Card[];
+  originalSkat?: Card[];
+  pickedSkat: boolean;
+  declarerCardPoints: number;
+  defendersCardPoints: number;
+  winnerSide: number;
+  gameValue: number;
+  gameEndFlag: boolean;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: SkatConfig;
+  hint?: SkatHint;
+}
+
+// --- Shithead / Karma (シットヘッド / カーマ) ---
+
+/** A Shithead player's per-game state. */
+export interface ShitheadPlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  rank: number;
+  handCount: number;
+  handCards: Card[];
+  faceUpCards: Card[];
+  faceDownCount: number;
+}
+
+/** A single Shithead action (play or pickup). */
+export interface ShitheadAction {
+  playerIdx: number;
+  source: string;
+  playedCards: Card[];
+  pickup: boolean;
+  burned: boolean;
+  skipped: boolean;
+}
+
+/** Shithead local rule configuration. */
+export interface ShitheadConfig {
+  magicTwo: boolean;
+  magicSeven: boolean;
+  magicEight: boolean;
+  magicTen: boolean;
+  fourOfAKindBurn: boolean;
+  cpuDifficulty: number;
+}
+
+/** Full Shithead game state returned from the API. */
+export interface ShitheadResponse {
+  players: ShitheadPlayerData[];
+  currentTurn: number;
+  currentSource: string;
+  discardPile: Card[];
+  stockSize: number;
+  skipNext: boolean;
+  sevenActive: boolean;
+  gameEndFlag: boolean;
+  config: ShitheadConfig;
+  cpuActions: ShitheadAction[];
+  humanAction?: ShitheadAction;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Spider Solitaire (スパイダーソリティア) ---
 
 /** A suggested move hint in Spider Solitaire. */
@@ -2796,4 +2922,109 @@ export interface SpiteAndMaliceResponse {
 export interface SpiteAndMaliceMoveZone {
   zone: 'hand' | 'goal' | 'side' | 'foundation';
   idx?: number;
+}
+
+// --- Nertz / Pounce (ナーツ / パウンス) ---
+
+/** Tableau card with face-up state in a Nertz player area. */
+export interface NertzTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** Nertz player view (per-player tableau, nertz pile, waste, and stock). */
+export interface NertzPlayerData {
+  name: string;
+  isHuman: boolean;
+  deckIdx: number;
+  score: number;
+  nertzSize: number;
+  nertzTop?: Card;
+  tableau: NertzTableauCard[][];
+  wasteTop?: Card;
+  wasteSize: number;
+  stockSize: number;
+}
+
+/** Nertz shared foundation pile. */
+export interface NertzFoundationData {
+  top?: Card;
+  suit: number;
+  size: number;
+}
+
+/** Nertz suggested move hint. */
+export interface NertzHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Nertz local rule configuration. */
+export interface NertzConfig {
+  playerCount: number;
+  drawCount: number;
+  targetScore: number;
+  cpuDifficulty: number;
+  cpuTickMoves: number;
+}
+
+/** Source or target zone for a Nertz move. */
+export interface NertzMoveZone {
+  zone: 'nertz' | 'waste' | 'tableau' | 'foundation';
+  col?: number;
+  idx?: number;
+  cardIndex?: number;
+}
+
+/** Full Nertz game state returned from the API. */
+export interface NertzResponse {
+  phase: number;
+  roundNumber: number;
+  winnerIdx: number;
+  matchWinner: number;
+  moveCount: number;
+  canUndo: boolean;
+  playerCount: number;
+  drawCount: number;
+  targetScore: number;
+  cpuDifficulty: number;
+  /** CPU per-tick budget (resolved from cpuDifficulty when 0). */
+  cpuTickMoves: number;
+  players: NertzPlayerData[];
+  foundations: NertzFoundationData[];
+  hint?: NertzHint;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+/** Player snapshot for Slapjack. */
+export interface SlapjackPlayerData {
+  name: string;
+  isHuman: boolean;
+  stockSize: number;
+}
+
+/** Full Slapjack game state returned from the API. */
+export interface SlapjackResponse {
+  phase: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  currentTurnIdx: number;
+  isHumanTurn: boolean;
+  isTopJack: boolean;
+  centerPileSize: number;
+  topCard?: Card | null;
+  players: SlapjackPlayerData[];
+  cpuDifficulty: number;
+  pendingKind: number;
+  pendingDeadlineMs: number;
+  lastEventKind: number;
+  lastEventPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }

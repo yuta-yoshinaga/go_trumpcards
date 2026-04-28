@@ -2,6 +2,7 @@ package web
 
 import (
 	"bytes"
+	"net"
 	"testing"
 )
 
@@ -92,5 +93,84 @@ func TestSetStderr_RedirectsSink(t *testing.T) {
 	w.SetStderr(&buf)
 	if w.stderr != &buf {
 		t.Fatal("SetStderr did not redirect the sink")
+	}
+}
+
+// TestIsExposedHost pins down the predicate that decides whether a host
+// string is "reachable from other machines" (i.e. non-loopback). Used by
+// the network-exposure warning. See issue #1536.
+func TestIsExposedHost(t *testing.T) {
+	tests := []struct {
+		host string
+		want bool
+	}{
+		// Non-exposed (loopback / safe defaults).
+		{"", false},          // empty → defaults applied elsewhere; treat as safe
+		{"localhost", false}, // hostname; stays cautious without DNS resolution
+		{"127.0.0.1", false},
+		{"127.0.0.5", false}, // 127.0.0.0/8 is all loopback
+		{"::1", false},
+		// Exposed (IPv4/IPv6 unspecified or routable).
+		{"0.0.0.0", true},      // IPv4 unspecified — listens on every interface
+		{"::", true},           // IPv6 unspecified
+		{"192.168.1.10", true}, // private LAN address
+		{"10.0.0.5", true},
+		{"172.16.0.1", true},
+		{"8.8.8.8", true}, // public — would not be a sensible bind, but classify as exposed
+		// Unparseable — be cautious and treat as not exposed; we don't resolve DNS.
+		{"myserver.local", false},
+		{"not.a.real.host", false},
+		{"192.168.x.y", false}, // bad IP literal
+	}
+	for _, tt := range tests {
+		t.Run(tt.host, func(t *testing.T) {
+			if got := isExposedHost(tt.host); got != tt.want {
+				t.Errorf("isExposedHost(%q) = %v, want %v", tt.host, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestMaybeWarnExposed_EmitsForNonLoopback verifies the warning fires for
+// non-loopback hosts and stays silent for loopback / quiet mode. Asserts on
+// the boundAddr being present in the message so users can grep for the
+// specific listener that triggered the warning.
+func TestMaybeWarnExposed_EmitsForNonLoopback(t *testing.T) {
+	tests := []struct {
+		name     string
+		host     string
+		quiet    bool
+		wantWarn bool
+	}{
+		{"0.0.0.0 warns", "0.0.0.0", false, true},
+		{"127.0.0.1 silent", "127.0.0.1", false, false},
+		{"::1 silent", "::1", false, false},
+		{"localhost silent", "localhost", false, false},
+		{"::  warns", "::", false, true},
+		{"private LAN warns", "192.168.1.10", false, true},
+		{"quiet suppresses 0.0.0.0", "0.0.0.0", true, false},
+		{"quiet suppresses 192.168.x", "192.168.1.10", true, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := NewTrumpCardsWeb()
+			var buf bytes.Buffer
+			w.SetStderr(&buf)
+			w.SetQuiet(tt.quiet)
+			// net.JoinHostPort matches what ln.Addr().String() returns in
+			// production: IPv6 hosts get bracketed (e.g. "::" → "[::]:8080")
+			// instead of the malformed ":::8080" naive concatenation produces.
+			// PR #1539 review.
+			boundAddr := net.JoinHostPort(tt.host, "8080")
+			w.maybeWarnExposed(tt.host, boundAddr)
+			gotWarn := buf.Len() > 0
+			if gotWarn != tt.wantWarn {
+				t.Errorf("warning emitted = %v, want %v (output=%q)", gotWarn, tt.wantWarn, buf.String())
+			}
+			if tt.wantWarn && !bytes.Contains(buf.Bytes(), []byte(boundAddr)) {
+				t.Errorf("warning must include the bound addr %q so users can grep; got: %q",
+					boundAddr, buf.String())
+			}
+		})
 	}
 }

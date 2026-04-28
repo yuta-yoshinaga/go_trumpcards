@@ -107,10 +107,18 @@ func (web *TrumpCardsWeb) Exec() error {
 	// Free-text messages go to the configurable stderr sink (defaults to
 	// os.Stderr). Structured slog events fire regardless so systemd / docker
 	// / log shippers still see every lifecycle event. See issue #1452.
-	slog.Info("web server listening", "addr", ln.Addr().String())
+	boundAddr := ln.Addr().String()
+	slog.Info("web server listening", "addr", boundAddr)
 	if !web.quiet {
-		_, _ = fmt.Fprintln(web.stderr, i18n.Tf("webServerRunning", "addr", ln.Addr().String()))
+		_, _ = fmt.Fprintln(web.stderr, i18n.Tf("webServerRunning", "addr", boundAddr))
 		_, _ = fmt.Fprintln(web.stderr, i18n.T("webServerStop"))
+	}
+	// Network-exposure warning fires only after the listening banner so the
+	// user sees the bound address first, then "by the way, this is reachable
+	// from your LAN". Suppressed by --quiet / TRUMPCARDS_QUIET=1 / non-TTY
+	// stderr (the latter via the caller's quiet override). See issue #1536.
+	if host, _, splitErr := net.SplitHostPort(boundAddr); splitErr == nil {
+		web.maybeWarnExposed(host, boundAddr)
 	}
 
 	errCh := make(chan error, 1)
@@ -157,4 +165,55 @@ func getListenAddr() string {
 		port = "8080"
 	}
 	return net.JoinHostPort(host, port)
+}
+
+// isExposedHost reports whether host is reachable from other machines on the
+// network — i.e. anything that is not a loopback address. Used to drive the
+// network-exposure warning when the user binds to 0.0.0.0 or a LAN IP. See
+// issue #1536.
+//
+// Two deliberate departures from a strict "anything-non-loopback is exposed"
+// reading (PR #1539 review):
+//
+//   - Empty host returns false. In production net.SplitHostPort(ln.Addr())
+//     never produces "" for a successful bind, so this branch is purely a
+//     defensive guard for direct callers. Returning false (silent) instead of
+//     true (warn) errs on the side of not nagging when intent is ambiguous —
+//     the caller has not opted into a specific bind, so we should not fabricate
+//     a warning. The Go net convention of treating "" as "all interfaces"
+//     applies to net.Listen's addr argument, not to a free-floating host string
+//     handed to a predicate.
+//   - "localhost" returns false. ln.Addr().String() always returns an IP
+//     literal so this arm is dead code on the Exec path; keeping it documents
+//     the policy for direct callers and avoids spurious warnings if someone
+//     plumbs the env var through unparsed.
+//
+// We do NOT resolve DNS: an unparseable host falls through to false so a typo
+// or non-routable name (myserver.local) cannot trigger a misleading warning.
+func isExposedHost(host string) bool {
+	switch host {
+	case "", "localhost":
+		return false
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return false
+	}
+	// IsLoopback covers 127.0.0.0/8 and ::1; IsUnspecified (0.0.0.0, ::) is
+	// already implied by !IsLoopback (an unspecified address is by
+	// definition not loopback) so we drop the redundant check. PR #1539
+	// review.
+	return !ip.IsLoopback()
+}
+
+// maybeWarnExposed emits a one-line warning to web.stderr when the bound
+// address is reachable from outside the local machine. It is a no-op when
+// quiet mode is set or the host is loopback. Structured slog logs are not
+// affected — this is purely a free-text helper for interactive terminals.
+// See issue #1536.
+func (web *TrumpCardsWeb) maybeWarnExposed(host, boundAddr string) {
+	if web.quiet || !isExposedHost(host) {
+		return
+	}
+	_, _ = fmt.Fprintln(web.stderr, i18n.Tf("webServerExposureWarning", "addr", boundAddr))
 }

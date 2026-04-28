@@ -333,6 +333,54 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
     expect(screen.getByLabelText('膠着時に自動でめくる')).toBeInTheDocument();
   });
+
+  it('renders an inline auto-flip toggle when stuck', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    expect(screen.getByTestId('inline-auto-flip-toggle')).toBeInTheDocument();
+  });
+
+  it('does not render the inline auto-flip toggle in play phase', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('inline-auto-flip-toggle')).not.toBeInTheDocument();
+  });
+
+  it('inline auto-flip toggle reflects current speedConfig.autoFlip', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('inline-auto-flip-toggle')).toBeInTheDocument());
+    const toggle = screen.getByTestId('inline-auto-flip-toggle') as HTMLInputElement;
+    expect(toggle.checked).toBe(true);
+  });
+
+  it('clicking the inline auto-flip toggle disables auto-flip', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('inline-auto-flip-toggle')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('inline-auto-flip-toggle'));
+    mockExec.mockClear();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3000);
+    });
+    expect(mockExec).not.toHaveBeenCalledWith('flip');
+    vi.useRealTimers();
+  });
+
+  it('renders an emphasized stuck container when stuck', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByTestId('flip-button')).toBeInTheDocument());
+    expect(screen.getByTestId('stuck-emphasis-container')).toBeInTheDocument();
+  });
+
+  it('does not render the stuck emphasis container in play phase', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    expect(screen.queryByTestId('stuck-emphasis-container')).not.toBeInTheDocument();
+  });
 });
 
 describe('SpeedPage auto-flip timer', () => {

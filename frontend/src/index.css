@@ -95,11 +95,15 @@ textarea {
   font-size: 16px;
 }
 
-/* Dark-themed select elements for game UI */
+/* Dark-themed select elements for game UI.
+   min-height enforces the 44px touch target baseline (DESIGN.md, WCAG 2.5.5)
+   so dropdowns line up with btnPrimary/btnSecondary across all 69 games
+   without needing per-component min-h-[44px] classes. */
 select {
   background-color: var(--color-ds-surface-elevated);
   color: var(--color-ds-text-primary);
   border: 1px solid var(--color-ds-border-subtle);
+  min-height: 44px;
 }
 
 select:focus-visible {
@@ -127,13 +131,20 @@ h3 {
   font-variant-numeric: tabular-nums;
 }
 
-/* Dark-themed number/text inputs for game UI */
+/* Dark-themed number/text inputs for game UI.
+   min-height enforces the 44px touch target baseline (DESIGN.md, WCAG 2.5.5).
+   Components that already pass `min-h-[44px]` (e.g. NavBar mobile search) are
+   unaffected; everything else now meets the threshold without per-component
+   overrides. `input:not([type])` covers bare `<input>` (defaults to text)
+   which the explicit selectors miss. */
 input[type="number"],
 input[type="text"],
-input[type="search"] {
+input[type="search"],
+input:not([type]) {
   background-color: var(--color-ds-surface-elevated);
   color: var(--color-ds-text-primary);
   border: 1px solid var(--color-ds-border-subtle);
+  min-height: 44px;
 }
 
 /* Accent color for checkboxes and radios on dark theme */
@@ -144,7 +155,8 @@ input[type="radio"] {
 
 input[type="number"]:focus-visible,
 input[type="text"]:focus-visible,
-input[type="search"]:focus-visible {
+input[type="search"]:focus-visible,
+input:not([type]):focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px var(--color-ds-bg),
@@ -220,24 +232,20 @@ input[type="search"]:focus-visible {
 
 @keyframes sweat-drop {
   0% {
-    opacity: 0;
-    transform: translateY(-4px);
+    opacity: 0.6;
+    transform: translateY(-2px);
   }
-  30% {
+  50% {
     opacity: 1;
-    transform: translateY(0);
-  }
-  70% {
-    opacity: 1;
-    transform: translateY(0);
+    transform: translateY(2px);
   }
   100% {
-    opacity: 0;
-    transform: translateY(4px);
+    opacity: 0.6;
+    transform: translateY(-2px);
   }
 }
 .animate-sweat-drop {
-  animation: sweat-drop 2s ease-in-out;
+  animation: sweat-drop 1.5s ease-in-out infinite;
 }
 
 /* Rotate chevron when sidebar category is open */

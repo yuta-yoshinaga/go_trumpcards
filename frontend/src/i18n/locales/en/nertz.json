@@ -1,0 +1,57 @@
+{
+  "title": "Nertz / Pounce",
+  "labels": {
+    "round": "Round",
+    "moveCount": "Moves",
+    "score": "Score",
+    "you": "You",
+    "cpu": "CPU",
+    "nertz": "Nertz pile",
+    "tableau": "Tableau",
+    "waste": "Waste",
+    "stock": "Stock",
+    "foundation": "Foundation",
+    "foundationN": "Foundation {{n}}",
+    "remaining": "left",
+    "size": ""
+  },
+  "actions": {
+    "play": "Play",
+    "draw": "Draw",
+    "tick": "Step CPU",
+    "nextRound": "Next round",
+    "undo": "Undo",
+    "hint": "Hint",
+    "reset": "Reset"
+  },
+  "phase": {
+    "playing": "Playing",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
+  },
+  "messages": {
+    "selectSource": "Select a card from your nertz pile, waste, or tableau.",
+    "selectTarget": "Pick a foundation or tableau column to move to.",
+    "win": "You win!",
+    "lose": "Player {{winner}} wins",
+    "noHint": "No hint available"
+  },
+  "settings": {
+    "title": "Settings",
+    "playerCount": "Player count (2-6)",
+    "drawCount": "1-draw / 3-draw",
+    "targetScore": "Target score",
+    "cpuDifficulty": "CPU difficulty",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "tutorial": {
+    "intro": "Nertz is a real-time competitive solitaire where several players race in parallel.",
+    "nertzPile": "This is your Nertz pile — empty it first to win the round.",
+    "tableau": "The tableau builds down in alternating colors, like Klondike.",
+    "foundations": "The central foundations are shared. Start with an Ace and build up by suit.",
+    "stock": "Draw from the stock to pull more cards through your waste.",
+    "resetButton": "Reset to start a new game."
+  }
+}

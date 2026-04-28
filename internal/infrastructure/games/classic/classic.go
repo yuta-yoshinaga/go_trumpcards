@@ -215,4 +215,36 @@ func init() {
 			return usecase.RestoreSpiteAndMaliceInteractor(data, new(presenter.SpiteAndMaliceWebPresenter))
 		},
 		controller.NewSpiteAndMaliceWebControllerWithProvider)
+	games.RegisterKVGame("skat", games.CategoryClassic,
+		func() usecase.SkatInteractorIF {
+			return usecase.NewSkatInteractor(domain.NewDefaultSkat(), new(presenter.SkatWebPresenter))
+		},
+		func(data []byte) (usecase.SkatInteractorIF, error) {
+			return usecase.RestoreSkatInteractor(data, new(presenter.SkatWebPresenter))
+		},
+		controller.NewSkatWebControllerWithProvider)
+	games.RegisterKVGame("shithead", games.CategoryClassic,
+		func() usecase.ShitheadInteractorIF {
+			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))
+		},
+		func(data []byte) (usecase.ShitheadInteractorIF, error) {
+			return usecase.RestoreShitheadInteractor(data, new(presenter.ShitheadWebPresenter))
+		},
+		controller.NewShitheadWebControllerWithProvider)
+	games.RegisterKVGame("nertz", games.CategoryClassic,
+		func() usecase.NertzInteractorIF {
+			return usecase.NewNertzInteractor(domain.NewDefaultNertz(), new(presenter.NertzWebPresenter))
+		},
+		func(data []byte) (usecase.NertzInteractorIF, error) {
+			return usecase.RestoreNertzInteractor(data, new(presenter.NertzWebPresenter))
+		},
+		controller.NewNertzWebControllerWithProvider)
+	games.RegisterKVGame("slapjack", games.CategoryClassic,
+		func() usecase.SlapjackInteractorIF {
+			return usecase.NewSlapjackInteractor(domain.NewDefaultSlapjack(), new(presenter.SlapjackWebPresenter))
+		},
+		func(data []byte) (usecase.SlapjackInteractorIF, error) {
+			return usecase.RestoreSlapjackInteractor(data, new(presenter.SlapjackWebPresenter))
+		},
+		controller.NewSlapjackWebControllerWithProvider)
 }

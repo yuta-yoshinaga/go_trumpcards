@@ -29,6 +29,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   pinochle: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   twotenjack: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   whist: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
+  skat: { bg: 'bg-game-bg-blue', footer: 'bg-game-bg-blue-dark border-white/20' },
   // Matching/Pass — unified to green
   oldmaid: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   doubt: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
@@ -38,6 +39,8 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   crazyeights: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   pageone: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   gofish: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  shithead: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
+  nertz: { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' },
   // Solitaire — unified to casino
   klondike: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   freecell: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },

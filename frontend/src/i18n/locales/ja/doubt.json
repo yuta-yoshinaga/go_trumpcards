@@ -8,6 +8,7 @@
   "table": "テーブル",
   "tableCards": "場のカード: {{count}}枚",
   "actionDesc": "{{name}}が{{count}}枚出しました (宣言: {{value}})",
+  "actionDescWithTell": "{{name}}が{{count}}枚出しました (宣言: {{value}}) — 緊張しているようだ…",
   "doubtQuestion": "ダウトしますか？",
   "countdown": "残り {{sec}} 秒",
   "cpuDoubters": "ダウト宣言CPU: {{names}}",

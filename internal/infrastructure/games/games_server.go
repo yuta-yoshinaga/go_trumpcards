@@ -338,4 +338,24 @@ func init() {
 			return usecase.NewSpiteAndMaliceInteractor(domain.NewDefaultSpiteAndMalice(), new(presenter.SpiteAndMaliceWebPresenter))
 		},
 		controller.NewSpiteAndMaliceWebController)
+	BindWebControllerFor("skat",
+		func() usecase.SkatInteractorIF {
+			return usecase.NewSkatInteractor(domain.NewDefaultSkat(), new(presenter.SkatWebPresenter))
+		},
+		controller.NewSkatWebController)
+	BindWebControllerFor("shithead",
+		func() usecase.ShitheadInteractorIF {
+			return usecase.NewShitheadInteractor(domain.NewDefaultShithead(), new(presenter.ShitheadWebPresenter))
+		},
+		controller.NewShitheadWebController)
+	BindWebControllerFor("nertz",
+		func() usecase.NertzInteractorIF {
+			return usecase.NewNertzInteractor(domain.NewDefaultNertz(), new(presenter.NertzWebPresenter))
+		},
+		controller.NewNertzWebController)
+	BindWebControllerFor("slapjack",
+		func() usecase.SlapjackInteractorIF {
+			return usecase.NewSlapjackInteractor(domain.NewDefaultSlapjack(), new(presenter.SlapjackWebPresenter))
+		},
+		controller.NewSlapjackWebController)
 }

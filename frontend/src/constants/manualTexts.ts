@@ -35,6 +35,7 @@ import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
+import nertz from '../../../docs/manual/web/nertz.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
@@ -53,7 +54,10 @@ import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import sevenbridge from '../../../docs/manual/web/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
 import sevens from '../../../docs/manual/web/sevens.md?raw';
+import shithead from '../../../docs/manual/web/shithead.md?raw';
 import shortdeck from '../../../docs/manual/web/shortdeck.md?raw';
+import skat from '../../../docs/manual/web/skat.md?raw';
+import slapjack from '../../../docs/manual/web/slapjack.md?raw';
 import spades from '../../../docs/manual/web/spades.md?raw';
 import spanish21 from '../../../docs/manual/web/spanish21.md?raw';
 import speed from '../../../docs/manual/web/speed.md?raw';
@@ -135,4 +139,8 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/president': president,
   '/cassino': cassino,
   '/spiteandmalice': spiteandmalice,
+  '/skat': skat,
+  '/shithead': shithead,
+  '/nertz': nertz,
+  '/slapjack': slapjack,
 };

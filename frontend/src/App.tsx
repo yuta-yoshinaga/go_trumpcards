@@ -39,6 +39,7 @@ import { KlondikePage } from './pages/KlondikePage';
 import { LetItRidePage } from './pages/LetItRidePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { NapoleonPage } from './pages/NapoleonPage';
+import { NertzPage } from './pages/NertzPage';
 import { OhHellPage } from './pages/OhHellPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
@@ -57,7 +58,10 @@ import { ScorpionPage } from './pages/ScorpionPage';
 import { SevenBridgePage } from './pages/SevenBridgePage';
 import { SevenCardStudPage } from './pages/SevenCardStudPage';
 import { SevensPage } from './pages/SevensPage';
+import { ShitheadPage } from './pages/ShitheadPage';
 import { ShortDeckPage } from './pages/ShortDeckPage';
+import { SkatPage } from './pages/SkatPage';
+import { SlapjackPage } from './pages/SlapjackPage';
 import { SpadesPage } from './pages/SpadesPage';
 import { Spanish21Page } from './pages/Spanish21Page';
 import { SpeedPage } from './pages/SpeedPage';
@@ -139,6 +143,10 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/president': <PresidentPage />,
   '/cassino': <CassinoPage />,
   '/spiteandmalice': <SpiteAndMalicePage />,
+  '/skat': <SkatPage />,
+  '/shithead': <ShitheadPage />,
+  '/nertz': <NertzPage />,
+  '/slapjack': <SlapjackPage />,
 };
 
 /** Root application component with router and game page routes. */

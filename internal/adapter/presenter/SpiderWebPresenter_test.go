@@ -112,17 +112,35 @@ func TestSpiderWebPresenter_Output(t *testing.T) {
 }
 
 func TestSpiderWebPresenter_Output_Stalemate(t *testing.T) {
-	sg := new(interfaces.MockSpiderGame)
-	setupSpiderWebMockDefaults(sg)
-	sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
-	sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "UndoToEscape")
-	sg.On("IsStalemate").Return(true)
-	sg.On("UndoToEscape").Return(-1)
+	t.Run("no escape available", func(t *testing.T) {
+		sg := new(interfaces.MockSpiderGame)
+		setupSpiderWebMockDefaults(sg)
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "UndoToEscape")
+		sg.On("IsStalemate").Return(true)
+		sg.On("UndoToEscape").Return(-1)
 
-	p := new(SpiderWebPresenter)
-	result := parseSpiderOutput(t, p.Output(sg, nil))
-	assert.True(t, result.IsStalemate)
-	assert.Equal(t, "spider.stalemate", result.MessageCode)
+		p := new(SpiderWebPresenter)
+		result := parseSpiderOutput(t, p.Output(sg, nil))
+		assert.True(t, result.IsStalemate)
+		assert.Equal(t, "spider.stalemate", result.MessageCode)
+		assert.Empty(t, result.MessageParams)
+	})
+
+	t.Run("escape available with positive count", func(t *testing.T) {
+		sg := new(interfaces.MockSpiderGame)
+		setupSpiderWebMockDefaults(sg)
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "IsStalemate")
+		sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "UndoToEscape")
+		sg.On("IsStalemate").Return(true)
+		sg.On("UndoToEscape").Return(2)
+
+		p := new(SpiderWebPresenter)
+		result := parseSpiderOutput(t, p.Output(sg, nil))
+		assert.True(t, result.IsStalemate)
+		assert.Equal(t, "spider.stalemateWithEscape", result.MessageCode)
+		assert.Equal(t, "2", result.MessageParams["count"])
+	})
 }
 
 func TestSpiderWebPresenter_Output_CanUndo(t *testing.T) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/update"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/web"
@@ -34,10 +36,47 @@ var (
 // validator so the two cannot diverge.
 var supportedLangs = map[string]bool{"ja": true, "en": true}
 
+// posixLocalePlaceholders are POSIX placeholder locale prefixes that signal
+// "no language preference" rather than a specific unsupported language.
+// They are the default in Docker base images (debian-slim, distroless), CI
+// runners (GitHub Actions, GitLab CI), and minimal Linux installs, so warning
+// about them on every invocation creates noise without information value.
+// Treat them as silent fallback to the default locale, matching gettext's
+// convention. See issue #1534.
+var posixLocalePlaceholders = map[string]bool{"C": true, "POSIX": true}
+
+// isPosixLocalePlaceholder reports whether prefix is a POSIX locale
+// placeholder (e.g. the "C" in "C.UTF-8"). Comparison is case-sensitive
+// because real-world LANG values use the canonical uppercase forms ("C",
+// "POSIX"); a lowercase "c" is unusual enough that it is more likely a typo
+// for a real language code than the placeholder, so we let it warn through.
+func isPosixLocalePlaceholder(prefix string) bool {
+	return posixLocalePlaceholders[prefix]
+}
+
 // portInRange reports whether port is a valid TCP port number, with 0
 // reserved for "let the OS assign an ephemeral port" (POSIX convention).
 func portInRange(port int) bool {
 	return port >= 0 && port <= 65535
+}
+
+// validCategoryNames is the canonical set of `--category` filter values,
+// derived from the games registry at package load so it stays in lockstep
+// with games.Category.String() automatically. Adding a new Category to the
+// games package is enough — no manual sync here. See issue #1535 and
+// PR #1538 review feedback.
+var validCategoryNames = func() map[string]bool {
+	seen := make(map[string]bool)
+	for _, g := range games.All() {
+		seen[g.Category.String()] = true
+	}
+	return seen
+}()
+
+// validCategory reports whether s names a registered game category. Comparison
+// is case-sensitive to match games.Category.String()'s canonical lowercase form.
+func validCategory(s string) bool {
+	return validCategoryNames[s]
 }
 
 // flagSetVisited reports whether any of the named flags was explicitly set
@@ -130,9 +169,13 @@ func run() int {
 		if idx := strings.IndexAny(envLang, "_-."); idx >= 0 {
 			prefix = envLang[:idx]
 		}
-		if supportedLangs[prefix] {
+		switch {
+		case supportedLangs[prefix]:
 			detectedLang = prefix
-		} else if !quiet {
+		case isPosixLocalePlaceholder(prefix):
+			// C / POSIX / C.UTF-8 are placeholders, not language preferences;
+			// silently fall back to the default. See issue #1534.
+		case !quiet:
 			langEnvWarn = envLang
 		}
 	}
@@ -157,15 +200,37 @@ func run() int {
 	// Build game commands from the registry (single source of truth).
 	commands := buildGameCommands()
 	commands["games"] = func() int {
-		var short, aliases bool
-		_, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
+		var short, aliases, asJSON bool
+		var category string
+		fs, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
 			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
+			f.BoolVar(&asJSON, "json", false, "Emit machine-readable JSON (array of {name, category, description, aliases})")
+			f.StringVar(&category, "category", "", "Filter by category: casino|classic|solo")
 		})
 		if !ok {
 			return code
 		}
-		printGames(short, aliases, os.Stdout)
+		if category != "" && !validCategory(category) {
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidCategory", "category", category))
+			return 2
+		}
+		if asJSON {
+			// --short / --aliases are silently irrelevant in JSON mode (the
+			// schema is fixed). Warn the user instead of dropping the flags
+			// without feedback so a typo in scripts surfaces early. The warning
+			// goes to stderr so the JSON on stdout stays pure / pipeable. See
+			// PR #1538 review feedback.
+			if flagSetVisited(fs, "short", "aliases") {
+				fmt.Fprintln(os.Stderr, i18n.T("cliGamesJSONIgnoredFlags"))
+			}
+			if err := printGamesJSON(category, os.Stdout); err != nil {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliGamesJSONError", "err", err.Error()))
+				return 1
+			}
+			return 0
+		}
+		printGames(short, aliases, category, os.Stdout)
 		return 0
 	}
 	commands["completion"] = func() int {
@@ -264,15 +329,23 @@ func run() int {
 		arg = canonical
 	}
 	if handler, ok := commands[arg]; ok {
-		// `<game> --help` / `<game> -h`: Go's flag package stops parsing at the first
-		// non-flag argument, so these trailing flags land in Args(). Intercept them
-		// and print that game's help instead of launching the game. Subcommands in
-		// subFlagCommands are handled by parseSubFlags (which catches flag.ErrHelp).
-		if !subFlagCommands[arg] && hasHelpFlag(flag.Args()[1:]) {
-			return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
-		}
-		if flag.NArg() > 1 && !subFlagCommands[arg] {
-			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(flag.Args()[1:], " ")))
+		if !subFlagCommands[arg] {
+			// Apply --lang / --no-color when they land after the game name so
+			// `trumpcards <game> --lang en` matches the prepositional form.
+			// Done before the help short-circuit so `<game> --lang en --help`
+			// renders help in the requested locale.
+			extras := applyTrailingGlobalFlags(flag.Args()[1:], quiet, os.Stderr)
+			// `<game> --help` / `<game> -h`: Go's flag package stops parsing at
+			// the first non-flag argument, so these trailing flags land in Args().
+			// Intercept them and print that game's help instead of launching the
+			// game. Subcommands in subFlagCommands are handled by parseSubFlags
+			// (which catches flag.ErrHelp).
+			if hasHelpFlag(extras) {
+				return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
+			}
+			if len(extras) > 0 {
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(extras, " ")))
+			}
 		}
 		return handler()
 	}
@@ -314,12 +387,19 @@ var builtinSubcommandHelp = map[string][]string{
 		"  -q, --quiet       Suppress human-friendly startup/shutdown messages",
 		"                    (implied when stderr is not a TTY; structured slog logs still emitted)",
 		"",
+		"NETWORK EXPOSURE:",
+		"  Binding to a non-loopback host (0.0.0.0, ::, a LAN IP, etc.) prints a one-line",
+		"  WARNING on stderr after the listening banner so the operator notices that the",
+		"  server is reachable from other machines on the LAN/VPN. The warning is suppressed",
+		"  by --quiet / TRUMPCARDS_QUIET=1, and slog's structured 'web server listening'",
+		"  event always fires regardless. The default 127.0.0.1 bind never warns.",
+		"",
 		"EXAMPLES:",
 		"  trumpcards web",
 		"  trumpcards web --port 3000",
 		"  trumpcards web --port 0            # start on any free port; see startup log for actual port",
-		"  trumpcards web --host 0.0.0.0",
-		"  trumpcards web --quiet             # systemd / docker friendly",
+		"  trumpcards web --host 0.0.0.0      # exposes on all interfaces; prints exposure warning",
+		"  trumpcards web --quiet             # systemd / docker friendly (no exposure warning either)",
 		"  HOST=0.0.0.0 PORT=3000 trumpcards web",
 	},
 	"update": {
@@ -370,17 +450,29 @@ var builtinSubcommandHelp = map[string][]string{
 	},
 	"games": {
 		"USAGE:",
-		"  trumpcards games [--short] [--aliases]",
+		"  trumpcards games [--short] [--aliases] [--json] [--category casino|classic|solo]",
 		"",
 		"FLAGS:",
-		"      --short     Print game names only (for scripting)",
-		"      --aliases   With --short, also print each alias on its own line",
-		"                  (long output always includes aliases inline)",
+		"      --short              Print game names only (for scripting)",
+		"      --aliases            With --short, also print each alias on its own line",
+		"                           (long output always includes aliases inline)",
+		"      --json               Emit machine-readable JSON: an array of",
+		"                           {name, category, description, aliases}.",
+		"                           aliases is always [] (never null) for stable schema.",
+		"                           Combines with --category; --short / --aliases have no",
+		"                           effect in JSON mode (the schema is fixed) and emit a",
+		"                           one-line warning to stderr if used together.",
+		"      --category CAT       Restrict output to one Cloudflare Worker category:",
+		"                           casino, classic, or solo. Combinable with --short / --json.",
+		"                           Invalid value exits 2.",
 		"",
 		"EXAMPLES:",
 		"  trumpcards games",
 		"  trumpcards games --short",
 		"  trumpcards games --short --aliases",
+		"  trumpcards games --category casino",
+		"  trumpcards games --json | jq -r '.[] | select(.category==\"solo\") | .name'",
+		"  trumpcards games --json --category classic",
 	},
 	"help": {
 		"USAGE:",
@@ -507,6 +599,68 @@ func updateExitCode(err error) int {
 	}
 }
 
+// applyTrailingGlobalFlags scans args for global flags (`--lang`, `--no-color`)
+// that landed after the game name because Go's flag package stops parsing at
+// the first positional argument. Each recognized flag is applied to the runtime
+// (i18n locale / color streams) and stripped from the returned slice so the
+// caller's "extra args" warning fires only for genuinely unknown trailing
+// tokens. Unsupported `--lang` values fall back to the existing locale and emit
+// the usual cliUnsupportedLang warning on stderr (suppressed when quiet).
+func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []string {
+	rest := make([]string, 0, len(args))
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if a == "--" {
+			rest = append(rest, args[i:]...)
+			break
+		}
+		var langVal string
+		var haveLang, haveNoColor, consumed bool
+		switch {
+		case a == "--lang" || a == "-lang":
+			haveLang, consumed = true, true
+			if i+1 < len(args) {
+				langVal = args[i+1]
+				i++
+			}
+		case strings.HasPrefix(a, "--lang="):
+			langVal = strings.TrimPrefix(a, "--lang=")
+			haveLang, consumed = true, true
+		case strings.HasPrefix(a, "-lang="):
+			langVal = strings.TrimPrefix(a, "-lang=")
+			haveLang, consumed = true, true
+		case a == "--no-color" || a == "-no-color":
+			haveNoColor, consumed = true, true
+		case strings.HasPrefix(a, "--no-color=") || strings.HasPrefix(a, "-no-color="):
+			val := a[strings.Index(a, "=")+1:]
+			b, err := strconv.ParseBool(val)
+			if err == nil {
+				consumed = true
+				haveNoColor = b
+			}
+		}
+		switch {
+		case haveLang:
+			switch {
+			case supportedLangs[langVal]:
+				i18n.SetLang(langVal)
+			case langVal == "":
+				// Bare `--lang` with no value mirrors detectBootstrapLang's tolerant
+				// behavior — silently ignore rather than emit an empty-value warning.
+			case !quiet:
+				_, _ = fmt.Fprintln(stderr, i18n.Tf("cliUnsupportedLang", "lang", langVal))
+				_, _ = fmt.Fprintln(stderr, i18n.T("cliSupportedLangs"))
+			}
+		case haveNoColor:
+			color.SetStdoutColor(false)
+			color.SetStderrColor(false)
+		case !consumed:
+			rest = append(rest, a)
+		}
+	}
+	return rest
+}
+
 // hasHelpFlag reports whether args contains a help flag. It accepts all four
 // forms Go's flag package treats as equivalent for a help flag registered as
 // both "help" and "h": "-h", "--h", "-help", "--help".
@@ -564,9 +718,13 @@ EXAMPLES:
   trumpcards blackjack           Play BlackJack
   trumpcards blackjack --help    Show BlackJack's in-game commands
   trumpcards --lang en poker     Play Poker in English
+  trumpcards poker --lang en     Same — global flags also accepted after the game name
+  trumpcards blackjack --no-color  Play BlackJack with color disabled
   trumpcards games               List all available games
   trumpcards games --short       List game names only (for scripting)
   trumpcards games --short --aliases  List game names including aliases
+  trumpcards games --json        Machine-readable list (name, category, description, aliases)
+  trumpcards games --category solo  Filter by Cloudflare Worker category (casino|classic|solo)
   trumpcards update              Self-update to the latest version
   trumpcards update --yes        Update without confirmation prompt
   trumpcards update --check      Report whether an update is available (exit 10 if yes)
@@ -649,17 +807,13 @@ func detectBootstrapLang(args []string, langEnv string) string {
 // and any aliases inline. With short=true, only canonical names are printed,
 // one per line — and if aliases is also true, every alias gets its own line.
 // The `aliases` flag is a no-op in long mode because aliases are always shown
-// inline there.
-func printGames(short, aliases bool, w io.Writer) {
+// inline there. If category is non-empty, output is restricted to games whose
+// games.Category matches; the caller is expected to have validated category
+// via validCategory before invoking. See issue #1535.
+func printGames(short, aliases bool, category string, w io.Writer) {
 	var reverseAliases map[string][]string
 	if !short || aliases {
-		reverseAliases = make(map[string][]string)
-		for alias, canonical := range ui.GameAliases {
-			reverseAliases[canonical] = append(reverseAliases[canonical], alias)
-		}
-		for k := range reverseAliases {
-			sort.Strings(reverseAliases[k])
-		}
+		reverseAliases = buildReverseAliases()
 	}
 
 	var descs map[string]string
@@ -667,7 +821,16 @@ func printGames(short, aliases bool, w io.Writer) {
 		descs = ui.GameDescriptions()
 	}
 
+	// Only build the category index when a filter is active — otherwise the
+	// allocation is wasted because the gating predicate below is a no-op.
+	var categoryByName map[string]string
+	if category != "" {
+		categoryByName = gameCategoryByName()
+	}
 	for _, name := range ui.GameNames() {
+		if category != "" && categoryByName[name] != category {
+			continue
+		}
 		if short {
 			_, _ = fmt.Fprintln(w, name)
 			if aliases {
@@ -683,6 +846,69 @@ func printGames(short, aliases bool, w io.Writer) {
 			_, _ = fmt.Fprintln(w, line)
 		}
 	}
+}
+
+// gameCategoryByName builds Name→Category-string from the games registry.
+// The strings come from games.Category.String() so they stay in lockstep
+// with the SSoT and validCategory's accepted values.
+func gameCategoryByName() map[string]string {
+	all := games.All()
+	out := make(map[string]string, len(all))
+	for _, g := range all {
+		out[g.Name] = g.Category.String()
+	}
+	return out
+}
+
+// buildReverseAliases inverts ui.GameAliases (alias → canonical) into
+// canonical → sorted aliases. Sorting per-key keeps output deterministic
+// despite Go's randomized map iteration. Shared by printGames and
+// printGamesJSON so the two render the same alias set in the same order.
+func buildReverseAliases() map[string][]string {
+	rev := make(map[string][]string)
+	for alias, canonical := range ui.GameAliases {
+		rev[canonical] = append(rev[canonical], alias)
+	}
+	for k := range rev {
+		sort.Strings(rev[k])
+	}
+	return rev
+}
+
+// printGamesJSON emits a JSON array describing every game (or only games in
+// the given category, if non-empty). Each entry is `{name, category,
+// description, aliases}`. Aliases is always a non-nil slice so the JSON
+// shape is stable: scripts can rely on `.aliases | length` working without a
+// null guard. See issue #1535.
+func printGamesJSON(category string, w io.Writer) error {
+	type entry struct {
+		Name        string   `json:"name"`
+		Category    string   `json:"category"`
+		Description string   `json:"description"`
+		Aliases     []string `json:"aliases"`
+	}
+	reverseAliases := buildReverseAliases()
+	all := games.All()
+	out := make([]entry, 0, len(all))
+	for _, g := range all {
+		cat := g.Category.String()
+		if category != "" && cat != category {
+			continue
+		}
+		al := reverseAliases[g.Name]
+		if al == nil {
+			al = []string{} // emit `[]`, never `null` — stable schema for scripts.
+		}
+		out = append(out, entry{
+			Name:        g.Name,
+			Category:    cat,
+			Description: g.Description,
+			Aliases:     al,
+		})
+	}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(out)
 }
 
 // buildGameCommands generates command handlers for all games from the registry.

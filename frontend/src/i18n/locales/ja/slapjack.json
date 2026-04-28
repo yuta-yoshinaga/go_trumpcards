@@ -1,0 +1,37 @@
+{
+  "button": {
+    "step": "めくる"
+  },
+  "phase": {
+    "play": "進行中",
+    "slap": "Jだ！",
+    "end": "終了"
+  },
+  "label": {
+    "stock": "ストック",
+    "pileCount": "場に{{count}}枚"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU難易度",
+    "difficulty": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "hard": "Hard"
+    }
+  },
+  "slapjack": {
+    "slap": "スラップ！",
+    "jackOnTop": "Jだ！叩け！"
+  },
+  "hint": {
+    "flipCard": "あなたのターンです。s でカードをめくりましょう",
+    "slapJack": "Jが場に出ました！素早くスラップを"
+  },
+  "tutorial": {
+    "cpuPile": "CPUのストックです。残り枚数が表示されます。",
+    "arena": "場札エリアです。Jが出たら素早く叩きましょう。",
+    "playerPile": "あなたのストックです。なくなると負けです。",
+    "stepButton": "このボタンでカードをめくります。",
+    "slapButton": "場のトップがJのとき素早く叩きます。J以外で叩くとペナルティです。"
+  }
+}

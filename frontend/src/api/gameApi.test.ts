@@ -20,6 +20,8 @@ import {
   pyramidApi,
   sessionId,
   sevensApi,
+  shitheadApi,
+  slapjackApi,
   spadesApi,
   spiderApi,
   tripeaksApi,
@@ -3025,6 +3027,128 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(letitrideApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('shitheadApi.exec', () => {
+    const payload = {
+      players: [],
+      currentTurn: 0,
+      currentSource: 'hand',
+      discardPile: [],
+      stockSize: 0,
+      skipNext: false,
+      sevenActive: false,
+      gameEndFlag: false,
+      config: {},
+      cpuActions: [],
+      message: '',
+    };
+
+    it('calls with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await shitheadApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/shithead/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', sessionId }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with play command and indices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await shitheadApi.exec('play', { indices: [0, 1] });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/shithead/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'play', indices: [0, 1], sessionId }),
+        }),
+      );
+    });
+
+    it('calls with reset command and config', async () => {
+      const config = {
+        magicTwo: true,
+        magicSeven: false,
+        magicEight: true,
+        magicTen: true,
+        fourOfAKindBurn: true,
+        cpuDifficulty: 2,
+      };
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await shitheadApi.exec('reset', { config });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/shithead/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'reset', config, sessionId }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(shitheadApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('slapjackApi', () => {
+    const payload = {
+      phase: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      currentTurnIdx: 0,
+      isHumanTurn: true,
+      isTopJack: false,
+      centerPileSize: 0,
+      topCard: null,
+      players: [],
+      cpuDifficulty: 1,
+      pendingKind: 0,
+      pendingDeadlineMs: 0,
+      lastEventKind: 0,
+      lastEventPlayerIdx: 0,
+      message: '',
+    };
+
+    it('sends reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await slapjackApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/slapjack/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', sessionId }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('sends step / slap / tick / log commands', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      for (const cmd of ['step', 'slap', 'tick', 'log'] as const) {
+        await slapjackApi.exec(cmd);
+        expect(mockFetch).toHaveBeenCalledWith(
+          '/slapjack/exec',
+          expect.objectContaining({
+            body: JSON.stringify({ command: cmd, sessionId }),
+          }),
+        );
+      }
+    });
+
+    it('sends reset with config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await slapjackApi.exec('reset', { config: { cpuDifficulty: 2 } });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/slapjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'reset', config: { cpuDifficulty: 2 }, sessionId }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(slapjackApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 });
