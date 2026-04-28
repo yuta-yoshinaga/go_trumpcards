@@ -93,6 +93,9 @@
     "mute": "Mute sound",
     "unmute": "Unmute sound"
   },
+  "skeleton": {
+    "loading": "Loading…"
+  },
   "settings": {
     "title": "Settings"
   },
