@@ -170,6 +170,7 @@ func TestFortyThievesWebPresenter_ActionLogOutput(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
 		fg.On("GetPhase").Return(domain.FortyThievesPhasePlaying)
 
+		fg.On("GetGameEndFlag").Return(false)
 		p := new(FortyThievesWebPresenter)
 		result := p.ActionLogOutput(fg)
 		assert.Contains(t, result, "[]")
@@ -178,6 +179,7 @@ func TestFortyThievesWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over returns log", func(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
 		fg.On("GetPhase").Return(domain.FortyThievesPhaseGameOver)
+		fg.On("GetGameEndFlag").Return(true)
 		fg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{TurnNumber: 1, ActionType: "draw", Detail: "test"},
 		})

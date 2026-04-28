@@ -338,6 +338,7 @@ func TestKlondikeWebPresenter_ActionLogOutput(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
 
+		kg.On("GetGameEndFlag").Return(false)
 		p := new(KlondikeWebPresenter)
 		result := p.ActionLogOutput(kg)
 		var out controller.ActionLogWebOutput
@@ -349,6 +350,7 @@ func TestKlondikeWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("after game clear", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameClear)
+		kg.On("GetGameEndFlag").Return(true)
 		kg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw", Detail: "test", Cards: nil},
 		})
@@ -364,6 +366,7 @@ func TestKlondikeWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("after game over", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameOver)
+		kg.On("GetGameEndFlag").Return(true)
 		kg.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 
 		p := new(KlondikeWebPresenter)

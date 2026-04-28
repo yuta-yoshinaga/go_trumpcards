@@ -518,6 +518,9 @@ func (k *Klondike) GetFoundation() [KlondikeFoundationCnt][]*Card { return k.fou
 // GetActionLog 棋譜取得
 func (k *Klondike) GetActionLog() []*ActionLogEntry { return k.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (k *Klondike) GetGameEndFlag() bool { return k.phase != KlondikePhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (k *Klondike) IsStalemate() bool { return k.isStalemate }
 

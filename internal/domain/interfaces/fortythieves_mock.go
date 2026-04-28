@@ -132,3 +132,9 @@ func (_m *MockFortyThievesGame) IsStalemate() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
 }
+
+// GetGameEndFlag mocks the GetGameEndFlag call.
+func (_m *MockFortyThievesGame) GetGameEndFlag() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}

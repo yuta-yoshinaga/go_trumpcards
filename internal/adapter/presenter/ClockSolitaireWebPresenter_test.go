@@ -163,6 +163,7 @@ func TestClockSolitaireWebPresenterActionLog_Playing(t *testing.T) {
 	gg := new(interfaces.MockClockSolitaireGame)
 	gg.On("GetPhase").Return(domain.ClockSolitairePhasePlaying)
 
+	gg.On("GetGameEndFlag").Return(false)
 	p := &ClockSolitaireWebPresenter{}
 	result := p.ActionLogOutput(gg)
 
@@ -175,6 +176,7 @@ func TestClockSolitaireWebPresenterActionLog_Playing(t *testing.T) {
 func TestClockSolitaireWebPresenterActionLog_GameOver(t *testing.T) {
 	gg := new(interfaces.MockClockSolitaireGame)
 	gg.On("GetPhase").Return(domain.ClockSolitairePhaseGameOver)
+	gg.On("GetGameEndFlag").Return(true)
 	gg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, ActionType: "step", Detail: "test"},
 	})

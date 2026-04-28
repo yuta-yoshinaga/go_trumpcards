@@ -87,6 +87,7 @@ func TestPokerSquaresWebPresenter_Output_Complete(t *testing.T) {
 func TestPokerSquaresWebPresenter_ActionLog_Playing(t *testing.T) {
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhasePlaying)
+	pg.On("GetGameEndFlag").Return(false)
 	p := &PokerSquaresWebPresenter{}
 	result := p.ActionLogOutput(pg)
 	assert.Contains(t, result, "entries")
@@ -95,6 +96,7 @@ func TestPokerSquaresWebPresenter_ActionLog_Playing(t *testing.T) {
 func TestPokerSquaresWebPresenter_ActionLog_Complete(t *testing.T) {
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhaseComplete)
+	pg.On("GetGameEndFlag").Return(true)
 	pg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, ActionType: "place", Detail: "test"},
 	})

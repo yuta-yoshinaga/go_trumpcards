@@ -57,10 +57,7 @@ func (p *CalculationWebPresenter) HintOutput(g interfaces.CalculationGame) strin
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *CalculationWebPresenter) ActionLogOutput(g interfaces.CalculationGame) string {
-	if g.GetPhase() == domain.CalculationPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(g.GetActionLog())
+	return actionLogOutputJSON(g)
 }
 
 // buildBase は共通フィールドを詰めたレスポンスオブジェクトを返す

@@ -103,9 +103,5 @@ func (p *SpiderWebPresenter) HintOutput(s interfaces.SpiderGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *SpiderWebPresenter) ActionLogOutput(s interfaces.SpiderGame) string {
-	phase := s.GetPhase()
-	if phase == domain.SpiderPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(s.GetActionLog())
+	return actionLogOutputJSON(s)
 }

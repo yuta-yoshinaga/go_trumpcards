@@ -183,6 +183,7 @@ func TestYukonWebPresenter_ActionLogOutput(t *testing.T) {
 		yg := new(interfaces.MockYukonGame)
 		yg.On("GetPhase").Return(domain.YukonPhasePlaying)
 
+		yg.On("GetGameEndFlag").Return(false)
 		p := new(YukonWebPresenter)
 		result := p.ActionLogOutput(yg)
 		assert.Contains(t, result, "entries")
@@ -191,6 +192,7 @@ func TestYukonWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		yg := new(interfaces.MockYukonGame)
 		yg.On("GetPhase").Return(domain.YukonPhaseGameOver)
+		yg.On("GetGameEndFlag").Return(true)
 		yg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{TurnNumber: 1, ActionType: "move"},
 		})

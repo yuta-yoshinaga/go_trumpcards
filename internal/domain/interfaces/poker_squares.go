@@ -5,6 +5,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // PokerSquaresGame はポーカー・スクエアズゲームのインタフェース。
 type PokerSquaresGame interface {
 	BaseGame
+	// GetGameEndFlag reports whether the game has left the playing phase.
+	GetGameEndFlag() bool
 	// Reset ゲームを初期化する
 	Reset()
 	// Place 現在のカードをセル(row, col)に配置する

@@ -197,11 +197,13 @@ func TestNertzWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("playing returns empty log", func(t *testing.T) {
 		g := new(interfaces.MockNertzGame)
 		g.On("GetPhase").Return(domain.NertzPhasePlaying)
+		g.On("GetGameEndFlag").Return(false)
 		assert.NotEmpty(t, new(NertzWebPresenter).ActionLogOutput(g))
 	})
 	t.Run("after round end returns full log", func(t *testing.T) {
 		g := new(interfaces.MockNertzGame)
 		g.On("GetPhase").Return(domain.NertzPhaseRoundEnd)
+		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "moveNF"}})
 		assert.NotEmpty(t, new(NertzWebPresenter).ActionLogOutput(g))
 	})

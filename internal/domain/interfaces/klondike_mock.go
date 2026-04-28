@@ -151,3 +151,9 @@ func (_m *MockKlondikeGame) IsStalemate() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
 }
+
+// GetGameEndFlag mocks the GetGameEndFlag call.
+func (_m *MockKlondikeGame) GetGameEndFlag() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
