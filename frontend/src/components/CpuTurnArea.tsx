@@ -33,7 +33,7 @@ export function CpuTurnArea({
   const conditionalClass = isFinished && dimFinished ? finishedPlayerClass : isCurrentTurn ? activeTurnClass : '';
   return (
     <div id={id} className={`${className}${conditionalClass ? ` ${conditionalClass}` : ''}`}>
-      <div className={`text-white font-bold mb-1${nameClassName ? ` ${nameClassName}` : ''}`}>
+      <div className={`text-ds-text-primary font-bold mb-1${nameClassName ? ` ${nameClassName}` : ''}`}>
         {playerName(playerId, isHuman)}
         {isFinished && finishedLabel && <StatusBadge variant="success">{finishedLabel}</StatusBadge>}
         {isCurrentTurn && !isFinished && <StatusBadge variant="warning">{t('status.thinking')}</StatusBadge>}

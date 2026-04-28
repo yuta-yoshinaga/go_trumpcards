@@ -210,14 +210,16 @@ export function VideoPokerGameContent({
             )}
 
             {isResultPhase && state.payout > 0 && (
-              <div className="text-white text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
+              <div className="text-ds-text-primary text-center font-bold mb-2">
+                {t('label.payout', { payout: state.payout })}
+              </div>
             )}
 
             {isBetPhase && (
               <div className="flex-1 flex flex-col items-center justify-center" data-tutorial="vp-bet-controls">
                 <ErrorAlert message={error} onRetry={retry} />
                 <div className="flex items-center gap-2">
-                  <label htmlFor="vp-bet-amount" className="text-white text-sm">
+                  <label htmlFor="vp-bet-amount" className="text-ds-text-primary text-sm">
                     {t('label.betAmount')}
                   </label>
                   <select
@@ -270,7 +272,7 @@ export function VideoPokerGameContent({
               </div>
             )}
             <div className="flex justify-center pb-2">
-              <label className="text-white text-sm flex items-center gap-2 min-h-[44px]">
+              <label className="text-ds-text-primary text-sm flex items-center gap-2 min-h-[44px]">
                 <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
                 {tc('hint.toggle', { ns: 'tutorial' })}
               </label>
