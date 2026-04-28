@@ -1,6 +1,7 @@
 package controller_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,6 +11,23 @@ import (
 )
 
 func boolPtr(v bool) *bool { return &v }
+
+// toConfigInput is the constraint satisfied by every *WebInput type whose
+// ToConfig() returns Cfg, allowing jsonToConfig to be reused across games.
+type toConfigInput[Cfg any] interface {
+	ToConfig() (Cfg, error)
+}
+
+// jsonToConfig unmarshals raw into a fresh In value and runs ToConfig on it.
+// Used to assert that the live JSON wire shape still survives mixin embedding.
+func jsonToConfig[In toConfigInput[Cfg], Cfg any](t *testing.T, raw []byte) (Cfg, error) {
+	t.Helper()
+	var in In
+	if err := json.Unmarshal(raw, &in); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	return in.ToConfig()
+}
 
 // ---------------------------------------------------------------------------
 // BlackJackWebInput.HasConfigParams
@@ -277,7 +295,7 @@ func TestHoldemWebInput_ToConfig_Defaults(t *testing.T) {
 }
 
 func TestHoldemWebInput_ToConfig_BothBlindsSet(t *testing.T) {
-	p := controller.HoldemWebInput{SmallBlind: intPtr(10), BigBlind: intPtr(20)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{SmallBlind: intPtr(10), BigBlind: intPtr(20)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 10, cfg.SmallBlind)
@@ -289,7 +307,7 @@ func TestHoldemWebInput_ToConfig_OnlySmallBlindGeDefault(t *testing.T) {
 	def := domain.DefaultHoldemConfig()
 	// Set sb >= def.BigBlind to trigger auto-adjust
 	sb := def.BigBlind
-	p := controller.HoldemWebInput{SmallBlind: intPtr(sb)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{SmallBlind: intPtr(sb)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, sb, cfg.SmallBlind)
@@ -299,7 +317,7 @@ func TestHoldemWebInput_ToConfig_OnlySmallBlindGeDefault(t *testing.T) {
 // Only SmallBlind provided but sb < default BigBlind: no auto-adjust, still sb < bb
 func TestHoldemWebInput_ToConfig_OnlySmallBlindLtDefault(t *testing.T) {
 	// default SmallBlind=5, BigBlind=10; setting sb=7 < 10, no auto-adjust; 7<10 is valid
-	p := controller.HoldemWebInput{SmallBlind: intPtr(7)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{SmallBlind: intPtr(7)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 7, cfg.SmallBlind)
@@ -308,7 +326,7 @@ func TestHoldemWebInput_ToConfig_OnlySmallBlindLtDefault(t *testing.T) {
 
 // Only BigBlind provided, bb > 1: auto-adjust SmallBlind
 func TestHoldemWebInput_ToConfig_OnlyBigBlindGt1(t *testing.T) {
-	p := controller.HoldemWebInput{BigBlind: intPtr(20)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{BigBlind: intPtr(20)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 10, cfg.SmallBlind)
@@ -317,7 +335,7 @@ func TestHoldemWebInput_ToConfig_OnlyBigBlindGt1(t *testing.T) {
 
 // Only BigBlind=2: auto sb = bb/2 = 1
 func TestHoldemWebInput_ToConfig_OnlyBigBlind2(t *testing.T) {
-	p := controller.HoldemWebInput{BigBlind: intPtr(2)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{BigBlind: intPtr(2)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 1, cfg.SmallBlind)
@@ -326,34 +344,34 @@ func TestHoldemWebInput_ToConfig_OnlyBigBlind2(t *testing.T) {
 
 // Only BigBlind=1: no auto-adjust (bb > 1 is false), but sb(5) >= bb(1) → error
 func TestHoldemWebInput_ToConfig_OnlyBigBlind1Error(t *testing.T) {
-	p := controller.HoldemWebInput{BigBlind: intPtr(1)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{BigBlind: intPtr(1)}}
 	_, err := p.ToConfig()
 	assert.Error(t, err)
 }
 
 // sb >= bb error
 func TestHoldemWebInput_ToConfig_SmallBlindGeqBigBlind(t *testing.T) {
-	p := controller.HoldemWebInput{SmallBlind: intPtr(10), BigBlind: intPtr(10)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{SmallBlind: intPtr(10), BigBlind: intPtr(10)}}
 	_, err := p.ToConfig()
 	assert.Error(t, err)
 }
 
 func TestHoldemWebInput_ToConfig_TournamentMode(t *testing.T) {
-	p := controller.HoldemWebInput{TournamentMode: boolPtr(true)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{TournamentMode: boolPtr(true)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.True(t, cfg.TournamentMode)
 }
 
 func TestHoldemWebInput_ToConfig_BlindLevelHands_Valid(t *testing.T) {
-	p := controller.HoldemWebInput{BlindLevelHands: intPtr(5)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{BlindLevelHands: intPtr(5)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 5, cfg.BlindLevelHands)
 }
 
 func TestHoldemWebInput_ToConfig_BlindLevelHands_Zero(t *testing.T) {
-	p := controller.HoldemWebInput{BlindLevelHands: intPtr(0)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{BlindLevelHands: intPtr(0)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	// 0 < 1, so not applied - default stays
@@ -361,14 +379,14 @@ func TestHoldemWebInput_ToConfig_BlindLevelHands_Zero(t *testing.T) {
 }
 
 func TestHoldemWebInput_ToConfig_BlindMultiplier_Valid(t *testing.T) {
-	p := controller.HoldemWebInput{BlindMultiplier: intPtr(150)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{BlindMultiplier: intPtr(150)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 150, cfg.BlindMultiplier)
 }
 
 func TestHoldemWebInput_ToConfig_BlindMultiplier_TooLow(t *testing.T) {
-	p := controller.HoldemWebInput{BlindMultiplier: intPtr(100)}
+	p := controller.HoldemWebInput{PokerBlindsInput: controller.PokerBlindsInput{BlindMultiplier: intPtr(100)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	// 100 < 101, so not applied - default stays
@@ -376,121 +394,228 @@ func TestHoldemWebInput_ToConfig_BlindMultiplier_TooLow(t *testing.T) {
 }
 
 func TestHoldemWebInput_ToConfig_BettingLimit_BelowMin(t *testing.T) {
-	p := controller.HoldemWebInput{BettingLimit: intPtr(-1)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{BettingLimit: intPtr(-1)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, domain.BettingLimitType(0), cfg.BettingLimit)
 }
 
 func TestHoldemWebInput_ToConfig_BettingLimit_AboveMax(t *testing.T) {
-	p := controller.HoldemWebInput{BettingLimit: intPtr(5)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{BettingLimit: intPtr(5)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, domain.BettingLimitType(2), cfg.BettingLimit)
 }
 
 func TestHoldemWebInput_ToConfig_BettingLimit_InRange(t *testing.T) {
-	p := controller.HoldemWebInput{BettingLimit: intPtr(1)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{BettingLimit: intPtr(1)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, domain.BettingLimitType(1), cfg.BettingLimit)
 }
 
 func TestHoldemWebInput_ToConfig_TableSize_Valid(t *testing.T) {
-	p := controller.HoldemWebInput{TableSize: intPtr(6)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{TableSize: intPtr(6)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 6, cfg.TableSize)
 }
 
 func TestHoldemWebInput_ToConfig_TableSize_Invalid(t *testing.T) {
-	p := controller.HoldemWebInput{TableSize: intPtr(5)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{TableSize: intPtr(5)}}
 	_, err := p.ToConfig()
 	assert.Error(t, err)
 }
 
 func TestHoldemWebInput_ToConfig_RebuyEnabled(t *testing.T) {
-	p := controller.HoldemWebInput{RebuyEnabled: boolPtr(true)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{RebuyEnabled: boolPtr(true)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.True(t, cfg.RebuyEnabled)
 }
 
 func TestHoldemWebInput_ToConfig_RebuyMaxCount_Valid(t *testing.T) {
-	p := controller.HoldemWebInput{RebuyMaxCount: intPtr(5)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{RebuyMaxCount: intPtr(5)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 5, cfg.RebuyMaxCount)
 }
 
 func TestHoldemWebInput_ToConfig_RebuyMaxCount_Zero(t *testing.T) {
-	p := controller.HoldemWebInput{RebuyMaxCount: intPtr(0)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{RebuyMaxCount: intPtr(0)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, domain.DefaultHoldemConfig().RebuyMaxCount, cfg.RebuyMaxCount)
 }
 
 func TestHoldemWebInput_ToConfig_RebuyChips_Valid(t *testing.T) {
-	p := controller.HoldemWebInput{RebuyChips: intPtr(500)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{RebuyChips: intPtr(500)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 500, cfg.RebuyChips)
 }
 
 func TestHoldemWebInput_ToConfig_RebuyChips_Zero(t *testing.T) {
-	p := controller.HoldemWebInput{RebuyChips: intPtr(0)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{RebuyChips: intPtr(0)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, domain.DefaultHoldemConfig().RebuyChips, cfg.RebuyChips)
 }
 
 func TestHoldemWebInput_ToConfig_RebuyPeriodHands_Valid(t *testing.T) {
-	p := controller.HoldemWebInput{RebuyPeriodHands: intPtr(10)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{RebuyPeriodHands: intPtr(10)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 10, cfg.RebuyPeriodHands)
 }
 
 func TestHoldemWebInput_ToConfig_RebuyPeriodHands_Zero(t *testing.T) {
-	p := controller.HoldemWebInput{RebuyPeriodHands: intPtr(0)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{RebuyPeriodHands: intPtr(0)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, domain.DefaultHoldemConfig().RebuyPeriodHands, cfg.RebuyPeriodHands)
 }
 
 func TestHoldemWebInput_ToConfig_AddonEnabled(t *testing.T) {
-	p := controller.HoldemWebInput{AddonEnabled: boolPtr(true)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{AddonEnabled: boolPtr(true)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.True(t, cfg.AddonEnabled)
 }
 
 func TestHoldemWebInput_ToConfig_AddonChips_Valid(t *testing.T) {
-	p := controller.HoldemWebInput{AddonChips: intPtr(2000)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{AddonChips: intPtr(2000)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 2000, cfg.AddonChips)
 }
 
 func TestHoldemWebInput_ToConfig_AddonChips_Zero(t *testing.T) {
-	p := controller.HoldemWebInput{AddonChips: intPtr(0)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{AddonChips: intPtr(0)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, domain.DefaultHoldemConfig().AddonChips, cfg.AddonChips)
 }
 
 func TestHoldemWebInput_ToConfig_AddonAfterHand_Valid(t *testing.T) {
-	p := controller.HoldemWebInput{AddonAfterHand: intPtr(15)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{AddonAfterHand: intPtr(15)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, 15, cfg.AddonAfterHand)
 }
 
 func TestHoldemWebInput_ToConfig_AddonAfterHand_Zero(t *testing.T) {
-	p := controller.HoldemWebInput{AddonAfterHand: intPtr(0)}
+	p := controller.HoldemWebInput{PokerCommonInput: controller.PokerCommonInput{AddonAfterHand: intPtr(0)}}
 	cfg, err := p.ToConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, domain.DefaultHoldemConfig().AddonAfterHand, cfg.AddonAfterHand)
+}
+
+// ---------------------------------------------------------------------------
+// JSON wire compatibility: the embedded PokerCommonInput / PokerBlindsInput
+// mixins must keep deserializing the same flat JSON shape the frontend already
+// sends. These tests pin that contract so future mixin edits cannot silently
+// break the live API.
+// ---------------------------------------------------------------------------
+
+func TestHoldemWebInput_FlatJSON_PreservesAllFields(t *testing.T) {
+	raw := []byte(`{
+		"command": "reset",
+		"smallBlind": 25,
+		"bigBlind": 50,
+		"blindLevelHands": 8,
+		"blindMultiplier": 150,
+		"tournamentMode": true,
+		"bettingLimit": 2,
+		"tableSize": 6,
+		"rebuyEnabled": true,
+		"rebuyMaxCount": 4,
+		"rebuyChips": 1500,
+		"rebuyPeriodHands": 25,
+		"addonEnabled": true,
+		"addonChips": 2500,
+		"addonAfterHand": 30
+	}`)
+	cfg, err := jsonToConfig[controller.HoldemWebInput, domain.HoldemConfig](t, raw)
+	assert.NoError(t, err)
+	assert.Equal(t, 25, cfg.SmallBlind)
+	assert.Equal(t, 50, cfg.BigBlind)
+	assert.Equal(t, 8, cfg.BlindLevelHands)
+	assert.Equal(t, 150, cfg.BlindMultiplier)
+	assert.True(t, cfg.TournamentMode)
+	assert.Equal(t, domain.BettingLimitType(2), cfg.BettingLimit)
+	assert.Equal(t, 6, cfg.TableSize)
+	assert.True(t, cfg.RebuyEnabled)
+	assert.Equal(t, 4, cfg.RebuyMaxCount)
+	assert.Equal(t, 1500, cfg.RebuyChips)
+	assert.Equal(t, 25, cfg.RebuyPeriodHands)
+	assert.True(t, cfg.AddonEnabled)
+	assert.Equal(t, 2500, cfg.AddonChips)
+	assert.Equal(t, 30, cfg.AddonAfterHand)
+}
+
+func TestPineappleWebInput_FlatJSON_PreservesAllFields(t *testing.T) {
+	raw := []byte(`{
+		"command": "reset",
+		"smallBlind": 15,
+		"bigBlind": 30,
+		"tournamentMode": true,
+		"tableSize": 9,
+		"rebuyEnabled": true,
+		"rebuyChips": 800,
+		"addonEnabled": true,
+		"addonChips": 1200
+	}`)
+	cfg, err := jsonToConfig[controller.PineappleWebInput, domain.PineappleConfig](t, raw)
+	assert.NoError(t, err)
+	assert.Equal(t, 15, cfg.SmallBlind)
+	assert.Equal(t, 30, cfg.BigBlind)
+	assert.True(t, cfg.TournamentMode)
+	assert.Equal(t, 9, cfg.TableSize)
+	assert.True(t, cfg.RebuyEnabled)
+	assert.Equal(t, 800, cfg.RebuyChips)
+	assert.True(t, cfg.AddonEnabled)
+	assert.Equal(t, 1200, cfg.AddonChips)
+}
+
+func TestSevenCardStudWebInput_FlatJSON_PreservesAllFields(t *testing.T) {
+	raw := []byte(`{
+		"command": "reset",
+		"ante": 2,
+		"bringIn": 4,
+		"smallBet": 10,
+		"bigBet": 20,
+		"tournamentMode": true,
+		"anteLevelHands": 5,
+		"anteMultiplier": 200,
+		"bettingLimit": 1,
+		"tableSize": 4,
+		"rebuyEnabled": true,
+		"rebuyMaxCount": 2,
+		"rebuyChips": 500,
+		"rebuyPeriodHands": 10,
+		"addonEnabled": true,
+		"addonChips": 800,
+		"addonAfterHand": 15
+	}`)
+	cfg, err := jsonToConfig[controller.SevenCardStudWebInput, domain.SevenCardStudConfig](t, raw)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, cfg.Ante)
+	assert.Equal(t, 4, cfg.BringIn)
+	assert.Equal(t, 10, cfg.SmallBet)
+	assert.Equal(t, 20, cfg.BigBet)
+	assert.True(t, cfg.TournamentMode)
+	assert.Equal(t, 5, cfg.AnteLevelHands)
+	assert.Equal(t, 200, cfg.AnteMultiplier)
+	assert.Equal(t, domain.BettingLimitType(1), cfg.BettingLimit)
+	assert.Equal(t, 4, cfg.TableSize)
+	assert.True(t, cfg.RebuyEnabled)
+	assert.Equal(t, 2, cfg.RebuyMaxCount)
+	assert.Equal(t, 500, cfg.RebuyChips)
+	assert.Equal(t, 10, cfg.RebuyPeriodHands)
+	assert.True(t, cfg.AddonEnabled)
+	assert.Equal(t, 800, cfg.AddonChips)
+	assert.Equal(t, 15, cfg.AddonAfterHand)
 }
 
 // ---------------------------------------------------------------------------
