@@ -68,7 +68,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
         />
       </div>
       <div className="flex items-center justify-center gap-2 mb-2">
-        <label htmlFor="bj-hand-count" className="text-white text-sm">
+        <label htmlFor="bj-hand-count" className="text-ds-text-primary text-sm">
           {t('handCount')}
         </label>
         <select
@@ -88,7 +88,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
       </div>
 
       {/* Advanced settings: collapsible */}
-      <details className="mb-2 text-white text-sm" open={props.autoExpandAdvanced || undefined}>
+      <details className="mb-2 text-ds-text-primary text-sm" open={props.autoExpandAdvanced || undefined}>
         <summary className="cursor-pointer select-none text-center text-ds-warning hover:text-ds-warning-hover py-1">
           {t('advancedSettings')}
           {(props.perfectPairsBet > 0 || props.twentyOnePlus3Bet > 0) && (
@@ -129,7 +129,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           </div>
           {/* Deck & CPU count */}
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            <label htmlFor="bj-deck-count" className="text-white text-sm">
+            <label htmlFor="bj-deck-count" className="text-ds-text-primary text-sm">
               {t('deckCount')}
             </label>
             <select
@@ -146,7 +146,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
                 </option>
               ))}
             </select>
-            <label htmlFor="bj-cpu-count" className="text-white text-sm">
+            <label htmlFor="bj-cpu-count" className="text-ds-text-primary text-sm">
               {t('cpuCount')}
             </label>
             <select
@@ -218,7 +218,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
             >
               {t('das')} {props.doubleAfterSplit ? 'ON' : 'OFF'}
             </button>
-            <label htmlFor="bj-penetration" className="text-white text-sm">
+            <label htmlFor="bj-penetration" className="text-ds-text-primary text-sm">
               {t('penetration')}
             </label>
             <select
@@ -234,7 +234,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
                 </option>
               ))}
             </select>
-            <label htmlFor="bj-surrender-rule" className="text-white text-sm">
+            <label htmlFor="bj-surrender-rule" className="text-ds-text-primary text-sm">
               {t('surrenderRule')}
             </label>
             <select

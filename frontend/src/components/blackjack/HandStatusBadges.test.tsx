@@ -40,6 +40,13 @@ describe('HandStatusBadges', () => {
     expect(elem).toHaveClass('bg-ds-surface-elevated');
   });
 
+  it('uses warm-ivory text-ds-text-primary on the SUR badge instead of pure white', () => {
+    render(<HandStatusBadges {...noBadges} surrendered={true} />);
+    const elem = screen.getByTitle(i18n.t('blackjack:status.surTooltip'));
+    expect(elem.className).not.toContain('text-white');
+    expect(elem.className).toContain('text-ds-text-primary');
+  });
+
   it('renders all badges simultaneously when all flags are true', () => {
     render(<HandStatusBadges busted={true} doubled={true} isBlackJack={true} surrendered={true} />);
     expect(screen.getByTitle(i18n.t('blackjack:status.bustTooltip'))).toBeInTheDocument();
