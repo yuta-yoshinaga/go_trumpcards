@@ -586,6 +586,51 @@ export const memoryApi = {
     }),
 };
 
+/**
+ * Command verbs accepted by the solitaire-style move endpoints.
+ *
+ * The union is intentionally broader than any single game uses (e.g. Klondike
+ * has `'draw'`, Spider has `'deal'`, Accordion has neither) so that the shared
+ * factories can be reused without per-game subtype declarations. Game-specific
+ * call sites still get type-checked because they only ever invoke a subset of
+ * these commands.
+ */
+export type SolitaireMoveCommand =
+  | 'reset'
+  | 'move'
+  | 'giveup'
+  | 'hint'
+  | 'autocomplete'
+  | 'log'
+  | 'undo'
+  | 'undo_n'
+  | 'draw'
+  | 'deal';
+
+/**
+ * Factory for solitaire-style move APIs whose request body is `{ command, from, to, n }`.
+ *
+ * Used by Canfield, FreeCell, Yukon, Scorpion, Accordion, FortyThieves, and
+ * Calculation — every solitaire variant whose move endpoint takes only
+ * source/target zones and an optional batch-undo count.
+ */
+function createSolitaireMoveApi<T, Zone, Cmd extends string = SolitaireMoveCommand>(game: string) {
+  return {
+    exec: (command: Cmd, from?: Zone, to?: Zone, n?: number) => gameExec<T>(game, { command, from, to, n }),
+  };
+}
+
+/**
+ * Factory for solitaire-style move APIs that also carry an optional `config`
+ * object (Klondike, Spider). Body shape: `{ command, from, to, config, n }`.
+ */
+function createSolitaireMoveApiWithConfig<T, Zone, C, Cmd extends string = SolitaireMoveCommand>(game: string) {
+  return {
+    exec: (command: Cmd, from?: Zone, to?: Zone, config?: C, n?: number) =>
+      gameExec<T>(game, { command, from, to, config, n }),
+  };
+}
+
 /** Source or target zone for a Klondike card move. */
 export interface KlondikeMoveZone {
   zone: string;
@@ -600,22 +645,9 @@ export interface KlondikeConfigInput {
 }
 
 /** API client for the Klondike /klondike/exec endpoint. */
-export const klondikeApi = {
-  exec: (
-    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
-    from?: KlondikeMoveZone,
-    to?: KlondikeMoveZone,
-    config?: KlondikeConfigInput,
-    n?: number,
-  ) =>
-    gameExec<KlondikeResponse>('klondike', {
-      command,
-      from,
-      to,
-      config,
-      n,
-    }),
-};
+export const klondikeApi = createSolitaireMoveApiWithConfig<KlondikeResponse, KlondikeMoveZone, KlondikeConfigInput>(
+  'klondike',
+);
 
 /** Source or target zone for a Canfield card move. */
 export interface CanfieldMoveZone {
@@ -625,20 +657,7 @@ export interface CanfieldMoveZone {
 }
 
 /** API client for the Canfield /canfield/exec endpoint. */
-export const canfieldApi = {
-  exec: (
-    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
-    from?: CanfieldMoveZone,
-    to?: CanfieldMoveZone,
-    n?: number,
-  ) =>
-    gameExec<CanfieldResponse>('canfield', {
-      command,
-      from,
-      to,
-      n,
-    }),
-};
+export const canfieldApi = createSolitaireMoveApi<CanfieldResponse, CanfieldMoveZone>('canfield');
 
 /** Source or target zone for a FreeCell card move. */
 export interface FreeCellMoveZone {
@@ -649,20 +668,7 @@ export interface FreeCellMoveZone {
 }
 
 /** API client for the FreeCell /freecell/exec endpoint. */
-export const freecellApi = {
-  exec: (
-    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
-    from?: FreeCellMoveZone,
-    to?: FreeCellMoveZone,
-    n?: number,
-  ) =>
-    gameExec<FreeCellResponse>('freecell', {
-      command,
-      from,
-      to,
-      n,
-    }),
-};
+export const freecellApi = createSolitaireMoveApi<FreeCellResponse, FreeCellMoveZone>('freecell');
 
 /** Configuration options for Crazy Eights game settings. */
 export interface CrazyEightsConfigInput {
@@ -840,22 +846,7 @@ export interface SpiderConfigInput {
 }
 
 /** API client for the Spider /spider/exec endpoint. */
-export const spiderApi = {
-  exec: (
-    command: 'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
-    from?: SpiderMoveZone,
-    to?: SpiderMoveZone,
-    config?: SpiderConfigInput,
-    n?: number,
-  ) =>
-    gameExec<SpiderResponse>('spider', {
-      command,
-      from,
-      to,
-      config,
-      n,
-    }),
-};
+export const spiderApi = createSolitaireMoveApiWithConfig<SpiderResponse, SpiderMoveZone, SpiderConfigInput>('spider');
 
 /** Configuration options for Napoleon game settings. */
 export interface NapoleonConfigInput {
@@ -1144,20 +1135,7 @@ export interface YukonMoveZone {
 }
 
 /** API client for the Yukon /yukon/exec endpoint. */
-export const yukonApi = {
-  exec: (
-    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
-    from?: YukonMoveZone,
-    to?: YukonMoveZone,
-    n?: number,
-  ) =>
-    gameExec<YukonResponse>('yukon', {
-      command,
-      from,
-      to,
-      n,
-    }),
-};
+export const yukonApi = createSolitaireMoveApi<YukonResponse, YukonMoveZone>('yukon');
 
 /** Source or target zone for a Scorpion card move. */
 export interface ScorpionMoveZone {
@@ -1167,20 +1145,7 @@ export interface ScorpionMoveZone {
 }
 
 /** API client for the Scorpion /scorpion/exec endpoint. */
-export const scorpionApi = {
-  exec: (
-    command: 'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
-    from?: ScorpionMoveZone,
-    to?: ScorpionMoveZone,
-    n?: number,
-  ) =>
-    gameExec<ScorpionResponse>('scorpion', {
-      command,
-      from,
-      to,
-      n,
-    }),
-};
+export const scorpionApi = createSolitaireMoveApi<ScorpionResponse, ScorpionMoveZone>('scorpion');
 
 /** Source or target pile for an Accordion move. */
 export interface AccordionMoveZone {
@@ -1189,20 +1154,7 @@ export interface AccordionMoveZone {
 }
 
 /** API client for the Accordion /accordion/exec endpoint. */
-export const accordionApi = {
-  exec: (
-    command: 'reset' | 'move' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n',
-    from?: AccordionMoveZone,
-    to?: AccordionMoveZone,
-    n?: number,
-  ) =>
-    gameExec<AccordionResponse>('accordion', {
-      command,
-      from,
-      to,
-      n,
-    }),
-};
+export const accordionApi = createSolitaireMoveApi<AccordionResponse, AccordionMoveZone>('accordion');
 
 /** Configuration options for Seven Bridge game settings. */
 export interface SevenBridgeConfigInput {
@@ -1293,24 +1245,10 @@ export const clocksolitaireApi = {
 };
 
 /** API client for the Forty Thieves /fortythieves/exec endpoint. */
-export const fortyThievesApi = {
-  exec: (
-    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
-    from?: FortyThievesMoveZone,
-    to?: FortyThievesMoveZone,
-    n?: number,
-  ) => gameExec<FortyThievesResponse>('fortythieves', { command, from, to, n }),
-};
+export const fortyThievesApi = createSolitaireMoveApi<FortyThievesResponse, FortyThievesMoveZone>('fortythieves');
 
 /** API client for the Calculation /calculation/exec endpoint. */
-export const calculationApi = {
-  exec: (
-    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n',
-    from?: CalculationMoveZone,
-    to?: CalculationMoveZone,
-    n?: number,
-  ) => gameExec<CalculationResponse>('calculation', { command, from, to, n }),
-};
+export const calculationApi = createSolitaireMoveApi<CalculationResponse, CalculationMoveZone>('calculation');
 
 /** Command verbs accepted by the Spite & Malice /spiteandmalice/exec endpoint. */
 export type SpiteAndMaliceCommand = 'reset' | 'move' | 'discard' | 'cpu' | 'hint' | 'log';
@@ -1381,17 +1319,24 @@ export const pokersquaresApi = {
     gameExec<PokerSquaresResponse>('pokersquares', { command, row, col }),
 };
 
+/**
+ * Factory for casino bet APIs whose request body is `{ command, amount }`.
+ * Used by Let It Ride and Red Dog — table games whose only per-action input
+ * is the wager amount.
+ */
+function createBetAmountApi<T, Cmd extends string>(game: string) {
+  return {
+    exec: (command: Cmd, amount?: number) => gameExec<T>(game, { command, amount }),
+  };
+}
+
 /** API client for the Let It Ride /letitride/exec endpoint. */
-export const letitrideApi = {
-  exec: (command: 'reset' | 'bet' | 'pull' | 'letitride' | 'log', amount?: number) =>
-    gameExec<LetItRideResponse>('letitride', { command, amount }),
-};
+export const letitrideApi = createBetAmountApi<LetItRideResponse, 'reset' | 'bet' | 'pull' | 'letitride' | 'log'>(
+  'letitride',
+);
 
 /** API client for the Red Dog /reddog/exec endpoint. */
-export const reddogApi = {
-  exec: (command: 'reset' | 'bet' | 'raise' | 'stay' | 'log', amount?: number) =>
-    gameExec<RedDogResponse>('reddog', { command, amount }),
-};
+export const reddogApi = createBetAmountApi<RedDogResponse, 'reset' | 'bet' | 'raise' | 'stay' | 'log'>('reddog');
 
 const games = [
   'blackjack',
