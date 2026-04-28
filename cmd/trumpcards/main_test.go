@@ -823,6 +823,92 @@ func TestCliAliasesWithoutShortKeyRemoved(t *testing.T) {
 	}
 }
 
+// TestValidCategoryNamesDerivedFromRegistry verifies the validCategory set is
+// in lockstep with the games registry's actual categories. Adding a new
+// games.Category in the registry must automatically extend the CLI filter
+// without touching this file. See PR #1538 review feedback.
+func TestValidCategoryNamesDerivedFromRegistry(t *testing.T) {
+	// Walk every registered game's category via the same helper production
+	// uses; assert the predicate accepts it.
+	registryCategories := make(map[string]bool)
+	for name, cat := range gameCategoryByName() {
+		registryCategories[cat] = true
+		if !validCategory(cat) {
+			t.Errorf("registry has category %q (for game %q) but validCategory rejects it", cat, name)
+		}
+	}
+	if len(registryCategories) == 0 {
+		t.Fatal("expected at least one category in registry")
+	}
+	// And no extra entries that don't appear in the registry — that would
+	// mean validCategoryNames drifted away from the SSoT.
+	for cat := range validCategoryNames {
+		if !registryCategories[cat] {
+			t.Errorf("validCategory accepts %q but no game in the registry uses it", cat)
+		}
+	}
+}
+
+// TestRunGamesJSONIgnoredFlagsWarning verifies that passing --short or
+// --aliases together with --json emits a one-line warning to stderr
+// (the JSON schema is fixed; silently dropping flags hides script bugs).
+// See PR #1538 review feedback (observation #4).
+func TestRunGamesJSONIgnoredFlagsWarning(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+	}()
+
+	cases := []struct {
+		name     string
+		args     []string
+		wantWarn bool
+	}{
+		{"--json --short warns", []string{"trumpcards", "games", "--json", "--short"}, true},
+		{"--json --aliases warns", []string{"trumpcards", "games", "--json", "--aliases"}, true},
+		{"--json alone is silent", []string{"trumpcards", "games", "--json"}, false},
+		{"--json --category solo is silent", []string{"trumpcards", "games", "--json", "--category", "solo"}, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != 0 {
+				t.Fatalf("exit = %d, want 0 (stderr=%q)", exit, errBuf.String())
+			}
+			// JSON must always end up on stdout regardless of warnings.
+			if outBuf.Len() == 0 || outBuf.String()[0] != '[' {
+				t.Errorf("expected a JSON array on stdout; got: %q", outBuf.String())
+			}
+			gotWarn := strings.Contains(errBuf.String(), "--json")
+			if gotWarn != tc.wantWarn {
+				t.Errorf("warning emitted: got=%v, want=%v (stderr=%q)", gotWarn, tc.wantWarn, errBuf.String())
+			}
+		})
+	}
+}
+
 // TestUpdateExitCodeMapping verifies that every sentinel error from the
 // updater maps to a distinct, documented exit code. Callers depend on this
 // mapping for retry / fallback logic. See issue #1449.

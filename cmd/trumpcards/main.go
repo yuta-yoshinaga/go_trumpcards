@@ -60,10 +60,18 @@ func portInRange(port int) bool {
 	return port >= 0 && port <= 65535
 }
 
-// validCategoryNames is the canonical set of `--category` filter values; the
-// strings must stay in lockstep with games.Category.String() so the predicate
-// neither drops a real category nor accepts a typo. See issue #1535.
-var validCategoryNames = map[string]bool{"casino": true, "classic": true, "solo": true}
+// validCategoryNames is the canonical set of `--category` filter values,
+// derived from the games registry at package load so it stays in lockstep
+// with games.Category.String() automatically. Adding a new Category to the
+// games package is enough — no manual sync here. See issue #1535 and
+// PR #1538 review feedback.
+var validCategoryNames = func() map[string]bool {
+	seen := make(map[string]bool)
+	for _, g := range games.All() {
+		seen[g.Category.String()] = true
+	}
+	return seen
+}()
 
 // validCategory reports whether s names a registered game category. Comparison
 // is case-sensitive to match games.Category.String()'s canonical lowercase form.
@@ -194,7 +202,7 @@ func run() int {
 	commands["games"] = func() int {
 		var short, aliases, asJSON bool
 		var category string
-		_, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
+		fs, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
 			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
 			f.BoolVar(&asJSON, "json", false, "Emit machine-readable JSON (array of {name, category, description, aliases})")
@@ -208,6 +216,14 @@ func run() int {
 			return 2
 		}
 		if asJSON {
+			// --short / --aliases are silently irrelevant in JSON mode (the
+			// schema is fixed). Warn the user instead of dropping the flags
+			// without feedback so a typo in scripts surfaces early. The warning
+			// goes to stderr so the JSON on stdout stays pure / pipeable. See
+			// PR #1538 review feedback.
+			if flagSetVisited(fs, "short", "aliases") {
+				fmt.Fprintln(os.Stderr, i18n.T("cliGamesJSONIgnoredFlags"))
+			}
 			if err := printGamesJSON(category, os.Stdout); err != nil {
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliGamesJSONError", "err", err.Error()))
 				return 1
@@ -436,6 +452,9 @@ var builtinSubcommandHelp = map[string][]string{
 		"      --json               Emit machine-readable JSON: an array of",
 		"                           {name, category, description, aliases}.",
 		"                           aliases is always [] (never null) for stable schema.",
+		"                           Combines with --category; --short / --aliases have no",
+		"                           effect in JSON mode (the schema is fixed) and emit a",
+		"                           one-line warning to stderr if used together.",
 		"      --category CAT       Restrict output to one Cloudflare Worker category:",
 		"                           casino, classic, or solo. Combinable with --short / --json.",
 		"                           Invalid value exits 2.",
@@ -787,13 +806,7 @@ func detectBootstrapLang(args []string, langEnv string) string {
 func printGames(short, aliases bool, category string, w io.Writer) {
 	var reverseAliases map[string][]string
 	if !short || aliases {
-		reverseAliases = make(map[string][]string)
-		for alias, canonical := range ui.GameAliases {
-			reverseAliases[canonical] = append(reverseAliases[canonical], alias)
-		}
-		for k := range reverseAliases {
-			sort.Strings(reverseAliases[k])
-		}
+		reverseAliases = buildReverseAliases()
 	}
 
 	var descs map[string]string
@@ -801,7 +814,12 @@ func printGames(short, aliases bool, category string, w io.Writer) {
 		descs = ui.GameDescriptions()
 	}
 
-	categoryByName := gameCategoryByName()
+	// Only build the category index when a filter is active — otherwise the
+	// allocation is wasted because the gating predicate below is a no-op.
+	var categoryByName map[string]string
+	if category != "" {
+		categoryByName = gameCategoryByName()
+	}
 	for _, name := range ui.GameNames() {
 		if category != "" && categoryByName[name] != category {
 			continue
@@ -835,6 +853,21 @@ func gameCategoryByName() map[string]string {
 	return out
 }
 
+// buildReverseAliases inverts ui.GameAliases (alias → canonical) into
+// canonical → sorted aliases. Sorting per-key keeps output deterministic
+// despite Go's randomized map iteration. Shared by printGames and
+// printGamesJSON so the two render the same alias set in the same order.
+func buildReverseAliases() map[string][]string {
+	rev := make(map[string][]string)
+	for alias, canonical := range ui.GameAliases {
+		rev[canonical] = append(rev[canonical], alias)
+	}
+	for k := range rev {
+		sort.Strings(rev[k])
+	}
+	return rev
+}
+
 // printGamesJSON emits a JSON array describing every game (or only games in
 // the given category, if non-empty). Each entry is `{name, category,
 // description, aliases}`. Aliases is always a non-nil slice so the JSON
@@ -847,13 +880,7 @@ func printGamesJSON(category string, w io.Writer) error {
 		Description string   `json:"description"`
 		Aliases     []string `json:"aliases"`
 	}
-	reverseAliases := make(map[string][]string)
-	for alias, canonical := range ui.GameAliases {
-		reverseAliases[canonical] = append(reverseAliases[canonical], alias)
-	}
-	for k := range reverseAliases {
-		sort.Strings(reverseAliases[k])
-	}
+	reverseAliases := buildReverseAliases()
 	all := games.All()
 	out := make([]entry, 0, len(all))
 	for _, g := range all {
