@@ -69,10 +69,8 @@ export function BettingControls({
             onChange={(e) => {
               onBetAmountChange(Number(e.target.value));
             }}
-            className={`w-20 px-2 py-1 text-sm rounded border ${
-              isOutOfRange
-                ? 'bg-ds-error/40 border-ds-error text-ds-error'
-                : 'bg-white/90 border-transparent text-ds-text-inverse'
+            className={`w-20 px-2 py-1 text-sm rounded ${
+              isOutOfRange ? 'bg-ds-error/40 border-ds-error text-ds-error' : ''
             }`}
           />
         </div>
