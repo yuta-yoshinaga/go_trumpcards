@@ -1,82 +1,30 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { type KlondikeConfigInput, type KlondikeMoveZone, klondikeApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { KlondikeHint } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Klondike game state, source selection, hints, and moves. */
 export function useKlondikeGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(klondikeApi.exec);
   const [selectedSource, setSelectedSource] = useState<KlondikeMoveZone | null>(null);
-  const [hint, setHint] = useState<KlondikeHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
+  const base = useSolitaireGameBase<
+    Awaited<ReturnType<typeof klondikeApi.exec>>,
+    Parameters<typeof klondikeApi.exec>,
+    KlondikeHint
+  >(klondikeApi.exec, {
+    onClearSelection,
+    hintApi: () => klondikeApi.exec('hint'),
+  });
 
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
-
-  const handleDraw = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('draw');
-  }, [exec]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('reset');
-  }, [exec]);
-
+  const handleDraw = useCallback(() => base.runAction('draw'), [base.runAction]);
   const handleResetWithConfig = useCallback(
-    (config: KlondikeConfigInput) => {
-      setSelectedSource(null);
-      setHint(null);
-      exec('reset', undefined, undefined, config);
-    },
-    [exec],
+    (config: KlondikeConfigInput) => base.runAction('reset', undefined, undefined, config),
+    [base.runAction],
   );
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('giveup');
-  }, [exec]);
-
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await klondikeApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, []);
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    exec('autocomplete');
-  }, [exec, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('undo');
-  }, [exec]);
-
-  /** Undo N moves at once to escape a stalemate. */
   const handleUndoEscape = useCallback(
-    (n: number) => {
-      setSelectedSource(null);
-      setHint(null);
-      exec('undo_n', undefined, undefined, undefined, n);
-    },
-    [exec],
+    (n: number) => base.runAction('undo_n', undefined, undefined, undefined, n),
+    [base.runAction],
   );
 
   const handleSelectSource = useCallback((zone: KlondikeMoveZone) => {
@@ -91,32 +39,32 @@ export function useKlondikeGame() {
   const handleSelectTarget = useCallback(
     (zone: KlondikeMoveZone) => {
       if (!selectedSource) return;
-      setHint(null);
-      exec('move', selectedSource, zone);
+      base.setHint(null);
+      void base.apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, exec],
+    [selectedSource, base],
   );
 
   return {
-    state,
-    loading,
-    error,
-    hintError,
-    exec,
+    state: base.state,
+    loading: base.loading,
+    error: base.error,
+    hintError: base.hintError,
+    exec: base.apiCall,
     selectedSource,
-    hint,
+    hint: base.hint,
     handleDraw,
-    handleReset,
+    handleReset: base.handleReset,
     handleResetWithConfig,
-    handleGiveUp,
-    handleHint,
-    handleAutoComplete,
-    handleUndo,
+    handleGiveUp: base.handleGiveUp,
+    handleHint: base.handleHint,
+    handleAutoComplete: base.handleAutoComplete,
+    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
-    isAutoCompleting,
-    retry,
+    isAutoCompleting: base.isAutoCompleting,
+    retry: base.retry,
   };
 }

@@ -1,67 +1,25 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { type FreeCellMoveZone, freecellApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { FreeCellHint } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages FreeCell game state, source selection, hints, and moves. */
 export function useFreeCellGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(freecellApi.exec);
   const [selectedSource, setSelectedSource] = useState<FreeCellMoveZone | null>(null);
-  const [hint, setHint] = useState<FreeCellHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const callExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
+  const base = useSolitaireGameBase<
+    Awaited<ReturnType<typeof freecellApi.exec>>,
+    Parameters<typeof freecellApi.exec>,
+    FreeCellHint
+  >(freecellApi.exec, {
+    onClearSelection,
+    hintApi: () => freecellApi.exec('hint'),
+  });
 
-  useEffect(() => {
-    callExec('reset');
-  }, [callExec]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    callExec('reset');
-  }, [callExec]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    callExec('giveup');
-  }, [callExec]);
-
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await freecellApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, []);
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    callExec('autocomplete');
-  }, [callExec, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    callExec('undo');
-  }, [callExec]);
-
-  /** Undo N moves at once to escape a stalemate. */
   const handleUndoEscape = useCallback(
-    (n: number) => {
-      setSelectedSource(null);
-      setHint(null);
-      callExec('undo_n', undefined, undefined, n);
-    },
-    [callExec],
+    (n: number) => base.runAction('undo_n', undefined, undefined, n),
+    [base.runAction],
   );
 
   const handleSelectSource = useCallback((zone: FreeCellMoveZone) => {
@@ -82,30 +40,30 @@ export function useFreeCellGame() {
   const handleSelectTarget = useCallback(
     (zone: FreeCellMoveZone) => {
       if (!selectedSource) return;
-      setHint(null);
-      callExec('move', selectedSource, zone);
+      base.setHint(null);
+      void base.apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, callExec],
+    [selectedSource, base],
   );
 
   return {
-    state,
-    loading,
-    error,
-    hintError,
-    exec: callExec,
+    state: base.state,
+    loading: base.loading,
+    error: base.error,
+    hintError: base.hintError,
+    exec: base.apiCall,
     selectedSource,
-    hint,
-    handleReset,
-    handleGiveUp,
-    handleHint,
-    handleAutoComplete,
-    handleUndo,
+    hint: base.hint,
+    handleReset: base.handleReset,
+    handleGiveUp: base.handleGiveUp,
+    handleHint: base.handleHint,
+    handleAutoComplete: base.handleAutoComplete,
+    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
-    isAutoCompleting,
-    retry,
+    isAutoCompleting: base.isAutoCompleting,
+    retry: base.retry,
   };
 }
