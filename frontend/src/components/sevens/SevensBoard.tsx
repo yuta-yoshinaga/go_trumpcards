@@ -35,7 +35,7 @@ function Board({
   const isMobile = useIsMobile();
   return (
     <div className="bg-black/30 rounded-[10px] py-2 px-2 sm:px-3.5 my-2">
-      <div className="text-white font-bold mb-1.5 text-sm">
+      <div className="text-ds-text-primary font-bold mb-1.5 text-sm">
         {t('board')}
         {tunnelEnabled && <span className="text-ds-warning text-xs ml-2">{t('tunnelTag')}</span>}
         {jokerSelecting && <span className="text-ds-success text-xs ml-2">{t('jokerSelectHint')}</span>}
