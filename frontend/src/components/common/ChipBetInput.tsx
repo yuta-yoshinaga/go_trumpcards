@@ -55,7 +55,7 @@ export function ChipBetInput({
   const errorClasses = invalid ? 'bg-ds-error/40 border-ds-error text-ds-error' : '';
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor={id} className="text-white text-sm">
+      <label htmlFor={id} className="text-ds-text-primary text-sm">
         {label}
       </label>
       <input
