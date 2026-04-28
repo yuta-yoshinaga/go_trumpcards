@@ -1,13 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
 import { useIsMediumDesktop, useIsMobile } from '../hooks/useCardDimensions';
+import { useDetailsOutsideClick } from '../hooks/useDetailsOutsideClick';
 import { useFavoriteGames } from '../hooks/useFavoriteGames';
+import { useGameRouteSearch } from '../hooks/useGameRouteSearch';
+import { useNavFocusTrap } from '../hooks/useNavFocusTrap';
 import { useRecentGames } from '../hooks/useRecentGames';
 import { focusRingWhite } from '../styles/buttonStyles';
-import { getFocusableElements } from '../utils/dom';
+import { NavLangToggle } from './nav/NavLangToggle';
 import { SoundToggle } from './SoundToggle';
 import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
 
@@ -53,46 +56,13 @@ function CloseIcon() {
   );
 }
 
-interface LangToggleProps {
-  currentLang: string;
-  i18n: { changeLanguage: (lng: string) => void };
-  t: (key: string) => string;
-}
-
-/** Language toggle buttons (JA / EN). */
-function LangToggle({ currentLang, i18n, t }: LangToggleProps) {
-  return (
-    <div className="flex gap-0.5">
-      <button
-        type="button"
-        aria-label={t('nav.switchToJa')}
-        aria-pressed={currentLang === 'ja'}
-        onClick={() => i18n.changeLanguage('ja')}
-        className={`px-3 py-2 text-xs font-bold rounded-l min-h-[44px] transition-colors ${currentLang === 'ja' ? 'bg-ds-accent text-ds-text-on-accent' : 'bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
-      >
-        JA
-      </button>
-      <button
-        type="button"
-        aria-label={t('nav.switchToEn')}
-        aria-pressed={currentLang === 'en'}
-        onClick={() => i18n.changeLanguage('en')}
-        className={`px-3 py-2 text-xs font-bold rounded-r min-h-[44px] transition-colors ${currentLang === 'en' ? 'bg-ds-accent text-ds-text-on-accent' : 'bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
-      >
-        EN
-      </button>
-    </div>
-  );
-}
-
 /** Lookup map from path to game route for recent/favorite rendering. */
 const routeByPath = new Map(gameRoutes.map((r) => [r.path, r]));
 
 /** Renders the top navigation bar with game links grouped by category and language toggle. */
 export function NavBar() {
   const { pathname } = useLocation();
-  const { t, i18n } = useTranslation('common');
-  const currentLang = i18n.language;
+  const { t } = useTranslation('common');
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const isMobile = useIsMobile();
@@ -101,74 +71,9 @@ export function NavBar() {
   const { favorites, isFavorite, toggleFavorite } = useFavoriteGames();
   const navRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
-  const wasOpen = useRef(false);
 
-  useEffect(() => {
-    const justOpened = isOpen && !wasOpen.current;
-    const justClosed = !isOpen && wasOpen.current;
-    wasOpen.current = isOpen;
-
-    if (justClosed && toggleRef.current) {
-      toggleRef.current.focus();
-    }
-
-    if (!isOpen || !navRef.current) return;
-    const nav = navRef.current;
-
-    // Only move focus on the open transition; re-running the effect for a
-    // viewport resize (isMobile flip) must not steal focus from the user.
-    if (justOpened) {
-      const initial = getFocusableElements(nav)[0];
-      initial?.focus();
-    }
-
-    // Focus trap is scoped to mobile, where the menu covers the viewport
-    // like a modal. On tablet+ (sm:flex) the nav renders inline and a trap
-    // would prevent normal Tab flow into page content.
-    if (!isMobile) return;
-
-    const handleTab = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
-      const focusable = getFocusableElements(nav);
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement as HTMLElement | null;
-      if (e.shiftKey) {
-        if (active === first || !nav.contains(active)) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (active === last || !nav.contains(active)) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleTab);
-    return () => document.removeEventListener('keydown', handleTab);
-  }, [isOpen, isMobile]);
-
-  // Close nav dropdown on outside click (large desktop only).
-  // On mobile/tablet, categories are always-open so this must be skipped
-  // to prevent a layout shift between mousedown and mouseup that causes
-  // clicks to land on the wrong game link.
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (isMobile || isMediumDesktop) return;
-      if (!navRef.current) return;
-      const openDetails = navRef.current.querySelectorAll('details[open]');
-      for (const details of openDetails) {
-        if (!details.contains(e.target as Node)) {
-          details.removeAttribute('open');
-        }
-      }
-    };
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [isMobile, isMediumDesktop]);
+  useNavFocusTrap(navRef, toggleRef, isOpen, isMobile);
+  useDetailsOutsideClick(navRef, !isMobile && !isMediumDesktop);
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
@@ -181,24 +86,7 @@ export function NavBar() {
     }
   };
 
-  /** Pre-compute bilingual names for search filtering.
-   * Uses explicit lng overrides so the result is language-independent. */
-  const searchableRoutes = useMemo(
-    () =>
-      gameRoutes.map((route) => ({
-        route,
-        ja: i18n.t(route.labelKey, { lng: 'ja', ns: 'common' }).toLowerCase(),
-        en: i18n.t(route.labelKey, { lng: 'en', ns: 'common' }).toLowerCase(),
-      })),
-    [i18n.t],
-  );
-
-  /** Filter game routes by bilingual name match. */
-  const filteredRoutes = useMemo(() => {
-    if (!searchTerm) return null;
-    const lower = searchTerm.toLowerCase();
-    return searchableRoutes.filter(({ ja, en }) => ja.includes(lower) || en.includes(lower)).map(({ route }) => route);
-  }, [searchTerm, searchableRoutes]);
+  const { filteredRoutes } = useGameRouteSearch(searchTerm);
 
   return (
     <div className="glass-panel--dark lg:hidden relative z-30 pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
@@ -212,7 +100,7 @@ export function NavBar() {
         </Link>
         <div className="flex items-center gap-2">
           <SoundToggle />
-          <LangToggle currentLang={currentLang} i18n={i18n} t={t} />
+          <NavLangToggle />
           <button
             ref={toggleRef}
             type="button"
@@ -389,7 +277,7 @@ export function NavBar() {
         <TutorialProgressPanel />
         <div className="hidden sm:flex sm:items-center sm:gap-2">
           <SoundToggle />
-          <LangToggle currentLang={currentLang} i18n={i18n} t={t} />
+          <NavLangToggle />
         </div>
       </nav>
     </div>
