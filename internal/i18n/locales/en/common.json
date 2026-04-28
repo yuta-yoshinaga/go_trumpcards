@@ -86,6 +86,7 @@
   "fortythieves.invalidToZone": "Invalid to zone: {{val}}. Use 't' (tableau) or 'f' (foundation).",
   "fortythieves.moveUsage": "Usage: m t <col> <idx> t <col>",
   "webServerRunning": "Server is running at http://{{addr}}",
+  "webServerExposureWarning": "WARNING: listening on {{addr}} — reachable from other hosts on your LAN/VPN. Use --host 127.0.0.1 if unintended, or --quiet to silence this warning.",
   "webServerStop": "Press Ctrl+C to stop",
   "webServerShutdown": "Shutting down server...",
   "webServerStopped": "Server stopped.",
