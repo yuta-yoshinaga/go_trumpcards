@@ -14,6 +14,19 @@ describe('GameSkeleton', () => {
     expect(el.getAttribute('aria-busy')).toBe('true');
   });
 
+  it('exposes a status live region with a localized loading label for screen readers', () => {
+    render(
+      <GameSkeleton bgClass="bg-game-bg-green" footerClassName="bg-green-dark" footer={<div>f</div>}>
+        <div>b</div>
+      </GameSkeleton>,
+    );
+    const el = screen.getByTestId('skeleton');
+    expect(el.getAttribute('role')).toBe('status');
+    expect(el.getAttribute('aria-live')).toBe('polite');
+    expect(el.getAttribute('aria-label')).toBe('読み込み中…');
+    expect(screen.getByText('読み込み中…')).toBeInTheDocument();
+  });
+
   it('applies bgClass to outer wrapper', () => {
     render(
       <GameSkeleton bgClass="bg-game-bg-blue" footerClassName="bg-blue-dark" footer={<div>f</div>}>
