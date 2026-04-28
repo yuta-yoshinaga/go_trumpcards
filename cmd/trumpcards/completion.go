@@ -138,8 +138,12 @@ func writeBashCompletion(w io.Writer) error {
             COMPREPLY=( $(compgen -W "--port -p --host" -- "$cur") )
             return
             ;;
-        games|--short|--aliases)
-            COMPREPLY=( $(compgen -W "--short --aliases" -- "$cur") )
+        --category)
+            COMPREPLY=( $(compgen -W "casino classic solo" -- "$cur") )
+            return
+            ;;
+        games|--short|--aliases|--json)
+            COMPREPLY=( $(compgen -W "--short --aliases --json --category" -- "$cur") )
             return
             ;;
     esac
@@ -198,7 +202,9 @@ _trumpcards() {
                 games)
                     _arguments \
                         '--short[Print game names only]' \
-                        '--aliases[Include aliases in output]'
+                        '--aliases[Include aliases in output]' \
+                        '--json[Emit machine-readable JSON]' \
+                        '--category[Filter by category]:category:(casino classic solo)'
                     ;;
                 web)
                     _arguments \
@@ -245,6 +251,8 @@ complete -c trumpcards -n '__fish_seen_subcommand_from update' -l yes -s y -d 'S
 # games subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from games' -l short -d 'Print game names only'
 complete -c trumpcards -n '__fish_seen_subcommand_from games' -l aliases -d 'Include aliases in output'
+complete -c trumpcards -n '__fish_seen_subcommand_from games' -l json -d 'Emit machine-readable JSON'
+complete -c trumpcards -n '__fish_seen_subcommand_from games' -l category -x -a 'casino classic solo' -d 'Filter by category'
 
 # web subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from web' -l port -s p -d 'Port number' -x

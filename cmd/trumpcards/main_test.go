@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -595,7 +596,7 @@ func TestPrintGamesLongModeAlwaysIncludesAliases(t *testing.T) {
 	}
 	var buf bytes.Buffer
 	// aliases=false — long mode must STILL show aliases inline.
-	printGames(false, false, &buf)
+	printGames(false, false, "", &buf)
 	out := buf.String()
 	if !strings.Contains(out, "[aliases:") {
 		t.Errorf("long mode output should contain inline '[aliases:' for games with aliases; got:\n%s", out)
@@ -617,8 +618,8 @@ func TestPrintGamesShortModeRespectsAliasesFlag(t *testing.T) {
 	}
 
 	var without, with bytes.Buffer
-	printGames(true, false, &without)
-	printGames(true, true, &with)
+	printGames(true, false, "", &without)
+	printGames(true, true, "", &with)
 
 	// Without --aliases, alias lines should not appear.
 	if strings.Contains(without.String(), "\n"+aliasSample+"\n") || strings.HasPrefix(without.String(), aliasSample+"\n") {
@@ -630,11 +631,281 @@ func TestPrintGamesShortModeRespectsAliasesFlag(t *testing.T) {
 	}
 }
 
+// TestValidCategory pins down the predicate used to gate `--category`. The
+// canonical strings must match games.Category.String() (casino / classic /
+// solo) — drift between the CLI list and the games-pkg enum would silently
+// reject valid categories or accept invalid ones.
+func TestValidCategory(t *testing.T) {
+	tests := []struct {
+		s    string
+		want bool
+	}{
+		{"casino", true},
+		{"classic", true},
+		{"solo", true},
+		{"Casino", false}, // case-sensitive — match games.Category.String() form
+		{"", false},
+		{"poker", false}, // game name, not a category
+		{"slot", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.s, func(t *testing.T) {
+			if got := validCategory(tt.s); got != tt.want {
+				t.Errorf("validCategory(%q) = %v, want %v", tt.s, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestPrintGamesJSONFullEmitsEveryGame verifies that the JSON output of
+// `games --json` (no filter) is a JSON array containing one entry per game in
+// the registry, each with the expected schema.
+func TestPrintGamesJSONFullEmitsEveryGame(t *testing.T) {
+	var buf bytes.Buffer
+	if err := printGamesJSON("", &buf); err != nil {
+		t.Fatalf("printGamesJSON returned error: %v", err)
+	}
+	type entry struct {
+		Name        string   `json:"name"`
+		Category    string   `json:"category"`
+		Description string   `json:"description"`
+		Aliases     []string `json:"aliases"`
+	}
+	var got []entry
+	if err := json.Unmarshal(buf.Bytes(), &got); err != nil {
+		t.Fatalf("output is not valid JSON: %v\nraw=%s", err, buf.String())
+	}
+	if len(got) != len(ui.GameNames()) {
+		t.Errorf("entry count = %d, want %d", len(got), len(ui.GameNames()))
+	}
+	// Every entry must have a non-empty name and one of the three canonical categories.
+	for _, e := range got {
+		if e.Name == "" {
+			t.Errorf("entry has empty name: %+v", e)
+		}
+		if !validCategory(e.Category) {
+			t.Errorf("entry %q has invalid category %q", e.Name, e.Category)
+		}
+		if e.Description == "" {
+			t.Errorf("entry %q has empty description", e.Name)
+		}
+		// Aliases must be a non-nil slice so JSON renders [] not null.
+		if e.Aliases == nil {
+			t.Errorf("entry %q has nil aliases (want []); JSON shape must be stable", e.Name)
+		}
+	}
+}
+
+// TestPrintGamesJSONNullAliasesAvoided locks down the JSON shape requirement
+// that aliases is always `[]`, never `null`. Scripts that do
+// `.aliases | length` would crash on a null without this guarantee.
+func TestPrintGamesJSONNullAliasesAvoided(t *testing.T) {
+	var buf bytes.Buffer
+	if err := printGamesJSON("", &buf); err != nil {
+		t.Fatalf("printGamesJSON err: %v", err)
+	}
+	if strings.Contains(buf.String(), `"aliases":null`) {
+		t.Errorf("JSON output contains \"aliases\":null — must always emit [] for stable schema; got:\n%s", buf.String())
+	}
+}
+
+// TestPrintGamesJSONByCategory verifies that --category narrows the JSON
+// output to the matching subset and that the result is consistent with
+// games.ByCategory (the SSoT).
+func TestPrintGamesJSONByCategory(t *testing.T) {
+	for _, cat := range []string{"casino", "classic", "solo"} {
+		t.Run(cat, func(t *testing.T) {
+			var buf bytes.Buffer
+			if err := printGamesJSON(cat, &buf); err != nil {
+				t.Fatalf("printGamesJSON(%q) err: %v", cat, err)
+			}
+			var got []map[string]any
+			if err := json.Unmarshal(buf.Bytes(), &got); err != nil {
+				t.Fatalf("invalid JSON: %v\nraw=%s", err, buf.String())
+			}
+			if len(got) == 0 {
+				t.Fatalf("category %q produced 0 entries (every category should have games)", cat)
+			}
+			for _, e := range got {
+				if e["category"] != cat {
+					t.Errorf("entry %v has category %q, want %q", e["name"], e["category"], cat)
+				}
+			}
+		})
+	}
+}
+
+// TestPrintGamesByCategoryFiltersLong verifies the non-JSON long output
+// honors --category.
+func TestPrintGamesByCategoryFiltersLong(t *testing.T) {
+	var buf bytes.Buffer
+	printGames(false, false, "casino", &buf)
+	out := buf.String()
+	if !strings.Contains(out, "blackjack") {
+		t.Errorf("expected casino filter to include blackjack; got:\n%s", out)
+	}
+	// hearts is classic; must be excluded.
+	if strings.Contains(out, "hearts ") {
+		t.Errorf("expected casino filter to exclude classic-category 'hearts'; got:\n%s", out)
+	}
+}
+
+// TestPrintGamesByCategoryFiltersShort verifies short output honors --category.
+func TestPrintGamesByCategoryFiltersShort(t *testing.T) {
+	var buf bytes.Buffer
+	printGames(true, false, "solo", &buf)
+	lines := strings.Split(strings.TrimSpace(buf.String()), "\n")
+	if len(lines) == 0 || lines[0] == "" {
+		t.Fatalf("expected non-empty solo output; got:\n%s", buf.String())
+	}
+	// klondike is solo; must be present. blackjack is casino; must be absent.
+	hasKlondike, hasBlackjack := false, false
+	for _, l := range lines {
+		switch l {
+		case "klondike":
+			hasKlondike = true
+		case "blackjack":
+			hasBlackjack = true
+		}
+	}
+	if !hasKlondike {
+		t.Errorf("solo filter should include klondike; got:\n%s", buf.String())
+	}
+	if hasBlackjack {
+		t.Errorf("solo filter should exclude blackjack; got:\n%s", buf.String())
+	}
+}
+
+// TestRunGamesInvalidCategoryExits2 verifies that --category with an invalid
+// value rejects with exit 2 (POSIX usage error) and emits an i18n message
+// naming the offending value on stderr.
+func TestRunGamesInvalidCategoryExits2(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+	}()
+	flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+	os.Args = []string{"trumpcards", "games", "--category", "bogus"}
+
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	os.Stdout = wOut
+	os.Stderr = wErr
+
+	exitCh := make(chan int, 1)
+	go func() { exitCh <- run() }()
+	exit := <-exitCh
+	_ = wOut.Close()
+	_ = wErr.Close()
+	var outBuf, errBuf bytes.Buffer
+	_, _ = outBuf.ReadFrom(rOut)
+	_, _ = errBuf.ReadFrom(rErr)
+
+	if exit != 2 {
+		t.Errorf("exit = %d, want 2 (stderr=%q)", exit, errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "bogus") {
+		t.Errorf("stderr must name the offending category 'bogus'; got: %q", errBuf.String())
+	}
+}
+
 func TestCliAliasesWithoutShortKeyRemoved(t *testing.T) {
 	// The `cliAliasesWithoutShort` warning contradicted the long-mode behavior
 	// and was removed; ensure it hasn't crept back into either locale.
 	if got := i18n.T("cliAliasesWithoutShort"); got != "cliAliasesWithoutShort" && got != "" {
 		t.Errorf("i18n key 'cliAliasesWithoutShort' should be removed but still resolves to: %q", got)
+	}
+}
+
+// TestValidCategoryNamesDerivedFromRegistry verifies the validCategory set is
+// in lockstep with the games registry's actual categories. Adding a new
+// games.Category in the registry must automatically extend the CLI filter
+// without touching this file. See PR #1538 review feedback.
+func TestValidCategoryNamesDerivedFromRegistry(t *testing.T) {
+	// Walk every registered game's category via the same helper production
+	// uses; assert the predicate accepts it.
+	registryCategories := make(map[string]bool)
+	for name, cat := range gameCategoryByName() {
+		registryCategories[cat] = true
+		if !validCategory(cat) {
+			t.Errorf("registry has category %q (for game %q) but validCategory rejects it", cat, name)
+		}
+	}
+	if len(registryCategories) == 0 {
+		t.Fatal("expected at least one category in registry")
+	}
+	// And no extra entries that don't appear in the registry — that would
+	// mean validCategoryNames drifted away from the SSoT.
+	for cat := range validCategoryNames {
+		if !registryCategories[cat] {
+			t.Errorf("validCategory accepts %q but no game in the registry uses it", cat)
+		}
+	}
+}
+
+// TestRunGamesJSONIgnoredFlagsWarning verifies that passing --short or
+// --aliases together with --json emits a one-line warning to stderr
+// (the JSON schema is fixed; silently dropping flags hides script bugs).
+// See PR #1538 review feedback (observation #4).
+func TestRunGamesJSONIgnoredFlagsWarning(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+	}()
+
+	cases := []struct {
+		name     string
+		args     []string
+		wantWarn bool
+	}{
+		{"--json --short warns", []string{"trumpcards", "games", "--json", "--short"}, true},
+		{"--json --aliases warns", []string{"trumpcards", "games", "--json", "--aliases"}, true},
+		{"--json alone is silent", []string{"trumpcards", "games", "--json"}, false},
+		{"--json --category solo is silent", []string{"trumpcards", "games", "--json", "--category", "solo"}, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != 0 {
+				t.Fatalf("exit = %d, want 0 (stderr=%q)", exit, errBuf.String())
+			}
+			// JSON must always end up on stdout regardless of warnings.
+			if outBuf.Len() == 0 || outBuf.String()[0] != '[' {
+				t.Errorf("expected a JSON array on stdout; got: %q", outBuf.String())
+			}
+			gotWarn := strings.Contains(errBuf.String(), "--json")
+			if gotWarn != tc.wantWarn {
+				t.Errorf("warning emitted: got=%v, want=%v (stderr=%q)", gotWarn, tc.wantWarn, errBuf.String())
+			}
+		})
 	}
 }
 
