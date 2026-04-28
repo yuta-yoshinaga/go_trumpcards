@@ -195,7 +195,7 @@ function LetItRidePageContent() {
               messageParams={state.messageParams}
             />
 
-            <label className="flex items-center gap-1 text-white text-xs justify-center mb-2 cursor-pointer">
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={frontendHintEnabled}
@@ -212,7 +212,7 @@ function LetItRidePageContent() {
               <div className="flex flex-col items-center justify-center py-4 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
                 <details className="bg-black/30 rounded-lg w-full max-w-sm">
-                  <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
                   <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
@@ -285,7 +285,7 @@ function LetItRidePageContent() {
             )}
 
             {!isBetPhase && (
-              <div className="flex justify-center gap-4 text-white text-sm mb-2" data-testid="bet-status">
+              <div className="flex justify-center gap-4 text-ds-text-primary text-sm mb-2" data-testid="bet-status">
                 <span>
                   {t('label.bet1')}: {state.bet1Active ? t('label.active') : t('label.pulled')}
                 </span>
@@ -299,7 +299,7 @@ function LetItRidePageContent() {
             )}
 
             {isEndPhase && (
-              <div className="text-white text-center text-sm mb-2" data-testid="payout-breakdown">
+              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
                 {state.bet1Payout !== 0 && (
                   <div>
                     {t('payout.bet1')}: {state.bet1Payout}

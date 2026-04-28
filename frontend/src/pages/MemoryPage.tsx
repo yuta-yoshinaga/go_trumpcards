@@ -207,7 +207,7 @@ function MemoryPageContent() {
           <div className="flex-1 overflow-y-auto lg:overflow-hidden lg:flex lg:flex-col pt-3 lg:pt-1 px-4 lg:px-8">
             {/* Player scores – compact inline layout to maximise board visibility */}
             <div
-              className="my-1 px-2 py-1 rounded bg-black/30 text-white text-sm flex flex-wrap items-center gap-y-0.5 lg:shrink-0"
+              className="my-1 px-2 py-1 rounded bg-black/30 text-ds-text-primary text-sm flex flex-wrap items-center gap-y-0.5 lg:shrink-0"
               data-tutorial="mem-score-table"
               role="status"
               aria-label={t('scores')}

@@ -65,7 +65,7 @@ function ShitheadPageContent() {
   if (!state) {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.shithead.bg}`}>
-        <div className="flex-1 flex items-center justify-center text-white">
+        <div className="flex-1 flex items-center justify-center text-ds-text-primary">
           <p>{tc('common.loading')}</p>
         </div>
       </div>
@@ -94,7 +94,7 @@ function ShitheadPageContent() {
         {error && <ErrorAlert message={error} onRetry={retry} />}
 
         {/* CPU player rows */}
-        <div className="bg-black/30 text-white p-3 rounded text-sm space-y-1">
+        <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm space-y-1">
           {state.players
             .filter((p) => !p.isHuman)
             .map((p) => (
@@ -115,7 +115,7 @@ function ShitheadPageContent() {
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
         {/* Discard pile and stock */}
-        <div data-tutorial="sh-discard" className="bg-black/30 text-white p-3 rounded">
+        <div data-tutorial="sh-discard" className="bg-black/30 text-ds-text-primary p-3 rounded">
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <span>
               {t('labels.discardPile')}: {state.discardPile.length === 0 ? '—' : describeTopCard(state.discardPile)}
@@ -130,7 +130,7 @@ function ShitheadPageContent() {
 
         {/* Human player area */}
         {humanPlayer && (
-          <div data-tutorial="sh-player-hand" className="bg-black/30 text-white p-3 rounded space-y-2">
+          <div data-tutorial="sh-player-hand" className="bg-black/30 text-ds-text-primary p-3 rounded space-y-2">
             <div className="text-sm">
               {t('labels.you')} —{' '}
               {humanPlayer.isFinished

@@ -293,11 +293,11 @@ function AccordionPageContent() {
                     aria-label={top ? `${idx}: ${cardAlt(top)}` : `${idx}: empty`}
                   >
                     {top && <AnimatedCard card={top} width={cardWidth} />}
-                    <span className="absolute top-0 left-0 text-[10px] bg-black/40 text-white rounded-br px-1">
+                    <span className="absolute top-0 left-0 text-[10px] bg-black/40 text-ds-text-primary rounded-br px-1">
                       {idx}
                     </span>
                     {pile.size > 1 && (
-                      <span className="absolute bottom-0 right-0 text-[10px] bg-black/60 text-white rounded-tl px-1">
+                      <span className="absolute bottom-0 right-0 text-[10px] bg-black/60 text-ds-text-primary rounded-tl px-1">
                         +{pile.size - 1}
                       </span>
                     )}

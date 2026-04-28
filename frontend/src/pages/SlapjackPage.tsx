@@ -288,7 +288,7 @@ function SlapjackPageContent() {
                 type="button"
                 onClick={handleSlap}
                 disabled={loading || isGameEnd || state.centerPileSize === 0}
-                className={`px-6 py-2 rounded-lg text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`px-6 py-2 rounded-lg text-ds-text-primary font-bold disabled:opacity-40 disabled:cursor-not-allowed ${
                   state.isTopJack
                     ? 'bg-ds-warning hover:bg-ds-warning-hover animate-pulse'
                     : 'bg-ds-error hover:bg-ds-error'

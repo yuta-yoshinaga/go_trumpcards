@@ -109,7 +109,7 @@ function RedDogPageContent() {
   if (!state) {
     return (
       <div className={`flex-1 flex items-center justify-center ${gameTheme.reddog.bg}`}>
-        <div className="text-white">Loading...</div>
+        <div className="text-ds-text-primary">Loading...</div>
       </div>
     );
   }
@@ -157,7 +157,7 @@ function RedDogPageContent() {
               messageParams={state.messageParams}
             />
 
-            <label className="flex items-center gap-1 text-white text-xs justify-center mb-2 cursor-pointer">
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer">
               <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
               {tc('hint.toggle', { ns: 'tutorial' })}
             </label>
@@ -168,7 +168,7 @@ function RedDogPageContent() {
               <div className="flex flex-col items-center justify-center py-4 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
                 <details className="bg-black/30 rounded-lg w-full max-w-sm">
-                  <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
                   <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-1">
@@ -199,7 +199,7 @@ function RedDogPageContent() {
                   ))}
                 </div>
                 {state.spread > 0 && (isSpreadDecision || isEndPhase) && (
-                  <div className="text-white text-center text-sm mt-2">
+                  <div className="text-ds-text-primary text-center text-sm mt-2">
                     {t('label.spread')}: {state.spread}
                   </div>
                 )}
@@ -220,7 +220,7 @@ function RedDogPageContent() {
             )}
 
             {isEndPhase && (
-              <div className="text-white text-center text-sm mb-2" data-testid="payout-breakdown">
+              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
                 </div>

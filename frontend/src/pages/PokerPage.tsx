@@ -243,7 +243,7 @@ function PokerPageContent() {
 
             {/* CPU exchanges log */}
             {state?.cpuExchanges && state.cpuExchanges.length > 0 && (
-              <div className="bg-black/30 rounded p-2 mb-3 text-white text-xs">
+              <div className="bg-black/30 rounded p-2 mb-3 text-ds-text-primary text-xs">
                 <div className="font-bold mb-1">{t('cpuExchange')}</div>
                 {state.cpuExchanges.map((ex, i) => (
                   <div key={`${i}-${ex.playerIdx}`}>
@@ -262,7 +262,7 @@ function PokerPageContent() {
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="pk-player-hand">
-                <div className="text-white text-lg mb-1">
+                <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
                   <span className="ml-3 text-xs">
                     {tc('betting.chips')} {humanPlayer.chips}
@@ -361,7 +361,7 @@ function PokerPageContent() {
 
             {/* Draw odds panel */}
             {canExchange && odds?.some((o) => o.probability > 0) && (
-              <div className="bg-black/40 rounded-lg px-4 py-2 mb-2 text-white text-xs" data-testid="odds-panel">
+              <div className="bg-black/40 rounded-lg px-4 py-2 mb-2 text-ds-text-primary text-xs" data-testid="odds-panel">
                 <div className="font-bold mb-1">{t('drawOdds')}</div>
                 {odds
                   .filter((o) => o.probability > 0)
