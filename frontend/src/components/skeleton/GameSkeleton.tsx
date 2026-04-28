@@ -28,14 +28,7 @@ export function GameSkeleton({
   const { t } = useTranslation('common');
   const loadingLabel = t('skeleton.loading');
   return (
-    <div
-      className={['flex-1', 'flex', 'flex-col', 'min-h-0', bgClass].join(' ')}
-      role="status"
-      aria-busy={true}
-      aria-live="polite"
-      aria-label={loadingLabel}
-      data-testid="skeleton"
-    >
+    <div className={['flex-1', 'flex', 'flex-col', 'min-h-0', bgClass].join(' ')} role="status" data-testid="skeleton">
       <SkeletonBar />
       <div className={['flex-1', 'overflow-y-auto', bodyClassName].join(' ')}>{children}</div>
       <GameFooter className={footerClassName}>{footer}</GameFooter>

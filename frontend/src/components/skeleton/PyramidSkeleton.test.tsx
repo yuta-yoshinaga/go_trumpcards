@@ -6,6 +6,6 @@ describe('PyramidSkeleton', () => {
   it('renders skeleton structure', () => {
     render(<PyramidSkeleton />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
-    expect(screen.getByTestId('skeleton').getAttribute('aria-busy')).toBe('true');
+    expect(screen.getByTestId('skeleton').getAttribute('role')).toBe('status');
   });
 });

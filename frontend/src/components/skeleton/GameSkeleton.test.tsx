@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { GameSkeleton } from './GameSkeleton';
 
 describe('GameSkeleton', () => {
-  it('renders skeleton shell with data-testid and aria-busy', () => {
+  it('renders skeleton shell with data-testid and role=status', () => {
     render(
       <GameSkeleton bgClass="bg-game-bg-green" footerClassName="bg-green-dark px-4 py-3" footer={<div>footer</div>}>
         <div>body</div>
@@ -11,19 +11,23 @@ describe('GameSkeleton', () => {
     );
     const el = screen.getByTestId('skeleton');
     expect(el).toBeInTheDocument();
-    expect(el.getAttribute('aria-busy')).toBe('true');
+    expect(el.getAttribute('role')).toBe('status');
   });
 
-  it('exposes a status live region with a localized loading label for screen readers', () => {
+  it('exposes a localized loading label via an sr-only span inside the status region', () => {
+    // role="status" already implies aria-live="polite". The sr-only span is the
+    // accessible name source — assistive tech announces its text content when the
+    // status region first mounts. We deliberately do not duplicate it as aria-label
+    // (which would override the text) or set aria-busy (which can suppress the
+    // announcement on some ATs that wait for aria-busy="false" before rendering).
     render(
       <GameSkeleton bgClass="bg-game-bg-green" footerClassName="bg-green-dark" footer={<div>f</div>}>
         <div>b</div>
       </GameSkeleton>,
     );
     const el = screen.getByTestId('skeleton');
-    expect(el.getAttribute('role')).toBe('status');
-    expect(el.getAttribute('aria-live')).toBe('polite');
-    expect(el.getAttribute('aria-label')).toBe('読み込み中…');
+    expect(el).not.toHaveAttribute('aria-label');
+    expect(el).not.toHaveAttribute('aria-busy');
     expect(screen.getByText('読み込み中…')).toBeInTheDocument();
   });
 

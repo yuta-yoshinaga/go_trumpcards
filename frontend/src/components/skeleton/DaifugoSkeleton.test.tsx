@@ -6,6 +6,6 @@ describe('DaifugoSkeleton', () => {
   it('renders skeleton structure', () => {
     render(<DaifugoSkeleton />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
-    expect(screen.getByTestId('skeleton').getAttribute('aria-busy')).toBe('true');
+    expect(screen.getByTestId('skeleton').getAttribute('role')).toBe('status');
   });
 });
