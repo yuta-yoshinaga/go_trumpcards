@@ -6685,7 +6685,7 @@ paths:
         | Command     | Aliases     | Description |
         |-------------|-------------|-------------|
         | `reset`     | `r`         | Start / restart a match (optional `config`) |
-        | `nextRound` | `nr`        | Start next round after RoundEnd |
+        | `nextround` | `nr`        | Start next round after RoundEnd |
         | `tick`      |             | Advance pending CPU actions one step |
         | `draw`      | `d`         | Draw `drawCount` cards from stock to waste (`playerIdx`) |
         | `move`      | `m`         | Move a card between zones (see body) |
@@ -6716,7 +6716,7 @@ paths:
               properties:
                 command:
                   type: string
-                  enum: [reset, r, nextRound, nr, tick, draw, d, move, m, undo, u, hint, log, l]
+                  enum: [reset, r, nextround, nr, tick, draw, d, move, m, undo, u, hint, log, l]
                 playerIdx:
                   type: integer
                   description: 0 = human; CPUs are 1..N-1
@@ -6805,7 +6805,7 @@ paths:
                 properties:
                   phase:
                     type: integer
-                  roundNo:
+                  roundNumber:
                     type: integer
                   winnerIdx:
                     type: integer
@@ -6832,7 +6832,7 @@ paths:
                       properties:
                         name:
                           type: string
-                        isCpu:
+                        isHuman:
                           type: boolean
                         deckIdx:
                           type: integer

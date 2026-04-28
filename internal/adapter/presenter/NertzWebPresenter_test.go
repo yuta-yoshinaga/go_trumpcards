@@ -68,6 +68,26 @@ func TestNertzWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, out.Players[0].StockSize)
 		assert.Len(t, out.Foundations, 2)
 		require.NotNil(t, out.Foundations[0].Top)
+		// Issue #1532: locked-in shape — RoundNumber populated, IsHuman is the
+		// inverse of the domain's IsCpu (so true for the human player at idx 0
+		// and false for CPU at idx 1, matching Slapjack / majority of games).
+		assert.Equal(t, 1, out.RoundNumber, "RoundNumber must be populated from GetRoundNo")
+		assert.True(t, out.Players[0].IsHuman, "human player (idx 0) must report IsHuman=true")
+		assert.False(t, out.Players[1].IsHuman, "CPU player (idx 1) must report IsHuman=false")
+	})
+
+	// TestNertzWebPresenter_JSONShape pins down the JSON-tag rename to lock
+	// in the public API contract. See issue #1532.
+	t.Run("JSON shape uses isHuman / roundNumber", func(t *testing.T) {
+		g := new(interfaces.MockNertzGame)
+		setupNertzWebMockDefaults(g)
+		raw := new(NertzWebPresenter).Output(g, nil)
+		// New canonical names must appear.
+		assert.Contains(t, raw, `"roundNumber":`, "JSON output must use roundNumber")
+		assert.Contains(t, raw, `"isHuman":`, "JSON output must use isHuman")
+		// Old legacy names must NOT appear (this is a breaking rename, not a dual emit).
+		assert.NotContains(t, raw, `"roundNo":`, "JSON output must not include legacy roundNo")
+		assert.NotContains(t, raw, `"isCpu":`, "JSON output must not include legacy isCpu")
 	})
 
 	t.Run("with error", func(t *testing.T) {

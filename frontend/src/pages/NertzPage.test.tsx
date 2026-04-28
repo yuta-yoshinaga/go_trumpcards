@@ -24,7 +24,7 @@ const baseConfig = {
 
 const playingState: NertzResponse = {
   phase: NertzPhase.PLAYING,
-  roundNo: 1,
+  roundNumber: 1,
   winnerIdx: -1,
   matchWinner: -1,
   moveCount: 0,
@@ -33,7 +33,7 @@ const playingState: NertzResponse = {
   players: [
     {
       name: 'You',
-      isCpu: false,
+      isHuman: true,
       deckIdx: 0,
       score: 0,
       nertzSize: 13,
@@ -49,7 +49,7 @@ const playingState: NertzResponse = {
     },
     {
       name: 'CPU1',
-      isCpu: true,
+      isHuman: false,
       deckIdx: 1,
       score: 0,
       nertzSize: 13,

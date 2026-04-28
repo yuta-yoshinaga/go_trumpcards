@@ -98,6 +98,14 @@ func TestNertzWebController_Method(t *testing.T) {
 		recorded.BodyIs(expected)
 	})
 
+	// Issue #1532: long-form alias is lowercase to match Hearts / Skat / Whist.
+	t.Run("next round (lowercase alias)", func(t *testing.T) {
+		in := decode(`{"command":"nextround","sessionId":"s1"}`)
+		recorded := execRequest(t, ctrl.Exec, &in)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(expected)
+	})
+
 	t.Run("tick", func(t *testing.T) {
 		in := decode(`{"command":"tick","sessionId":"s1"}`)
 		recorded := execRequest(t, ctrl.Exec, &in)

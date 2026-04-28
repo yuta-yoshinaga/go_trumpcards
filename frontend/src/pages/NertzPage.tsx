@@ -181,14 +181,14 @@ function NertzPageContent() {
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
         <div className="bg-black/30 text-white p-3 rounded text-sm flex flex-wrap gap-x-4 gap-y-1">
           <span>
-            {t('labels.round')}: {state.roundNo}
+            {t('labels.round')}: {state.roundNumber}
           </span>
           <span>
             {t('labels.moveCount')}: {state.moveCount}
           </span>
           {state.players.map((p, i) => (
             <span key={`scoreline-${i}`}>
-              {p.isCpu ? `${t('labels.cpu')}${i}` : t('labels.you')}: {p.score} ({p.nertzSize})
+              {p.isHuman ? t('labels.you') : `${t('labels.cpu')}${i}`}: {p.score} ({p.nertzSize})
             </span>
           ))}
         </div>
@@ -215,7 +215,7 @@ function NertzPageContent() {
         {state.players.length > 1 && (
           <div className="bg-black/30 text-white p-3 rounded text-sm space-y-1">
             {state.players
-              .filter((p) => p.isCpu)
+              .filter((p) => !p.isHuman)
               .map((p) => (
                 <div key={`cpu-${p.deckIdx}`} className="flex justify-between">
                   <span>
