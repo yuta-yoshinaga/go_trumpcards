@@ -337,7 +337,9 @@ function BaccaratPageContent() {
 
             {/* Payout info */}
             {isEndPhase && (
-              <div className="text-ds-text-primary text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
+              <div className="text-ds-text-primary text-center font-bold mb-2">
+                {t('label.payout', { payout: state.payout })}
+              </div>
             )}
 
             {/* Side bet results */}
@@ -347,7 +349,9 @@ function BaccaratPageContent() {
 
             {/* Big Road */}
             <div className="flex flex-col items-center">
-              {state.history.length > 0 && <div className="text-ds-text-primary text-sm font-bold mb-1">{t('road.title')}</div>}
+              {state.history.length > 0 && (
+                <div className="text-ds-text-primary text-sm font-bold mb-1">{t('road.title')}</div>
+              )}
               <BigRoadGrid history={state.history} />
               {state.history.length > 0 && (
                 <button
