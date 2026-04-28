@@ -169,10 +169,27 @@ func getListenAddr() string {
 
 // isExposedHost reports whether host is reachable from other machines on the
 // network — i.e. anything that is not a loopback address. Used to drive the
-// network-exposure warning when the user binds to 0.0.0.0 or a LAN IP. We
-// deliberately do NOT resolve DNS hostnames: an unparseable host falls back
-// to "not exposed" so a typo or non-routable name (myserver.local) does not
-// trigger a misleading warning. See issue #1536.
+// network-exposure warning when the user binds to 0.0.0.0 or a LAN IP. See
+// issue #1536.
+//
+// Two deliberate departures from a strict "anything-non-loopback is exposed"
+// reading (PR #1539 review):
+//
+//   - Empty host returns false. In production net.SplitHostPort(ln.Addr())
+//     never produces "" for a successful bind, so this branch is purely a
+//     defensive guard for direct callers. Returning false (silent) instead of
+//     true (warn) errs on the side of not nagging when intent is ambiguous —
+//     the caller has not opted into a specific bind, so we should not fabricate
+//     a warning. The Go net convention of treating "" as "all interfaces"
+//     applies to net.Listen's addr argument, not to a free-floating host string
+//     handed to a predicate.
+//   - "localhost" returns false. ln.Addr().String() always returns an IP
+//     literal so this arm is dead code on the Exec path; keeping it documents
+//     the policy for direct callers and avoids spurious warnings if someone
+//     plumbs the env var through unparsed.
+//
+// We do NOT resolve DNS: an unparseable host falls through to false so a typo
+// or non-routable name (myserver.local) cannot trigger a misleading warning.
 func isExposedHost(host string) bool {
 	switch host {
 	case "", "localhost":
@@ -182,9 +199,11 @@ func isExposedHost(host string) bool {
 	if ip == nil {
 		return false
 	}
-	// IsUnspecified covers 0.0.0.0 and ::, which listen on every interface.
-	// IsLoopback covers 127.0.0.0/8 and ::1.
-	return ip.IsUnspecified() || !ip.IsLoopback()
+	// IsLoopback covers 127.0.0.0/8 and ::1; IsUnspecified (0.0.0.0, ::) is
+	// already implied by !IsLoopback (an unspecified address is by
+	// definition not loopback) so we drop the redundant check. PR #1539
+	// review.
+	return !ip.IsLoopback()
 }
 
 // maybeWarnExposed emits a one-line warning to web.stderr when the bound

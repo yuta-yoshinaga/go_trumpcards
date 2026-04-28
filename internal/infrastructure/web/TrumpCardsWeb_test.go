@@ -2,6 +2,7 @@ package web
 
 import (
 	"bytes"
+	"net"
 	"testing"
 )
 
@@ -156,7 +157,11 @@ func TestMaybeWarnExposed_EmitsForNonLoopback(t *testing.T) {
 			var buf bytes.Buffer
 			w.SetStderr(&buf)
 			w.SetQuiet(tt.quiet)
-			boundAddr := tt.host + ":8080"
+			// net.JoinHostPort matches what ln.Addr().String() returns in
+			// production: IPv6 hosts get bracketed (e.g. "::" → "[::]:8080")
+			// instead of the malformed ":::8080" naive concatenation produces.
+			// PR #1539 review.
+			boundAddr := net.JoinHostPort(tt.host, "8080")
 			w.maybeWarnExposed(tt.host, boundAddr)
 			gotWarn := buf.Len() > 0
 			if gotWarn != tt.wantWarn {
