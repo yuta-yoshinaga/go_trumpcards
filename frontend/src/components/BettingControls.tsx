@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { btnPokerAccent, btnPokerAllIn, btnPokerMuted, btnPokerPrimary } from '../styles/buttonStyles';
+import { ChipBetInput } from './common/ChipBetInput';
 
 interface BettingControlsProps {
   inputId: string;
@@ -53,27 +54,19 @@ export function BettingControls({
   return (
     <div className="text-center mb-2">
       <div className="flex flex-col items-center justify-center gap-1 mb-2">
-        <div className="flex items-center justify-center gap-2">
-          <label htmlFor={inputId} className="text-white text-sm">
-            {t('betting.betAmount')}
-          </label>
-          <input
-            id={inputId}
-            type="number"
-            min={minRaise}
-            max={hasMax ? max : undefined}
-            step={10}
-            value={betAmount}
-            aria-invalid={isOutOfRange || undefined}
-            aria-describedby={isOutOfRange ? `${inputId}-range` : undefined}
-            onChange={(e) => {
-              onBetAmountChange(Number(e.target.value));
-            }}
-            className={`w-20 px-2 py-1 text-sm rounded ${
-              isOutOfRange ? 'bg-ds-error/40 border-ds-error text-ds-error' : ''
-            }`}
-          />
-        </div>
+        <ChipBetInput
+          id={inputId}
+          label={t('betting.betAmount')}
+          value={betAmount}
+          onChange={onBetAmountChange}
+          min={minRaise}
+          max={hasMax ? max : undefined}
+          step={10}
+          disabled={loading}
+          autoClamp={false}
+          invalid={isOutOfRange}
+          describedBy={isOutOfRange ? `${inputId}-range` : undefined}
+        />
         {isOutOfRange && (
           <p id={`${inputId}-range`} className="text-ds-error text-xs" role="alert">
             {t('betting.rangeHint', { min: minRaise, max: hasMax ? max : '∞' })}

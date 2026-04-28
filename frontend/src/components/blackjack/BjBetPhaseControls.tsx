@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSuccess, btnWarning } from '../../styles/buttonStyles';
+import { ChipBetInput } from '../common/ChipBetInput';
 import {
   BJ_COUNTING_HILO,
   BJ_COUNTING_KO,
@@ -55,17 +56,14 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
     <>
       {/* Basic settings: bet amount, hand count */}
       <div className="flex items-center justify-center gap-2 mb-2">
-        <label htmlFor="bj-bet-amount" className="text-white text-sm">
-          {t('betAmount')}
-        </label>
-        <input
+        <ChipBetInput
           id="bj-bet-amount"
-          type="number"
+          label={t('betAmount')}
+          value={props.betAmount}
+          onChange={props.onBetAmountChange}
           min={10}
           step={10}
-          value={props.betAmount}
-          onChange={(e) => props.onBetAmountChange(Number(e.target.value))}
-          className="w-20 px-2 py-1 rounded text-sm"
+          autoClamp={false}
           disabled={props.loading}
         />
       </div>
@@ -102,35 +100,27 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
         <div className="mt-2 space-y-2 glass-panel rounded-lg p-3">
           {/* Side bets */}
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            <label htmlFor="bj-pp-bet" className="text-white text-sm">
-              {t('sideBetLabel.pp')}
-            </label>
-            <input
+            <ChipBetInput
               id="bj-pp-bet"
-              type="number"
-              min={0}
-              max={10000}
-              step={10}
+              label={t('sideBetLabel.pp')}
               value={props.perfectPairsBet}
-              onChange={(e) => props.onPerfectPairsBetChange(Number(e.target.value))}
-              className="w-20 px-2 py-1 rounded text-sm"
-              disabled={props.loading}
-              aria-describedby="bj-pp-help"
-            />
-            <label htmlFor="bj-t3-bet" className="text-white text-sm">
-              {t('sideBetLabel.t3')}
-            </label>
-            <input
-              id="bj-t3-bet"
-              type="number"
-              min={0}
+              onChange={props.onPerfectPairsBetChange}
               max={10000}
+              min={0}
               step={10}
-              value={props.twentyOnePlus3Bet}
-              onChange={(e) => props.onTwentyOnePlus3BetChange(Number(e.target.value))}
-              className="w-20 px-2 py-1 rounded text-sm"
               disabled={props.loading}
-              aria-describedby="bj-t3-help"
+              describedBy="bj-pp-help"
+            />
+            <ChipBetInput
+              id="bj-t3-bet"
+              label={t('sideBetLabel.t3')}
+              value={props.twentyOnePlus3Bet}
+              onChange={props.onTwentyOnePlus3BetChange}
+              max={10000}
+              min={0}
+              step={10}
+              disabled={props.loading}
+              describedBy="bj-t3-help"
             />
           </div>
           <div className="text-ds-text-muted text-xs text-center">

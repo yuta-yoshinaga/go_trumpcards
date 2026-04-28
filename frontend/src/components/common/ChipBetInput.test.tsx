@@ -55,4 +55,31 @@ describe('ChipBetInput', () => {
     const input = screen.getByLabelText('Bet');
     expect(input.className).toContain('min-h-[44px]');
   });
+
+  it('passes raw numeric values through without clamping when autoClamp is false', () => {
+    const onChange = vi.fn();
+    render(<ChipBetInput id="bet" label="Bet" value={20} onChange={onChange} max={50} autoClamp={false} />);
+    fireEvent.change(screen.getByLabelText('Bet'), { target: { value: '80' } });
+    expect(onChange).toHaveBeenCalledWith(80);
+  });
+
+  it('passes empty input through as 0 under autoClamp=false (parent decides validity)', () => {
+    const onChange = vi.fn();
+    render(<ChipBetInput id="bet" label="Bet" value={20} onChange={onChange} max={50} autoClamp={false} />);
+    fireEvent.change(screen.getByLabelText('Bet'), { target: { value: '' } });
+    expect(onChange).toHaveBeenCalledWith(0);
+  });
+
+  it('applies error styling and aria-invalid when invalid is true', () => {
+    render(<ChipBetInput id="bet" label="Bet" value={5} onChange={() => {}} max={50} invalid />);
+    const input = screen.getByLabelText('Bet');
+    expect(input.className).toContain('bg-ds-error/40');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('wires aria-describedby through to the input element', () => {
+    render(<ChipBetInput id="bet" label="Bet" value={5} onChange={() => {}} max={50} describedBy="bet-help" />);
+    const input = screen.getByLabelText('Bet');
+    expect(input).toHaveAttribute('aria-describedby', 'bet-help');
+  });
 });
