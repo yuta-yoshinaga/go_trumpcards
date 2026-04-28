@@ -2935,7 +2935,7 @@ export interface NertzTableauCard {
 /** Nertz player view (per-player tableau, nertz pile, waste, and stock). */
 export interface NertzPlayerData {
   name: string;
-  isCpu: boolean;
+  isHuman: boolean;
   deckIdx: number;
   score: number;
   nertzSize: number;
@@ -2982,7 +2982,7 @@ export interface NertzMoveZone {
 /** Full Nertz game state returned from the API. */
 export interface NertzResponse {
   phase: number;
-  roundNo: number;
+  roundNumber: number;
   winnerIdx: number;
   matchWinner: number;
   moveCount: number;

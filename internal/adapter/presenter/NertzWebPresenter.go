@@ -73,7 +73,7 @@ func (p *NertzWebPresenter) buildBase(g interfaces.NertzGame) *controller.NertzW
 	cfg := g.GetConfig()
 	resObj := &controller.NertzWebOutput{
 		Phase:         int(g.GetPhase()),
-		RoundNo:       g.GetRoundNo(),
+		RoundNumber:   g.GetRoundNo(),
 		WinnerIdx:     g.GetWinnerIdx(),
 		MatchWinner:   g.GetMatchWinner(),
 		MoveCount:     g.GetMoveCount(),
@@ -93,7 +93,7 @@ func (p *NertzWebPresenter) buildBase(g interfaces.NertzGame) *controller.NertzW
 		}
 		out := &controller.NertzWebPlayer{
 			Name:      pl.GetName(),
-			IsCpu:     pl.GetIsCpu(),
+			IsHuman:   !pl.GetIsCpu(),
 			DeckIdx:   pl.GetDeckIdx(),
 			Score:     pl.GetScore(),
 			NertzSize: pl.NertzSize(),

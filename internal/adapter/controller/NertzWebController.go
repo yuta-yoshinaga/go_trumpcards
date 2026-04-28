@@ -42,7 +42,7 @@ type NertzWebTableauCard struct {
 // NertzWebPlayer プレイヤー出力
 type NertzWebPlayer struct {
 	Name      string                   `json:"name"`
-	IsCpu     bool                     `json:"isCpu"`
+	IsHuman   bool                     `json:"isHuman"`
 	DeckIdx   int                      `json:"deckIdx"`
 	Score     int                      `json:"score"`
 	NertzSize int                      `json:"nertzSize"`
@@ -72,7 +72,7 @@ type NertzWebHint struct {
 // NertzWebOutput Nertz Web 出力
 type NertzWebOutput struct {
 	Phase         int                   `json:"phase"`
-	RoundNo       int                   `json:"roundNo"`
+	RoundNumber   int                   `json:"roundNumber"`
 	WinnerIdx     int                   `json:"winnerIdx"`
 	MatchWinner   int                   `json:"matchWinner"`
 	MoveCount     int                   `json:"moveCount"`
@@ -119,7 +119,7 @@ func nertzDispatch(bc *baseController, w http.ResponseWriter, ni usecase.NertzIn
 		} else {
 			bc.writePresenterResponse(w, ni.Reset())
 		}
-	case "nr", "nextRound":
+	case "nr", "nextround":
 		bc.writePresenterResponse(w, ni.NextRound())
 	case "tick":
 		bc.writePresenterResponse(w, ni.Tick())
