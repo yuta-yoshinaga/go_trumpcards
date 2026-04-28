@@ -175,6 +175,13 @@ describe('BettingControls', () => {
     expect(input.className).toContain('bg-ds-error/40');
   });
 
+  it('does not hardcode bg-white or text-ds-text-inverse on the input when in range', () => {
+    render(<BettingControls {...makeProps({ betAmount: 30, minRaise: 10, maxBetAmount: 100 })} />);
+    const input = screen.getByLabelText('ベット額:');
+    expect(input.className).not.toContain('bg-white');
+    expect(input.className).not.toContain('text-ds-text-inverse');
+  });
+
   it('disables bet/raise button when value is out of range', () => {
     render(<BettingControls {...makeProps({ betAmount: 5 })} />);
     expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
