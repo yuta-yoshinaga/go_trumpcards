@@ -18,6 +18,9 @@ export interface UseGameRouteSearchResult {
 export function useGameRouteSearch(searchTerm: string): UseGameRouteSearchResult {
   const { i18n } = useTranslation('common');
 
+  // Both i18n.t calls pass explicit lng overrides, so the index is language-
+  // independent. Depending on i18n.t (not the whole i18n instance) keeps the
+  // index from rebuilding on every JA ↔ EN toggle (PR #1572 review).
   const searchableRoutes = useMemo(
     () =>
       gameRoutes.map((route) => ({
@@ -25,7 +28,7 @@ export function useGameRouteSearch(searchTerm: string): UseGameRouteSearchResult
         ja: i18n.t(route.labelKey, { lng: 'ja', ns: 'common' }).toLowerCase(),
         en: i18n.t(route.labelKey, { lng: 'en', ns: 'common' }).toLowerCase(),
       })),
-    [i18n],
+    [i18n.t],
   );
 
   return useMemo(() => {
