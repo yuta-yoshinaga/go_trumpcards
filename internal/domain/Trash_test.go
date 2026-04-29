@@ -110,6 +110,74 @@ func TestTrashDrawJokerAwaitsPlacement(t *testing.T) {
 	assert.Equal(t, TrashPhaseAwaitWild, tr.GetPhase())
 }
 
+// TestTrashDrawWildAutoPlacesWithSingleEmptySlot pins issue #1565: when a
+// wild card surfaces and the human has exactly one face-down slot, the
+// game must auto-place the wild instead of asking the user to pick — there
+// is no meaningful choice and the forced click breaks Trash's tempo.
+func TestTrashDrawWildAutoPlacesWithSingleEmptySlot(t *testing.T) {
+	t.Run("King wild auto-placed and chain continues", func(t *testing.T) {
+		tr := NewDefaultTrash()
+		tr.Reset()
+		// Positions 1-9 face-up; only position 10 is face-down. After the wild lands
+		// there, the displaced face-down card (a 5) is the new pending; with
+		// position 5 face-up it cannot place and the turn ends.
+		var slots [TrashSlotCnt]TrashSlot
+		for i := range TrashSlotCnt - 1 {
+			slots[i] = TrashSlot{Card: NewCard(CardDesignSpade, i+1, false), FaceUp: true}
+		}
+		slots[TrashSlotCnt-1] = TrashSlot{Card: NewCard(CardDesignHeart, 5, false), FaceUp: false}
+		tr.SetPlayerSlots(TrashHumanIdx, slots)
+		tr.SetStock([]*Card{NewCard(CardDesignDiamond, 13, false)})
+
+		require.NoError(t, tr.Draw())
+
+		out := tr.GetPlayerSlots(TrashHumanIdx)
+		assert.True(t, out[TrashSlotCnt-1].FaceUp, "single-empty slot should be auto-flipped")
+		assert.Equal(t, 13, out[TrashSlotCnt-1].Card.GetValue(), "wild should occupy the auto-placed slot")
+		// Phase must NOT be AwaitWild — the forced-click was eliminated.
+		assert.NotEqual(t, TrashPhaseAwaitWild, tr.GetPhase(),
+			"auto-placement must skip the AwaitWild prompt")
+	})
+
+	t.Run("Joker wild auto-placed and triggers win", func(t *testing.T) {
+		tr := NewDefaultTrash()
+		tr.Reset()
+		// Single face-down slot at position 10 holds a Q (end-turn card). The
+		// wild lands there flipping it; the displaced Q would normally end the
+		// turn, but a complete face-up board first triggers a win.
+		var slots [TrashSlotCnt]TrashSlot
+		for i := range TrashSlotCnt - 1 {
+			slots[i] = TrashSlot{Card: NewCard(CardDesignSpade, i+1, false), FaceUp: true}
+		}
+		slots[TrashSlotCnt-1] = TrashSlot{Card: NewCard(CardDesignSpade, 12, false), FaceUp: false}
+		tr.SetPlayerSlots(TrashHumanIdx, slots)
+		tr.SetStock([]*Card{NewCard(CardDesignJoker, 1, false)})
+
+		require.NoError(t, tr.Draw())
+
+		assert.Equal(t, TrashPhaseGameOver, tr.GetPhase(), "completing the board must win")
+		assert.Equal(t, TrashHumanIdx, tr.GetWinner())
+	})
+
+	t.Run("two empty slots still prompts (no auto)", func(t *testing.T) {
+		tr := NewDefaultTrash()
+		tr.Reset()
+		var slots [TrashSlotCnt]TrashSlot
+		for i := range TrashSlotCnt - 2 {
+			slots[i] = TrashSlot{Card: NewCard(CardDesignSpade, i+1, false), FaceUp: true}
+		}
+		slots[8] = TrashSlot{Card: NewCard(CardDesignHeart, 9, false), FaceUp: false}
+		slots[9] = TrashSlot{Card: NewCard(CardDesignHeart, 10, false), FaceUp: false}
+		tr.SetPlayerSlots(TrashHumanIdx, slots)
+		tr.SetStock([]*Card{NewCard(CardDesignDiamond, 13, false)})
+
+		require.NoError(t, tr.Draw())
+
+		assert.Equal(t, TrashPhaseAwaitWild, tr.GetPhase(),
+			"two empty slots is a real choice; the human must pick")
+	})
+}
+
 func TestTrashDrawJackEndsTurn(t *testing.T) {
 	tr := NewDefaultTrash()
 	tr.Reset()

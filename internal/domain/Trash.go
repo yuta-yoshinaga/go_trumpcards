@@ -126,17 +126,31 @@ func (t *Trash) PlaceWild(pos int) error {
 	if pos < 1 || pos > TrashSlotCnt {
 		return errors.New("invalid position")
 	}
-	p := &t.players[t.current]
 	idx := pos - 1
-	if p.Slots[idx].FaceUp {
+	if t.players[t.current].Slots[idx].FaceUp {
 		return errors.New("slot already filled")
 	}
+	t.placeWildAt(idx)
+	if t.phase == TrashPhasePlayerTurn {
+		t.resolveChain()
+	}
+	return nil
+}
+
+// placeWildAt is the shared core of explicit wild placement (PlaceWild) and
+// the single-empty-slot auto-placement triggered from resolveChain (issue
+// #1565). It assumes idx is in range and refers to a face-down slot — both
+// callers validate before invoking. The phase is left at PlayerTurn on a
+// non-winning placement so the caller decides whether to keep resolving the
+// chain (auto path stays in the loop; explicit path re-enters resolveChain).
+func (t *Trash) placeWildAt(idx int) {
+	p := &t.players[t.current]
 	wild := t.pending
 	old := p.Slots[idx].Card
 	p.Slots[idx].Card = wild
 	p.Slots[idx].FaceUp = true
 	t.pending = old
-	t.appendLog("placeWild", fmt.Sprintf("プレイヤー%dが位置%dにワイルドを配置", t.current, pos), []*Card{wild})
+	t.appendLog("placeWild", fmt.Sprintf("プレイヤー%dが位置%dにワイルドを配置", t.current, idx+1), []*Card{wild})
 
 	if t.isWin(t.current) {
 		t.winner = t.current
@@ -146,11 +160,31 @@ func (t *Trash) PlaceWild(pos int) error {
 			t.pending = nil
 		}
 		t.appendLog("win", fmt.Sprintf("プレイヤー%dの勝利", t.current), nil)
-		return nil
+		return
 	}
 	t.phase = TrashPhasePlayerTurn
-	t.resolveChain()
-	return nil
+}
+
+// onlyEmptySlot returns the slot index (0..TrashSlotCnt-1) when the player
+// at idx has exactly one face-down slot left, or -1 if there are zero or
+// more than one. Used to gate auto-placement of wild cards (issue #1565):
+// with no empty slot we should never have reached this code path, and with
+// two or more we want the human to keep their tactical choice.
+func (t *Trash) onlyEmptySlot(playerIdx int) int {
+	if playerIdx < 0 || playerIdx >= TrashPlayerCnt {
+		return -1
+	}
+	found := -1
+	for i, s := range t.players[playerIdx].Slots {
+		if s.FaceUp {
+			continue
+		}
+		if found != -1 {
+			return -1
+		}
+		found = i
+	}
+	return found
 }
 
 // IsCpuTurn 現在のターンがCPUか
@@ -264,11 +298,23 @@ func (t *Trash) GetActionLog() []*ActionLogEntry { return t.actionLog }
 // --- Private helpers ---
 
 // resolveChain pendingカードを順次解決する。連鎖中にAwaitWild/GameOver/EndTurnのいずれかに到達したら終了。
+//
+// Auto-placement (issue #1565): when a wild card surfaces and the current
+// player has exactly one face-down slot left, the wild is placed directly
+// instead of transitioning to TrashPhaseAwaitWild. This removes a forced
+// click for an outcome that has no meaningful choice — the only legal
+// destination — and matches the tempo Trash relies on. With multiple
+// empty slots the human still chooses; CPUs continue to auto-place via
+// CpuStep regardless of count.
 func (t *Trash) resolveChain() {
 	for t.pending != nil && t.phase == TrashPhasePlayerTurn {
 		c := t.pending
 		switch {
 		case isTrashWild(c):
+			if idx := t.onlyEmptySlot(t.current); idx >= 0 {
+				t.placeWildAt(idx)
+				continue
+			}
 			t.phase = TrashPhaseAwaitWild
 			return
 		case isTrashEndTurn(c):
