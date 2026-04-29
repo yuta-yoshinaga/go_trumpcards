@@ -10,19 +10,21 @@ type NertzCpuDifficulty int
 
 // Nertzの難易度定数
 //
-// 現状の Tick / FindCpuMove は同一の優先度ヒューリスティック (ナッツ→ウェイ
-// スト→タブロー → ファウンデーション、その後タブロー間移動、最後にストック
-// ドロー) を使い、難易度は ResolvedCpuTickMoves が返す 1tick あたりの手数のみ
-// に反映される。Hard は「先読みスコア」を使う設計だったが未実装のため、当面
-// は手数の差として現れる (PR #1528 レビュー指摘)。
+// 難易度は二軸で表現される:
+//   - 1tick あたりの手数 (ResolvedCpuTickMoves が返す Easy=1 / Normal=3 / Hard=5)
+//   - 手の選択方針 (FindCpuMove が分岐):
+//   - Easy / Normal: first-match ヒューリスティック (ナッツ→ウェイスト→タブロー
+//     → ファウンデーション、その後タブロー間移動、最後にストックドロー)
+//   - Hard: 全合法手を列挙し scoreNertzMove で評価して最高得点の手を選ぶ
+//     先読みスコア方式 (issue #1562 で実装)。
 const (
-	// NertzCpuDifficultyEasy 1tickあたり1手。
+	// NertzCpuDifficultyEasy 1tickあたり1手・first-match ヒューリスティック。
 	NertzCpuDifficultyEasy NertzCpuDifficulty = iota
-	// NertzCpuDifficultyNormal 1tickあたり最大3手。
+	// NertzCpuDifficultyNormal 1tickあたり最大3手・first-match ヒューリスティック。
 	NertzCpuDifficultyNormal
-	// NertzCpuDifficultyHard 1tickあたり最大5手。
-	// (TODO: 真の "先読みスコア" による最適手選択を実装する。現状は Easy/Normal
-	// と同じヒューリスティックを高速回転させているだけ。)
+	// NertzCpuDifficultyHard 1tickあたり最大5手・先読みスコアで最適手を選択。
+	// "Nertz パイル削減を最大化する" 戦略を取るため、見かけ上の速度差ではなく
+	// 質の高い手選択でプレイヤーに圧力をかける (issue #1562)。
 	NertzCpuDifficultyHard
 )
 
