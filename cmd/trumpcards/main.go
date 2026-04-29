@@ -560,8 +560,9 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 // alias (e.g. `gni` -> `gin`) instead of a far-off canonical name. See
 // issue #1555.
 func helpSuggestionCandidates() []string {
-	seen := make(map[string]struct{})
-	out := make([]string, 0)
+	capacity := len(ui.GameNames()) + len(builtinSubcommandHelp) + len(ui.GameAliases)
+	seen := make(map[string]struct{}, capacity)
+	out := make([]string, 0, capacity)
 	add := func(name string) {
 		if _, ok := seen[name]; ok {
 			return
