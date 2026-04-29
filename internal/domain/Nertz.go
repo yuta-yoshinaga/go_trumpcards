@@ -467,6 +467,10 @@ type NertzAction struct {
 // CPU の処理順は毎 tick 無作為化する。固定順だと低 index の CPU が共有
 // ファウンデーションへの送り込みで一貫した先行優位を持ってしまうため
 // (PR #1528 レビュー指摘)。
+//
+// 各 CPU の手選択は CpuDifficulty に従って分岐する (FindCpuMove 参照):
+// Easy/Normal は first-match を高速反復、Hard は先読みスコアで質の高い
+// 手を選ぶ (issue #1562)。
 func (g *Nertz) Tick() []*NertzAction {
 	if g.phase != NertzPhasePlaying {
 		return nil
@@ -501,7 +505,7 @@ func (g *Nertz) Tick() []*NertzAction {
 // FindCpuMove playerIdx の CPU が次に行うべき手 (アクション記述子) を返す。
 // 該当する手がなければ nil。
 //
-// 優先度 (全難易度共通)::
+// 優先度 (Easy/Normal)::
 //  1. ナッツパイル → ファウンデーション
 //  2. ウェイスト → ファウンデーション
 //  3. タブロー → ファウンデーション
@@ -510,15 +514,25 @@ func (g *Nertz) Tick() []*NertzAction {
 //  6. タブロー間移動 (列単位; 空 toCol への進歩のない移動はスキップ)
 //  7. ストックから引く (リサイクル含む)
 //
-// 難易度 (NertzCpuDifficulty) による分岐は現状ない。Tick の per-tick budget
-// (Easy=1 / Normal=3 / Hard=5) でのみ強さが変わる。Hard で「ナッツパイル削減
-// を最大化する」「先読みスコアで最適手を選ぶ」拡張は将来課題 (PR #1528 レ
-// ビュー指摘)。step 6 の fromIdx は現状 0 固定で、部分スタック移動は実装し
-// ていない。
+// Hard 難易度では `findCpuMoveHard` に分岐し、全ての合法手を列挙してから
+// 「ナッツパイル削減を最大化する」スコア評価で最適手を選ぶ (issue #1562)。
+// Easy/Normal はこのまま first-match で素早く返す — その方が tick budget
+// 内で多くの手を消費できるので「軽快なミス」の表現に向いている。
+//
+// step 6 の fromIdx は現状 0 固定で、部分スタック移動は実装していない。
 func (g *Nertz) FindCpuMove(playerIdx int) *NertzAction {
 	if playerIdx < 0 || playerIdx >= len(g.players) {
 		return nil
 	}
+	if g.config.CpuDifficulty == NertzCpuDifficultyHard {
+		return g.findCpuMoveHard(playerIdx)
+	}
+	return g.findCpuMoveFast(playerIdx)
+}
+
+// findCpuMoveFast は Easy/Normal 用の first-match ヒューリスティック。
+// 旧来の FindCpuMove と完全に同一の挙動 — 最初に見つかった合法手を返す。
+func (g *Nertz) findCpuMoveFast(playerIdx int) *NertzAction {
 	p := g.players[playerIdx]
 
 	// 1. Nertz top → any foundation
@@ -651,6 +665,241 @@ func (g *Nertz) FindCpuMove(playerIdx int) *NertzAction {
 		}
 	}
 	return nil
+}
+
+// findCpuMoveHard は Hard 難易度用の先読みスコアアルゴリズム (issue #1562)。
+// 全ての合法手を列挙し、scoreNertzMove で評価して最高得点の手を返す。
+// 同点の場合は first-match と同じ列挙順で前のものを優先する (決定的に) 。
+//
+// 旧来の Hard は Easy/Normal と同じヒューリスティックを高速回転させるだけ
+// で、強さの差は単に「速い」というストレスフルな UX に偏っていた。本実装
+// は per-tick budget は据え置きにしたまま、選ばれる手の質で差別化する。
+func (g *Nertz) findCpuMoveHard(playerIdx int) *NertzAction {
+	candidates := g.enumerateCpuMoves(playerIdx)
+	if len(candidates) == 0 {
+		return nil
+	}
+	bestScore := scoreNertzMoveMin
+	var best *NertzAction
+	for _, m := range candidates {
+		s := g.scoreNertzMove(playerIdx, m)
+		if s > bestScore {
+			bestScore = s
+			best = m
+		}
+	}
+	return best
+}
+
+// scoreNertzMoveMin は scoreNertzMove が決して返さない値の番兵。findCpuMoveHard
+// の比較で「初回は必ず置き換わる」性質を保つ。
+const scoreNertzMoveMin = -1 << 30
+
+// enumerateCpuMoves は playerIdx の合法手を全て列挙する。findCpuMoveFast の
+// 1〜7 と同じカテゴリ順に追加するので、同点比較の決定性が保たれる。draw は
+// 他に手が無かったときだけ追加する (常に並べると Tick budget を浪費する)。
+func (g *Nertz) enumerateCpuMoves(playerIdx int) []*NertzAction {
+	p := g.players[playerIdx]
+	moves := make([]*NertzAction, 0, 16)
+
+	// 1. Nertz top → any foundation
+	if top := p.NertzTop(); top != nil {
+		for fi, f := range g.foundations {
+			if f.CanAccept(top) {
+				moves = append(moves, &NertzAction{
+					PlayerIdx:  playerIdx,
+					ActionType: "moveNF",
+					FromZone:   NertzZoneNertz, FromCol: -1, FromIdx: -1,
+					ToZone: NertzZoneFoundation, ToCol: fi,
+					Cards: []*Card{top},
+				})
+			}
+		}
+	}
+
+	// 2. Waste top → any foundation
+	if top := p.WasteTop(); top != nil {
+		for fi, f := range g.foundations {
+			if f.CanAccept(top) {
+				moves = append(moves, &NertzAction{
+					PlayerIdx:  playerIdx,
+					ActionType: "moveWF",
+					FromZone:   NertzZoneWaste, FromCol: -1, FromIdx: -1,
+					ToZone: NertzZoneFoundation, ToCol: fi,
+					Cards: []*Card{top},
+				})
+			}
+		}
+	}
+
+	// 3. Tableau bottom → any foundation
+	for col := range NertzTableauCnt {
+		top := p.TableauTop(col)
+		if top == nil {
+			continue
+		}
+		for fi, f := range g.foundations {
+			if f.CanAccept(top) {
+				moves = append(moves, &NertzAction{
+					PlayerIdx:  playerIdx,
+					ActionType: "moveTF",
+					FromZone:   NertzZoneTableau, FromCol: col, FromIdx: p.TableauSize(col) - 1,
+					ToZone: NertzZoneFoundation, ToCol: fi,
+					Cards: []*Card{top},
+				})
+			}
+		}
+	}
+
+	// 4. Nertz top → tableau (both empty and non-empty considered;
+	//    scoreNertzMove discriminates between them).
+	if top := p.NertzTop(); top != nil {
+		for col := range NertzTableauCnt {
+			if canPlaceOnNertzTableau(top, p.TableauTop(col)) {
+				moves = append(moves, &NertzAction{
+					PlayerIdx:  playerIdx,
+					ActionType: "moveNT",
+					FromZone:   NertzZoneNertz, FromCol: -1, FromIdx: -1,
+					ToZone: NertzZoneTableau, ToCol: col,
+					Cards: []*Card{top},
+				})
+			}
+		}
+	}
+
+	// 5. Waste top → tableau
+	if top := p.WasteTop(); top != nil {
+		for col := range NertzTableauCnt {
+			if canPlaceOnNertzTableau(top, p.TableauTop(col)) {
+				moves = append(moves, &NertzAction{
+					PlayerIdx:  playerIdx,
+					ActionType: "moveWT",
+					FromZone:   NertzZoneWaste, FromCol: -1, FromIdx: -1,
+					ToZone: NertzZoneTableau, ToCol: col,
+					Cards: []*Card{top},
+				})
+			}
+		}
+	}
+
+	// 6. Tableau substack → another tableau col. Apply the same "skip useless
+	//    swap into empty when nertz pile is empty" guard as findCpuMoveFast.
+	for fromCol := range NertzTableauCnt {
+		col := p.GetTableauColumn(fromCol)
+		if len(col) == 0 {
+			continue
+		}
+		bottom := col[0].Card
+		for toCol := range NertzTableauCnt {
+			if toCol == fromCol {
+				continue
+			}
+			if !canPlaceOnNertzTableau(bottom, p.TableauTop(toCol)) {
+				continue
+			}
+			if p.TableauTop(toCol) == nil && p.NertzSize() == 0 {
+				continue
+			}
+			cards := make([]*Card, len(col))
+			for i, tc := range col {
+				cards[i] = tc.Card
+			}
+			moves = append(moves, &NertzAction{
+				PlayerIdx:  playerIdx,
+				ActionType: "moveTT",
+				FromZone:   NertzZoneTableau, FromCol: fromCol, FromIdx: 0,
+				ToZone: NertzZoneTableau, ToCol: toCol,
+				Cards: cards,
+			})
+		}
+	}
+
+	// 7. Draw — only as last resort. Adding it unconditionally would dilute
+	//    the score comparison (draw is always legal when stock or waste has
+	//    cards) and the Hard CPU would constantly pick "draw" over a +5 TT
+	//    reorganization since draw is +1.
+	if len(moves) == 0 && (p.StockSize() > 0 || p.WasteSize() > 0) {
+		moves = append(moves, &NertzAction{
+			PlayerIdx:  playerIdx,
+			ActionType: "draw",
+			FromZone:   NertzZoneStock, FromCol: -1, FromIdx: -1,
+			ToZone: NertzZoneWaste, ToCol: -1,
+		})
+	}
+	return moves
+}
+
+// scoreNertzMove rates a candidate move on its strategic value for a Hard
+// CPU. The headline lever is "reduce the Nertz pile" — emptying it is the
+// only path to scoring (and ending the round), so anything that pulls a
+// card off the Nertz pile beats anything that doesn't, all else equal.
+// Foundation work is the next most valuable since each foundation card is
+// worth 1 point at round end. Tableau reorganization is filler — useful
+// when nothing else is available, but not chased over real progress.
+//
+// The base score categories below intentionally leave gaps so secondary
+// adjustments (avoiding empty-column traps when the Nertz pile is empty,
+// preferring lower foundation indices, etc.) can fine-tune without
+// crossing category boundaries. See issue #1562.
+func (g *Nertz) scoreNertzMove(playerIdx int, m *NertzAction) int {
+	if m == nil {
+		return scoreNertzMoveMin
+	}
+	p := g.players[playerIdx]
+	score := 0
+	switch m.ActionType {
+	case "moveNF":
+		// Nertz → Foundation: best possible move. Pile -1 AND foundation +1.
+		// Two birds; this is what Nertz is fundamentally about.
+		score = 100
+	case "moveNT":
+		// Nertz → Tableau: pile -1 even though no foundation progress. Still
+		// extremely valuable because pile reduction is the win condition.
+		score = 50
+	case "moveWF":
+		// Waste → Foundation: foundation +1, no pile effect.
+		score = 30
+	case "moveTF":
+		// Tableau → Foundation: foundation +1, frees a tableau slot. Slightly
+		// less valuable than waste-to-foundation because tableau columns
+		// generally have downstream value as Nertz/Waste landing pads.
+		score = 20
+	case "moveWT":
+		// Waste → Tableau: defensive; clears waste so the next stock cycle
+		// reveals a fresh card.
+		score = 10
+	case "moveTT":
+		// Tableau reorganization. Sometimes unlocks a TF down the line, but
+		// without lookahead we can't tell — keep low priority.
+		score = 5
+	case "draw":
+		// Last resort.
+		score = 1
+	}
+
+	// Adjustment 1: when the Nertz pile is empty, the only way to refill an
+	// emptied tableau column is via the waste-stock cycle (the actual rule
+	// allows "anything fits in an empty column", but the player cannot
+	// generate cards on demand). Penalize moves that empty a column with
+	// no clear refill plan so the CPU doesn't strand its waste pile.
+	if p.NertzSize() == 0 {
+		switch m.ActionType {
+		case "moveTF", "moveTT":
+			if m.FromCol >= 0 && p.TableauSize(m.FromCol) == len(m.Cards) {
+				score -= 8
+			}
+		}
+	}
+
+	// Adjustment 2: tableau-to-foundation favors smaller foundation indices
+	// (deterministic tiebreak across runs). enumerateCpuMoves already iterates
+	// foundations in index order, so the Hard CPU and the Easy/Normal CPU
+	// produce the same move when ties survive — the test suite stays stable.
+	if m.ToZone == NertzZoneFoundation {
+		score -= m.ToCol // 0..3 swing; never crosses a category boundary.
+	}
+
+	return score
 }
 
 // NertzHint 人間プレイヤー (idx=0) への次の推奨手。
