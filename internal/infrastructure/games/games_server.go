@@ -238,6 +238,11 @@ func init() {
 			return usecase.NewCaribbeanStudInteractor(domain.NewDefaultCaribbeanStud(), new(presenter.CaribbeanStudWebPresenter))
 		},
 		controller.NewCaribbeanStudWebController)
+	BindWebControllerFor("texasholdembonus",
+		func() usecase.TexasHoldemBonusInteractorIF {
+			return usecase.NewTexasHoldemBonusInteractor(domain.NewDefaultTexasHoldemBonus(), new(presenter.TexasHoldemBonusWebPresenter))
+		},
+		controller.NewTexasHoldemBonusWebController)
 	BindWebControllerFor("war",
 		func() usecase.WarInteractorIF {
 			return usecase.NewWarInteractor(domain.NewDefaultWar(), new(presenter.WarWebPresenter))

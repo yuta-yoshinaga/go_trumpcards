@@ -90,6 +90,8 @@ tags:
     description: Three Card Poker (スリーカードポーカー) game
   - name: caribbeanstud
     description: Caribbean Stud Poker (カリビアンスタッドポーカー) game
+  - name: texasholdembonus
+    description: Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) game
   - name: ohhell
     description: Oh Hell (オー・ヘル) game
   - name: bridge
@@ -3091,6 +3093,102 @@ paths:
                     playerHandRank: 0
                     dealerHandRank: 0
                     message: param error.
+
+  /texasholdembonus/exec:
+    post:
+      tags:
+        - texasholdembonus
+      summary: Execute a Texas Hold'em Bonus Poker game command
+      description: |
+        Send a command to advance the Texas Hold'em Bonus Poker
+        (テキサスホールデムボーナスポーカー) session identified by `sessionId`.
+        Texas Hold'em Bonus Poker is a single-player casino Texas Hold'em variant
+        using a standard 52-card deck. Player places an Ante bet (required) and an
+        optional Bonus side bet, receives 2 hole cards, then must either bet 2x Ante
+        (Flop bet) to see the flop or fold (forfeit Ante). After the flop and turn
+        the player can either Check or Raise (1x Ante). After the river the showdown
+        evaluates the best 5-card hand from each player's 2 hole cards plus the
+        5-card board. Dealer always plays — no qualifier.
+
+        Ante and play bets pay 1:1 on a player win, push on a tie, and lose on a
+        dealer win. Ante Bonus pays on the player's hand regardless of outcome:
+        Royal Flush 1000:1, Straight Flush 200:1, Four of a Kind 25:1, Full House
+        5:1, Flush 4:1, Straight 1:1. Bonus side bet pays on the two hole cards: AA
+        30:1, AK suited 25:1, AQ/AJ suited 20:1, AK off 15:1, KK/QQ/JJ 10:1, AQ/AJ
+        off 5:1, pocket pair 22-TT 3:1.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Bet      | `1`   | Place Ante and optional Bonus side bet |
+        | PreFlop  | `2`   | Decide to Play (2x Ante) or Fold |
+        | Flop     | `3`   | Decide to Check or Raise (1x Ante) |
+        | Turn     | `4`   | Decide to Check or Raise (1x Ante) |
+        | End      | `5`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `bonusBet`) |
+        | `play`  | `p`     | Pre-flop: bet 2x Ante and reveal the flop |
+        | `fold`  | `f`     | Pre-flop: forfeit Ante (Bonus side bet still resolves) |
+        | `check` | `c`     | Flop / Turn: advance without an additional bet |
+        | `raise` | `ra`    | Flop / Turn: bet 1x Ante and advance |
+        | `log`   | `l`     | View action log |
+      operationId: texasholdembonusExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TexasHoldemBonusRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante with 10 Bonus
+                value:
+                  command: bet
+                  amount: 100
+                  bonusBet: 10
+                  sessionId: my-session-001
+              play:
+                summary: Pre-flop bet (2x Ante)
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold pre-flop
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              check:
+                summary: Check (flop / turn)
+                value:
+                  command: check
+                  sessionId: my-session-001
+              raise:
+                summary: Raise (1x Ante)
+                value:
+                  command: raise
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TexasHoldemBonusResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TexasHoldemBonusResponse'
 
   /ohhell/exec:
     post:
@@ -12913,6 +13011,156 @@ components:
         message:
           type: string
           description: Game result or error message. Empty during bet/action phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Texas Hold'em Bonus Poker
+    # -------------------------------------------------------------------------
+    TexasHoldemBonusRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `play` (`p`), `fold` (`f`), `check` (`c`), `raise` (`ra`),
+            `log` (`l`).
+          enum: [r, reset, b, bet, p, play, f, fold, c, check, ra, raise, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Ante bet amount. Required for `bet` command (minimum 10, must be a
+            multiple of 10). Ignored for other commands.
+          minimum: 10
+          example: 100
+        bonusBet:
+          type: integer
+          description: |
+            Bonus side bet amount. Optional; used with the `bet` command.
+            0 or omitted means no side bet.
+          minimum: 0
+          example: 10
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    TexasHoldemBonusResponse:
+      type: object
+      description: Current state of the Texas Hold'em Bonus Poker game
+      required:
+        - playerHand
+        - dealerHand
+        - community
+        - phase
+        - chips
+        - anteBet
+        - bonusBet
+        - flopBet
+        - turnBet
+        - riverBet
+        - totalPlayBet
+        - result
+        - antePayout
+        - playPayout
+        - bonusPayout
+        - totalPayout
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Player's two hole cards
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Dealer's two hole cards (masked until showdown)
+          items:
+            $ref: '#/components/schemas/Card'
+        community:
+          type: array
+          description: Community cards (length grows from 0 to 5 as the streets advance)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1=Bet, 2=PreFlop, 3=Flop, 4=Turn, 5=End"
+          enum: [1, 2, 3, 4, 5]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Ante bet amount
+          example: 100
+        bonusBet:
+          type: integer
+          description: Bonus side bet amount
+          example: 10
+        flopBet:
+          type: integer
+          description: Flop bet amount (2x Ante placed pre-flop)
+          example: 0
+        turnBet:
+          type: integer
+          description: Turn bet amount (1x Ante placed after the flop)
+          example: 0
+        riverBet:
+          type: integer
+          description: River bet amount (1x Ante placed after the turn)
+          example: 0
+        totalPlayBet:
+          type: integer
+          description: Sum of flop / turn / river bets
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1=Player wins, -1=Dealer wins, 0=Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          description: Payout from the Ante bet (includes Ante Bonus when applicable)
+          example: 0
+        playPayout:
+          type: integer
+          description: Combined payout from the flop / turn / river bets
+          example: 0
+        bonusPayout:
+          type: integer
+          description: Bonus side bet payout
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the round (sum of all payouts)
+          example: 0
+        playerHandRank:
+          type: integer
+          description: Player's best 5-card hand rank (0=High Card .. 9=Royal Flush)
+          example: 0
+        dealerHandRank:
+          type: integer
+          description: Dealer's best 5-card hand rank (same encoding as `playerHandRank`)
+          example: 0
+        message:
+          type: string
+          description: Game result or error message. Empty during pre-resolution phases.
           example: ""
         messageCode:
           type: string

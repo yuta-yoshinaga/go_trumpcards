@@ -63,7 +63,7 @@ describe('OldMaidPlayerArea CPU highlight', () => {
     render(<OldMaidPlayerArea {...selectableProps} player={makeCpuPlayer(3)} highlightedCardIdx={1} />);
     // Selectable cards are rendered as buttons; style is on the img inside
     const buttons = screen.getAllByRole('button');
-    const imgs = buttons.map((btn) => btn.querySelector('img')!);
+    const imgs = buttons.map((btn) => btn.querySelector('img'));
     // Highlighted card (index 1) should reference design tokens via CSS custom properties
     expect(imgs[1]?.getAttribute('style')).toContain('var(--color-ds-accent)');
     expect(imgs[1]?.getAttribute('style')).toContain('var(--shadow-ds-accent-glow)');
@@ -75,7 +75,8 @@ describe('OldMaidPlayerArea CPU highlight', () => {
     render(<OldMaidPlayerArea {...selectableProps} player={makeCpuPlayer(3)} highlightedCardIdx={-1} />);
     const buttons = screen.getAllByRole('button');
     for (const btn of buttons) {
-      const img = btn.querySelector('img')!;
+      const img = btn.querySelector('img');
+      expect(img).not.toBeNull();
       expect(img).toHaveStyle({ border: '2px solid transparent' });
     }
   });

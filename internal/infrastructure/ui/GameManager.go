@@ -738,6 +738,22 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "texasholdembonus", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTexasHoldemBonusCuiController(usecase.NewTexasHoldemBonusInteractor(
+				domain.NewDefaultTexasHoldemBonus(), new(presenter.TexasHoldemBonusCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "texasholdembonus.helpTitle",
+				CommandKeys: []string{
+					"texasholdembonus.helpBet",
+					"texasholdembonus.helpPlay",
+					"texasholdembonus.helpFold",
+					"texasholdembonus.helpCheck",
+					"texasholdembonus.helpRaise",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 	{Name: "war", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewWarCuiController(usecase.NewWarInteractor(
@@ -1169,6 +1185,8 @@ var GameAliases = map[string]string{
 	"3card":  "threecard",
 	"csp":    "caribbeanstud",
 	"stud":   "caribbeanstud",
+	"thb":    "texasholdembonus",
+	"thbp":   "texasholdembonus",
 	"40t":    "fortythieves",
 	"pgp":    "paigow",
 	"lir":    "letitride",

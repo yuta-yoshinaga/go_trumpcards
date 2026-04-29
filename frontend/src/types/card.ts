@@ -1902,6 +1902,36 @@ export interface CaribbeanStudResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) ---
+
+/** Texas Hold'em Bonus Poker API response. */
+export interface TexasHoldemBonusResponse {
+  /** Player's two hole cards. */
+  playerHand: Card[];
+  /** Dealer's hole cards: masked as `MaskedCard` until the showdown. */
+  dealerHand: (Card | MaskedCard)[];
+  /** Community cards (flop / turn / river). Length grows from 0 → 5 over phases. */
+  community: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  bonusBet: number;
+  flopBet: number;
+  turnBet: number;
+  riverBet: number;
+  totalPlayBet: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  bonusPayout: number;
+  totalPayout: number;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Pai Gow Poker (パイゴウポーカー) ---
 
 /** Pai Gow Poker API response. */

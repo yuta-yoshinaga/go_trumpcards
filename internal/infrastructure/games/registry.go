@@ -131,6 +131,7 @@ var registry = []*Game{
 	{Name: "paigow", Category: CategoryCasino, Description: "Pai Gow Poker (パイガオポーカー)"},
 	{Name: "twotenjack", Category: CategoryClassic, Description: "Two Ten Jack (ツーテンジャック)"},
 	{Name: "caribbeanstud", Category: CategoryCasino, Description: "Caribbean Stud Poker (カリビアンスタッドポーカー)"},
+	{Name: "texasholdembonus", Category: CategoryCasino, Description: "Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー)"},
 	{Name: "war", Category: CategoryClassic, Description: "War (戦争)"},
 	{Name: "canfield", Category: CategorySolo, Description: "Canfield Solitaire (キャンフィールド)"},
 	{Name: "fiftyone", Category: CategoryClassic, Description: "Fifty-one (フィフティワン)"},

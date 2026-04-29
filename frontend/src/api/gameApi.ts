@@ -67,6 +67,7 @@ import type {
   SpiderResponse,
   SpiteAndMaliceMoveZone,
   SpiteAndMaliceResponse,
+  TexasHoldemBonusResponse,
   ThreeCardResponse,
   TrashResponse,
   TriPeaksResponse,
@@ -101,6 +102,7 @@ const workerUrl: Record<string, string> = {
   jokerpoker: WORKER_CASINO,
   threecard: WORKER_CASINO,
   caribbeanstud: WORKER_CASINO,
+  texasholdembonus: WORKER_CASINO,
   paigow: WORKER_CASINO,
   pineapple: WORKER_CASINO,
   crazypineapple: WORKER_CASINO,
@@ -838,6 +840,12 @@ export const caribbeanstudApi = {
     gameExec<CaribbeanStudResponse>('caribbeanstud', { command, amount, jackpotBet }),
 };
 
+/** API client for the Texas Hold'em Bonus Poker /texasholdembonus/exec endpoint. */
+export const texasholdembonusApi = {
+  exec: (command: 'reset' | 'bet' | 'play' | 'fold' | 'check' | 'raise' | 'log', amount?: number, bonusBet?: number) =>
+    gameExec<TexasHoldemBonusResponse>('texasholdembonus', { command, amount, bonusBet }),
+};
+
 /** API client for the Pai Gow Poker /paigow/exec endpoint. */
 export const paigowApi = {
   exec: (command: 'reset' | 'bet' | 'set' | 'log', amount?: number, low0?: number, low1?: number) =>
@@ -1414,6 +1422,7 @@ const games = [
   'cribbage',
   'threecard',
   'caribbeanstud',
+  'texasholdembonus',
   'paigow',
   'speed',
   'war',
