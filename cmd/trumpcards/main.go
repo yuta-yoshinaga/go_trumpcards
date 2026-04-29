@@ -208,11 +208,20 @@ func run() int {
 	commands["games"] = func() int {
 		var short, aliases, asJSON bool
 		var category string
+		// quietSink absorbs `-q`/`--quiet` when placed after the subcommand
+		// name so Go's FlagSet does not reject it as an unknown flag. The
+		// outer `quiet` was already resolved before subcommand dispatch
+		// and is the source of truth for behavior; this binding only
+		// exists so subcommand parsing does not exit 2 on a recognized
+		// global flag (PR #1582 review).
+		var quietSink bool
 		fs, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
 			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
 			f.BoolVar(&asJSON, "json", false, "Emit machine-readable JSON (array of {name, category, description, aliases})")
 			f.StringVar(&category, "category", "", "Filter by category: casino|classic|solo")
+			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
+			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -241,8 +250,11 @@ func run() int {
 	}
 	commands["completion"] = func() int {
 		var noHint bool
+		var quietSink bool // see comment on the games subcommand
 		fs, code, ok := parseSubFlags("completion", func(f *flag.FlagSet) {
 			f.BoolVar(&noHint, "no-hint", false, "Suppress installation hint comments (also implied when stdout is not a TTY)")
+			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
+			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -255,11 +267,14 @@ func run() int {
 	}
 	commands["update"] = func() int {
 		var yes, check bool
+		var quietSink bool // see comment on the games subcommand
 		_, code, ok := parseSubFlags("update", func(f *flag.FlagSet) {
 			f.BoolVar(&yes, "yes", false, "Skip confirmation prompt")
 			f.BoolVar(&yes, "y", false, "Skip confirmation prompt (shorthand)")
 			f.BoolVar(&check, "check", false, "Check for an update without installing (prints latest tag, status, current to stdout)")
 			f.BoolVar(&check, "dry-run", false, "Alias for --check")
+			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
+			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -605,13 +620,18 @@ func updateExitCode(err error) int {
 	}
 }
 
-// applyTrailingGlobalFlags scans args for global flags (`--lang`, `--no-color`)
-// that landed after the game name because Go's flag package stops parsing at
-// the first positional argument. Each recognized flag is applied to the runtime
-// (i18n locale / color streams) and stripped from the returned slice so the
-// caller's "extra args" warning fires only for genuinely unknown trailing
-// tokens. Unsupported `--lang` values fall back to the existing locale and emit
-// the usual cliUnsupportedLang warning on stderr (suppressed when quiet).
+// applyTrailingGlobalFlags scans args for global flags (`--lang`, `--no-color`,
+// `--quiet`/`-q`) that landed after the game name because Go's flag package
+// stops parsing at the first positional argument. Each recognized flag is
+// applied to the runtime (i18n locale / color streams) and stripped from
+// the returned slice so the caller's "extra args" warning fires only for
+// genuinely unknown trailing tokens. Unsupported `--lang` values fall back
+// to the existing locale and emit the usual cliUnsupportedLang warning on
+// stderr (suppressed when quiet). `--quiet`/`-q` is a silent no-op here —
+// its value was already resolved before subcommand dispatch in run() — but
+// we recognize the form so users typing `trumpcards <game> -q` don't get
+// a confusing "extra arguments ignored" warning about a documented flag
+// (PR #1582 review).
 func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []string {
 	rest := make([]string, 0, len(args))
 	for i := 0; i < len(args); i++ {
@@ -643,6 +663,17 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 			if err == nil {
 				consumed = true
 				haveNoColor = b
+			}
+		case a == "--quiet" || a == "-quiet" || a == "-q" || a == "--q":
+			// Silent no-op — the global pass already applied the value.
+			// Recognized here only so the trailing-args warning does not
+			// fire for a documented global flag.
+			consumed = true
+		case strings.HasPrefix(a, "--quiet=") || strings.HasPrefix(a, "-quiet=") ||
+			strings.HasPrefix(a, "--q=") || strings.HasPrefix(a, "-q="):
+			val := a[strings.Index(a, "=")+1:]
+			if _, err := strconv.ParseBool(val); err == nil {
+				consumed = true
 			}
 		}
 		switch {
