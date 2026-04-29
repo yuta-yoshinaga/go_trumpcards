@@ -89,7 +89,7 @@ export function TutorialSuggestDialog({
           if (e.key === 'Escape') onSkip();
         }}
       >
-        <h2 id="suggest-dialog-title" className="text-lg font-bold text-white mb-2">
+        <h2 id="suggest-dialog-title" className="text-lg font-bold text-ds-text-primary mb-2">
           {t('firstVisit.title')}
         </h2>
         <p id="suggest-dialog-desc" className="text-ds-text-primary mb-4">
