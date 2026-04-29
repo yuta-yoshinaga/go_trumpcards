@@ -125,9 +125,5 @@ func (p *KlondikeWebPresenter) HintOutput(k interfaces.KlondikeGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *KlondikeWebPresenter) ActionLogOutput(k interfaces.KlondikeGame) string {
-	phase := k.GetPhase()
-	if phase == domain.KlondikePhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(k.GetActionLog())
+	return actionLogOutputJSON(k)
 }

@@ -5,6 +5,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // YukonGame ユーコンゲームインタフェース
 type YukonGame interface {
 	SolitaireGame
+	// GetGameEndFlag reports whether the game has left the playing phase.
+	GetGameEndFlag() bool
 	// Reset ゲームを初期化する
 	Reset()
 	// MoveTableauToTableau タブロー間でカードを移動する

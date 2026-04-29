@@ -199,6 +199,7 @@ func TestGolfWebPresenterActionLogOutput(t *testing.T) {
 		gg := new(interfaces.MockGolfGame)
 		gg.On("GetPhase").Return(domain.GolfPhasePlaying)
 
+		gg.On("GetGameEndFlag").Return(false)
 		p := &GolfWebPresenter{}
 		result := p.ActionLogOutput(gg)
 		assert.Contains(t, result, "entries")
@@ -207,6 +208,7 @@ func TestGolfWebPresenterActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		gg := new(interfaces.MockGolfGame)
 		gg.On("GetPhase").Return(domain.GolfPhaseGameOver)
+		gg.On("GetGameEndFlag").Return(true)
 		gg.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 
 		p := &GolfWebPresenter{}

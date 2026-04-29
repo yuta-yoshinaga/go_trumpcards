@@ -395,6 +395,9 @@ func (s *Scorpion) GetCompletedSuits() int { return s.completedSuits }
 // GetActionLog 棋譜取得
 func (s *Scorpion) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (s *Scorpion) GetGameEndFlag() bool { return s.phase != ScorpionPhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (s *Scorpion) IsStalemate() bool { return s.isStalemate }
 

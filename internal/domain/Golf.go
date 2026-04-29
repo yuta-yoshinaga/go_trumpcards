@@ -276,6 +276,9 @@ func (g *Golf) GetLayout() [GolfColCnt][GolfRowCnt]*GolfCard {
 // GetActionLog 棋譜取得
 func (g *Golf) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (g *Golf) GetGameEndFlag() bool { return g.phase != GolfPhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (g *Golf) IsStalemate() bool { return g.isStalemate }
 

@@ -48,7 +48,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
         </svg>
         {title}
       </summary>
-      <div className="glass-panel rounded-lg p-3 mt-1 text-xs text-white">
+      <div className="glass-panel rounded-lg p-3 mt-1 text-xs text-ds-text-primary">
         {groups.map((group, gi) => {
           const content = (
             <div className="flex flex-wrap gap-x-4 gap-y-1">

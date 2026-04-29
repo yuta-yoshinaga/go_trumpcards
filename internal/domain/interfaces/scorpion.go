@@ -5,6 +5,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // ScorpionGame スコーピオンゲームインタフェース
 type ScorpionGame interface {
 	SolitaireGame
+	// GetGameEndFlag reports whether the game has left the playing phase.
+	GetGameEndFlag() bool
 	// Reset ゲームを初期化する
 	Reset()
 	// Deal ストックから先頭3列にカードを配る

@@ -51,6 +51,21 @@ func applyAddonConfig(addonEnabled *bool, addonChips, addonAfterHand *int,
 	applyIntIfGte(addonAfterHand, srcAfterHand, 1)
 }
 
+// applyTableSize validates src against isValid and writes it to *dst.
+// When src is nil, *dst is left unchanged. When src is non-nil but invalid,
+// errMsg is returned wrapped as a controller-style param error.
+func applyTableSize(dst *int, src *int, isValid func(int) bool, errMsg string) error {
+	if src == nil {
+		return nil
+	}
+	ts := *src
+	if !isValid(ts) {
+		return errors.New(errMsg)
+	}
+	*dst = ts
+	return nil
+}
+
 // validateAndApplyBlinds validates small/big blind values and applies them to dst pointers.
 // If only one blind is provided, the other is auto-adjusted.
 func validateAndApplyBlinds(sb, bb *int, sbPtr, bbPtr *int, defaultBB int) error {

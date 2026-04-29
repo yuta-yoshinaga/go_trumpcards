@@ -62,10 +62,7 @@ func (p *NertzWebPresenter) HintOutput(g interfaces.NertzGame) string {
 // み完全ログを返す (他のリアルタイム系ゲームと同じ運用 / PR #1528 レビュー指
 // 摘)。
 func (p *NertzWebPresenter) ActionLogOutput(g interfaces.NertzGame) string {
-	if g.GetPhase() == domain.NertzPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(g.GetActionLog())
+	return actionLogOutputJSON(g)
 }
 
 // buildBase は共通フィールドを詰めたレスポンスオブジェクトを返す

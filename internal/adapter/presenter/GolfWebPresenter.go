@@ -105,9 +105,5 @@ func (pr *GolfWebPresenter) HintOutput(g interfaces.GolfGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (pr *GolfWebPresenter) ActionLogOutput(g interfaces.GolfGame) string {
-	phase := g.GetPhase()
-	if phase == domain.GolfPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(g.GetActionLog())
+	return actionLogOutputJSON(g)
 }

@@ -67,9 +67,5 @@ func (pr *ClockSolitaireWebPresenter) Output(g interfaces.ClockSolitaireGame, la
 
 // ActionLogOutput 棋譜をJSON出力
 func (pr *ClockSolitaireWebPresenter) ActionLogOutput(g interfaces.ClockSolitaireGame) string {
-	phase := g.GetPhase()
-	if phase == domain.ClockSolitairePhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(g.GetActionLog())
+	return actionLogOutputJSON(g)
 }

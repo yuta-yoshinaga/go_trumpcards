@@ -114,9 +114,5 @@ func (p *FortyThievesWebPresenter) HintOutput(ft interfaces.FortyThievesGame) st
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *FortyThievesWebPresenter) ActionLogOutput(ft interfaces.FortyThievesGame) string {
-	phase := ft.GetPhase()
-	if phase == domain.FortyThievesPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(ft.GetActionLog())
+	return actionLogOutputJSON(ft)
 }
