@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
@@ -53,6 +53,12 @@ export interface SolitaireGameBase<TState, TArgs extends unknown[], THint> {
  * game replicated by hand. Game-specific selection state and selection
  * handlers stay in the per-game hook.
  *
+ * The returned object is memoized and the action callbacks are kept stable
+ * across renders even when the caller passes an inline options literal — see
+ * the optionsRef below — so per-game hooks can safely list the returned
+ * `base` object (or its individual properties) in their own useCallback /
+ * useEffect deps without re-creating their handlers on every render.
+ *
  * @typeParam TState  Response shape returned by the game's API.
  * @typeParam TArgs   Argument tuple of the game's API exec function.
  * @typeParam THint   Hint payload type for that game.
@@ -66,9 +72,11 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
   const [hintError, setHintError] = useState<string | null>(null);
   const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
 
-  const onClear = options.onClearSelection;
-  const hintApi = options.hintApi;
-  const selectHint = options.selectHint;
+  // Keep the latest options in a ref so the action callbacks below stay
+  // stable even when the caller passes an inline `{ hintApi: () => ... }`
+  // literal (a fresh reference every render). PR #1573 review.
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   useEffect(() => {
     void apiCall(...(['reset'] as unknown as TArgs));
@@ -76,11 +84,11 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
 
   const runAction = useCallback(
     (...args: TArgs) => {
-      onClear?.();
+      optionsRef.current.onClearSelection?.();
       setHint(null);
       void apiCall(...args);
     },
-    [apiCall, onClear],
+    [apiCall],
   );
 
   const handleReset = useCallback(() => runAction(...(['reset'] as unknown as TArgs)), [runAction]);
@@ -88,6 +96,7 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
   const handleUndo = useCallback(() => runAction(...(['undo'] as unknown as TArgs)), [runAction]);
 
   const handleHint = useCallback(async () => {
+    const { hintApi, selectHint } = optionsRef.current;
     if (!hintApi) return;
     try {
       const res = await hintApi();
@@ -97,31 +106,52 @@ export function useSolitaireGameBase<TState, TArgs extends unknown[], THint, THi
     } catch {
       setHintError(NETWORK_ERROR_MESSAGE());
     }
-  }, [hintApi, selectHint]);
+  }, []);
 
   const handleAutoComplete = useCallback(() => {
-    onClear?.();
+    optionsRef.current.onClearSelection?.();
     setHint(null);
     startAutoComplete();
     void apiCall(...(['autocomplete'] as unknown as TArgs));
-  }, [apiCall, onClear, startAutoComplete]);
+  }, [apiCall, startAutoComplete]);
 
-  return {
-    state,
-    loading,
-    error,
-    retry,
-    apiCall,
-    hint,
-    setHint,
-    hintError,
-    isAutoCompleting,
-    startAutoComplete,
-    runAction,
-    handleReset,
-    handleGiveUp,
-    handleUndo,
-    handleHint,
-    handleAutoComplete,
-  };
+  // Memoize the returned object so per-game hooks can safely depend on
+  // `base` without their own callbacks tearing down on every render.
+  return useMemo(
+    () => ({
+      state,
+      loading,
+      error,
+      retry,
+      apiCall,
+      hint,
+      setHint,
+      hintError,
+      isAutoCompleting,
+      startAutoComplete,
+      runAction,
+      handleReset,
+      handleGiveUp,
+      handleUndo,
+      handleHint,
+      handleAutoComplete,
+    }),
+    [
+      state,
+      loading,
+      error,
+      retry,
+      apiCall,
+      hint,
+      hintError,
+      isAutoCompleting,
+      startAutoComplete,
+      runAction,
+      handleReset,
+      handleGiveUp,
+      handleUndo,
+      handleHint,
+      handleAutoComplete,
+    ],
+  );
 }

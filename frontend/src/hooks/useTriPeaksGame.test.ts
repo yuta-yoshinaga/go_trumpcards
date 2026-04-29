@@ -153,4 +153,25 @@ describe('useTriPeaksGame', () => {
     expect(result.current.hintError).toBeTruthy();
     expect(result.current.hint).toBeNull();
   });
+
+  it('handleSelectCard forwards row/col to the remove command and clears hint', async () => {
+    const { result } = renderHook(() => useTriPeaksGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    // Seed hint state so we can confirm it is cleared on selection.
+    mockExec.mockResolvedValue({ ...defaultState, hint: { type: 'remove', row: 1, col: 2 } });
+    await act(async () => {
+      await result.current.handleHint();
+    });
+    expect(result.current.hint).not.toBeNull();
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(defaultState);
+    act(() => {
+      result.current.handleSelectCard(0, 2);
+    });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 2));
+    await waitFor(() => expect(result.current.hint).toBeNull());
+  });
 });
