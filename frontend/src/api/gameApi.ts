@@ -587,34 +587,17 @@ export const memoryApi = {
 };
 
 /**
- * Command verbs accepted by the solitaire-style move endpoints.
- *
- * The union is intentionally broader than any single game uses (e.g. Klondike
- * has `'draw'`, Spider has `'deal'`, Accordion has neither) so that the shared
- * factories can be reused without per-game subtype declarations. Game-specific
- * call sites still get type-checked because they only ever invoke a subset of
- * these commands.
- */
-export type SolitaireMoveCommand =
-  | 'reset'
-  | 'move'
-  | 'giveup'
-  | 'hint'
-  | 'autocomplete'
-  | 'log'
-  | 'undo'
-  | 'undo_n'
-  | 'draw'
-  | 'deal';
-
-/**
  * Factory for solitaire-style move APIs whose request body is `{ command, from, to, n }`.
  *
  * Used by Canfield, FreeCell, Yukon, Scorpion, Accordion, FortyThieves, and
  * Calculation — every solitaire variant whose move endpoint takes only
  * source/target zones and an optional batch-undo count.
+ *
+ * `Cmd` is intentionally not defaulted: each call site declares the exact
+ * command union its game accepts so invalid commands are rejected at compile
+ * time instead of being silently widened to a broader shared union.
  */
-function createSolitaireMoveApi<T, Zone, Cmd extends string = SolitaireMoveCommand>(game: string) {
+function createSolitaireMoveApi<T, Zone, Cmd extends string>(game: string) {
   return {
     exec: (command: Cmd, from?: Zone, to?: Zone, n?: number) => gameExec<T>(game, { command, from, to, n }),
   };
@@ -623,8 +606,11 @@ function createSolitaireMoveApi<T, Zone, Cmd extends string = SolitaireMoveComma
 /**
  * Factory for solitaire-style move APIs that also carry an optional `config`
  * object (Klondike, Spider). Body shape: `{ command, from, to, config, n }`.
+ *
+ * Like {@link createSolitaireMoveApi}, the `Cmd` generic is not defaulted —
+ * each call site declares its exact command union.
  */
-function createSolitaireMoveApiWithConfig<T, Zone, C, Cmd extends string = SolitaireMoveCommand>(game: string) {
+function createSolitaireMoveApiWithConfig<T, Zone, C, Cmd extends string>(game: string) {
   return {
     exec: (command: Cmd, from?: Zone, to?: Zone, config?: C, n?: number) =>
       gameExec<T>(game, { command, from, to, config, n }),
@@ -645,9 +631,12 @@ export interface KlondikeConfigInput {
 }
 
 /** API client for the Klondike /klondike/exec endpoint. */
-export const klondikeApi = createSolitaireMoveApiWithConfig<KlondikeResponse, KlondikeMoveZone, KlondikeConfigInput>(
-  'klondike',
-);
+export const klondikeApi = createSolitaireMoveApiWithConfig<
+  KlondikeResponse,
+  KlondikeMoveZone,
+  KlondikeConfigInput,
+  'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('klondike');
 
 /** Source or target zone for a Canfield card move. */
 export interface CanfieldMoveZone {
@@ -657,7 +646,11 @@ export interface CanfieldMoveZone {
 }
 
 /** API client for the Canfield /canfield/exec endpoint. */
-export const canfieldApi = createSolitaireMoveApi<CanfieldResponse, CanfieldMoveZone>('canfield');
+export const canfieldApi = createSolitaireMoveApi<
+  CanfieldResponse,
+  CanfieldMoveZone,
+  'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('canfield');
 
 /** Source or target zone for a FreeCell card move. */
 export interface FreeCellMoveZone {
@@ -668,7 +661,11 @@ export interface FreeCellMoveZone {
 }
 
 /** API client for the FreeCell /freecell/exec endpoint. */
-export const freecellApi = createSolitaireMoveApi<FreeCellResponse, FreeCellMoveZone>('freecell');
+export const freecellApi = createSolitaireMoveApi<
+  FreeCellResponse,
+  FreeCellMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('freecell');
 
 /** Configuration options for Crazy Eights game settings. */
 export interface CrazyEightsConfigInput {
@@ -846,7 +843,12 @@ export interface SpiderConfigInput {
 }
 
 /** API client for the Spider /spider/exec endpoint. */
-export const spiderApi = createSolitaireMoveApiWithConfig<SpiderResponse, SpiderMoveZone, SpiderConfigInput>('spider');
+export const spiderApi = createSolitaireMoveApiWithConfig<
+  SpiderResponse,
+  SpiderMoveZone,
+  SpiderConfigInput,
+  'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('spider');
 
 /** Configuration options for Napoleon game settings. */
 export interface NapoleonConfigInput {
@@ -1135,7 +1137,11 @@ export interface YukonMoveZone {
 }
 
 /** API client for the Yukon /yukon/exec endpoint. */
-export const yukonApi = createSolitaireMoveApi<YukonResponse, YukonMoveZone>('yukon');
+export const yukonApi = createSolitaireMoveApi<
+  YukonResponse,
+  YukonMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('yukon');
 
 /** Source or target zone for a Scorpion card move. */
 export interface ScorpionMoveZone {
@@ -1145,7 +1151,11 @@ export interface ScorpionMoveZone {
 }
 
 /** API client for the Scorpion /scorpion/exec endpoint. */
-export const scorpionApi = createSolitaireMoveApi<ScorpionResponse, ScorpionMoveZone>('scorpion');
+export const scorpionApi = createSolitaireMoveApi<
+  ScorpionResponse,
+  ScorpionMoveZone,
+  'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('scorpion');
 
 /** Source or target pile for an Accordion move. */
 export interface AccordionMoveZone {
@@ -1154,7 +1164,11 @@ export interface AccordionMoveZone {
 }
 
 /** API client for the Accordion /accordion/exec endpoint. */
-export const accordionApi = createSolitaireMoveApi<AccordionResponse, AccordionMoveZone>('accordion');
+export const accordionApi = createSolitaireMoveApi<
+  AccordionResponse,
+  AccordionMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'log' | 'undo' | 'undo_n'
+>('accordion');
 
 /** Configuration options for Seven Bridge game settings. */
 export interface SevenBridgeConfigInput {
@@ -1245,10 +1259,18 @@ export const clocksolitaireApi = {
 };
 
 /** API client for the Forty Thieves /fortythieves/exec endpoint. */
-export const fortyThievesApi = createSolitaireMoveApi<FortyThievesResponse, FortyThievesMoveZone>('fortythieves');
+export const fortyThievesApi = createSolitaireMoveApi<
+  FortyThievesResponse,
+  FortyThievesMoveZone,
+  'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('fortythieves');
 
 /** API client for the Calculation /calculation/exec endpoint. */
-export const calculationApi = createSolitaireMoveApi<CalculationResponse, CalculationMoveZone>('calculation');
+export const calculationApi = createSolitaireMoveApi<
+  CalculationResponse,
+  CalculationMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('calculation');
 
 /** Command verbs accepted by the Spite & Malice /spiteandmalice/exec endpoint. */
 export type SpiteAndMaliceCommand = 'reset' | 'move' | 'discard' | 'cpu' | 'hint' | 'log';
