@@ -340,9 +340,8 @@ func nertzHardGameForTest(t *testing.T) *domain.Nertz {
 func TestNertz_FindCpuMoveHardPrefersNertzToFoundation(t *testing.T) {
 	g := nertzHardGameForTest(t)
 	clearFoundations(g)
-	for i, p := range g.GetPlayers() {
+	for _, p := range g.GetPlayers() {
 		clearPlayerPiles(p)
-		_ = i
 	}
 	cpu := g.GetPlayers()[1]
 	// Both moves are legal:
@@ -382,48 +381,64 @@ func TestNertz_FindCpuMoveHardPrefersNertzToTableauOverTableauToTableau(t *testi
 		"Hard must reduce nertz pile when both NT and TT are legal; got %v", move.ActionType)
 }
 
-// TestNertz_FindCpuMoveHardAvoidsEmptyingColumnWhenNertzEmpty pins the
-// "stranded waste pile" guard: when the Nertz pile is empty (no refill
-// available) and emptying a tableau column would leave it permanently
-// dead, Hard prefers a different legal move even if its base score is
-// lower.
-func TestNertz_FindCpuMoveHardAvoidsEmptyingColumnWhenNertzEmpty(t *testing.T) {
-	g := nertzHardGameForTest(t)
-	clearFoundations(g)
-	for _, p := range g.GetPlayers() {
-		clearPlayerPiles(p)
-	}
-	cpu := g.GetPlayers()[1]
-	// Nertz pile empty (no refill possible).
-	// col 0: solitary Ace of Spades. Foundation has no Ace yet.
-	//        moveTF Ace → foundation EMPTIES col 0.
-	// col 1: 2 of Spades on top of Ace of Spades (FAIL — same column setup
-	//        won't naturally place there; instead use waste→tableau path).
-	// Setup a competing legal move: waste has 2 of Hearts and col 2 has 3 of
-	// Spades, so waste-to-tableau is legal and *not* an empty-column trap.
-	cpu.PushTableau(0, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 1), FaceUp: true})
-	cpu.PushTableau(2, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 3), FaceUp: true})
-	cpu.PushWaste(newNertzCard(domain.CardDesignHeart, 2))
-	// Foundation gets the Ace played as moveTF (+20 base, then -8 because the
-	// move would empty col 0 with nertz pile empty -> score 12).
-	// moveWT (waste→tableau) base is +10. So Hard should prefer moveTF still
-	// (12 > 10). Test pins the SCORE — not the choice — by asserting that
-	// Hard does NOT silently dump the column when an alternate non-empty
-	// choice exists. We verify the choice via the score-based selection
-	// is moveTF (acceptable since 12 > 10), which exercises the penalty.
-	move := g.FindCpuMove(1)
-	require.NotNil(t, move)
-	// The penalty makes the column-emptying move score 12; non-emptying
-	// alternatives are moveWT (10). With penalty, moveTF is still chosen,
-	// but the score margin shrunk. Pin the actual chosen move.
-	if move.ActionType == "moveTF" {
-		// Penalty applied — column-emptying TF still wins narrowly. Acceptable.
-	} else if move.ActionType == "moveWT" {
-		// Penalty pushed Hard onto moveWT. Also acceptable; the spec is
-		// "avoid the trap when reasonable", not "always avoid".
-	} else {
-		t.Errorf("unexpected move type %q; expected moveTF or moveWT", move.ActionType)
-	}
+// TestNertz_FindCpuMoveHardEmptyColumnPenalty pins the "stranded waste
+// pile" penalty's two regimes (PR #1587 review). Both sub-cases set up
+// the same trigger condition (Nertz pile empty, a moveTF that would
+// empty its source column) but with competing moves at different
+// strengths so the test asserts a single, deterministic outcome —
+// either the penalty narrows the gap but moveTF still wins, or the
+// penalty is the deciding factor and a competing move wins.
+func TestNertz_FindCpuMoveHardEmptyColumnPenalty(t *testing.T) {
+	t.Run("penalty applied; moveTF still wins narrowly", func(t *testing.T) {
+		g := nertzHardGameForTest(t)
+		clearFoundations(g)
+		for _, p := range g.GetPlayers() {
+			clearPlayerPiles(p)
+		}
+		cpu := g.GetPlayers()[1]
+		// Nertz pile empty. col 0 holds a solitary Ace of Spades, so
+		// moveTF (Ace → foundation 0) empties the column. Competing
+		// move: waste 2 of Hearts onto col 2's 3 of Spades.
+		// Scores: moveTF base 20 - empty-column penalty 8 = 12.
+		// moveWT base 10 (col 2 is non-empty so no empty-target penalty) = 10.
+		// 12 > 10 → moveTF still wins, but the test now pins it.
+		cpu.PushTableau(0, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 1), FaceUp: true})
+		cpu.PushTableau(2, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 3), FaceUp: true})
+		cpu.PushWaste(newNertzCard(domain.CardDesignHeart, 2))
+
+		move := g.FindCpuMove(1)
+		require.NotNil(t, move)
+		assert.Equal(t, "moveTF", move.ActionType,
+			"moveTF (12) still beats moveWT (10) after the empty-column penalty")
+	})
+
+	t.Run("penalty deflects column choice when both moveTFs are legal", func(t *testing.T) {
+		g := nertzHardGameForTest(t)
+		clearFoundations(g)
+		for _, p := range g.GetPlayers() {
+			clearPlayerPiles(p)
+		}
+		cpu := g.GetPlayers()[1]
+		// Nertz pile empty. Two foundation-legal moveTF candidates:
+		//   col 0: solo Ace of Spades (size 1). moveTF empties the
+		//          column → penalty applies. Score 20 − 0 − 8 = 12.
+		//   col 1: face-down Clover 5 then face-up Ace of Hearts.
+		//          moveTF takes only the top card; size 2 ≠ moves 1 →
+		//          penalty does NOT apply. Score 20 − 0 = 20.
+		// Without the penalty both would tie at 20 and the foundation
+		// tiebreak (lower index wins) would pick col 0's enumeration
+		// (it iterates first). With the penalty, col 1 wins decisively.
+		cpu.PushTableau(0, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 1), FaceUp: true})
+		cpu.PushTableau(1, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignClover, 5), FaceUp: false})
+		cpu.PushTableau(1, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignHeart, 1), FaceUp: true})
+
+		move := g.FindCpuMove(1)
+		require.NotNil(t, move)
+		assert.Equal(t, "moveTF", move.ActionType)
+		assert.Equal(t, 1, move.FromCol,
+			"penalty must steer Hard onto col 1's non-emptying moveTF "+
+				"(score 20) over col 0's emptying moveTF (score 12)")
+	})
 }
 
 // TestNertz_FindCpuMoveHardFallsBackToDrawWhenNothingElseLegal verifies

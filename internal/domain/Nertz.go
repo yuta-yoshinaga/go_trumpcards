@@ -784,12 +784,18 @@ func (g *Nertz) enumerateCpuMoves(playerIdx int) []*NertzAction {
 
 	// 6. Tableau substack → another tableau col. Apply the same "skip useless
 	//    swap into empty when nertz pile is empty" guard as findCpuMoveFast.
+	//    Two perf notes (PR #1587 review):
+	//    - Read p.tableau directly to skip the defensive copy in
+	//      GetTableauColumn — same package, same trust boundary.
+	//    - Build the shared `cards` slice once per fromCol; every valid toCol
+	//      can reuse it because moveTT moves the entire column verbatim.
 	for fromCol := range NertzTableauCnt {
-		col := p.GetTableauColumn(fromCol)
+		col := p.tableau[fromCol]
 		if len(col) == 0 {
 			continue
 		}
 		bottom := col[0].Card
+		var cards []*Card // lazily built on first valid destination
 		for toCol := range NertzTableauCnt {
 			if toCol == fromCol {
 				continue
@@ -800,9 +806,11 @@ func (g *Nertz) enumerateCpuMoves(playerIdx int) []*NertzAction {
 			if p.TableauTop(toCol) == nil && p.NertzSize() == 0 {
 				continue
 			}
-			cards := make([]*Card, len(col))
-			for i, tc := range col {
-				cards[i] = tc.Card
+			if cards == nil {
+				cards = make([]*Card, len(col))
+				for i, tc := range col {
+					cards[i] = tc.Card
+				}
 			}
 			moves = append(moves, &NertzAction{
 				PlayerIdx:  playerIdx,
@@ -891,12 +899,34 @@ func (g *Nertz) scoreNertzMove(playerIdx int, m *NertzAction) int {
 		}
 	}
 
-	// Adjustment 2: tableau-to-foundation favors smaller foundation indices
+	// Adjustment 2: when filling an empty tableau column from nertz or
+	// waste, a small penalty preserves the empty column's flexibility —
+	// it can accept any card, so spending it on a known card wastes
+	// optionality. Mirrors the "non-empty preferred" heuristic in
+	// findCpuMoveFast (PR #1587 review). Magnitude (-3) keeps the
+	// adjusted scores inside their categories: moveNT 50 → 47, still
+	// well above moveWF 30; moveWT 10 → 7, still above moveTT 5.
+	switch m.ActionType {
+	case "moveNT", "moveWT":
+		if m.ToZone == NertzZoneTableau && p.TableauTop(m.ToCol) == nil {
+			score -= 3
+		}
+	}
+
+	// Adjustment 3: tableau-to-foundation favors smaller foundation indices
 	// (deterministic tiebreak across runs). enumerateCpuMoves already iterates
 	// foundations in index order, so the Hard CPU and the Easy/Normal CPU
 	// produce the same move when ties survive — the test suite stays stable.
+	//
+	// Modulo NertzFoundationsPerPlayer caps the swing at 0..3 regardless of
+	// player count: in N-player games there are NertzFoundationsPerPlayer*N
+	// foundations (16 in 4-player, 24 in 6-player), and an unbounded
+	// `score -= m.ToCol` would cross category boundaries (e.g. moveTF base
+	// 20 minus index 11 = 9, less than moveWT base 10 — wrong winner). The
+	// modulo gives a per-suit-position tiebreak that stays inside the moveTF
+	// band (PR #1587 review).
 	if m.ToZone == NertzZoneFoundation {
-		score -= m.ToCol // 0..3 swing; never crosses a category boundary.
+		score -= m.ToCol % NertzFoundationsPerPlayer
 	}
 
 	return score
