@@ -1,0 +1,90 @@
+{
+  "title": "Texas Hold'em Bonus Poker",
+  "player": "Player",
+  "dealer": "Dealer",
+  "board": "Board",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "bonus": "Bonus",
+    "flopBet": "Flop Bet",
+    "turnBet": "Turn Bet",
+    "riverBet": "River Bet",
+    "handRank": "Hand"
+  },
+  "button": {
+    "bet": "Bet",
+    "play": "Play (2×)",
+    "fold": "Fold",
+    "check": "Check",
+    "raise": "Raise (1×)",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Betting",
+    "preFlop": "Pre-Flop",
+    "flop": "Flop",
+    "turn": "Turn",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "You win!",
+    "dealerWins": "Dealer wins!",
+    "push": "Push!",
+    "fold": "Folded"
+  },
+  "payout": {
+    "ante": "Ante (incl. bonus)",
+    "play": "Play bets",
+    "bonus": "Side bonus",
+    "total": "Total"
+  },
+  "handRank": {
+    "0": "High Card",
+    "1": "Pair",
+    "2": "Two Pair",
+    "3": "Three of a Kind",
+    "4": "Straight",
+    "5": "Flush",
+    "6": "Full House",
+    "7": "Four of a Kind",
+    "8": "Straight Flush",
+    "9": "Royal Flush"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "betGuide": "Set your ante and optional bonus side bet",
+  "payoutRef": {
+    "title": "Payout Table",
+    "anteHeader": "Ante Bonus (Straight or better)",
+    "anteRoyalFlush": "Royal Flush: 1000:1",
+    "anteStraightFlush": "Straight Flush: 200:1",
+    "anteFourOfAKind": "Four of a Kind: 25:1",
+    "anteFullHouse": "Full House: 5:1",
+    "anteFlush": "Flush: 4:1",
+    "anteStraight": "Straight: 1:1",
+    "bonusHeader": "Bonus Side Bet (hole cards)",
+    "bonusAA": "Pocket Aces: 30:1",
+    "bonusAKSuited": "AK suited: 25:1",
+    "bonusAQAJSuited": "AQ/AJ suited: 20:1",
+    "bonusAKOff": "AK offsuit: 15:1",
+    "bonusKKQQJJ": "KK/QQ/JJ: 10:1",
+    "bonusAQAJOff": "AQ/AJ offsuit: 5:1",
+    "bonusMediumPair": "Pocket pair 22-TT: 3:1"
+  },
+  "tutorial": {
+    "betControls": "Set your ante and optional bonus side bet, then press Bet.",
+    "preFlopButtons": "Choose Play (2× ante) to see the flop, or Fold to forfeit.",
+    "postFlopButtons": "Check to see the next street, or Raise (1× ante) to add to the pot.",
+    "results": "Check your results and payouts here."
+  },
+  "hint": {
+    "pocketPair": "Pocket pair — play recommended",
+    "acePlay": "Includes Ace — play recommended",
+    "suitedBroadway": "Suited broadway — play recommended",
+    "broadwayCards": "Broadway cards — play recommended",
+    "pairOrBetter": "Pair or better — raise recommended",
+    "weakHand": "Weak hand"
+  }
+}

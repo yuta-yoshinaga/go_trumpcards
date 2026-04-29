@@ -48,6 +48,7 @@ import type {
   SpeedResponse,
   SpiderResponse,
   SpiteAndMaliceResponse,
+  TexasHoldemBonusResponse,
   ThreeCardResponse,
   TrashResponse,
   TriPeaksResponse,
@@ -109,6 +110,7 @@ import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
 import { getSpiderHint } from '../utils/hints/spiderHint';
 import { getSpiteAndMaliceHint } from '../utils/hints/spiteAndMaliceHint';
+import { getTexasHoldemBonusHint } from '../utils/hints/texasHoldemBonusHint';
 import { getThreeCardHint } from '../utils/hints/threecardHint';
 import { getTrashHint } from '../utils/hints/trashHint';
 import { getTriPeaksHint } from '../utils/hints/tripeaksHint';
@@ -160,6 +162,7 @@ const hintFactories = {
   cribbage: (s) => getCribbageHint(s as CribbageResponse),
   gofish: (s) => getGoFishHint(s as GoFishResponse),
   caribbeanstud: (s) => getCaribbeanStudHint(s as CaribbeanStudResponse),
+  texasholdembonus: (s) => getTexasHoldemBonusHint(s as TexasHoldemBonusResponse),
   durak: (s) => getDurakHint(s as DurakResponse),
   canasta: (s) => getCanastaHint(s as CanastaResponse),
   canfield: (s) => getCanfieldHint(s as CanfieldResponse),

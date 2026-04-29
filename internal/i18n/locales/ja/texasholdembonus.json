@@ -1,0 +1,8 @@
+{
+  "helpTitle": "Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー)",
+  "helpBet": "  b <ante> [bonus]     ベット (アンテ必須、ボーナスサイドベット任意)",
+  "helpPlay": "  p                    プレイ (アンテの2倍のフロップベット)",
+  "helpFold": "  f                    フォールド (アンテ没収)",
+  "helpCheck": "  c                    チェック (ターン/リバーで追加ベットしない)",
+  "helpRaise": "  ra                   レイズ (ターン/リバーでアンテと同額をベット)"
+}

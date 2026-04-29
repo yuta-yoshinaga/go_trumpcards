@@ -142,6 +142,14 @@ func init() {
 			return usecase.RestoreCaribbeanStudInteractor(data, new(presenter.CaribbeanStudWebPresenter))
 		},
 		controller.NewCaribbeanStudWebControllerWithProvider)
+	games.RegisterKVGame("texasholdembonus", games.CategoryCasino,
+		func() usecase.TexasHoldemBonusInteractorIF {
+			return usecase.NewTexasHoldemBonusInteractor(domain.NewDefaultTexasHoldemBonus(), new(presenter.TexasHoldemBonusWebPresenter))
+		},
+		func(data []byte) (usecase.TexasHoldemBonusInteractorIF, error) {
+			return usecase.RestoreTexasHoldemBonusInteractor(data, new(presenter.TexasHoldemBonusWebPresenter))
+		},
+		controller.NewTexasHoldemBonusWebControllerWithProvider)
 	games.RegisterKVGame("letitride", games.CategoryCasino,
 		func() usecase.LetItRideInteractorIF {
 			return usecase.NewLetItRideInteractor(domain.NewDefaultLetItRide(), new(presenter.LetItRideWebPresenter))

@@ -1,0 +1,8 @@
+{
+  "helpTitle": "Texas Hold'em Bonus Poker",
+  "helpBet": "  b <ante> [bonus]     bet (ante required, bonus side bet optional)",
+  "helpPlay": "  p                    play (place flop bet equal to 2x ante)",
+  "helpFold": "  f                    fold (forfeit ante)",
+  "helpCheck": "  c                    check (no additional bet on turn/river)",
+  "helpRaise": "  ra                   raise (place a bet equal to ante on turn/river)"
+}

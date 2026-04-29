@@ -5,6 +5,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   spanish21: { bg: 'bg-game-bg-green-bright', footer: 'bg-game-bg-green-bright-dark border-white/20' },
   baccarat: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   threecard: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  texasholdembonus: { bg: 'bg-game-bg-green-poker', footer: 'bg-game-bg-green-poker-dark border-white/20' },
   paigow: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   letitride: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   reddog: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },

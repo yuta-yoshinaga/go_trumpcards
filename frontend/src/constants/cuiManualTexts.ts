@@ -64,6 +64,7 @@ import spanish21 from '../../../docs/manual/cui/spanish21.md?raw';
 import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
 import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
+import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
@@ -82,6 +83,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
+  '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
   '/crazyeights': crazyeights,
   '/cribbage': cribbage,

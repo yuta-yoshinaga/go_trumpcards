@@ -63,6 +63,7 @@ import spanish21 from '../../../docs/manual/web/spanish21.md?raw';
 import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
+import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
@@ -81,6 +82,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
+  '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
   '/crazyeights': crazyeights,
   '/cribbage': cribbage,

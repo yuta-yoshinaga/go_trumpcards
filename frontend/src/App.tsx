@@ -67,6 +67,7 @@ import { Spanish21Page } from './pages/Spanish21Page';
 import { SpeedPage } from './pages/SpeedPage';
 import { SpiderPage } from './pages/SpiderPage';
 import { SpiteAndMalicePage } from './pages/SpiteAndMalicePage';
+import { TexasHoldemBonusPage } from './pages/TexasHoldemBonusPage';
 import { ThreeCardPage } from './pages/ThreeCardPage';
 import { TrashPage } from './pages/TrashPage';
 import { TriPeaksPage } from './pages/TriPeaksPage';
@@ -118,6 +119,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/spanish21': <Spanish21Page />,
   '/threecard': <ThreeCardPage />,
   '/caribbeanstud': <CaribbeanStudPage />,
+  '/texasholdembonus': <TexasHoldemBonusPage />,
   '/paigow': <PaiGowPage />,
   '/letitride': <LetItRidePage />,
   '/speed': <SpeedPage />,
