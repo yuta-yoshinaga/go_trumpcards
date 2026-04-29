@@ -115,12 +115,15 @@ func TestTrashDrawJokerAwaitsPlacement(t *testing.T) {
 // game must auto-place the wild instead of asking the user to pick — there
 // is no meaningful choice and the forced click breaks Trash's tempo.
 func TestTrashDrawWildAutoPlacesWithSingleEmptySlot(t *testing.T) {
-	t.Run("King wild auto-placed and chain continues", func(t *testing.T) {
+	t.Run("King wild auto-placed wins and discards the displaced card", func(t *testing.T) {
+		// Filling the only face-down slot completes the board, so isWin
+		// is always true on auto-placement (PR #1584 review). The
+		// displaced face-down card cannot continue the chain — it is
+		// pushed to the discard pile by the win path. We pin both
+		// invariants here: AwaitWild is skipped, GameOver is reached,
+		// and the displaced 5 lands on the discard pile.
 		tr := NewDefaultTrash()
 		tr.Reset()
-		// Positions 1-9 face-up; only position 10 is face-down. After the wild lands
-		// there, the displaced face-down card (a 5) is the new pending; with
-		// position 5 face-up it cannot place and the turn ends.
 		var slots [TrashSlotCnt]TrashSlot
 		for i := range TrashSlotCnt - 1 {
 			slots[i] = TrashSlot{Card: NewCard(CardDesignSpade, i+1, false), FaceUp: true}
@@ -137,6 +140,13 @@ func TestTrashDrawWildAutoPlacesWithSingleEmptySlot(t *testing.T) {
 		// Phase must NOT be AwaitWild — the forced-click was eliminated.
 		assert.NotEqual(t, TrashPhaseAwaitWild, tr.GetPhase(),
 			"auto-placement must skip the AwaitWild prompt")
+		// The single-slot auto-fill always completes the board, so the
+		// game ends and the displaced 5 is discarded.
+		assert.Equal(t, TrashPhaseGameOver, tr.GetPhase())
+		assert.Equal(t, TrashHumanIdx, tr.GetWinner())
+		require.NotNil(t, tr.GetDiscardTop())
+		assert.Equal(t, 5, tr.GetDiscardTop().GetValue(),
+			"displaced face-down card should land on the discard pile")
 	})
 
 	t.Run("Joker wild auto-placed and triggers win", func(t *testing.T) {

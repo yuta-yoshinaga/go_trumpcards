@@ -166,14 +166,15 @@ func (t *Trash) placeWildAt(idx int) {
 }
 
 // onlyEmptySlot returns the slot index (0..TrashSlotCnt-1) when the player
-// at idx has exactly one face-down slot left, or -1 if there are zero or
-// more than one. Used to gate auto-placement of wild cards (issue #1565):
+// at playerIdx has exactly one face-down slot left, or -1 if there are zero
+// or more than one. Used to gate auto-placement of wild cards (issue #1565):
 // with no empty slot we should never have reached this code path, and with
 // two or more we want the human to keep their tactical choice.
+//
+// Unexported and only called from resolveChain with t.current, which the
+// game state machine guarantees to be in [0, TrashPlayerCnt) — no bounds
+// guard needed (PR #1584 review).
 func (t *Trash) onlyEmptySlot(playerIdx int) int {
-	if playerIdx < 0 || playerIdx >= TrashPlayerCnt {
-		return -1
-	}
 	found := -1
 	for i, s := range t.players[playerIdx].Slots {
 		if s.FaceUp {
