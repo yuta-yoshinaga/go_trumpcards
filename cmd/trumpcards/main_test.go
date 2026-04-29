@@ -1211,6 +1211,7 @@ func TestApplyTrailingColorFlag(t *testing.T) {
 		name       string
 		args       []string
 		quiet      bool
+		noColorEnv string // NO_COLOR for this case; "" leaves unset
 		wantStdout bool
 		wantStderr bool
 		wantWarn   string
@@ -1237,11 +1238,59 @@ func TestApplyTrailingColorFlag(t *testing.T) {
 			quiet:      true,
 			wantStdout: true, wantStderr: true,
 		},
+		// PR #1583 review #3: missing edge cases for trailing --color.
+		{
+			// Case-insensitive matching must work in trailing position too,
+			// matching applyColorMode's `ALWAYS` test. See review issue #3.
+			name:       "--color=NEVER (case-insensitive)",
+			args:       []string{"--color=NEVER"},
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// NO_COLOR env precedence applies in trailing position too —
+			// users running `trumpcards <game> --color=auto` with NO_COLOR
+			// set must still get color off (POSIX no-color spec).
+			name:       "--color=auto with NO_COLOR set forces off",
+			args:       []string{"--color=auto"},
+			noColorEnv: "1",
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// NO_COLOR env beats --color=always even in trailing position
+			// (matches the top-level applyColorMode precedence; PR #1583
+			// review #2 — single SSoT for resolution).
+			name:       "--color=always with NO_COLOR set forces off",
+			args:       []string{"--color=always"},
+			noColorEnv: "1",
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// Within trailing args, --no-color must beat --color=always
+			// regardless of token order, matching top-level precedence.
+			// Pre-fix this returned color ON because the second flag won.
+			// See PR #1583 review #2.
+			name:       "--no-color beats --color=always regardless of order",
+			args:       []string{"--color=always", "--no-color"},
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// Reverse order still gives the same answer.
+			name:       "--no-color beats --color=always (reverse order)",
+			args:       []string{"--no-color", "--color=always"},
+			wantStdout: false, wantStderr: false,
+		},
 	}
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			color.SetStdoutColor(true)
 			color.SetStderrColor(true)
+			if tt.noColorEnv == "" {
+				_ = os.Unsetenv("NO_COLOR")
+			} else {
+				_ = os.Setenv("NO_COLOR", tt.noColorEnv)
+			}
+			t.Cleanup(func() { _ = os.Unsetenv("NO_COLOR") })
+
 			var stderr bytes.Buffer
 			rest := applyTrailingGlobalFlags(tt.args, tt.quiet, &stderr)
 			if len(rest) != 0 {

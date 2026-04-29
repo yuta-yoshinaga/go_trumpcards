@@ -644,15 +644,33 @@ func updateExitCode(err error) int {
 	}
 }
 
-// applyTrailingGlobalFlags scans args for global flags (`--lang`, `--no-color`)
-// that landed after the game name because Go's flag package stops parsing at
-// the first positional argument. Each recognized flag is applied to the runtime
-// (i18n locale / color streams) and stripped from the returned slice so the
-// caller's "extra args" warning fires only for genuinely unknown trailing
-// tokens. Unsupported `--lang` values fall back to the existing locale and emit
+// applyTrailingGlobalFlags scans args for global flags (`--lang`,
+// `--no-color`, `--color`, `--quiet`/`-q`) that landed after the game
+// name because Go's flag package stops parsing at the first positional
+// argument. Each recognized flag is applied to the runtime (i18n locale
+// / color streams) and stripped from the returned slice so the caller's
+// "extra args" warning fires only for genuinely unknown trailing tokens.
+// Unsupported `--lang` values fall back to the existing locale and emit
 // the usual cliUnsupportedLang warning on stderr (suppressed when quiet).
+//
+// Color resolution is deferred to the end of the scan and dispatched
+// through `applyColorMode` (the SSoT) so the precedence rule matches the
+// top-level flag exactly: --no-color (or --color=never) beats
+// --color=always regardless of token order, and NO_COLOR env beats
+// everything (PR #1583 review). An invalid trailing --color value emits
+// the localized warning but does NOT abort the launched session — the
+// ambient state is already valid and a late typo shouldn't kill a game
+// that's about to run; applyColorMode's exit code is therefore
+// intentionally discarded here.
 func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []string {
 	rest := make([]string, 0, len(args))
+	// Accumulate color flags across the entire scan so precedence matches
+	// applyColorMode's documented order rather than depending on which
+	// flag the user wrote last. trailingNoColor stays false unless
+	// --no-color is present (or --no-color=true); --no-color=false is
+	// consumed silently with no effect.
+	var trailingNoColor, haveTrailingColor bool
+	var trailingColor string
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		if a == "--" {
@@ -709,39 +727,28 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 				_, _ = fmt.Fprintln(stderr, i18n.T("cliSupportedLangs"))
 			}
 		case haveNoColor:
-			color.SetStdoutColor(false)
-			color.SetStderrColor(false)
+			trailingNoColor = true
 		case haveColor:
-			// Trailing `--color=...` honors the same NO_COLOR precedence as
-			// the top-level flag (see applyColorMode); an unrecognized value
-			// falls back to the historical auto-detect rather than aborting,
-			// because the ambient state is already valid and we don't want a
-			// late typo to terminate a launched game.
-			switch strings.ToLower(strings.TrimSpace(colorVal)) {
-			case "always":
-				if os.Getenv("NO_COLOR") == "" {
-					color.SetStdoutColor(true)
-					color.SetStderrColor(true)
-				}
-			case "never":
-				color.SetStdoutColor(false)
-				color.SetStderrColor(false)
-			case "auto", "":
-				if os.Getenv("NO_COLOR") != "" {
-					color.SetStdoutColor(false)
-					color.SetStderrColor(false)
-				} else {
-					color.SetStdoutColor(term.IsTerminal(int(os.Stdout.Fd())))
-					color.SetStderrColor(term.IsTerminal(int(os.Stderr.Fd())))
-				}
-			default:
-				if !quiet {
-					_, _ = fmt.Fprintln(stderr, i18n.Tf("cliInvalidColorMode", "mode", colorVal))
-				}
-			}
+			haveTrailingColor = true
+			trailingColor = colorVal
 		case !consumed:
 			rest = append(rest, a)
 		}
+	}
+	// Single delegated color resolution. Skipping the call when neither
+	// flag was seen preserves the "trailing args without color flags
+	// don't change anything" contract — the top-level applyColorMode
+	// already ran in run() at startup and its result must remain.
+	if haveTrailingColor || trailingNoColor {
+		errSink := io.Discard
+		if !quiet {
+			errSink = stderr
+		}
+		mode := trailingColor
+		if !haveTrailingColor {
+			mode = "auto" // --no-color alone with no --color value
+		}
+		_, _ = applyColorMode(mode, trailingNoColor, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), errSink)
 	}
 	return rest
 }
@@ -796,8 +803,9 @@ OPTIONS:
                     auto:    enable when stdout/stderr is a TTY (per stream)
                     always:  force-enable even when piped (e.g. for tee or less -R)
                     never:   force-disable
-                    Matches git/ls/grep convention. Overrides --no-color.
-                    NO_COLOR=<any value> always wins (https://no-color.org/).
+                    Matches git/ls/grep convention. Use instead of --no-color.
+                    Precedence: NO_COLOR env > --color=never (or --no-color)
+                    > --color=always > --color=auto (https://no-color.org/).
   --no-color        DEPRECATED alias for --color=never. Will be removed in a
                     future release; prefer --color=never.
   -V, --version     Show version information
