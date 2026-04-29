@@ -63,11 +63,7 @@ func (p *ScorpionWebPresenter) ActionLogOutput(s interfaces.ScorpionGame) string
 // buildBase は共通フィールドを詰めたレスポンスオブジェクトを返す
 func (p *ScorpionWebPresenter) buildBase(s interfaces.ScorpionGame) *controller.ScorpionWebOutput {
 	resObj := new(controller.ScorpionWebOutput)
-	resObj.Phase = int(s.GetPhase())
-	resObj.MoveCount = s.GetMoveCount()
-	resObj.CanUndo = s.CanUndo()
-	resObj.IsStalemate = s.IsStalemate()
-	resObj.UndoToEscape = s.UndoToEscape()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, s, int(s.GetPhase()))
 	resObj.StockCount = s.GetStockCount()
 	resObj.CompletedSuits = s.GetCompletedSuits()
 

@@ -38,15 +38,11 @@ type PyramidWebOutputHint struct {
 
 // PyramidWebOutput ピラミッドWebアウトプット
 type PyramidWebOutput struct {
-	Pyramid      [][]*PyramidWebOutputCard `json:"pyramid"`
-	StockCount   int                       `json:"stockCount"`
-	Waste        []*WebOutputCard          `json:"waste"`
-	Phase        int                       `json:"phase"`
-	MoveCount    int                       `json:"moveCount"`
-	CanUndo      bool                      `json:"canUndo"`
-	IsStalemate  bool                      `json:"isStalemate"`
-	UndoToEscape int                       `json:"undoToEscape"`
-	Hint         *PyramidWebOutputHint     `json:"hint,omitempty"`
+	Pyramid    [][]*PyramidWebOutputCard `json:"pyramid"`
+	StockCount int                       `json:"stockCount"`
+	Waste      []*WebOutputCard          `json:"waste"`
+	Hint       *PyramidWebOutputHint     `json:"hint,omitempty"`
+	SolitaireWebOutputBase
 	WebOutputBase
 }
 
