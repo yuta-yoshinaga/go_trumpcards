@@ -14,11 +14,7 @@ type FreeCellWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *FreeCellWebPresenter) Output(f interfaces.FreeCellGame, lastErr error) string {
 	resObj := new(controller.FreeCellWebOutput)
-	resObj.Phase = int(f.GetPhase())
-	resObj.MoveCount = f.GetMoveCount()
-	resObj.CanUndo = f.CanUndo()
-	resObj.IsStalemate = f.IsStalemate()
-	resObj.UndoToEscape = f.UndoToEscape()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, f, int(f.GetPhase()))
 
 	// タブロー
 	tableau := f.GetTableau()
@@ -81,10 +77,7 @@ func (p *FreeCellWebPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 func (p *FreeCellWebPresenter) HintOutput(f interfaces.FreeCellGame) string {
 	hint := f.GetHint()
 	resObj := new(controller.FreeCellWebOutput)
-	resObj.Phase = int(f.GetPhase())
-	resObj.MoveCount = f.GetMoveCount()
-	resObj.CanUndo = f.CanUndo()
-	resObj.UndoToEscape = f.UndoToEscape()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, f, int(f.GetPhase()))
 	resObj.FreeCells = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)

@@ -167,6 +167,7 @@ func TestTriPeaksWebPresenterHintOutput(t *testing.T) {
 		tg.On("GetMoveCount").Return(0)
 		tg.On("GetStockCount").Return(23)
 		tg.On("CanUndo").Return(false)
+		tg.On("IsStalemate").Return(false)
 		tg.On("UndoToEscape").Return(0)
 
 		p := &TriPeaksWebPresenter{}
@@ -185,6 +186,7 @@ func TestTriPeaksWebPresenterHintOutput(t *testing.T) {
 		tg.On("GetMoveCount").Return(0)
 		tg.On("GetStockCount").Return(0)
 		tg.On("CanUndo").Return(false)
+		tg.On("IsStalemate").Return(false)
 		tg.On("UndoToEscape").Return(0)
 
 		p := &TriPeaksWebPresenter{}

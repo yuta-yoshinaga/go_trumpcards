@@ -29,15 +29,11 @@ type TriPeaksWebOutputHint struct {
 
 // TriPeaksWebOutput トリピークスWebアウトプット
 type TriPeaksWebOutput struct {
-	Layout       [][]*TriPeaksWebOutputCard `json:"layout"`
-	StockCount   int                        `json:"stockCount"`
-	Waste        []*WebOutputCard           `json:"waste"`
-	Phase        int                        `json:"phase"`
-	MoveCount    int                        `json:"moveCount"`
-	CanUndo      bool                       `json:"canUndo"`
-	IsStalemate  bool                       `json:"isStalemate"`
-	UndoToEscape int                        `json:"undoToEscape"`
-	Hint         *TriPeaksWebOutputHint     `json:"hint,omitempty"`
+	Layout     [][]*TriPeaksWebOutputCard `json:"layout"`
+	StockCount int                        `json:"stockCount"`
+	Waste      []*WebOutputCard           `json:"waste"`
+	Hint       *TriPeaksWebOutputHint     `json:"hint,omitempty"`
+	SolitaireWebOutputBase
 	WebOutputBase
 }
 

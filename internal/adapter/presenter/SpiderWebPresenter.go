@@ -14,15 +14,11 @@ type SpiderWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *SpiderWebPresenter) Output(s interfaces.SpiderGame, lastErr error) string {
 	resObj := new(controller.SpiderWebOutput)
-	resObj.Phase = int(s.GetPhase())
-	resObj.MoveCount = s.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, s, int(s.GetPhase()))
 	resObj.StockCount = s.GetStockCount()
 	resObj.CompletedSuits = s.GetCompletedSuits()
-	resObj.CanUndo = s.CanUndo()
 	resObj.Score = s.GetScore()
 	resObj.Difficulty = int(s.GetDifficulty())
-	resObj.IsStalemate = s.IsStalemate()
-	resObj.UndoToEscape = s.UndoToEscape()
 
 	// タブロー
 	tableau := s.GetTableau()
@@ -76,15 +72,11 @@ func (p *SpiderWebPresenter) Output(s interfaces.SpiderGame, lastErr error) stri
 func (p *SpiderWebPresenter) HintOutput(s interfaces.SpiderGame) string {
 	hint := s.GetHint()
 	resObj := new(controller.SpiderWebOutput)
-	resObj.Phase = int(s.GetPhase())
-	resObj.MoveCount = s.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, s, int(s.GetPhase()))
 	resObj.StockCount = s.GetStockCount()
 	resObj.CompletedSuits = s.GetCompletedSuits()
-	resObj.CanUndo = s.CanUndo()
 	resObj.Score = s.GetScore()
 	resObj.Difficulty = int(s.GetDifficulty())
-	resObj.IsStalemate = s.IsStalemate()
-	resObj.UndoToEscape = s.UndoToEscape()
 	resObj.Tableau = make([][]*controller.SpiderWebOutputTableauCard, 0)
 
 	if hint != nil {

@@ -165,6 +165,7 @@ func TestGolfWebPresenterHintOutput(t *testing.T) {
 		gg.On("GetMoveCount").Return(0)
 		gg.On("GetStockCount").Return(16)
 		gg.On("CanUndo").Return(false)
+		gg.On("IsStalemate").Return(false)
 		gg.On("UndoToEscape").Return(0)
 
 		p := &GolfWebPresenter{}
@@ -183,6 +184,7 @@ func TestGolfWebPresenterHintOutput(t *testing.T) {
 		gg.On("GetMoveCount").Return(0)
 		gg.On("GetStockCount").Return(0)
 		gg.On("CanUndo").Return(false)
+		gg.On("IsStalemate").Return(false)
 		gg.On("UndoToEscape").Return(0)
 
 		p := &GolfWebPresenter{}

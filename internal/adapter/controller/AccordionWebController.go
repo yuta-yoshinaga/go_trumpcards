@@ -35,14 +35,10 @@ type AccordionWebOutputHint struct {
 
 // AccordionWebOutput アコーディオンWebアウトプット
 type AccordionWebOutput struct {
-	Piles        []*AccordionWebOutputPile `json:"piles"`
-	PileCount    int                       `json:"pileCount"`
-	Phase        int                       `json:"phase"`
-	MoveCount    int                       `json:"moveCount"`
-	CanUndo      bool                      `json:"canUndo"`
-	IsStalemate  bool                      `json:"isStalemate"`
-	UndoToEscape int                       `json:"undoToEscape"`
-	Hint         *AccordionWebOutputHint   `json:"hint,omitempty"`
+	Piles     []*AccordionWebOutputPile `json:"piles"`
+	PileCount int                       `json:"pileCount"`
+	Hint      *AccordionWebOutputHint   `json:"hint,omitempty"`
+	SolitaireWebOutputBase
 	WebOutputBase
 }
 

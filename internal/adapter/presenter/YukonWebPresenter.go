@@ -14,11 +14,7 @@ type YukonWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *YukonWebPresenter) Output(y interfaces.YukonGame, lastErr error) string {
 	resObj := new(controller.YukonWebOutput)
-	resObj.Phase = int(y.GetPhase())
-	resObj.MoveCount = y.GetMoveCount()
-	resObj.CanUndo = y.CanUndo()
-	resObj.IsStalemate = y.IsStalemate()
-	resObj.UndoToEscape = y.UndoToEscape()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, y, int(y.GetPhase()))
 
 	// タブロー
 	tableau := y.GetTableau()
@@ -80,11 +76,7 @@ func (p *YukonWebPresenter) Output(y interfaces.YukonGame, lastErr error) string
 func (p *YukonWebPresenter) HintOutput(y interfaces.YukonGame) string {
 	hint := y.GetHint()
 	resObj := new(controller.YukonWebOutput)
-	resObj.Phase = int(y.GetPhase())
-	resObj.MoveCount = y.GetMoveCount()
-	resObj.CanUndo = y.CanUndo()
-	resObj.IsStalemate = y.IsStalemate()
-	resObj.UndoToEscape = y.UndoToEscape()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, y, int(y.GetPhase()))
 	resObj.Tableau = make([][]*controller.KlondikeWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
 
