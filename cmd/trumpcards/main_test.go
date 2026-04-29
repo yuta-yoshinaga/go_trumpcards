@@ -1260,6 +1260,229 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 	}
 }
 
+// TestApplyColorMode verifies issue #1554: the new tristate --color flag
+// resolves to per-stream color settings with the documented precedence
+// (NO_COLOR > --color=never / --no-color > --color=always > auto). The
+// helper is the SSoT for color resolution; the run() integration relies
+// on it for the explicit-flag path, so any drift here would silently
+// change CLI behavior.
+func TestApplyColorMode(t *testing.T) {
+	// stdout-non-TTY/stderr-non-TTY: under `go test` both are pipes.
+	const nonTTY = uintptr(0xDEADBEEF) // any value that IsTerminal returns false for
+	tests := []struct {
+		name        string
+		mode        string
+		noColorFlag bool
+		noColorEnv  string
+		wantStdout  bool
+		wantStderr  bool
+		wantOK      bool
+		wantExit    int
+		wantErrSub  string
+	}{
+		{
+			name:       "auto + non-TTY -> off",
+			mode:       "auto",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "always -> force on",
+			mode:       "always",
+			wantStdout: true, wantStderr: true, wantOK: true,
+		},
+		{
+			name:       "never -> force off",
+			mode:       "never",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "ALWAYS (case-insensitive) -> on",
+			mode:       "ALWAYS",
+			wantStdout: true, wantStderr: true, wantOK: true,
+		},
+		{
+			name:       "  auto  (trim whitespace) -> off",
+			mode:       "  auto  ",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:        "--no-color overrides --color=always",
+			mode:        "always",
+			noColorFlag: true,
+			wantStdout:  false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "NO_COLOR env beats --color=always (POSIX spec)",
+			mode:       "always",
+			noColorEnv: "1",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "empty mode treated as auto",
+			mode:       "",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "invalid mode -> exit 2 with i18n error",
+			mode:       "rainbow",
+			wantOK:     false,
+			wantExit:   2,
+			wantErrSub: "rainbow",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// Reset to a known baseline before each subtest.
+			color.SetStdoutColor(true)
+			color.SetStderrColor(true)
+			var stderr bytes.Buffer
+			code, ok := applyColorMode(tc.mode, tc.noColorFlag, tc.noColorEnv, nonTTY, nonTTY, &stderr)
+			if ok != tc.wantOK {
+				t.Errorf("ok=%v, want %v (stderr=%q)", ok, tc.wantOK, stderr.String())
+			}
+			if code != tc.wantExit {
+				t.Errorf("exit=%d, want %d", code, tc.wantExit)
+			}
+			if tc.wantErrSub != "" && !strings.Contains(stderr.String(), tc.wantErrSub) {
+				t.Errorf("stderr %q does not contain %q", stderr.String(), tc.wantErrSub)
+			}
+			// Only assert color state when the helper succeeded.
+			if !ok {
+				return
+			}
+			gotStdoutColor := !color.NoColorStdout()
+			gotStderrColor := !color.NoColorStderr()
+			if gotStdoutColor != tc.wantStdout {
+				t.Errorf("stdout color = %v, want %v", gotStdoutColor, tc.wantStdout)
+			}
+			if gotStderrColor != tc.wantStderr {
+				t.Errorf("stderr color = %v, want %v", gotStderrColor, tc.wantStderr)
+			}
+		})
+	}
+}
+
+// TestApplyTrailingColorFlag verifies issue #1554: trailing `--color=...` (after
+// the game name) is honored just like `--lang` and `--no-color`. An invalid
+// trailing value is a soft warning rather than an exit-2, because the game has
+// already been resolved and we don't want a typo to abort a launched session.
+func TestApplyTrailingColorFlag(t *testing.T) {
+	origNoColor, hadNoColor := os.LookupEnv("NO_COLOR")
+	defer func() {
+		if hadNoColor {
+			_ = os.Setenv("NO_COLOR", origNoColor)
+		} else {
+			_ = os.Unsetenv("NO_COLOR")
+		}
+	}()
+	_ = os.Unsetenv("NO_COLOR")
+
+	cases := []struct {
+		name       string
+		args       []string
+		quiet      bool
+		noColorEnv string // NO_COLOR for this case; "" leaves unset
+		wantStdout bool
+		wantStderr bool
+		wantWarn   string
+	}{
+		{
+			name:       "--color=never trailing flag",
+			args:       []string{"--color=never"},
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			name:       "--color always trailing (space-separated)",
+			args:       []string{"--color", "always"},
+			wantStdout: true, wantStderr: true,
+		},
+		{
+			name:       "invalid value warns (loud) but does not abort",
+			args:       []string{"--color=rainbow"},
+			wantStdout: true, wantStderr: true, // unchanged
+			wantWarn: "rainbow",
+		},
+		{
+			name:       "invalid value silenced under quiet",
+			args:       []string{"--color=rainbow"},
+			quiet:      true,
+			wantStdout: true, wantStderr: true,
+		},
+		// PR #1583 review #3: missing edge cases for trailing --color.
+		{
+			// Case-insensitive matching must work in trailing position too,
+			// matching applyColorMode's `ALWAYS` test. See review issue #3.
+			name:       "--color=NEVER (case-insensitive)",
+			args:       []string{"--color=NEVER"},
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// NO_COLOR env precedence applies in trailing position too —
+			// users running `trumpcards <game> --color=auto` with NO_COLOR
+			// set must still get color off (POSIX no-color spec).
+			name:       "--color=auto with NO_COLOR set forces off",
+			args:       []string{"--color=auto"},
+			noColorEnv: "1",
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// NO_COLOR env beats --color=always even in trailing position
+			// (matches the top-level applyColorMode precedence; PR #1583
+			// review #2 — single SSoT for resolution).
+			name:       "--color=always with NO_COLOR set forces off",
+			args:       []string{"--color=always"},
+			noColorEnv: "1",
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// Within trailing args, --no-color must beat --color=always
+			// regardless of token order, matching top-level precedence.
+			// Pre-fix this returned color ON because the second flag won.
+			// See PR #1583 review #2.
+			name:       "--no-color beats --color=always regardless of order",
+			args:       []string{"--color=always", "--no-color"},
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// Reverse order still gives the same answer.
+			name:       "--no-color beats --color=always (reverse order)",
+			args:       []string{"--no-color", "--color=always"},
+			wantStdout: false, wantStderr: false,
+		},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			color.SetStdoutColor(true)
+			color.SetStderrColor(true)
+			if tt.noColorEnv == "" {
+				_ = os.Unsetenv("NO_COLOR")
+			} else {
+				_ = os.Setenv("NO_COLOR", tt.noColorEnv)
+			}
+			t.Cleanup(func() { _ = os.Unsetenv("NO_COLOR") })
+
+			var stderr bytes.Buffer
+			rest := applyTrailingGlobalFlags(tt.args, tt.quiet, &stderr)
+			if len(rest) != 0 {
+				t.Errorf("trailing color flag should be consumed; got rest=%v", rest)
+			}
+			gotStdoutColor := !color.NoColorStdout()
+			gotStderrColor := !color.NoColorStderr()
+			if gotStdoutColor != tt.wantStdout || gotStderrColor != tt.wantStderr {
+				t.Errorf("stdout/stderr color = %v/%v, want %v/%v",
+					gotStdoutColor, gotStderrColor, tt.wantStdout, tt.wantStderr)
+			}
+			if tt.wantWarn == "" {
+				if stderr.Len() != 0 {
+					t.Errorf("expected no warning; got %q", stderr.String())
+				}
+			} else if !strings.Contains(stderr.String(), tt.wantWarn) {
+				t.Errorf("stderr missing %q: got %q", tt.wantWarn, stderr.String())
+			}
+		})
+	}
+}
+
 // TestRunVersionSubcommand verifies issue #1552: `trumpcards version` is
 // equivalent to the `--version` flag, and `trumpcards version --short` is
 // equivalent to `--version-short`. The subcommand form matters because it
@@ -1403,5 +1626,17 @@ func TestBuildHelpTextMentionsVersionSubcommand(t *testing.T) {
 	helpText := buildHelpText()
 	if !strings.Contains(helpText, "version") {
 		t.Errorf("help text should advertise the 'version' subcommand; got:\n%s", helpText)
+	}
+}
+
+// TestBuildHelpTextDocumentsColorTristate verifies issue #1554: the
+// top-level --help advertises --color=auto|always|never so the new option
+// is discoverable without reading the source.
+func TestBuildHelpTextDocumentsColorTristate(t *testing.T) {
+	helpText := buildHelpText()
+	for _, want := range []string{"--color", "auto", "always", "never", "DEPRECATED"} {
+		if !strings.Contains(helpText, want) {
+			t.Errorf("help text missing %q; got:\n%s", want, helpText)
+		}
 	}
 }
