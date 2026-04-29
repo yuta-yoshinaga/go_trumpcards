@@ -1,82 +1,30 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { type SpiderConfigInput, type SpiderMoveZone, spiderApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { SpiderHint } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Spider Solitaire game state, source selection, hints, and moves. */
 export function useSpiderGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(spiderApi.exec);
   const [selectedSource, setSelectedSource] = useState<SpiderMoveZone | null>(null);
-  const [hint, setHint] = useState<SpiderHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
 
-  const apiExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
+  const base = useSolitaireGameBase<
+    Awaited<ReturnType<typeof spiderApi.exec>>,
+    Parameters<typeof spiderApi.exec>,
+    SpiderHint
+  >(spiderApi.exec, {
+    onClearSelection,
+    hintApi: () => spiderApi.exec('hint'),
+  });
 
-  useEffect(() => {
-    apiExec('reset');
-  }, [apiExec]);
-
-  const handleDeal = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    apiExec('deal');
-  }, [apiExec]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    apiExec('reset');
-  }, [apiExec]);
-
+  const handleDeal = useCallback(() => base.runAction('deal'), [base.runAction]);
   const handleResetWithConfig = useCallback(
-    (config: SpiderConfigInput) => {
-      setSelectedSource(null);
-      setHint(null);
-      apiExec('reset', undefined, undefined, config);
-    },
-    [apiExec],
+    (config: SpiderConfigInput) => base.runAction('reset', undefined, undefined, config),
+    [base.runAction],
   );
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    apiExec('giveup');
-  }, [apiExec]);
-
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await spiderApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, []);
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    apiExec('autocomplete');
-  }, [apiExec, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    apiExec('undo');
-  }, [apiExec]);
-
-  /** Undo N moves at once to escape a stalemate. */
   const handleUndoEscape = useCallback(
-    (n: number) => {
-      setSelectedSource(null);
-      setHint(null);
-      apiExec('undo_n', undefined, undefined, undefined, n);
-    },
-    [apiExec],
+    (n: number) => base.runAction('undo_n', undefined, undefined, undefined, n),
+    [base.runAction],
   );
 
   const handleSelectSource = useCallback((zone: SpiderMoveZone) => {
@@ -91,32 +39,32 @@ export function useSpiderGame() {
   const handleSelectTarget = useCallback(
     (zone: SpiderMoveZone) => {
       if (!selectedSource) return;
-      setHint(null);
-      apiExec('move', selectedSource, zone);
+      base.setHint(null);
+      void base.apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, apiExec],
+    [selectedSource, base],
   );
 
   return {
-    state,
-    loading,
-    error,
-    exec: rawExec,
-    hintError,
+    state: base.state,
+    loading: base.loading,
+    error: base.error,
+    exec: base.apiCall,
+    hintError: base.hintError,
     selectedSource,
-    hint,
+    hint: base.hint,
     handleDeal,
-    handleReset,
+    handleReset: base.handleReset,
     handleResetWithConfig,
-    handleGiveUp,
-    handleHint,
-    handleAutoComplete,
-    handleUndo,
+    handleGiveUp: base.handleGiveUp,
+    handleHint: base.handleHint,
+    handleAutoComplete: base.handleAutoComplete,
+    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
-    isAutoCompleting,
-    retry,
+    isAutoCompleting: base.isAutoCompleting,
+    retry: base.retry,
   };
 }

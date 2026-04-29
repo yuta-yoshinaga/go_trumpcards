@@ -1,80 +1,46 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { tripeaksApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { TriPeaksHint } from '../types/card';
-import { useGameApi } from './useGameApi';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages TriPeaks game state, hints, and card removal actions. */
 export function useTriPeaksGame() {
-  const { state, loading, error, exec, retry } = useGameApi(tripeaksApi.exec);
-  const [hint, setHint] = useState<TriPeaksHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
+  const base = useSolitaireGameBase<
+    Awaited<ReturnType<typeof tripeaksApi.exec>>,
+    Parameters<typeof tripeaksApi.exec>,
+    TriPeaksHint
+  >(tripeaksApi.exec, {
+    hintApi: () => tripeaksApi.exec('hint'),
+  });
 
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
-
-  const handleDraw = useCallback(() => {
-    setHint(null);
-    exec('draw');
-  }, [exec]);
-
-  const handleReset = useCallback(() => {
-    setHint(null);
-    exec('reset');
-  }, [exec]);
-
-  const handleGiveUp = useCallback(() => {
-    setHint(null);
-    exec('giveup');
-  }, [exec]);
-
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await tripeaksApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, []);
-
-  const handleUndo = useCallback(() => {
-    setHint(null);
-    exec('undo');
-  }, [exec]);
-
-  /** Batch undo to escape stalemate. */
+  const handleDraw = useCallback(() => base.runAction('draw'), [base.runAction]);
   const handleUndoEscape = useCallback(
-    (n: number) => {
-      setHint(null);
-      exec('undo_n', undefined, undefined, n);
-    },
-    [exec],
+    (n: number) => base.runAction('undo_n', undefined, undefined, n),
+    [base.runAction],
   );
 
   const handleSelectCard = useCallback(
     (row: number, col: number) => {
-      setHint(null);
-      exec('remove', row, col);
+      base.setHint(null);
+      void base.apiCall('remove', row, col);
     },
-    [exec],
+    [base],
   );
 
   return {
-    state,
-    loading,
-    error,
-    exec,
-    hintError,
-    hint,
+    state: base.state,
+    loading: base.loading,
+    error: base.error,
+    exec: base.apiCall,
+    hintError: base.hintError,
+    hint: base.hint,
     handleDraw,
-    handleReset,
-    handleGiveUp,
-    handleHint,
-    handleUndo,
+    handleReset: base.handleReset,
+    handleGiveUp: base.handleGiveUp,
+    handleHint: base.handleHint,
+    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectCard,
-    retry,
+    retry: base.retry,
   };
 }
