@@ -212,11 +212,13 @@ func TestSpiteAndMaliceWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("playing", func(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
 		g.On("GetPhase").Return(domain.SpiteAndMalicePhasePlaying)
+		g.On("GetGameEndFlag").Return(false)
 		assert.NotEmpty(t, new(SpiteAndMaliceWebPresenter).ActionLogOutput(g))
 	})
 	t.Run("game over", func(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
 		g.On("GetPhase").Return(domain.SpiteAndMalicePhaseGameOver)
+		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "playHand"}})
 		assert.NotEmpty(t, new(SpiteAndMaliceWebPresenter).ActionLogOutput(g))
 	})

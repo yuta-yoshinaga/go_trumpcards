@@ -414,6 +414,9 @@ func (ft *FortyThieves) GetFoundation() [FortyThievesFoundationCnt][]*Card { ret
 // GetActionLog 棋譜取得
 func (ft *FortyThieves) GetActionLog() []*ActionLogEntry { return ft.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (ft *FortyThieves) GetGameEndFlag() bool { return ft.phase != FortyThievesPhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (ft *FortyThieves) IsStalemate() bool { return ft.isStalemate }
 

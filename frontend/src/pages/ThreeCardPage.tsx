@@ -183,7 +183,7 @@ function ThreeCardPageContent() {
               <div className="flex flex-col items-center justify-center py-4 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
                 <details className="bg-black/30 rounded-lg w-full max-w-sm">
-                  <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
                   <div className="px-4 pb-3 text-ds-text-muted text-sm space-y-2">
@@ -269,7 +269,7 @@ function ThreeCardPageContent() {
 
             {/* Payout breakdown */}
             {isEndPhase && (
-              <div className="text-white text-center text-sm mb-2" data-testid="payout-breakdown">
+              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
                 {state.antePayout !== 0 && (
                   <div>
                     {t('payout.ante')}: {state.antePayout}
@@ -323,7 +323,7 @@ function ThreeCardPageContent() {
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="tc-bet-controls">
                 <div className="flex items-center gap-2">
-                  <label htmlFor="threecard-ante-amount" className="text-white text-sm">
+                  <label htmlFor="threecard-ante-amount" className="text-ds-text-primary text-sm">
                     {t('label.ante')}
                   </label>
                   <input
@@ -338,7 +338,7 @@ function ThreeCardPageContent() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <label htmlFor="threecard-pairplus-amount" className="text-white text-sm">
+                  <label htmlFor="threecard-pairplus-amount" className="text-ds-text-primary text-sm">
                     {t('label.pairPlus')}
                   </label>
                   <input

@@ -610,7 +610,7 @@ function KlondikePageContent() {
                   handleResetWithConfig({ drawCount: n, scoringMode: scoringModeSetting });
                   resetTimer();
                 }}
-                className="bg-ds-surface-elevated text-white text-sm rounded px-2 py-1"
+                className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
                 aria-label={t('drawMode')}
               >
                 <option value={1}>{t('drawMode1')}</option>
@@ -629,7 +629,7 @@ function KlondikePageContent() {
                   handleResetWithConfig({ drawCount: drawCountSetting, scoringMode: n });
                   resetTimer();
                 }}
-                className="bg-ds-surface-elevated text-white text-sm rounded px-2 py-1"
+                className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
                 aria-label={t('scoringMode')}
               >
                 <option value={0}>{t('scoringNone')}</option>

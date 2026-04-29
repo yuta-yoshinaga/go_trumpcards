@@ -311,7 +311,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               <div className="flex flex-col items-center justify-center py-6 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
                 <details className="bg-black/30 rounded-lg w-full max-w-sm">
-                  <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
                   <ul className="text-ds-text-muted text-sm space-y-1 px-4 pb-3">
@@ -339,11 +339,11 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
             )}
             {phase !== BjPhase.BET && (
               <div data-tutorial="bj-dealer-hand">
-                <h2 className="text-white">
+                <h2 className="text-ds-text-primary">
                   {t('dealerHand')}
                   {dealerHitsSoft17 ? ' (H17)' : ' (S17)'}
                 </h2>
-                <p className="text-white">
+                <p className="text-ds-text-primary">
                   {t('score')} {state.dealer.score ? state.dealer.score : ''}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -412,7 +412,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               <div className="mb-2" data-tutorial="bj-player-hand">
                 {hands.map((hand, handIndex) => (
                   <div key={`hand-${handIndex}`} className="mb-2">
-                    <h2 className="text-white mt-0 mb-0.5">
+                    <h2 className="text-ds-text-primary mt-0 mb-0.5">
                       {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
                       {handIndex === currentHandIdx &&
                         (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) &&
@@ -424,7 +424,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                         surrendered={hand.surrendered}
                       />
                     </h2>
-                    <p className="text-white mt-0 mb-0.5">
+                    <p className="text-ds-text-primary mt-0 mb-0.5">
                       {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -541,7 +541,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                     />
                   </div>
                   <div className="flex items-center justify-center gap-2 mt-2">
-                    <label htmlFor="bj-auto-advance" className="text-white text-sm">
+                    <label htmlFor="bj-auto-advance" className="text-ds-text-primary text-sm">
                       {t('autoAdvance')}
                     </label>
                     <select

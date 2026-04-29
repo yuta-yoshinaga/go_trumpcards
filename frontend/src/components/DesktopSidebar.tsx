@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
 import { useFavoriteGames } from '../hooks/useFavoriteGames';
+import { useGameRouteSearch } from '../hooks/useGameRouteSearch';
 import { focusRingWhite } from '../styles/buttonStyles';
+import { NavLangToggle } from './nav/NavLangToggle';
 import { SoundToggle } from './SoundToggle';
 import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
 
@@ -14,30 +16,10 @@ const routeByPath = new Map(gameRoutes.map((r) => [r.path, r]));
 /** Persistent left sidebar navigation for large desktop (≥1024px) with search, favorites, categories, and tutorial progress. */
 export function DesktopSidebar() {
   const { pathname } = useLocation();
-  const { t, i18n } = useTranslation('common');
-  const currentLang = i18n.language;
+  const { t } = useTranslation('common');
   const [searchTerm, setSearchTerm] = useState('');
   const { favorites, isFavorite, toggleFavorite } = useFavoriteGames();
-
-  /** Pre-compute bilingual names for search filtering. */
-  const searchableRoutes = useMemo(
-    () =>
-      gameRoutes.map((route) => ({
-        route,
-        ja: i18n.t(route.labelKey, { lng: 'ja', ns: 'common' }).toLowerCase(),
-        en: i18n.t(route.labelKey, { lng: 'en', ns: 'common' }).toLowerCase(),
-      })),
-    [i18n],
-  );
-
-  /** Filter game routes by bilingual name match. */
-  const filteredPaths = useMemo(() => {
-    if (!searchTerm) return null;
-    const lower = searchTerm.toLowerCase();
-    return new Set(
-      searchableRoutes.filter(({ ja, en }) => ja.includes(lower) || en.includes(lower)).map(({ route }) => route.path),
-    );
-  }, [searchTerm, searchableRoutes]);
+  const { filteredPaths } = useGameRouteSearch(searchTerm);
 
   return (
     <aside
@@ -208,26 +190,7 @@ export function DesktopSidebar() {
 
       {/* Language + Sound controls */}
       <div className="border-t border-ds-border-subtle px-3 py-2 flex items-center justify-between">
-        <div className="flex gap-0.5">
-          <button
-            type="button"
-            aria-label={t('nav.switchToJa')}
-            aria-pressed={currentLang === 'ja'}
-            onClick={() => i18n.changeLanguage('ja')}
-            className={`px-2 py-1 text-xs font-bold rounded-l transition-colors ${currentLang === 'ja' ? 'bg-ds-accent text-ds-text-on-accent' : 'bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
-          >
-            JA
-          </button>
-          <button
-            type="button"
-            aria-label={t('nav.switchToEn')}
-            aria-pressed={currentLang === 'en'}
-            onClick={() => i18n.changeLanguage('en')}
-            className={`px-2 py-1 text-xs font-bold rounded-r transition-colors ${currentLang === 'en' ? 'bg-ds-accent text-ds-text-on-accent' : 'bg-ds-surface-elevated text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
-          >
-            EN
-          </button>
-        </div>
+        <NavLangToggle size="sm" />
         <SoundToggle />
       </div>
     </aside>

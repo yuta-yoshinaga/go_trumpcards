@@ -280,12 +280,12 @@ function OhHellPageContent() {
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* Round/Trick/Trump info */}
-            <div className="text-white text-center mb-2">
+            <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber, total: state.totalRounds })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               <span className="mr-4">{t('handSize', { n: state.handSize })}</span>
             </div>
-            <div className="text-white text-center mb-2">
+            <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('trump', { suit: t(`suitName.${state.trumpSuit}`) })}</span>
               <span>{t('dealer', { name: dealerName })}</span>
             </div>
@@ -525,7 +525,7 @@ function OhHellPageContent() {
                     max={state.handSize}
                     value={bidValue}
                     onChange={(e) => setBidValue(Number(e.target.value))}
-                    className="w-16 px-2 py-1 rounded bg-white/20 text-white text-center"
+                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
                     aria-label="bid-input"
                   />
                   <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>

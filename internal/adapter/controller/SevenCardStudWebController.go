@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -12,26 +11,17 @@ import (
 // SevenCardStudWebInput セブンカードスタッドWebインプット
 type SevenCardStudWebInput struct {
 	BaseWebInput
-	Amount           int             `json:"amount,omitempty"`
-	HumanPlayMs      int             `json:"humanPlayMs,omitempty"`
-	Ante             *int            `json:"ante,omitempty"`
-	BringIn          *int            `json:"bringIn,omitempty"`
-	SmallBet         *int            `json:"smallBet,omitempty"`
-	BigBet           *int            `json:"bigBet,omitempty"`
-	TournamentMode   *bool           `json:"tournamentMode,omitempty"`
-	AnteLevelHands   *int            `json:"anteLevelHands,omitempty"`
-	AnteMultiplier   *int            `json:"anteMultiplier,omitempty"`
-	BettingLimit     *int            `json:"bettingLimit,omitempty"`
-	TableSize        *int            `json:"tableSize,omitempty"`
-	RebuyEnabled     *bool           `json:"rebuyEnabled,omitempty"`
-	RebuyMaxCount    *int            `json:"rebuyMaxCount,omitempty"`
-	RebuyChips       *int            `json:"rebuyChips,omitempty"`
-	RebuyPeriodHands *int            `json:"rebuyPeriodHands,omitempty"`
-	AddonEnabled     *bool           `json:"addonEnabled,omitempty"`
-	AddonChips       *int            `json:"addonChips,omitempty"`
-	AddonAfterHand   *int            `json:"addonAfterHand,omitempty"`
-	CpuMetaAI        bool            `json:"cpuMetaAI,omitempty"`
-	Profile          json.RawMessage `json:"profile,omitempty"`
+	PokerCommonInput
+	Amount         int             `json:"amount,omitempty"`
+	HumanPlayMs    int             `json:"humanPlayMs,omitempty"`
+	Ante           *int            `json:"ante,omitempty"`
+	BringIn        *int            `json:"bringIn,omitempty"`
+	SmallBet       *int            `json:"smallBet,omitempty"`
+	BigBet         *int            `json:"bigBet,omitempty"`
+	AnteLevelHands *int            `json:"anteLevelHands,omitempty"`
+	AnteMultiplier *int            `json:"anteMultiplier,omitempty"`
+	CpuMetaAI      bool            `json:"cpuMetaAI,omitempty"`
+	Profile        json.RawMessage `json:"profile,omitempty"`
 }
 
 // SevenCardStudWebOutputPlayer セブンカードスタッドWebアウトプットプレイヤー
@@ -145,12 +135,8 @@ func (p SevenCardStudWebInput) ToConfig() (domain.SevenCardStudConfig, error) {
 	applyIntIfGte(&cfg.AnteLevelHands, p.AnteLevelHands, 1)
 	applyIntIfGte(&cfg.AnteMultiplier, p.AnteMultiplier, 101)
 	applyBettingLimit(&cfg.BettingLimit, p.BettingLimit)
-	if p.TableSize != nil {
-		ts := *p.TableSize
-		if !domain.IsValidSevenCardStudTableSize(ts) {
-			return domain.SevenCardStudConfig{}, errors.New("param error: tableSize must be 2-7")
-		}
-		cfg.TableSize = ts
+	if err := applyTableSize(&cfg.TableSize, p.TableSize, domain.IsValidSevenCardStudTableSize, "param error: tableSize must be 2-7"); err != nil {
+		return domain.SevenCardStudConfig{}, err
 	}
 	applyRebuyConfig(&cfg.RebuyEnabled, &cfg.RebuyMaxCount, &cfg.RebuyChips, &cfg.RebuyPeriodHands,
 		p.RebuyEnabled, p.RebuyMaxCount, p.RebuyChips, p.RebuyPeriodHands)

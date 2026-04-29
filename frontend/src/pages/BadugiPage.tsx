@@ -177,7 +177,7 @@ function BadugiPageContent() {
         <span>
           {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
         </span>
-        <span className="text-xs bg-black/20 text-white px-2 py-0.5 rounded">
+        <span className="text-xs bg-black/20 text-ds-text-primary px-2 py-0.5 rounded">
           {drawIndex === 0 ? t('preDrawLabel') : t('drawBadge', { n: drawIndex })}
         </span>
       </PhaseIndicator>
@@ -218,7 +218,7 @@ function BadugiPageContent() {
 
         {/* CPU exchanges log */}
         {state?.cpuExchanges && state.cpuExchanges.length > 0 && (
-          <div className="bg-black/30 rounded p-2 mb-3 text-white text-xs">
+          <div className="bg-black/30 rounded p-2 mb-3 text-ds-text-primary text-xs">
             <div className="font-bold mb-1">{t('cpuExchange')}</div>
             {state.cpuExchanges.map((ex, i) => (
               <div key={`${i}-${ex.playerIdx}`}>
@@ -234,7 +234,7 @@ function BadugiPageContent() {
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2" data-tutorial="bg-player-hand">
-            <div className="text-white text-lg mb-1">
+            <div className="text-ds-text-primary text-lg mb-1">
               {t('yourHand')}
               <span className="ml-3 text-xs">
                 {tc('betting.chips')} {humanPlayer.chips}

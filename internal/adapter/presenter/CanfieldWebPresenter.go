@@ -101,10 +101,7 @@ func (p *CanfieldWebPresenter) HintOutput(c interfaces.CanfieldGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *CanfieldWebPresenter) ActionLogOutput(c interfaces.CanfieldGame) string {
-	if c.GetPhase() == domain.CanfieldPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(c.GetActionLog())
+	return actionLogOutputJSON(c)
 }
 
 func (p *CanfieldWebPresenter) buildBaseOutput(c interfaces.CanfieldGame) *controller.CanfieldWebOutput {

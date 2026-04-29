@@ -216,7 +216,7 @@ function IndianPokerPageContent() {
                 ?.filter((p) => !p.isHuman)
                 .map((p) => (
                   <div key={p.id} className={isMobile ? 'text-center' : 'mb-3'}>
-                    <div className={`text-white text-sm mb-1 ${isMobile ? 'truncate' : ''}`}>
+                    <div className={`text-ds-text-primary text-sm mb-1 ${isMobile ? 'truncate' : ''}`}>
                       {tc('player.cpu', { id: p.id })}
                       {!isMobile && <span className="text-ds-text-muted text-xs"> ({p.playStyleName})</span>}
                       <span className={`text-xs ${isMobile ? 'block' : 'ml-2'}`}>
@@ -266,7 +266,7 @@ function IndianPokerPageContent() {
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="ip-player-card">
-                <div className="text-white text-lg mb-1">
+                <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourCard')}
                   <span className="ml-3 text-xs">
                     {tc('betting.chips')} {humanPlayer.chips}

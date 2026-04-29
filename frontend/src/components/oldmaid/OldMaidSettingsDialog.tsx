@@ -98,13 +98,13 @@ export function OldMaidSettingsDialog({
           if (e.key === 'Escape') onClose();
         }}
       >
-        <h2 id="oldmaid-settings-title" className="text-lg font-bold text-white mb-4">
+        <h2 id="oldmaid-settings-title" className="text-lg font-bold text-ds-text-primary mb-4">
           {t('setup.title')}
         </h2>
         <div className="flex flex-col gap-3">
           <fieldset className="flex flex-col gap-3 border-0 p-0 m-0">
-            <legend className="text-white font-bold mb-1">{t('setup.modeSelect')}</legend>
-            <label className="flex items-center gap-2 text-white cursor-pointer min-h-[44px]">
+            <legend className="text-ds-text-primary font-bold mb-1">{t('setup.modeSelect')}</legend>
+            <label className="flex items-center gap-2 text-ds-text-primary cursor-pointer min-h-[44px]">
               <input
                 type="radio"
                 name="oldmaid-mode"
@@ -114,7 +114,7 @@ export function OldMaidSettingsDialog({
               />
               {t('setup.normal')}
             </label>
-            <label className="flex items-center gap-2 text-white cursor-pointer min-h-[44px]">
+            <label className="flex items-center gap-2 text-ds-text-primary cursor-pointer min-h-[44px]">
               <input
                 type="radio"
                 name="oldmaid-mode"
@@ -127,8 +127,8 @@ export function OldMaidSettingsDialog({
           </fieldset>
           <div className="border-t border-white/20 my-1" />
           <fieldset className="flex flex-col gap-3 border-0 p-0 m-0">
-            <legend className="text-white font-bold mb-1">{t('setup.cpuSettings')}</legend>
-            <label className="flex items-center gap-2 text-white cursor-pointer min-h-[44px]">
+            <legend className="text-ds-text-primary font-bold mb-1">{t('setup.cpuSettings')}</legend>
+            <label className="flex items-center gap-2 text-ds-text-primary cursor-pointer min-h-[44px]">
               <input
                 type="checkbox"
                 checked={cpuPlacementStrategy}
@@ -136,11 +136,11 @@ export function OldMaidSettingsDialog({
               />
               {t('setup.cpuStrategy')}
             </label>
-            <label className="flex items-center gap-2 text-white cursor-pointer min-h-[44px]">
+            <label className="flex items-center gap-2 text-ds-text-primary cursor-pointer min-h-[44px]">
               <input type="checkbox" checked={cpuMemoryAI} onChange={(e) => onMemoryAIChange(e.target.checked)} />
               {t('setup.cpuMemoryAI')}
             </label>
-            <label className="flex items-center gap-2 text-white cursor-pointer min-h-[44px]">
+            <label className="flex items-center gap-2 text-ds-text-primary cursor-pointer min-h-[44px]">
               <input
                 type="checkbox"
                 checked={cpuHesitationEnabled}
@@ -148,7 +148,7 @@ export function OldMaidSettingsDialog({
               />
               {t('setup.cpuHesitation')}
             </label>
-            <label className="flex items-center gap-2 text-white cursor-pointer min-h-[44px]">
+            <label className="flex items-center gap-2 text-ds-text-primary cursor-pointer min-h-[44px]">
               <input type="checkbox" checked={cpuMetaAI} onChange={(e) => onMetaAIChange(e.target.checked)} />
               {t('setup.cpuMetaAI')}
             </label>

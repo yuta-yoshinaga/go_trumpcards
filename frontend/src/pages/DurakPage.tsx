@@ -256,7 +256,7 @@ function DurakPageContent() {
               <div>
                 {/* Trump info */}
                 <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2" data-tutorial="dk-trump-info">
-                  <div className="text-white font-bold mb-1">
+                  <div className="text-ds-text-primary font-bold mb-1">
                     {t('trump')}: {suitSymbol(state.trumpSuit)}
                     {state.trumpCard && (
                       <span className="ml-2">
@@ -271,7 +271,7 @@ function DurakPageContent() {
 
                 {/* Table pairs */}
                 <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2" data-tutorial="dk-table-cards">
-                  <div className="text-white font-bold mb-1">{t('table')}</div>
+                  <div className="text-ds-text-primary font-bold mb-1">{t('table')}</div>
                   {state.tablePairs.length === 0 ? (
                     <div className="text-game-text-muted text-sm">{t('tableEmpty')}</div>
                   ) : (
@@ -347,7 +347,7 @@ function DurakPageContent() {
                         state.currentTurn === player.id ? 'ring-2 ring-ds-warning' : ''
                       }`}
                     >
-                      <div className="text-white text-sm font-bold">
+                      <div className="text-ds-text-primary text-sm font-bold">
                         {playerName(player.id, false)}
                         {state.attackerIdx === player.id && (
                           <span className="text-ds-error text-xs ml-1">({t('attacker')})</span>
@@ -368,7 +368,7 @@ function DurakPageContent() {
           <GameFooter className={`${theme.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <div className="mb-2" data-tutorial="dk-player-hand">
-                <div className="text-white font-bold text-sm mb-1">
+                <div className="text-ds-text-primary font-bold text-sm mb-1">
                   {humanPlayer.cardCount}
                   {isAttacker && <span className="text-ds-error text-xs ml-2">({t('attacker')})</span>}
                   {isDefender && <span className="text-ds-info text-xs ml-2">({t('defender')})</span>}

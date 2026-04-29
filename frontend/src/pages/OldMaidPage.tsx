@@ -304,7 +304,7 @@ function OldMaidPageContent() {
 
             {/* Status */}
             {statusLines.length > 0 && (
-              <div className="bg-black/50 rounded-lg text-white py-2 px-3 my-2 whitespace-pre-line text-sm">
+              <div className="bg-black/50 rounded-lg text-ds-text-primary py-2 px-3 my-2 whitespace-pre-line text-sm">
                 {statusLines.join('\n')}
               </div>
             )}
@@ -338,7 +338,7 @@ function OldMaidPageContent() {
 
             {/* JijiNuki: show removed card at game end */}
             {state.gameEndFlag && state.removedCard && (
-              <div className="text-center my-2 text-white text-sm">
+              <div className="text-center my-2 text-ds-text-primary text-sm">
                 {t('removedCard', { card: cardLabel(state.removedCard) })}
               </div>
             )}

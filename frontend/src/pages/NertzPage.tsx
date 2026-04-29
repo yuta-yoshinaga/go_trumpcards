@@ -158,7 +158,7 @@ function NertzPageContent() {
   if (!state || !human) {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.nertz.bg}`}>
-        <div className="flex-1 flex items-center justify-center text-white">
+        <div className="flex-1 flex items-center justify-center text-ds-text-primary">
           <p>{tc('common.loading')}</p>
         </div>
       </div>
@@ -179,7 +179,7 @@ function NertzPageContent() {
       cancelReset={cancelReset}
     >
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
-        <div className="bg-black/30 text-white p-3 rounded text-sm flex flex-wrap gap-x-4 gap-y-1">
+        <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm flex flex-wrap gap-x-4 gap-y-1">
           <span>
             {t('labels.round')}: {state.roundNumber}
           </span>
@@ -195,7 +195,7 @@ function NertzPageContent() {
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-        <div data-tutorial="nertz-foundations" className="bg-black/30 text-white p-3 rounded">
+        <div data-tutorial="nertz-foundations" className="bg-black/30 text-ds-text-primary p-3 rounded">
           <div className="text-xs uppercase tracking-wide text-ds-text-muted mb-2">{t('labels.foundation')}</div>
           <div className="flex flex-wrap gap-2">
             {state.foundations.map((f, idx) => (
@@ -213,7 +213,7 @@ function NertzPageContent() {
         </div>
 
         {state.players.length > 1 && (
-          <div className="bg-black/30 text-white p-3 rounded text-sm space-y-1">
+          <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm space-y-1">
             {state.players
               .filter((p) => !p.isHuman)
               .map((p) => (
@@ -230,7 +230,7 @@ function NertzPageContent() {
           </div>
         )}
 
-        <div className="bg-black/30 text-white p-3 rounded space-y-2">
+        <div className="bg-black/30 text-ds-text-primary p-3 rounded space-y-2">
           <div className="flex flex-wrap gap-3 items-start">
             <div data-tutorial="nertz-pile" className="space-y-1">
               <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.nertz')}</div>

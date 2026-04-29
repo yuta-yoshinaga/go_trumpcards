@@ -11,7 +11,7 @@ export function TutorialProgressPanel() {
 
   return (
     <details className="glass-panel rounded-lg px-3 py-2 mx-2 mb-2">
-      <summary className="cursor-pointer text-white font-bold text-sm select-none">
+      <summary className="cursor-pointer text-ds-text-primary font-bold text-sm select-none">
         {t('progress.title', { defaultValue: 'Tutorial Progress' })} — {completedCount}/{totalCount}
       </summary>
 

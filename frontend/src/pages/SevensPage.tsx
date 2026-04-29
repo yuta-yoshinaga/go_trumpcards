@@ -356,12 +356,12 @@ function SevensPageContent() {
 
             {state.cpuActions && state.cpuActions.length > 0 && (
               <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
-                <span className="text-white">{tc('label.cpuActions')}</span>
+                <span className="text-ds-text-primary">{tc('label.cpuActions')}</span>
                 {state.cpuActions.map((a, i) => (
                   <div
                     key={`cpu-action-${a.playerIdx}-${i}`}
                     data-testid={a.forcedPass ? `cpu-action-forced-pass-${i}` : `cpu-action-${i}`}
-                    className={a.forcedPass ? 'text-ds-warning/80' : 'text-white'}
+                    className={a.forcedPass ? 'text-ds-warning/80' : 'text-ds-text-primary'}
                   >
                     {actionDesc(state.players, a, t)}
                   </div>

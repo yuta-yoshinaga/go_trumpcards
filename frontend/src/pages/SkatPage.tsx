@@ -97,7 +97,7 @@ function SkatPageContent() {
   if (!state) {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.skat.bg}`}>
-        <div className="flex-1 flex items-center justify-center text-white">
+        <div className="flex-1 flex items-center justify-center text-ds-text-primary">
           <p>{t('common.loading')}</p>
         </div>
       </div>
@@ -136,7 +136,7 @@ function SkatPageContent() {
         {error && <ErrorAlert message={error} onRetry={retry} />}
 
         {/* Round / declarer / game info */}
-        <div className="bg-black/30 text-white p-3 rounded space-y-1 text-sm">
+        <div className="bg-black/30 text-ds-text-primary p-3 rounded space-y-1 text-sm">
           <div>
             {t('round')}: {state.roundNumber} | {t('dealer')}: CPU {state.dealerIdx} | {t('currentBid')}:{' '}
             {state.currentBid}
@@ -171,7 +171,7 @@ function SkatPageContent() {
 
         {/* Skat (face-up at round end) */}
         {state.originalSkat && state.originalSkat.length > 0 && (
-          <div className="bg-black/30 text-white p-3 rounded">
+          <div className="bg-black/30 text-ds-text-primary p-3 rounded">
             <div className="text-sm mb-1">{t('skatLabel')}:</div>
             <div className="flex gap-2">
               {state.originalSkat.map((c, i) => (
@@ -196,7 +196,7 @@ function SkatPageContent() {
         )}
 
         {/* Player scores */}
-        <div className="bg-black/30 text-white p-3 rounded text-sm">
+        <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm">
           <table className="w-full">
             <thead>
               <tr>

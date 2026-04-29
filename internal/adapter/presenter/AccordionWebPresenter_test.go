@@ -131,6 +131,7 @@ func TestAccordionWebPresenter_ActionLogOutput(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
 		ag.On("GetPhase").Return(domain.AccordionPhasePlaying)
 
+		ag.On("GetGameEndFlag").Return(false)
 		p := new(AccordionWebPresenter)
 		result := p.ActionLogOutput(ag)
 		assert.Contains(t, result, "entries")
@@ -139,6 +140,7 @@ func TestAccordionWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
 		ag.On("GetPhase").Return(domain.AccordionPhaseGameOver)
+		ag.On("GetGameEndFlag").Return(true)
 		ag.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "move"}})
 
 		p := new(AccordionWebPresenter)

@@ -207,6 +207,9 @@ func (a *Accordion) GetPileCount() int { return len(a.piles) }
 // GetActionLog 棋譜取得
 func (a *Accordion) GetActionLog() []*ActionLogEntry { return a.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (a *Accordion) GetGameEndFlag() bool { return a.phase != AccordionPhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (a *Accordion) IsStalemate() bool { return a.isStalemate }
 

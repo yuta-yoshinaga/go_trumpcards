@@ -253,7 +253,7 @@ function BridgePageContent() {
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* Round/Trick info */}
-            <div className="text-white text-center mb-2">
+            <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               {isPlayPhase && <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>}
               {contractDisplay() && <span className="mr-4">{contractDisplay()}</span>}
@@ -541,7 +541,7 @@ function BridgePageContent() {
               {isHumanBidTurn && (
                 <span data-tutorial="br-bid-controls" className="flex gap-1 items-center flex-wrap">
                   <select
-                    className="text-xs rounded bg-black/50 text-white px-1.5 py-0.5"
+                    className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
                     value={bidLevel}
                     onChange={(e) => setBidLevel(Number(e.target.value))}
                     aria-label={t('bidLevel')}
@@ -553,7 +553,7 @@ function BridgePageContent() {
                     ))}
                   </select>
                   <select
-                    className="text-xs rounded bg-black/50 text-white px-1.5 py-0.5"
+                    className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
                     value={bidSuit}
                     onChange={(e) => setBidSuit(Number(e.target.value))}
                     aria-label={t('bidSuit')}
