@@ -106,9 +106,5 @@ func (pr *TriPeaksWebPresenter) HintOutput(t interfaces.TriPeaksGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (pr *TriPeaksWebPresenter) ActionLogOutput(t interfaces.TriPeaksGame) string {
-	phase := t.GetPhase()
-	if phase == domain.TriPeaksPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(t.GetActionLog())
+	return actionLogOutputJSON(t)
 }

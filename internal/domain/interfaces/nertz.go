@@ -5,6 +5,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // NertzGame Nertz / Pounce ゲームインタフェース
 type NertzGame interface {
 	BaseGame
+	// GetGameEndFlag reports whether the game has left the playing phase.
+	GetGameEndFlag() bool
 	// Reset ゲームを初期化する
 	Reset()
 	// ResetWithConfig 設定を適用してゲームを初期化する

@@ -57,10 +57,7 @@ func (p *ScorpionWebPresenter) HintOutput(s interfaces.ScorpionGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *ScorpionWebPresenter) ActionLogOutput(s interfaces.ScorpionGame) string {
-	if s.GetPhase() == domain.ScorpionPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(s.GetActionLog())
+	return actionLogOutputJSON(s)
 }
 
 // buildBase は共通フィールドを詰めたレスポンスオブジェクトを返す

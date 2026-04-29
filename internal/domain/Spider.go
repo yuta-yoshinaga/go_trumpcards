@@ -413,6 +413,9 @@ func (s *Spider) GetCompletedSuits() int { return s.completedSuits }
 // GetActionLog 棋譜取得
 func (s *Spider) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (s *Spider) GetGameEndFlag() bool { return s.phase != SpiderPhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (s *Spider) IsStalemate() bool { return s.isStalemate }
 

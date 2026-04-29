@@ -105,9 +105,5 @@ func (pr *PyramidWebPresenter) HintOutput(p interfaces.PyramidGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (pr *PyramidWebPresenter) ActionLogOutput(p interfaces.PyramidGame) string {
-	phase := p.GetPhase()
-	if phase == domain.PyramidPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(p.GetActionLog())
+	return actionLogOutputJSON(p)
 }

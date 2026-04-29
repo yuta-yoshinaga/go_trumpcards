@@ -388,6 +388,9 @@ func (p *Pyramid) GetPyramid() [PyramidRowCnt][]*PyramidCard { return p.pyramid 
 // GetActionLog 棋譜取得
 func (p *Pyramid) GetActionLog() []*ActionLogEntry { return p.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (p *Pyramid) GetGameEndFlag() bool { return p.phase != PyramidPhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (p *Pyramid) IsStalemate() bool { return p.isStalemate }
 

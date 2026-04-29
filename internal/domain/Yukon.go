@@ -347,6 +347,9 @@ func (y *Yukon) GetFoundation() [YukonFoundationCnt][]*Card { return y.foundatio
 // GetActionLog 棋譜取得
 func (y *Yukon) GetActionLog() []*ActionLogEntry { return y.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (y *Yukon) GetGameEndFlag() bool { return y.phase != YukonPhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (y *Yukon) IsStalemate() bool { return y.isStalemate }
 

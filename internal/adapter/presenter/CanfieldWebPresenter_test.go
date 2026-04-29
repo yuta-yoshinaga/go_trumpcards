@@ -116,6 +116,7 @@ func TestCanfieldWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("playing", func(t *testing.T) {
 		cg := new(interfaces.MockCanfieldGame)
 		cg.On("GetPhase").Return(domain.CanfieldPhasePlaying)
+		cg.On("GetGameEndFlag").Return(false)
 		p := new(CanfieldWebPresenter)
 		_ = p.ActionLogOutput(cg)
 	})
@@ -123,6 +124,7 @@ func TestCanfieldWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("cleared", func(t *testing.T) {
 		cg := new(interfaces.MockCanfieldGame)
 		cg.On("GetPhase").Return(domain.CanfieldPhaseGameClear)
+		cg.On("GetGameEndFlag").Return(true)
 		cg.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "draw"}})
 		p := new(CanfieldWebPresenter)
 		_ = p.ActionLogOutput(cg)

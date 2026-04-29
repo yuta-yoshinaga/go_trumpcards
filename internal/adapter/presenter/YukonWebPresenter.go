@@ -105,9 +105,5 @@ func (p *YukonWebPresenter) HintOutput(y interfaces.YukonGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *YukonWebPresenter) ActionLogOutput(y interfaces.YukonGame) string {
-	phase := y.GetPhase()
-	if phase == domain.YukonPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(y.GetActionLog())
+	return actionLogOutputJSON(y)
 }

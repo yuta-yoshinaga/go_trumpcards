@@ -5,6 +5,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // AccordionGame アコーディオンゲームインタフェース
 type AccordionGame interface {
 	BaseGame
+	// GetGameEndFlag reports whether the game has left the playing phase.
+	GetGameEndFlag() bool
 	// Reset ゲームを初期化する
 	Reset()
 	// Move fromIdx のパイルを toIdx のパイルに重ねる

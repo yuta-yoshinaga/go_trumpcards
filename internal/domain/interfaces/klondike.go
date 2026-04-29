@@ -5,6 +5,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // KlondikeGame クロンダイクゲームインタフェース
 type KlondikeGame interface {
 	SolitaireGame
+	// GetGameEndFlag reports whether the game has left the playing phase.
+	GetGameEndFlag() bool
 	// Reset ゲームを初期化する
 	Reset()
 	// ResetWithConfig 指定設定でゲームを初期化する

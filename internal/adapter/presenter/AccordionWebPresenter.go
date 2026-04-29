@@ -56,10 +56,7 @@ func (p *AccordionWebPresenter) HintOutput(a interfaces.AccordionGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *AccordionWebPresenter) ActionLogOutput(a interfaces.AccordionGame) string {
-	if a.GetPhase() == domain.AccordionPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(a.GetActionLog())
+	return actionLogOutputJSON(a)
 }
 
 // buildBase は共通フィールドを詰めたレスポンスオブジェクトを返す

@@ -112,3 +112,9 @@ func (_m *MockTriPeaksGame) IsStalemate() bool {
 	ret := _m.Called()
 	return ret.Get(0).(bool)
 }
+
+// GetGameEndFlag mocks the GetGameEndFlag call.
+func (_m *MockTriPeaksGame) GetGameEndFlag() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
