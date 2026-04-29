@@ -446,6 +446,9 @@ func (c *Canfield) GetFoundation() [CanfieldFoundationCnt][]*Card { return c.fou
 // GetActionLog 棋譜取得
 func (c *Canfield) GetActionLog() []*ActionLogEntry { return c.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (c *Canfield) GetGameEndFlag() bool { return c.phase != CanfieldPhasePlaying }
+
 // GetBaseRank ベースランク取得
 func (c *Canfield) GetBaseRank() int { return c.baseRank }
 

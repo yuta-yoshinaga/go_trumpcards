@@ -317,6 +317,9 @@ func (c *Calculation) GetFoundations() [CalculationFoundationCnt][]*Card { retur
 // GetActionLog 棋譜取得
 func (c *Calculation) GetActionLog() []*ActionLogEntry { return c.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (c *Calculation) GetGameEndFlag() bool { return c.phase != CalculationPhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (c *Calculation) IsStalemate() bool { return c.isStalemate }
 

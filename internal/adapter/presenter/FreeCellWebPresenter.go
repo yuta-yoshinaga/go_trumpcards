@@ -107,9 +107,5 @@ func (p *FreeCellWebPresenter) HintOutput(f interfaces.FreeCellGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *FreeCellWebPresenter) ActionLogOutput(f interfaces.FreeCellGame) string {
-	phase := f.GetPhase()
-	if phase == domain.FreeCellPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(f.GetActionLog())
+	return actionLogOutputJSON(f)
 }

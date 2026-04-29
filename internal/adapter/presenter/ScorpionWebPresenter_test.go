@@ -142,6 +142,7 @@ func TestScorpionWebPresenter_ActionLogOutput(t *testing.T) {
 		sg := new(interfaces.MockScorpionGame)
 		sg.On("GetPhase").Return(domain.ScorpionPhasePlaying)
 
+		sg.On("GetGameEndFlag").Return(false)
 		p := new(ScorpionWebPresenter)
 		result := p.ActionLogOutput(sg)
 		assert.Contains(t, result, "entries")
@@ -150,6 +151,7 @@ func TestScorpionWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		sg := new(interfaces.MockScorpionGame)
 		sg.On("GetPhase").Return(domain.ScorpionPhaseGameOver)
+		sg.On("GetGameEndFlag").Return(true)
 		sg.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "move"}})
 
 		p := new(ScorpionWebPresenter)

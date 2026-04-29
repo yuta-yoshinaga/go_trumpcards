@@ -224,6 +224,7 @@ func TestPyramidWebPresenterActionLogOutput_Playing(t *testing.T) {
 	pg := new(interfaces.MockPyramidGame)
 	pg.On("GetPhase").Return(domain.PyramidPhasePlaying)
 
+	pg.On("GetGameEndFlag").Return(false)
 	p := &PyramidWebPresenter{}
 	result := p.ActionLogOutput(pg)
 	assert.Contains(t, result, "entries")
@@ -232,6 +233,7 @@ func TestPyramidWebPresenterActionLogOutput_Playing(t *testing.T) {
 func TestPyramidWebPresenterActionLogOutput_GameOver(t *testing.T) {
 	pg := new(interfaces.MockPyramidGame)
 	pg.On("GetPhase").Return(domain.PyramidPhaseGameOver)
+	pg.On("GetGameEndFlag").Return(true)
 	pg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 		{TurnNumber: 1, ActionType: "draw", Detail: "test"},
 	})

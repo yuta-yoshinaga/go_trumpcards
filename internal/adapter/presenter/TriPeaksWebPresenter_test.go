@@ -201,6 +201,7 @@ func TestTriPeaksWebPresenterActionLogOutput(t *testing.T) {
 		tg := new(interfaces.MockTriPeaksGame)
 		tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying)
 
+		tg.On("GetGameEndFlag").Return(false)
 		p := &TriPeaksWebPresenter{}
 		result := p.ActionLogOutput(tg)
 		assert.Contains(t, result, "entries")
@@ -209,6 +210,7 @@ func TestTriPeaksWebPresenterActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		tg := new(interfaces.MockTriPeaksGame)
 		tg.On("GetPhase").Return(domain.TriPeaksPhaseGameOver)
+		tg.On("GetGameEndFlag").Return(true)
 		tg.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 
 		p := &TriPeaksWebPresenter{}

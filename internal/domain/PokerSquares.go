@@ -175,6 +175,9 @@ func (p *PokerSquares) SetPlacedCount(n int) { p.placedCount = n }
 // GetActionLog は棋譜を返す。
 func (p *PokerSquares) GetActionLog() []*ActionLogEntry { return p.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (p *PokerSquares) GetGameEndFlag() bool { return p.phase != PokerSquaresPhasePlaying }
+
 // IsComplete はゲームが完了したかを返す。
 func (p *PokerSquares) IsComplete() bool {
 	return p.placedCount >= PokerSquaresTotalCells

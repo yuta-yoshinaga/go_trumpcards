@@ -83,3 +83,9 @@ func (_m *MockCalculationGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return v.([]*domain.ActionLogEntry)
 }
+
+// GetGameEndFlag mocks the GetGameEndFlag call.
+func (_m *MockCalculationGame) GetGameEndFlag() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}

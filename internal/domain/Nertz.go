@@ -865,6 +865,9 @@ func (g *Nertz) SetFoundations(fs []*NertzFoundation) { g.foundations = fs }
 // GetActionLog 棋譜
 func (g *Nertz) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (g *Nertz) GetGameEndFlag() bool { return g.phase != NertzPhasePlaying }
+
 // GetMoveCount 手数
 func (g *Nertz) GetMoveCount() int { return g.moveCount }
 
