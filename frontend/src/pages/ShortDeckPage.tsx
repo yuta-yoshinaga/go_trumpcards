@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { shortdeckApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
@@ -16,6 +15,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HudStats } from '../components/HudStats';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -102,37 +102,6 @@ const SHORTDECK_PHASE_KEYS: Readonly<Record<number, string>> = {
   [HoldemPhase.END]: 'end',
   [HoldemPhase.REBUY]: 'rebuy',
 };
-
-function StatTooltip({ id, label, tooltipText }: { id: string; label: string; tooltipText: string }) {
-  return (
-    <button
-      type="button"
-      className="group relative cursor-help bg-transparent border-none p-0 font-inherit text-inherit inline"
-      aria-describedby={id}
-    >
-      {label}
-      <span
-        id={id}
-        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-ds-surface-elevated px-2 py-1 text-xs text-ds-text-primary opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
-        role="tooltip"
-      >
-        {tooltipText}
-      </span>
-    </button>
-  );
-}
-
-function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; threeBet: number; af: string }) {
-  const { t } = useTranslation('shortdeck');
-  return (
-    <span className="ml-2 text-ds-info text-[0.8em] hidden md:inline" data-testid="hud-stats">
-      <StatTooltip id="tooltip-vpip" label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:{vpip}%{' '}
-      <StatTooltip id="tooltip-pfr" label={t('stats.pfr')} tooltipText={t('stats.pfrTooltip')} />:{pfr}%{' '}
-      <StatTooltip id="tooltip-3bet" label={t('stats.threeBet')} tooltipText={t('stats.threeBetTooltip')} />:{threeBet}%{' '}
-      <StatTooltip id="tooltip-af" label={t('stats.af')} tooltipText={t('stats.afTooltip')} />:{af}
-    </span>
-  );
-}
 
 /** Renders the Short Deck Hold'em game page with community cards, betting, and showdown. */
 export function ShortDeckPage() {
@@ -302,7 +271,7 @@ function ShortDeckPageContent() {
                   showHandName={isShowdown}
                   extraInfo={
                     p.totalHands > 0 ? (
-                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
+                      <HudStats namespace="shortdeck" vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} />
                     ) : undefined
                   }
                 />
@@ -361,6 +330,7 @@ function ShortDeckPageContent() {
                   </span>
                   {humanPlayer.totalHands > 0 && (
                     <HudStats
+                      namespace="shortdeck"
                       vpip={humanPlayer.vpip}
                       pfr={humanPlayer.pfr}
                       threeBet={humanPlayer.threeBet}
