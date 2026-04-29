@@ -224,7 +224,7 @@ function PokerSquaresPageContent() {
                             key={`row-score-${i}`}
                             data-testid={`row-score-${i}`}
                             style={{ height: Math.round(cardWidth * 1.4) }}
-                            className="flex items-center justify-center text-white text-sm font-mono px-2 rounded bg-black/30 min-w-[2.5rem]"
+                            className="flex items-center justify-center text-ds-text-primary text-sm font-mono px-2 rounded bg-black/30 min-w-[2.5rem]"
                           >
                             {s}
                           </div>
@@ -241,7 +241,7 @@ function PokerSquaresPageContent() {
                           key={`col-score-${i}`}
                           data-testid={`col-score-${i}`}
                           style={{ width: cardWidth }}
-                          className="text-center text-white text-sm font-mono py-1 rounded bg-black/30"
+                          className="text-center text-ds-text-primary text-sm font-mono py-1 rounded bg-black/30"
                         >
                           {s}
                         </div>
@@ -250,7 +250,7 @@ function PokerSquaresPageContent() {
                   </div>
                 </div>
 
-                <div className="text-center text-white text-lg font-bold mb-2" data-testid="total-score">
+                <div className="text-center text-ds-text-primary text-lg font-bold mb-2" data-testid="total-score">
                   {t('label.totalScore')}: {state.totalScore}
                 </div>
 

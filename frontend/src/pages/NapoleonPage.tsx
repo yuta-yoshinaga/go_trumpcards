@@ -290,7 +290,7 @@ function NapoleonPageContent() {
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* Round/Trick info */}
-            <div className="text-white text-center mb-2">
+            <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               {trumpLabel && (
@@ -594,7 +594,7 @@ function NapoleonPageContent() {
                     max={17}
                     value={bidValue}
                     onChange={(e) => setBidValue(Number(e.target.value))}
-                    className="w-16 px-2 py-1 rounded bg-white/20 text-white text-center"
+                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
                     aria-label="bid-input"
                   />
                   <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
@@ -612,7 +612,7 @@ function NapoleonPageContent() {
                   <select
                     value={trumpSuitValue}
                     onChange={(e) => setTrumpSuitValue(Number(e.target.value))}
-                    className="px-2 py-1 rounded bg-white/20 text-white"
+                    className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
                     aria-label="trump-suit"
                   >
                     {[1, 2, 3, 4].map((s) => (
@@ -624,7 +624,7 @@ function NapoleonPageContent() {
                   <select
                     value={adjSuitValue}
                     onChange={(e) => setAdjSuitValue(Number(e.target.value))}
-                    className="px-2 py-1 rounded bg-white/20 text-white"
+                    className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
                     aria-label="adjutant-suit"
                   >
                     <option value={0}>JOKER</option>
@@ -638,7 +638,7 @@ function NapoleonPageContent() {
                     <select
                       value={adjValueValue}
                       onChange={(e) => setAdjValueValue(Number(e.target.value))}
-                      className="px-2 py-1 rounded bg-white/20 text-white"
+                      className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
                       aria-label="adjutant-value"
                     >
                       {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (

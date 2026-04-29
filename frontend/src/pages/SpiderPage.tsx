@@ -448,7 +448,7 @@ function SpiderPageContent() {
                   onChange={(e) => {
                     handleResetWithConfig({ difficulty: Number(e.target.value) });
                   }}
-                  className="bg-ds-surface-elevated text-white text-sm rounded px-2 py-1"
+                  className="bg-ds-surface-elevated text-ds-text-primary text-sm rounded px-2 py-1"
                   aria-label={t('difficulty')}
                 >
                   <option value={1}>{t('difficulty1')}</option>

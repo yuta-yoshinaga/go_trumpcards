@@ -198,7 +198,7 @@ function PigsTailPageContent() {
                       : 'bg-black/30'
                   } ${isGameEnd && state.loserIdx === idx ? 'bg-ds-error/40 border border-ds-error/50' : ''}`}
                 >
-                  <span className="text-white text-sm font-medium">
+                  <span className="text-ds-text-primary text-sm font-medium">
                     {player.isHuman ? tc('player.you') : `CPU ${player.id}`}
                   </span>
                   <span className="text-ds-text-primary text-sm">
@@ -237,7 +237,7 @@ function PigsTailPageContent() {
               />
               <button
                 type="button"
-                className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-white text-sm transition-colors"
+                className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-ds-text-primary text-sm transition-colors"
                 onClick={showActionLog}
               >
                 {tc('actionLog.view')}
