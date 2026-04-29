@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -14,9 +15,12 @@ type Tendency = 'tight' | 'normal' | 'loose' | 'passive' | 'balanced' | 'aggress
 /**
  * StatTooltip renders a label that reveals a tooltip on hover/focus.
  * Mirrors the inline tooltips that previously lived on each poker page;
- * extracted to deduplicate four near-identical copies. See issue #1564.
+ * extracted to deduplicate four near-identical copies. Uses `useId` so
+ * each instance gets a unique DOM id even when multiple HudStats rows
+ * are rendered (one per CPU player). See issue #1564.
  */
-function StatTooltip({ id, label, tooltipText }: { id: string; label: string; tooltipText: string }) {
+function StatTooltip({ label, tooltipText }: { label: string; tooltipText: string }) {
+  const id = useId();
   return (
     <button
       type="button"
@@ -134,19 +138,19 @@ export function HudStats({ vpip, pfr, threeBet, af, namespace = 'holdem' }: HudS
   const afT = afTendency(af);
   return (
     <span className="ml-2 text-ds-info text-[0.8em] hidden md:inline" data-testid="hud-stats">
-      <StatTooltip id="tooltip-vpip" label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:
+      <StatTooltip label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:
       <span className={tendencyClass(vpipT)} data-testid="hud-vpip-tendency" data-tendency={vpipT}>
         {vpip}%
       </span>{' '}
-      <StatTooltip id="tooltip-pfr" label={t('stats.pfr')} tooltipText={t('stats.pfrTooltip')} />:
+      <StatTooltip label={t('stats.pfr')} tooltipText={t('stats.pfrTooltip')} />:
       <span className={tendencyClass(pfrT)} data-testid="hud-pfr-tendency" data-tendency={pfrT}>
         {pfr}%
       </span>{' '}
-      <StatTooltip id="tooltip-3bet" label={t('stats.threeBet')} tooltipText={t('stats.threeBetTooltip')} />:
+      <StatTooltip label={t('stats.threeBet')} tooltipText={t('stats.threeBetTooltip')} />:
       <span className={tendencyClass(threeBetT)} data-testid="hud-3bet-tendency" data-tendency={threeBetT}>
         {threeBet}%
       </span>{' '}
-      <StatTooltip id="tooltip-af" label={t('stats.af')} tooltipText={t('stats.afTooltip')} />:
+      <StatTooltip label={t('stats.af')} tooltipText={t('stats.afTooltip')} />:
       <span className={tendencyClass(afT)} data-testid="hud-af-tendency" data-tendency={afT}>
         {af}
       </span>
