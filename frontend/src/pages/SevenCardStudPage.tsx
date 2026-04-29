@@ -289,7 +289,7 @@ function SevenCardStudPageContent() {
             <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="scs-cpu-area">
               {cpuPlayers.map((p) => (
                 <div key={p.id} className="mb-3 p-2 rounded bg-black/30">
-                  <div className="text-white text-sm mb-1">
+                  <div className="text-ds-text-primary text-sm mb-1">
                     CPU {p.id}
                     <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
                     <span className="ml-2 text-xs">
@@ -370,7 +370,7 @@ function SevenCardStudPageContent() {
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="scs-player-hand">
-                <div className="text-white text-lg mb-1">
+                <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
                   <span className="ml-3 text-xs">
                     {tc('betting.chips')} {humanPlayer.chips}
@@ -464,7 +464,7 @@ function SevenCardStudPageContent() {
             {/* Rebuy/Addon controls */}
             {isRebuyPhase && (
               <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-white mb-2">
+                <p className="text-ds-text-primary mb-2">
                   {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
                 </p>
                 <div className="flex justify-center gap-2">
@@ -489,7 +489,7 @@ function SevenCardStudPageContent() {
             )}
             {isAddonPhase && (
               <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
@@ -538,15 +538,15 @@ function SevenCardStudPageContent() {
 
             {/* Settings + Reset */}
             <details className="mb-1">
-              <summary className="cursor-pointer select-none text-white text-sm font-bold py-1">
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
                 {tc('settings.title')}
               </summary>
               <div className="flex items-center gap-3 py-1">
-                <label className="text-white text-sm flex items-center gap-1">
+                <label className="text-ds-text-primary text-sm flex items-center gap-1">
                   <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
                   {tc('hint.toggle', { ns: 'tutorial' })}
                 </label>
-                <label className="text-white text-sm flex items-center gap-1">
+                <label className="text-ds-text-primary text-sm flex items-center gap-1">
                   <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
                   {t('settings.cpuMetaAI')}
                 </label>

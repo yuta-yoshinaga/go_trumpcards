@@ -113,7 +113,7 @@ function StatTooltip({ id, label, tooltipText }: { id: string; label: string; to
       {label}
       <span
         id={id}
-        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-ds-surface-elevated px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-ds-surface-elevated px-2 py-1 text-xs text-ds-text-primary opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
         role="tooltip"
       >
         {tooltipText}
@@ -275,7 +275,7 @@ function ShortDeckPageContent() {
             {(() => {
               const communityCardsContent = (
                 <>
-                  <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card) => (
@@ -354,7 +354,7 @@ function ShortDeckPageContent() {
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="sd-player-hand">
-                <div className="text-white text-lg mb-1">
+                <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
                   <span className="ml-3 text-xs">
                     {tc('betting.chips')} {humanPlayer.chips}
@@ -436,7 +436,7 @@ function ShortDeckPageContent() {
             {/* Rebuy/Addon controls */}
             {isRebuyPhase && (
               <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-white mb-2">
+                <p className="text-ds-text-primary mb-2">
                   {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
                 </p>
                 <div className="flex justify-center gap-2">
@@ -461,7 +461,7 @@ function ShortDeckPageContent() {
             )}
             {isAddonPhase && (
               <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
@@ -510,12 +510,12 @@ function ShortDeckPageContent() {
 
             {/* Settings + Reset */}
             <details className="mb-1" data-tutorial="sd-learning-mode" open={learningMode || undefined}>
-              <summary className="cursor-pointer select-none text-white text-sm font-bold py-1">
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
                 {tc('settings.title')}
               </summary>
               <div className="flex flex-col gap-2 py-1">
                 <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                  <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
+                  <label htmlFor="learningModeCheckbox" className="text-ds-text-primary text-sm cursor-pointer">
                     {t('learning.toggle')}
                   </label>
                   <input
@@ -529,11 +529,11 @@ function ShortDeckPageContent() {
                   <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
                 )}
                 <div className="flex items-center gap-3">
-                  <label className="text-white text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
                     <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
                     {tc('hint.toggle', { ns: 'tutorial' })}
                   </label>
-                  <label className="text-white text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
                     <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
                     {t('settings.cpuMetaAI')}
                   </label>
