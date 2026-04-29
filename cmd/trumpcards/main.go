@@ -60,6 +60,47 @@ func portInRange(port int) bool {
 	return port >= 0 && port <= 65535
 }
 
+// applyColorMode resolves the tristate `--color=auto|always|never` flag (issue
+// #1554), the legacy `--no-color` deprecated alias, and the NO_COLOR env var
+// (https://no-color.org/) into per-stream color settings. Precedence:
+//
+//  1. NO_COLOR=<any non-empty value>     => never (POSIX-spec forces off)
+//  2. --color=never  OR  --no-color      => never
+//  3. --color=always                     => always
+//  4. --color=auto (default) or unset    => per-stream TTY detect
+//
+// Returns (exitCode, ok). Returns (2, false) on an unrecognized --color value;
+// the caller should propagate the exit code. The value comparison is
+// case-insensitive and trims surrounding whitespace so users typing
+// `--color=ALWAYS` or `--color= auto ` succeed without surprise. The error
+// message is rendered via i18n on stderr.
+func applyColorMode(mode string, noColorFlag bool, noColorEnv string, stdoutFd, stderrFd uintptr, stderr io.Writer) (int, bool) {
+	resolved := strings.ToLower(strings.TrimSpace(mode))
+	switch {
+	case noColorEnv != "":
+		resolved = "never"
+	case noColorFlag:
+		resolved = "never"
+	case resolved == "":
+		resolved = "auto"
+	}
+	switch resolved {
+	case "always":
+		color.SetStdoutColor(true)
+		color.SetStderrColor(true)
+	case "never":
+		color.SetStdoutColor(false)
+		color.SetStderrColor(false)
+	case "auto":
+		color.SetStdoutColor(term.IsTerminal(int(stdoutFd)))
+		color.SetStderrColor(term.IsTerminal(int(stderrFd)))
+	default:
+		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliInvalidColorMode", "mode", mode))
+		return 2, false
+	}
+	return 0, true
+}
+
 // validCategoryNames is the canonical set of `--category` filter values,
 // derived from the games registry at package load so it stays in lockstep
 // with games.Category.String() automatically. Adding a new Category to the
@@ -117,7 +158,8 @@ func run() int {
 	showVersion := flag.Bool("version", false, "Show version information")
 	flag.BoolVar(showVersion, "V", false, "Show version information (shorthand)")
 	showVersionShort := flag.Bool("version-short", false, "Print version number only (machine-readable)")
-	noColorFlag := flag.Bool("no-color", false, "Disable color output")
+	noColorFlag := flag.Bool("no-color", false, "Disable color output (deprecated alias for --color=never)")
+	colorMode := flag.String("color", "auto", "Color output mode: auto (default; per-stream TTY detect), always, or never")
 	showHelp := flag.Bool("help", false, "Show this help message")
 	flag.BoolVar(showHelp, "h", false, "Show this help message (shorthand)")
 
@@ -139,12 +181,15 @@ func run() int {
 		return 0
 	}
 
-	// Color control: NO_COLOR env var (https://no-color.org/) and --no-color flag
-	// force color off on both streams. TTY auto-detection is done per stream so that
-	// `game | tee log.txt` keeps stderr colors and `game 2> err.log` keeps stdout colors.
-	forceOff := os.Getenv("NO_COLOR") != "" || *noColorFlag
-	color.SetStdoutColor(!forceOff && term.IsTerminal(int(os.Stdout.Fd())))
-	color.SetStderrColor(!forceOff && term.IsTerminal(int(os.Stderr.Fd())))
+	// Color control: tristate --color=auto|always|never (issue #1554) plus the
+	// legacy --no-color flag (kept as a deprecated alias for --color=never)
+	// and the NO_COLOR env var (https://no-color.org/, which the spec defines
+	// as "presence => disable" and therefore overrides --color=always).
+	// Precedence: NO_COLOR > --color=never (or --no-color) > --color=always >
+	// --color=auto (per-stream TTY detect, the historical default).
+	if code, ok := applyColorMode(*colorMode, *noColorFlag, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), os.Stderr); !ok {
+		return code
+	}
 
 	if *showVersionShort {
 		fmt.Println(version)
@@ -614,8 +659,8 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 			rest = append(rest, args[i:]...)
 			break
 		}
-		var langVal string
-		var haveLang, haveNoColor, consumed bool
+		var langVal, colorVal string
+		var haveLang, haveNoColor, haveColor, consumed bool
 		switch {
 		case a == "--lang" || a == "-lang":
 			haveLang, consumed = true, true
@@ -638,6 +683,18 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 				consumed = true
 				haveNoColor = b
 			}
+		case a == "--color" || a == "-color":
+			haveColor, consumed = true, true
+			if i+1 < len(args) {
+				colorVal = args[i+1]
+				i++
+			}
+		case strings.HasPrefix(a, "--color="):
+			colorVal = strings.TrimPrefix(a, "--color=")
+			haveColor, consumed = true, true
+		case strings.HasPrefix(a, "-color="):
+			colorVal = strings.TrimPrefix(a, "-color=")
+			haveColor, consumed = true, true
 		}
 		switch {
 		case haveLang:
@@ -654,6 +711,34 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 		case haveNoColor:
 			color.SetStdoutColor(false)
 			color.SetStderrColor(false)
+		case haveColor:
+			// Trailing `--color=...` honors the same NO_COLOR precedence as
+			// the top-level flag (see applyColorMode); an unrecognized value
+			// falls back to the historical auto-detect rather than aborting,
+			// because the ambient state is already valid and we don't want a
+			// late typo to terminate a launched game.
+			switch strings.ToLower(strings.TrimSpace(colorVal)) {
+			case "always":
+				if os.Getenv("NO_COLOR") == "" {
+					color.SetStdoutColor(true)
+					color.SetStderrColor(true)
+				}
+			case "never":
+				color.SetStdoutColor(false)
+				color.SetStderrColor(false)
+			case "auto", "":
+				if os.Getenv("NO_COLOR") != "" {
+					color.SetStdoutColor(false)
+					color.SetStderrColor(false)
+				} else {
+					color.SetStdoutColor(term.IsTerminal(int(os.Stdout.Fd())))
+					color.SetStderrColor(term.IsTerminal(int(os.Stderr.Fd())))
+				}
+			default:
+				if !quiet {
+					_, _ = fmt.Fprintln(stderr, i18n.Tf("cliInvalidColorMode", "mode", colorVal))
+				}
+			}
 		case !consumed:
 			rest = append(rest, a)
 		}
@@ -707,9 +792,14 @@ COMMANDS:
 OPTIONS:
   -h, --help        Show this help message
   --lang ja|en      Language (default: ja)
-  --no-color        Disable color output (stdout and stderr)
-                    Auto-detection is per-stream: stdout color is on only
-                    when stdout is a TTY; the same applies to stderr.
+  --color MODE      Color output mode: auto (default), always, never
+                    auto:    enable when stdout/stderr is a TTY (per stream)
+                    always:  force-enable even when piped (e.g. for tee or less -R)
+                    never:   force-disable
+                    Matches git/ls/grep convention. Overrides --no-color.
+                    NO_COLOR=<any value> always wins (https://no-color.org/).
+  --no-color        DEPRECATED alias for --color=never. Will be removed in a
+                    future release; prefer --color=never.
   -V, --version     Show version information
   --version-short   Print version number only (machine-readable)
 
@@ -719,7 +809,10 @@ EXAMPLES:
   trumpcards blackjack --help    Show BlackJack's in-game commands
   trumpcards --lang en poker     Play Poker in English
   trumpcards poker --lang en     Same — global flags also accepted after the game name
-  trumpcards blackjack --no-color  Play BlackJack with color disabled
+  trumpcards blackjack --no-color    Play BlackJack with color disabled (legacy)
+  trumpcards blackjack --color=never  Same — preferred form
+  trumpcards holdem | tee g.log       --color defaults to auto so the pipe disables color
+  trumpcards holdem --color=always | tee g.log  Keep color even when piping
   trumpcards games               List all available games
   trumpcards games --short       List game names only (for scripting)
   trumpcards games --short --aliases  List game names including aliases
