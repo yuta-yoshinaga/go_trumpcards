@@ -346,6 +346,79 @@ func TestRunUnsupportedLangFlagFallsBackAndWarns(t *testing.T) {
 	}
 }
 
+// TestRunGlobalQuietFlagSuppressesWarnings verifies issue #1553: the global
+// --quiet/-q flag is OR-combined with TRUMPCARDS_QUIET, so users can suppress
+// the locale-fallback warning without exporting an env var first. Both the
+// long form (`--quiet`) and the POSIX shorthand (`-q`) must work.
+func TestRunGlobalQuietFlagSuppressesWarnings(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origQuiet, quietWasSet := os.LookupEnv("TRUMPCARDS_QUIET")
+	origLang, langWasSet := os.LookupEnv("LANG")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if quietWasSet {
+			_ = os.Setenv("TRUMPCARDS_QUIET", origQuiet)
+		} else {
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+		}
+		if langWasSet {
+			_ = os.Setenv("LANG", origLang)
+		} else {
+			_ = os.Unsetenv("LANG")
+		}
+		i18n.SetLang("ja")
+	}()
+
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"--quiet long form", []string{"trumpcards", "--quiet", "--lang", "fr", "games", "--short"}},
+		{"-q shorthand", []string{"trumpcards", "-q", "--lang", "fr", "games", "--short"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_ = os.Unsetenv("LANG")
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != 0 {
+				t.Errorf("exit = %d, want 0 (stderr=%q)", exit, errBuf.String())
+			}
+			// The locale-fallback warning must be suppressed under quiet.
+			if strings.Contains(errBuf.String(), "fr") {
+				t.Errorf("expected no 'fr' fallback warning under quiet; got stderr=%q", errBuf.String())
+			}
+			// `games --short` must still produce its normal stdout output.
+			if outBuf.Len() == 0 {
+				t.Error("expected `games --short` stdout despite quiet")
+			}
+		})
+	}
+}
+
 // TestRunPosixLocalePlaceholderEnvSuppressesWarn verifies issue #1534: LANG
 // values that are POSIX locale placeholders ("C", "POSIX", "C.UTF-8") do NOT
 // trigger the cliLangEnvFallback warning, because they are the default in

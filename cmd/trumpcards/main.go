@@ -118,6 +118,8 @@ func run() int {
 	flag.BoolVar(showVersion, "V", false, "Show version information (shorthand)")
 	showVersionShort := flag.Bool("version-short", false, "Print version number only (machine-readable)")
 	noColorFlag := flag.Bool("no-color", false, "Disable color output")
+	quietFlag := flag.Bool("quiet", false, "Suppress non-essential output (warnings, banners). Errors still go to stderr.")
+	flag.BoolVar(quietFlag, "q", false, "Suppress non-essential output (shorthand)")
 	showHelp := flag.Bool("help", false, "Show this help message")
 	flag.BoolVar(showHelp, "h", false, "Show this help message (shorthand)")
 
@@ -162,7 +164,11 @@ func run() int {
 	// "Warning: ... defaulting to ja" message users already see, and prevents
 	// typos from tripping `set -e` scripts. See issue #1448.
 	detectedLang := "ja"
-	quiet := os.Getenv("TRUMPCARDS_QUIET") != ""
+	// Quiet is the OR of the global --quiet/-q flag and TRUMPCARDS_QUIET env var
+	// (issue #1553). The env var was the only knob before; the flag was added
+	// so users get the POSIX-conventional `-q` they expect from `grep`/`apt-get`/
+	// etc., and so `web --quiet` no longer needs to be the only opt-out path.
+	quiet := *quietFlag || os.Getenv("TRUMPCARDS_QUIET") != ""
 	var langEnvWarn string // deferred until SetLang is called so i18n resolves
 	if envLang := os.Getenv("LANG"); envLang != "" {
 		prefix := envLang
@@ -710,6 +716,9 @@ OPTIONS:
   --no-color        Disable color output (stdout and stderr)
                     Auto-detection is per-stream: stdout color is on only
                     when stdout is a TTY; the same applies to stderr.
+  -q, --quiet       Suppress non-essential output (banners, locale fallback warnings,
+                    and the network-exposure warning printed by 'web --host 0.0.0.0').
+                    Errors still go to stderr. Equivalent to TRUMPCARDS_QUIET=1.
   -V, --version     Show version information
   --version-short   Print version number only (machine-readable)
 
@@ -740,6 +749,9 @@ ENVIRONMENT VARIABLES:
   NO_COLOR          Disable color output on both stdout and stderr when set
                     (see https://no-color.org/)
                     Example: NO_COLOR=1 trumpcards blackjack
+  TRUMPCARDS_QUIET  Suppress non-essential output when set to a non-empty value
+                    (equivalent to --quiet/-q). Errors still go to stderr.
+                    Example: TRUMPCARDS_QUIET=1 trumpcards update --yes
   HOST              Bind address for the web server (default: 127.0.0.1)
                     Example: HOST=0.0.0.0 trumpcards web
   PORT              Port number for the web server (default: 8080)
