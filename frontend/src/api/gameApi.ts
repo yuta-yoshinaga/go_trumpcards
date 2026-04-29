@@ -215,17 +215,31 @@ export type BlackJackCommand =
   | 'declineearlysurrender'
   | 'setsurrenderrule';
 
+/**
+ * Factory for BlackJack-shaped APIs whose request body is
+ * `{ command, amount, ...config, ...betOptions }`. Spanish 21 reuses the
+ * BlackJack response and command union, so both clients are constructed
+ * via the same factory rather than duplicating the eight-token shape.
+ *
+ * Kept narrow on purpose — only games that share the BlackJack command
+ * union and bet-option payload should use it. See issue #1550.
+ */
+function createBlackJackLikeApi(game: string) {
+  return {
+    exec: (
+      command: BlackJackCommand,
+      amount?: number,
+      config?: BlackJackConfigInput,
+      betOptions?: BlackJackBetOptions,
+    ) => gameExec<BlackJackResponse>(game, { command, amount, ...config, ...betOptions }),
+  };
+}
+
 /** API client for the BlackJack /blackjack/exec endpoint. */
-export const blackjackApi = {
-  exec: (command: BlackJackCommand, amount?: number, config?: BlackJackConfigInput, betOptions?: BlackJackBetOptions) =>
-    gameExec<BlackJackResponse>('blackjack', { command, amount, ...config, ...betOptions }),
-};
+export const blackjackApi = createBlackJackLikeApi('blackjack');
 
 /** API client for the Spanish 21 /spanish21/exec endpoint (shares BlackJack response shape). */
-export const spanish21Api = {
-  exec: (command: BlackJackCommand, amount?: number, config?: BlackJackConfigInput, betOptions?: BlackJackBetOptions) =>
-    gameExec<BlackJackResponse>('spanish21', { command, amount, ...config, ...betOptions }),
-};
+export const spanish21Api = createBlackJackLikeApi('spanish21');
 
 /** Configuration options for Poker game settings. */
 export interface PokerConfigInput {
