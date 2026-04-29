@@ -239,13 +239,25 @@ func (t *TexasHoldemBonus) dealFlop() {
 	for range 3 {
 		t.community = append(t.community, t.trumpCards.DrawCard())
 	}
+	t.updatePlayerCurrentRank()
 	t.appendLog(-1, "flop", "flop dealt", nil)
 }
 
 // dealTurn ターンを配る。
 func (t *TexasHoldemBonus) dealTurn() {
 	t.community = append(t.community, t.trumpCards.DrawCard())
+	t.updatePlayerCurrentRank()
 	t.appendLog(-1, "turn", "turn dealt", nil)
+}
+
+// updatePlayerCurrentRank プレイヤーの現在の最良ハンドランクを更新する。
+// フロップ／ターン時点でプレイヤーのホール＋コミュニティから最良5枚を評価する。
+// ヒント生成（フロントエンド）が中盤の手の強さを参照できるようにするため。
+// resolve() がリバー後に同じフィールドを上書きする。
+func (t *TexasHoldemBonus) updatePlayerCurrentRank() {
+	all := append([]*Card{}, t.playerHand...)
+	all = append(all, t.community...)
+	t.playerHandRank, _ = evalBestFromSeven(all)
 }
 
 // dealRiver リバーを配る。

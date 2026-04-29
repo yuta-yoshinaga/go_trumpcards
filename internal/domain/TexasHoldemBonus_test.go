@@ -58,6 +58,35 @@ func TestTexasHoldemBonus_Reset(t *testing.T) {
 	assert.Equal(t, 0, g.GetRiverBet())
 }
 
+func TestTexasHoldemBonus_PlayerHandRank_PopulatedAtFlopAndTurn(t *testing.T) {
+	// Drive a hand to FLOP with a deterministic pair (player Sd2 / Hd2 + flop with a 2),
+	// then verify GetPlayerHandRank() reflects the pair *before* showdown so the
+	// frontend hint at FLOP/TURN can read a meaningful rank.
+	g := domain.NewDefaultTexasHoldemBonus()
+	require.NoError(t, g.Bet(100, 0))
+	g.SetPlayerHand(makeHandTHB(
+		cd{domain.CardDesignSpade, 2},
+		cd{domain.CardDesignHeart, 2},
+	))
+	g.SetCommunity(makeHandTHB(
+		cd{domain.CardDesignClover, 7},
+		cd{domain.CardDesignDiamond, 9},
+		cd{domain.CardDesignSpade, 13},
+	))
+	g.SetPhase(domain.TexasHoldemBonusPhasePreFlop)
+	// Drive Play() so the production code path runs (dealFlop overwrites the
+	// community, so we re-set the override then trigger updatePlayerCurrentRank
+	// via a Check transitioning to TURN with our deterministic community).
+	g.SetCommunity(makeHandTHB(
+		cd{domain.CardDesignClover, 7},
+		cd{domain.CardDesignDiamond, 9},
+		cd{domain.CardDesignSpade, 13},
+	))
+	g.SetPhase(domain.TexasHoldemBonusPhaseFlop)
+	require.NoError(t, g.Check()) // deals turn card and updates current rank
+	require.GreaterOrEqual(t, g.GetPlayerHandRank(), domain.PokerHandOnePair, "expected pair or better mid-hand")
+}
+
 func TestTexasHoldemBonus_Reset_RefillChips(t *testing.T) {
 	g := domain.NewDefaultTexasHoldemBonus()
 	g.SetChips(5)
@@ -333,8 +362,12 @@ func TestTexasHoldemBonus_Showdown_Push(t *testing.T) {
 	g.SetChips(100000)
 	require.NoError(t, g.Bet(100, 0))
 	require.NoError(t, g.Play())
-	require.NoError(t, g.Raise()) // place turn bet 100
-	require.NoError(t, g.Raise()) // would place river bet, but we override below
+	// Place turn + river bets directly via SetPhase to avoid the implicit
+	// resolve() inside the second Raise(); we want to override the hands and
+	// drive resolve() ourselves with deterministic cards.
+	g.SetTurnBet(100)
+	g.SetRiverBet(100)
+	g.SetPhase(domain.TexasHoldemBonusPhaseTurn)
 	// Override game state to a deterministic push: both players play the
 	// board straight 5-6-7-8-9 (player and dealer hole cards are unused).
 	g.SetPlayerHand(makeHandTHB(

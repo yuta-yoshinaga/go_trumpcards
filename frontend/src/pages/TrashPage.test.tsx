@@ -114,9 +114,9 @@ describe('TrashPage', () => {
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     const stock = screen.getByText('🂠').closest('button');
-    if (!stock) throw new Error('stock button not found');
+    expect(stock).not.toBeNull();
     expect(stock).not.toBeDisabled();
-    fireEvent.click(stock);
+    fireEvent.click(stock as HTMLElement);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
@@ -188,8 +188,8 @@ describe('TrashPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // Resetting requires a confirmation; after clicking, the dialog element should be present.
     const resetBtn = document.querySelector('[data-tutorial="tr-reset"]');
-    if (!resetBtn) throw new Error('reset button not found');
-    fireEvent.click(resetBtn);
+    expect(resetBtn).not.toBeNull();
+    fireEvent.click(resetBtn as Element);
     // The confirm dialog surfaces a button; ensure it renders some confirm text.
     await waitFor(() => {
       expect(screen.getAllByRole('button').length).toBeGreaterThanOrEqual(3);

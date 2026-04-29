@@ -1,13 +1,14 @@
 import type { Card, MaskedCard, TexasHoldemBonusResponse } from '../../../types/card';
 import { isMaskedCard } from '../../../types/card';
+import { TexasHoldemBonusPhase } from '../../../types/phases';
 import { formatCard, formatCardList, formatHeader, formatIndexedCards, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
-  1: 'BET',
-  2: 'PRE-FLOP',
-  3: 'FLOP',
-  4: 'TURN',
-  5: 'END',
+  [TexasHoldemBonusPhase.BET]: 'BET',
+  [TexasHoldemBonusPhase.PRE_FLOP]: 'PRE-FLOP',
+  [TexasHoldemBonusPhase.FLOP]: 'FLOP',
+  [TexasHoldemBonusPhase.TURN]: 'TURN',
+  [TexasHoldemBonusPhase.END]: 'END',
 };
 
 /** Format the dealer's hidden hand (all masked) for the pre-showdown phases. */
@@ -32,7 +33,7 @@ export function formatTexasholdembonusState(state: TexasHoldemBonusResponse): st
   }
 
   if (state.dealerHand.length > 0) {
-    if (state.phase === 5) {
+    if (state.phase === TexasHoldemBonusPhase.END) {
       lines.push(`Dealer: ${formatCardList(state.dealerHand as Card[])}`);
     } else {
       lines.push(`Dealer: ${formatDealerHidden(state.dealerHand)}`);
@@ -44,7 +45,7 @@ export function formatTexasholdembonusState(state: TexasHoldemBonusResponse): st
   if (state.bonusBet > 0) lines.push(`bonus: ${state.bonusBet}`);
   if (state.totalPlayBet > 0) lines.push(`play bets: ${state.totalPlayBet}`);
 
-  if (state.phase === 5) {
+  if (state.phase === TexasHoldemBonusPhase.END) {
     lines.push(`payout: ante=${state.antePayout} play=${state.playPayout} bonus=${state.bonusPayout}`);
     lines.push(`total: ${state.totalPayout}`);
   }
