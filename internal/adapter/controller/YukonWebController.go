@@ -30,14 +30,10 @@ type YukonWebOutputHint struct {
 
 // YukonWebOutput ユーコンWebアウトプット
 type YukonWebOutput struct {
-	Tableau      [][]*KlondikeWebOutputTableauCard `json:"tableau"`
-	Foundation   [][]*WebOutputCard                `json:"foundation"`
-	Phase        int                               `json:"phase"`
-	MoveCount    int                               `json:"moveCount"`
-	CanUndo      bool                              `json:"canUndo"`
-	IsStalemate  bool                              `json:"isStalemate"`
-	UndoToEscape int                               `json:"undoToEscape"`
-	Hint         *YukonWebOutputHint               `json:"hint,omitempty"`
+	Tableau    [][]*KlondikeWebOutputTableauCard `json:"tableau"`
+	Foundation [][]*WebOutputCard                `json:"foundation"`
+	Hint       *YukonWebOutputHint               `json:"hint,omitempty"`
+	SolitaireWebOutputBase
 	WebOutputBase
 }
 

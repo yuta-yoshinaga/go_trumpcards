@@ -32,12 +32,8 @@ type ScorpionWebOutput struct {
 	Tableau        [][]*KlondikeWebOutputTableauCard `json:"tableau"`
 	StockCount     int                               `json:"stockCount"`
 	CompletedSuits int                               `json:"completedSuits"`
-	Phase          int                               `json:"phase"`
-	MoveCount      int                               `json:"moveCount"`
-	CanUndo        bool                              `json:"canUndo"`
-	IsStalemate    bool                              `json:"isStalemate"`
-	UndoToEscape   int                               `json:"undoToEscape"`
 	Hint           *ScorpionWebOutputHint            `json:"hint,omitempty"`
+	SolitaireWebOutputBase
 	WebOutputBase
 }
 

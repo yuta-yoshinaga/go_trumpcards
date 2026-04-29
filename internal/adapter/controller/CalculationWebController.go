@@ -28,16 +28,12 @@ type CalculationWebOutputHint struct {
 
 // CalculationWebOutput カルキュレーションWebアウトプット
 type CalculationWebOutput struct {
-	Foundations  [][]*WebOutputCard        `json:"foundations"`
-	Wastes       [][]*WebOutputCard        `json:"wastes"`
-	StockCount   int                       `json:"stockCount"`
-	StockTop     *WebOutputCard            `json:"stockTop,omitempty"`
-	Phase        int                       `json:"phase"`
-	MoveCount    int                       `json:"moveCount"`
-	CanUndo      bool                      `json:"canUndo"`
-	IsStalemate  bool                      `json:"isStalemate"`
-	UndoToEscape int                       `json:"undoToEscape"`
-	Hint         *CalculationWebOutputHint `json:"hint,omitempty"`
+	Foundations [][]*WebOutputCard        `json:"foundations"`
+	Wastes      [][]*WebOutputCard        `json:"wastes"`
+	StockCount  int                       `json:"stockCount"`
+	StockTop    *WebOutputCard            `json:"stockTop,omitempty"`
+	Hint        *CalculationWebOutputHint `json:"hint,omitempty"`
+	SolitaireWebOutputBase
 	WebOutputBase
 }
 

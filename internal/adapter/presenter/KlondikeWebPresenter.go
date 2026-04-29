@@ -14,15 +14,11 @@ type KlondikeWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *KlondikeWebPresenter) Output(k interfaces.KlondikeGame, lastErr error) string {
 	resObj := new(controller.KlondikeWebOutput)
-	resObj.Phase = int(k.GetPhase())
-	resObj.MoveCount = k.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, k, int(k.GetPhase()))
 	resObj.StockCount = k.GetStockCount()
 	resObj.DrawCount = k.GetDrawCount()
-	resObj.CanUndo = k.CanUndo()
 	resObj.Score = k.GetScore()
 	resObj.ScoringMode = int(k.GetScoringMode())
-	resObj.IsStalemate = k.IsStalemate()
-	resObj.UndoToEscape = k.UndoToEscape()
 
 	// ウェイスト
 	waste := k.GetWaste()
@@ -95,14 +91,11 @@ func (p *KlondikeWebPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 func (p *KlondikeWebPresenter) HintOutput(k interfaces.KlondikeGame) string {
 	hint := k.GetHint()
 	resObj := new(controller.KlondikeWebOutput)
-	resObj.Phase = int(k.GetPhase())
-	resObj.MoveCount = k.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, k, int(k.GetPhase()))
 	resObj.StockCount = k.GetStockCount()
 	resObj.DrawCount = k.GetDrawCount()
-	resObj.CanUndo = k.CanUndo()
 	resObj.Score = k.GetScore()
 	resObj.ScoringMode = int(k.GetScoringMode())
-	resObj.UndoToEscape = k.UndoToEscape()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.KlondikeWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)

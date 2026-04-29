@@ -14,12 +14,8 @@ type TriPeaksWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (pr *TriPeaksWebPresenter) Output(t interfaces.TriPeaksGame, lastErr error) string {
 	resObj := new(controller.TriPeaksWebOutput)
-	resObj.Phase = int(t.GetPhase())
-	resObj.MoveCount = t.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, t, int(t.GetPhase()))
 	resObj.StockCount = t.GetStockCount()
-	resObj.CanUndo = t.CanUndo()
-	resObj.IsStalemate = t.IsStalemate()
-	resObj.UndoToEscape = t.UndoToEscape()
 
 	// ウェイスト
 	waste := t.GetWaste()
@@ -82,11 +78,8 @@ func (pr *TriPeaksWebPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 func (pr *TriPeaksWebPresenter) HintOutput(t interfaces.TriPeaksGame) string {
 	hint := t.GetHint()
 	resObj := new(controller.TriPeaksWebOutput)
-	resObj.Phase = int(t.GetPhase())
-	resObj.MoveCount = t.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, t, int(t.GetPhase()))
 	resObj.StockCount = t.GetStockCount()
-	resObj.CanUndo = t.CanUndo()
-	resObj.UndoToEscape = t.UndoToEscape()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Layout = make([][]*controller.TriPeaksWebOutputCard, 0)
 

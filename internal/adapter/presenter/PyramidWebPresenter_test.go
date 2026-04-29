@@ -192,6 +192,7 @@ func TestPyramidWebPresenterHintOutput_WithHint(t *testing.T) {
 	pg.On("GetMoveCount").Return(0)
 	pg.On("GetStockCount").Return(24)
 	pg.On("CanUndo").Return(false)
+	pg.On("IsStalemate").Return(false)
 	pg.On("UndoToEscape").Return(0)
 
 	p := &PyramidWebPresenter{}
@@ -210,6 +211,7 @@ func TestPyramidWebPresenterHintOutput_NoHint(t *testing.T) {
 	pg.On("GetMoveCount").Return(0)
 	pg.On("GetStockCount").Return(24)
 	pg.On("CanUndo").Return(false)
+	pg.On("IsStalemate").Return(false)
 	pg.On("UndoToEscape").Return(0)
 
 	p := &PyramidWebPresenter{}

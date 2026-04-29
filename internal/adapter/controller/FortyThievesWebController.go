@@ -37,16 +37,12 @@ type FortyThievesWebOutputHint struct {
 
 // FortyThievesWebOutput フォーティシーブスWebアウトプット
 type FortyThievesWebOutput struct {
-	Tableau      [][]*FortyThievesWebOutputTableauCard `json:"tableau"`
-	StockCount   int                                   `json:"stockCount"`
-	Waste        []*WebOutputCard                      `json:"waste"`
-	Foundation   [][]*WebOutputCard                    `json:"foundation"`
-	Phase        int                                   `json:"phase"`
-	MoveCount    int                                   `json:"moveCount"`
-	CanUndo      bool                                  `json:"canUndo"`
-	IsStalemate  bool                                  `json:"isStalemate"`
-	UndoToEscape int                                   `json:"undoToEscape"`
-	Hint         *FortyThievesWebOutputHint            `json:"hint,omitempty"`
+	Tableau    [][]*FortyThievesWebOutputTableauCard `json:"tableau"`
+	StockCount int                                   `json:"stockCount"`
+	Waste      []*WebOutputCard                      `json:"waste"`
+	Foundation [][]*WebOutputCard                    `json:"foundation"`
+	Hint       *FortyThievesWebOutputHint            `json:"hint,omitempty"`
+	SolitaireWebOutputBase
 	WebOutputBase
 }
 
