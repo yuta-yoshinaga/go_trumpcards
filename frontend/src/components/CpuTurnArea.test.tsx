@@ -147,6 +147,6 @@ describe('CpuTurnArea', () => {
       <CpuTurnArea playerId={1} isHuman={false} isCurrentTurn={false} isFinished={false} className={baseClass} />,
     );
     const nameDiv = container.querySelector('.font-bold');
-    expect(nameDiv?.className).toBe('text-white font-bold mb-1');
+    expect(nameDiv?.className).toBe('text-ds-text-primary font-bold mb-1');
   });
 });
