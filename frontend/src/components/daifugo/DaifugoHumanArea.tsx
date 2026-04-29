@@ -37,7 +37,7 @@ export function DaifugoHumanArea({
       id={`player-area-${player.id}`}
       className={`${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}
     >
-      <div className="text-white font-bold mb-1">
+      <div className="text-ds-text-primary font-bold mb-1">
         {playerName(player.id, player.isHuman)}
         {player.isFinished && (
           <StatusBadge variant="success">{t('finishedWithRank', { rank: t(`rank.${player.rank}`) })}</StatusBadge>
