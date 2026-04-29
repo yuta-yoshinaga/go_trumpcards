@@ -106,6 +106,12 @@ describe('CardImage', () => {
     img.dispatchEvent(event);
     expect(onDrop).toHaveBeenCalledTimes(1);
   });
+
+  it('disables text selection so iOS Safari does not start a selection during drag', () => {
+    const card: Card = { design: 'SPADE', value: 1 };
+    render(<CardImage card={card} />);
+    expect(screen.getByRole('img')).toHaveStyle({ userSelect: 'none' });
+  });
 });
 
 describe('CardBack', () => {
@@ -175,5 +181,10 @@ describe('CardBack', () => {
     const styleAttr = screen.getByRole('img').getAttribute('style') ?? '';
     expect(styleAttr).toContain('var(--color-ds-card-back-border)');
     expect(styleAttr).toContain('var(--shadow-ds-card-back)');
+  });
+
+  it('disables text selection so iOS Safari does not start a selection during drag', () => {
+    render(<CardBack />);
+    expect(screen.getByRole('img')).toHaveStyle({ userSelect: 'none' });
   });
 });

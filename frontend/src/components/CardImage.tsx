@@ -50,7 +50,16 @@ export function CardImage({
       width={CARD_NATURAL_WIDTH}
       height={CARD_NATURAL_HEIGHT}
       loading="lazy"
-      style={{ width: w, maxWidth: '100%', borderRadius: 6, display: 'block', ...style }}
+      style={{
+        width: w,
+        maxWidth: '100%',
+        borderRadius: 6,
+        display: 'block',
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
+        ...style,
+      }}
       className={className}
       draggable={draggable}
       onDragStart={onDragStart}
@@ -88,6 +97,9 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
         display: 'block',
         border: '1px solid var(--color-ds-card-back-border)',
         boxShadow: 'var(--shadow-ds-card-back)',
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
         ...style,
       }}
       className={className}
