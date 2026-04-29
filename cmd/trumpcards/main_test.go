@@ -1089,3 +1089,149 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 		})
 	}
 }
+
+// TestRunVersionSubcommand verifies issue #1552: `trumpcards version` is
+// equivalent to the `--version` flag, and `trumpcards version --short` is
+// equivalent to `--version-short`. The subcommand form matters because it
+// matches the conventions of `git`, `gh`, `kubectl`, etc.; users who type
+// the subcommand by habit must not see an "unknown game" error.
+func TestRunVersionSubcommand(t *testing.T) {
+	cases := []struct {
+		name      string
+		args      []string
+		wantExit  int
+		wantSubst string
+	}{
+		{
+			name:      "long form prints full version line",
+			args:      []string{"trumpcards", "version"},
+			wantExit:  0,
+			wantSubst: "trumpcards ",
+		},
+		{
+			name:      "--short prints just the version token",
+			args:      []string{"trumpcards", "version", "--short"},
+			wantExit:  0,
+			wantSubst: version,
+		},
+	}
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+	}()
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != tc.wantExit {
+				t.Errorf("exit = %d, want %d (stderr=%q)", exit, tc.wantExit, errBuf.String())
+			}
+			if !strings.Contains(outBuf.String(), tc.wantSubst) {
+				t.Errorf("stdout missing %q; got %q", tc.wantSubst, outBuf.String())
+			}
+			if errBuf.Len() != 0 {
+				t.Errorf("expected no stderr output; got %q", errBuf.String())
+			}
+		})
+	}
+}
+
+// TestSuggestionCandidatesIncludesAliases verifies issue #1555: the
+// "did you mean" candidate set must include game aliases so a typo of
+// the alias (`gni` -> `gin`) is recovered to the alias the user knows
+// about, rather than to a far-off canonical name (`gofish`).
+func TestSuggestionCandidatesIncludesAliases(t *testing.T) {
+	commands := map[string]func() int{
+		"ginrummy":      func() int { return 0 },
+		"sevencardstud": func() int { return 0 },
+		"gofish":        func() int { return 0 },
+	}
+	got := suggestionCandidates(commands)
+	gotSet := make(map[string]struct{}, len(got))
+	for _, n := range got {
+		gotSet[n] = struct{}{}
+	}
+	for _, want := range []string{"ginrummy", "sevencardstud", "gofish"} {
+		if _, ok := gotSet[want]; !ok {
+			t.Errorf("missing canonical %q from candidates: %v", want, got)
+		}
+	}
+	// At least one alias must appear; pick a known one if it exists.
+	if _, ok := ui.GameAliases["gin"]; ok {
+		if _, present := gotSet["gin"]; !present {
+			t.Errorf("alias 'gin' should be in candidates: %v", got)
+		}
+	}
+	// Spot-check dedup: if an alias collides with a canonical (it shouldn't,
+	// but the helper must still be idempotent), the slice must not contain
+	// the same string twice. We assert the invariant via len(map)==len(slice).
+	if len(gotSet) != len(got) {
+		t.Errorf("candidates contain duplicates: %v", got)
+	}
+}
+
+// TestHelpSuggestionCandidatesIncludesAliases verifies issue #1555: the
+// runHelpCommand suggestion path also pulls aliases, so `trumpcards help
+// gni` recovers to `gin` (or `ginrummy`) rather than a distant canonical.
+func TestHelpSuggestionCandidatesIncludesAliases(t *testing.T) {
+	got := helpSuggestionCandidates()
+	gotSet := make(map[string]struct{}, len(got))
+	for _, n := range got {
+		gotSet[n] = struct{}{}
+	}
+	if _, ok := ui.GameAliases["gin"]; ok {
+		if _, present := gotSet["gin"]; !present {
+			t.Errorf("alias 'gin' should be in help candidates: %v", got)
+		}
+	}
+	// Builtin subcommands should also be suggestable for `trumpcards help <cmd>` typos.
+	for _, want := range []string{"web", "update", "version"} {
+		if _, ok := gotSet[want]; !ok {
+			t.Errorf("missing builtin %q from help candidates: %v", want, got)
+		}
+	}
+}
+
+// TestBuildHelpTextHasExitCodes verifies issue #1556: the top-level --help
+// must document the exit-code policy so CI / cron / scripts can branch on
+// it without reading the source.
+func TestBuildHelpTextHasExitCodes(t *testing.T) {
+	helpText := buildHelpText()
+	for _, want := range []string{"EXIT CODES:", " 130 ", " 143 ", " 10 ", " 75 "} {
+		if !strings.Contains(helpText, want) {
+			t.Errorf("help text missing %q; got:\n%s", want, helpText)
+		}
+	}
+}
+
+// TestBuildHelpTextMentionsVersionSubcommand verifies issue #1552: the
+// COMMANDS section advertises the subcommand alongside the existing
+// flags so it is discoverable from `trumpcards --help`.
+func TestBuildHelpTextMentionsVersionSubcommand(t *testing.T) {
+	helpText := buildHelpText()
+	if !strings.Contains(helpText, "version") {
+		t.Errorf("help text should advertise the 'version' subcommand; got:\n%s", helpText)
+	}
+}
