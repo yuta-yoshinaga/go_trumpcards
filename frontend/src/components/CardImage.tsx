@@ -31,6 +31,13 @@ interface CardImageProps {
 const CARD_NATURAL_WIDTH = 200;
 const CARD_NATURAL_HEIGHT = 300;
 
+/** Suppresses iOS Safari long-press callout and text selection on card images. */
+const noCalloutStyle = {
+  WebkitTouchCallout: 'none',
+  WebkitUserSelect: 'none',
+  userSelect: 'none',
+} as React.CSSProperties;
+
 /** Renders a face-up playing card image. */
 export function CardImage({
   card,
@@ -50,7 +57,14 @@ export function CardImage({
       width={CARD_NATURAL_WIDTH}
       height={CARD_NATURAL_HEIGHT}
       loading="lazy"
-      style={{ width: w, maxWidth: '100%', borderRadius: 6, display: 'block', ...style }}
+      style={{
+        width: w,
+        maxWidth: '100%',
+        borderRadius: 6,
+        display: 'block',
+        ...noCalloutStyle,
+        ...style,
+      }}
       className={className}
       draggable={draggable}
       onDragStart={onDragStart}
@@ -88,6 +102,7 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
         display: 'block',
         border: '1px solid var(--color-ds-card-back-border)',
         boxShadow: 'var(--shadow-ds-card-back)',
+        ...noCalloutStyle,
         ...style,
       }}
       className={className}
