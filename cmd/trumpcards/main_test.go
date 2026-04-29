@@ -346,6 +346,149 @@ func TestRunUnsupportedLangFlagFallsBackAndWarns(t *testing.T) {
 	}
 }
 
+// TestRunGlobalQuietFlagSuppressesWarnings verifies issue #1553: the global
+// --quiet/-q flag is OR-combined with TRUMPCARDS_QUIET, so users can suppress
+// the locale-fallback warning without exporting an env var first. Both the
+// long form (`--quiet`) and the POSIX shorthand (`-q`) must work.
+func TestRunGlobalQuietFlagSuppressesWarnings(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origQuiet, quietWasSet := os.LookupEnv("TRUMPCARDS_QUIET")
+	origLang, langWasSet := os.LookupEnv("LANG")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if quietWasSet {
+			_ = os.Setenv("TRUMPCARDS_QUIET", origQuiet)
+		} else {
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+		}
+		if langWasSet {
+			_ = os.Setenv("LANG", origLang)
+		} else {
+			_ = os.Unsetenv("LANG")
+		}
+		i18n.SetLang("ja")
+	}()
+
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"--quiet long form", []string{"trumpcards", "--quiet", "--lang", "fr", "games", "--short"}},
+		{"-q shorthand", []string{"trumpcards", "-q", "--lang", "fr", "games", "--short"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_ = os.Unsetenv("LANG")
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != 0 {
+				t.Errorf("exit = %d, want 0 (stderr=%q)", exit, errBuf.String())
+			}
+			// The locale-fallback warning must be suppressed under quiet.
+			if strings.Contains(errBuf.String(), "fr") {
+				t.Errorf("expected no 'fr' fallback warning under quiet; got stderr=%q", errBuf.String())
+			}
+			// `games --short` must still produce its normal stdout output.
+			if outBuf.Len() == 0 {
+				t.Error("expected `games --short` stdout despite quiet")
+			}
+		})
+	}
+}
+
+// TestRunGlobalQuietFlagAcceptedAfterSubcommand verifies the fix for
+// PR #1582 review: subcommand FlagSets (games / update / completion) must
+// not reject `--quiet`/`-q` placed after the subcommand name. Without
+// this, `trumpcards games -q` exited 2 with "flag provided but not
+// defined" — surprising for a flag advertised under OPTIONS as global.
+//
+// We exercise the games subcommand because it is the only one that
+// produces both stdout and exit 0 reliably without external dependencies
+// (update needs a network endpoint, completion needs a TTY for hints).
+// The other two share the same flag-registration pattern.
+func TestRunGlobalQuietFlagAcceptedAfterSubcommand(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origQuiet, quietWasSet := os.LookupEnv("TRUMPCARDS_QUIET")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if quietWasSet {
+			_ = os.Setenv("TRUMPCARDS_QUIET", origQuiet)
+		} else {
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+		}
+	}()
+
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"games -q --short", []string{"trumpcards", "games", "-q", "--short"}},
+		{"games --quiet --short", []string{"trumpcards", "games", "--quiet", "--short"}},
+		{"games --short -q (after another flag)", []string{"trumpcards", "games", "--short", "-q"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != 0 {
+				t.Errorf("exit = %d, want 0 (stderr=%q)", exit, errBuf.String())
+			}
+			if strings.Contains(errBuf.String(), "flag provided but not defined") {
+				t.Errorf("subcommand FlagSet must accept -q/--quiet; got stderr=%q", errBuf.String())
+			}
+			if outBuf.Len() == 0 {
+				t.Error("expected `games --short` stdout output")
+			}
+		})
+	}
+}
+
 // TestRunPosixLocalePlaceholderEnvSuppressesWarn verifies issue #1534: LANG
 // values that are POSIX locale placeholders ("C", "POSIX", "C.UTF-8") do NOT
 // trigger the cliLangEnvFallback warning, because they are the default in
@@ -1057,6 +1200,33 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 			wantRest:    []string{"--", "--no-color"},
 			wantLang:    "en",
 			wantNoColor: false,
+		},
+		// PR #1582 review: trailing -q/--quiet must be silently consumed
+		// (no spurious "extra arguments ignored" warning) since the flag
+		// is documented as global and was already evaluated upstream.
+		{
+			name:     "-q is silently consumed (no extra-args warning)",
+			args:     []string{"-q"},
+			wantRest: []string{},
+			wantLang: "ja",
+		},
+		{
+			name:     "--quiet is silently consumed",
+			args:     []string{"--quiet"},
+			wantRest: []string{},
+			wantLang: "ja",
+		},
+		{
+			name:     "--quiet=true (equals form) is silently consumed",
+			args:     []string{"--quiet=true"},
+			wantRest: []string{},
+			wantLang: "ja",
+		},
+		{
+			name:     "-q mixed with foo positional preserves foo",
+			args:     []string{"foo", "-q", "bar"},
+			wantRest: []string{"foo", "bar"},
+			wantLang: "ja",
 		},
 	}
 	for _, tt := range tests {

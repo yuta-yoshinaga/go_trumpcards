@@ -118,6 +118,8 @@ func run() int {
 	flag.BoolVar(showVersion, "V", false, "Show version information (shorthand)")
 	showVersionShort := flag.Bool("version-short", false, "Print version number only (machine-readable)")
 	noColorFlag := flag.Bool("no-color", false, "Disable color output")
+	quietFlag := flag.Bool("quiet", false, "Suppress non-essential output (warnings, banners). Errors still go to stderr.")
+	flag.BoolVar(quietFlag, "q", false, "Suppress non-essential output (shorthand)")
 	showHelp := flag.Bool("help", false, "Show this help message")
 	flag.BoolVar(showHelp, "h", false, "Show this help message (shorthand)")
 
@@ -162,7 +164,11 @@ func run() int {
 	// "Warning: ... defaulting to ja" message users already see, and prevents
 	// typos from tripping `set -e` scripts. See issue #1448.
 	detectedLang := "ja"
-	quiet := os.Getenv("TRUMPCARDS_QUIET") != ""
+	// Quiet is the OR of the global --quiet/-q flag and TRUMPCARDS_QUIET env var
+	// (issue #1553). The env var was the only knob before; the flag was added
+	// so users get the POSIX-conventional `-q` they expect from `grep`/`apt-get`/
+	// etc., and so `web --quiet` no longer needs to be the only opt-out path.
+	quiet := *quietFlag || os.Getenv("TRUMPCARDS_QUIET") != ""
 	var langEnvWarn string // deferred until SetLang is called so i18n resolves
 	if envLang := os.Getenv("LANG"); envLang != "" {
 		prefix := envLang
@@ -202,11 +208,20 @@ func run() int {
 	commands["games"] = func() int {
 		var short, aliases, asJSON bool
 		var category string
+		// quietSink absorbs `-q`/`--quiet` when placed after the subcommand
+		// name so Go's FlagSet does not reject it as an unknown flag. The
+		// outer `quiet` was already resolved before subcommand dispatch
+		// and is the source of truth for behavior; this binding only
+		// exists so subcommand parsing does not exit 2 on a recognized
+		// global flag (PR #1582 review).
+		var quietSink bool
 		fs, code, ok := parseSubFlags("games", func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
 			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
 			f.BoolVar(&asJSON, "json", false, "Emit machine-readable JSON (array of {name, category, description, aliases})")
 			f.StringVar(&category, "category", "", "Filter by category: casino|classic|solo")
+			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
+			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -235,8 +250,11 @@ func run() int {
 	}
 	commands["completion"] = func() int {
 		var noHint bool
+		var quietSink bool // see comment on the games subcommand
 		fs, code, ok := parseSubFlags("completion", func(f *flag.FlagSet) {
 			f.BoolVar(&noHint, "no-hint", false, "Suppress installation hint comments (also implied when stdout is not a TTY)")
+			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
+			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -264,11 +282,14 @@ func run() int {
 	}
 	commands["update"] = func() int {
 		var yes, check bool
+		var quietSink bool // see comment on the games subcommand
 		_, code, ok := parseSubFlags("update", func(f *flag.FlagSet) {
 			f.BoolVar(&yes, "yes", false, "Skip confirmation prompt")
 			f.BoolVar(&yes, "y", false, "Skip confirmation prompt (shorthand)")
 			f.BoolVar(&check, "check", false, "Check for an update without installing (prints latest tag, status, current to stdout)")
 			f.BoolVar(&check, "dry-run", false, "Alias for --check")
+			f.BoolVar(&quietSink, "quiet", quiet, "Accepted for consistency with the global flag; the global -q already applied")
+			f.BoolVar(&quietSink, "q", quiet, "Accepted for consistency with the global flag; the global -q already applied (shorthand)")
 		})
 		if !ok {
 			return code
@@ -682,13 +703,18 @@ func updateExitCode(err error) int {
 	}
 }
 
-// applyTrailingGlobalFlags scans args for global flags (`--lang`, `--no-color`)
-// that landed after the game name because Go's flag package stops parsing at
-// the first positional argument. Each recognized flag is applied to the runtime
-// (i18n locale / color streams) and stripped from the returned slice so the
-// caller's "extra args" warning fires only for genuinely unknown trailing
-// tokens. Unsupported `--lang` values fall back to the existing locale and emit
-// the usual cliUnsupportedLang warning on stderr (suppressed when quiet).
+// applyTrailingGlobalFlags scans args for global flags (`--lang`, `--no-color`,
+// `--quiet`/`-q`) that landed after the game name because Go's flag package
+// stops parsing at the first positional argument. Each recognized flag is
+// applied to the runtime (i18n locale / color streams) and stripped from
+// the returned slice so the caller's "extra args" warning fires only for
+// genuinely unknown trailing tokens. Unsupported `--lang` values fall back
+// to the existing locale and emit the usual cliUnsupportedLang warning on
+// stderr (suppressed when quiet). `--quiet`/`-q` is a silent no-op here —
+// its value was already resolved before subcommand dispatch in run() — but
+// we recognize the form so users typing `trumpcards <game> -q` don't get
+// a confusing "extra arguments ignored" warning about a documented flag
+// (PR #1582 review).
 func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []string {
 	rest := make([]string, 0, len(args))
 	for i := 0; i < len(args); i++ {
@@ -720,6 +746,17 @@ func applyTrailingGlobalFlags(args []string, quiet bool, stderr io.Writer) []str
 			if err == nil {
 				consumed = true
 				haveNoColor = b
+			}
+		case a == "--quiet" || a == "-quiet" || a == "-q" || a == "--q":
+			// Silent no-op — the global pass already applied the value.
+			// Recognized here only so the trailing-args warning does not
+			// fire for a documented global flag.
+			consumed = true
+		case strings.HasPrefix(a, "--quiet=") || strings.HasPrefix(a, "-quiet=") ||
+			strings.HasPrefix(a, "--q=") || strings.HasPrefix(a, "-q="):
+			val := a[strings.Index(a, "=")+1:]
+			if _, err := strconv.ParseBool(val); err == nil {
+				consumed = true
 			}
 		}
 		switch {
@@ -786,6 +823,9 @@ OPTIONS:
   --no-color        Disable color output (stdout and stderr)
                     Auto-detection is per-stream: stdout color is on only
                     when stdout is a TTY; the same applies to stderr.
+  -q, --quiet       Suppress non-essential output (banners, locale fallback warnings,
+                    and the network-exposure warning printed by 'web --host 0.0.0.0').
+                    Errors still go to stderr. Equivalent to TRUMPCARDS_QUIET=1.
   -V, --version     Show version information
   --version-short   Print version number only (machine-readable)
 
@@ -816,6 +856,9 @@ ENVIRONMENT VARIABLES:
   NO_COLOR          Disable color output on both stdout and stderr when set
                     (see https://no-color.org/)
                     Example: NO_COLOR=1 trumpcards blackjack
+  TRUMPCARDS_QUIET  Suppress non-essential output when set to a non-empty value
+                    (equivalent to --quiet/-q). Errors still go to stderr.
+                    Example: TRUMPCARDS_QUIET=1 trumpcards update --yes
   HOST              Bind address for the web server (default: 127.0.0.1)
                     Example: HOST=0.0.0.0 trumpcards web
   PORT              Port number for the web server (default: 8080)
