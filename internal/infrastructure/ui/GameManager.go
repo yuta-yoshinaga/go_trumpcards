@@ -1171,6 +1171,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "tonk", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTonkCuiController(usecase.NewTonkInteractor(
+				domain.NewDefaultTonk(), new(presenter.TonkCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "tonk.helpTitle",
+				CommandKeys: []string{
+					"tonk.helpDrawStock",
+					"tonk.helpDrawDiscard",
+					"tonk.helpDiscard",
+					"tonk.helpKnock",
+					"tonk.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"tonk.helpSetDifficulty", "tonk.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

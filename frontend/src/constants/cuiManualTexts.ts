@@ -68,6 +68,7 @@ import spider from '../../../docs/manual/cui/spider.md?raw';
 import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
 import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
+import tonk from '../../../docs/manual/cui/tonk.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
@@ -133,6 +134,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/speed': speed,
   '/spider': spider,
   '/threecard': threecard,
+  '/tonk': tonk,
   '/tripeaks': tripeaks,
   '/twotenjack': twotenjack,
   '/videopoker': videopoker,

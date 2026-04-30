@@ -154,6 +154,8 @@ tags:
     description: Egyptian Ratscrew (エジプシャン・ラットスクリュー) game - real-time reflex game where 1 human races a CPU to slap pairs/sandwiches; face-card chance battles add a strategic layer
   - name: bakersdozen
     description: Baker's Dozen (ベーカーズ・ダズン) game - single-player open-information solitaire with 13 tableau columns of 4 cards each; kings auto-move to the bottom of each column at deal time
+  - name: tonk
+    description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
 
 paths:
   /blackjack/exec:
@@ -7268,6 +7270,70 @@ paths:
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
+  /tonk/exec:
+    post:
+      tags:
+        - tonk
+      summary: Execute a Tonk game command
+      description: |
+        Send a command to advance the Tonk (トンク) game session identified by
+        `sessionId`. Tonk is a 2-player rummy variant using a standard 52-card
+        deck. Each player is dealt 5 cards. If a player's initial 5 cards total
+        49 or 50 points, the player wins immediately ("Tonk on deal") and earns
+        a 50-point bonus. Otherwise standard draw/discard with a knock threshold
+        of 5 deadwood. On knock, deadwood difference is awarded; if the opponent
+        has lower deadwood than the knocker, opponent gets the difference + a
+        5-point undercut penalty. First to reach the point limit wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Draw      | `0`   | Draw a card from stock or discard pile |
+        | Discard   | `1`   | Discard a card or knock |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | A player reached the point limit |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `drawstock`   | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard` | `dd`    | Draw the top card from the discard pile |
+        | `discard`     | `d`     | Discard a card (requires `cardIndex`) |
+        | `knock`       | `k`     | Knock (deadwood ≤ 5) (requires `cardIndex`) |
+        | `nextround`   | `nr`    | Score the round and start the next |
+        | `log`         | `l`     | View action log |
+      operationId: tonkExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TonkRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              knock:
+                summary: Knock and discard card at index 2
+                value:
+                  command: knock
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TonkResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TonkResponse'
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -11546,6 +11612,134 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Tonk types
+    # -------------------------------------------------------------------------
+    TonkRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `discard` (`d`), `knock` (`k`),
+            `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard or knock with. Required for `discard` and `knock` commands.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    TonkResponse:
+      type: object
+      description: Current state of the Tonk game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Discard, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        knockerIdx:
+          type: integer
+        knockerMelds:
+          type: array
+          items:
+            type: object
+            properties:
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        knockerDeadwood:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        opponentMelds:
+          type: array
+          items:
+            type: object
+            properties:
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        opponentDeadwood:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        isTonk:
+          type: boolean
+          description: Whether the round was won by an instant Tonk on deal (49/50 points)
+        isUndercut:
+          type: boolean
+          description: Whether the opponent undercut the knocker
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
 
     # -------------------------------------------------------------------------
     # Canasta types

@@ -67,6 +67,7 @@ import spider from '../../../docs/manual/web/spider.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
 import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
+import tonk from '../../../docs/manual/web/tonk.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
@@ -131,6 +132,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/speed': speed,
   '/spider': spider,
   '/threecard': threecard,
+  '/tonk': tonk,
   '/tripeaks': tripeaks,
   '/twotenjack': twotenjack,
   '/videopoker': videopoker,
