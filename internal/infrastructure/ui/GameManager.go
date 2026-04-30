@@ -1155,6 +1155,22 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"egyptianratscrew.helpSetDifficulty"},
 			})
 	}},
+	{Name: "bakersdozen", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBakersDozenCuiController(usecase.NewBakersDozenInteractor(
+				domain.NewDefaultBakersDozen(), new(presenter.BakersDozenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bakersdozen.helpTitle",
+				CommandKeys: []string{
+					"bakersdozen.helpMoveTT",
+					"bakersdozen.helpMoveTF",
+					"bakersdozen.helpGiveUp",
+					"bakersdozen.helpHint",
+					"bakersdozen.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

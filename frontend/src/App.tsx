@@ -9,6 +9,7 @@ import { gameRoutes } from './constants/gameRoutes';
 import { AccordionPage } from './pages/AccordionPage';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BadugiPage } from './pages/BadugiPage';
+import { BakersDozenPage } from './pages/BakersDozenPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
 import { CalculationPage } from './pages/CalculationPage';
@@ -151,6 +152,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/nertz': <NertzPage />,
   '/slapjack': <SlapjackPage />,
   '/egyptianratscrew': <EgyptianRatscrewPage />,
+  '/bakersdozen': <BakersDozenPage />,
 };
 
 /** Root application component with router and game page routes. */

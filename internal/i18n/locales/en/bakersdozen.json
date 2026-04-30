@@ -1,0 +1,8 @@
+{
+  "helpTitle": "Baker's Dozen",
+  "helpMoveTF": "  m <col> f            move tableau to foundation",
+  "helpMoveTT": "  m <fromCol> <toCol>  move single card between tableau cols",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete"
+}

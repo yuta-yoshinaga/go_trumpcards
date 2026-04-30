@@ -1,0 +1,34 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "empty": "Empty",
+  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "landscapeBanner": "Landscape mode recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "undo": "Undo",
+  "stalemate": "Stalemate",
+  "playing": "Move cards to build foundations",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "hintAvailable": "Hint available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "foundation": "Build 4 foundation piles by suit from Ace to King.",
+    "tableau": "13 tableau columns of 4 cards each. Kings are automatically moved to the bottom at deal time.",
+    "moves": "Move single cards onto any card one rank lower (suit doesn't matter). Empty columns cannot be filled.",
+    "controls": "Use hint, undo, and auto-complete buttons."
+  },
+  "frontendHint": {
+    "tableau": "Tableau column {{col}}",
+    "foundation": "Foundation"
+  }
+}

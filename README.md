@@ -90,6 +90,7 @@ Go + Clean Architecture で実装した71種類のトランプゲーム。CLI �
 | ナーツ / パウンス (Nertz / Pounce) | `nertz` | [CUI](docs/manual/cui/nertz.md) / [Web](docs/manual/web/nertz.md) |
 | スラップジャック (Slapjack) | `slapjack` | [CUI](docs/manual/cui/slapjack.md) / [Web](docs/manual/web/slapjack.md) |
 | エジプシャン・ラットスクリュー (Egyptian Ratscrew) | `egyptianratscrew` | [CUI](docs/manual/cui/egyptianratscrew.md) / [Web](docs/manual/web/egyptianratscrew.md) |
+| ベーカーズ・ダズン (Baker's Dozen) | `bakersdozen` | [CUI](docs/manual/cui/bakersdozen.md) / [Web](docs/manual/web/bakersdozen.md) |
 
 ## Demo
 

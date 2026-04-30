@@ -105,6 +105,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/memory', labelKey: 'nav.memory', icon: '🧠' },
       { path: '/clocksolitaire', labelKey: 'nav.clocksolitaire', icon: '🕐' },
       { path: '/fortythieves', labelKey: 'nav.fortythieves', icon: '🏰' },
+      { path: '/bakersdozen', labelKey: 'nav.bakersdozen', icon: '🥖' },
       { path: '/canfield', labelKey: 'nav.canfield', icon: '🎩' },
       { path: '/yukon', labelKey: 'nav.yukon', icon: '🏔️' },
       { path: '/scorpion', labelKey: 'nav.scorpion', icon: '🦂' },

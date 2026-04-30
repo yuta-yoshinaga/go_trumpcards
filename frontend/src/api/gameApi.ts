@@ -3,6 +3,8 @@ import type {
   ActionLogResponse,
   BaccaratResponse,
   BadugiResponse,
+  BakersDozenMoveZone,
+  BakersDozenResponse,
   BlackJackResponse,
   BridgeResponse,
   CalculationMoveZone,
@@ -161,6 +163,7 @@ const workerUrl: Record<string, string> = {
   nertz: WORKER_CLASSIC,
   slapjack: WORKER_CLASSIC,
   egyptianratscrew: WORKER_CLASSIC,
+  bakersdozen: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1303,6 +1306,13 @@ export const fortyThievesApi = createSolitaireMoveApi<
   'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('fortythieves');
 
+/** API client for the Baker's Dozen /bakersdozen/exec endpoint. */
+export const bakersDozenApi = createSolitaireMoveApi<
+  BakersDozenResponse,
+  BakersDozenMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('bakersdozen');
+
 /** API client for the Calculation /calculation/exec endpoint. */
 export const calculationApi = createSolitaireMoveApi<
   CalculationResponse,
@@ -1362,7 +1372,7 @@ export const cassinoApi = {
     gameExec<CassinoResponse>('cassino', { command, ...(params ?? {}) }),
 };
 
-export type { FortyThievesMoveZone };
+export type { BakersDozenMoveZone, FortyThievesMoveZone };
 
 /** API client for the Whist /whist/exec endpoint. */
 export const whistApi = {
@@ -1470,6 +1480,7 @@ const games = [
   'nertz',
   'slapjack',
   'egyptianratscrew',
+  'bakersdozen',
 ] as const;
 type Game = (typeof games)[number];
 

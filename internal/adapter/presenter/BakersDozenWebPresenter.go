@@ -1,0 +1,96 @@
+package presenter
+
+import (
+	"fmt"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+// BakersDozenWebPresenter ベーカーズダズンWebプレゼンタークラス
+type BakersDozenWebPresenter struct{}
+
+// Output ゲーム状態をJSON出力
+func (p *BakersDozenWebPresenter) Output(bd interfaces.BakersDozenGame, lastErr error) string {
+	resObj := new(controller.BakersDozenWebOutput)
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bd, int(bd.GetPhase()))
+
+	// タブロー
+	tableau := bd.GetTableau()
+	resObj.Tableau = make([][]*controller.BakersDozenWebOutputTableauCard, domain.BakersDozenTableauCnt)
+	for i := range domain.BakersDozenTableauCnt {
+		colCards := tableau[i]
+		resObj.Tableau[i] = make([]*controller.BakersDozenWebOutputTableauCard, len(colCards))
+		for j, tc := range colCards {
+			outTC := &controller.BakersDozenWebOutputTableauCard{FaceUp: tc.FaceUp}
+			if tc.FaceUp {
+				outTC.Card = cardToOutput(tc.Card)
+			}
+			resObj.Tableau[i][j] = outTC
+		}
+	}
+
+	// ファンデーション
+	foundation := bd.GetFoundation()
+	resObj.Foundation = make([][]*controller.WebOutputCard, domain.BakersDozenFoundationCnt)
+	for i := range domain.BakersDozenFoundationCnt {
+		pile := foundation[i]
+		resObj.Foundation[i] = make([]*controller.WebOutputCard, len(pile))
+		for j, c := range pile {
+			resObj.Foundation[i][j] = cardToOutput(c)
+		}
+	}
+
+	// メッセージ
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	} else {
+		phase := bd.GetPhase()
+		switch phase {
+		case domain.BakersDozenPhasePlaying:
+			if bd.IsStalemate() {
+				resObj.MessageCode = "bakersdozen.stalemate"
+			} else {
+				resObj.MessageCode = "bakersdozen.playing"
+			}
+		case domain.BakersDozenPhaseGameClear:
+			resObj.Message = fmt.Sprintf("ゲームクリア！ 手数: %d", bd.GetMoveCount())
+			resObj.MessageCode = "bakersdozen.gameClear"
+			resObj.MessageParams = map[string]string{"moveCount": fmt.Sprintf("%d", bd.GetMoveCount())}
+		case domain.BakersDozenPhaseGameOver:
+			resObj.Message = "ゲームオーバー"
+			resObj.MessageCode = "bakersdozen.gameOver"
+		}
+	}
+
+	return marshalOrError(resObj)
+}
+
+// HintOutput ヒントをJSON出力
+func (p *BakersDozenWebPresenter) HintOutput(bd interfaces.BakersDozenGame) string {
+	hint := bd.GetHint()
+	resObj := new(controller.BakersDozenWebOutput)
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bd, int(bd.GetPhase()))
+	resObj.Tableau = make([][]*controller.BakersDozenWebOutputTableauCard, 0)
+	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+
+	if hint != nil {
+		resObj.Hint = &controller.BakersDozenWebOutputHint{
+			FromCol:   hint.FromCol,
+			CardIndex: hint.CardIndex,
+			ToZone:    hint.ToZone,
+			ToCol:     hint.ToCol,
+		}
+		resObj.MessageCode = "bakersdozen.hintAvailable"
+	} else {
+		resObj.MessageCode = "bakersdozen.noHint"
+	}
+
+	return marshalOrError(resObj)
+}
+
+// ActionLogOutput 棋譜をJSON出力
+func (p *BakersDozenWebPresenter) ActionLogOutput(bd interfaces.BakersDozenGame) string {
+	return actionLogOutputJSON(bd)
+}
