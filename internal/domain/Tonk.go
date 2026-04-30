@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"time"
 )
 
 // TonkPlayerCnt Tonkプレイヤー数
@@ -63,6 +64,7 @@ type Tonk struct {
 	opponentDeadwood []*Card   // 相手のデッドウッド
 	isTonk           bool      // 配牌Tonk(49/50点即勝利)かどうか
 	isUndercut       bool      // アンダーカット(ノッカーが負け)かどうか
+	rng              *rand.Rand
 }
 
 // NewTonk コンストラクタ
@@ -74,7 +76,13 @@ func NewTonk(trumpCards *TrumpCards, players []*TonkPlayer, config TonkConfig) *
 		winnerIdx:   -1,
 		roundNumber: 0,
 		knockerIdx:  -1,
+		rng:         rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
+}
+
+// SetRand テスト用に乱数源を差し替える
+func (g *Tonk) SetRand(r *rand.Rand) {
+	g.rng = r
 }
 
 // NewDefaultTonk returns Tonk with the standard 2-player setup (1 human, 1 CPU)
@@ -112,7 +120,6 @@ func (g *Tonk) Reset() {
 		p.SetIsFinished(false)
 	}
 
-	g.trumpCards.Shuffle()
 	g.dealInitialCards()
 	g.sortAllHands()
 
@@ -142,7 +149,6 @@ func (g *Tonk) NextRound() {
 		p.ResetRound()
 	}
 
-	g.trumpCards.Shuffle()
 	g.dealInitialCards()
 	g.sortAllHands()
 
@@ -161,7 +167,7 @@ func (g *Tonk) dealInitialCards() {
 		g.drawPile = append(g.drawPile, card)
 	}
 
-	rand.Shuffle(len(g.drawPile), func(i, j int) {
+	g.rng.Shuffle(len(g.drawPile), func(i, j int) {
 		g.drawPile[i], g.drawPile[j] = g.drawPile[j], g.drawPile[i]
 	})
 
@@ -373,7 +379,7 @@ func (g *Tonk) cpuDraw() {
 		case TonkCpuDifficultyNormal:
 			shouldPickDiscard = dwWith < dwWithout-3
 		default:
-			shouldPickDiscard = rand.Intn(3) == 0
+			shouldPickDiscard = g.rng.Intn(3) == 0
 		}
 
 		if shouldPickDiscard {
@@ -427,7 +433,7 @@ func (g *Tonk) cpuDiscardOrKnock() {
 		shouldKnock := false
 		switch g.config.CpuDifficulty {
 		case TonkCpuDifficultyHard:
-			shouldKnock = bestDeadwood <= 3 || bestDeadwood == 0
+			shouldKnock = bestDeadwood <= 3
 		case TonkCpuDifficultyNormal:
 			shouldKnock = bestDeadwood <= 4
 		default:

@@ -5,6 +5,7 @@ package domain_test
 import (
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -195,6 +196,38 @@ func TestTonk_TonkOnDeal_FromHandValuation(t *testing.T) {
 		total += domain.GinRummyCardValue(c)
 	}
 	assert.Equal(t, 50, total)
+}
+
+// TestTonk_TonkOnDeal_DeterministicSeed exercises the actual checkTonkOnDeal/scoreTonk
+// path through Reset() using a seeded rng known to deal a 49- or 50-point hand.
+// Seed 359 deals player 0 a 50-point hand (Tonk-on-deal high); seed 478 deals player 1
+// a 50-point hand. Both produce a 100-point round score (TonkBonus + handValue).
+func TestTonk_TonkOnDeal_DeterministicSeed(t *testing.T) {
+	tests := []struct {
+		name           string
+		seed           int64
+		wantKnocker    int
+		wantRoundScore int
+	}{
+		{"player 0 (human) tonk on deal", 359, 0, 100},
+		{"player 1 (cpu) tonk on deal", 478, 1, 100},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestTonk()
+			g.SetRand(rand.New(rand.NewSource(tc.seed)))
+			g.Reset()
+
+			assert.True(t, g.GetIsTonk(), "expected Tonk on deal")
+			assert.Equal(t, tc.wantKnocker, g.GetKnockerIdx())
+			assert.Equal(t, tc.wantRoundScore, g.GetPlayer(tc.wantKnocker).GetCumulativeScore())
+			assert.Equal(t, 0, g.GetPlayer(1-tc.wantKnocker).GetCumulativeScore())
+			assert.Equal(t, domain.TonkPhaseRoundEnd, g.GetPhase())
+			assert.False(t, g.GetGameEndFlag(), "high PointLimit should keep game alive")
+			// Opponent melds/deadwood are computed during scoreTonk
+			assert.NotNil(t, g.GetOpponentDeadwood())
+		})
+	}
 }
 
 // --- PlayerDrawFromStock ---
