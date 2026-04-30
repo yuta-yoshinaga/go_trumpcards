@@ -569,3 +569,32 @@ export const SlapjackEventKind = {
   SLAP_CORRECT: 2,
   SLAP_WRONG: 3,
 } as const;
+
+/** Egyptian Ratscrew phase constants (sync: internal/domain/EgyptianRatscrew.go). */
+export const EgyptianRatscrewPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Egyptian Ratscrew pending CPU action kind (sync: internal/domain/EgyptianRatscrew.go). */
+export const EgyptianRatscrewPendingKind = {
+  NONE: 0,
+  STEP: 1,
+  SLAP: 2,
+} as const;
+
+/** Egyptian Ratscrew last-event kind for UI feedback (sync: internal/domain/EgyptianRatscrew.go). */
+export const EgyptianRatscrewEventKind = {
+  NONE: 0,
+  STEP: 1,
+  SLAP_CORRECT: 2,
+  SLAP_WRONG: 3,
+  CHANCE_WIN: 4,
+} as const;
+
+/** Egyptian Ratscrew slap reason for UI feedback (sync: internal/domain/EgyptianRatscrew.go). */
+export const EgyptianRatscrewSlapReason = {
+  NONE: 0,
+  PAIR: 1,
+  SANDWICH: 2,
+} as const;

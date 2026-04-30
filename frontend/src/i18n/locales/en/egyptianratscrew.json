@@ -1,0 +1,44 @@
+{
+  "button": {
+    "step": "Flip"
+  },
+  "phase": {
+    "play": "Playing",
+    "slap": "PAIR/SANDWICH!",
+    "chance": "Chance battle",
+    "end": "End"
+  },
+  "label": {
+    "stock": "Stock",
+    "pileCount": "Pile: {{count}}",
+    "chanceRemaining": "Chances left: {{count}}"
+  },
+  "settings": {
+    "cpuDifficulty": "CPU difficulty",
+    "difficulty": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "hard": "Hard"
+    }
+  },
+  "egyptianratscrew": {
+    "slap": "Slap!",
+    "slappable": "PAIR/SANDWICH! Slap fast!",
+    "chanceBattle": "Chance battle in progress",
+    "slapReason": {
+      "pair": "Pair",
+      "sandwich": "Sandwich"
+    }
+  },
+  "hint": {
+    "flipCard": "Your turn. Press s to flip the next card",
+    "slap": "Pair or sandwich! Slap quickly"
+  },
+  "tutorial": {
+    "cpuPile": "CPU's stock. Remaining count is shown.",
+    "arena": "The center pile. Slap when a pair or sandwich appears.",
+    "playerPile": "Your stock. You lose if it empties.",
+    "stepButton": "Flip the top card of your stock. Face cards (J/Q/K/A) impose a chance battle on your opponent.",
+    "slapButton": "Slap when the top two match (pair) or the top three form a sandwich (X-Y-X). Wrong slaps cost you a card."
+  }
+}

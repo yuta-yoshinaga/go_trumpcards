@@ -88,7 +88,8 @@
     "skat": "スカート",
     "shithead": "シットヘッド",
     "nertz": "ナーツ",
-    "slapjack": "スラップジャック"
+    "slapjack": "スラップジャック",
+    "egyptianratscrew": "エジプシャン・ラットスクリュー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -363,6 +364,8 @@
     "war.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
     "slapjack.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "slapjack.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
+    "egyptianratscrew.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "egyptianratscrew.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
     "fiftyone.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "fiftyone.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "clocksolitaire.playing": "プレイ中",

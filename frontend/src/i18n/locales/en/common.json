@@ -88,7 +88,8 @@
     "skat": "Skat",
     "shithead": "Shithead",
     "nertz": "Nertz / Pounce",
-    "slapjack": "Slapjack"
+    "slapjack": "Slapjack",
+    "egyptianratscrew": "Egyptian Ratscrew"
   },
   "sound": {
     "mute": "Mute sound",
@@ -363,6 +364,8 @@
     "war.result.cpuWin": "Game Over! CPU wins...",
     "slapjack.result.humanWin": "Game Over! You win!",
     "slapjack.result.cpuWin": "Game Over! CPU wins...",
+    "egyptianratscrew.result.humanWin": "Game Over! You win!",
+    "egyptianratscrew.result.cpuWin": "Game Over! CPU wins...",
     "fiftyone.result.humanWin": "Game Over! You win!",
     "fiftyone.result.cpuWin": "Game Over! CPU {{cpuId}} wins!",
     "clocksolitaire.playing": "Playing",

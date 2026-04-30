@@ -150,6 +150,8 @@ tags:
     description: Nertz / Pounce (ナーツ / パウンス) game - real-time multi-player competitive solitaire (2-6 players) racing to empty a 13-card Nertz pile onto shared Klondike-style foundations
   - name: slapjack
     description: Slapjack (スラップジャック) game - real-time reflex game where 1 human races a CPU to slap the centre pile when a Jack appears on top
+  - name: egyptianratscrew
+    description: Egyptian Ratscrew (エジプシャン・ラットスクリュー) game - real-time reflex game where 1 human races a CPU to slap pairs/sandwiches; face-card chance battles add a strategic layer
 
 paths:
   /blackjack/exec:
@@ -4678,6 +4680,138 @@ paths:
                   lastEventKind:
                     type: integer
                   lastEventPlayerIdx:
+                    type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+
+  /egyptianratscrew/exec:
+    post:
+      tags:
+        - egyptianratscrew
+      summary: Execute an Egyptian Ratscrew game command
+      description: |
+        Send a command to advance the Egyptian Ratscrew game session identified
+        by `sessionId`. Egyptian Ratscrew is a real-time reflex game for a
+        human vs CPU played with a standard 52-card deck split evenly (26 cards
+        each). Players take turns flipping the top of their stock onto the
+        centre pile. The pile is **slappable** when the top two share a rank
+        (pair) or the top three form a sandwich (X-Y-X); the first to slap a
+        slappable pile wins it. Wrong slaps cost 1 card to the opponent. Face
+        cards trigger a chance battle: when a face card lands on top, the next
+        player must reveal a face card within N flips (J=1, Q=2, K=3, A=4) or
+        the player who placed the face card wins the pile.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Game is running |
+        | GameEnd  | `1`   | Game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game (optional `config.cpuDifficulty` 0-2) |
+        | `step`  | `s`     | Current player flips top of stock onto pile |
+        | `slap`  | `j`     | Slap the pile (pair / sandwich = win, otherwise penalty) |
+        | `tick`  |         | Advance the CPU's pending step / slap action |
+        | `log`   | `l`     | View action log |
+      operationId: egyptianRatscrewExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, step, s, slap, j, tick, log, l]
+                playerIdx:
+                  type: integer
+                  description: 0 = human (slap only)
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0=easy, 1=normal, 2=hard
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              slap:
+                summary: Human slaps when pair / sandwich is on top
+                value:
+                  command: slap
+                  playerIdx: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phase:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerIdx:
+                    type: integer
+                  currentTurnIdx:
+                    type: integer
+                  isHumanTurn:
+                    type: boolean
+                  isTopFaceCard:
+                    type: boolean
+                  isSlappable:
+                    type: boolean
+                  centerPileSize:
+                    type: integer
+                  topCard:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        isHuman:
+                          type: boolean
+                        stockSize:
+                          type: integer
+                  cpuDifficulty:
+                    type: integer
+                  chanceRemaining:
+                    type: integer
+                  chanceFromIdx:
+                    type: integer
+                  pendingKind:
+                    type: integer
+                  pendingDeadlineMs:
+                    type: integer
+                  lastEventKind:
+                    type: integer
+                  lastEventPlayerIdx:
+                    type: integer
+                  lastSlapReason:
                     type: integer
                   message:
                     type: string
