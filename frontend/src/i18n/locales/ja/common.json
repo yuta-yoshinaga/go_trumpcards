@@ -366,6 +366,7 @@
     "slapjack.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
     "egyptianratscrew.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "egyptianratscrew.result.cpuWin": "ゲーム終了！ CPU の勝ち...",
+    "egyptianratscrew.result.draw": "ゲーム終了！ 引き分け",
     "fiftyone.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "fiftyone.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "clocksolitaire.playing": "プレイ中",

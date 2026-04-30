@@ -24,7 +24,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import type { EgyptianRatscrewResponse } from '../types/card';
-import { EgyptianRatscrewEventKind, EgyptianRatscrewPhase } from '../types/phases';
+import { EgyptianRatscrewEventKind, EgyptianRatscrewPendingKind, EgyptianRatscrewPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { formatEgyptianRatscrewState } from '../utils/cli/formatters/egyptianratscrewFormatter';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
@@ -87,15 +87,17 @@ function EgyptianRatscrewPageContent() {
     execApi('reset');
   }, [execApi]);
 
-  // CPU tick driver while the game is active.
+  // CPU tick driver: poll only while a CPU action is pending. Narrow deps so
+  // the interval is not torn down on every state change.
+  const isCpuPending = state?.pendingKind !== undefined && state.pendingKind !== EgyptianRatscrewPendingKind.NONE;
+  const isGameRunning = !!state && !state.gameEndFlag;
   useEffect(() => {
-    if (!state) return;
-    if (state.gameEndFlag) return;
+    if (!isGameRunning || !isCpuPending) return;
     const id = window.setInterval(() => {
       void execApi('tick');
     }, ER_TICK_INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, [state, execApi]);
+  }, [isGameRunning, isCpuPending, execApi]);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('egyptianratscrew');

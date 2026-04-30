@@ -415,7 +415,7 @@ func TestEgyptianRatscrew_CheckStuck_BothEmpty(t *testing.T) {
 	g, _ := setupEgyptianRatscrewWithStocks(t, []*Card{}, []*Card{})
 	g.checkStuck()
 	assert.True(t, g.GetGameEndFlag())
-	assert.Equal(t, 0, g.GetWinnerIdx())
+	assert.Equal(t, -1, g.GetWinnerIdx(), "両者ストック空でスラップ/チャンスとも不可なら引き分け")
 }
 
 func TestEgyptianRatscrew_CheckStuck_NoOpAfterEnd(t *testing.T) {

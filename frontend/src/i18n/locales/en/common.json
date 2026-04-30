@@ -366,6 +366,7 @@
     "slapjack.result.cpuWin": "Game Over! CPU wins...",
     "egyptianratscrew.result.humanWin": "Game Over! You win!",
     "egyptianratscrew.result.cpuWin": "Game Over! CPU wins...",
+    "egyptianratscrew.result.draw": "Game Over! It's a draw.",
     "fiftyone.result.humanWin": "Game Over! You win!",
     "fiftyone.result.cpuWin": "Game Over! CPU {{cpuId}} wins!",
     "clocksolitaire.playing": "Playing",

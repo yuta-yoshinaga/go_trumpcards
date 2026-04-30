@@ -36,6 +36,9 @@ func (p *EgyptianRatscrewWebPresenter) Output(g interfaces.EgyptianRatscrewGame,
 	resObj.Players = make([]*controller.EgyptianRatscrewWebPlayer, 0, g.GetPlayerCnt())
 	for i := range g.GetPlayerCnt() {
 		player := g.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		name := "あなた"
 		if !player.GetIsHuman() {
 			name = "CPU"
@@ -56,16 +59,21 @@ func (p *EgyptianRatscrewWebPresenter) ActionLogOutput(g interfaces.EgyptianRats
 	return actionLogOutputJSON(g)
 }
 
-// buildEgyptianRatscrewMessage ゲーム状態に応じたメッセージを生成する
+// buildEgyptianRatscrewMessage ゲーム状態に応じたメッセージを生成する。
+// 終局フラグはエラーより優先する。詰みで Step が ErrInvalidPlay を返してもゲーム終了画面を出すため。
 func buildEgyptianRatscrewMessage(g interfaces.EgyptianRatscrewGame, lastErr error) (string, string, map[string]string) {
+	if g.GetGameEndFlag() {
+		switch g.GetWinnerIdx() {
+		case 0:
+			return "", "egyptianratscrew.result.humanWin", nil
+		case -1:
+			return "", "egyptianratscrew.result.draw", nil
+		default:
+			return "", "egyptianratscrew.result.cpuWin", nil
+		}
+	}
 	if lastErr != nil {
 		return lastErr.Error(), "error", nil
-	}
-	if g.GetGameEndFlag() {
-		if g.GetWinnerIdx() == 0 {
-			return "", "egyptianratscrew.result.humanWin", nil
-		}
-		return "", "egyptianratscrew.result.cpuWin", nil
 	}
 	return "", "", nil
 }

@@ -17,6 +17,9 @@ func (p *EgyptianRatscrewCuiPresenter) Output(g interfaces.EgyptianRatscrewGame,
 	return buildCuiOutput("Egyptian Ratscrew (エジプシャン・ラットスクリュー)", func(b *strings.Builder) {
 		cpu := g.GetPlayer(1)
 		human := g.GetPlayer(0)
+		if cpu == nil || human == nil {
+			return
+		}
 
 		fmt.Fprintf(b, "CPU: ストック%d枚\n", cpu.GetStockSize())
 		b.WriteString("----------\n")
@@ -69,14 +72,16 @@ func (p *EgyptianRatscrewCuiPresenter) Output(g interfaces.EgyptianRatscrewGame,
 		}
 
 		if g.GetGameEndFlag() {
-			if g.GetWinnerIdx() == 0 {
+			switch g.GetWinnerIdx() {
+			case 0:
 				b.WriteString(color.Green("あなたの勝ちです！\n"))
-			} else {
+			case -1:
+				b.WriteString(color.Yellow("引き分けです\n"))
+			default:
 				b.WriteString(color.Red("CPUの勝ちです...\n"))
 			}
-		}
-
-		if lastErr != nil {
+		} else if lastErr != nil {
+			// 終局済みのときは終局メッセージを優先し、エラーは抑止する。
 			fmt.Fprintf(b, "%s %s\n", color.Red("[エラー]"), lastErr.Error())
 		}
 	})

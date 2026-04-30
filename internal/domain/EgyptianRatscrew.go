@@ -550,7 +550,8 @@ func (g *EgyptianRatscrew) checkStuck() {
 		}
 		return
 	}
-	g.endGame(0)
+	// 両者ストック空 + スラップ不可 + チャンスバトルなしで詰み。引き分けとする。
+	g.endGame(-1)
 }
 
 // appendLog 棋譜にエントリを追加する
