@@ -1,0 +1,49 @@
+{
+  "phase": {
+    "draw": "ドロー",
+    "discard": "ディスカード",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardTop": "捨て札",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "drawStockButton": "山札から引く",
+  "drawDiscardButton": "捨て札から引く",
+  "discardButton": "捨てる",
+  "knockButton": "ノック",
+  "nextRound": "次のラウンド",
+  "drawPhase": "山札または捨て札から1枚引いてください",
+  "discardPhase": "手札から1枚捨てるか、ノック (デッドウッド5点以下) してください",
+  "roundEnd": "ラウンド終了",
+  "tonkOnDeal": "配牌Tonk成立！即勝利です",
+  "knockerMelds": "ノッカーのメルド",
+  "knockerDeadwood": "ノッカーのデッドウッド",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "tutorial": {
+    "drawArea": "山札または捨て札から1枚引きます。",
+    "playerHand": "あなたの手札（5枚）です。メルド（3枚以上の同ランク・同スート連続）を作りましょう。",
+    "discardButton": "不要なカードを1枚捨てます。",
+    "knockButton": "デッドウッドが5点以下になればノックして勝負できます。配牌時に49点・50点ならTonk即勝利！",
+    "scoreTable": "各プレイヤーのスコアが表示されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

@@ -72,6 +72,7 @@ import type {
   SpiteAndMaliceResponse,
   TexasHoldemBonusResponse,
   ThreeCardResponse,
+  TonkResponse,
   TrashResponse,
   TriPeaksResponse,
   TwoTenJackResponse,
@@ -164,6 +165,7 @@ const workerUrl: Record<string, string> = {
   slapjack: WORKER_CLASSIC,
   egyptianratscrew: WORKER_CLASSIC,
   bakersdozen: WORKER_SOLO,
+  tonk: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -748,6 +750,26 @@ export const ginrummyApi = {
       command,
       cardIndex,
       cardIndices,
+      config,
+    }),
+};
+
+/** Configuration options for Tonk game settings. */
+export interface TonkConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Tonk /tonk/exec endpoint. */
+export const tonkApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: TonkConfigInput,
+  ) =>
+    gameExec<TonkResponse>('tonk', {
+      command,
+      cardIndex,
       config,
     }),
 };
@@ -1481,6 +1503,7 @@ const games = [
   'slapjack',
   'egyptianratscrew',
   'bakersdozen',
+  'tonk',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -175,6 +175,7 @@ const hintFactories = {
   badugi: (s) => getBadugiHint(s as BadugiResponse),
   fortythieves: () => null,
   bakersdozen: () => null,
+  tonk: () => null,
   paigow: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),

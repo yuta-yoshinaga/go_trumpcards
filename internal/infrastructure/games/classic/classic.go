@@ -255,4 +255,12 @@ func init() {
 			return usecase.RestoreEgyptianRatscrewInteractor(data, new(presenter.EgyptianRatscrewWebPresenter))
 		},
 		controller.NewEgyptianRatscrewWebControllerWithProvider)
+	games.RegisterKVGame("tonk", games.CategoryClassic,
+		func() usecase.TonkInteractorIF {
+			return usecase.NewTonkInteractor(domain.NewDefaultTonk(), new(presenter.TonkWebPresenter))
+		},
+		func(data []byte) (usecase.TonkInteractorIF, error) {
+			return usecase.RestoreTonkInteractor(data, new(presenter.TonkWebPresenter))
+		},
+		controller.NewTonkWebControllerWithProvider)
 }

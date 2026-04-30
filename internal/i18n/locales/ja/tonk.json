@@ -1,0 +1,10 @@
+{
+  "helpTitle": "Tonk (トンク)",
+  "helpDrawStock": "  ds                   山札から引く",
+  "helpDrawDiscard": "  dd                   捨て札から引く",
+  "helpDiscard": "  d <idx>              カードを捨てる",
+  "helpKnock": "  k <idx>              ノック (デッドウッド5点以下で宣言)",
+  "helpNextRound": "  nr                   次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               ポイント上限"
+}

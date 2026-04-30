@@ -90,7 +90,8 @@
     "nertz": "ナーツ",
     "slapjack": "スラップジャック",
     "egyptianratscrew": "エジプシャン・ラットスクリュー",
-    "bakersdozen": "ベーカーズ・ダズン"
+    "bakersdozen": "ベーカーズ・ダズン",
+    "tonk": "トンク"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -267,6 +268,12 @@
     "ginrummy.discardPhase": "手札から1枚捨てるか、ノックしてください",
     "ginrummy.layoffPhase": "ノッカーのメルドにカードをレイオフできます",
     "ginrummy.roundEnd": "ラウンド終了",
+    "tonk.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "tonk.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "tonk.drawPhase": "山札または捨て札から1枚引いてください",
+    "tonk.discardPhase": "手札から1枚捨てるか、ノック (デッドウッド5点以下) してください",
+    "tonk.roundEnd": "ラウンド終了",
+    "tonk.tonkOnDeal": "配牌Tonk成立！即勝利です",
     "canasta.drawPhase": "山札からカードを引くか、捨て札の山を取ってください",
     "canasta.meldPhase": "メルドを出すか、スキップしてください",
     "canasta.discardPhase": "カードを1枚捨てるか、上がってください",

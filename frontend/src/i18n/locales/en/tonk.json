@@ -1,0 +1,49 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "discard": "Discard",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "drawPile": "Stock: {{count}}",
+  "discardTop": "Discard",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "drawStockButton": "Draw Stock",
+  "drawDiscardButton": "Draw Discard",
+  "discardButton": "Discard",
+  "knockButton": "Knock",
+  "nextRound": "Next Round",
+  "drawPhase": "Draw a card from the stock or discard pile",
+  "discardPhase": "Discard a card or knock (deadwood <= 5)",
+  "roundEnd": "Round end",
+  "tonkOnDeal": "Tonk on deal! Instant win",
+  "knockerMelds": "Knocker's melds",
+  "knockerDeadwood": "Knocker's deadwood",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "tutorial": {
+    "drawArea": "Draw one card from the stock or discard pile.",
+    "playerHand": "Your hand (5 cards). Build melds — 3+ of a rank, or 3+ in a suit run.",
+    "discardButton": "Discard one card you don't need.",
+    "knockButton": "Knock when your deadwood is 5 or less. If your initial 5 cards total 49 or 50, you instantly win (Tonk).",
+    "scoreTable": "Shows each player's score.",
+    "resetButton": "Reset to start a new game."
+  }
+}

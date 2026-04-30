@@ -225,6 +225,14 @@ export const GinRummyPhase = {
   GAME_END: 4,
 } as const;
 
+/** Tonk phase constants (sync: internal/domain/Tonk.go). */
+export const TonkPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Seven Bridge phase constants (sync: internal/domain/SevenBridge.go). */
 export const SevenBridgePhase = {
   DRAW: 0,

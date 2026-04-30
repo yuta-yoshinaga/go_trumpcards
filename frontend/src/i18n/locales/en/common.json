@@ -90,7 +90,8 @@
     "nertz": "Nertz / Pounce",
     "slapjack": "Slapjack",
     "egyptianratscrew": "Egyptian Ratscrew",
-    "bakersdozen": "Baker's Dozen"
+    "bakersdozen": "Baker's Dozen",
+    "tonk": "Tonk"
   },
   "sound": {
     "mute": "Mute sound",
@@ -267,6 +268,12 @@
     "ginrummy.discardPhase": "Discard a card or knock",
     "ginrummy.layoffPhase": "Lay off cards onto the knocker's melds",
     "ginrummy.roundEnd": "Round over",
+    "tonk.result.humanWin": "Game over! You win!",
+    "tonk.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "tonk.drawPhase": "Draw a card from the stock or discard pile",
+    "tonk.discardPhase": "Discard a card or knock (deadwood <= 5)",
+    "tonk.roundEnd": "Round over",
+    "tonk.tonkOnDeal": "Tonk on deal! Instant win",
     "canasta.drawPhase": "Draw from stock or pick up the discard pile.",
     "canasta.meldPhase": "Meld cards or skip.",
     "canasta.discardPhase": "Discard a card or go out.",
