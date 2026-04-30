@@ -36,7 +36,7 @@ func TestBakersDozenWebController_Method(t *testing.T) {
 	biMock.On("Hint").Return(mockOutput)
 	biMock.On("AutoComplete").Return(mockOutput)
 	biMock.On("ActionLog").Return(mockOutput)
-	biMock.On("MoveTableauToTableau", 0, 3, 5).Return(mockOutput)
+	biMock.On("MoveTableauToTableau", 0, -1, 5).Return(mockOutput)
 	biMock.On("MoveTableauToFoundation", 1).Return(mockOutput)
 	biMock.On("Undo").Return(mockOutput)
 	biMock.On("UndoN", 2).Return(mockOutput)
@@ -118,7 +118,16 @@ func TestBakersDozenWebController_Method(t *testing.T) {
 
 	t.Run("move tableau to tableau", func(t *testing.T) {
 		var input controller.BakersDozenWebInput
-		_ = json.Unmarshal([]byte(`{"command":"m","sessionId":"s1","from":{"zone":"tableau","col":0,"cardIndex":3},"to":{"zone":"tableau","col":5}}`), &input)
+		_ = json.Unmarshal([]byte(`{"command":"m","sessionId":"s1","from":{"zone":"tableau","col":0},"to":{"zone":"tableau","col":5}}`), &input)
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("move tableau to tableau ignores client cardIndex", func(t *testing.T) {
+		// Client sends cardIndex=99 but the server should pass -1 to the domain.
+		var input controller.BakersDozenWebInput
+		_ = json.Unmarshal([]byte(`{"command":"m","sessionId":"s1","from":{"zone":"tableau","col":0,"cardIndex":99},"to":{"zone":"tableau","col":5}}`), &input)
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(expectedBody)
@@ -146,9 +155,16 @@ func TestBakersDozenWebController_Method(t *testing.T) {
 		recorded.CodeIs(http.StatusBadRequest)
 	})
 
-	t.Run("move tableau to tableau missing params", func(t *testing.T) {
+	t.Run("move tableau to tableau missing from.col", func(t *testing.T) {
 		var input controller.BakersDozenWebInput
 		_ = json.Unmarshal([]byte(`{"command":"m","sessionId":"s1","from":{"zone":"tableau"},"to":{"zone":"tableau","col":5}}`), &input)
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusBadRequest)
+	})
+
+	t.Run("move tableau to tableau missing to.col", func(t *testing.T) {
+		var input controller.BakersDozenWebInput
+		_ = json.Unmarshal([]byte(`{"command":"m","sessionId":"s1","from":{"zone":"tableau","col":0},"to":{"zone":"tableau"}}`), &input)
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusBadRequest)
 	})

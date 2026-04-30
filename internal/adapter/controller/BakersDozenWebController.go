@@ -92,11 +92,14 @@ func bakersDozenMoveDispatch(bc *baseController, w http.ResponseWriter, bi useca
 
 	switch {
 	case fromZone == "tableau" && toZone == "tableau":
-		if param.From.Col == nil || param.From.CardIndex == nil || param.To.Col == nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col, from.cardIndex, to.col are required."))
+		if param.From.Col == nil || param.To.Col == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col and to.col are required."))
 			return true
 		}
-		bc.writePresenterResponse(w, bi.MoveTableauToTableau(*param.From.Col, *param.From.CardIndex, *param.To.Col))
+		// Pass -1 so the domain resolves the index from its own state — Baker's
+		// Dozen only ever moves the top card, so trusting the client cardIndex
+		// adds nothing and gives the server one less untrusted input.
+		bc.writePresenterResponse(w, bi.MoveTableauToTableau(*param.From.Col, -1, *param.To.Col))
 	case fromZone == "tableau" && toZone == "foundation":
 		if param.From.Col == nil {
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: from.col is required."))

@@ -113,6 +113,9 @@ func (bd *BakersDozen) Reset() {
 		}
 		bd.tableau[i] = append(kings, others...)
 	}
+
+	// Detect a dead deal so the UI can offer Undo-to-Escape from move 0.
+	bd.checkStalemate()
 }
 
 // MoveTableauToTableau タブローからタブローにカードを移動（1枚のみ）

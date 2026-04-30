@@ -16,18 +16,18 @@ func (p *BakersDozenWebPresenter) Output(bd interfaces.BakersDozenGame, lastErr 
 	resObj := new(controller.BakersDozenWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bd, int(bd.GetPhase()))
 
-	// タブロー
+	// タブロー — every card in Baker's Dozen is face-up by rule, so we always
+	// serialise tc.Card and the FaceUp field is effectively a constant true.
 	tableau := bd.GetTableau()
 	resObj.Tableau = make([][]*controller.BakersDozenWebOutputTableauCard, domain.BakersDozenTableauCnt)
 	for i := range domain.BakersDozenTableauCnt {
 		colCards := tableau[i]
 		resObj.Tableau[i] = make([]*controller.BakersDozenWebOutputTableauCard, len(colCards))
 		for j, tc := range colCards {
-			outTC := &controller.BakersDozenWebOutputTableauCard{FaceUp: tc.FaceUp}
-			if tc.FaceUp {
-				outTC.Card = cardToOutput(tc.Card)
+			resObj.Tableau[i][j] = &controller.BakersDozenWebOutputTableauCard{
+				Card:   cardToOutput(tc.Card),
+				FaceUp: true,
 			}
-			resObj.Tableau[i][j] = outTC
 		}
 	}
 

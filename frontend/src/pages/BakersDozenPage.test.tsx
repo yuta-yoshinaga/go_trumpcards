@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bakersDozenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -117,5 +117,64 @@ describe('BakersDozenPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+  });
+
+  it('shows StalemateEscapeButton when stalemate flag is set', async () => {
+    const stalemate: BakersDozenResponse = { ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true };
+    mockExec.mockResolvedValue(stalemate);
+    renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
+  });
+
+  it('renders foundation pile top card', async () => {
+    const withFoundation: BakersDozenResponse = {
+      ...playingState,
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], [], [], []],
+    };
+    mockExec.mockResolvedValue(withFoundation);
+    renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => {
+      // Foundation top card aria-label uses suit + count (見出しは "♠ 組札 2枚")
+      expect(screen.getByLabelText(/♠ 組札 2枚/)).toBeInTheDocument();
+    });
+  });
+
+  it('renders hint banner when hint state is set', async () => {
+    let resolveHint: ((res: BakersDozenResponse) => void) | undefined;
+    mockExec.mockImplementation((cmd: string) => {
+      if (cmd === 'hint') {
+        return new Promise<BakersDozenResponse>((resolve) => {
+          resolveHint = resolve;
+        });
+      }
+      return Promise.resolve(playingState);
+    });
+
+    renderWithProviders(<BakersDozenPage />);
+    const hintBtn = await screen.findByRole('button', { name: 'ヒント' });
+    fireEvent.click(hintBtn);
+
+    // Resolve the in-flight hint call with a hint payload.
+    resolveHint?.({
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 1 },
+    });
+
+    await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
+  });
+
+  it('selecting a tableau card marks it as selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    // Pick the top card of column 0 by its aria-label (cardAlt produces "♠ 5").
+    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    fireEvent.click(sourceBtn);
+    await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('forwards reset commands to the API on initial load', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => expect(mockExec.mock.calls.some((c) => c[0] === 'reset')).toBe(true));
   });
 });

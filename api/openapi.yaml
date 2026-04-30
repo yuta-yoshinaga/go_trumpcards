@@ -4892,7 +4892,6 @@ paths:
                   from:
                     zone: tableau
                     col: 0
-                    cardIndex: -1
                   to:
                     zone: tableau
                     col: 5
@@ -7305,7 +7304,7 @@ components:
           description: Column index (required for tableau zone)
         cardIndex:
           type: integer
-          description: Card index within the column (required when moving from tableau; -1 means top card)
+          description: Optional / ignored. The server always operates on the top card of the source column; clients may omit this field. Retained for parity with FortyThievesMoveZone.
     Card:
       type: object
       description: A single playing card

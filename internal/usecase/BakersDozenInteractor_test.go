@@ -6,7 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -186,6 +188,38 @@ func TestBakersDozenInteractorUndo(t *testing.T) {
 
 		result := bi.Undo()
 		assert.Equal(t, "error_output", result)
+	})
+}
+
+func TestBakersDozenInteractorSnapshot(t *testing.T) {
+	bd := domain.NewDefaultBakersDozen()
+	bd.Reset()
+	bp := newMockBakersDozenPresenter()
+	bi := NewBakersDozenInteractor(bd, bp)
+
+	data, err := bi.Snapshot()
+	require.NoError(t, err)
+	assert.NotEmpty(t, data)
+}
+
+func TestRestoreBakersDozenInteractor(t *testing.T) {
+	t.Run("round-trip preserves state", func(t *testing.T) {
+		bd := domain.NewDefaultBakersDozen()
+		bd.Reset()
+		bp := newMockBakersDozenPresenter()
+		bi := NewBakersDozenInteractor(bd, bp)
+		data, err := bi.Snapshot()
+		require.NoError(t, err)
+
+		restored, err := RestoreBakersDozenInteractor(data, bp)
+		require.NoError(t, err)
+		assert.NotNil(t, restored)
+	})
+
+	t.Run("invalid json returns error", func(t *testing.T) {
+		bp := newMockBakersDozenPresenter()
+		_, err := RestoreBakersDozenInteractor([]byte("not json"), bp)
+		assert.Error(t, err)
 	})
 }
 
