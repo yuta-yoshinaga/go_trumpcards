@@ -463,6 +463,13 @@ export const FortyThievesPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Baker's Dozen phase constants (sync: internal/domain/BakersDozen.go). */
+export const BakersDozenPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Calculation phase constants (sync: internal/domain/Calculation.go). */
 export const CalculationPhase = {
   PLAYING: 0,

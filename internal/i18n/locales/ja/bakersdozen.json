@@ -1,0 +1,8 @@
+{
+  "helpTitle": "Baker's Dozen (ベーカーズ・ダズン)",
+  "helpMoveTF": "  m <col> f            タブローから組札へ",
+  "helpMoveTT": "  m <fromCol> <toCol>  タブロー間で1枚移動",
+  "helpGiveUp": "  g                    ギブアップ",
+  "helpHint": "  h                    ヒント",
+  "helpAutoComplete": "  ac                   オートコンプリート"
+}

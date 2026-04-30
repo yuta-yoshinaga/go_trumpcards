@@ -103,6 +103,12 @@ describe('useGameHint', () => {
     expect(result.current.hint).toBeNull();
   });
 
+  it('returns null hint for bakersdozen (server-side hints only)', () => {
+    localStorage.setItem('hint_enabled_bakersdozen', 'true');
+    const { result } = renderHook(() => useGameHint('bakersdozen', { phase: 0 } as never));
+    expect(result.current.hint).toBeNull();
+  });
+
   it('returns baccarat hint when enabled', () => {
     localStorage.setItem('hint_enabled_baccarat', 'true');
     const state: Partial<BaccaratResponse> = {

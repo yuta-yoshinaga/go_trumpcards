@@ -52,6 +52,7 @@ export const gameTheme: Record<string, { bg: string; footer: string }> = {
   memory: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   clocksolitaire: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   fortythieves: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
+  bakersdozen: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   canfield: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   pokersquares: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
   calculation: { bg: 'bg-game-bg-casino', footer: 'bg-game-bg-casino-dark border-white/20' },
