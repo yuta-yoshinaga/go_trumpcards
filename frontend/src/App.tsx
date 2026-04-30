@@ -24,6 +24,7 @@ import { DaifugoPage } from './pages/DaifugoPage';
 import { DeucesWildPage } from './pages/DeucesWildPage';
 import { DoubtPage } from './pages/DoubtPage';
 import { DurakPage } from './pages/DurakPage';
+import { EgyptianRatscrewPage } from './pages/EgyptianRatscrewPage';
 import { EuchrePage } from './pages/EuchrePage';
 import { FiftyOnePage } from './pages/FiftyOnePage';
 import { FortyThievesPage } from './pages/FortyThievesPage';
@@ -149,6 +150,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/shithead': <ShitheadPage />,
   '/nertz': <NertzPage />,
   '/slapjack': <SlapjackPage />,
+  '/egyptianratscrew': <EgyptianRatscrewPage />,
 };
 
 /** Root application component with router and game page routes. */

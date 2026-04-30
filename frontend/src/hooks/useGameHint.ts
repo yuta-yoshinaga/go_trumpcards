@@ -14,6 +14,7 @@ import type {
   DaifugoResponse,
   DoubtResponse,
   DurakResponse,
+  EgyptianRatscrewResponse,
   EuchreResponse,
   FiftyOneResponse,
   FreeCellResponse,
@@ -75,6 +76,7 @@ import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
 import { getDurakHint } from '../utils/hints/durakHint';
+import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
 import { getFiftyOneHint } from '../utils/hints/fiftyoneHint';
 import { getFreeCellHint } from '../utils/hints/freecellHint';
@@ -192,6 +194,7 @@ const hintFactories = {
   shithead: () => null,
   nertz: (s) => getNertzHint(s as NertzResponse),
   slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
+  egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
 } satisfies Record<string, HintFn>;
 
 /** Supported game names for the hint system, derived from the registry. */

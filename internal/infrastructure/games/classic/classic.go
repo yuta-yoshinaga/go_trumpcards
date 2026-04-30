@@ -247,4 +247,12 @@ func init() {
 			return usecase.RestoreSlapjackInteractor(data, new(presenter.SlapjackWebPresenter))
 		},
 		controller.NewSlapjackWebControllerWithProvider)
+	games.RegisterKVGame("egyptianratscrew", games.CategoryClassic,
+		func() usecase.EgyptianRatscrewInteractorIF {
+			return usecase.NewEgyptianRatscrewInteractor(domain.NewDefaultEgyptianRatscrew(), new(presenter.EgyptianRatscrewWebPresenter))
+		},
+		func(data []byte) (usecase.EgyptianRatscrewInteractorIF, error) {
+			return usecase.RestoreEgyptianRatscrewInteractor(data, new(presenter.EgyptianRatscrewWebPresenter))
+		},
+		controller.NewEgyptianRatscrewWebControllerWithProvider)
 }

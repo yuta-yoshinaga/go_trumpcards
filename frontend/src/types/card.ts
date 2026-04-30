@@ -3058,3 +3058,35 @@ export interface SlapjackResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+/** Player snapshot for Egyptian Ratscrew. */
+export interface EgyptianRatscrewPlayerData {
+  name: string;
+  isHuman: boolean;
+  stockSize: number;
+}
+
+/** Full Egyptian Ratscrew game state returned from the API. */
+export interface EgyptianRatscrewResponse {
+  phase: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  currentTurnIdx: number;
+  isHumanTurn: boolean;
+  isTopFaceCard: boolean;
+  isSlappable: boolean;
+  centerPileSize: number;
+  topCard?: Card | null;
+  players: EgyptianRatscrewPlayerData[];
+  cpuDifficulty: number;
+  chanceRemaining: number;
+  chanceFromIdx: number;
+  pendingKind: number;
+  pendingDeadlineMs: number;
+  lastEventKind: number;
+  lastEventPlayerIdx: number;
+  lastSlapReason: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}

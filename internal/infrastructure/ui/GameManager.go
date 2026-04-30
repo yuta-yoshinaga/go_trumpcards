@@ -1141,6 +1141,20 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"slapjack.helpSetDifficulty"},
 			})
 	}},
+	{Name: "egyptianratscrew", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewEgyptianRatscrewCuiController(usecase.NewEgyptianRatscrewInteractor(
+				domain.NewDefaultEgyptianRatscrew(), new(presenter.EgyptianRatscrewCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "egyptianratscrew.helpTitle",
+				CommandKeys: []string{
+					"egyptianratscrew.helpStep",
+					"egyptianratscrew.helpSlap",
+					"egyptianratscrew.helpTick",
+				},
+				SettingKeys: []string{"egyptianratscrew.helpSetDifficulty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

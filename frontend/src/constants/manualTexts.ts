@@ -20,6 +20,7 @@ import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
+import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
@@ -90,6 +91,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/deuceswild': deuceswild,
   '/doubt': doubt,
   '/durak': durak,
+  '/egyptianratscrew': egyptianratscrew,
   '/fortythieves': fortythieves,
   '/euchre': euchre,
   '/freecell': freecell,

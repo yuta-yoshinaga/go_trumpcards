@@ -20,6 +20,7 @@ import type {
   DoubtResponse,
   DurakConfigInput,
   DurakResponse,
+  EgyptianRatscrewResponse,
   EuchreResponse,
   FiftyOneResponse,
   FortyThievesMoveZone,
@@ -159,6 +160,7 @@ const workerUrl: Record<string, string> = {
   shithead: WORKER_CLASSIC,
   nertz: WORKER_CLASSIC,
   slapjack: WORKER_CLASSIC,
+  egyptianratscrew: WORKER_CLASSIC,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1143,6 +1145,20 @@ export const slapjackApi = {
     }),
 };
 
+/** Configuration options for Egyptian Ratscrew game settings. */
+export interface EgyptianRatscrewConfigInput {
+  cpuDifficulty?: number;
+}
+
+/** API client for the Egyptian Ratscrew /egyptianratscrew/exec endpoint. */
+export const egyptianRatscrewApi = {
+  exec: (command: 'reset' | 'step' | 'slap' | 'tick' | 'log', args?: { config?: EgyptianRatscrewConfigInput }) =>
+    gameExec<EgyptianRatscrewResponse>('egyptianratscrew', {
+      command,
+      ...(args || {}),
+    }),
+};
+
 /** API client for the Fifty-one /fiftyone/exec endpoint. */
 export const fiftyoneApi = {
   exec: (
@@ -1453,6 +1469,7 @@ const games = [
   'shithead',
   'nertz',
   'slapjack',
+  'egyptianratscrew',
 ] as const;
 type Game = (typeof games)[number];
 
