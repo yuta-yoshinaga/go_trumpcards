@@ -24,5 +24,9 @@
     "drawButton": "Press this button to draw a card. If it matches the suit of the top center card, you get a penalty!",
     "playerArea": "Each player's hand count is shown here.",
     "resetButton": "Press reset to start a new game."
+  },
+  "hint": {
+    "draw": "Your turn — draw a card from the circle.",
+    "afterPenalty": "Previous draw caused a penalty. Draw again."
   }
 }

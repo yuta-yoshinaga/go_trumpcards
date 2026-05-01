@@ -3,12 +3,14 @@ import type {
   AccordionResponse,
   BaccaratResponse,
   BadugiResponse,
+  BakersDozenResponse,
   BlackJackResponse,
   CalculationResponse,
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
   CassinoResponse,
+  ClockSolitaireResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoResponse,
@@ -32,6 +34,7 @@ import type {
   OldMaidResponse,
   OmahaResponse,
   PageOneResponse,
+  PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
   PokerResponse,
@@ -43,7 +46,9 @@ import type {
   SevenBridgeResponse,
   SevenCardStudResponse,
   SevensResponse,
+  ShitheadResponse,
   ShortDeckResponse,
+  SkatResponse,
   SlapjackResponse,
   SpadesResponse,
   SpeedResponse,
@@ -63,12 +68,14 @@ import type { HintResult } from '../types/hint';
 import { getAccordionHint } from '../utils/hints/accordionHint';
 import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
+import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
+import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
 import { getCrazyPineappleHint } from '../utils/hints/crazyPineappleHint';
 import { getCribbageHint } from '../utils/hints/cribbageHint';
@@ -95,6 +102,7 @@ import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
+import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
@@ -106,7 +114,9 @@ import { getReddogHint } from '../utils/hints/reddogHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
+import { getShitheadHint } from '../utils/hints/shitheadHint';
 import { getShortDeckHint } from '../utils/hints/shortdeckHint';
+import { getSkatHint } from '../utils/hints/skatHint';
 import { getSlapjackHint } from '../utils/hints/slapjackHint';
 import { getSpadesHint } from '../utils/hints/spadesHint';
 import { getSpeedHint } from '../utils/hints/speedHint';
@@ -174,10 +184,11 @@ const hintFactories = {
   razz: (s) => getRazzHint(s as SevenCardStudResponse),
   badugi: (s) => getBadugiHint(s as BadugiResponse),
   fortythieves: () => null,
-  bakersdozen: () => null,
+  bakersdozen: (s) => getBakersdozenHint(s as BakersDozenResponse),
   tonk: () => null,
   paigow: () => null,
   pageone: (s) => getPageOneHint(s as PageOneResponse),
+  pigtail: (s) => getPigstailHint(s as PigsTailResponse),
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
   letitride: (s) => getLetitrideHint(s as LetItRideResponse),
   reddog: (s) => getReddogHint(s as RedDogResponse),
@@ -191,9 +202,10 @@ const hintFactories = {
   trash: (s) => getTrashHint(s as TrashResponse),
   president: (s) => getPresidentHint(s as PresidentResponse),
   cassino: (s) => getCassinoHint(s as CassinoResponse),
+  clocksolitaire: (s) => getClocksolitaireHint(s as ClockSolitaireResponse),
   spiteandmalice: (s) => getSpiteAndMaliceHint(s as SpiteAndMaliceResponse),
-  skat: () => null,
-  shithead: () => null,
+  skat: (s) => getSkatHint(s as SkatResponse),
+  shithead: (s) => getShitheadHint(s as ShitheadResponse),
   nertz: (s) => getNertzHint(s as NertzResponse),
   slapjack: (s) => getSlapjackHint(s as SlapjackResponse),
   egyptianratscrew: (s) => getEgyptianRatscrewHint(s as EgyptianRatscrewResponse),
