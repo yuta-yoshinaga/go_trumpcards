@@ -9,6 +9,21 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// canastaNoArgCommands maps no-arg CUI commands to Canasta interactor methods.
+var canastaNoArgCommands = cuiutil.NewCommandMap[usecase.CanastaInteractorIF]().
+	Add(usecase.CanastaInteractorIF.DrawFromStock, "ds", "drawstock").
+	Add(usecase.CanastaInteractorIF.SkipMeld, "sm", "skipmeld").
+	Add(usecase.CanastaInteractorIF.GoOut, "go", "goout").
+	Add(usecase.CanastaInteractorIF.NextRound, "nr", "nextround").
+	Add(usecase.CanastaInteractorIF.ActionLog, "log", "l")
+
+// canastaArgfulCommands lists alias names for argful commands handled in the
+// Exec switch.
+var canastaArgfulCommands = []string{
+	"dd", "drawdiscard", "m", "meld", "d", "discard",
+	"sd", "setdifficulty", "sl", "setlimit",
+}
+
 // CanastaCuiController カナスタCUIコントローラークラス
 type CanastaCuiController struct {
 	ci usecase.CanastaInteractorIF
@@ -27,31 +42,20 @@ func (c *CanastaCuiController) Exec(command string) string {
 			cfg := c.ci.GetConfig()
 			return c.ci.ResetWithConfig(cfg)
 		},
-		[]string{
-			"ds", "drawstock", "dd", "drawdiscard",
-			"m", "meld", "sm", "skipmeld",
-			"d", "discard", "go", "goout",
-			"nr", "nextround",
-			"sd", "setdifficulty", "sl", "setlimit", "log", "l",
-		},
+		append(canastaNoArgCommands.Names(), canastaArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := canastaNoArgCommands.Lookup(cmd); ok {
+				return fn(c.ci), true
+			}
 			switch cmd {
-			case "ds", "drawstock":
-				return c.ci.DrawFromStock(), true
 			case "dd", "drawdiscard":
 				indices := parseIntList(args)
 				return c.ci.DrawFromDiscard(indices), true
 			case "m", "meld":
 				groups := parseMeldGroups(args)
 				return c.ci.Meld(groups), true
-			case "sm", "skipmeld":
-				return c.ci.SkipMeld(), true
 			case "d", "discard":
 				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
-			case "go", "goout":
-				return c.ci.GoOut(), true
-			case "nr", "nextround":
-				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
 				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
@@ -65,7 +69,7 @@ func (c *CanastaCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return "", false
 			}
 		},
 	)

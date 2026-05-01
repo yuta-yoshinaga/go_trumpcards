@@ -10,6 +10,21 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// klondikeNoArgCommands maps no-arg CUI commands to Klondike interactor methods.
+var klondikeNoArgCommands = cuiutil.NewCommandMap[usecase.KlondikeInteractorIF]().
+	Add(usecase.KlondikeInteractorIF.Draw, "d", "draw").
+	Add(usecase.KlondikeInteractorIF.GiveUp, "g", "giveup").
+	Add(usecase.KlondikeInteractorIF.AutoComplete, "ac", "autocomplete").
+	Add(usecase.KlondikeInteractorIF.Undo, "u", "undo").
+	Add(usecase.KlondikeInteractorIF.Hint, "h", "hint").
+	Add(usecase.KlondikeInteractorIF.ActionLog, "log", "l")
+
+// klondikeArgfulCommands lists alias names for argful commands handled in the
+// Exec switch. "f" is included even though it can be no-arg, because it
+// behaves differently with vs. without a column argument and isn't a clean
+// nullary call.
+var klondikeArgfulCommands = []string{"m", "move", "f"}
+
 // KlondikeCuiController クロンダイクCUIコントローラークラス
 type KlondikeCuiController struct {
 	ki usecase.KlondikeInteractorIF
@@ -33,23 +48,18 @@ func (c *KlondikeCuiController) Exec(command string) string {
 			}
 			return c.ki.Reset()
 		},
-		[]string{"d", "draw", "m", "move", "f", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
+		append(klondikeNoArgCommands.Names(), klondikeArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := klondikeNoArgCommands.Lookup(cmd); ok {
+				return fn(c.ki), true
+			}
 			switch cmd {
-			case "d", "draw":
-				return c.ki.Draw(), true
 			case "f":
 				return c.handleFoundationShorthand(args), true
 			case "m", "move":
 				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ki.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ki.AutoComplete(), true
-			case "u", "undo":
-				return c.ki.Undo(), true
 			default:
-				return handleCuiHintAndLog(cmd, c.ki.Hint, c.ki.ActionLog)
+				return "", false
 			}
 		},
 	)

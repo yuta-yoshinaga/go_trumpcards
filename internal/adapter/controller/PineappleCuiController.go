@@ -10,6 +10,41 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// pineappleNoArgCommands maps no-arg CUI commands to Pineapple interactor calls.
+// Action(domain.PineappleActionX, 0, 0) is wrapped in a thin closure because
+// CommandMap binds func(T) string and the action enum/zero amounts have to be
+// supplied at registration time.
+var pineappleNoArgCommands = cuiutil.NewCommandMap[usecase.PineappleInteractorIF]().
+	Add(func(pi usecase.PineappleInteractorIF) string {
+		return pi.Action(domain.PineappleActionFold, 0, 0)
+	}, "f", "fold").
+	Add(func(pi usecase.PineappleInteractorIF) string {
+		return pi.Action(domain.PineappleActionCheck, 0, 0)
+	}, "ck", "check").
+	Add(func(pi usecase.PineappleInteractorIF) string {
+		return pi.Action(domain.PineappleActionCall, 0, 0)
+	}, "c", "call").
+	Add(func(pi usecase.PineappleInteractorIF) string {
+		return pi.Action(domain.PineappleActionAllIn, 0, 0)
+	}, "a", "allin").
+	Add(usecase.PineappleInteractorIF.Rebuy, "rb", "rebuy").
+	Add(usecase.PineappleInteractorIF.SkipRebuy, "sr", "skiprebuy").
+	Add(usecase.PineappleInteractorIF.Addon, "ad", "addon").
+	Add(usecase.PineappleInteractorIF.SkipAddon, "sa", "skipaddon").
+	Add(usecase.PineappleInteractorIF.Muck, "m", "muck").
+	Add(usecase.PineappleInteractorIF.ShowHand, "sh", "show").
+	Add(usecase.PineappleInteractorIF.ActionLog, "log", "l")
+
+// pineappleArgfulCommands lists alias names for argful commands handled in the
+// Exec switch.
+var pineappleArgfulCommands = []string{
+	"b", "bet", "ra", "raise", "d", "discard",
+	"bl", "bettinglimit", "tm", "tournament",
+	"sb", "smallblind", "bb", "bigblind",
+	"lh", "levelhand", "ts", "tablesize",
+	"mai", "metaai",
+}
+
 // PineappleCuiController パイナップルポーカーCUIコントローラークラス
 type PineappleCuiController struct {
 	pi usecase.PineappleInteractorIF
@@ -25,23 +60,12 @@ func (c *PineappleCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.pi.Reset() },
-		[]string{
-			"f", "fold", "ck", "check", "c", "call", "b", "bet", "ra", "raise",
-			"a", "allin", "d", "discard",
-			"bl", "bettinglimit", "tm", "tournament",
-			"sb", "smallblind", "bb", "bigblind", "lh", "levelhand", "ts", "tablesize",
-			"rb", "rebuy", "sr", "skiprebuy", "ad", "addon", "sa", "skipaddon", "m", "muck", "sh", "show",
-			"mai", "metaai",
-			"log", "l",
-		},
+		append(pineappleNoArgCommands.Names(), pineappleArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := pineappleNoArgCommands.Lookup(cmd); ok {
+				return fn(c.pi), true
+			}
 			switch cmd {
-			case "f", "fold":
-				return c.pi.Action(domain.PineappleActionFold, 0, 0), true
-			case "ck", "check":
-				return c.pi.Action(domain.PineappleActionCheck, 0, 0), true
-			case "c", "call":
-				return c.pi.Action(domain.PineappleActionCall, 0, 0), true
 			case "b", "bet":
 				if len(args) < 1 {
 					return cuiutil.PromptRequest(i18n.T("promptBetAmount"), "b {0}"), true
@@ -60,8 +84,6 @@ func (c *PineappleCuiController) Exec(command string) string {
 					return err.Error(), true
 				}
 				return c.pi.Action(domain.PineappleActionRaise, amount, 0), true
-			case "a", "allin":
-				return c.pi.Action(domain.PineappleActionAllIn, 0, 0), true
 			case "d", "discard":
 				if len(args) < 1 {
 					return i18n.T("pineapple.discardIdxRequired"), true
@@ -137,18 +159,6 @@ func (c *PineappleCuiController) Exec(command string) string {
 				cfg := c.pi.GetConfig()
 				cfg.TableSize = v
 				return c.pi.ResetWithConfig(cfg, nil), true
-			case "rb", "rebuy":
-				return c.pi.Rebuy(), true
-			case "sr", "skiprebuy":
-				return c.pi.SkipRebuy(), true
-			case "ad", "addon":
-				return c.pi.Addon(), true
-			case "sa", "skipaddon":
-				return c.pi.SkipAddon(), true
-			case "m", "muck":
-				return c.pi.Muck(), true
-			case "sh", "show":
-				return c.pi.ShowHand(), true
 			case "mai", "metaai":
 				if len(args) < 1 {
 					return i18n.T("metaAIRequired"), true
@@ -161,7 +171,7 @@ func (c *PineappleCuiController) Exec(command string) string {
 				cfg.CpuMetaAI = v == 1
 				return c.pi.ResetWithConfig(cfg, nil), true
 			default:
-				return handleCuiLog(cmd, c.pi.ActionLog)
+				return "", false
 			}
 		},
 	)

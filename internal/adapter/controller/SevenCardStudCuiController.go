@@ -9,6 +9,41 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// sevenCardStudNoArgCommands maps no-arg CUI commands to SevenCardStud calls.
+// Action(domain.SevenCardStudActionX, 0, 0) is wrapped in a thin closure
+// because CommandMap binds func(T) string and the action enum/zero amounts
+// have to be supplied at registration time.
+var sevenCardStudNoArgCommands = cuiutil.NewCommandMap[usecase.SevenCardStudInteractorIF]().
+	Add(func(si usecase.SevenCardStudInteractorIF) string {
+		return si.Action(domain.SevenCardStudActionFold, 0, 0)
+	}, "f", "fold").
+	Add(func(si usecase.SevenCardStudInteractorIF) string {
+		return si.Action(domain.SevenCardStudActionCheck, 0, 0)
+	}, "ck", "check").
+	Add(func(si usecase.SevenCardStudInteractorIF) string {
+		return si.Action(domain.SevenCardStudActionCall, 0, 0)
+	}, "c", "call").
+	Add(func(si usecase.SevenCardStudInteractorIF) string {
+		return si.Action(domain.SevenCardStudActionAllIn, 0, 0)
+	}, "a", "allin").
+	Add(usecase.SevenCardStudInteractorIF.Rebuy, "rb", "rebuy").
+	Add(usecase.SevenCardStudInteractorIF.SkipRebuy, "sr", "skiprebuy").
+	Add(usecase.SevenCardStudInteractorIF.Addon, "ad", "addon").
+	Add(usecase.SevenCardStudInteractorIF.SkipAddon, "sa", "skipaddon").
+	Add(usecase.SevenCardStudInteractorIF.Muck, "m", "muck").
+	Add(usecase.SevenCardStudInteractorIF.ShowHand, "sh", "show").
+	Add(usecase.SevenCardStudInteractorIF.ActionLog, "log", "l")
+
+// sevenCardStudArgfulCommands lists alias names for argful commands handled in
+// the Exec switch.
+var sevenCardStudArgfulCommands = []string{
+	"b", "bet", "ra", "raise",
+	"bl", "bettinglimit", "tm", "tournament",
+	"ante", "bi", "bringin", "sb", "smallbet", "bb", "bigbet",
+	"lh", "levelhand", "ts", "tablesize",
+	"mai", "metaai",
+}
+
 // SevenCardStudCuiController セブンカードスタッドCUIコントローラークラス
 type SevenCardStudCuiController struct {
 	si usecase.SevenCardStudInteractorIF
@@ -24,23 +59,12 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.si.Reset() },
-		[]string{
-			"f", "fold", "ck", "check", "c", "call", "b", "bet", "ra", "raise",
-			"a", "allin", "bl", "bettinglimit", "tm", "tournament",
-			"ante", "bi", "bringin", "sb", "smallbet", "bb", "bigbet",
-			"lh", "levelhand", "ts", "tablesize",
-			"rb", "rebuy", "sr", "skiprebuy", "ad", "addon", "sa", "skipaddon", "m", "muck", "sh", "show",
-			"mai", "metaai",
-			"log", "l",
-		},
+		append(sevenCardStudNoArgCommands.Names(), sevenCardStudArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := sevenCardStudNoArgCommands.Lookup(cmd); ok {
+				return fn(c.si), true
+			}
 			switch cmd {
-			case "f", "fold":
-				return c.si.Action(domain.SevenCardStudActionFold, 0, 0), true
-			case "ck", "check":
-				return c.si.Action(domain.SevenCardStudActionCheck, 0, 0), true
-			case "c", "call":
-				return c.si.Action(domain.SevenCardStudActionCall, 0, 0), true
 			case "b", "bet":
 				if len(args) < 1 {
 					return cuiutil.PromptRequest(i18n.T("promptBetAmount"), "b {0}"), true
@@ -59,8 +83,6 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 					return err.Error(), true
 				}
 				return c.si.Action(domain.SevenCardStudActionRaise, amount, 0), true
-			case "a", "allin":
-				return c.si.Action(domain.SevenCardStudActionAllIn, 0, 0), true
 			case "bl", "bettinglimit":
 				if len(args) < 1 {
 					return i18n.T("holdem.bettingLimitRequired"), true
@@ -149,18 +171,6 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				cfg := c.si.GetConfig()
 				cfg.TableSize = v
 				return c.si.ResetWithConfig(cfg, nil), true
-			case "rb", "rebuy":
-				return c.si.Rebuy(), true
-			case "sr", "skiprebuy":
-				return c.si.SkipRebuy(), true
-			case "ad", "addon":
-				return c.si.Addon(), true
-			case "sa", "skipaddon":
-				return c.si.SkipAddon(), true
-			case "m", "muck":
-				return c.si.Muck(), true
-			case "sh", "show":
-				return c.si.ShowHand(), true
 			case "mai", "metaai":
 				if len(args) < 1 {
 					return i18n.T("metaAIRequired"), true
@@ -173,7 +183,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				cfg.CpuMetaAI = v == 1
 				return c.si.ResetWithConfig(cfg, nil), true
 			default:
-				return handleCuiLog(cmd, c.si.ActionLog)
+				return "", false
 			}
 		},
 	)
