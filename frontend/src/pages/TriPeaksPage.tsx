@@ -27,7 +27,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -156,7 +156,7 @@ function TriPeaksPageContent() {
 
   // Issue #1609: warn before tab close / reload while a round is in progress.
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
+  useGameRoundGuard(isGameRoundActive(state));
 
   if (!state) return <TriPeaksSkeleton />;
 

@@ -29,7 +29,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useFortyThievesGame } from '../hooks/useFortyThievesGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -184,7 +184,7 @@ function FortyThievesPageContent() {
 
   // Issue #1609: warn before tab close / reload while a round is in progress.
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
+  useGameRoundGuard(isGameRoundActive(state));
 
   if (!state) return <FortyThievesSkeleton />;
 
