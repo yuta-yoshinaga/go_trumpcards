@@ -3,7 +3,6 @@
 package ui
 
 import (
-	"bufio"
 	"bytes"
 	"strings"
 	"testing"
@@ -33,10 +32,10 @@ func (m *promptMockExecer) Exec(command string) string {
 
 func TestHandlePromptLoop_NoPrompt(t *testing.T) {
 	t.Parallel()
-	scanner := bufio.NewScanner(strings.NewReader(""))
 	var buf bytes.Buffer
+	reader := newScannerLineReader(strings.NewReader(""), &buf)
 	me := &promptMockExecer{}
-	result := handlePromptLoop(scanner, me, "normal result", "", &buf)
+	result := handlePromptLoop(reader, me, "normal result", "", &buf)
 	assert.Equal(t, "normal result", result)
 	assert.Empty(t, me.calls)
 }
@@ -44,11 +43,11 @@ func TestHandlePromptLoop_NoPrompt(t *testing.T) {
 func TestHandlePromptLoop_SinglePrompt(t *testing.T) {
 	t.Parallel()
 	// Simulate: controller returns prompt, user types "100", controller returns "bet ok"
-	scanner := bufio.NewScanner(strings.NewReader("100\n"))
 	var buf bytes.Buffer
+	reader := newScannerLineReader(strings.NewReader("100\n"), &buf)
 	me := &promptMockExecer{results: []string{"bet ok"}}
 	prompt := cuiutil.PromptRequest("Enter bet amount:", "b {0}")
-	result := handlePromptLoop(scanner, me, prompt, "", &buf)
+	result := handlePromptLoop(reader, me, prompt, "", &buf)
 	assert.Equal(t, "bet ok", result)
 	assert.Equal(t, []string{"b 100"}, me.calls)
 	assert.Contains(t, buf.String(), "Enter bet amount:")
@@ -57,34 +56,34 @@ func TestHandlePromptLoop_SinglePrompt(t *testing.T) {
 func TestHandlePromptLoop_ChainedPrompts(t *testing.T) {
 	t.Parallel()
 	// Simulate wizard: m -> prompt source zone -> user types "t" -> prompt column -> user types "3" -> "move ok"
-	scanner := bufio.NewScanner(strings.NewReader("t\n3\n"))
 	var buf bytes.Buffer
+	reader := newScannerLineReader(strings.NewReader("t\n3\n"), &buf)
 	secondPrompt := cuiutil.PromptRequest("Enter column:", "m t {0}")
 	me := &promptMockExecer{results: []string{secondPrompt, "move ok"}}
 	firstPrompt := cuiutil.PromptRequest("Enter source zone:", "m {0}")
-	result := handlePromptLoop(scanner, me, firstPrompt, "klondike", &buf)
+	result := handlePromptLoop(reader, me, firstPrompt, "klondike", &buf)
 	assert.Equal(t, "move ok", result)
 	assert.Equal(t, []string{"m t", "m t 3"}, me.calls)
 }
 
 func TestHandlePromptLoop_EmptyInput_Cancels(t *testing.T) {
 	t.Parallel()
-	scanner := bufio.NewScanner(strings.NewReader("\n"))
 	var buf bytes.Buffer
+	reader := newScannerLineReader(strings.NewReader("\n"), &buf)
 	me := &promptMockExecer{}
 	prompt := cuiutil.PromptRequest("Enter amount:", "b {0}")
-	result := handlePromptLoop(scanner, me, prompt, "", &buf)
+	result := handlePromptLoop(reader, me, prompt, "", &buf)
 	assert.Equal(t, i18n.T("cancelled"), result)
 	assert.Empty(t, me.calls)
 }
 
 func TestHandlePromptLoop_EOF_ReturnsQuit(t *testing.T) {
 	t.Parallel()
-	scanner := bufio.NewScanner(strings.NewReader(""))
 	var buf bytes.Buffer
+	reader := newScannerLineReader(strings.NewReader(""), &buf)
 	me := &promptMockExecer{}
 	prompt := cuiutil.PromptRequest("Enter amount:", "b {0}")
-	result := handlePromptLoop(scanner, me, prompt, "", &buf)
+	result := handlePromptLoop(reader, me, prompt, "", &buf)
 	assert.Equal(t, i18n.QuitSentinel, result)
 	assert.Empty(t, me.calls)
 }
@@ -96,22 +95,22 @@ func TestHandlePromptLoop_EOF_ReturnsQuit(t *testing.T) {
 // single-game-mode loop use the same gameName as interactive mode).
 func TestHandlePromptLoop_GameNameInPrompt(t *testing.T) {
 	t.Parallel()
-	scanner := bufio.NewScanner(strings.NewReader("100\n"))
 	var buf bytes.Buffer
+	reader := newScannerLineReader(strings.NewReader("100\n"), &buf)
 	me := &promptMockExecer{results: []string{"bet ok"}}
 	prompt := cuiutil.PromptRequest("Enter bet amount:", "b {0}")
-	_ = handlePromptLoop(scanner, me, prompt, "blackjack", &buf)
+	_ = handlePromptLoop(reader, me, prompt, "blackjack", &buf)
 	assert.Contains(t, buf.String(), "[blackjack] > ", "prompt must include gameName context")
 }
 
 func TestHandlePromptLoop_MalformedPrompt(t *testing.T) {
 	t.Parallel()
-	scanner := bufio.NewScanner(strings.NewReader(""))
 	var buf bytes.Buffer
+	reader := newScannerLineReader(strings.NewReader(""), &buf)
 	me := &promptMockExecer{}
 	// Malformed: no tab separator, so template is empty
 	malformed := "PROMPT:Just a message"
-	result := handlePromptLoop(scanner, me, malformed, "", &buf)
+	result := handlePromptLoop(reader, me, malformed, "", &buf)
 	assert.Equal(t, "Just a message", result)
 	assert.Empty(t, me.calls)
 }

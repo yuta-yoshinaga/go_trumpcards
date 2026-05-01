@@ -3,7 +3,6 @@
 package ui
 
 import (
-	"bufio"
 	"bytes"
 	"strings"
 	"testing"
@@ -50,8 +49,8 @@ func TestReadInput_WithGameName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			var promptBuf bytes.Buffer
-			scanner := bufio.NewScanner(strings.NewReader(tt.input))
-			text, exit := readInput(scanner, tt.gameName, &promptBuf)
+			reader := newScannerLineReader(strings.NewReader(tt.input), &promptBuf)
+			text, exit := readInput(reader, tt.gameName)
 
 			assert.Equal(t, tt.wantPrompt, promptBuf.String())
 			assert.Equal(t, tt.wantText, text)

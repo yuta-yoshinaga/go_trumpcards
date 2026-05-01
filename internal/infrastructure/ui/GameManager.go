@@ -1352,6 +1352,21 @@ func (m *GameManager) switchGame(name string) string {
 	return msg
 }
 
+// CompletionCandidates returns the alias set the readline tab-completer
+// should offer for the first token. Includes the manager-level commands
+// (`switch`, `games`) plus every canonical game name and alias, so typing
+// `swi<Tab>` completes to `switch` and `bla<Tab>` completes to `blackjack`.
+// Per-game command aliases (e.g. `hit`, `stand`) are intentionally omitted —
+// they live in the controller layer and would require a CuiExecer extension
+// the rest of the codebase doesn't have yet. Issue #1608.
+func (m *GameManager) CompletionCandidates() []string {
+	candidates := m.suggestionCandidates()
+	out := make([]string, 0, len(candidates)+2)
+	out = append(out, "switch", "games")
+	out = append(out, candidates...)
+	return out
+}
+
 // suggestionCandidates returns the deduplicated set of canonical game names
 // and aliases for "did you mean" suggestions on `switch <typo>`. Mirrors the
 // helper in cmd/trumpcards/main.go added in #1555 so a typo of an alias (e.g.

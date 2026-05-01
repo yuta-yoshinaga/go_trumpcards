@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -42,6 +41,60 @@ type CuiExecer interface {
 	Exec(command string) string
 }
 
+// commandLister exposes the alias set a controller will accept. It's
+// implemented by any type whose value-set is reachable through CuiExecer +
+// reflection-free introspection — currently just *GameManager — so the
+// completer below can suggest game-specific aliases. Controllers that don't
+// implement it get only the common command set.
+type commandLister interface {
+	CompletionCandidates() []string
+}
+
+// commonCompletionCommands is the always-available command set. Mirrors
+// cui_controller_helper.go's commonCommands; duplicated here because that
+// list lives in the adapter layer and we want infra to stay independent.
+var commonCompletionCommands = []string{
+	"q", "quit", "exit",
+	"r", "reset",
+	"help", "?",
+}
+
+// installCompleter wires a tab-completion function into r. The completer
+// expands the first token only — argful commands (e.g. "b 100") still need
+// the user to type the argument by hand, since alias completion can't know
+// game-state-dependent valid arguments.
+func installCompleter(r LineReader, lister commandLister) {
+	r.SetCompleter(func(prefix string) []string {
+		// liner passes the full line; we complete the first whitespace-bounded token.
+		fields := strings.Fields(prefix)
+		// If the cursor is past the first token, no completion (we don't know
+		// per-game arg shapes).
+		if len(fields) > 1 || (len(fields) == 1 && strings.HasSuffix(prefix, " ")) {
+			return nil
+		}
+		var token string
+		if len(fields) == 1 {
+			token = fields[0]
+		}
+		candidates := commonCompletionCommands
+		if lister != nil {
+			candidates = append(candidates, lister.CompletionCandidates()...)
+		}
+		var out []string
+		seen := make(map[string]bool, len(candidates))
+		for _, c := range candidates {
+			if seen[c] {
+				continue
+			}
+			seen[c] = true
+			if strings.HasPrefix(c, token) {
+				out = append(out, c)
+			}
+		}
+		return out
+	})
+}
+
 // RunInteractiveCuiLoop runs an interactive multi-game CUI loop with game switching support.
 // The manager handles help/? commands internally; other commands are delegated to the current game.
 func RunInteractiveCuiLoop(manager *GameManager) {
@@ -51,14 +104,21 @@ func RunInteractiveCuiLoop(manager *GameManager) {
 		fmt.Println(initMsg)
 	}
 	fmt.Println(i18n.T("typeHelp"))
-	scanner := bufio.NewScanner(os.Stdin)
+	reader := newDefaultLineReader()
+	defer func() { _ = reader.Close() }()
+	if lister, ok := any(manager).(commandLister); ok {
+		installCompleter(reader, lister)
+	} else {
+		installCompleter(reader, nil)
+	}
 	for {
-		input, exit := readInput(scanner, manager.CurrentGame(), os.Stdout)
+		input, exit := readInput(reader, manager.CurrentGame())
 		if exit {
 			break
 		}
+		reader.AppendHistory(input)
 		res := manager.Exec(input)
-		res = handlePromptLoop(scanner, manager, res, manager.CurrentGame(), os.Stdout)
+		res = handlePromptLoop(reader, manager, res, manager.CurrentGame(), os.Stdout)
 		if res == i18n.QuitSentinel {
 			fmt.Println(i18n.T("bye"))
 			break
@@ -86,12 +146,19 @@ func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) {
 	setupSignalHandler()
 	fmt.Println(controller.Exec("r"))
 	fmt.Println(i18n.T("typeHelp"))
-	scanner := bufio.NewScanner(os.Stdin)
+	reader := newDefaultLineReader()
+	defer func() { _ = reader.Close() }()
+	if lister, ok := controller.(commandLister); ok {
+		installCompleter(reader, lister)
+	} else {
+		installCompleter(reader, nil)
+	}
 	for {
-		input, exit := readInput(scanner, gameName, os.Stdout)
+		input, exit := readInput(reader, gameName)
 		if exit {
 			break
 		}
+		reader.AppendHistory(input)
 		trimmed := strings.TrimSpace(input)
 		if trimmed == "help" || trimmed == "?" {
 			for _, line := range helpLines {
@@ -100,7 +167,7 @@ func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) {
 			continue
 		}
 		res := controller.Exec(input)
-		res = handlePromptLoop(scanner, controller, res, gameName, os.Stdout)
+		res = handlePromptLoop(reader, controller, res, gameName, os.Stdout)
 		if res == i18n.QuitSentinel {
 			fmt.Println(i18n.T("bye"))
 			break
@@ -111,7 +178,7 @@ func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) {
 
 // handlePromptLoop handles interactive prompting when a controller returns a prompt request.
 // It loops until the controller returns a non-prompt result (allowing chained wizard-style prompts).
-func handlePromptLoop(scanner *bufio.Scanner, execer CuiExecer, result, gameName string, w io.Writer) string {
+func handlePromptLoop(reader LineReader, execer CuiExecer, result, gameName string, w io.Writer) string {
 	for cuiutil.IsPromptRequest(result) {
 		promptMsg, tmpl := cuiutil.ParsePromptRequest(result)
 		if tmpl == "" {
@@ -119,7 +186,7 @@ func handlePromptLoop(scanner *bufio.Scanner, execer CuiExecer, result, gameName
 			return promptMsg
 		}
 		_, _ = fmt.Fprintln(w, promptMsg)
-		input, exit := readInput(scanner, gameName, w)
+		input, exit := readInput(reader, gameName)
 		if exit {
 			return i18n.QuitSentinel
 		}

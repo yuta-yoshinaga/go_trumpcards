@@ -6,6 +6,7 @@ toolchain go1.26.0
 
 require (
 	github.com/minio/selfupdate v0.6.0
+	github.com/peterh/liner v1.2.2
 	github.com/stretchr/testify v1.11.1
 	github.com/syumai/workers v0.32.0
 	golang.org/x/term v0.41.0
@@ -14,6 +15,7 @@ require (
 require (
 	aead.dev/minisign v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
