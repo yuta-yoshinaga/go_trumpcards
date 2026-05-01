@@ -19,7 +19,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { SpiderSkeleton } from '../components/skeleton/SpiderSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -169,7 +169,7 @@ function SpiderPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <SpiderSkeleton />;
+  if (!state) return <GameSkeleton gameKey="spider" layout={{ kind: 'tableau', topRow: 3, tableau: 10 }} />;
 
   const isPlaying = state.phase === SpiderPhase.PLAYING;
   const isGameClear = state.phase === SpiderPhase.GAME_CLEAR;

@@ -13,7 +13,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
-import { WhistSkeleton } from '../components/skeleton/WhistSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -156,7 +156,8 @@ function WhistPageContent() {
     });
   }, [dispatch, hideActionLog, whistConfig.cpuDifficulty, whistConfig.pointLimit]);
 
-  if (!state) return <WhistSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="whist" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === WhistPhase.PLAY;

@@ -15,7 +15,7 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { CribbageSkeleton } from '../components/skeleton/CribbageSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -188,7 +188,13 @@ function CribbagePageContent() {
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <CribbageSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="cribbage"
+        layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 6 }}
+      />
+    );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDiscardPhase = state.phase === CribbagePhase.DISCARD;

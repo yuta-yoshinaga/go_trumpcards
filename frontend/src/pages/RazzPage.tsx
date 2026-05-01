@@ -20,7 +20,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
-import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -240,7 +240,13 @@ function RazzPageContent() {
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <HoldemSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="razz"
+        layout={{ kind: 'community-poker', community: 5, opponents: 3, opponentCards: 2, footerHandSize: 2 }}
+      />
+    );
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.razz.bg}`} aria-busy={loading}>

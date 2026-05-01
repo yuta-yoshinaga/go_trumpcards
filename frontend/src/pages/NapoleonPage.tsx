@@ -18,7 +18,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
-import { NapoleonSkeleton } from '../components/skeleton/NapoleonSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -198,7 +198,13 @@ function NapoleonPageContent() {
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <NapoleonSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="napoleon"
+        layout={{ kind: 'trick-taking', opponents: 4, trickArea: true, footerHandSize: 5 }}
+      />
+    );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isBidPhase = state.phase === NapoleonPhase.BID;

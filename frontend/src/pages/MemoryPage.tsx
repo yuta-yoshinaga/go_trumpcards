@@ -16,7 +16,7 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { MemorySkeleton } from '../components/skeleton/MemorySkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -135,7 +135,20 @@ function MemoryPageContent() {
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <MemorySkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="memory"
+        layout={{
+          kind: 'card-grid',
+          count: 52,
+          cols: 'grid-cols-4 md:grid-cols-8 lg:grid-cols-13',
+          aspectRatio: 'aspect-[2/3] lg:aspect-auto',
+          gridClassName: 'lg:grid-rows-4 lg:h-full',
+          topPills: 4,
+        }}
+      />
+    );
 
   const isFlip1 = state.phase === MemoryPhase.FLIP1;
   const isFlip2 = state.phase === MemoryPhase.FLIP2;

@@ -15,7 +15,7 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { GinRummySkeleton } from '../components/skeleton/GinRummySkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -163,7 +163,13 @@ function GinRummyPageContent() {
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <GinRummySkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="ginrummy"
+        layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 10 }}
+      />
+    );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDrawPhase = state.phase === GinRummyPhase.DRAW;

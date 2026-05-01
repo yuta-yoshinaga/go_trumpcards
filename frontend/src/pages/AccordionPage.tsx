@@ -17,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -216,7 +216,7 @@ function AccordionPageContent() {
   useGameRoundGuard(isGameRoundActive(state));
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
-  if (!state) return <KlondikeSkeleton />;
+  if (!state) return <GameSkeleton gameKey="accordion" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
 
   const isPlaying = state.phase === AccordionPhase.PLAYING;
   const isGameClear = state.phase === AccordionPhase.GAME_CLEAR;

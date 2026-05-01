@@ -15,7 +15,7 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { PaiGowSkeleton } from '../components/skeleton/PaiGowSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -158,7 +158,7 @@ function PaiGowPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <PaiGowSkeleton />;
+  if (!state) return <GameSkeleton gameKey="paigow" layout={{ kind: 'casino-table', sections: [7, 7] }} />;
 
   const handleBet = () => {
     execApi('bet', betAmount);

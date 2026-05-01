@@ -18,7 +18,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { BakersDozenSkeleton } from '../components/skeleton/BakersDozenSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -177,7 +177,7 @@ function BakersDozenPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <BakersDozenSkeleton />;
+  if (!state) return <GameSkeleton gameKey="bakersdozen" layout={{ kind: 'tableau', topRow: 4, tableau: 13 }} />;
 
   const isPlaying = state.phase === BakersDozenPhase.PLAYING;
   const isGameClear = state.phase === BakersDozenPhase.GAME_CLEAR;

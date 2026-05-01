@@ -20,7 +20,7 @@ import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSettingsDialog } from '../components/oldmaid/OldMaidSettingsDialog';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -157,7 +157,21 @@ function OldMaidPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
-  if (!displayState) return <OldMaidSkeleton />;
+  if (!displayState)
+    return (
+      <GameSkeleton
+        gameKey="oldmaid"
+        layout={{
+          kind: 'trick-taking',
+          titleBar: false,
+          opponents: 3,
+          opponentStyle: 'hand',
+          opponentHandSize: 3,
+          footerHandSize: 5,
+          footerButton: 'wide',
+        }}
+      />
+    );
 
   const state = displayState;
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;

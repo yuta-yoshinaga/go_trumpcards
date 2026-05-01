@@ -21,7 +21,7 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { DaifugoSkeleton } from '../components/skeleton/DaifugoSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
@@ -168,7 +168,22 @@ function DaifugoPageContent() {
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <DaifugoSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="daifugo"
+        layout={{
+          kind: 'trick-taking',
+          titleBar: false,
+          opponents: 3,
+          opponentStyle: 'hand',
+          opponentHandSize: 4,
+          trickArea: true,
+          footerHandSize: 5,
+          footerButton: 'wide',
+        }}
+      />
+    );
 
   const pendingAction = state.pendingAction ?? 'none';
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;

@@ -33,7 +33,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { LossFeedback } from '../components/motion/LossFeedback';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -258,7 +258,13 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
     hideActionLog,
   ]);
 
-  if (!state) return <BlackJackSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="blackjack"
+        layout={{ kind: 'casino-table', sections: [5], footerStyle: 'hand', footerHandSize: 5 }}
+      />
+    );
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme[themeKey].bg}`} aria-busy={loading}>

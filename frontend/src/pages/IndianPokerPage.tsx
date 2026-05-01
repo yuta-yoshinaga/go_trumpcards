@@ -20,7 +20,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
-import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -171,7 +171,13 @@ function IndianPokerPageContent() {
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <HoldemSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="indianpoker"
+        layout={{ kind: 'community-poker', community: 5, opponents: 3, opponentCards: 2, footerHandSize: 2 }}
+      />
+    );
 
   // Build results with handName for RoundResults component
   const roundResultsForDisplay = state.roundResults?.map((r) => ({

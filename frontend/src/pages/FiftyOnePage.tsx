@@ -15,7 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { FiftyOneSkeleton } from '../components/skeleton/FiftyOneSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -150,7 +150,8 @@ function FiftyOnePageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  if (!state || state.players.length < 4) return <FiftyOneSkeleton />;
+  if (!state || state.players.length < 4)
+    return <GameSkeleton gameKey="fiftyone" layout={{ kind: 'centered', rows: [5, 5] }} />;
 
   const isGameEnd = state.gameEndFlag || state.phase === FiftyOnePhase.GAME_END;
   const humanWon = isGameEnd && state.winnerIdx === 0;

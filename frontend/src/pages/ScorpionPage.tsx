@@ -19,7 +19,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -294,7 +294,7 @@ function ScorpionPageContent() {
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
-  if (!state) return <KlondikeSkeleton />;
+  if (!state) return <GameSkeleton gameKey="scorpion" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
 
   const isPlaying = state.phase === ScorpionPhase.PLAYING;
   const isGameClear = state.phase === ScorpionPhase.GAME_CLEAR;

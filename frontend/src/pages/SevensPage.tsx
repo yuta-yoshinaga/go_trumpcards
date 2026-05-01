@@ -18,7 +18,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
-import { SevensSkeleton } from '../components/skeleton/SevensSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -162,7 +162,20 @@ function SevensPageContent() {
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <SevensSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="sevens"
+        layout={{
+          kind: 'card-grid',
+          count: 52,
+          cols: 'grid-cols-13',
+          aspectRatio: 'aspect-square',
+          topPills: 3,
+          footerHandSize: 5,
+        }}
+      />
+    );
 
   const tablePlaced = state.tablePlaced;
   const tunnelEnabled = state.config.tunnelEnabled;
