@@ -17,7 +17,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GolfSkeleton } from '../components/skeleton/GolfSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -134,7 +134,13 @@ function GolfPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <GolfSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="golf"
+        layout={{ kind: 'tiered-rows', rows: [5, 5, 5, 5, 5, 5, 5], stockWaste: true, columns: true }}
+      />
+    );
 
   const isPlaying = state.phase === GolfPhase.PLAYING;
   const isGameClear = state.phase === GolfPhase.GAME_CLEAR;

@@ -13,7 +13,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
-import { TwoTenJackSkeleton } from '../components/skeleton/TwoTenJackSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -161,7 +161,8 @@ function TwoTenJackPageContent() {
     });
   }, [dispatch, hideActionLog, twoTenJackConfig.cpuDifficulty, twoTenJackConfig.pointLimit]);
 
-  if (!state) return <TwoTenJackSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="twotenjack" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDeclarePhase = state.phase === TwoTenJackPhase.DECLARE;

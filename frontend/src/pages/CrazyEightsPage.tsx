@@ -15,7 +15,7 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { CrazyEightsSkeleton } from '../components/skeleton/CrazyEightsSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -161,7 +161,13 @@ function CrazyEightsPageContent() {
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <CrazyEightsSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="crazyeights"
+        layout={{ kind: 'trick-taking', centerCard: true, trickArea: true, footerHandSize: 5 }}
+      />
+    );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === CrazyEightsPhase.PLAY;

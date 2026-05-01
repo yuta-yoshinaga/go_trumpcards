@@ -18,7 +18,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { FreeCellSkeleton } from '../components/skeleton/FreeCellSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -158,7 +158,7 @@ function FreeCellPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <FreeCellSkeleton />;
+  if (!state) return <GameSkeleton gameKey="freecell" layout={{ kind: 'tableau', topRow: 8, tableau: 8 }} />;
 
   const isPlaying = state.phase === FreeCellPhase.PLAYING;
   const isGameClear = state.phase === FreeCellPhase.GAME_CLEAR;

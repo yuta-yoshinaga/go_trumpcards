@@ -19,7 +19,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -195,7 +195,7 @@ function KlondikePageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <KlondikeSkeleton />;
+  if (!state) return <GameSkeleton gameKey="klondike" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
 
   const isPlaying = state.phase === KlondikePhase.PLAYING;
   const isGameClear = state.phase === KlondikePhase.GAME_CLEAR;

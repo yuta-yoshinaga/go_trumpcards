@@ -16,7 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { CaribbeanStudSkeleton } from '../components/skeleton/CaribbeanStudSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -134,7 +134,7 @@ function CaribbeanStudPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <CaribbeanStudSkeleton />;
+  if (!state) return <GameSkeleton gameKey="caribbeanstud" layout={{ kind: 'casino-table', sections: [5, 5] }} />;
 
   const handleBet = () => {
     execApi('bet', anteAmount, jackpotAmount);

@@ -15,7 +15,7 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { ThreeCardSkeleton } from '../components/skeleton/ThreeCardSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -124,7 +124,7 @@ function ThreeCardPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <ThreeCardSkeleton />;
+  if (!state) return <GameSkeleton gameKey="threecard" layout={{ kind: 'casino-table', sections: [3, 3] }} />;
 
   const handleBet = () => {
     execApi('bet', anteAmount, pairPlusAmount);

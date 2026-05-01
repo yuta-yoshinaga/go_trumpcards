@@ -15,7 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { WarSkeleton } from '../components/skeleton/WarSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -110,7 +110,8 @@ function WarPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  if (!state || state.players.length < 2) return <WarSkeleton />;
+  if (!state || state.players.length < 2)
+    return <GameSkeleton gameKey="war" layout={{ kind: 'centered', rows: [2] }} />;
 
   const isGameEnd = state.gameEndFlag || state.phase === WarPhase.GAME_END;
   const humanWon = isGameEnd && state.winnerIdx === 0;

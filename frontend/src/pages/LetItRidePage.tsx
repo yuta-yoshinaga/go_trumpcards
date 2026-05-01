@@ -17,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { LetItRideSkeleton } from '../components/skeleton/LetItRideSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -136,7 +136,7 @@ function LetItRidePageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <LetItRideSkeleton />;
+  if (!state) return <GameSkeleton gameKey="letitride" layout={{ kind: 'casino-table', sections: [3, 2] }} />;
 
   const handleBet = () => {
     execApi('bet', betAmount);

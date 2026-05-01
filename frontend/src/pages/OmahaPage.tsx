@@ -24,7 +24,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
-import { OmahaSkeleton } from '../components/skeleton/OmahaSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -203,7 +203,13 @@ function OmahaPageContent() {
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <OmahaSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="omaha"
+        layout={{ kind: 'community-poker', community: 5, opponents: 3, opponentCards: 4, footerHandSize: 4 }}
+      />
+    );
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.omaha.bg}`} aria-busy={loading}>

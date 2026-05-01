@@ -12,7 +12,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
-import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -172,7 +172,8 @@ function HeartsPageContent() {
     });
   }, [exec, hideActionLog, heartsConfig.cpuDifficulty, heartsConfig.pointLimit, heartsConfig.omnibusJD]);
 
-  if (!state) return <HeartsSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="hearts" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPassPhase = state.phase === HeartsPhase.PASS;

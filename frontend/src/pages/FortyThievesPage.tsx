@@ -19,7 +19,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { FortyThievesSkeleton } from '../components/skeleton/FortyThievesSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -177,7 +177,7 @@ function FortyThievesPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <FortyThievesSkeleton />;
+  if (!state) return <GameSkeleton gameKey="fortythieves" layout={{ kind: 'tableau', topRow: 10, tableau: 10 }} />;
 
   const isPlaying = state.phase === FortyThievesPhase.PLAYING;
   const isGameClear = state.phase === FortyThievesPhase.GAME_CLEAR;

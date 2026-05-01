@@ -18,7 +18,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { PyramidSkeleton } from '../components/skeleton/PyramidSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -142,7 +142,8 @@ function PyramidPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <PyramidSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="pyramid" layout={{ kind: 'tiered-rows', rows: [1, 2, 3, 4], stockWaste: true }} />;
 
   const isPlaying = state.phase === PyramidPhase.PLAYING;
   const isGameClear = state.phase === PyramidPhase.GAME_CLEAR;

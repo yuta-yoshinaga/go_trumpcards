@@ -18,7 +18,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { TriPeaksSkeleton } from '../components/skeleton/TriPeaksSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -149,7 +149,8 @@ function TriPeaksPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <TriPeaksSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="tripeaks" layout={{ kind: 'tiered-rows', rows: [3, 6, 9, 10], stockWaste: true }} />;
 
   const isPlaying = state.phase === TriPeaksPhase.PLAYING;
   const isGameClear = state.phase === TriPeaksPhase.GAME_CLEAR;

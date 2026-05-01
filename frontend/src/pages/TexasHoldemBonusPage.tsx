@@ -16,7 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { TexasHoldemBonusSkeleton } from '../components/skeleton/TexasHoldemBonusSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -144,7 +144,7 @@ function TexasHoldemBonusPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <TexasHoldemBonusSkeleton />;
+  if (!state) return <GameSkeleton gameKey="texasholdembonus" layout={{ kind: 'casino-table', sections: [2, 5, 2] }} />;
 
   const handleBet = () => execApi('bet', anteAmount, bonusAmount);
   const handlePlay = () => execApi('play');

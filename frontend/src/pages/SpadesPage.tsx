@@ -13,7 +13,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
-import { SpadesSkeleton } from '../components/skeleton/SpadesSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -173,7 +173,8 @@ function SpadesPageContent() {
     spadesConfig.bagPenaltyThreshold,
   ]);
 
-  if (!state) return <SpadesSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="spades" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isBidPhase = state.phase === SpadesPhase.BID;

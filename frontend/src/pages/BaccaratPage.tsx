@@ -16,7 +16,7 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { BaccaratSkeleton } from '../components/skeleton/BaccaratSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -236,7 +236,7 @@ function BaccaratPageContent() {
 
   useGameRoundGuard(isGameRoundActive(state));
 
-  if (!state) return <BaccaratSkeleton />;
+  if (!state) return <GameSkeleton gameKey="baccarat" layout={{ kind: 'casino-table', sections: [2, 2] }} />;
 
   const handleBet = () => {
     execApi('bet', betAmount, betType, playerPairBet, bankerPairBet);

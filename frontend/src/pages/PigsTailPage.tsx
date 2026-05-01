@@ -12,7 +12,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { PigsTailSkeleton } from '../components/skeleton/PigsTailSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCliGame } from '../hooks/useCliGame';
@@ -119,7 +119,8 @@ function PigsTailPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  if (!state) return <PigsTailSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="pigtail" layout={{ kind: 'centered', rows: [2], shape: 'circle', bars: 4 }} />;
 
   const isGameEnd = state.gameEndFlag;
   const isHumanTurn = !isGameEnd && state.players[state.currentTurn]?.isHuman === true;
