@@ -1,6 +1,33 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { useGameRoundGuard } from './useGameRoundGuard';
+import { isGameRoundActive, useGameRoundGuard } from './useGameRoundGuard';
+
+describe('isGameRoundActive', () => {
+  it('returns false for null', () => {
+    expect(isGameRoundActive(null)).toBe(false);
+  });
+
+  it('returns false for undefined', () => {
+    expect(isGameRoundActive(undefined)).toBe(false);
+  });
+
+  it('returns false for non-object primitives', () => {
+    expect(isGameRoundActive(42)).toBe(false);
+    expect(isGameRoundActive('active')).toBe(false);
+  });
+
+  it('returns false when gameEndFlag is true', () => {
+    expect(isGameRoundActive({ gameEndFlag: true })).toBe(false);
+  });
+
+  it('returns true for an object without gameEndFlag', () => {
+    expect(isGameRoundActive({ phase: 'deal' })).toBe(true);
+  });
+
+  it('returns true when gameEndFlag is false', () => {
+    expect(isGameRoundActive({ gameEndFlag: false })).toBe(true);
+  });
+});
 
 describe('useGameRoundGuard', () => {
   afterEach(() => {

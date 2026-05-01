@@ -52,7 +52,7 @@ class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryStat
   buildIssueUrl(): string {
     const { error } = this.state;
     const title = encodeURIComponent(`[Bug] ${error?.name ?? 'Unknown error'}: ${error?.message ?? ''}`);
-    const stack = error?.stack ?? '(none)';
+    const stack = (error?.stack ?? '(none)').slice(0, 1000);
     const body = encodeURIComponent(
       `**URL:** ${typeof window !== 'undefined' ? window.location.href : '(unknown)'}\n` +
         `**User Agent:** ${typeof navigator !== 'undefined' ? navigator.userAgent : '(unknown)'}\n` +
