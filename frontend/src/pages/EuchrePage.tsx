@@ -26,6 +26,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useEuchreGame } from '../hooks/useEuchreGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -193,6 +194,10 @@ function EuchrePageContent() {
       pointLimit: euchreConfig.pointLimit,
     });
   }, [apiExec, hideActionLog, euchreConfig.cpuDifficulty, euchreConfig.pointLimit]);
+
+  // Issue #1609: warn before tab close / reload while a round is in progress.
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <EuchreSkeleton />;
 

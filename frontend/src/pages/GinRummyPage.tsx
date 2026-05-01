@@ -24,6 +24,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '../hooks/useGinRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -166,6 +167,10 @@ function GinRummyPageContent() {
       pointLimit: ginRummyConfig.pointLimit,
     });
   }, [gameExec, hideActionLog, ginRummyConfig.cpuDifficulty, ginRummyConfig.pointLimit]);
+
+  // Issue #1609: warn before tab close / reload while a round is in progress.
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <GinRummySkeleton />;
 

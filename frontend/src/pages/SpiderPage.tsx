@@ -28,6 +28,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { useSound } from '../providers/SoundProvider';
@@ -172,6 +173,10 @@ function SpiderPageContent() {
     bindings: actionBindings,
     enabled: !!isPlayingForKbd && !loading,
   });
+
+  // Issue #1609: warn before tab close / reload while a round is in progress.
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <SpiderSkeleton />;
 

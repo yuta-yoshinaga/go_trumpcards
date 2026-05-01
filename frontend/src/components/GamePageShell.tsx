@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { GamePageHeading } from './GamePageHeading';
 import { GameResetDialog } from './GameResetDialog';
 import { ManualButton } from './ManualButton';
@@ -57,6 +58,9 @@ export function GamePageShell({
   headerExtra,
   children,
 }: GamePageShellProps) {
+  // Issue #1609: warn before tab close / reload while a round is active so
+  // long-form games (Hearts, Spades, Skat, …) don't silently lose state.
+  useGameRoundGuard(!gameEndFlag);
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading}>
       <GamePageHeading title={title} />

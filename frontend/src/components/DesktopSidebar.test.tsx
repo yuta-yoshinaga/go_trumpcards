@@ -13,7 +13,10 @@ vi.mock('../providers/SoundProvider', () => ({
   })),
 }));
 
-function renderSidebar(initialPath = '/') {
+// Default to a non-game path so useRecentGames does not record the current page
+// and produce a duplicate "Recent" link alongside the categorized one. Tests
+// that need a specific game path (or `/`) pass it explicitly.
+function renderSidebar(initialPath = '/nonexistent') {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
       <DesktopSidebar />
@@ -28,6 +31,7 @@ function labelFor(labelKey: string): string {
 afterEach(() => {
   i18n.changeLanguage('ja');
   localStorage.removeItem('trumpcards-favorite-games');
+  localStorage.removeItem('trumpcards-recent-games');
 });
 
 describe('DesktopSidebar', () => {
@@ -59,7 +63,11 @@ describe('DesktopSidebar', () => {
 
   it('marks active game with aria-current="page"', () => {
     renderSidebar('/poker');
-    expect(screen.getByRole('link', { name: labelFor('nav.poker') })).toHaveAttribute('aria-current', 'page');
+    // /poker also gets recorded in recent games, producing a duplicate link.
+    const pokerLinks = screen.getAllByRole('link', { name: labelFor('nav.poker') });
+    for (const link of pokerLinks) {
+      expect(link).toHaveAttribute('aria-current', 'page');
+    }
     expect(screen.getByRole('link', { name: labelFor('nav.hearts') })).not.toHaveAttribute('aria-current');
   });
 
@@ -68,6 +76,27 @@ describe('DesktopSidebar', () => {
     for (const { path, labelKey } of gameRoutes) {
       expect(screen.getByRole('link', { name: labelFor(labelKey) })).toHaveAttribute('href', path);
     }
+  });
+
+  describe('recent games', () => {
+    it('does not render section when no recent games stored', () => {
+      renderSidebar();
+      expect(screen.queryByText(i18n.t('nav.recentGames'))).not.toBeInTheDocument();
+    });
+
+    it('renders section when recent games are stored', () => {
+      localStorage.setItem('trumpcards-recent-games', JSON.stringify(['/poker', '/hearts']));
+      renderSidebar();
+      expect(screen.getByText(i18n.t('nav.recentGames'))).toBeInTheDocument();
+    });
+
+    it('hides section during search', () => {
+      localStorage.setItem('trumpcards-recent-games', JSON.stringify(['/poker']));
+      renderSidebar();
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: 'test' } });
+      expect(screen.queryByText(i18n.t('nav.recentGames'))).not.toBeInTheDocument();
+    });
   });
 
   describe('search', () => {

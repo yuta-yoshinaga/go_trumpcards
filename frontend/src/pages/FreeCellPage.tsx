@@ -28,6 +28,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -161,6 +162,10 @@ function FreeCellPageContent() {
     bindings: actionBindings,
     enabled: !!isPlayingForKbd && !loading,
   });
+
+  // Issue #1609: warn before tab close / reload while a round is in progress.
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <FreeCellSkeleton />;
 

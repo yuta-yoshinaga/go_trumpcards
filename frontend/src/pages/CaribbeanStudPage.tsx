@@ -26,6 +26,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -139,6 +140,10 @@ function CaribbeanStudPageContent() {
     enabled: !!state && !loading,
   });
 
+  // Issue #1609: warn before tab close / reload while a round is in progress.
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
   if (!state) return <CaribbeanStudSkeleton />;
 
   const handleBet = () => {
@@ -160,7 +165,7 @@ function CaribbeanStudPageContent() {
   const phaseName = isBetPhase ? t('phase.bet') : isActionPhase ? t('phase.action') : t('phase.end');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.threecard.bg}`} aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.caribbeanstud.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.caribbeanstud')} />
       <PhaseIndicator phaseName={phaseName}>
         <span>
@@ -326,7 +331,7 @@ function CaribbeanStudPageContent() {
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 
-          <GameFooter className={`${gameTheme.threecard.footer} px-4 pt-3`}>
+          <GameFooter className={`${gameTheme.caribbeanstud.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel title={t('settings.title')} groups={[]} />
             {isBetPhase && (

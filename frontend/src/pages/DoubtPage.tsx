@@ -35,6 +35,7 @@ import {
 } from '../hooks/useDoubtGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -219,6 +220,10 @@ function DoubtPageContent() {
     hideActionLog();
     void exec('reset', undefined, undefined, undefined, doubtConfig);
   }, [exec, hideActionLog, doubtConfig]);
+
+  // Issue #1609: warn before tab close / reload while a round is in progress.
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <DoubtSkeleton />;
 

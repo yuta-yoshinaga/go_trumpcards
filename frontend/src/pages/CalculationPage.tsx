@@ -27,6 +27,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -275,7 +276,11 @@ function CalculationPageContent() {
     [source],
   );
 
+  // Issue #1609: warn before tab close / reload while a round is in progress.
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
+
   if (!state) return <KlondikeSkeleton />;
 
   const isPlaying = state.phase === CalculationPhase.PLAYING;

@@ -97,10 +97,10 @@ describe('ChipBetInput', () => {
     expect(onChange).toHaveBeenCalledWith(999999999);
   });
 
-  it('does not invoke onChange when input parses to NaN under autoClamp=false', () => {
-    // Number("") === 0 (covered above), but Number("abc") === NaN. Without the guard
-    // running before the !autoClamp branch, callers would have to defensively check
-    // for NaN; this test pins the guard's placement.
+  it('does not invoke onChange when raw input has no digits under autoClamp=false', () => {
+    // Issue #1615: switched to type=text + inputMode=numeric. To preserve the
+    // prior "type=number rejects NaN" UX, all-non-digit input is dropped before
+    // calling onChange (rather than clamped to 0).
     const onChange = vi.fn();
     const { container } = render(
       <ChipBetInput id="bet" label="Bet" value={20} onChange={onChange} max={50} autoClamp={false} />,
@@ -111,5 +111,30 @@ describe('ChipBetInput', () => {
     Object.defineProperty(input, 'value', { get: () => 'abc', configurable: true });
     fireEvent.change(input);
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('uses inputMode=numeric to surface the digit keyboard on mobile', () => {
+    render(<ChipBetInput id="bet" label="Bet" value={50} onChange={() => {}} max={500} />);
+    const input = screen.getByLabelText('Bet');
+    expect(input).toHaveAttribute('type', 'text');
+    expect(input).toHaveAttribute('inputmode', 'numeric');
+    expect(input).toHaveAttribute('pattern', '[0-9]*');
+  });
+
+  it('strips non-digit characters from typed input before parsing', () => {
+    const onChange = vi.fn();
+    render(<ChipBetInput id="bet" label="Bet" value={50} onChange={onChange} max={500} />);
+    fireEvent.change(screen.getByLabelText('Bet'), { target: { value: '1.2e5' } });
+    // '1.2e5' → '125' after stripping; clamped under max=500 → 125.
+    expect(onChange).toHaveBeenLastCalledWith(125);
+  });
+
+  it('blurs the input on wheel events to prevent accidental scroll changes', () => {
+    render(<ChipBetInput id="bet" label="Bet" value={50} onChange={() => {}} max={500} />);
+    const input = screen.getByLabelText('Bet') as HTMLInputElement;
+    input.focus();
+    expect(document.activeElement).toBe(input);
+    fireEvent.wheel(input, { deltaY: 100 });
+    expect(document.activeElement).not.toBe(input);
   });
 });

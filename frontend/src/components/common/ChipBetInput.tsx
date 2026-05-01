@@ -60,7 +60,11 @@ export function ChipBetInput({
       </label>
       <input
         id={id}
-        type="number"
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        autoComplete="off"
+        enterKeyHint="done"
         min={min}
         max={max}
         step={step}
@@ -68,8 +72,11 @@ export function ChipBetInput({
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
         onChange={(e) => {
-          const parsed = Number(e.target.value);
-          if (Number.isNaN(parsed)) return;
+          const raw = e.target.value;
+          const cleaned = raw.replace(/[^0-9]/g, '');
+          // User typed only non-digit chars: reject (mirrors prior type=number rejection of NaN input).
+          if (raw !== '' && cleaned === '') return;
+          const parsed = cleaned === '' ? 0 : Number(cleaned);
           if (!autoClamp) {
             onChange(parsed);
             return;
@@ -77,6 +84,7 @@ export function ChipBetInput({
           const upper = max ?? Number.POSITIVE_INFINITY;
           onChange(Math.max(min, Math.min(parsed, upper)));
         }}
+        onWheel={(e) => e.currentTarget.blur()}
         disabled={disabled}
         className={`${widthClass} px-3 py-2 rounded text-base min-h-[44px] ${errorClasses}`}
       />

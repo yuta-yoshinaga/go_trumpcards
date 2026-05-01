@@ -20,8 +20,8 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 
 ## Frontend (React)
 
-9. **Page**: `frontend/src/pages/<Game>Page.tsx` with test file, reuse `useGamePageSetup` hook, `usePhaseNames`, `gameReplay`, `useCardDimensions`, `gameExec` API helper
-10. **Shared components**: Use `PhaseIndicator`, `SettingsPanel`, `ConfirmDialog`, `ActionLogSection`, `GameFooter`, `GameMessageBox`, `AnimatedCardBack`, `ErrorBoundary`
+9. **Page**: `frontend/src/pages/<Game>Page.tsx` with test file, reuse `useGamePageSetup` hook, `usePhaseNames`, `gameReplay`, `useCardDimensions`, `gameExec` API helper. Add `useGameRoundGuard(!!state && !state.gameEndFlag)` so accidental tab close / reload during a round triggers the browser leave warning (pages using `GamePageShell` get this for free; otherwise call the hook directly).
+10. **Shared components**: Use `PhaseIndicator`, `SettingsPanel`, `ConfirmDialog`, `ActionLogSection`, `GameFooter`, `GameMessageBox`, `AnimatedCardBack`, `ErrorBoundary`. Add a `GameKey` entry in `frontend/src/styles/gameTheme.ts` and reference `gameTheme.<key>` (do not reuse another game's key; the strict union type catches missing entries at compile time).
 11. **CLI mode**: Wire `useCliMode`, `useCliGame`, `CliToggle`, and `CliTerminal` in the page. At minimum add a stub config (`parseCommand` returns error, empty `helpText`). Place `CliToggle` inside `PhaseIndicator` and wrap GUI content with `{cliEnabled ? <CliTerminal .../> : <>{/* GUI */}</>}`
 12. **i18n**: Add `frontend/src/i18n/locales/{ja,en}/<game>.json` translation files (include `tutorial` keys if tutorial is added)
 13. **Router**: Add route in `frontend/src/App.tsx` and NavBar entry in `frontend/src/constants/gameRoutes.ts`
