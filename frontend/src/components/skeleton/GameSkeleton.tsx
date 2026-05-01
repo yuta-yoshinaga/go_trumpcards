@@ -94,6 +94,12 @@ interface CenteredLayout {
   rows: number[];
   /** Card shape (default `card`). `circle` is used by PigsTail. */
   shape?: 'card' | 'circle';
+  /**
+   * Inter-item gap. `narrow` (default) uses `gap-2` (compact rows like
+   * FiftyOne). `wide` uses `gap-8` (spread out, used by War's two-card duel
+   * and PigsTail's two-circle arrangement).
+   */
+  gap?: 'narrow' | 'wide';
   /** Number of small bar placeholders to render below the cards. */
   bars?: number;
 }
@@ -161,6 +167,10 @@ function renderLayout(layout: SkeletonLayout, cardWidth: number, cardHeight: num
       return renderCardGrid(layout, cardWidth, cardHeight);
     case 'centered':
       return renderCentered(layout);
+    default: {
+      const _exhaustive: never = layout;
+      throw new Error(`Unhandled SkeletonLayout: ${JSON.stringify(_exhaustive)}`);
+    }
   }
 }
 
@@ -412,15 +422,16 @@ function renderCardGrid(layout: CardGridLayout, cardWidth: number, cardHeight: n
 
 function renderCentered(layout: CenteredLayout): RenderedLayout {
   const shapeClass = layout.shape === 'circle' ? 'h-20 w-20 rounded-full' : 'h-24 w-16 rounded';
+  // `gap` defaults to `wide` for circles (PigsTail) and `narrow` otherwise.
+  // Static strings are required so Tailwind's JIT scanner can detect the classes.
+  const gap = (layout.gap ?? (layout.shape === 'circle' ? 'wide' : 'narrow')) === 'wide' ? 'gap-8' : 'gap-2';
   const body = (
     <>
       {layout.rows.map((cardCount, rowIdx) => (
         <div
           key={rowIdx}
           data-skeleton-section="centered-row"
-          className={`flex justify-center gap-${layout.shape === 'circle' ? '8' : '2'} ${
-            rowIdx === 0 ? (layout.bars ? 'mb-4' : 'my-8') : 'mt-2'
-          }`}
+          className={`flex justify-center ${gap} ${rowIdx === 0 ? (layout.bars ? 'mb-4' : 'my-8') : 'mt-2'}`}
         >
           {Array.from({ length: cardCount }, (_, i) => (
             <div key={i} className={`${shapeClass} bg-white/10 animate-pulse`} />

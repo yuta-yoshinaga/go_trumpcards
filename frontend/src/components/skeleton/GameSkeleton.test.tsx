@@ -125,11 +125,30 @@ describe('GameSkeleton (layout-driven)', () => {
     it('omits title bar when titleBar=false', () => {
       const { container } = render(
         <GameSkeleton
-          gameKey="speed"
-          layout={{ kind: 'trick-taking', titleBar: false, opponents: 0, footerHandSize: 4 }}
+          gameKey="oldmaid"
+          layout={{ kind: 'trick-taking', titleBar: false, opponents: 0, footerHandSize: 5 }}
         />,
       );
       expect(container.querySelector('[data-skeleton-section="title-bar"]')).toBeNull();
+    });
+
+    it('renders standard footer button (w-32) by default', () => {
+      const { container } = render(
+        <GameSkeleton gameKey="hearts" layout={{ kind: 'trick-taking', footerHandSize: 5 }} />,
+      );
+      const footer = container.querySelector('footer');
+      expect(footer?.querySelector('.w-32')).not.toBeNull();
+      expect(footer?.querySelector('.w-48')).toBeNull();
+    });
+
+    it('renders wide footer button (w-48 mx-auto) when footerButton="wide"', () => {
+      const { container } = render(
+        <GameSkeleton gameKey="daifugo" layout={{ kind: 'trick-taking', footerHandSize: 5, footerButton: 'wide' }} />,
+      );
+      const footer = container.querySelector('footer');
+      const wideBtn = footer?.querySelector('.w-48');
+      expect(wideBtn).not.toBeNull();
+      expect(wideBtn?.className).toContain('mx-auto');
     });
 
     it('renders trick area when trickArea=true', () => {
@@ -237,6 +256,29 @@ describe('GameSkeleton (layout-driven)', () => {
       const row = container.querySelector('[data-skeleton-section="centered-row"]');
       const firstShape = row?.querySelector('.animate-pulse');
       expect(firstShape?.className).toContain('rounded-full');
+    });
+
+    it('uses gap-2 by default for card shape (FiftyOne)', () => {
+      const { container } = render(<GameSkeleton gameKey="fiftyone" layout={{ kind: 'centered', rows: [5] }} />);
+      const row = container.querySelector('[data-skeleton-section="centered-row"]');
+      expect(row?.className).toContain('gap-2');
+      expect(row?.className).not.toContain('gap-8');
+    });
+
+    it('uses gap-8 when gap="wide" (War)', () => {
+      const { container } = render(
+        <GameSkeleton gameKey="war" layout={{ kind: 'centered', rows: [2], gap: 'wide' }} />,
+      );
+      const row = container.querySelector('[data-skeleton-section="centered-row"]');
+      expect(row?.className).toContain('gap-8');
+    });
+
+    it('uses gap-8 by default for circle shape (PigsTail)', () => {
+      const { container } = render(
+        <GameSkeleton gameKey="pigtail" layout={{ kind: 'centered', rows: [2], shape: 'circle' }} />,
+      );
+      const row = container.querySelector('[data-skeleton-section="centered-row"]');
+      expect(row?.className).toContain('gap-8');
     });
   });
 });

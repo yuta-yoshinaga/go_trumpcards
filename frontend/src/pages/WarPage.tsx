@@ -111,7 +111,7 @@ function WarPageContent() {
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   if (!state || state.players.length < 2)
-    return <GameSkeleton gameKey="war" layout={{ kind: 'centered', rows: [2] }} />;
+    return <GameSkeleton gameKey="war" layout={{ kind: 'centered', rows: [2], gap: 'wide' }} />;
 
   const isGameEnd = state.gameEndFlag || state.phase === WarPhase.GAME_END;
   const humanWon = isGameEnd && state.winnerIdx === 0;
