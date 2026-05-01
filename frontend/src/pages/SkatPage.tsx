@@ -1,21 +1,32 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import type { skatApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSkatGame } from '../hooks/useSkatGame';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { SkatResponse } from '../types/card';
 import { SkatGameType, SkatPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { parseSkatCommand, SKAT_HELP } from '../utils/cli/commands/skatCommands';
+import { formatSkatState } from '../utils/cli/formatters/skatFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Suit identifiers matching internal/domain/Card.go (1=Spade, 2=Clover, 3=Heart, 4=Diamond). */
 const SUIT_SPADE = 1;
@@ -70,6 +81,7 @@ export function SkatPage() {
 function SkatPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('skat');
+  const skatGame = useSkatGame();
   const {
     state,
     loading,
@@ -84,10 +96,27 @@ function SkatPageContent() {
     handleNextTrick,
     handleNextRound,
     retry,
-  } = useSkatGame();
+  } = skatGame;
   const { cardWidth, isMobile: _isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('skat', SKAT_PHASE_KEYS);
   const [trumpSuit, setTrumpSuit] = useState<number>(SUIT_SPADE);
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('skat', state);
+  const cliMode = useCliMode('skat');
+  const cliConfig: CliGameConfig<SkatResponse, Parameters<typeof skatApi.exec>> = useMemo(
+    () => ({
+      gameName: 'skat',
+      parseCommand: parseSkatCommand,
+      formatResponse: formatSkatState,
+      helpText: SKAT_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(skatGame.dispatch, cliConfig, state, {
+    addInput: cliMode.addInput,
+    addOutput: cliMode.addOutput,
+    addError: cliMode.addError,
+    clearLog: cliMode.clearLog,
+  });
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -131,218 +160,239 @@ function SkatPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliMode.cliEnabled} onToggle={cliMode.toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
-        {error && <ErrorAlert message={error} onRetry={retry} />}
+      {cliMode.cliEnabled ? (
+        <CliTerminal logEntries={cliMode.logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
+            {error && <ErrorAlert message={error} onRetry={retry} />}
 
-        {/* Round / declarer / game info */}
-        <div className="bg-black/30 text-ds-text-primary p-3 rounded space-y-1 text-sm">
-          <div>
-            {t('round')}: {state.roundNumber} | {t('dealer')}: CPU {state.dealerIdx} | {t('currentBid')}:{' '}
-            {state.currentBid}
-          </div>
-          {state.declarerIdx >= 0 && (
-            <div data-tutorial="sk-declarer-info">
-              {t('declarer')}: {state.players[state.declarerIdx]?.isHuman ? t('you') : `CPU ${state.declarerIdx}`}
-              {state.gameType !== SkatGameType.NONE && (
-                <span className="ml-2">
-                  | {t('gameType')}:{' '}
-                  {state.gameType === SkatGameType.SUIT
-                    ? `${t('suitGame')} (${suitLabel(state.trumpSuit)})`
-                    : state.gameType === SkatGameType.GRAND
-                      ? t('grandGame')
-                      : t('nullGame')}
-                </span>
+            {/* Round / declarer / game info */}
+            <div className="bg-black/30 text-ds-text-primary p-3 rounded space-y-1 text-sm">
+              <div>
+                {t('round')}: {state.roundNumber} | {t('dealer')}: CPU {state.dealerIdx} | {t('currentBid')}:{' '}
+                {state.currentBid}
+              </div>
+              {state.declarerIdx >= 0 && (
+                <div data-tutorial="sk-declarer-info">
+                  {t('declarer')}: {state.players[state.declarerIdx]?.isHuman ? t('you') : `CPU ${state.declarerIdx}`}
+                  {state.gameType !== SkatGameType.NONE && (
+                    <span className="ml-2">
+                      | {t('gameType')}:{' '}
+                      {state.gameType === SkatGameType.SUIT
+                        ? `${t('suitGame')} (${suitLabel(state.trumpSuit)})`
+                        : state.gameType === SkatGameType.GRAND
+                          ? t('grandGame')
+                          : t('nullGame')}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
 
-        {/* Trick display */}
-        <TrickDisplay
-          currentTrick={state.currentTrick.map((tc) => ({ playerIdx: tc.playerIdx, card: tc.card }))}
-          players={state.players.map((p) => ({ id: p.id, isHuman: p.isHuman }))}
-          cardWidth={cardWidth}
-          label={t('currentTrick')}
-          dataTutorial="sk-trick-display"
-        />
+            {/* Trick display */}
+            <TrickDisplay
+              currentTrick={state.currentTrick.map((tc) => ({ playerIdx: tc.playerIdx, card: tc.card }))}
+              players={state.players.map((p) => ({ id: p.id, isHuman: p.isHuman }))}
+              cardWidth={cardWidth}
+              label={t('currentTrick')}
+              dataTutorial="sk-trick-display"
+            />
 
-        {/* Skat (face-up at round end) */}
-        {state.originalSkat && state.originalSkat.length > 0 && (
-          <div className="bg-black/30 text-ds-text-primary p-3 rounded">
-            <div className="text-sm mb-1">{t('skatLabel')}:</div>
-            <div className="flex gap-2">
-              {state.originalSkat.map((c, i) => (
-                <span key={`skat-${i}`} className="bg-white text-black px-2 py-1 rounded">
-                  {c.design} {c.value}
-                </span>
-              ))}
+            {/* Skat (face-up at round end) */}
+            {state.originalSkat && state.originalSkat.length > 0 && (
+              <div className="bg-black/30 text-ds-text-primary p-3 rounded">
+                <div className="text-sm mb-1">{t('skatLabel')}:</div>
+                <div className="flex gap-2">
+                  {state.originalSkat.map((c, i) => (
+                    <span key={`skat-${i}`} className="bg-white text-black px-2 py-1 rounded">
+                      {c.design} {c.value}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Player hand */}
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={_isMobile}
+                dataTutorialPrefix="sk"
+              />
+            )}
+
+            {/* Player scores */}
+            <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm">
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left">{t('player')}</th>
+                    <th className="text-right">{t('tricks')}</th>
+                    <th className="text-right">{t('cardPoints')}</th>
+                    <th className="text-right">{t('total')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.players.map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        {p.isHuman ? t('you') : `CPU ${p.id}`}
+                        {p.isDeclarer && ` (${t('declarer')})`}
+                      </td>
+                      <td className="text-right">{p.trickCount}</td>
+                      <td className="text-right">{p.cardPoints}</td>
+                      <td className="text-right">{p.cumulativeScore}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+
+            <ActionLogSection
+              isEndPhase={isRoundEnd || isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-        )}
 
-        {/* Player hand */}
-        {humanPlayer && (
-          <PlayerHandSection
-            humanPlayer={humanPlayer}
-            selectedCardIndices={selectedCardIndices}
-            toggleCard={toggleCard}
-            cardWidth={cardWidth}
-            isMobile={_isMobile}
-            dataTutorialPrefix="sk"
-          />
-        )}
+          <GameFooter className={`${gameTheme.skat.footer} px-4 py-2.5`}>
+            <div className="flex flex-wrap gap-2 items-center">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+                <input
+                  type="checkbox"
+                  checked={hintEnabled}
+                  onChange={(e) => setHintEnabled(e.target.checked)}
+                  aria-label={tc('hint.toggle', { ns: 'tutorial' })}
+                />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="sk-reset-button"
+              />
 
-        {/* Player scores */}
-        <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm">
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th className="text-left">{t('player')}</th>
-                <th className="text-right">{t('tricks')}</th>
-                <th className="text-right">{t('cardPoints')}</th>
-                <th className="text-right">{t('total')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.players.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    {p.isHuman ? t('you') : `CPU ${p.id}`}
-                    {p.isDeclarer && ` (${t('declarer')})`}
-                  </td>
-                  <td className="text-right">{p.trickCount}</td>
-                  <td className="text-right">{p.cardPoints}</td>
-                  <td className="text-right">{p.cumulativeScore}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              {/* Bid phase actions */}
+              {isHumanBidTurn && (
+                <>
+                  <button type="button" className={btnPrimary} onClick={() => handleBid(true)} disabled={loading}>
+                    {state.currentBid === 0 ? t('callBid') : `${t('acceptAt')} ${state.currentBid}`}
+                  </button>
+                  <button type="button" className={btnPrimary} onClick={() => handleBid(false)} disabled={loading}>
+                    {t('pass')}
+                  </button>
+                </>
+              )}
 
-        <ActionLogSection
-          isEndPhase={isRoundEnd || isGameEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
+              {/* Skat pickup */}
+              {isPickup && isHumanDeclarer && (
+                <>
+                  <button type="button" className={btnPrimary} onClick={() => handlePickSkat(true)} disabled={loading}>
+                    {t('pickUp')}
+                  </button>
+                  <button type="button" className={btnPrimary} onClick={() => handlePickSkat(false)} disabled={loading}>
+                    {t('handGame')}
+                  </button>
+                </>
+              )}
 
-      <GameFooter className={`${gameTheme.skat.footer} px-4 py-2.5`}>
-        <div className="flex flex-wrap gap-2 items-center">
-          <GameResetButton
-            isGameEnd={isGameEnd}
-            onReset={handleManualReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="sk-reset-button"
-          />
+              {/* Discard */}
+              {isDiscard && isHumanDeclarer && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleDiscard}
+                  disabled={loading || selectedCardIndices.length !== 2}
+                >
+                  {t('discardSelected')}
+                </button>
+              )}
 
-          {/* Bid phase actions */}
-          {isHumanBidTurn && (
-            <>
-              <button type="button" className={btnPrimary} onClick={() => handleBid(true)} disabled={loading}>
-                {state.currentBid === 0 ? t('callBid') : `${t('acceptAt')} ${state.currentBid}`}
-              </button>
-              <button type="button" className={btnPrimary} onClick={() => handleBid(false)} disabled={loading}>
-                {t('pass')}
-              </button>
-            </>
-          )}
+              {/* Game declaration */}
+              {isDeclareGame && isHumanDeclarer && (
+                <>
+                  <select
+                    aria-label={t('trumpSuitLabel')}
+                    value={trumpSuit}
+                    onChange={(e) => setTrumpSuit(Number(e.target.value))}
+                    className="px-2 py-1 rounded text-black"
+                    disabled={loading}
+                  >
+                    <option value={SUIT_SPADE}>{t('spades')} ♠</option>
+                    <option value={SUIT_CLOVER}>{t('clubs')} ♣</option>
+                    <option value={SUIT_HEART}>{t('hearts')} ♥</option>
+                    <option value={SUIT_DIAMOND}>{t('diamonds')} ♦</option>
+                  </select>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => handleDeclareGame(SkatGameType.SUIT, trumpSuit)}
+                    disabled={loading}
+                  >
+                    {t('declareSuit')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => handleDeclareGame(SkatGameType.GRAND)}
+                    disabled={loading}
+                  >
+                    {t('declareGrand')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => handleDeclareGame(SkatGameType.NULL)}
+                    disabled={loading}
+                  >
+                    {t('declareNull')}
+                  </button>
+                </>
+              )}
 
-          {/* Skat pickup */}
-          {isPickup && isHumanDeclarer && (
-            <>
-              <button type="button" className={btnPrimary} onClick={() => handlePickSkat(true)} disabled={loading}>
-                {t('pickUp')}
-              </button>
-              <button type="button" className={btnPrimary} onClick={() => handlePickSkat(false)} disabled={loading}>
-                {t('handGame')}
-              </button>
-            </>
-          )}
+              {/* Play phase */}
+              {isPlay && isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handlePlay}
+                  disabled={loading || selectedCardIndices.length !== 1}
+                >
+                  {t('play')}
+                </button>
+              )}
 
-          {/* Discard */}
-          {isDiscard && isHumanDeclarer && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handleDiscard}
-              disabled={loading || selectedCardIndices.length !== 2}
-            >
-              {t('discardSelected')}
-            </button>
-          )}
+              {isTrickEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                  {t('nextTrick')}
+                </button>
+              )}
 
-          {/* Game declaration */}
-          {isDeclareGame && isHumanDeclarer && (
-            <>
-              <select
-                aria-label={t('trumpSuitLabel')}
-                value={trumpSuit}
-                onChange={(e) => setTrumpSuit(Number(e.target.value))}
-                className="px-2 py-1 rounded text-black"
-                disabled={loading}
-              >
-                <option value={SUIT_SPADE}>{t('spades')} ♠</option>
-                <option value={SUIT_CLOVER}>{t('clubs')} ♣</option>
-                <option value={SUIT_HEART}>{t('hearts')} ♥</option>
-                <option value={SUIT_DIAMOND}>{t('diamonds')} ♦</option>
-              </select>
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => handleDeclareGame(SkatGameType.SUIT, trumpSuit)}
-                disabled={loading}
-              >
-                {t('declareSuit')}
-              </button>
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => handleDeclareGame(SkatGameType.GRAND)}
-                disabled={loading}
-              >
-                {t('declareGrand')}
-              </button>
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => handleDeclareGame(SkatGameType.NULL)}
-                disabled={loading}
-              >
-                {t('declareNull')}
-              </button>
-            </>
-          )}
-
-          {/* Play phase */}
-          {isPlay && isHumanTurn && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handlePlay}
-              disabled={loading || selectedCardIndices.length !== 1}
-            >
-              {t('play')}
-            </button>
-          )}
-
-          {isTrickEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-              {t('nextTrick')}
-            </button>
-          )}
-
-          {isRoundEnd && !isGameEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-              {t('nextRound')}
-            </button>
-          )}
-        </div>
-      </GameFooter>
+              {isRoundEnd && !isGameEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
+                </button>
+              )}
+            </div>
+          </GameFooter>
+          {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+        </>
+      )}
     </GamePageShell>
   );
 }
