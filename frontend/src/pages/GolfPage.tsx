@@ -25,6 +25,7 @@ import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useGolfGame } from '../hooks/useGolfGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -137,6 +138,8 @@ function GolfPageContent() {
     hideActionLog();
     handleReset();
   }, [handleReset, hideActionLog]);
+
+  useGameRoundGuard(isGameRoundActive(state));
 
   if (!state) return <GolfSkeleton />;
 

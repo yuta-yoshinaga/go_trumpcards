@@ -24,6 +24,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
 import { useSound } from '../providers/SoundProvider';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -77,6 +78,7 @@ function SpeedPageContent() {
     handleConfigChange,
     handleToggle,
   } = useSpeedGame();
+  useGameRoundGuard(!!state && !state.gameEndFlag);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,

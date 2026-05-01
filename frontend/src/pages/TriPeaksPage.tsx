@@ -27,6 +27,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -152,6 +153,8 @@ function TriPeaksPageContent() {
     hideActionLog();
     handleReset();
   }, [handleReset, hideActionLog]);
+
+  useGameRoundGuard(isGameRoundActive(state));
 
   if (!state) return <TriPeaksSkeleton />;
 

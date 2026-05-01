@@ -5,6 +5,7 @@ import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
 import { useFavoriteGames } from '../hooks/useFavoriteGames';
 import { useGameRouteSearch } from '../hooks/useGameRouteSearch';
+import { useRecentGames } from '../hooks/useRecentGames';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { NavLangToggle } from './nav/NavLangToggle';
 import { SoundToggle } from './SoundToggle';
@@ -19,6 +20,7 @@ export function DesktopSidebar() {
   const { t } = useTranslation('common');
   const [searchTerm, setSearchTerm] = useState('');
   const { favorites, isFavorite, toggleFavorite } = useFavoriteGames();
+  const recentGames = useRecentGames(pathname);
   const { filteredPaths } = useGameRouteSearch(searchTerm);
 
   return (
@@ -65,7 +67,7 @@ export function DesktopSidebar() {
             }}
             placeholder={t('nav.searchPlaceholder')}
             aria-label={t('nav.searchPlaceholder')}
-            className="flex-1 px-2 py-1.5 text-xs bg-ds-surface-elevated text-ds-text-primary rounded border border-ds-border-subtle placeholder-ds-text-muted min-w-0"
+            className="flex-1 px-2 py-2 text-sm bg-ds-surface-elevated text-ds-text-primary rounded border border-ds-border-subtle placeholder-ds-text-muted min-w-0 min-h-[44px]"
           />
           {searchTerm && (
             <button
@@ -97,7 +99,33 @@ export function DesktopSidebar() {
                     key={`fav-${gamePath}`}
                     to={gamePath}
                     aria-current={pathname === gamePath ? 'page' : undefined}
-                    className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors ${pathname === gamePath ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
+                    className={`inline-flex items-center gap-1.5 px-2 py-2 text-sm rounded transition-colors min-h-[44px] ${pathname === gamePath ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
+                  >
+                    <span aria-hidden="true">{route.icon}</span>
+                    {t(route.labelKey)}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Recent Games */}
+        {!filteredPaths && recentGames.length > 0 && (
+          <div className="mb-2">
+            <span className="text-ds-text-muted text-[10px] uppercase tracking-wider px-1 font-semibold">
+              {t('nav.recentGames')}
+            </span>
+            <div className="mt-1 flex flex-col gap-0.5">
+              {recentGames.map((gamePath) => {
+                const route = routeByPath.get(gamePath);
+                if (!route) return null;
+                return (
+                  <Link
+                    key={`recent-${gamePath}`}
+                    to={gamePath}
+                    aria-current={pathname === gamePath ? 'page' : undefined}
+                    className={`inline-flex items-center gap-1.5 px-2 py-2 text-sm rounded transition-colors min-h-[44px] ${pathname === gamePath ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
                   >
                     <span aria-hidden="true">{route.icon}</span>
                     {t(route.labelKey)}
@@ -127,7 +155,7 @@ export function DesktopSidebar() {
                     <Link
                       to={path}
                       aria-current={pathname === path ? 'page' : undefined}
-                      className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
+                      className={`inline-flex items-center gap-1.5 px-2 py-2 text-sm rounded transition-colors flex-1 min-h-[44px] ${pathname === path ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
                     >
                       <span aria-hidden="true">{icon}</span>
                       {t(routeLabel)}
@@ -161,7 +189,7 @@ export function DesktopSidebar() {
                       <Link
                         to={path}
                         aria-current={pathname === path ? 'page' : undefined}
-                        className={`inline-flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors flex-1 ${pathname === path ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
+                        className={`inline-flex items-center gap-1.5 px-2 py-2 text-sm rounded transition-colors flex-1 min-h-[44px] ${pathname === path ? 'bg-ds-accent text-ds-text-on-accent' : 'text-ds-text-primary hover:bg-ds-surface-elevated-hover'}`}
                       >
                         <span aria-hidden="true">{icon}</span>
                         {t(routeLabel)}

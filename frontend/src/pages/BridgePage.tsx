@@ -24,6 +24,7 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -191,6 +192,8 @@ function BridgePageContent() {
       cpuDifficulty: bridgeConfig.cpuDifficulty,
     });
   }, [apiExec, hideActionLog, bridgeConfig.cpuDifficulty]);
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <BridgeSkeleton />;
 

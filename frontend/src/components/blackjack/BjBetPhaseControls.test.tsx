@@ -39,7 +39,8 @@ function defaultProps(overrides?: Partial<BjBetPhaseControlsProps>): BjBetPhaseC
 describe('BjBetPhaseControls', () => {
   it('renders bet amount input with provided value', () => {
     render(<BjBetPhaseControls {...defaultProps({ betAmount: 50 })} />);
-    expect(screen.getByLabelText('ベット額:')).toHaveValue(50);
+    // ChipBetInput now uses type=text + inputMode=numeric (#1615) — value is a string.
+    expect(screen.getByLabelText('ベット額:')).toHaveValue('50');
   });
 
   it('calls onBetAmountChange when bet input changes', () => {
@@ -150,7 +151,7 @@ describe('BjBetPhaseControls', () => {
 
   it('renders PP input with provided value', () => {
     render(<BjBetPhaseControls {...defaultProps({ perfectPairsBet: 20 })} />);
-    expect(screen.getByLabelText('PP (ペアベット):')).toHaveValue(20);
+    expect(screen.getByLabelText('PP (ペアベット):')).toHaveValue('20');
   });
 
   it('calls onPerfectPairsBetChange when PP input changes', () => {
@@ -162,7 +163,7 @@ describe('BjBetPhaseControls', () => {
 
   it('renders 21+3 input with provided value', () => {
     render(<BjBetPhaseControls {...defaultProps({ twentyOnePlus3Bet: 40 })} />);
-    expect(screen.getByLabelText('21+3:')).toHaveValue(40);
+    expect(screen.getByLabelText('21+3:')).toHaveValue('40');
   });
 
   it('calls onTwentyOnePlus3BetChange when 21+3 input changes', () => {

@@ -28,6 +28,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
@@ -198,6 +199,8 @@ function KlondikePageContent() {
     bindings: actionBindings,
     enabled: !!isPlayingForKbd && !loading,
   });
+
+  useGameRoundGuard(isGameRoundActive(state));
 
   if (!state) return <KlondikeSkeleton />;
 

@@ -22,6 +22,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePinochleGame } from '../hooks/usePinochleGame';
 import { useSound } from '../providers/SoundProvider';
@@ -165,6 +166,8 @@ function PinochlePageContent() {
     hideActionLog();
     handleReset();
   }, [handleReset, hideActionLog]);
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) {
     return (

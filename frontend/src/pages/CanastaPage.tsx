@@ -24,6 +24,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -145,6 +146,8 @@ function CanastaPageContent() {
     onClear: clearSelection,
     enabled: !!isHumanTurn && !loading,
   });
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) {
     return (

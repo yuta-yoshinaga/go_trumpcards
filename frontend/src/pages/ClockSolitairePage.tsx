@@ -24,6 +24,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ClockSolitaireResponse } from '../types/card';
@@ -73,6 +74,7 @@ function ClockSolitairePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('clocksolitaire');
   const { state, loading, error, exec: execApi, retry } = useGameApi(clocksolitaireApi.exec);
+  useGameRoundGuard(isGameRoundActive(state));
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   const handleAutoPlay = useCallback(() => execApi('autoplay'), [execApi]);

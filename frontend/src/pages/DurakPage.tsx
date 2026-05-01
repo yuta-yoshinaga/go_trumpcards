@@ -24,6 +24,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, useDurakGame } from '../hooks/useDurakGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -38,8 +39,7 @@ const PHASE_ATTACK = 0;
 const PHASE_DEFEND = 1;
 const PHASE_BOUT_END = 2;
 
-/** Fallback theme for durak (matching/pass category). */
-const theme = gameTheme.durak ?? { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' };
+const theme = gameTheme.durak;
 
 /** Durak tutorial step definitions. */
 const DURAK_TUTORIAL_STEPS: TutorialStep[] = [
@@ -159,6 +159,8 @@ function DurakPageContent() {
     hideActionLog();
     void gameExec('reset', undefined, undefined, durakConfig);
   }, [gameExec, hideActionLog, durakConfig]);
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <DurakSkeleton />;
 

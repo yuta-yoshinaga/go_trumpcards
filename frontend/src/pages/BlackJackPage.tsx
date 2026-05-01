@@ -41,8 +41,8 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
-import { useGameLeaveGuard } from '../hooks/useGameLeaveGuard';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -195,7 +195,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
     phase === BjPhase.EARLY_SURRENDER ||
     phase === BjPhase.INSURANCE ||
     phase === BjPhase.ACTION;
-  useGameLeaveGuard(isRoundInProgress, tc('button.confirmLeaveRoundMessage'));
+  useGameRoundGuard(isRoundInProgress);
   const hands = state?.hands ?? [];
   const currentHandIdx = state?.currentHandIdx ?? 0;
   const currentHand = hands[currentHandIdx];
@@ -259,10 +259,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   if (!state) return <BlackJackSkeleton />;
 
   return (
-    <div
-      className={`flex-1 flex flex-col min-h-0 ${gameTheme[themeKey]?.bg ?? gameTheme.blackjack.bg}`}
-      aria-busy={loading}
-    >
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme[themeKey].bg}`} aria-busy={loading}>
       <GamePageHeading title={tc(navTitleKey)} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator
@@ -406,7 +403,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
           </div>
 
           {/* Sticky footer: player hand + result + buttons */}
-          <GameFooter className={`${gameTheme[themeKey]?.footer ?? gameTheme.blackjack.footer} px-4 py-3`}>
+          <GameFooter className={`${gameTheme[themeKey].footer} px-4 py-3`}>
             {/* Player hands */}
             {phase !== BjPhase.BET && hands.length > 0 && (
               <div className="mb-2" data-tutorial="bj-player-hand">
@@ -548,7 +545,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                       id="bj-auto-advance"
                       value={autoAdvance}
                       onChange={(e) => setAutoAdvance(Number(e.target.value))}
-                      className="px-2 py-1 rounded text-sm"
+                      className="px-3 py-2 rounded text-sm min-h-[44px]"
                     >
                       <option value={0}>OFF</option>
                       <option value={3}>{t('autoAdvanceSec', { sec: 3 })}</option>

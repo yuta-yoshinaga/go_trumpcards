@@ -101,7 +101,9 @@
     "loading": "Loading…"
   },
   "settings": {
-    "title": "Settings"
+    "title": "Settings",
+    "showHelp": "Show help",
+    "hideHelp": "Hide help"
   },
   "player": {
     "you": "You",
@@ -199,7 +201,12 @@
     "mucked": "Mucked",
     "player": "Player",
     "errorBoundaryTitle": "An error occurred",
-    "errorBoundaryRetry": "Retry"
+    "errorBoundaryRetry": "Retry",
+    "errorBoundaryReload": "Reload page",
+    "errorBoundaryReport": "Report issue",
+    "errorBoundaryHelp": "Sorry — choose how to recover below.",
+    "errorBoundaryRepeated": "The same error keeps occurring. Please reload the page.",
+    "errorBoundaryDetails": "Show error details"
   },
   "messageCode": {
     "blackjack.result.draw": "It is a draw.",

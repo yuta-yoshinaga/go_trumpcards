@@ -30,6 +30,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
@@ -182,10 +183,12 @@ function BadugiPageContent() {
     execAction('reset', undefined, undefined, { bettingLimit, cpuMetaAI });
   }, [execAction, hideActionLog, bettingLimit, cpuMetaAI]);
 
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
   if (!state) return <PokerSkeleton />;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.poker.bg}`} aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.badugi.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.badugi')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseLabel} isHumanTurn={canAct || canExchange}>
@@ -255,7 +258,7 @@ function BadugiPageContent() {
           </div>
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.poker.footer} px-5 py-3`}>
+          <GameFooter className={`${gameTheme.badugi.footer} px-5 py-3`}>
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="bg-player-hand">

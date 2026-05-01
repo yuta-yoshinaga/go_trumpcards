@@ -23,6 +23,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
@@ -69,6 +70,7 @@ function PokerSquaresPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(pokersquaresApi.exec);
+  useGameRoundGuard(isGameRoundActive(state));
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,

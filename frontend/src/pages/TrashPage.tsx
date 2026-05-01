@@ -24,6 +24,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -186,8 +187,10 @@ function TrashPageContent() {
     },
     [apiCall, state, playSound],
   );
+  useGameRoundGuard(isGameRoundActive(state));
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
+
   if (!state) return <KlondikeSkeleton />;
 
   const isGameOver = state.phase === TrashPhase.GAME_OVER;
@@ -203,7 +206,7 @@ function TrashPageContent() {
         : t('phase.playerTurn');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.klondike.bg}`} aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.trash.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.trash')} />
       <PhaseIndicator phaseName={phaseName}>
         <span>

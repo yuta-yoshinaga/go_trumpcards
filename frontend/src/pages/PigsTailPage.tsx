@@ -20,7 +20,9 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { gameTheme } from '../styles/gameTheme';
 import type { PigsTailResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
@@ -81,6 +83,7 @@ function PigsTailPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pigtail');
   const { state, loading, exec: execApi } = useGameApi(pigtailApi.exec);
+  useGameRoundGuard(!!state && !state.gameEndFlag);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pigtail', state);
@@ -132,7 +135,7 @@ function PigsTailPageContent() {
   const loserIsHuman = isGameEnd && state.loserIdx >= 0 && state.players[state.loserIdx]?.isHuman === true;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pigtail.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.pigtail')} />
       <PhaseIndicator phaseName={currentPhaseName ?? ''}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -223,7 +226,7 @@ function PigsTailPageContent() {
 
           {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
-          <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+          <GameFooter className={`${gameTheme.pigtail.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center items-center flex-wrap">
               <label className="flex items-center gap-1 text-ds-text-primary text-xs">
                 <input

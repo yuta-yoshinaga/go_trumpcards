@@ -24,6 +24,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { gameTheme } from '../styles/gameTheme';
 import type { FiftyOneResponse } from '../types/card';
 import { FiftyOnePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -80,6 +82,7 @@ function FiftyOnePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fiftyone');
   const { state, loading, error, exec: execApi, retry } = useGameApi(fiftyoneApi.exec);
+  useGameRoundGuard(!!state && !state.gameEndFlag);
   const { cardWidth } = useCardDimensions();
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [selectedHandIdx, setSelectedHandIdx] = useState<number | null>(null);
@@ -165,7 +168,7 @@ function FiftyOnePageContent() {
   const canExchange = isHumanTurn && selectedHandIdx !== null && selectedTableIdx !== null;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.fiftyone.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.fiftyone')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -286,7 +289,7 @@ function FiftyOnePageContent() {
             ]}
           />
 
-          <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+          <GameFooter className={`${gameTheme.fiftyone.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="fo-action-buttons">
               <button
                 type="button"

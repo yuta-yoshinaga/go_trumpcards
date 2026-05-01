@@ -22,6 +22,8 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { gameTheme } from '../styles/gameTheme';
 import type { CassinoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import {
@@ -133,9 +135,11 @@ function CassinoPageContent() {
 
   const onReset = useCallback(() => handleResetWithConfig(), [handleResetWithConfig]);
 
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
   if (!state || state.players.length < 4) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-game-bg-green text-ds-text-muted" aria-busy>
+      <div className={`flex-1 flex items-center justify-center ${gameTheme.cassino.bg} text-ds-text-muted`} aria-busy>
         {tc('common.loading')}
       </div>
     );
@@ -151,7 +155,7 @@ function CassinoPageContent() {
   const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.cassino.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.cassino')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -312,7 +316,7 @@ function CassinoPageContent() {
             ]}
           />
 
-          <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+          <GameFooter className={`${gameTheme.cassino.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="cs-actions">
               <button
                 type="button"

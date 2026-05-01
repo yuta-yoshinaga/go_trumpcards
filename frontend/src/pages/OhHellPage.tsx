@@ -28,6 +28,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import {
   CPU_DIFFICULTY_OPTIONS,
   MAX_HAND_SIZE_OPTIONS,
@@ -187,6 +188,8 @@ function OhHellPageContent() {
     ohHellConfig.scoringVariant,
     ohHellConfig.roundDirection,
   ]);
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <OhHellSkeleton />;
 

@@ -25,6 +25,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCrazyEightsGame } from '../hooks/useCrazyEightsGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -164,6 +165,8 @@ function CrazyEightsPageContent() {
   });
 
   const phaseNames = usePhaseNames('crazyeights', CRAZYEIGHTS_PHASE_KEYS);
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <CrazyEightsSkeleton />;
 

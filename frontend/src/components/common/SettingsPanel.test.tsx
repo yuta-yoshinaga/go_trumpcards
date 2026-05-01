@@ -199,7 +199,7 @@ describe('SettingsPanel', () => {
     expect(screen.getByText('G2')).toBeInTheDocument();
   });
 
-  it('renders tooltip on checkbox hover with aria-describedby', () => {
+  it('reveals checkbox tooltip via the help button (touch-accessible toggle)', () => {
     const { container } = render(
       <SettingsPanel
         title="Settings"
@@ -210,15 +210,19 @@ describe('SettingsPanel', () => {
         ]}
       />,
     );
-    const tooltip = screen.getByText('Help text');
-    expect(tooltip).toBeInTheDocument();
-    expect(tooltip).toHaveAttribute('id', 'cb1-tooltip');
-    expect(tooltip).toHaveAttribute('role', 'tooltip');
+    // Tooltip text is hidden until the help button is tapped.
+    expect(screen.queryByText('Help text')).not.toBeInTheDocument();
+    // aria-describedby is wired up regardless so screen-reader users still get it on focus.
     const checkbox = container.querySelector('#cb1') as HTMLInputElement;
     expect(checkbox).toHaveAttribute('aria-describedby', 'cb1-tooltip');
+    const helpBtn = screen.getByRole('button', { name: /Show help|説明を表示/ });
+    fireEvent.click(helpBtn);
+    const tooltip = screen.getByText('Help text');
+    expect(tooltip).toHaveAttribute('id', 'cb1-tooltip');
+    expect(tooltip).toHaveAttribute('role', 'tooltip');
   });
 
-  it('renders tooltip on select hover with aria-describedby', () => {
+  it('reveals select tooltip via the help button', () => {
     render(
       <SettingsPanel
         title="Settings"
@@ -238,12 +242,65 @@ describe('SettingsPanel', () => {
         ]}
       />,
     );
-    const tooltip = screen.getByText('Select help');
-    expect(tooltip).toBeInTheDocument();
-    expect(tooltip).toHaveAttribute('id', 'sel1-tooltip');
-    expect(tooltip).toHaveAttribute('role', 'tooltip');
+    expect(screen.queryByText('Select help')).not.toBeInTheDocument();
     const select = screen.getByLabelText('Sel');
     expect(select).toHaveAttribute('aria-describedby', 'sel1-tooltip');
+    const helpBtn = screen.getByRole('button', { name: /Show help|説明を表示/ });
+    fireEvent.click(helpBtn);
+    const tooltip = screen.getByText('Select help');
+    expect(tooltip).toHaveAttribute('id', 'sel1-tooltip');
+    expect(tooltip).toHaveAttribute('role', 'tooltip');
+  });
+
+  it('toggles tooltip closed on a second help button click', () => {
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[
+          {
+            items: [{ type: 'checkbox', id: 'cb1', label: 'With tip', checked: false, tooltip: 'Help text' }],
+          },
+        ]}
+      />,
+    );
+    const helpBtn = screen.getByRole('button', { name: /Show help|説明を表示/ });
+    fireEvent.click(helpBtn);
+    expect(screen.getByText('Help text')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Hide help|説明を非表示/ }));
+    expect(screen.queryByText('Help text')).not.toBeInTheDocument();
+  });
+
+  it('closes the open tooltip when Escape is pressed', () => {
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[
+          {
+            items: [{ type: 'checkbox', id: 'cb1', label: 'With tip', checked: false, tooltip: 'Help text' }],
+          },
+        ]}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Show help|説明を表示/ }));
+    expect(screen.getByText('Help text')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByText('Help text')).not.toBeInTheDocument();
+  });
+
+  it('does not toggle the checkbox when the help button inside the row is clicked', () => {
+    const onToggle = vi.fn();
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[
+          {
+            items: [{ type: 'checkbox', id: 'cb1', label: 'Item', checked: false, tooltip: 'Help', onToggle }],
+          },
+        ]}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Show help|説明を表示/ }));
+    expect(onToggle).not.toHaveBeenCalled();
   });
 
   it('does not set aria-describedby when no tooltip on checkbox', () => {

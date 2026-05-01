@@ -29,6 +29,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -109,6 +110,7 @@ function OldMaidPageContent() {
     setSetupHesitation,
     setSetupMetaAI,
   } = useOldMaidGame();
+  useGameRoundGuard(!!displayState && !displayState.gameEndFlag);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,

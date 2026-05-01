@@ -32,6 +32,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -171,6 +172,8 @@ function DaifugoPageContent() {
     hideActionLog();
     void exec('reset', [], configInput);
   }, [exec, configInput, hideActionLog]);
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <DaifugoSkeleton />;
 

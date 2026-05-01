@@ -26,6 +26,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -148,6 +149,8 @@ function TexasHoldemBonusPageContent() {
     bindings: actionBindings,
     enabled: !!state && !loading,
   });
+
+  useGameRoundGuard(isGameRoundActive(state));
 
   if (!state) return <TexasHoldemBonusSkeleton />;
 

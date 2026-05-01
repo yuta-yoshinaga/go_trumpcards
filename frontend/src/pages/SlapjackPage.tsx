@@ -23,6 +23,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { gameTheme } from '../styles/gameTheme';
 import type { SlapjackResponse } from '../types/card';
 import { SlapjackEventKind, SlapjackPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -71,6 +73,7 @@ function SlapjackPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('slapjack');
   const { state, loading, error, exec: execApi, retry } = useGameApi(slapjackApi.exec);
+  useGameRoundGuard(!!state && !state.gameEndFlag);
   const { cardWidth } = useCardDimensions();
   const {
     hint: frontendHint,
@@ -136,7 +139,9 @@ function SlapjackPageContent() {
 
   if (!state || state.players.length < 2) {
     return (
-      <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green items-center justify-center text-ds-text-muted">
+      <div
+        className={`flex-1 flex flex-col min-h-0 ${gameTheme.slapjack.bg} items-center justify-center text-ds-text-muted`}
+      >
         Loading…
       </div>
     );
@@ -151,7 +156,7 @@ function SlapjackPageContent() {
   const lastEvent = state.lastEventKind;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.slapjack.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.slapjack')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={!isGameEnd && state.isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -272,7 +277,7 @@ function SlapjackPageContent() {
             ]}
           />
 
-          <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+          <GameFooter className={`${gameTheme.slapjack.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center">
               <button
                 type="button"
