@@ -14,12 +14,8 @@ type FortyThievesWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *FortyThievesWebPresenter) Output(ft interfaces.FortyThievesGame, lastErr error) string {
 	resObj := new(controller.FortyThievesWebOutput)
-	resObj.Phase = int(ft.GetPhase())
-	resObj.MoveCount = ft.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, ft, int(ft.GetPhase()))
 	resObj.StockCount = ft.GetStockCount()
-	resObj.CanUndo = ft.CanUndo()
-	resObj.IsStalemate = ft.IsStalemate()
-	resObj.UndoToEscape = ft.UndoToEscape()
 
 	// ウェイスト
 	waste := ft.GetWaste()
@@ -87,11 +83,8 @@ func (p *FortyThievesWebPresenter) Output(ft interfaces.FortyThievesGame, lastEr
 func (p *FortyThievesWebPresenter) HintOutput(ft interfaces.FortyThievesGame) string {
 	hint := ft.GetHint()
 	resObj := new(controller.FortyThievesWebOutput)
-	resObj.Phase = int(ft.GetPhase())
-	resObj.MoveCount = ft.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, ft, int(ft.GetPhase()))
 	resObj.StockCount = ft.GetStockCount()
-	resObj.CanUndo = ft.CanUndo()
-	resObj.UndoToEscape = ft.UndoToEscape()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.FortyThievesWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
@@ -114,9 +107,5 @@ func (p *FortyThievesWebPresenter) HintOutput(ft interfaces.FortyThievesGame) st
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *FortyThievesWebPresenter) ActionLogOutput(ft interfaces.FortyThievesGame) string {
-	phase := ft.GetPhase()
-	if phase == domain.FortyThievesPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(ft.GetActionLog())
+	return actionLogOutputJSON(ft)
 }

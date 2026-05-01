@@ -5,6 +5,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // ClockSolitaireGame クロックソリティアゲームインタフェース
 type ClockSolitaireGame interface {
 	BaseGame
+	// GetGameEndFlag reports whether the game has left the playing phase.
+	GetGameEndFlag() bool
 	// Reset ゲームを初期化する
 	Reset()
 	// Step 1ステップ実行する

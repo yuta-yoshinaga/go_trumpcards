@@ -45,19 +45,15 @@ type KlondikeWebOutputHint struct {
 
 // KlondikeWebOutput クロンダイクWebアウトプット
 type KlondikeWebOutput struct {
-	Tableau      [][]*KlondikeWebOutputTableauCard `json:"tableau"`
-	StockCount   int                               `json:"stockCount"`
-	Waste        []*WebOutputCard                  `json:"waste"`
-	Foundation   [][]*WebOutputCard                `json:"foundation"`
-	Phase        int                               `json:"phase"`
-	MoveCount    int                               `json:"moveCount"`
-	DrawCount    int                               `json:"drawCount"`
-	CanUndo      bool                              `json:"canUndo"`
-	IsStalemate  bool                              `json:"isStalemate"`
-	UndoToEscape int                               `json:"undoToEscape"`
-	Score        int                               `json:"score"`
-	ScoringMode  int                               `json:"scoringMode"`
-	Hint         *KlondikeWebOutputHint            `json:"hint,omitempty"`
+	Tableau     [][]*KlondikeWebOutputTableauCard `json:"tableau"`
+	StockCount  int                               `json:"stockCount"`
+	Waste       []*WebOutputCard                  `json:"waste"`
+	Foundation  [][]*WebOutputCard                `json:"foundation"`
+	DrawCount   int                               `json:"drawCount"`
+	Score       int                               `json:"score"`
+	ScoringMode int                               `json:"scoringMode"`
+	Hint        *KlondikeWebOutputHint            `json:"hint,omitempty"`
+	SolitaireWebOutputBase
 	WebOutputBase
 }
 

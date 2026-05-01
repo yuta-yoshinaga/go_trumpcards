@@ -6,6 +6,7 @@
 import accordion from '../../../docs/manual/cui/accordion.md?raw';
 import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
+import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import calculation from '../../../docs/manual/cui/calculation.md?raw';
@@ -21,6 +22,7 @@ import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
 import durak from '../../../docs/manual/cui/durak.md?raw';
+import egyptianratscrew from '../../../docs/manual/cui/egyptianratscrew.md?raw';
 import euchre from '../../../docs/manual/cui/euchre.md?raw';
 import fiftyone from '../../../docs/manual/cui/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/cui/fortythieves.md?raw';
@@ -64,7 +66,9 @@ import spanish21 from '../../../docs/manual/cui/spanish21.md?raw';
 import speed from '../../../docs/manual/cui/speed.md?raw';
 import spider from '../../../docs/manual/cui/spider.md?raw';
 import spiteandmalice from '../../../docs/manual/cui/spiteandmalice.md?raw';
+import texasholdembonus from '../../../docs/manual/cui/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/cui/threecard.md?raw';
+import tonk from '../../../docs/manual/cui/tonk.md?raw';
 import trash from '../../../docs/manual/cui/trash.md?raw';
 import tripeaks from '../../../docs/manual/cui/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/cui/twotenjack.md?raw';
@@ -82,13 +86,16 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
+  '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
   '/crazyeights': crazyeights,
   '/cribbage': cribbage,
   '/daifugo': daifugo,
   '/deuceswild': deuceswild,
   '/doubt': doubt,
+  '/bakersdozen': bakersdozen,
   '/durak': durak,
+  '/egyptianratscrew': egyptianratscrew,
   '/fiftyone': fiftyone,
   '/fortythieves': fortythieves,
   '/euchre': euchre,
@@ -127,6 +134,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/speed': speed,
   '/spider': spider,
   '/threecard': threecard,
+  '/tonk': tonk,
   '/tripeaks': tripeaks,
   '/twotenjack': twotenjack,
   '/videopoker': videopoker,

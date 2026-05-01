@@ -24,7 +24,7 @@ export function OldMaidDrawHistory({
 
   return (
     <div className="bg-black/50 rounded-lg my-2 p-2" data-testid="draw-history-timeline">
-      <div className="text-white font-bold text-xs mb-1">{t('history.title')}</div>
+      <div className="text-ds-text-primary font-bold text-xs mb-1">{t('history.title')}</div>
       <div ref={scrollRef} className="max-h-[120px] overflow-y-auto text-xs text-game-text-muted">
         {entries.map((entry, i) => {
           const from = findPlayerName(players, entry.drawPlayerIdx);

@@ -238,6 +238,11 @@ func init() {
 			return usecase.NewCaribbeanStudInteractor(domain.NewDefaultCaribbeanStud(), new(presenter.CaribbeanStudWebPresenter))
 		},
 		controller.NewCaribbeanStudWebController)
+	BindWebControllerFor("texasholdembonus",
+		func() usecase.TexasHoldemBonusInteractorIF {
+			return usecase.NewTexasHoldemBonusInteractor(domain.NewDefaultTexasHoldemBonus(), new(presenter.TexasHoldemBonusWebPresenter))
+		},
+		controller.NewTexasHoldemBonusWebController)
 	BindWebControllerFor("war",
 		func() usecase.WarInteractorIF {
 			return usecase.NewWarInteractor(domain.NewDefaultWar(), new(presenter.WarWebPresenter))
@@ -358,4 +363,19 @@ func init() {
 			return usecase.NewSlapjackInteractor(domain.NewDefaultSlapjack(), new(presenter.SlapjackWebPresenter))
 		},
 		controller.NewSlapjackWebController)
+	BindWebControllerFor("egyptianratscrew",
+		func() usecase.EgyptianRatscrewInteractorIF {
+			return usecase.NewEgyptianRatscrewInteractor(domain.NewDefaultEgyptianRatscrew(), new(presenter.EgyptianRatscrewWebPresenter))
+		},
+		controller.NewEgyptianRatscrewWebController)
+	BindWebControllerFor("bakersdozen",
+		func() usecase.BakersDozenInteractorIF {
+			return usecase.NewBakersDozenInteractor(domain.NewDefaultBakersDozen(), new(presenter.BakersDozenWebPresenter))
+		},
+		controller.NewBakersDozenWebController)
+	BindWebControllerFor("tonk",
+		func() usecase.TonkInteractorIF {
+			return usecase.NewTonkInteractor(domain.NewDefaultTonk(), new(presenter.TonkWebPresenter))
+		},
+		controller.NewTonkWebController)
 }

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { crazyPineappleApi, pineappleApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
@@ -16,6 +15,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HudStats } from '../components/HudStats';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -109,49 +109,6 @@ const PINEAPPLE_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PineapplePhase.REBUY]: 'rebuy',
   [PineapplePhase.DISCARD]: 'discard',
 };
-
-function StatTooltip({ id, label, tooltipText }: { id: string; label: string; tooltipText: string }) {
-  return (
-    <button
-      type="button"
-      className="group relative cursor-help bg-transparent border-none p-0 font-inherit text-inherit inline"
-      aria-describedby={id}
-    >
-      {label}
-      <span
-        id={id}
-        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-ds-surface-elevated px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
-        role="tooltip"
-      >
-        {tooltipText}
-      </span>
-    </button>
-  );
-}
-
-function HudStats({
-  namespace,
-  vpip,
-  pfr,
-  threeBet,
-  af,
-}: {
-  namespace: string;
-  vpip: number;
-  pfr: number;
-  threeBet: number;
-  af: string;
-}) {
-  const { t } = useTranslation(namespace);
-  return (
-    <span className="ml-2 text-ds-info text-[0.8em] hidden md:inline" data-testid="hud-stats">
-      <StatTooltip id="tooltip-vpip" label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:{vpip}%{' '}
-      <StatTooltip id="tooltip-pfr" label={t('stats.pfr')} tooltipText={t('stats.pfrTooltip')} />:{pfr}%{' '}
-      <StatTooltip id="tooltip-3bet" label={t('stats.threeBet')} tooltipText={t('stats.threeBetTooltip')} />:{threeBet}%{' '}
-      <StatTooltip id="tooltip-af" label={t('stats.af')} tooltipText={t('stats.afTooltip')} />:{af}
-    </span>
-  );
-}
 
 /** Variant of the Pineapple page: standard "pineapple" or the Crazy Pineapple
  * variant (discard happens after the flop betting round instead of before). */
@@ -310,7 +267,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {(() => {
               const communityCardsContent = (
                 <>
-                  <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
+                  <div className="text-ds-text-primary text-lg mb-1.5">{t('communityCards')}</div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card) => (
@@ -389,7 +346,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="pn-player-hand">
-                <div className="text-white text-lg mb-1">
+                <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
                   <span className="ml-3 text-xs">
                     {tc('betting.chips')} {humanPlayer.chips}
@@ -459,7 +416,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
-                <p className="text-white mb-2">{t('discard.select')}</p>
+                <p className="text-ds-text-primary mb-2">{t('discard.select')}</p>
                 <button
                   type="button"
                   className={`${btnPrimary} min-w-[90px]`}
@@ -503,7 +460,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Rebuy/Addon controls */}
             {isRebuyPhase && (
               <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-white mb-2">
+                <p className="text-ds-text-primary mb-2">
                   {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
                 </p>
                 <div className="flex justify-center gap-2">
@@ -528,7 +485,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             )}
             {isAddonPhase && (
               <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
@@ -577,12 +534,12 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
             {/* Settings + Reset */}
             <details className="mb-1" data-tutorial="pn-learning-mode" open={learningMode || undefined}>
-              <summary className="cursor-pointer select-none text-white text-sm font-bold py-1">
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
                 {tc('settings.title')}
               </summary>
               <div className="flex flex-col gap-2 py-1">
                 <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                  <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
+                  <label htmlFor="learningModeCheckbox" className="text-ds-text-primary text-sm cursor-pointer">
                     {t('learning.toggle')}
                   </label>
                   <input
@@ -596,11 +553,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
                 )}
                 <div className="flex items-center gap-3">
-                  <label className="text-white text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
                     <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
                     {tc('hint.toggle', { ns: 'tutorial' })}
                   </label>
-                  <label className="text-white text-sm flex items-center gap-1">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1">
                     <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
                     {t('settings.cpuMetaAI')}
                   </label>

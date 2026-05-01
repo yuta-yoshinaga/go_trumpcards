@@ -54,10 +54,7 @@ func (p *SpiteAndMaliceWebPresenter) HintOutput(g interfaces.SpiteAndMaliceGame)
 
 // ActionLogOutput 棋譜を JSON 出力
 func (p *SpiteAndMaliceWebPresenter) ActionLogOutput(g interfaces.SpiteAndMaliceGame) string {
-	if g.GetPhase() == domain.SpiteAndMalicePhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(g.GetActionLog())
+	return actionLogOutputJSON(g)
 }
 
 // buildBase は共通フィールドを詰めたレスポンスオブジェクトを返す

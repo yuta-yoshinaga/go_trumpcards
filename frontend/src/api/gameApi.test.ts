@@ -3,6 +3,7 @@ import {
   actionLogApi,
   baccaratApi,
   blackjackApi,
+  canfieldApi,
   crazyeightsApi,
   daifugoApi,
   doubtApi,
@@ -3027,6 +3028,34 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(letitrideApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  // canfieldApi covers the createSolitaireMoveApi factory body — the seven
+  // games that use it (Canfield, FreeCell, Yukon, Scorpion, Accordion,
+  // FortyThieves, Calculation) all share the same wire shape, so one
+  // representative test pins the factory output for the whole group.
+  describe('canfieldApi.exec (createSolitaireMoveApi factory smoke test)', () => {
+    it('sends reset command with no zones', async () => {
+      const mockResponse = { tableau: [], stockCount: 0, phase: 0, message: '' };
+      mockFetch.mockReturnValue(makeResponse(mockResponse));
+      const result = await canfieldApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/canfield/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', from: undefined, to: undefined, sessionId }),
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('sends undo_n command with batch count', async () => {
+      mockFetch.mockReturnValue(makeResponse({ phase: 1 }));
+      await canfieldApi.exec('undo_n', undefined, undefined, 3);
+      expect(mockFetch).toHaveBeenCalledWith('/canfield/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'undo_n', from: undefined, to: undefined, n: 3, sessionId }),
+      });
     });
   });
 

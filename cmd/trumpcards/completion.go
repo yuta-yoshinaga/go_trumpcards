@@ -123,6 +123,10 @@ func writeBashCompletion(w io.Writer) error {
             COMPREPLY=( $(compgen -W "ja en" -- "$cur") )
             return
             ;;
+        --color)
+            COMPREPLY=( $(compgen -W "auto always never" -- "$cur") )
+            return
+            ;;
         completion)
             COMPREPLY=( $(compgen -W "bash zsh fish" -- "$cur") )
             return
@@ -149,7 +153,7 @@ func writeBashCompletion(w io.Writer) error {
     esac
 
     if [[ "$cur" == -* ]]; then
-        COMPREPLY=( $(compgen -W "--help --lang --no-color --version --version-short -h -V" -- "$cur") )
+        COMPREPLY=( $(compgen -W "--help --lang --color --no-color --version --version-short -h -V" -- "$cur") )
         return
     fi
 
@@ -182,7 +186,8 @@ _trumpcards() {
         '(-V --version)'{-V,--version}'[Show version information]' \
         '--version-short[Print version number only]' \
         '--lang[Language]:language:(ja en)' \
-        '--no-color[Disable color output]' \
+        '--color[Color output mode]:mode:(auto always never)' \
+        '--no-color[DEPRECATED alias for --color=never]' \
         '1:command:->cmds' \
         '*::arg:->args'
 
@@ -238,7 +243,8 @@ complete -c trumpcards -l help -s h -d 'Show help message'
 complete -c trumpcards -l version -s V -d 'Show version information'
 complete -c trumpcards -l version-short -d 'Print version number only'
 complete -c trumpcards -l lang -x -a 'ja en' -d 'Language'
-complete -c trumpcards -l no-color -d 'Disable color output'
+complete -c trumpcards -l color -x -a 'auto always never' -d 'Color output mode'
+complete -c trumpcards -l no-color -d 'DEPRECATED alias for --color=never'
 
 # Subcommands
 %s

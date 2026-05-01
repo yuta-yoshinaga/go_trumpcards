@@ -64,6 +64,7 @@
     "fortythieves": "Forty Thieves",
     "paigow": "Pai Gow Poker",
     "caribbeanstud": "Caribbean Stud Poker",
+    "texasholdembonus": "Texas Hold'em Bonus Poker",
     "war": "War",
     "fiftyone": "Fifty-one",
     "canfield": "Canfield",
@@ -87,11 +88,17 @@
     "skat": "Skat",
     "shithead": "Shithead",
     "nertz": "Nertz / Pounce",
-    "slapjack": "Slapjack"
+    "slapjack": "Slapjack",
+    "egyptianratscrew": "Egyptian Ratscrew",
+    "bakersdozen": "Baker's Dozen",
+    "tonk": "Tonk"
   },
   "sound": {
     "mute": "Mute sound",
     "unmute": "Unmute sound"
+  },
+  "skeleton": {
+    "loading": "Loading…"
   },
   "settings": {
     "title": "Settings"
@@ -261,6 +268,12 @@
     "ginrummy.discardPhase": "Discard a card or knock",
     "ginrummy.layoffPhase": "Lay off cards onto the knocker's melds",
     "ginrummy.roundEnd": "Round over",
+    "tonk.result.humanWin": "Game over! You win!",
+    "tonk.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "tonk.drawPhase": "Draw a card from the stock or discard pile",
+    "tonk.discardPhase": "Discard a card or knock (deadwood <= 5)",
+    "tonk.roundEnd": "Round over",
+    "tonk.tonkOnDeal": "Tonk on deal! Instant win",
     "canasta.drawPhase": "Draw from stock or pick up the discard pile.",
     "canasta.meldPhase": "Meld cards or skip.",
     "canasta.discardPhase": "Discard a card or go out.",
@@ -303,6 +316,10 @@
     "caribbeanstud.result.push": "Push!",
     "caribbeanstud.result.fold": "Folded",
     "caribbeanstud.result.dealerNotQualified": "Dealer does not qualify!",
+    "texasholdembonus.result.playerWins": "You win!",
+    "texasholdembonus.result.dealerWins": "Dealer wins!",
+    "texasholdembonus.result.push": "Push!",
+    "texasholdembonus.result.fold": "Folded",
     "letitride.result.win": "You win!",
     "letitride.result.lose": "No winning hand",
     "klondike.playing": "Playing",
@@ -355,6 +372,9 @@
     "war.result.cpuWin": "Game Over! CPU wins...",
     "slapjack.result.humanWin": "Game Over! You win!",
     "slapjack.result.cpuWin": "Game Over! CPU wins...",
+    "egyptianratscrew.result.humanWin": "Game Over! You win!",
+    "egyptianratscrew.result.cpuWin": "Game Over! CPU wins...",
+    "egyptianratscrew.result.draw": "Game Over! It's a draw.",
     "fiftyone.result.humanWin": "Game Over! You win!",
     "fiftyone.result.cpuWin": "Game Over! CPU {{cpuId}} wins!",
     "clocksolitaire.playing": "Playing",

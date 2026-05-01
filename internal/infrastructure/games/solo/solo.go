@@ -166,4 +166,12 @@ func init() {
 			return usecase.RestoreCalculationInteractor(data, new(presenter.CalculationWebPresenter))
 		},
 		controller.NewCalculationWebControllerWithProvider)
+	games.RegisterKVGame("bakersdozen", games.CategorySolo,
+		func() usecase.BakersDozenInteractorIF {
+			return usecase.NewBakersDozenInteractor(domain.NewDefaultBakersDozen(), new(presenter.BakersDozenWebPresenter))
+		},
+		func(data []byte) (usecase.BakersDozenInteractorIF, error) {
+			return usecase.RestoreBakersDozenInteractor(data, new(presenter.BakersDozenWebPresenter))
+		},
+		controller.NewBakersDozenWebControllerWithProvider)
 }

@@ -225,6 +225,14 @@ export const GinRummyPhase = {
   GAME_END: 4,
 } as const;
 
+/** Tonk phase constants (sync: internal/domain/Tonk.go). */
+export const TonkPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
 /** Seven Bridge phase constants (sync: internal/domain/SevenBridge.go). */
 export const SevenBridgePhase = {
   DRAW: 0,
@@ -358,6 +366,15 @@ export const CaribbeanStudPhase = {
   END: 3,
 } as const;
 
+/** Texas Hold'em Bonus Poker phase constants (sync: internal/domain/TexasHoldemBonus.go). */
+export const TexasHoldemBonusPhase = {
+  BET: 1,
+  PRE_FLOP: 2,
+  FLOP: 3,
+  TURN: 4,
+  END: 5,
+} as const;
+
 /** Doubt phase constants (sync: internal/domain/Doubt.go). */
 export const DoubtPhase = {
   PLAY: 0,
@@ -449,6 +466,13 @@ export const PaiGowPhase = {
 
 /** Forty Thieves phase constants (sync: internal/domain/FortyThieves.go). */
 export const FortyThievesPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Baker's Dozen phase constants (sync: internal/domain/BakersDozen.go). */
+export const BakersDozenPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,
@@ -559,4 +583,33 @@ export const SlapjackEventKind = {
   STEP: 1,
   SLAP_CORRECT: 2,
   SLAP_WRONG: 3,
+} as const;
+
+/** Egyptian Ratscrew phase constants (sync: internal/domain/EgyptianRatscrew.go). */
+export const EgyptianRatscrewPhase = {
+  PLAY: 0,
+  GAME_END: 1,
+} as const;
+
+/** Egyptian Ratscrew pending CPU action kind (sync: internal/domain/EgyptianRatscrew.go). */
+export const EgyptianRatscrewPendingKind = {
+  NONE: 0,
+  STEP: 1,
+  SLAP: 2,
+} as const;
+
+/** Egyptian Ratscrew last-event kind for UI feedback (sync: internal/domain/EgyptianRatscrew.go). */
+export const EgyptianRatscrewEventKind = {
+  NONE: 0,
+  STEP: 1,
+  SLAP_CORRECT: 2,
+  SLAP_WRONG: 3,
+  CHANCE_WIN: 4,
+} as const;
+
+/** Egyptian Ratscrew slap reason for UI feedback (sync: internal/domain/EgyptianRatscrew.go). */
+export const EgyptianRatscrewSlapReason = {
+  NONE: 0,
+  PAIR: 1,
+  SANDWICH: 2,
 } as const;

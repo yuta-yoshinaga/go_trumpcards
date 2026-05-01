@@ -108,3 +108,9 @@ func (_m *MockScorpionGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return v.([]*domain.ActionLogEntry)
 }
+
+// GetGameEndFlag mocks the GetGameEndFlag call.
+func (_m *MockScorpionGame) GetGameEndFlag() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}

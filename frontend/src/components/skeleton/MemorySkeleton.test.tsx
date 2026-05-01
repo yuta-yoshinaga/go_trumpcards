@@ -6,6 +6,6 @@ describe('MemorySkeleton', () => {
   it('renders skeleton structure', () => {
     render(<MemorySkeleton />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
-    expect(screen.getByTestId('skeleton').getAttribute('aria-busy')).toBe('true');
+    expect(screen.getByTestId('skeleton').getAttribute('role')).toBe('status');
   });
 });

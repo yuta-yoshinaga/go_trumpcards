@@ -14,7 +14,7 @@ export function CpuActionLog({ actions }: CpuActionLogProps) {
       role="log"
       aria-live="polite"
       aria-label={t('label.cpuActionLog')}
-      className="bg-black/30 rounded p-2 mb-3 text-white text-xs"
+      className="bg-black/30 rounded p-2 mb-3 text-ds-text-primary text-xs"
     >
       <div className="font-bold mb-1">{t('label.cpuAction')}</div>
       {actions.map((a, i) => (

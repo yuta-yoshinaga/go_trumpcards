@@ -346,6 +346,149 @@ func TestRunUnsupportedLangFlagFallsBackAndWarns(t *testing.T) {
 	}
 }
 
+// TestRunGlobalQuietFlagSuppressesWarnings verifies issue #1553: the global
+// --quiet/-q flag is OR-combined with TRUMPCARDS_QUIET, so users can suppress
+// the locale-fallback warning without exporting an env var first. Both the
+// long form (`--quiet`) and the POSIX shorthand (`-q`) must work.
+func TestRunGlobalQuietFlagSuppressesWarnings(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origQuiet, quietWasSet := os.LookupEnv("TRUMPCARDS_QUIET")
+	origLang, langWasSet := os.LookupEnv("LANG")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if quietWasSet {
+			_ = os.Setenv("TRUMPCARDS_QUIET", origQuiet)
+		} else {
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+		}
+		if langWasSet {
+			_ = os.Setenv("LANG", origLang)
+		} else {
+			_ = os.Unsetenv("LANG")
+		}
+		i18n.SetLang("ja")
+	}()
+
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"--quiet long form", []string{"trumpcards", "--quiet", "--lang", "fr", "games", "--short"}},
+		{"-q shorthand", []string{"trumpcards", "-q", "--lang", "fr", "games", "--short"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_ = os.Unsetenv("LANG")
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != 0 {
+				t.Errorf("exit = %d, want 0 (stderr=%q)", exit, errBuf.String())
+			}
+			// The locale-fallback warning must be suppressed under quiet.
+			if strings.Contains(errBuf.String(), "fr") {
+				t.Errorf("expected no 'fr' fallback warning under quiet; got stderr=%q", errBuf.String())
+			}
+			// `games --short` must still produce its normal stdout output.
+			if outBuf.Len() == 0 {
+				t.Error("expected `games --short` stdout despite quiet")
+			}
+		})
+	}
+}
+
+// TestRunGlobalQuietFlagAcceptedAfterSubcommand verifies the fix for
+// PR #1582 review: subcommand FlagSets (games / update / completion) must
+// not reject `--quiet`/`-q` placed after the subcommand name. Without
+// this, `trumpcards games -q` exited 2 with "flag provided but not
+// defined" — surprising for a flag advertised under OPTIONS as global.
+//
+// We exercise the games subcommand because it is the only one that
+// produces both stdout and exit 0 reliably without external dependencies
+// (update needs a network endpoint, completion needs a TTY for hints).
+// The other two share the same flag-registration pattern.
+func TestRunGlobalQuietFlagAcceptedAfterSubcommand(t *testing.T) {
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	origQuiet, quietWasSet := os.LookupEnv("TRUMPCARDS_QUIET")
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+		if quietWasSet {
+			_ = os.Setenv("TRUMPCARDS_QUIET", origQuiet)
+		} else {
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+		}
+	}()
+
+	cases := []struct {
+		name string
+		args []string
+	}{
+		{"games -q --short", []string{"trumpcards", "games", "-q", "--short"}},
+		{"games --quiet --short", []string{"trumpcards", "games", "--quiet", "--short"}},
+		{"games --short -q (after another flag)", []string{"trumpcards", "games", "--short", "-q"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_ = os.Unsetenv("TRUMPCARDS_QUIET")
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != 0 {
+				t.Errorf("exit = %d, want 0 (stderr=%q)", exit, errBuf.String())
+			}
+			if strings.Contains(errBuf.String(), "flag provided but not defined") {
+				t.Errorf("subcommand FlagSet must accept -q/--quiet; got stderr=%q", errBuf.String())
+			}
+			if outBuf.Len() == 0 {
+				t.Error("expected `games --short` stdout output")
+			}
+		})
+	}
+}
+
 // TestRunPosixLocalePlaceholderEnvSuppressesWarn verifies issue #1534: LANG
 // values that are POSIX locale placeholders ("C", "POSIX", "C.UTF-8") do NOT
 // trigger the cliLangEnvFallback warning, because they are the default in
@@ -1058,6 +1201,33 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 			wantLang:    "en",
 			wantNoColor: false,
 		},
+		// PR #1582 review: trailing -q/--quiet must be silently consumed
+		// (no spurious "extra arguments ignored" warning) since the flag
+		// is documented as global and was already evaluated upstream.
+		{
+			name:     "-q is silently consumed (no extra-args warning)",
+			args:     []string{"-q"},
+			wantRest: []string{},
+			wantLang: "ja",
+		},
+		{
+			name:     "--quiet is silently consumed",
+			args:     []string{"--quiet"},
+			wantRest: []string{},
+			wantLang: "ja",
+		},
+		{
+			name:     "--quiet=true (equals form) is silently consumed",
+			args:     []string{"--quiet=true"},
+			wantRest: []string{},
+			wantLang: "ja",
+		},
+		{
+			name:     "-q mixed with foo positional preserves foo",
+			args:     []string{"foo", "-q", "bar"},
+			wantRest: []string{"foo", "bar"},
+			wantLang: "ja",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1087,5 +1257,386 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 				t.Errorf("stderr missing %q: %q", tt.wantWarn, stderr.String())
 			}
 		})
+	}
+}
+
+// TestApplyColorMode verifies issue #1554: the new tristate --color flag
+// resolves to per-stream color settings with the documented precedence
+// (NO_COLOR > --color=never / --no-color > --color=always > auto). The
+// helper is the SSoT for color resolution; the run() integration relies
+// on it for the explicit-flag path, so any drift here would silently
+// change CLI behavior.
+func TestApplyColorMode(t *testing.T) {
+	// stdout-non-TTY/stderr-non-TTY: under `go test` both are pipes.
+	const nonTTY = uintptr(0xDEADBEEF) // any value that IsTerminal returns false for
+	tests := []struct {
+		name        string
+		mode        string
+		noColorFlag bool
+		noColorEnv  string
+		wantStdout  bool
+		wantStderr  bool
+		wantOK      bool
+		wantExit    int
+		wantErrSub  string
+	}{
+		{
+			name:       "auto + non-TTY -> off",
+			mode:       "auto",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "always -> force on",
+			mode:       "always",
+			wantStdout: true, wantStderr: true, wantOK: true,
+		},
+		{
+			name:       "never -> force off",
+			mode:       "never",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "ALWAYS (case-insensitive) -> on",
+			mode:       "ALWAYS",
+			wantStdout: true, wantStderr: true, wantOK: true,
+		},
+		{
+			name:       "  auto  (trim whitespace) -> off",
+			mode:       "  auto  ",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:        "--no-color overrides --color=always",
+			mode:        "always",
+			noColorFlag: true,
+			wantStdout:  false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "NO_COLOR env beats --color=always (POSIX spec)",
+			mode:       "always",
+			noColorEnv: "1",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "empty mode treated as auto",
+			mode:       "",
+			wantStdout: false, wantStderr: false, wantOK: true,
+		},
+		{
+			name:       "invalid mode -> exit 2 with i18n error",
+			mode:       "rainbow",
+			wantOK:     false,
+			wantExit:   2,
+			wantErrSub: "rainbow",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// Reset to a known baseline before each subtest.
+			color.SetStdoutColor(true)
+			color.SetStderrColor(true)
+			var stderr bytes.Buffer
+			code, ok := applyColorMode(tc.mode, tc.noColorFlag, tc.noColorEnv, nonTTY, nonTTY, &stderr)
+			if ok != tc.wantOK {
+				t.Errorf("ok=%v, want %v (stderr=%q)", ok, tc.wantOK, stderr.String())
+			}
+			if code != tc.wantExit {
+				t.Errorf("exit=%d, want %d", code, tc.wantExit)
+			}
+			if tc.wantErrSub != "" && !strings.Contains(stderr.String(), tc.wantErrSub) {
+				t.Errorf("stderr %q does not contain %q", stderr.String(), tc.wantErrSub)
+			}
+			// Only assert color state when the helper succeeded.
+			if !ok {
+				return
+			}
+			gotStdoutColor := !color.NoColorStdout()
+			gotStderrColor := !color.NoColorStderr()
+			if gotStdoutColor != tc.wantStdout {
+				t.Errorf("stdout color = %v, want %v", gotStdoutColor, tc.wantStdout)
+			}
+			if gotStderrColor != tc.wantStderr {
+				t.Errorf("stderr color = %v, want %v", gotStderrColor, tc.wantStderr)
+			}
+		})
+	}
+}
+
+// TestApplyTrailingColorFlag verifies issue #1554: trailing `--color=...` (after
+// the game name) is honored just like `--lang` and `--no-color`. An invalid
+// trailing value is a soft warning rather than an exit-2, because the game has
+// already been resolved and we don't want a typo to abort a launched session.
+func TestApplyTrailingColorFlag(t *testing.T) {
+	origNoColor, hadNoColor := os.LookupEnv("NO_COLOR")
+	defer func() {
+		if hadNoColor {
+			_ = os.Setenv("NO_COLOR", origNoColor)
+		} else {
+			_ = os.Unsetenv("NO_COLOR")
+		}
+	}()
+	_ = os.Unsetenv("NO_COLOR")
+
+	cases := []struct {
+		name       string
+		args       []string
+		quiet      bool
+		noColorEnv string // NO_COLOR for this case; "" leaves unset
+		wantStdout bool
+		wantStderr bool
+		wantWarn   string
+	}{
+		{
+			name:       "--color=never trailing flag",
+			args:       []string{"--color=never"},
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			name:       "--color always trailing (space-separated)",
+			args:       []string{"--color", "always"},
+			wantStdout: true, wantStderr: true,
+		},
+		{
+			name:       "invalid value warns (loud) but does not abort",
+			args:       []string{"--color=rainbow"},
+			wantStdout: true, wantStderr: true, // unchanged
+			wantWarn: "rainbow",
+		},
+		{
+			name:       "invalid value silenced under quiet",
+			args:       []string{"--color=rainbow"},
+			quiet:      true,
+			wantStdout: true, wantStderr: true,
+		},
+		// PR #1583 review #3: missing edge cases for trailing --color.
+		{
+			// Case-insensitive matching must work in trailing position too,
+			// matching applyColorMode's `ALWAYS` test. See review issue #3.
+			name:       "--color=NEVER (case-insensitive)",
+			args:       []string{"--color=NEVER"},
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// NO_COLOR env precedence applies in trailing position too —
+			// users running `trumpcards <game> --color=auto` with NO_COLOR
+			// set must still get color off (POSIX no-color spec).
+			name:       "--color=auto with NO_COLOR set forces off",
+			args:       []string{"--color=auto"},
+			noColorEnv: "1",
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// NO_COLOR env beats --color=always even in trailing position
+			// (matches the top-level applyColorMode precedence; PR #1583
+			// review #2 — single SSoT for resolution).
+			name:       "--color=always with NO_COLOR set forces off",
+			args:       []string{"--color=always"},
+			noColorEnv: "1",
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// Within trailing args, --no-color must beat --color=always
+			// regardless of token order, matching top-level precedence.
+			// Pre-fix this returned color ON because the second flag won.
+			// See PR #1583 review #2.
+			name:       "--no-color beats --color=always regardless of order",
+			args:       []string{"--color=always", "--no-color"},
+			wantStdout: false, wantStderr: false,
+		},
+		{
+			// Reverse order still gives the same answer.
+			name:       "--no-color beats --color=always (reverse order)",
+			args:       []string{"--no-color", "--color=always"},
+			wantStdout: false, wantStderr: false,
+		},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			color.SetStdoutColor(true)
+			color.SetStderrColor(true)
+			if tt.noColorEnv == "" {
+				_ = os.Unsetenv("NO_COLOR")
+			} else {
+				_ = os.Setenv("NO_COLOR", tt.noColorEnv)
+			}
+			t.Cleanup(func() { _ = os.Unsetenv("NO_COLOR") })
+
+			var stderr bytes.Buffer
+			rest := applyTrailingGlobalFlags(tt.args, tt.quiet, &stderr)
+			if len(rest) != 0 {
+				t.Errorf("trailing color flag should be consumed; got rest=%v", rest)
+			}
+			gotStdoutColor := !color.NoColorStdout()
+			gotStderrColor := !color.NoColorStderr()
+			if gotStdoutColor != tt.wantStdout || gotStderrColor != tt.wantStderr {
+				t.Errorf("stdout/stderr color = %v/%v, want %v/%v",
+					gotStdoutColor, gotStderrColor, tt.wantStdout, tt.wantStderr)
+			}
+			if tt.wantWarn == "" {
+				if stderr.Len() != 0 {
+					t.Errorf("expected no warning; got %q", stderr.String())
+				}
+			} else if !strings.Contains(stderr.String(), tt.wantWarn) {
+				t.Errorf("stderr missing %q: got %q", tt.wantWarn, stderr.String())
+			}
+		})
+	}
+}
+
+// TestRunVersionSubcommand verifies issue #1552: `trumpcards version` is
+// equivalent to the `--version` flag, and `trumpcards version --short` is
+// equivalent to `--version-short`. The subcommand form matters because it
+// matches the conventions of `git`, `gh`, `kubectl`, etc.; users who type
+// the subcommand by habit must not see an "unknown game" error.
+func TestRunVersionSubcommand(t *testing.T) {
+	cases := []struct {
+		name      string
+		args      []string
+		wantExit  int
+		wantSubst string
+	}{
+		{
+			name:      "long form prints full version line",
+			args:      []string{"trumpcards", "version"},
+			wantExit:  0,
+			wantSubst: "trumpcards ",
+		},
+		{
+			name:      "--short prints just the version token",
+			args:      []string{"trumpcards", "version", "--short"},
+			wantExit:  0,
+			wantSubst: version,
+		},
+	}
+	origArgs := os.Args
+	origCmdLine := flag.CommandLine
+	origStdout := os.Stdout
+	origStderr := os.Stderr
+	defer func() {
+		os.Args = origArgs
+		flag.CommandLine = origCmdLine
+		os.Stdout = origStdout
+		os.Stderr = origStderr
+	}()
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			flag.CommandLine = flag.NewFlagSet("trumpcards", flag.ExitOnError)
+			os.Args = tc.args
+
+			rOut, wOut, _ := os.Pipe()
+			rErr, wErr, _ := os.Pipe()
+			os.Stdout = wOut
+			os.Stderr = wErr
+
+			exitCh := make(chan int, 1)
+			go func() { exitCh <- run() }()
+			exit := <-exitCh
+
+			_ = wOut.Close()
+			_ = wErr.Close()
+			var outBuf, errBuf bytes.Buffer
+			_, _ = outBuf.ReadFrom(rOut)
+			_, _ = errBuf.ReadFrom(rErr)
+
+			if exit != tc.wantExit {
+				t.Errorf("exit = %d, want %d (stderr=%q)", exit, tc.wantExit, errBuf.String())
+			}
+			if !strings.Contains(outBuf.String(), tc.wantSubst) {
+				t.Errorf("stdout missing %q; got %q", tc.wantSubst, outBuf.String())
+			}
+			if errBuf.Len() != 0 {
+				t.Errorf("expected no stderr output; got %q", errBuf.String())
+			}
+		})
+	}
+}
+
+// TestSuggestionCandidatesIncludesAliases verifies issue #1555: the
+// "did you mean" candidate set must include game aliases so a typo of
+// the alias (`gni` -> `gin`) is recovered to the alias the user knows
+// about, rather than to a far-off canonical name (`gofish`).
+func TestSuggestionCandidatesIncludesAliases(t *testing.T) {
+	commands := map[string]func() int{
+		"ginrummy":      func() int { return 0 },
+		"sevencardstud": func() int { return 0 },
+		"gofish":        func() int { return 0 },
+	}
+	got := suggestionCandidates(commands)
+	gotSet := make(map[string]struct{}, len(got))
+	for _, n := range got {
+		gotSet[n] = struct{}{}
+	}
+	for _, want := range []string{"ginrummy", "sevencardstud", "gofish"} {
+		if _, ok := gotSet[want]; !ok {
+			t.Errorf("missing canonical %q from candidates: %v", want, got)
+		}
+	}
+	// At least one alias must appear; pick a known one if it exists.
+	if _, ok := ui.GameAliases["gin"]; ok {
+		if _, present := gotSet["gin"]; !present {
+			t.Errorf("alias 'gin' should be in candidates: %v", got)
+		}
+	}
+	// Spot-check dedup: if an alias collides with a canonical (it shouldn't,
+	// but the helper must still be idempotent), the slice must not contain
+	// the same string twice. We assert the invariant via len(map)==len(slice).
+	if len(gotSet) != len(got) {
+		t.Errorf("candidates contain duplicates: %v", got)
+	}
+}
+
+// TestHelpSuggestionCandidatesIncludesAliases verifies issue #1555: the
+// runHelpCommand suggestion path also pulls aliases, so `trumpcards help
+// gni` recovers to `gin` (or `ginrummy`) rather than a distant canonical.
+func TestHelpSuggestionCandidatesIncludesAliases(t *testing.T) {
+	got := helpSuggestionCandidates()
+	gotSet := make(map[string]struct{}, len(got))
+	for _, n := range got {
+		gotSet[n] = struct{}{}
+	}
+	if _, ok := ui.GameAliases["gin"]; ok {
+		if _, present := gotSet["gin"]; !present {
+			t.Errorf("alias 'gin' should be in help candidates: %v", got)
+		}
+	}
+	// Builtin subcommands should also be suggestable for `trumpcards help <cmd>` typos.
+	for _, want := range []string{"web", "update", "version"} {
+		if _, ok := gotSet[want]; !ok {
+			t.Errorf("missing builtin %q from help candidates: %v", want, got)
+		}
+	}
+}
+
+// TestBuildHelpTextHasExitCodes verifies issue #1556: the top-level --help
+// must document the exit-code policy so CI / cron / scripts can branch on
+// it without reading the source.
+func TestBuildHelpTextHasExitCodes(t *testing.T) {
+	helpText := buildHelpText()
+	for _, want := range []string{"EXIT CODES:", " 130 ", " 143 ", " 10 ", " 75 "} {
+		if !strings.Contains(helpText, want) {
+			t.Errorf("help text missing %q; got:\n%s", want, helpText)
+		}
+	}
+}
+
+// TestBuildHelpTextMentionsVersionSubcommand verifies issue #1552: the
+// COMMANDS section advertises the subcommand alongside the existing
+// flags so it is discoverable from `trumpcards --help`.
+func TestBuildHelpTextMentionsVersionSubcommand(t *testing.T) {
+	helpText := buildHelpText()
+	if !strings.Contains(helpText, "version") {
+		t.Errorf("help text should advertise the 'version' subcommand; got:\n%s", helpText)
+	}
+}
+
+// TestBuildHelpTextDocumentsColorTristate verifies issue #1554: the
+// top-level --help advertises --color=auto|always|never so the new option
+// is discoverable without reading the source.
+func TestBuildHelpTextDocumentsColorTristate(t *testing.T) {
+	helpText := buildHelpText()
+	for _, want := range []string{"--color", "auto", "always", "never", "DEPRECATED"} {
+		if !strings.Contains(helpText, want) {
+			t.Errorf("help text missing %q; got:\n%s", want, helpText)
+		}
 	}
 }

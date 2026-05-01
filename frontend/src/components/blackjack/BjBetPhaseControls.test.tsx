@@ -305,4 +305,52 @@ describe('BjBetPhaseControls', () => {
     const details = container.querySelector('details');
     expect(details).not.toHaveAttribute('open');
   });
+
+  it('renders Perfect Pairs help text inline so touch users can see it', () => {
+    render(<BjBetPhaseControls {...defaultProps()} />);
+    expect(screen.getByText('Perfect Pairs: 最初の2枚がペアなら配当')).toBeInTheDocument();
+  });
+
+  it('renders 21+3 help text inline so touch users can see it', () => {
+    render(<BjBetPhaseControls {...defaultProps()} />);
+    expect(screen.getByText('21+3: 最初の2枚+ディーラー1枚でポーカー役が成立すれば配当')).toBeInTheDocument();
+  });
+
+  it('renders soft 17 help text inline so touch users can see it', () => {
+    render(<BjBetPhaseControls {...defaultProps()} />);
+    expect(screen.getByText('H17=ソフト17でヒット / S17=ソフト17でスタンド')).toBeInTheDocument();
+  });
+
+  it('renders DAS help text inline so touch users can see it', () => {
+    render(<BjBetPhaseControls {...defaultProps()} />);
+    expect(screen.getByText('DAS=スプリット後にダブルダウン可')).toBeInTheDocument();
+  });
+
+  it('does not rely on title attribute tooltips for side bets and rule toggles', () => {
+    render(<BjBetPhaseControls {...defaultProps()} />);
+    expect(screen.getByLabelText('PP (ペアベット):')).not.toHaveAttribute('title');
+    expect(screen.getByLabelText('21+3:')).not.toHaveAttribute('title');
+    expect(screen.getByRole('button', { name: 'S17' })).not.toHaveAttribute('title');
+    expect(screen.getByRole('button', { name: 'DAS ON' })).not.toHaveAttribute('title');
+  });
+
+  it('wires aria-describedby on side bets and rule toggles to their help text ids', () => {
+    render(<BjBetPhaseControls {...defaultProps()} />);
+    expect(screen.getByLabelText('PP (ペアベット):')).toHaveAttribute('aria-describedby', 'bj-pp-help');
+    expect(screen.getByLabelText('21+3:')).toHaveAttribute('aria-describedby', 'bj-t3-help');
+    expect(screen.getByRole('button', { name: 'S17' })).toHaveAttribute('aria-describedby', 'bj-soft17-help');
+    expect(screen.getByRole('button', { name: 'DAS ON' })).toHaveAttribute('aria-describedby', 'bj-das-help');
+  });
+
+  it('renders the four help text paragraphs with the matching ids so aria-describedby resolves', () => {
+    const { container } = render(<BjBetPhaseControls {...defaultProps()} />);
+    expect(container.querySelector('#bj-pp-help')).toHaveTextContent('Perfect Pairs: 最初の2枚がペアなら配当');
+    expect(container.querySelector('#bj-t3-help')).toHaveTextContent(
+      '21+3: 最初の2枚+ディーラー1枚でポーカー役が成立すれば配当',
+    );
+    expect(container.querySelector('#bj-soft17-help')).toHaveTextContent(
+      'H17=ソフト17でヒット / S17=ソフト17でスタンド',
+    );
+    expect(container.querySelector('#bj-das-help')).toHaveTextContent('DAS=スプリット後にダブルダウン可');
+  });
 });

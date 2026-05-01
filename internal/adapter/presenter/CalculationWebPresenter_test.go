@@ -146,6 +146,7 @@ func TestCalculationWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("playing", func(t *testing.T) {
 		g := new(interfaces.MockCalculationGame)
 		g.On("GetPhase").Return(domain.CalculationPhasePlaying)
+		g.On("GetGameEndFlag").Return(false)
 		result := new(CalculationWebPresenter).ActionLogOutput(g)
 		assert.Contains(t, result, "entries")
 	})
@@ -153,6 +154,7 @@ func TestCalculationWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		g := new(interfaces.MockCalculationGame)
 		g.On("GetPhase").Return(domain.CalculationPhaseGameOver)
+		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "move"}})
 		result := new(CalculationWebPresenter).ActionLogOutput(g)
 		assert.Contains(t, result, "entries")

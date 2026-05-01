@@ -14,12 +14,8 @@ type GolfWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (pr *GolfWebPresenter) Output(g interfaces.GolfGame, lastErr error) string {
 	resObj := new(controller.GolfWebOutput)
-	resObj.Phase = int(g.GetPhase())
-	resObj.MoveCount = g.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, g, int(g.GetPhase()))
 	resObj.StockCount = g.GetStockCount()
-	resObj.CanUndo = g.CanUndo()
-	resObj.IsStalemate = g.IsStalemate()
-	resObj.UndoToEscape = g.UndoToEscape()
 
 	// ウェイスト
 	waste := g.GetWaste()
@@ -82,11 +78,8 @@ func (pr *GolfWebPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 func (pr *GolfWebPresenter) HintOutput(g interfaces.GolfGame) string {
 	hint := g.GetHint()
 	resObj := new(controller.GolfWebOutput)
-	resObj.Phase = int(g.GetPhase())
-	resObj.MoveCount = g.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, g, int(g.GetPhase()))
 	resObj.StockCount = g.GetStockCount()
-	resObj.CanUndo = g.CanUndo()
-	resObj.UndoToEscape = g.UndoToEscape()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Layout = make([][]*controller.GolfWebOutputCard, 0)
 
@@ -105,9 +98,5 @@ func (pr *GolfWebPresenter) HintOutput(g interfaces.GolfGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (pr *GolfWebPresenter) ActionLogOutput(g interfaces.GolfGame) string {
-	phase := g.GetPhase()
-	if phase == domain.GolfPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(g.GetActionLog())
+	return actionLogOutputJSON(g)
 }

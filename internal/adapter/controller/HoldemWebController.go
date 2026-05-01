@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -12,24 +11,12 @@ import (
 // HoldemWebInput テキサスホールデムWebインプット
 type HoldemWebInput struct {
 	BaseWebInput
-	Amount           int             `json:"amount,omitempty"`
-	HumanPlayMs      int             `json:"humanPlayMs,omitempty"`
-	SmallBlind       *int            `json:"smallBlind,omitempty"`
-	BigBlind         *int            `json:"bigBlind,omitempty"`
-	TournamentMode   *bool           `json:"tournamentMode,omitempty"`
-	BlindLevelHands  *int            `json:"blindLevelHands,omitempty"`
-	BlindMultiplier  *int            `json:"blindMultiplier,omitempty"`
-	BettingLimit     *int            `json:"bettingLimit,omitempty"`
-	TableSize        *int            `json:"tableSize,omitempty"`
-	RebuyEnabled     *bool           `json:"rebuyEnabled,omitempty"`
-	RebuyMaxCount    *int            `json:"rebuyMaxCount,omitempty"`
-	RebuyChips       *int            `json:"rebuyChips,omitempty"`
-	RebuyPeriodHands *int            `json:"rebuyPeriodHands,omitempty"`
-	AddonEnabled     *bool           `json:"addonEnabled,omitempty"`
-	AddonChips       *int            `json:"addonChips,omitempty"`
-	AddonAfterHand   *int            `json:"addonAfterHand,omitempty"`
-	CpuMetaAI        bool            `json:"cpuMetaAI,omitempty"`
-	Profile          json.RawMessage `json:"profile,omitempty"`
+	PokerCommonInput
+	PokerBlindsInput
+	Amount      int             `json:"amount,omitempty"`
+	HumanPlayMs int             `json:"humanPlayMs,omitempty"`
+	CpuMetaAI   bool            `json:"cpuMetaAI,omitempty"`
+	Profile     json.RawMessage `json:"profile,omitempty"`
 }
 
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
@@ -153,12 +140,8 @@ func (p HoldemWebInput) ToConfig() (domain.HoldemConfig, error) {
 	applyIntIfGte(&cfg.BlindLevelHands, p.BlindLevelHands, 1)
 	applyIntIfGte(&cfg.BlindMultiplier, p.BlindMultiplier, 101)
 	applyBettingLimit(&cfg.BettingLimit, p.BettingLimit)
-	if p.TableSize != nil {
-		ts := *p.TableSize
-		if !domain.IsValidHoldemTableSize(ts) {
-			return domain.HoldemConfig{}, errors.New("param error: tableSize must be 4, 6, or 9")
-		}
-		cfg.TableSize = ts
+	if err := applyTableSize(&cfg.TableSize, p.TableSize, domain.IsValidHoldemTableSize, "param error: tableSize must be 4, 6, or 9"); err != nil {
+		return domain.HoldemConfig{}, err
 	}
 	applyRebuyConfig(&cfg.RebuyEnabled, &cfg.RebuyMaxCount, &cfg.RebuyChips, &cfg.RebuyPeriodHands,
 		p.RebuyEnabled, p.RebuyMaxCount, p.RebuyChips, p.RebuyPeriodHands)

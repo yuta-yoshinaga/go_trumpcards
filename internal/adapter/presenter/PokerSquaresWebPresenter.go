@@ -58,8 +58,5 @@ func (pr *PokerSquaresWebPresenter) Output(p interfaces.PokerSquaresGame, lastEr
 
 // ActionLogOutput は棋譜を JSON で出力する。
 func (pr *PokerSquaresWebPresenter) ActionLogOutput(p interfaces.PokerSquaresGame) string {
-	if p.GetPhase() == domain.PokerSquaresPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(p.GetActionLog())
+	return actionLogOutputJSON(p)
 }

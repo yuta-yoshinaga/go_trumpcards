@@ -151,7 +151,7 @@ export function OldMaidPlayerArea({
       <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-10">
         <CpuActionBubble message={bubble?.message} triggerKey={bubble?.triggerKey} />
       </div>
-      <div className="text-white font-bold mb-1 text-sm">
+      <div className="text-ds-text-primary font-bold mb-1 text-sm">
         {playerName(player.id, player.isHuman)}
         {player.isFinished && <StatusBadge variant="success">{tc('status.finished')}</StatusBadge>}
         {isTarget && !player.isHuman && !player.isFinished && !gameEndFlag && (
@@ -265,7 +265,7 @@ export function OldMaidPlayerArea({
               );
             })}
             {player.cardCount > 10 && (
-              <span className="text-white self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>
+              <span className="text-ds-text-primary self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>
             )}
           </>
         ) : compactNonTarget && !isTarget && !player.isHuman ? null : (
@@ -274,7 +274,7 @@ export function OldMaidPlayerArea({
               <CardBack key={i} width={cardWidth} />
             ))}
             {player.cardCount > 10 && (
-              <span className="text-white self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>
+              <span className="text-ds-text-primary self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>
             )}
           </>
         )}

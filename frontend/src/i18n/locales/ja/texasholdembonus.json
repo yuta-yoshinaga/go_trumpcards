@@ -1,0 +1,90 @@
+{
+  "title": "テキサスホールデムボーナスポーカー",
+  "player": "プレイヤー",
+  "dealer": "ディーラー",
+  "board": "ボード",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "bonus": "ボーナス",
+    "flopBet": "フロップベット",
+    "turnBet": "ターンベット",
+    "riverBet": "リバーベット",
+    "handRank": "役"
+  },
+  "button": {
+    "bet": "ベット",
+    "play": "プレイ (2×)",
+    "fold": "フォールド",
+    "check": "チェック",
+    "raise": "レイズ (1×)",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "preFlop": "プリフロップ",
+    "flop": "フロップ",
+    "turn": "ターン",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "dealerWins": "ディーラー勝利！",
+    "push": "引き分け！",
+    "fold": "フォールド"
+  },
+  "payout": {
+    "ante": "アンテ（ボーナス込）",
+    "play": "プレイ",
+    "bonus": "ボーナスサイド",
+    "total": "合計"
+  },
+  "handRank": {
+    "0": "ハイカード",
+    "1": "ワンペア",
+    "2": "ツーペア",
+    "3": "スリーカード",
+    "4": "ストレート",
+    "5": "フラッシュ",
+    "6": "フルハウス",
+    "7": "フォーカード",
+    "8": "ストレートフラッシュ",
+    "9": "ロイヤルフラッシュ"
+  },
+  "settings": {
+    "title": "設定"
+  },
+  "betGuide": "アンテと任意のボーナスを設定してベット",
+  "payoutRef": {
+    "title": "配当表",
+    "anteHeader": "アンテボーナス（ストレート以上）",
+    "anteRoyalFlush": "ロイヤルフラッシュ: 1000:1",
+    "anteStraightFlush": "ストレートフラッシュ: 200:1",
+    "anteFourOfAKind": "フォーカード: 25:1",
+    "anteFullHouse": "フルハウス: 5:1",
+    "anteFlush": "フラッシュ: 4:1",
+    "anteStraight": "ストレート: 1:1",
+    "bonusHeader": "ボーナスサイドベット（ホールカード）",
+    "bonusAA": "AA: 30:1",
+    "bonusAKSuited": "AK スーテッド: 25:1",
+    "bonusAQAJSuited": "AQ/AJ スーテッド: 20:1",
+    "bonusAKOff": "AK オフ: 15:1",
+    "bonusKKQQJJ": "KK/QQ/JJ: 10:1",
+    "bonusAQAJOff": "AQ/AJ オフ: 5:1",
+    "bonusMediumPair": "22〜TT: 3:1"
+  },
+  "tutorial": {
+    "betControls": "アンテとオプションのボーナスを設定し、ベットを押してください。",
+    "preFlopButtons": "プレイ（2×アンテ）でフロップへ進むか、フォールドで降りるか選びます。",
+    "postFlopButtons": "チェックで進むか、レイズ（1×アンテ）でベットを上乗せします。",
+    "results": "結果と配当を確認してください。"
+  },
+  "hint": {
+    "pocketPair": "ポケットペア — プレイ推奨",
+    "acePlay": "Aを含む — プレイ推奨",
+    "suitedBroadway": "スーテッドブロードウェイ — プレイ推奨",
+    "broadwayCards": "ブロードウェイ — プレイ推奨",
+    "pairOrBetter": "ペア以上 — レイズ推奨",
+    "weakHand": "弱い手札"
+  }
+}

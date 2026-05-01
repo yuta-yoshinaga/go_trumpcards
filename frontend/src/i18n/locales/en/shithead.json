@@ -34,5 +34,13 @@
     "discardPile": "Match or beat the top card of the discard pile, or pick up the pile.",
     "magicCards": "2 / 7 / 8 / 10 are magic cards that change the flow of play.",
     "resetButton": "Reset to play again."
+  },
+  "hint": {
+    "blindPlay": "Face-down phase — pick one and play blind.",
+    "pickup": "No playable cards. Pick up the discard pile.",
+    "leadLowest": "Discard is empty — lead with your lowest card.",
+    "burnTen": "Burn the pile with 10 to seize the initiative.",
+    "resetTwo": "Reset with 2 to escape pressure from a high top card.",
+    "playLowest": "Play the lowest card that beats or matches the top."
   }
 }

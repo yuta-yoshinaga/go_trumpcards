@@ -17,7 +17,7 @@ export function DaifugoCpuCompact({ player, isCurrentTurn }: { player: DaifugoPl
       id={`player-area-${player.id}`}
       className={`flex flex-shrink-0 items-center gap-1.5 rounded-[8px] px-2 py-1 text-xs whitespace-nowrap bg-black/20 ${conditionalClass}`}
     >
-      <span className="text-white font-bold">{playerName(player.id, player.isHuman)}</span>
+      <span className="text-ds-text-primary font-bold">{playerName(player.id, player.isHuman)}</span>
       {player.isFinished ? (
         <span className="text-game-text-muted">{t(`rank.${player.rank}`)}</span>
       ) : (

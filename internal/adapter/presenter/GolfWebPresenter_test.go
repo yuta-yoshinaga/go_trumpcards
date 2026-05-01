@@ -165,6 +165,7 @@ func TestGolfWebPresenterHintOutput(t *testing.T) {
 		gg.On("GetMoveCount").Return(0)
 		gg.On("GetStockCount").Return(16)
 		gg.On("CanUndo").Return(false)
+		gg.On("IsStalemate").Return(false)
 		gg.On("UndoToEscape").Return(0)
 
 		p := &GolfWebPresenter{}
@@ -183,6 +184,7 @@ func TestGolfWebPresenterHintOutput(t *testing.T) {
 		gg.On("GetMoveCount").Return(0)
 		gg.On("GetStockCount").Return(0)
 		gg.On("CanUndo").Return(false)
+		gg.On("IsStalemate").Return(false)
 		gg.On("UndoToEscape").Return(0)
 
 		p := &GolfWebPresenter{}
@@ -199,6 +201,7 @@ func TestGolfWebPresenterActionLogOutput(t *testing.T) {
 		gg := new(interfaces.MockGolfGame)
 		gg.On("GetPhase").Return(domain.GolfPhasePlaying)
 
+		gg.On("GetGameEndFlag").Return(false)
 		p := &GolfWebPresenter{}
 		result := p.ActionLogOutput(gg)
 		assert.Contains(t, result, "entries")
@@ -207,6 +210,7 @@ func TestGolfWebPresenterActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		gg := new(interfaces.MockGolfGame)
 		gg.On("GetPhase").Return(domain.GolfPhaseGameOver)
+		gg.On("GetGameEndFlag").Return(true)
 		gg.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 
 		p := &GolfWebPresenter{}

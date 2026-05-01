@@ -2,6 +2,30 @@
 
 This directory contains the React frontend (Vite + React + TypeScript).
 
+## Design system
+
+**Always read [`../DESIGN.md`](../DESIGN.md) before making any visual / UI changes.** Fonts, colors, spacing, motion, and the WCAG 2.5.5 AAA tap-target rule (44×44 px minimum for interactive controls) are defined there. Game background colors live in `src/styles/gameTheme.ts` (SSoT — every game page should reference its own key, not hardcode another game's theme).
+
+## Standard page structure
+
+Every game page (`src/pages/<X>Page.tsx`) follows the same skeleton — copy from an existing page like `SpadesPage.tsx` or `HeartsPage.tsx` rather than inventing a new structure. Key elements:
+
+1. **Outer `XPage` exports the TutorialWrapper, inner `XPageContent` holds the implementation** — this split is required because `TutorialWrapper` provides the context that hooks inside `XPageContent` consume.
+2. **Standard hooks**: `useGamePageSetup(gameName)` provides i18n + action-log + reset-confirm state; `useGameApi(apiFn, opts)` manages server state with loading / error / retry.
+3. **Mount-time reset**: pages call the api command `"reset"` inside a `useEffect` on mount to fetch a fresh game from the server.
+4. **Skeleton fallback**: render `<XSkeleton />` while `state` is `null`.
+5. **`GamePageShell`** wraps most pages and provides the background, page heading, phase indicator, and reset confirmation dialog.
+
+Shared building blocks:
+
+| Hook / component | Purpose |
+|------------------|---------|
+| `useGamePageSetup(gameName)` | i18n (`t`, `tc`), action-log state, reset-confirm dialog state |
+| `useGameApi(apiFn, opts)` | Server-state management with loading / error / retry |
+| `GamePageShell` | Background + heading + phase indicator + reset dialog wrapper (most pages use this) |
+| `TutorialWrapper` | Tutorial provider + i18n init (always wraps the exported `XPage`) |
+| `useCliMode` + `useCliGame` + `<CliTerminal>` + `<CliToggle>` | CLI fallback mode (BlackJack / Poker / etc.) |
+
 ## Package Manager Rule
 
 **Always use `bun` instead of `npm`/`node`, and `bunx` instead of `npx`.** This project uses Bun as the sole JavaScript runtime, package manager, and script runner. Never invoke `node ./node_modules/...` directly — use `bun` or `bunx` instead.

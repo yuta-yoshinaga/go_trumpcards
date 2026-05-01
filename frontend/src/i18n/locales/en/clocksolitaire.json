@@ -19,5 +19,9 @@
     "controls": "Step advances one card, Auto Play runs to completion.",
     "resetButton": "Press Reset to start a new game."
   },
+  "hint": {
+    "firstStep": "Step from the center pile to start.",
+    "continueStep": "Keep stepping the current card onto its clock-position pile."
+  },
   "landscapeBanner": "Rotate to landscape for a better experience"
 }

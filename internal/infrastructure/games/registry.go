@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 69 games. Cheap; no references to game code.
+//     Category) for all 73 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -131,6 +131,7 @@ var registry = []*Game{
 	{Name: "paigow", Category: CategoryCasino, Description: "Pai Gow Poker (パイガオポーカー)"},
 	{Name: "twotenjack", Category: CategoryClassic, Description: "Two Ten Jack (ツーテンジャック)"},
 	{Name: "caribbeanstud", Category: CategoryCasino, Description: "Caribbean Stud Poker (カリビアンスタッドポーカー)"},
+	{Name: "texasholdembonus", Category: CategoryCasino, Description: "Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー)"},
 	{Name: "war", Category: CategoryClassic, Description: "War (戦争)"},
 	{Name: "canfield", Category: CategorySolo, Description: "Canfield Solitaire (キャンフィールド)"},
 	{Name: "fiftyone", Category: CategoryClassic, Description: "Fifty-one (フィフティワン)"},
@@ -155,6 +156,9 @@ var registry = []*Game{
 	{Name: "shithead", Category: CategoryClassic, Description: "Shithead / Karma (シットヘッド)"},
 	{Name: "nertz", Category: CategoryClassic, Description: "Nertz / Pounce (ナーツ / パウンス)"},
 	{Name: "slapjack", Category: CategoryClassic, Description: "Slapjack (スラップジャック)"},
+	{Name: "egyptianratscrew", Category: CategoryClassic, Description: "Egyptian Ratscrew (エジプシャン・ラットスクリュー)"},
+	{Name: "bakersdozen", Category: CategorySolo, Description: "Baker's Dozen (ベーカーズ・ダズン)"},
+	{Name: "tonk", Category: CategoryClassic, Description: "Tonk (トンク)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

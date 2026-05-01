@@ -56,20 +56,13 @@ func (p *AccordionWebPresenter) HintOutput(a interfaces.AccordionGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *AccordionWebPresenter) ActionLogOutput(a interfaces.AccordionGame) string {
-	if a.GetPhase() == domain.AccordionPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(a.GetActionLog())
+	return actionLogOutputJSON(a)
 }
 
 // buildBase は共通フィールドを詰めたレスポンスオブジェクトを返す
 func (p *AccordionWebPresenter) buildBase(a interfaces.AccordionGame) *controller.AccordionWebOutput {
 	resObj := new(controller.AccordionWebOutput)
-	resObj.Phase = int(a.GetPhase())
-	resObj.MoveCount = a.GetMoveCount()
-	resObj.CanUndo = a.CanUndo()
-	resObj.IsStalemate = a.IsStalemate()
-	resObj.UndoToEscape = a.UndoToEscape()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, a, int(a.GetPhase()))
 	resObj.PileCount = a.GetPileCount()
 
 	piles := a.GetPiles()

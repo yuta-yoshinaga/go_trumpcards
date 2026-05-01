@@ -111,7 +111,12 @@ func TestSlapjackCuiPresenter_Output(t *testing.T) {
 
 	t.Run("last event wrong slap human", func(t *testing.T) {
 		g := setupSlapjackTest()
-		// Step a non-J card first
+		// Force a non-Jack on top of player 0's stock so Step always flips a
+		// non-Jack — without this the flipped card is whatever Reset() shuffled
+		// to the top, so ~1/13 of the time it's a Jack and the subsequent
+		// Slap(0) is registered as a CORRECT slap, breaking the assertion.
+		g.GetPlayer(0).ResetStock()
+		g.GetPlayer(0).AddToStockTop(domain.NewCard(domain.CardDesignSpade, 2, false))
 		assert.NoError(t, g.Step())
 		// Force the last event to wrong-slap by human via Slap
 		_ = g.Slap(0)
@@ -120,6 +125,9 @@ func TestSlapjackCuiPresenter_Output(t *testing.T) {
 
 	t.Run("last event wrong slap cpu", func(t *testing.T) {
 		g := setupSlapjackTest()
+		// Same determinism fix as the human variant above.
+		g.GetPlayer(0).ResetStock()
+		g.GetPlayer(0).AddToStockTop(domain.NewCard(domain.CardDesignSpade, 2, false))
 		assert.NoError(t, g.Step())
 		_ = g.Slap(1)
 		assert.Contains(t, p.Output(g, nil), "CPU が誤スラップ")

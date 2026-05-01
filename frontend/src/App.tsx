@@ -9,6 +9,7 @@ import { gameRoutes } from './constants/gameRoutes';
 import { AccordionPage } from './pages/AccordionPage';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BadugiPage } from './pages/BadugiPage';
+import { BakersDozenPage } from './pages/BakersDozenPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { BridgePage } from './pages/BridgePage';
 import { CalculationPage } from './pages/CalculationPage';
@@ -24,6 +25,7 @@ import { DaifugoPage } from './pages/DaifugoPage';
 import { DeucesWildPage } from './pages/DeucesWildPage';
 import { DoubtPage } from './pages/DoubtPage';
 import { DurakPage } from './pages/DurakPage';
+import { EgyptianRatscrewPage } from './pages/EgyptianRatscrewPage';
 import { EuchrePage } from './pages/EuchrePage';
 import { FiftyOnePage } from './pages/FiftyOnePage';
 import { FortyThievesPage } from './pages/FortyThievesPage';
@@ -67,7 +69,9 @@ import { Spanish21Page } from './pages/Spanish21Page';
 import { SpeedPage } from './pages/SpeedPage';
 import { SpiderPage } from './pages/SpiderPage';
 import { SpiteAndMalicePage } from './pages/SpiteAndMalicePage';
+import { TexasHoldemBonusPage } from './pages/TexasHoldemBonusPage';
 import { ThreeCardPage } from './pages/ThreeCardPage';
+import { TonkPage } from './pages/TonkPage';
 import { TrashPage } from './pages/TrashPage';
 import { TriPeaksPage } from './pages/TriPeaksPage';
 import { TwoTenJackPage } from './pages/TwoTenJackPage';
@@ -118,6 +122,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/spanish21': <Spanish21Page />,
   '/threecard': <ThreeCardPage />,
   '/caribbeanstud': <CaribbeanStudPage />,
+  '/texasholdembonus': <TexasHoldemBonusPage />,
   '/paigow': <PaiGowPage />,
   '/letitride': <LetItRidePage />,
   '/speed': <SpeedPage />,
@@ -147,6 +152,9 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/shithead': <ShitheadPage />,
   '/nertz': <NertzPage />,
   '/slapjack': <SlapjackPage />,
+  '/egyptianratscrew': <EgyptianRatscrewPage />,
+  '/bakersdozen': <BakersDozenPage />,
+  '/tonk': <TonkPage />,
 };
 
 /** Root application component with router and game page routes. */

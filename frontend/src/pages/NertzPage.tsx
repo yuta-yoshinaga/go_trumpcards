@@ -1,19 +1,28 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type NertzMoveZone, nertzApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, NertzPlayerData, NertzResponse, NertzTableauCard } from '../types/card';
 import { NertzPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { NERTZ_HELP, parseNertzCommand } from '../utils/cli/commands/nertzCommands';
+import { formatNertzState } from '../utils/cli/formatters/nertzFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** CPU tick interval in milliseconds while the round is active. */
 const NERTZ_TICK_INTERVAL_MS = 700;
@@ -50,6 +59,23 @@ function NertzPageContent() {
   const gameApi = useGameApi<NertzResponse, Parameters<typeof nertzApi.exec>>(runApi);
   const { state, loading, error, retry } = gameApi;
   const apiCall = gameApi.exec;
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('nertz', state);
+  const cliMode = useCliMode('nertz');
+  const cliConfig: CliGameConfig<NertzResponse, Parameters<typeof nertzApi.exec>> = useMemo(
+    () => ({
+      gameName: 'nertz',
+      parseCommand: parseNertzCommand,
+      formatResponse: formatNertzState,
+      helpText: NERTZ_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(apiCall, cliConfig, state, {
+    addInput: cliMode.addInput,
+    addOutput: cliMode.addOutput,
+    addError: cliMode.addError,
+    clearLog: cliMode.clearLog,
+  });
 
   const [selection, setSelection] = useState<Selection>(null);
 
@@ -158,7 +184,7 @@ function NertzPageContent() {
   if (!state || !human) {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.nertz.bg}`}>
-        <div className="flex-1 flex items-center justify-center text-white">
+        <div className="flex-1 flex items-center justify-center text-ds-text-primary">
           <p>{tc('common.loading')}</p>
         </div>
       </div>
@@ -177,143 +203,165 @@ function NertzPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliMode.cliEnabled} onToggle={cliMode.toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
-        <div className="bg-black/30 text-white p-3 rounded text-sm flex flex-wrap gap-x-4 gap-y-1">
-          <span>
-            {t('labels.round')}: {state.roundNumber}
-          </span>
-          <span>
-            {t('labels.moveCount')}: {state.moveCount}
-          </span>
-          {state.players.map((p, i) => (
-            <span key={`scoreline-${i}`}>
-              {p.isHuman ? t('labels.you') : `${t('labels.cpu')}${i}`}: {p.score} ({p.nertzSize})
-            </span>
-          ))}
-        </div>
+      {cliMode.cliEnabled ? (
+        <CliTerminal logEntries={cliMode.logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
+            <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm flex flex-wrap gap-x-4 gap-y-1">
+              <span>
+                {t('labels.round')}: {state.roundNumber}
+              </span>
+              <span>
+                {t('labels.moveCount')}: {state.moveCount}
+              </span>
+              {state.players.map((p, i) => (
+                <span key={`scoreline-${i}`}>
+                  {p.isHuman ? t('labels.you') : `${t('labels.cpu')}${i}`}: {p.score} ({p.nertzSize})
+                </span>
+              ))}
+            </div>
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
 
-        <div data-tutorial="nertz-foundations" className="bg-black/30 text-white p-3 rounded">
-          <div className="text-xs uppercase tracking-wide text-ds-text-muted mb-2">{t('labels.foundation')}</div>
-          <div className="flex flex-wrap gap-2">
-            {state.foundations.map((f, idx) => (
-              <FoundationCell
-                key={`f-${idx}`}
-                idx={idx}
-                top={f.top}
-                size={f.size}
-                onClick={() => handleFoundationClick(idx)}
-                disabled={!isHumanTurn || !selection}
-                ariaLabel={t('labels.foundationN', { n: idx, defaultValue: `Foundation ${idx}` })}
-              />
-            ))}
-          </div>
-        </div>
+            <div data-tutorial="nertz-foundations" className="bg-black/30 text-ds-text-primary p-3 rounded">
+              <div className="text-xs uppercase tracking-wide text-ds-text-muted mb-2">{t('labels.foundation')}</div>
+              <div className="flex flex-wrap gap-2">
+                {state.foundations.map((f, idx) => (
+                  <FoundationCell
+                    key={`f-${idx}`}
+                    idx={idx}
+                    top={f.top}
+                    size={f.size}
+                    onClick={() => handleFoundationClick(idx)}
+                    disabled={!isHumanTurn || !selection}
+                    ariaLabel={t('labels.foundationN', { n: idx, defaultValue: `Foundation ${idx}` })}
+                  />
+                ))}
+              </div>
+            </div>
 
-        {state.players.length > 1 && (
-          <div className="bg-black/30 text-white p-3 rounded text-sm space-y-1">
-            {state.players
-              .filter((p) => !p.isHuman)
-              .map((p) => (
-                <div key={`cpu-${p.deckIdx}`} className="flex justify-between">
-                  <span>
-                    {t('labels.cpu')}
-                    {p.deckIdx} — {p.name}
-                  </span>
-                  <span>
-                    {t('labels.nertz')}: {p.nertzSize} / {t('labels.score')}: {p.score}
-                  </span>
+            {state.players.length > 1 && (
+              <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm space-y-1">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={`cpu-${p.deckIdx}`} className="flex justify-between">
+                      <span>
+                        {t('labels.cpu')}
+                        {p.deckIdx} — {p.name}
+                      </span>
+                      <span>
+                        {t('labels.nertz')}: {p.nertzSize} / {t('labels.score')}: {p.score}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            <div className="bg-black/30 text-ds-text-primary p-3 rounded space-y-2">
+              <div className="flex flex-wrap gap-3 items-start">
+                <div data-tutorial="nertz-pile" className="space-y-1">
+                  <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.nertz')}</div>
+                  <CardButton
+                    card={human.nertzTop ?? null}
+                    label={`${human.nertzSize}`}
+                    selected={selection?.kind === 'nertz'}
+                    disabled={!isHumanTurn || !human.nertzTop}
+                    onClick={handleSelectNertz}
+                  />
                 </div>
-              ))}
+
+                <div className="space-y-1">
+                  <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.waste')}</div>
+                  <CardButton
+                    card={human.wasteTop ?? null}
+                    label={`${human.wasteSize}`}
+                    selected={selection?.kind === 'waste'}
+                    disabled={!isHumanTurn || !human.wasteTop}
+                    onClick={handleSelectWaste}
+                  />
+                </div>
+
+                <div data-tutorial="nertz-stock" className="space-y-1">
+                  <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.stock')}</div>
+                  <button
+                    type="button"
+                    onClick={handleDrawStock}
+                    disabled={!isHumanTurn || loading}
+                    className={`${btnSecondary} min-w-[3rem]`}
+                  >
+                    {human.stockSize}
+                  </button>
+                </div>
+              </div>
+
+              <div data-tutorial="nertz-tableau" className="space-y-1">
+                <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.tableau')}</div>
+                <div className="grid grid-cols-4 gap-2">
+                  {human.tableau.map((col, colIdx) => (
+                    <TableauColumn
+                      key={`tab-${colIdx}`}
+                      col={col}
+                      colIdx={colIdx}
+                      selection={selection}
+                      onSelectCard={handleSelectTableau}
+                      onTarget={() => handleTableauTargetClick(colIdx)}
+                      disabled={!isHumanTurn}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <ActionLogSection
+              isEndPhase={isGameEnd || isRoundEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-        )}
 
-        <div className="bg-black/30 text-white p-3 rounded space-y-2">
-          <div className="flex flex-wrap gap-3 items-start">
-            <div data-tutorial="nertz-pile" className="space-y-1">
-              <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.nertz')}</div>
-              <CardButton
-                card={human.nertzTop ?? null}
-                label={`${human.nertzSize}`}
-                selected={selection?.kind === 'nertz'}
-                disabled={!isHumanTurn || !human.nertzTop}
-                onClick={handleSelectNertz}
-              />
-            </div>
+          {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
-            <div className="space-y-1">
-              <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.waste')}</div>
-              <CardButton
-                card={human.wasteTop ?? null}
-                label={`${human.wasteSize}`}
-                selected={selection?.kind === 'waste'}
-                disabled={!isHumanTurn || !human.wasteTop}
-                onClick={handleSelectWaste}
-              />
-            </div>
-
-            <div data-tutorial="nertz-stock" className="space-y-1">
-              <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.stock')}</div>
-              <button
-                type="button"
-                onClick={handleDrawStock}
-                disabled={!isHumanTurn || loading}
-                className={`${btnSecondary} min-w-[3rem]`}
-              >
-                {human.stockSize}
-              </button>
-            </div>
-          </div>
-
-          <div data-tutorial="nertz-tableau" className="space-y-1">
-            <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.tableau')}</div>
-            <div className="grid grid-cols-4 gap-2">
-              {human.tableau.map((col, colIdx) => (
-                <TableauColumn
-                  key={`tab-${colIdx}`}
-                  col={col}
-                  colIdx={colIdx}
-                  selection={selection}
-                  onSelectCard={handleSelectTableau}
-                  onTarget={() => handleTableauTargetClick(colIdx)}
-                  disabled={!isHumanTurn}
+          <GameFooter className={`${gameTheme.nertz.footer} px-4 py-2.5`}>
+            <div className="flex flex-wrap gap-2 items-center">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+                <input
+                  type="checkbox"
+                  checked={hintEnabled}
+                  onChange={(e) => setHintEnabled(e.target.checked)}
+                  aria-label={tc('hint.toggle', { ns: 'tutorial' })}
                 />
-              ))}
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="nertz-reset"
+              />
+              {isRoundEnd && !isGameEnd && (
+                <button type="button" className={btnPrimary} onClick={handleNextRound} disabled={loading}>
+                  {t('actions.nextRound')}
+                </button>
+              )}
+              {isHumanTurn && state.canUndo && (
+                <button type="button" className={btnOutline} onClick={handleUndo} disabled={loading}>
+                  {t('actions.undo')}
+                </button>
+              )}
             </div>
-          </div>
-        </div>
-
-        <ActionLogSection
-          isEndPhase={isGameEnd || isRoundEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <GameFooter className={`${gameTheme.nertz.footer} px-4 py-2.5`}>
-        <div className="flex flex-wrap gap-2 items-center">
-          <GameResetButton
-            isGameEnd={isGameEnd}
-            onReset={handleManualReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="nertz-reset"
-          />
-          {isRoundEnd && !isGameEnd && (
-            <button type="button" className={btnPrimary} onClick={handleNextRound} disabled={loading}>
-              {t('actions.nextRound')}
-            </button>
-          )}
-          {isHumanTurn && state.canUndo && (
-            <button type="button" className={btnOutline} onClick={handleUndo} disabled={loading}>
-              {t('actions.undo')}
-            </button>
-          )}
-        </div>
-      </GameFooter>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

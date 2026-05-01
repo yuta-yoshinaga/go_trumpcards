@@ -315,7 +315,7 @@ function DoubtPageContent() {
               <div>
                 {/* Table area */}
                 <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2" data-tutorial="dt-table-area">
-                  <div className="text-white font-bold mb-1">{t('table')}</div>
+                  <div className="text-ds-text-primary font-bold mb-1">{t('table')}</div>
                   <div className="text-game-text-muted text-sm">{t('tableCards', { count: state.tableCardCount })}</div>
                   {state.lastAction && (
                     <div className="text-ds-warning text-xs mt-1">{actionDesc(state.lastAction, state.players, t)}</div>
@@ -327,7 +327,7 @@ function DoubtPageContent() {
                   <div className="bg-black/40 rounded-[10px] py-3 px-4 my-2" data-tutorial="dt-doubt-window">
                     {cpuPlayed ? (
                       <>
-                        <div className="text-white font-bold mb-2">{t('doubtQuestion')}</div>
+                        <div className="text-ds-text-primary font-bold mb-2">{t('doubtQuestion')}</div>
                         {state.lastAction && (
                           <div
                             className="bg-ds-warning/20 border-2 border-ds-warning rounded-lg py-2 px-3 mb-2 text-center animate-pulse"
@@ -363,7 +363,7 @@ function DoubtPageContent() {
                       </>
                     ) : (
                       <>
-                        <div className="text-white font-bold mb-2">{t('cpuJudging')}</div>
+                        <div className="text-ds-text-primary font-bold mb-2">{t('cpuJudging')}</div>
                         {state.cpuDoubters.length > 0 && (
                           <div className="text-ds-error text-sm mb-2">
                             {t('cpuDoubtExclaim', {
@@ -382,7 +382,7 @@ function DoubtPageContent() {
                 {/* Last doubt result */}
                 {state.lastDoubtResult && (
                   <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
-                    <div className="text-white font-bold mb-1">{t('doubtResult.title')}</div>
+                    <div className="text-ds-text-primary font-bold mb-1">{t('doubtResult.title')}</div>
                     <div className={state.lastDoubtResult.wasLying ? 'text-ds-error' : 'text-ds-success'}>
                       {state.lastDoubtResult.wasLying ? t('doubtResult.wasLying') : t('doubtResult.wasTruth')}
                     </div>
@@ -462,7 +462,7 @@ function DoubtPageContent() {
                 {/* Meta-AI info */}
                 {state.metaAI?.enabled && (
                   <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
-                    <div className="text-white font-bold mb-1">{t('metaAI.title')}</div>
+                    <div className="text-ds-text-primary font-bold mb-1">{t('metaAI.title')}</div>
                     <div className="text-game-text-muted">
                       {t('metaAI.gamesPlayed', { count: state.metaAI.gamesPlayed })}
                     </div>
@@ -488,7 +488,7 @@ function DoubtPageContent() {
             {/* Human player info */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="dt-player-hand">
-                <div className="text-white font-bold text-sm mb-1">
+                <div className="text-ds-text-primary font-bold text-sm mb-1">
                   {t('yourCards', { count: humanPlayer.cardCount })}
                   {isHumanTurn && state.phase === 0 && (
                     <span className="text-ds-success text-xs ml-2">{t('selectPrompt')}</span>
@@ -512,7 +512,7 @@ function DoubtPageContent() {
                 {/* Claimed value input (shown when cards are selected) */}
                 {showClaimInput && (
                   <div className="mt-2 flex items-center gap-2" data-tutorial="dt-claim-input">
-                    <label htmlFor="claim-input" className="text-white text-sm">
+                    <label htmlFor="claim-input" className="text-ds-text-primary text-sm">
                       {t('claimedValue')}
                     </label>
                     <input

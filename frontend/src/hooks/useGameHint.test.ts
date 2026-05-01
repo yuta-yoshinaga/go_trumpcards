@@ -103,6 +103,12 @@ describe('useGameHint', () => {
     expect(result.current.hint).toBeNull();
   });
 
+  it('returns null hint for bakersdozen (server-side hints only)', () => {
+    localStorage.setItem('hint_enabled_bakersdozen', 'true');
+    const { result } = renderHook(() => useGameHint('bakersdozen', { phase: 0 } as never));
+    expect(result.current.hint).toBeNull();
+  });
+
   it('returns baccarat hint when enabled', () => {
     localStorage.setItem('hint_enabled_baccarat', 'true');
     const state: Partial<BaccaratResponse> = {
@@ -824,6 +830,98 @@ describe('useGameHint', () => {
       message: '',
     };
     const { result } = renderHook(() => useGameHint('slapjack', state));
+    expect(result.current.hint).toBeNull();
+  });
+
+  it('routes egyptianratscrew through getEgyptianRatscrewHint (slap when slappable)', () => {
+    localStorage.setItem('hint_enabled_egyptianratscrew', 'true');
+    const state = {
+      phase: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      currentTurnIdx: 1,
+      isHumanTurn: false,
+      isTopFaceCard: false,
+      isSlappable: true,
+      centerPileSize: 2,
+      topCard: { design: 'SPADE' as const, value: 7 },
+      players: [
+        { name: 'You', isHuman: true, stockSize: 25 },
+        { name: 'CPU', isHuman: false, stockSize: 25 },
+      ],
+      cpuDifficulty: 1,
+      chanceRemaining: 0,
+      chanceFromIdx: -1,
+      pendingKind: 0,
+      pendingDeadlineMs: 0,
+      lastEventKind: 0,
+      lastEventPlayerIdx: 0,
+      lastSlapReason: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('egyptianratscrew', state));
+    expect(result.current.hint?.targetAction).toBe('slap');
+    expect(result.current.hint?.reason).toBe('hint.slap');
+  });
+
+  it('routes egyptianratscrew through getEgyptianRatscrewHint (step on human turn, no slap)', () => {
+    localStorage.setItem('hint_enabled_egyptianratscrew', 'true');
+    const state = {
+      phase: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      currentTurnIdx: 0,
+      isHumanTurn: true,
+      isTopFaceCard: false,
+      isSlappable: false,
+      centerPileSize: 0,
+      topCard: null,
+      players: [
+        { name: 'You', isHuman: true, stockSize: 26 },
+        { name: 'CPU', isHuman: false, stockSize: 26 },
+      ],
+      cpuDifficulty: 1,
+      chanceRemaining: 0,
+      chanceFromIdx: -1,
+      pendingKind: 0,
+      pendingDeadlineMs: 0,
+      lastEventKind: 0,
+      lastEventPlayerIdx: 0,
+      lastSlapReason: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('egyptianratscrew', state));
+    expect(result.current.hint?.targetAction).toBe('step');
+    expect(result.current.hint?.reason).toBe('hint.flipCard');
+  });
+
+  it('returns null egyptianratscrew hint when game has ended', () => {
+    localStorage.setItem('hint_enabled_egyptianratscrew', 'true');
+    const state = {
+      phase: 1,
+      gameEndFlag: true,
+      winnerIdx: 0,
+      currentTurnIdx: 0,
+      isHumanTurn: false,
+      isTopFaceCard: false,
+      isSlappable: false,
+      centerPileSize: 0,
+      topCard: null,
+      players: [
+        { name: 'You', isHuman: true, stockSize: 52 },
+        { name: 'CPU', isHuman: false, stockSize: 0 },
+      ],
+      cpuDifficulty: 1,
+      chanceRemaining: 0,
+      chanceFromIdx: -1,
+      pendingKind: 0,
+      pendingDeadlineMs: 0,
+      lastEventKind: 0,
+      lastEventPlayerIdx: 0,
+      lastSlapReason: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('egyptianratscrew', state));
     expect(result.current.hint).toBeNull();
   });
 });

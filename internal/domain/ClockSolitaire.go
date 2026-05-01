@@ -206,6 +206,9 @@ func (cs *ClockSolitaire) GetActionLog() []*ActionLogEntry {
 	return cs.actionLog
 }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (cs *ClockSolitaire) GetGameEndFlag() bool { return cs.phase != ClockSolitairePhasePlaying }
+
 // clockSolitaireJSON is the JSON wire format for ClockSolitaire.
 type clockSolitaireJSON struct {
 	TrumpCards  *TrumpCards                                    `json:"tc"`

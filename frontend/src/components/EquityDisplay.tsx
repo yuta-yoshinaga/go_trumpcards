@@ -19,7 +19,7 @@ export function EquityDisplay({ equity, potOdds }: EquityDisplayProps) {
     <div className="bg-black/30 rounded-lg p-3 mb-2" data-testid="equity-display">
       <div className="flex items-center gap-4 mb-2">
         <div className="flex-1">
-          <div className="text-white text-sm mb-1">
+          <div className="text-ds-text-primary text-sm mb-1">
             {t('learning.equity')}: <strong>{winPct}%</strong>
           </div>
           <div className="w-full bg-ds-surface rounded-full h-2.5">
@@ -30,7 +30,7 @@ export function EquityDisplay({ equity, potOdds }: EquityDisplayProps) {
             />
           </div>
         </div>
-        <div className="text-white text-sm">
+        <div className="text-ds-text-primary text-sm">
           {t('learning.potOdds')}: <strong>{potOdds.toFixed(1)}%</strong>
         </div>
       </div>
@@ -54,7 +54,7 @@ export function EquityDisplay({ equity, potOdds }: EquityDisplayProps) {
       </button>
 
       {showHandOdds && (
-        <table className="w-full text-xs text-white mt-2" data-testid="hand-odds-table">
+        <table className="w-full text-xs text-ds-text-primary mt-2" data-testid="hand-odds-table">
           <thead>
             <tr className="border-b border-white/20">
               <th className="text-left py-1">Hand</th>

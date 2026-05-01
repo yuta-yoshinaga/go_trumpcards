@@ -334,7 +334,7 @@ function PaiGowPageContent() {
                 )}
 
                 {/* Payout breakdown */}
-                <div className="text-white text-center text-sm mb-2" data-testid="payout-breakdown">
+                <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
                   {state.payout !== 0 && (
                     <div>
                       {t('label.payout')}: {state.payout}
@@ -376,7 +376,7 @@ function PaiGowPageContent() {
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="pg-bet-controls">
                 <div className="flex items-center gap-2">
-                  <label htmlFor="paigow-bet-amount" className="text-white text-sm">
+                  <label htmlFor="paigow-bet-amount" className="text-ds-text-primary text-sm">
                     {t('label.bet')}
                   </label>
                   <input

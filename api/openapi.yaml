@@ -90,6 +90,8 @@ tags:
     description: Three Card Poker (スリーカードポーカー) game
   - name: caribbeanstud
     description: Caribbean Stud Poker (カリビアンスタッドポーカー) game
+  - name: texasholdembonus
+    description: Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) game
   - name: ohhell
     description: Oh Hell (オー・ヘル) game
   - name: bridge
@@ -148,6 +150,12 @@ tags:
     description: Nertz / Pounce (ナーツ / パウンス) game - real-time multi-player competitive solitaire (2-6 players) racing to empty a 13-card Nertz pile onto shared Klondike-style foundations
   - name: slapjack
     description: Slapjack (スラップジャック) game - real-time reflex game where 1 human races a CPU to slap the centre pile when a Jack appears on top
+  - name: egyptianratscrew
+    description: Egyptian Ratscrew (エジプシャン・ラットスクリュー) game - real-time reflex game where 1 human races a CPU to slap pairs/sandwiches; face-card chance battles add a strategic layer
+  - name: bakersdozen
+    description: Baker's Dozen (ベーカーズ・ダズン) game - single-player open-information solitaire with 13 tableau columns of 4 cards each; kings auto-move to the bottom of each column at deal time
+  - name: tonk
+    description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
 
 paths:
   /blackjack/exec:
@@ -3092,6 +3100,102 @@ paths:
                     dealerHandRank: 0
                     message: param error.
 
+  /texasholdembonus/exec:
+    post:
+      tags:
+        - texasholdembonus
+      summary: Execute a Texas Hold'em Bonus Poker game command
+      description: |
+        Send a command to advance the Texas Hold'em Bonus Poker
+        (テキサスホールデムボーナスポーカー) session identified by `sessionId`.
+        Texas Hold'em Bonus Poker is a single-player casino Texas Hold'em variant
+        using a standard 52-card deck. Player places an Ante bet (required) and an
+        optional Bonus side bet, receives 2 hole cards, then must either bet 2x Ante
+        (Flop bet) to see the flop or fold (forfeit Ante). After the flop and turn
+        the player can either Check or Raise (1x Ante). After the river the showdown
+        evaluates the best 5-card hand from each player's 2 hole cards plus the
+        5-card board. Dealer always plays — no qualifier.
+
+        Ante and play bets pay 1:1 on a player win, push on a tie, and lose on a
+        dealer win. Ante Bonus pays on the player's hand regardless of outcome:
+        Royal Flush 1000:1, Straight Flush 200:1, Four of a Kind 25:1, Full House
+        5:1, Flush 4:1, Straight 1:1. Bonus side bet pays on the two hole cards: AA
+        30:1, AK suited 25:1, AQ/AJ suited 20:1, AK off 15:1, KK/QQ/JJ 10:1, AQ/AJ
+        off 5:1, pocket pair 22-TT 3:1.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Bet      | `1`   | Place Ante and optional Bonus side bet |
+        | PreFlop  | `2`   | Decide to Play (2x Ante) or Fold |
+        | Flop     | `3`   | Decide to Check or Raise (1x Ante) |
+        | Turn     | `4`   | Decide to Check or Raise (1x Ante) |
+        | End      | `5`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place Ante bet (requires `amount`; optional `bonusBet`) |
+        | `play`  | `p`     | Pre-flop: bet 2x Ante and reveal the flop |
+        | `fold`  | `f`     | Pre-flop: forfeit Ante (Bonus side bet still resolves) |
+        | `check` | `c`     | Flop / Turn: advance without an additional bet |
+        | `raise` | `ra`    | Flop / Turn: bet 1x Ante and advance |
+        | `log`   | `l`     | View action log |
+      operationId: texasholdembonusExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TexasHoldemBonusRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 Ante with 10 Bonus
+                value:
+                  command: bet
+                  amount: 100
+                  bonusBet: 10
+                  sessionId: my-session-001
+              play:
+                summary: Pre-flop bet (2x Ante)
+                value:
+                  command: play
+                  sessionId: my-session-001
+              fold:
+                summary: Fold pre-flop
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              check:
+                summary: Check (flop / turn)
+                value:
+                  command: check
+                  sessionId: my-session-001
+              raise:
+                summary: Raise (1x Ante)
+                value:
+                  command: raise
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TexasHoldemBonusResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TexasHoldemBonusResponse'
+
   /ohhell/exec:
     post:
       tags:
@@ -4581,6 +4685,271 @@ paths:
                     type: integer
                   lastEventPlayerIdx:
                     type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+
+  /egyptianratscrew/exec:
+    post:
+      tags:
+        - egyptianratscrew
+      summary: Execute an Egyptian Ratscrew game command
+      description: |
+        Send a command to advance the Egyptian Ratscrew game session identified
+        by `sessionId`. Egyptian Ratscrew is a real-time reflex game for a
+        human vs CPU played with a standard 52-card deck split evenly (26 cards
+        each). Players take turns flipping the top of their stock onto the
+        centre pile. The pile is **slappable** when the top two share a rank
+        (pair) or the top three form a sandwich (X-Y-X); the first to slap a
+        slappable pile wins it. Wrong slaps cost 1 card to the opponent. Face
+        cards trigger a chance battle: when a face card lands on top, the next
+        player must reveal a face card within N flips (J=1, Q=2, K=3, A=4) or
+        the player who placed the face card wins the pile.
+
+        The game proceeds through these phases:
+
+        | Phase    | Value | Description |
+        |----------|-------|-------------|
+        | Play     | `0`   | Game is running |
+        | GameEnd  | `1`   | Game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game (optional `config.cpuDifficulty` 0-2) |
+        | `step`  | `s`     | Current player flips top of stock onto pile |
+        | `slap`  | `j`     | Slap the pile (pair / sandwich = win, otherwise penalty) |
+        | `tick`  |         | Advance the CPU's pending step / slap action |
+        | `log`   | `l`     | View action log |
+      operationId: egyptianRatscrewExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, step, s, slap, j, tick, log, l]
+                playerIdx:
+                  type: integer
+                  description: 0 = human (slap only)
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      description: 0=easy, 1=normal, 2=hard
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              slap:
+                summary: Human slaps when pair / sandwich is on top
+                value:
+                  command: slap
+                  playerIdx: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phase:
+                    type: integer
+                  gameEndFlag:
+                    type: boolean
+                  winnerIdx:
+                    type: integer
+                  currentTurnIdx:
+                    type: integer
+                  isHumanTurn:
+                    type: boolean
+                  isTopFaceCard:
+                    type: boolean
+                  isSlappable:
+                    type: boolean
+                  centerPileSize:
+                    type: integer
+                  topCard:
+                    nullable: true
+                    allOf:
+                      - $ref: '#/components/schemas/Card'
+                  players:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        isHuman:
+                          type: boolean
+                        stockSize:
+                          type: integer
+                  cpuDifficulty:
+                    type: integer
+                  chanceRemaining:
+                    type: integer
+                  chanceFromIdx:
+                    type: integer
+                  pendingKind:
+                    type: integer
+                  pendingDeadlineMs:
+                    type: integer
+                  lastEventKind:
+                    type: integer
+                  lastEventPlayerIdx:
+                    type: integer
+                  lastSlapReason:
+                    type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+
+  /bakersdozen/exec:
+    post:
+      tags:
+        - bakersdozen
+      summary: Execute a Baker's Dozen game command
+      description: |
+        Send a command to advance the Baker's Dozen (ベーカーズ・ダズン) game
+        session identified by `sessionId`. Baker's Dozen is a single-player
+        open-information solitaire using a single 52-card deck. 13 tableau
+        columns of 4 face-up cards each (52 cards total), with kings
+        automatically moved to the bottom of each column at deal time. 4
+        foundation piles built up by suit Ace→King. Tableau builds rank-only
+        descending (suit doesn't matter); only single-card moves are allowed.
+        Empty columns cannot be filled. No stock or waste pile.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move a card between tableau/foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: bakersDozenExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/BakersDozenMoveZone'
+                to:
+                  $ref: '#/components/schemas/BakersDozenMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move tableau column 0's top card to column 5
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                    description: 13 tableau columns, each an array of cards (with face-up flag)
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          card:
+                            nullable: true
+                            allOf:
+                              - $ref: '#/components/schemas/Card'
+                          faceUp:
+                            type: boolean
+                  foundation:
+                    type: array
+                    description: 4 foundation piles (cards by suit, A→K)
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Card'
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  phase:
+                    type: integer
+                    description: "0=Playing, 1=GameClear, 2=GameOver"
+                  hint:
+                    type: object
+                    nullable: true
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
                   message:
                     type: string
                   messageCode:
@@ -6901,6 +7270,70 @@ paths:
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
+  /tonk/exec:
+    post:
+      tags:
+        - tonk
+      summary: Execute a Tonk game command
+      description: |
+        Send a command to advance the Tonk (トンク) game session identified by
+        `sessionId`. Tonk is a 2-player rummy variant using a standard 52-card
+        deck. Each player is dealt 5 cards. If a player's initial 5 cards total
+        49 or 50 points, the player wins immediately ("Tonk on deal") and earns
+        a 50-point bonus. Otherwise standard draw/discard with a knock threshold
+        of 5 deadwood. On knock, deadwood difference is awarded; if the opponent
+        has lower deadwood than the knocker, opponent gets the difference + a
+        5-point undercut penalty. First to reach the point limit wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Draw      | `0`   | Draw a card from stock or discard pile |
+        | Discard   | `1`   | Discard a card or knock |
+        | RoundEnd  | `2`   | Round scored; advance with `nextround` |
+        | GameEnd   | `3`   | A player reached the point limit |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `drawstock`   | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard` | `dd`    | Draw the top card from the discard pile |
+        | `discard`     | `d`     | Discard a card (requires `cardIndex`) |
+        | `knock`       | `k`     | Knock (deadwood ≤ 5) (requires `cardIndex`) |
+        | `nextround`   | `nr`    | Score the round and start the next |
+        | `log`         | `l`     | View action log |
+      operationId: tonkExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TonkRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              knock:
+                summary: Knock and discard card at index 2
+                value:
+                  command: knock
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TonkResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TonkResponse'
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -6922,6 +7355,22 @@ components:
         cardIndex:
           type: integer
           description: Card index within the column (required when moving from tableau)
+    BakersDozenMoveZone:
+      type: object
+      description: Source or target zone for a Baker's Dozen card move
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: Zone identifier (tableau, foundation)
+          enum: [tableau, foundation]
+        col:
+          type: integer
+          description: Column index (required for tableau zone)
+        cardIndex:
+          type: integer
+          description: Optional / ignored. The server always operates on the top card of the source column; clients may omit this field. Retained for parity with FortyThievesMoveZone.
     Card:
       type: object
       description: A single playing card
@@ -11165,6 +11614,134 @@ components:
           description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
+    # Tonk types
+    # -------------------------------------------------------------------------
+    TonkRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `discard` (`d`), `knock` (`k`),
+            `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard or knock with. Required for `discard` and `knock` commands.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    TonkResponse:
+      type: object
+      description: Current state of the Tonk game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Discard, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        knockerIdx:
+          type: integer
+        knockerMelds:
+          type: array
+          items:
+            type: object
+            properties:
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        knockerDeadwood:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        opponentMelds:
+          type: array
+          items:
+            type: object
+            properties:
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        opponentDeadwood:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        isTonk:
+          type: boolean
+          description: Whether the round was won by an instant Tonk on deal (49/50 points)
+        isUndercut:
+          type: boolean
+          description: Whether the opponent undercut the knocker
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
     # Canasta types
     # -------------------------------------------------------------------------
     CanastaRequest:
@@ -12913,6 +13490,156 @@ components:
         message:
           type: string
           description: Game result or error message. Empty during bet/action phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Texas Hold'em Bonus Poker
+    # -------------------------------------------------------------------------
+    TexasHoldemBonusRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bet` (`b`),
+            `play` (`p`), `fold` (`f`), `check` (`c`), `raise` (`ra`),
+            `log` (`l`).
+          enum: [r, reset, b, bet, p, play, f, fold, c, check, ra, raise, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Ante bet amount. Required for `bet` command (minimum 10, must be a
+            multiple of 10). Ignored for other commands.
+          minimum: 10
+          example: 100
+        bonusBet:
+          type: integer
+          description: |
+            Bonus side bet amount. Optional; used with the `bet` command.
+            0 or omitted means no side bet.
+          minimum: 0
+          example: 10
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    TexasHoldemBonusResponse:
+      type: object
+      description: Current state of the Texas Hold'em Bonus Poker game
+      required:
+        - playerHand
+        - dealerHand
+        - community
+        - phase
+        - chips
+        - anteBet
+        - bonusBet
+        - flopBet
+        - turnBet
+        - riverBet
+        - totalPlayBet
+        - result
+        - antePayout
+        - playPayout
+        - bonusPayout
+        - totalPayout
+        - playerHandRank
+        - dealerHandRank
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Player's two hole cards
+          items:
+            $ref: '#/components/schemas/Card'
+        dealerHand:
+          type: array
+          description: Dealer's two hole cards (masked until showdown)
+          items:
+            $ref: '#/components/schemas/Card'
+        community:
+          type: array
+          description: Community cards (length grows from 0 to 5 as the streets advance)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1=Bet, 2=PreFlop, 3=Flop, 4=Turn, 5=End"
+          enum: [1, 2, 3, 4, 5]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        anteBet:
+          type: integer
+          description: Ante bet amount
+          example: 100
+        bonusBet:
+          type: integer
+          description: Bonus side bet amount
+          example: 10
+        flopBet:
+          type: integer
+          description: Flop bet amount (2x Ante placed pre-flop)
+          example: 0
+        turnBet:
+          type: integer
+          description: Turn bet amount (1x Ante placed after the flop)
+          example: 0
+        riverBet:
+          type: integer
+          description: River bet amount (1x Ante placed after the turn)
+          example: 0
+        totalPlayBet:
+          type: integer
+          description: Sum of flop / turn / river bets
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1=Player wins, -1=Dealer wins, 0=Push/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        antePayout:
+          type: integer
+          description: Payout from the Ante bet (includes Ante Bonus when applicable)
+          example: 0
+        playPayout:
+          type: integer
+          description: Combined payout from the flop / turn / river bets
+          example: 0
+        bonusPayout:
+          type: integer
+          description: Bonus side bet payout
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout for the round (sum of all payouts)
+          example: 0
+        playerHandRank:
+          type: integer
+          description: Player's best 5-card hand rank (0=High Card .. 9=Royal Flush)
+          example: 0
+        dealerHandRank:
+          type: integer
+          description: Dealer's best 5-card hand rank (same encoding as `playerHandRank`)
+          example: 0
+        message:
+          type: string
+          description: Game result or error message. Empty during pre-resolution phases.
           example: ""
         messageCode:
           type: string

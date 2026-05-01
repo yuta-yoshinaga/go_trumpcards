@@ -9,6 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -21,6 +22,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, focusRingWhite } from '../styles/buttonStyles';
@@ -123,6 +125,7 @@ function TrashPageContent() {
   const gameApi = useGameApi<TrashResponse, ApiArgs>((...args) => trashRunner.exec(...args));
   const { state, loading, error, retry } = gameApi;
   const apiCall = gameApi.exec;
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('trash', state);
 
   useEffect(() => {
     void apiCall('reset');
@@ -271,7 +274,18 @@ function TrashPageContent() {
               hideActionLog={hideActionLog}
             />
 
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
             <GameFooter>
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+                <input
+                  type="checkbox"
+                  checked={hintEnabled}
+                  onChange={(e) => setHintEnabled(e.target.checked)}
+                  aria-label={tc('hint.toggle', { ns: 'tutorial' })}
+                />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
               <GameResetButton
                 isGameEnd={isGameOver}
                 onReset={handleResetAction}

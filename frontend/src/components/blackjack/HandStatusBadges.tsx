@@ -29,7 +29,10 @@ export function HandStatusBadges({ busted, doubled, isBlackJack, surrendered }: 
         </abbr>
       )}
       {surrendered && (
-        <abbr title={t('status.surTooltip')} className="ml-1 text-xs bg-ds-surface-elevated text-white px-1 rounded">
+        <abbr
+          title={t('status.surTooltip')}
+          className="ml-1 text-xs bg-ds-surface-elevated text-ds-text-primary px-1 rounded"
+        >
           [{t('status.sur')}]
         </abbr>
       )}

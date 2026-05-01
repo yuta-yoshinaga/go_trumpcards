@@ -335,6 +335,9 @@ func (t *TriPeaks) GetLayout() [TriPeaksRowCnt][TriPeaksColCnt]*TriPeaksCard {
 // GetActionLog 棋譜取得
 func (t *TriPeaks) GetActionLog() []*ActionLogEntry { return t.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (t *TriPeaks) GetGameEndFlag() bool { return t.phase != TriPeaksPhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (t *TriPeaks) IsStalemate() bool { return t.isStalemate }
 

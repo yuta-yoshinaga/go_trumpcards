@@ -27,15 +27,11 @@ type GolfWebOutputHint struct {
 
 // GolfWebOutput ゴルフソリティアWebアウトプット
 type GolfWebOutput struct {
-	Layout       [][]*GolfWebOutputCard `json:"layout"`
-	StockCount   int                    `json:"stockCount"`
-	Waste        []*WebOutputCard       `json:"waste"`
-	Phase        int                    `json:"phase"`
-	MoveCount    int                    `json:"moveCount"`
-	CanUndo      bool                   `json:"canUndo"`
-	IsStalemate  bool                   `json:"isStalemate"`
-	UndoToEscape int                    `json:"undoToEscape"`
-	Hint         *GolfWebOutputHint     `json:"hint,omitempty"`
+	Layout     [][]*GolfWebOutputCard `json:"layout"`
+	StockCount int                    `json:"stockCount"`
+	Waste      []*WebOutputCard       `json:"waste"`
+	Hint       *GolfWebOutputHint     `json:"hint,omitempty"`
+	SolitaireWebOutputBase
 	WebOutputBase
 }
 

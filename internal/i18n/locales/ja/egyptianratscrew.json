@@ -1,0 +1,9 @@
+{
+  "helpTitle": "Egyptian Ratscrew (エジプシャン・ラットスクリュー)",
+  "helpStep": "  s                    現手番プレイヤーがカードをめくる",
+  "helpSlap": "  j, slap              人間がスラップを試みる (ペア/サンドイッチ)",
+  "helpTick": "  tick                 CPUを1tick進める",
+  "helpSetDifficulty": "  sd <n>               CPU難易度 (0=Easy, 1=Normal, 2=Hard) を設定してリセット",
+  "labelHuman": "あなた",
+  "labelCpu": "CPU"
+}

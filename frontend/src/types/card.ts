@@ -1011,6 +1011,52 @@ export interface GinRummyConfig {
   pointLimit: number;
 }
 
+// --- Tonk (トンク) ---
+
+/** Tonk player data with scores. */
+export interface TonkPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+/** A meld (set or run) in Tonk. */
+export interface TonkMeld {
+  cards: Card[];
+}
+
+/** Tonk game configuration. */
+export interface TonkConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** Full Tonk game state returned from the API. */
+export interface TonkResponse {
+  players: TonkPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  knockerIdx: number;
+  knockerMelds: TonkMeld[];
+  knockerDeadwood: Card[];
+  opponentMelds: TonkMeld[];
+  opponentDeadwood: Card[];
+  isTonk: boolean;
+  isUndercut: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: TonkConfig;
+}
+
 // --- Seven Bridge (セブンブリッジ) ---
 
 /** A meld (set or run) shared across players in Seven Bridge. */
@@ -1902,6 +1948,36 @@ export interface CaribbeanStudResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Texas Hold'em Bonus Poker (テキサスホールデムボーナスポーカー) ---
+
+/** Texas Hold'em Bonus Poker API response. */
+export interface TexasHoldemBonusResponse {
+  /** Player's two hole cards. */
+  playerHand: Card[];
+  /** Dealer's hole cards: masked as `MaskedCard` until the showdown. */
+  dealerHand: (Card | MaskedCard)[];
+  /** Community cards (flop / turn / river). Length grows from 0 → 5 over phases. */
+  community: Card[];
+  phase: number;
+  chips: number;
+  anteBet: number;
+  bonusBet: number;
+  flopBet: number;
+  turnBet: number;
+  riverBet: number;
+  totalPlayBet: number;
+  result: number;
+  antePayout: number;
+  playPayout: number;
+  bonusPayout: number;
+  totalPayout: number;
+  playerHandRank: number;
+  dealerHandRank: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 // --- Pai Gow Poker (パイゴウポーカー) ---
 
 /** Pai Gow Poker API response. */
@@ -2455,6 +2531,44 @@ export interface FortyThievesResponse {
 
 /** Source or target zone for a Forty Thieves card move. */
 export interface FortyThievesMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+// --- Baker's Dozen (ベーカーズ・ダズン) ---
+
+/** A single tableau card in Baker's Dozen. */
+export interface BakersDozenTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** A suggested move hint in Baker's Dozen. */
+export interface BakersDozenHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** Full Baker's Dozen game state returned from the API. */
+export interface BakersDozenResponse {
+  tableau: BakersDozenTableauCard[][];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: BakersDozenHint;
+}
+
+/** Source or target zone for a Baker's Dozen card move. */
+export interface BakersDozenMoveZone {
   zone: string;
   col?: number;
   cardIndex?: number;
@@ -3024,6 +3138,38 @@ export interface SlapjackResponse {
   pendingDeadlineMs: number;
   lastEventKind: number;
   lastEventPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+/** Player snapshot for Egyptian Ratscrew. */
+export interface EgyptianRatscrewPlayerData {
+  name: string;
+  isHuman: boolean;
+  stockSize: number;
+}
+
+/** Full Egyptian Ratscrew game state returned from the API. */
+export interface EgyptianRatscrewResponse {
+  phase: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  currentTurnIdx: number;
+  isHumanTurn: boolean;
+  isTopFaceCard: boolean;
+  isSlappable: boolean;
+  centerPileSize: number;
+  topCard?: Card | null;
+  players: EgyptianRatscrewPlayerData[];
+  cpuDifficulty: number;
+  chanceRemaining: number;
+  chanceFromIdx: number;
+  pendingKind: number;
+  pendingDeadlineMs: number;
+  lastEventKind: number;
+  lastEventPlayerIdx: number;
+  lastSlapReason: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;

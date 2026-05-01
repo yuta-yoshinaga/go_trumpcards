@@ -57,20 +57,13 @@ func (p *CalculationWebPresenter) HintOutput(g interfaces.CalculationGame) strin
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *CalculationWebPresenter) ActionLogOutput(g interfaces.CalculationGame) string {
-	if g.GetPhase() == domain.CalculationPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(g.GetActionLog())
+	return actionLogOutputJSON(g)
 }
 
 // buildBase は共通フィールドを詰めたレスポンスオブジェクトを返す
 func (p *CalculationWebPresenter) buildBase(g interfaces.CalculationGame) *controller.CalculationWebOutput {
 	resObj := new(controller.CalculationWebOutput)
-	resObj.Phase = int(g.GetPhase())
-	resObj.MoveCount = g.GetMoveCount()
-	resObj.CanUndo = g.CanUndo()
-	resObj.IsStalemate = g.IsStalemate()
-	resObj.UndoToEscape = g.UndoToEscape()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, g, int(g.GetPhase()))
 	resObj.StockCount = g.GetStockCount()
 	if top := g.GetStockTop(); top != nil {
 		resObj.StockTop = cardToOutput(top)

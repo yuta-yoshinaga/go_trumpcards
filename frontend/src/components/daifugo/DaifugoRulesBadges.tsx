@@ -228,7 +228,7 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
           {b.label}
           <span
             role="tooltip"
-            className="hidden group-hover/badge:block group-focus/badge:block absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-ds-surface-elevated text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10 font-normal"
+            className="hidden group-hover/badge:block group-focus/badge:block absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-ds-surface-elevated text-ds-text-primary text-xs rounded px-2 py-1 whitespace-nowrap z-10 font-normal"
           >
             {b.description}
           </span>

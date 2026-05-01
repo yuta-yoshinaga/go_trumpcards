@@ -46,6 +46,19 @@ Card games involve shuffling, so tests must not depend on random outcomes:
 - **Force deterministic draws in OldMaid**: Give the target player exactly 1 card so `rand.Intn(1)` always returns 0
 - **Never assert on shuffled deck order**: Set up game state manually via `AddCard` instead of relying on `Reset`/`Shuffle`
 
+## Game registration helpers (use these — don't hand-roll boilerplate)
+
+The `internal/infrastructure/games/` package provides DRY helpers for the per-game registration pattern. Always use them instead of writing nested closures:
+
+| Helper | Where | Purpose |
+|--------|-------|---------|
+| `BindWebControllerFor[I, P, O]` | `games/server_helper.go` | One-call HTTP-server registration. Used by `games_server.go` (server build only, build tag `!js \|\| !wasm`). |
+| `RegisterKVGame[I, P, O]` | `games/worker_helper.go` | One-call Cloudflare-Worker (KV-backed) registration. Used by per-category sub-packages (`casino/`, `classic/`, `solo/`) under build tag `js && wasm`. |
+| `webControllerPair[I, P, O]` | `adapter/controller/web_controller_pair.go` | Generates `NewXWebController` + `NewXWebControllerWithProvider` together. Called inside per-game `*WebController.go`. |
+| `execCuiCommand` + `handleCuiLog` | `adapter/controller/cui_controller_helper.go` | Common CUI command parsing (`q`/`quit`/`r`/`reset` + suggestion-based unknown-command messages). Every `*CuiController.Exec` should delegate to it. |
+
+The build-tag split (`!js \|\| !wasm` for the server, `js && wasm` for workers) is what keeps each Cloudflare Worker binary under the 1 MB gzipped free-tier limit by letting TinyGo dead-code-eliminate the games from the other two categories. See the package doc comment in `games/registry.go` for the full design rationale.
+
 ## Formatting
 
 **After editing any Go source file, always run `goimports -w` on the modified files before committing.** Use `goimports`, not `gofmt`.

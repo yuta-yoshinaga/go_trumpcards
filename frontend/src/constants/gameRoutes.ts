@@ -25,6 +25,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/baccarat', labelKey: 'nav.baccarat', icon: '💎' },
       { path: '/threecard', labelKey: 'nav.threecard', icon: '🎴' },
       { path: '/caribbeanstud', labelKey: 'nav.caribbeanstud', icon: '🏝️' },
+      { path: '/texasholdembonus', labelKey: 'nav.texasholdembonus', icon: '🤠' },
       { path: '/paigow', labelKey: 'nav.paigow', icon: '🀄' },
       { path: '/letitride', labelKey: 'nav.letitride', icon: '🎰' },
       { path: '/reddog', labelKey: 'nav.reddog', icon: '🐕' },
@@ -88,6 +89,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/shithead', labelKey: 'nav.shithead', icon: '👑' },
       { path: '/nertz', labelKey: 'nav.nertz', icon: '🥜' },
       { path: '/slapjack', labelKey: 'nav.slapjack', icon: '✋' },
+      { path: '/egyptianratscrew', labelKey: 'nav.egyptianratscrew', icon: '🐀' },
     ],
   },
   {
@@ -103,6 +105,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/memory', labelKey: 'nav.memory', icon: '🧠' },
       { path: '/clocksolitaire', labelKey: 'nav.clocksolitaire', icon: '🕐' },
       { path: '/fortythieves', labelKey: 'nav.fortythieves', icon: '🏰' },
+      { path: '/bakersdozen', labelKey: 'nav.bakersdozen', icon: '🥖' },
       { path: '/canfield', labelKey: 'nav.canfield', icon: '🎩' },
       { path: '/yukon', labelKey: 'nav.yukon', icon: '🏔️' },
       { path: '/scorpion', labelKey: 'nav.scorpion', icon: '🦂' },
@@ -116,6 +119,7 @@ export const gameCategories: readonly GameCategory[] = [
     icon: '🍸',
     routes: [
       { path: '/ginrummy', labelKey: 'nav.ginrummy', icon: '🫐' },
+      { path: '/tonk', labelKey: 'nav.tonk', icon: '🎯' },
       { path: '/canasta', labelKey: 'nav.canasta', icon: '🃏' },
       { path: '/cribbage', labelKey: 'nav.cribbage', icon: '📌' },
       { path: '/sevenbridge', labelKey: 'nav.sevenbridge', icon: '7️⃣' },

@@ -188,6 +188,7 @@ func TestKlondikeWebPresenter_HintOutput(t *testing.T) {
 		kg.On("GetStockCount").Return(20)
 		kg.On("GetDrawCount").Return(1)
 		kg.On("CanUndo").Return(false)
+		kg.On("IsStalemate").Return(false)
 		kg.On("GetScore").Return(-52)
 		kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
 		kg.On("UndoToEscape").Return(0)
@@ -210,6 +211,7 @@ func TestKlondikeWebPresenter_HintOutput(t *testing.T) {
 		kg.On("GetStockCount").Return(24)
 		kg.On("GetDrawCount").Return(1)
 		kg.On("CanUndo").Return(false)
+		kg.On("IsStalemate").Return(false)
 		kg.On("GetScore").Return(-52)
 		kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
 		kg.On("UndoToEscape").Return(0)
@@ -273,6 +275,7 @@ func TestKlondikeWebPresenter_HintOutput_DrawCount(t *testing.T) {
 	kg.On("GetStockCount").Return(24)
 	kg.On("GetDrawCount").Return(3)
 	kg.On("CanUndo").Return(false)
+	kg.On("IsStalemate").Return(false)
 	kg.On("GetScore").Return(-52)
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
 	kg.On("UndoToEscape").Return(0)
@@ -290,6 +293,7 @@ func TestKlondikeWebPresenter_HintOutput_CanUndo(t *testing.T) {
 	kg.On("GetStockCount").Return(24)
 	kg.On("GetDrawCount").Return(1)
 	kg.On("CanUndo").Return(true)
+	kg.On("IsStalemate").Return(false)
 	kg.On("GetScore").Return(-52)
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
 	kg.On("UndoToEscape").Return(0)
@@ -307,6 +311,7 @@ func TestKlondikeWebPresenter_HintOutput_Score(t *testing.T) {
 	kg.On("GetStockCount").Return(24)
 	kg.On("GetDrawCount").Return(1)
 	kg.On("CanUndo").Return(false)
+	kg.On("IsStalemate").Return(false)
 	kg.On("GetScore").Return(200)
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
 	kg.On("UndoToEscape").Return(0)
@@ -324,6 +329,7 @@ func TestKlondikeWebPresenter_HintOutput_ScoringMode(t *testing.T) {
 	kg.On("GetStockCount").Return(24)
 	kg.On("GetDrawCount").Return(1)
 	kg.On("CanUndo").Return(false)
+	kg.On("IsStalemate").Return(false)
 	kg.On("GetScore").Return(-52)
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringVegas)
 	kg.On("UndoToEscape").Return(0)
@@ -338,6 +344,7 @@ func TestKlondikeWebPresenter_ActionLogOutput(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
 
+		kg.On("GetGameEndFlag").Return(false)
 		p := new(KlondikeWebPresenter)
 		result := p.ActionLogOutput(kg)
 		var out controller.ActionLogWebOutput
@@ -349,6 +356,7 @@ func TestKlondikeWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("after game clear", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameClear)
+		kg.On("GetGameEndFlag").Return(true)
 		kg.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw", Detail: "test", Cards: nil},
 		})
@@ -364,6 +372,7 @@ func TestKlondikeWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("after game over", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameOver)
+		kg.On("GetGameEndFlag").Return(true)
 		kg.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 
 		p := new(KlondikeWebPresenter)

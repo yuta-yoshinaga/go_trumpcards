@@ -14,12 +14,8 @@ type PyramidWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (pr *PyramidWebPresenter) Output(p interfaces.PyramidGame, lastErr error) string {
 	resObj := new(controller.PyramidWebOutput)
-	resObj.Phase = int(p.GetPhase())
-	resObj.MoveCount = p.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, p, int(p.GetPhase()))
 	resObj.StockCount = p.GetStockCount()
-	resObj.CanUndo = p.CanUndo()
-	resObj.IsStalemate = p.IsStalemate()
-	resObj.UndoToEscape = p.UndoToEscape()
 
 	// ウェイスト
 	waste := p.GetWaste()
@@ -79,11 +75,8 @@ func (pr *PyramidWebPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 func (pr *PyramidWebPresenter) HintOutput(p interfaces.PyramidGame) string {
 	hint := p.GetHint()
 	resObj := new(controller.PyramidWebOutput)
-	resObj.Phase = int(p.GetPhase())
-	resObj.MoveCount = p.GetMoveCount()
+	populateSolitaireBase(&resObj.SolitaireWebOutputBase, p, int(p.GetPhase()))
 	resObj.StockCount = p.GetStockCount()
-	resObj.CanUndo = p.CanUndo()
-	resObj.UndoToEscape = p.UndoToEscape()
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Pyramid = make([][]*controller.PyramidWebOutputCard, 0)
 
@@ -105,9 +98,5 @@ func (pr *PyramidWebPresenter) HintOutput(p interfaces.PyramidGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (pr *PyramidWebPresenter) ActionLogOutput(p interfaces.PyramidGame) string {
-	phase := p.GetPhase()
-	if phase == domain.PyramidPhasePlaying {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(p.GetActionLog())
+	return actionLogOutputJSON(p)
 }

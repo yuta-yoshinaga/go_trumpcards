@@ -339,6 +339,9 @@ func (s *SpiteAndMalice) GetPlayer(idx int) *SpiteAndMalicePlayer {
 // GetActionLog 棋譜取得
 func (s *SpiteAndMalice) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (s *SpiteAndMalice) GetGameEndFlag() bool { return s.phase != SpiteAndMalicePhasePlaying }
+
 // GetConfig 設定取得
 func (s *SpiteAndMalice) GetConfig() SpiteAndMaliceConfig { return s.config }
 

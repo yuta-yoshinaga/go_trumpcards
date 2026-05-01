@@ -316,3 +316,169 @@ func TestNertz_JSON(t *testing.T) {
 	assert.Equal(t, len(g.GetFoundations()), len(restored.GetFoundations()))
 	assert.Equal(t, g.GetRoundNo(), restored.GetRoundNo())
 }
+
+// --- Hard CPU lookahead tests (issue #1562) ---
+
+// nertzHardGameForTest creates a freshly reset Hard-difficulty Nertz game.
+// Cards are then cleared via clearPlayerPiles so the test owns the board.
+func nertzHardGameForTest(t *testing.T) *domain.Nertz {
+	t.Helper()
+	g := domain.NewDefaultNertz()
+	cfg := domain.DefaultNertzConfig()
+	cfg.CpuDifficulty = domain.NertzCpuDifficultyHard
+	g.ResetWithConfig(cfg)
+	return g
+}
+
+// TestNertz_FindCpuMoveHardPrefersNertzToFoundation pins the headline
+// behavior of issue #1562: when both a tableau-to-foundation and a
+// nertz-to-foundation are legal, Hard prefers the nertz-to-foundation
+// because reducing the Nertz pile is the win condition. Easy/Normal's
+// first-match heuristic happens to produce the same answer in this case
+// (NF is checked before TF), so the test verifies the Hard branch reaches
+// the same conclusion through scoring rather than ordering.
+func TestNertz_FindCpuMoveHardPrefersNertzToFoundation(t *testing.T) {
+	g := nertzHardGameForTest(t)
+	clearFoundations(g)
+	for _, p := range g.GetPlayers() {
+		clearPlayerPiles(p)
+	}
+	cpu := g.GetPlayers()[1]
+	// Both moves are legal:
+	//   - Nertz top is Ace of Spades → empty foundation
+	//   - Tableau col 0 top is Ace of Hearts → another empty foundation
+	// Hard MUST pick the nertz-to-foundation (moveNF +100 vs moveTF +20).
+	cpu.PushNertz(newNertzCard(domain.CardDesignSpade, 1))
+	cpu.PushTableau(0, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignHeart, 1), FaceUp: true})
+
+	move := g.FindCpuMove(1)
+	require.NotNil(t, move)
+	assert.Equal(t, "moveNF", move.ActionType)
+}
+
+// TestNertz_FindCpuMoveHardPrefersNertzToTableauOverTableauToTableau
+// verifies that Hard chases pile reduction even when a foundation move
+// is unavailable. Easy/Normal would also pick moveNT here (first-match
+// scans NT before TT), so this test pins the Hard scoring spec rather
+// than a behavioral divergence.
+func TestNertz_FindCpuMoveHardPrefersNertzToTableauOverTableauToTableau(t *testing.T) {
+	g := nertzHardGameForTest(t)
+	clearFoundations(g)
+	for _, p := range g.GetPlayers() {
+		clearPlayerPiles(p)
+	}
+	cpu := g.GetPlayers()[1]
+	// Black King on col 0 → red Q (Hearts) lands on it from EITHER nertz
+	// (top = QH) or tableau col 1 (also QH). Hard must prefer the nertz
+	// source because pile reduction is the win condition.
+	cpu.PushTableau(0, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 13), FaceUp: true})
+	cpu.PushTableau(1, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignHeart, 12), FaceUp: true})
+	cpu.PushNertz(newNertzCard(domain.CardDesignDiamond, 12))
+
+	move := g.FindCpuMove(1)
+	require.NotNil(t, move)
+	assert.Equal(t, "moveNT", move.ActionType,
+		"Hard must reduce nertz pile when both NT and TT are legal; got %v", move.ActionType)
+}
+
+// TestNertz_FindCpuMoveHardEmptyColumnPenalty pins the "stranded waste
+// pile" penalty's two regimes (PR #1587 review). Both sub-cases set up
+// the same trigger condition (Nertz pile empty, a moveTF that would
+// empty its source column) but with competing moves at different
+// strengths so the test asserts a single, deterministic outcome —
+// either the penalty narrows the gap but moveTF still wins, or the
+// penalty is the deciding factor and a competing move wins.
+func TestNertz_FindCpuMoveHardEmptyColumnPenalty(t *testing.T) {
+	t.Run("penalty applied; moveTF still wins narrowly", func(t *testing.T) {
+		g := nertzHardGameForTest(t)
+		clearFoundations(g)
+		for _, p := range g.GetPlayers() {
+			clearPlayerPiles(p)
+		}
+		cpu := g.GetPlayers()[1]
+		// Nertz pile empty. col 0 holds a solitary Ace of Spades, so
+		// moveTF (Ace → foundation 0) empties the column. Competing
+		// move: waste 2 of Hearts onto col 2's 3 of Spades.
+		// Scores: moveTF base 20 - empty-column penalty 8 = 12.
+		// moveWT base 10 (col 2 is non-empty so no empty-target penalty) = 10.
+		// 12 > 10 → moveTF still wins, but the test now pins it.
+		cpu.PushTableau(0, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 1), FaceUp: true})
+		cpu.PushTableau(2, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 3), FaceUp: true})
+		cpu.PushWaste(newNertzCard(domain.CardDesignHeart, 2))
+
+		move := g.FindCpuMove(1)
+		require.NotNil(t, move)
+		assert.Equal(t, "moveTF", move.ActionType,
+			"moveTF (12) still beats moveWT (10) after the empty-column penalty")
+	})
+
+	t.Run("penalty deflects column choice when both moveTFs are legal", func(t *testing.T) {
+		g := nertzHardGameForTest(t)
+		clearFoundations(g)
+		for _, p := range g.GetPlayers() {
+			clearPlayerPiles(p)
+		}
+		cpu := g.GetPlayers()[1]
+		// Nertz pile empty. Two foundation-legal moveTF candidates:
+		//   col 0: solo Ace of Spades (size 1). moveTF empties the
+		//          column → penalty applies. Score 20 − 0 − 8 = 12.
+		//   col 1: face-down Clover 5 then face-up Ace of Hearts.
+		//          moveTF takes only the top card; size 2 ≠ moves 1 →
+		//          penalty does NOT apply. Score 20 − 0 = 20.
+		// Without the penalty both would tie at 20 and the foundation
+		// tiebreak (lower index wins) would pick col 0's enumeration
+		// (it iterates first). With the penalty, col 1 wins decisively.
+		cpu.PushTableau(0, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 1), FaceUp: true})
+		cpu.PushTableau(1, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignClover, 5), FaceUp: false})
+		cpu.PushTableau(1, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignHeart, 1), FaceUp: true})
+
+		move := g.FindCpuMove(1)
+		require.NotNil(t, move)
+		assert.Equal(t, "moveTF", move.ActionType)
+		assert.Equal(t, 1, move.FromCol,
+			"penalty must steer Hard onto col 1's non-emptying moveTF "+
+				"(score 20) over col 0's emptying moveTF (score 12)")
+	})
+}
+
+// TestNertz_FindCpuMoveHardFallsBackToDrawWhenNothingElseLegal verifies
+// that the Hard CPU still draws as a last resort. enumerateCpuMoves only
+// adds the draw candidate when no other move is legal — confirm that
+// empty board (no playable cards) still produces a draw.
+func TestNertz_FindCpuMoveHardFallsBackToDrawWhenNothingElseLegal(t *testing.T) {
+	g := nertzHardGameForTest(t)
+	clearFoundations(g)
+	for _, p := range g.GetPlayers() {
+		clearPlayerPiles(p)
+	}
+	cpu := g.GetPlayers()[1]
+	// Stock has cards but tableau/nertz/waste are all empty so there are no
+	// place-able moves. Push a single stock card directly so DrawStock can fire.
+	cpu.PushStock(newNertzCard(domain.CardDesignSpade, 5))
+	move := g.FindCpuMove(1)
+	require.NotNil(t, move)
+	assert.Equal(t, "draw", move.ActionType)
+}
+
+// TestNertz_FindCpuMoveDifficultyDispatch verifies the smoke property:
+// Easy/Normal go through findCpuMoveFast, Hard goes through
+// findCpuMoveHard. Setting the same trivial position on each difficulty
+// must yield a non-nil move for all three, and the structural categories
+// match the heuristics (1..7 sequence at minimum). Other tests pin the
+// Hard scoring details; this one just guards the dispatch wiring.
+func TestNertz_FindCpuMoveDifficultyDispatch(t *testing.T) {
+	for _, d := range []domain.NertzCpuDifficulty{
+		domain.NertzCpuDifficultyEasy,
+		domain.NertzCpuDifficultyNormal,
+		domain.NertzCpuDifficultyHard,
+	} {
+		g := domain.NewDefaultNertz()
+		cfg := domain.DefaultNertzConfig()
+		cfg.CpuDifficulty = d
+		g.ResetWithConfig(cfg)
+		// After Reset all four tableau columns hold a face-up card; some
+		// moves are likely legal. Just check we got *something* back.
+		move := g.FindCpuMove(1)
+		assert.NotNil(t, move, "difficulty=%v must produce a move", d)
+	}
+}

@@ -171,7 +171,7 @@ function SideBetResultsDisplay({
   return (
     <div className="mb-2 text-center" data-testid="side-bet-results">
       {results.map((r) => (
-        <div key={r.betType} className="text-white text-sm">
+        <div key={r.betType} className="text-ds-text-primary text-sm">
           {r.betType === 1 ? t('sideBet.playerPair') : t('sideBet.bankerPair')}:{' '}
           {r.resultType === 1 ? t('sideBet.pair') : t('sideBet.noPair')} ({t('label.payout', { payout: r.payout })})
         </div>
@@ -280,7 +280,7 @@ function BaccaratPageContent() {
               <div className="flex flex-col items-center justify-center py-6 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
                 <details className="bg-black/30 rounded-lg w-full max-w-sm">
-                  <summary className="cursor-pointer select-none px-4 py-2 text-white font-bold text-sm">
+                  <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
                   <ul className="text-ds-text-muted text-sm space-y-1 px-4 pb-3">
@@ -337,7 +337,9 @@ function BaccaratPageContent() {
 
             {/* Payout info */}
             {isEndPhase && (
-              <div className="text-white text-center font-bold mb-2">{t('label.payout', { payout: state.payout })}</div>
+              <div className="text-ds-text-primary text-center font-bold mb-2">
+                {t('label.payout', { payout: state.payout })}
+              </div>
             )}
 
             {/* Side bet results */}
@@ -347,7 +349,9 @@ function BaccaratPageContent() {
 
             {/* Big Road */}
             <div className="flex flex-col items-center">
-              {state.history.length > 0 && <div className="text-white text-sm font-bold mb-1">{t('road.title')}</div>}
+              {state.history.length > 0 && (
+                <div className="text-ds-text-primary text-sm font-bold mb-1">{t('road.title')}</div>
+              )}
               <BigRoadGrid history={state.history} />
               {state.history.length > 0 && (
                 <button
@@ -395,7 +399,7 @@ function BaccaratPageContent() {
                   max={state.chips}
                 />
                 <div className="flex items-center gap-2">
-                  <label htmlFor="baccarat-bet-type" className="text-white text-sm">
+                  <label htmlFor="baccarat-bet-type" className="text-ds-text-primary text-sm">
                     {t('label.betTarget')}
                   </label>
                   <select

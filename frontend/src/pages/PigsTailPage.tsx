@@ -8,6 +8,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -17,6 +18,7 @@ import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import type { PigsTailResponse } from '../types/card';
@@ -81,6 +83,7 @@ function PigsTailPageContent() {
   const { state, loading, exec: execApi } = useGameApi(pigtailApi.exec);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('pigtail', state);
 
   useEffect(() => {
     execApi('reset');
@@ -198,7 +201,7 @@ function PigsTailPageContent() {
                       : 'bg-black/30'
                   } ${isGameEnd && state.loserIdx === idx ? 'bg-ds-error/40 border border-ds-error/50' : ''}`}
                 >
-                  <span className="text-white text-sm font-medium">
+                  <span className="text-ds-text-primary text-sm font-medium">
                     {player.isHuman ? tc('player.you') : `CPU ${player.id}`}
                   </span>
                   <span className="text-ds-text-primary text-sm">
@@ -218,8 +221,19 @@ function PigsTailPageContent() {
             )}
           </div>
 
+          {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
           <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-2 justify-center items-center flex-wrap">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+                <input
+                  type="checkbox"
+                  checked={hintEnabled}
+                  onChange={(e) => setHintEnabled(e.target.checked)}
+                  aria-label={tc('hint.toggle', { ns: 'tutorial' })}
+                />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
               <button
                 type="button"
                 className="px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -237,7 +251,7 @@ function PigsTailPageContent() {
               />
               <button
                 type="button"
-                className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-white text-sm transition-colors"
+                className="px-4 py-2 rounded-lg bg-ds-surface-elevated hover:bg-ds-surface-elevated text-ds-text-primary text-sm transition-colors"
                 onClick={showActionLog}
               >
                 {tc('actionLog.view')}

@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { type PyramidRemoveCard, pyramidApi } from '../api/gameApi';
-import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { PyramidHint } from '../types/card';
-import { useGameApi } from './useGameApi';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Selected card position in the pyramid or waste. */
 export interface PyramidSelection {
@@ -13,57 +12,22 @@ export interface PyramidSelection {
 
 /** Hook that manages Pyramid game state, card selection, hints, and removal actions. */
 export function usePyramidGame() {
-  const { state, loading, error, exec, retry } = useGameApi(pyramidApi.exec);
   const [selectedCard, setSelectedCard] = useState<PyramidSelection | null>(null);
-  const [hint, setHint] = useState<PyramidHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
+  const onClearSelection = useCallback(() => setSelectedCard(null), []);
 
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
+  const base = useSolitaireGameBase<
+    Awaited<ReturnType<typeof pyramidApi.exec>>,
+    Parameters<typeof pyramidApi.exec>,
+    PyramidHint
+  >(pyramidApi.exec, {
+    onClearSelection,
+    hintApi: () => pyramidApi.exec('hint'),
+  });
 
-  const handleDraw = useCallback(() => {
-    setSelectedCard(null);
-    setHint(null);
-    exec('draw');
-  }, [exec]);
-
-  const handleReset = useCallback(() => {
-    setSelectedCard(null);
-    setHint(null);
-    exec('reset');
-  }, [exec]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedCard(null);
-    setHint(null);
-    exec('giveup');
-  }, [exec]);
-
-  const handleHint = useCallback(async () => {
-    try {
-      const res = await pyramidApi.exec('hint');
-      setHint(res.hint ?? null);
-      setHintError(null);
-    } catch {
-      setHintError(NETWORK_ERROR_MESSAGE());
-    }
-  }, []);
-
-  const handleUndo = useCallback(() => {
-    setSelectedCard(null);
-    setHint(null);
-    exec('undo');
-  }, [exec]);
-
-  /** Batch undo N moves to escape a stalemate. */
+  const handleDraw = useCallback(() => base.runAction('draw'), [base.runAction]);
   const handleUndoEscape = useCallback(
-    (n: number) => {
-      setSelectedCard(null);
-      setHint(null);
-      exec('undo_n', undefined, undefined, n);
-    },
-    [exec],
+    (n: number) => base.runAction('undo_n', undefined, undefined, n),
+    [base.runAction],
   );
 
   const selectionToRemoveCard = useCallback((sel: PyramidSelection): PyramidRemoveCard => {
@@ -74,8 +38,8 @@ export function usePyramidGame() {
     (sel: PyramidSelection, cardValue?: number) => {
       // King (value 13) - remove solo immediately
       if (cardValue === 13) {
-        setHint(null);
-        exec('remove', selectionToRemoveCard(sel));
+        base.setHint(null);
+        void base.apiCall('remove', selectionToRemoveCard(sel));
         setSelectedCard(null);
         return;
       }
@@ -93,28 +57,28 @@ export function usePyramidGame() {
       }
 
       // Second card selected - attempt to remove pair
-      setHint(null);
-      exec('remove', selectionToRemoveCard(selectedCard), selectionToRemoveCard(sel));
+      base.setHint(null);
+      void base.apiCall('remove', selectionToRemoveCard(selectedCard), selectionToRemoveCard(sel));
       setSelectedCard(null);
     },
-    [selectedCard, exec, selectionToRemoveCard],
+    [selectedCard, base, selectionToRemoveCard],
   );
 
   return {
-    state,
-    loading,
-    error,
-    exec,
-    hintError,
+    state: base.state,
+    loading: base.loading,
+    error: base.error,
+    exec: base.apiCall,
+    hintError: base.hintError,
     selectedCard,
-    hint,
+    hint: base.hint,
     handleDraw,
-    handleReset,
-    handleGiveUp,
-    handleHint,
-    handleUndo,
+    handleReset: base.handleReset,
+    handleGiveUp: base.handleGiveUp,
+    handleHint: base.handleHint,
+    handleUndo: base.handleUndo,
     handleUndoEscape,
     handleSelectCard,
-    retry,
+    retry: base.retry,
   };
 }

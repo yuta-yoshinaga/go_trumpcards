@@ -5,6 +5,7 @@
 import accordion from '../../../docs/manual/web/accordion.md?raw';
 import baccarat from '../../../docs/manual/web/baccarat.md?raw';
 import badugi from '../../../docs/manual/web/badugi.md?raw';
+import bakersdozen from '../../../docs/manual/web/bakersdozen.md?raw';
 import blackjack from '../../../docs/manual/web/blackjack.md?raw';
 import bridge from '../../../docs/manual/web/bridge.md?raw';
 import calculation from '../../../docs/manual/web/calculation.md?raw';
@@ -20,6 +21,7 @@ import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
+import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
 import fiftyone from '../../../docs/manual/web/fiftyone.md?raw';
 import fortythieves from '../../../docs/manual/web/fortythieves.md?raw';
@@ -63,7 +65,9 @@ import spanish21 from '../../../docs/manual/web/spanish21.md?raw';
 import speed from '../../../docs/manual/web/speed.md?raw';
 import spider from '../../../docs/manual/web/spider.md?raw';
 import spiteandmalice from '../../../docs/manual/web/spiteandmalice.md?raw';
+import texasholdembonus from '../../../docs/manual/web/texasholdembonus.md?raw';
 import threecard from '../../../docs/manual/web/threecard.md?raw';
+import tonk from '../../../docs/manual/web/tonk.md?raw';
 import trash from '../../../docs/manual/web/trash.md?raw';
 import tripeaks from '../../../docs/manual/web/tripeaks.md?raw';
 import twotenjack from '../../../docs/manual/web/twotenjack.md?raw';
@@ -81,6 +85,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
+  '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
   '/crazyeights': crazyeights,
   '/cribbage': cribbage,
@@ -88,6 +93,8 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/deuceswild': deuceswild,
   '/doubt': doubt,
   '/durak': durak,
+  '/bakersdozen': bakersdozen,
+  '/egyptianratscrew': egyptianratscrew,
   '/fortythieves': fortythieves,
   '/euchre': euchre,
   '/freecell': freecell,
@@ -125,6 +132,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/speed': speed,
   '/spider': spider,
   '/threecard': threecard,
+  '/tonk': tonk,
   '/tripeaks': tripeaks,
   '/twotenjack': twotenjack,
   '/videopoker': videopoker,

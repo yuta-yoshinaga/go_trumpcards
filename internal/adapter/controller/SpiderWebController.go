@@ -45,14 +45,10 @@ type SpiderWebOutput struct {
 	Tableau        [][]*SpiderWebOutputTableauCard `json:"tableau"`
 	StockCount     int                             `json:"stockCount"`
 	CompletedSuits int                             `json:"completedSuits"`
-	Phase          int                             `json:"phase"`
-	MoveCount      int                             `json:"moveCount"`
-	CanUndo        bool                            `json:"canUndo"`
-	IsStalemate    bool                            `json:"isStalemate"`
-	UndoToEscape   int                             `json:"undoToEscape"`
 	Score          int                             `json:"score"`
 	Difficulty     int                             `json:"difficulty"`
 	Hint           *SpiderWebOutputHint            `json:"hint,omitempty"`
+	SolitaireWebOutputBase
 	WebOutputBase
 }
 

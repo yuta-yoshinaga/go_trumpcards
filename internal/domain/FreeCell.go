@@ -590,6 +590,9 @@ func (f *FreeCell) GetFoundation() [FreeCellFoundationCnt][]*Card { return f.fou
 // GetActionLog 棋譜取得
 func (f *FreeCell) GetActionLog() []*ActionLogEntry { return f.actionLog }
 
+// GetGameEndFlag returns true once the game has left the playing phase.
+func (f *FreeCell) GetGameEndFlag() bool { return f.phase != FreeCellPhasePlaying }
+
 // IsStalemate 手詰まり状態取得
 func (f *FreeCell) IsStalemate() bool { return f.isStalemate }
 

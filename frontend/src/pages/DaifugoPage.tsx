@@ -257,7 +257,7 @@ function DaifugoPageContent() {
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
             >
-              <div className="text-white font-bold mb-1.5">{t('tableCards')}</div>
+              <div className="text-ds-text-primary font-bold mb-1.5">{t('tableCards')}</div>
               <div className="flex flex-wrap gap-1">
                 {!state.tableCards || state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted">{t('tableEmpty')}</span>
@@ -313,7 +313,7 @@ function DaifugoPageContent() {
             )}
 
             {state.cpuActions && state.cpuActions.length > 0 && (
-              <div className="bg-black/40 rounded-lg text-white py-2 px-3.5 my-2 whitespace-pre-line text-xs">
+              <div className="bg-black/40 rounded-lg text-ds-text-primary py-2 px-3.5 my-2 whitespace-pre-line text-xs">
                 {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDescription(state.players, a))].join(
                   '\n',
                 )}

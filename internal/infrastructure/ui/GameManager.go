@@ -738,6 +738,22 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "texasholdembonus", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTexasHoldemBonusCuiController(usecase.NewTexasHoldemBonusInteractor(
+				domain.NewDefaultTexasHoldemBonus(), new(presenter.TexasHoldemBonusCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "texasholdembonus.helpTitle",
+				CommandKeys: []string{
+					"texasholdembonus.helpBet",
+					"texasholdembonus.helpPlay",
+					"texasholdembonus.helpFold",
+					"texasholdembonus.helpCheck",
+					"texasholdembonus.helpRaise",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 	{Name: "war", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewWarCuiController(usecase.NewWarInteractor(
@@ -1125,6 +1141,53 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys: []string{"slapjack.helpSetDifficulty"},
 			})
 	}},
+	{Name: "egyptianratscrew", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewEgyptianRatscrewCuiController(usecase.NewEgyptianRatscrewInteractor(
+				domain.NewDefaultEgyptianRatscrew(), new(presenter.EgyptianRatscrewCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "egyptianratscrew.helpTitle",
+				CommandKeys: []string{
+					"egyptianratscrew.helpStep",
+					"egyptianratscrew.helpSlap",
+					"egyptianratscrew.helpTick",
+				},
+				SettingKeys: []string{"egyptianratscrew.helpSetDifficulty"},
+			})
+	}},
+	{Name: "bakersdozen", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBakersDozenCuiController(usecase.NewBakersDozenInteractor(
+				domain.NewDefaultBakersDozen(), new(presenter.BakersDozenCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "bakersdozen.helpTitle",
+				CommandKeys: []string{
+					"bakersdozen.helpMoveTT",
+					"bakersdozen.helpMoveTF",
+					"bakersdozen.helpGiveUp",
+					"bakersdozen.helpHint",
+					"bakersdozen.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
+	{Name: "tonk", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewTonkCuiController(usecase.NewTonkInteractor(
+				domain.NewDefaultTonk(), new(presenter.TonkCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "tonk.helpTitle",
+				CommandKeys: []string{
+					"tonk.helpDrawStock",
+					"tonk.helpDrawDiscard",
+					"tonk.helpDiscard",
+					"tonk.helpKnock",
+					"tonk.helpNextRound",
+				},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"tonk.helpSetDifficulty", "tonk.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1169,6 +1232,8 @@ var GameAliases = map[string]string{
 	"3card":  "threecard",
 	"csp":    "caribbeanstud",
 	"stud":   "caribbeanstud",
+	"thb":    "texasholdembonus",
+	"thbp":   "texasholdembonus",
 	"40t":    "fortythieves",
 	"pgp":    "paigow",
 	"lir":    "letitride",
