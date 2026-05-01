@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import type { ComponentType } from 'react';
 import { describe, expect, it } from 'vitest';
 import type { TutorialStep } from '../../types/tutorial';
 import { withTutorial } from './withTutorial';
@@ -24,5 +25,12 @@ describe('withTutorial', () => {
     }
     const Wrapped = withTutorial(Named, 'common', steps);
     expect(Wrapped.displayName).toBe('withTutorial(Named)');
+  });
+
+  it('falls back to "Component" in displayName for anonymous components', () => {
+    const Anonymous = (() => null) as ComponentType<unknown>;
+    Object.defineProperty(Anonymous, 'name', { value: '' });
+    const Wrapped = withTutorial(Anonymous, 'common', steps);
+    expect(Wrapped.displayName).toBe('withTutorial(Component)');
   });
 });

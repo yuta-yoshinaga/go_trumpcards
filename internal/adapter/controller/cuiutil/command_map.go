@@ -18,10 +18,20 @@ func NewCommandMap[T any]() *CommandMap[T] {
 	return &CommandMap[T]{m: make(map[string]func(T) string)}
 }
 
-// Add binds fn to one or more aliases. Duplicate alias registration panics
-// because it would silently overwrite a previous binding — almost always a bug
-// at the call site (e.g., copy-paste error registering "h" twice).
+// Add binds fn to one or more aliases. Panics on:
+//   - nil fn (would surface only as a nil pointer dereference at exec time);
+//   - empty alias list (almost always a typo — the call would silently no-op);
+//   - duplicate alias registration (would silently overwrite a previous binding).
+//
+// All three are init-time programmer errors, so failing fast at startup is
+// preferred over surfacing them later at command-exec time.
 func (c *CommandMap[T]) Add(fn func(T) string, aliases ...string) *CommandMap[T] {
+	if fn == nil {
+		panic("cuiutil.CommandMap: function cannot be nil")
+	}
+	if len(aliases) == 0 {
+		panic("cuiutil.CommandMap: at least one alias is required")
+	}
 	for _, a := range aliases {
 		if _, exists := c.m[a]; exists {
 			panic("cuiutil.CommandMap: duplicate alias " + a)

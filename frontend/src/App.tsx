@@ -1,4 +1,4 @@
-import { type ComponentType, lazy, Suspense } from 'react';
+import { type ComponentType, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { DesktopSidebar } from './components/DesktopSidebar';
@@ -6,30 +6,18 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
 import { gameRoutes } from './constants/gameRoutes';
+import { resolvePageComponent } from './utils/resolvePageComponent';
 
 // Vite resolves this glob at build time; each match becomes its own chunk
-// because the importer is dynamic. The `eager: false` is the default but stated
-// explicitly here for the reader.
-const pageModules = import.meta.glob<Record<string, ComponentType>>('./pages/*Page.tsx');
+// because the importer is dynamic. Page components have heterogeneous prop
+// shapes (e.g., BlackJackPage takes a `variant`), so the value type is
+// `ComponentType<any>` — narrowed back to `ComponentType` (no props) in
+// `resolvePageComponent` since we render each as `<LazyPage />`.
+// biome-ignore lint/suspicious/noExplicitAny: Heterogeneous page prop shapes preclude a stricter generic here.
+const pageModules = import.meta.glob<Record<string, ComponentType<any>>>('./pages/*Page.tsx');
 
 const lazyPages = new Map<string, ComponentType>(
-  gameRoutes.map(({ path, page }) => {
-    const importPath = `./pages/${page}Page.tsx`;
-    const importer = pageModules[importPath];
-    if (!importer) {
-      throw new Error(`gameRoutes: no module at ${importPath} for path "${path}"`);
-    }
-    const exportName = `${page}Page`;
-    const Lazy = lazy(async () => {
-      const m = await importer();
-      const Component = m[exportName];
-      if (!Component) {
-        throw new Error(`gameRoutes: ${importPath} has no export named ${exportName}`);
-      }
-      return { default: Component };
-    });
-    return [path, Lazy];
-  }),
+  gameRoutes.map(({ path, page }) => [path, resolvePageComponent(pageModules, path, page)]),
 );
 
 /** Minimal `aria-busy` placeholder shown while a lazy game-page chunk loads. */

@@ -22,6 +22,9 @@ export function withTutorial<P extends object>(
       <Component {...props} />
     </TutorialWrapper>
   );
-  Wrapped.displayName = `withTutorial(${Component.displayName ?? Component.name ?? 'Component'})`;
+  // Treat empty strings as missing too — anonymous arrow components have
+  // `name === ""`, which `??` would otherwise prefer over the literal fallback.
+  const label = Component.displayName || Component.name || 'Component';
+  Wrapped.displayName = `withTutorial(${label})`;
   return Wrapped;
 }

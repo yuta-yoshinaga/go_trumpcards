@@ -78,3 +78,27 @@ func TestCommandMap_DuplicateAliasPanics(t *testing.T) {
 		Add((*fakeIF).hit, "h").
 		Add((*fakeIF).stand, "h")
 }
+
+func TestCommandMap_NilFunctionPanics(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("expected panic when registering nil fn, got none")
+		}
+	}()
+
+	NewCommandMap[*fakeIF]().Add(nil, "h")
+}
+
+func TestCommandMap_EmptyAliasesPanics(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("expected panic on Add with no aliases, got none")
+		}
+	}()
+
+	NewCommandMap[*fakeIF]().Add((*fakeIF).hit)
+}
