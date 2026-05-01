@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -162,6 +163,7 @@ func run() int {
 	colorMode := flag.String("color", "auto", "Color output mode: auto (default; per-stream TTY detect), always, or never")
 	quietFlag := flag.Bool("quiet", false, "Suppress non-essential output (warnings, banners). Errors still go to stderr.")
 	flag.BoolVar(quietFlag, "q", false, "Suppress non-essential output (shorthand)")
+	startGameFlag := flag.String("start", "", "Initial game for interactive mode (no positional arg). Aliases accepted; ignored when a game name is given. See issue #1604.")
 	showHelp := flag.Bool("help", false, "Show this help message")
 	flag.BoolVar(showHelp, "h", false, "Show this help message (shorthand)")
 
@@ -352,6 +354,7 @@ func run() int {
 		updater.SetReportCancelledAsError(true) // report user cancel as exit 75
 		updater.SetCheckOnly(check)
 		updater.SetProgressIsTTY(term.IsTerminal(int(os.Stderr.Fd())))
+		updater.SetQuiet(quiet) // suppress the "checking latest release..." line under --quiet
 		if err := updater.Exec(); err != nil {
 			return updateExitCode(err)
 		}
@@ -360,6 +363,7 @@ func run() int {
 	commands["web"] = func() int {
 		var port int
 		var host string
+		var openBrowser bool
 		webQuiet := quiet // inherit TRUMPCARDS_QUIET env var as default
 		fs, code, ok := parseSubFlags("web", func(f *flag.FlagSet) {
 			f.IntVar(&port, "port", 0, "Port number for the web server (default: 8080; 0 for OS-assigned ephemeral)")
@@ -367,6 +371,8 @@ func run() int {
 			f.StringVar(&host, "host", "", "Bind address for the web server (default: 127.0.0.1; use 0.0.0.0 to expose)")
 			f.BoolVar(&webQuiet, "quiet", webQuiet, "Suppress human-friendly startup/shutdown messages (structured slog still emitted)")
 			f.BoolVar(&webQuiet, "q", webQuiet, "Suppress human-friendly startup/shutdown messages (shorthand)")
+			f.BoolVar(&openBrowser, "open", false, "Open the resolved URL in the default browser after the server is ready (silently skipped when stderr is not a TTY)")
+			f.BoolVar(&openBrowser, "o", false, "Open the resolved URL in the default browser (shorthand)")
 		})
 		if !ok {
 			return code
@@ -390,6 +396,27 @@ func run() int {
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()
 		w.SetQuiet(webQuiet)
+		if openBrowser {
+			// Skip silently in non-TTY contexts (SSH/Docker/CI) so a script
+			// that always passes --open does not hang or spew xdg-open errors.
+			// The hint goes to stderr only; never to stdout. See issue #1607.
+			stderrIsTTY := term.IsTerminal(int(os.Stderr.Fd()))
+			if !stderrIsTTY {
+				if !webQuiet {
+					fmt.Fprintln(os.Stderr, i18n.T("cliWebOpenSkippedNonTTY"))
+				}
+			} else {
+				w.SetOnReady(func(boundAddr string) {
+					url := web.BrowserURLFor(boundAddr)
+					if url == "" {
+						return
+					}
+					if err := web.OpenBrowser(url); err != nil && !webQuiet {
+						fmt.Fprintln(os.Stderr, i18n.Tf("cliWebOpenFailed", "err", err.Error()))
+					}
+				})
+			}
+		}
 		if err := w.Exec(); err != nil {
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliWebStartFailed", "err", err.Error()))
 			if errors.Is(err, syscall.EADDRINUSE) {
@@ -445,7 +472,18 @@ func run() int {
 	// Startup banner goes to stderr so it matches `trumpcards web` (which also
 	// uses stderr for info logs) and leaves stdout free for future
 	// machine-readable output. See issue #1451.
-	startGame := "blackjack"
+	//
+	// --start <game> overrides the default starting game (issue #1604). The
+	// value goes through alias resolution and validation; an unknown name is
+	// a usage error (exit 2) so a typo from a script fails loudly rather
+	// than silently defaulting to blackjack. The flag is silently ignored
+	// when a positional game arg is given (the early dispatch above already
+	// returned for that path), keeping the no-effect-when-game-given
+	// behaviour documented in the issue.
+	startGame, code, ok := resolveStartGame(*startGameFlag, os.Stderr)
+	if !ok {
+		return code
+	}
 	if !quiet {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupBanner", "version", version))
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliStartupGame", "game", startGame))
@@ -455,18 +493,45 @@ func run() int {
 	return 0
 }
 
+// resolveStartGame resolves the --start flag value into a canonical game
+// name. Empty string returns the legacy default ("blackjack"). Aliases are
+// resolved via ui.GameAliases. An unknown name writes a localized error to
+// stderr and returns exit code 2 (usage error) — see the documented EXIT
+// CODES table in buildHelpText. Issue #1604.
+func resolveStartGame(flagValue string, stderr io.Writer) (string, int, bool) {
+	const defaultStart = "blackjack"
+	v := strings.ToLower(strings.TrimSpace(flagValue))
+	if v == "" {
+		return defaultStart, 0, true
+	}
+	if canonical, ok := ui.GameAliases[v]; ok {
+		v = canonical
+	}
+	if slices.Contains(ui.GameNames(), v) {
+		return v, 0, true
+	}
+	_, _ = fmt.Fprintln(stderr, i18n.Tf("cliUnknownGame", "name", v))
+	if suggestion := cuiutil.SuggestCommand(v, helpSuggestionCandidates(), 2); suggestion != "" {
+		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
+	}
+	return "", 2, false
+}
+
 // builtinSubcommandHelp maps non-game subcommand names to their Usage/Flags/Examples
 // help text. Used by both `trumpcards help <cmd>` and `trumpcards <cmd> --help`.
 var builtinSubcommandHelp = map[string][]string{
 	"web": {
 		"USAGE:",
-		"  trumpcards web [--port PORT] [--host HOST] [--quiet]",
+		"  trumpcards web [--port PORT] [--host HOST] [--quiet] [--open]",
 		"",
 		"FLAGS:",
 		"  -p, --port PORT   Port number (default: 8080; 0 = OS-assigned ephemeral; env PORT)",
 		"      --host HOST   Bind address (default: 127.0.0.1; use 0.0.0.0 to expose; env HOST)",
 		"  -q, --quiet       Suppress human-friendly startup/shutdown messages",
 		"                    (implied when stderr is not a TTY; structured slog logs still emitted)",
+		"  -o, --open        Open the resolved URL in the default browser after the server is",
+		"                    ready. Uses xdg-open / open / cmd-start. Silently skipped when",
+		"                    stderr is not a TTY (SSH/Docker/CI). Issue #1607.",
 		"",
 		"NETWORK EXPOSURE:",
 		"  Binding to a non-loopback host (0.0.0.0, ::, a LAN IP, etc.) prints a one-line",
@@ -479,6 +544,8 @@ var builtinSubcommandHelp = map[string][]string{
 		"  trumpcards web",
 		"  trumpcards web --port 3000",
 		"  trumpcards web --port 0            # start on any free port; see startup log for actual port",
+		"  trumpcards web --open              # start on default port and open the browser",
+		"  trumpcards web --port 0 --open     # ephemeral port + auto-open (no need to read the log)",
 		"  trumpcards web --host 0.0.0.0      # exposes on all interfaces; prints exposure warning",
 		"  trumpcards web --quiet             # systemd / docker friendly (no exposure warning either)",
 		"  HOST=0.0.0.0 PORT=3000 trumpcards web",
@@ -911,6 +978,10 @@ COMMANDS:
 
 OPTIONS:
   -h, --help        Show this help message
+  --start GAME      Initial game for interactive mode (no positional arg).
+                    Aliases accepted (e.g. --start gin → ginrummy). Silently
+                    ignored when a positional game name is given. An unknown
+                    name exits 2 with a Did-you-mean suggestion. Default: blackjack.
   --lang ja|en      Language (default: ja)
   --color MODE      Color output mode: auto (default), always, never
                     auto:    enable when stdout/stderr is a TTY (per stream)
@@ -929,6 +1000,8 @@ OPTIONS:
 
 EXAMPLES:
   trumpcards                     Start interactive mode (switch games with 'switch <game>')
+  trumpcards --start poker       Start interactive mode with poker as the initial game
+  trumpcards --start gin         Same — aliases are accepted (gin → ginrummy)
   trumpcards blackjack           Play BlackJack
   trumpcards blackjack --help    Show BlackJack's in-game commands
   trumpcards --lang en poker     Play Poker in English
@@ -1150,7 +1223,7 @@ func buildGameCommands() map[string]func() int {
 		e := entry // capture loop variable
 		commands[e.Name] = func() int {
 			g := e.NewCui()
-			ui.RunCuiLoop(g.Controller(), g.HelpLines())
+			ui.RunCuiLoop(e.Name, g.Controller(), g.HelpLines())
 			return 0
 		}
 	}

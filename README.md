@@ -178,11 +178,13 @@ go run ./cmd/trumpcards
 
 ```sh
 trumpcards                       # インタラクティブモード (ゲーム選択・切り替え可能)
+trumpcards --start poker         # インタラクティブモードを poker から開始 (--start, issue #1604)
 trumpcards --lang en             # インタラクティブモード (英語)
 trumpcards blackjack             # ブラックジャック CLI
 trumpcards --lang en blackjack   # ブラックジャック CLI (英語)
 trumpcards web                   # REST API + Web GUI サーバー起動
 trumpcards web --port 3000       # カスタムポートで起動 (--port フラグ)
+trumpcards web --open            # サーバー起動後にブラウザを自動オープン (--open, issue #1607)
 trumpcards update                # 最新版にセルフアップデート
 trumpcards version               # バージョン情報を表示 (--version と等価)
 trumpcards version --short       # バージョン番号のみ出力 (機械読み取り用)

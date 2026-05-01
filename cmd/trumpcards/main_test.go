@@ -1640,3 +1640,62 @@ func TestBuildHelpTextDocumentsColorTristate(t *testing.T) {
 		}
 	}
 }
+
+// TestResolveStartGame covers issue #1604: `--start <game>` selects the
+// initial game for interactive mode. Empty string falls back to blackjack;
+// aliases resolve to canonical names; unknown names exit 2.
+func TestResolveStartGame(t *testing.T) {
+	tests := []struct {
+		name     string
+		flag     string
+		wantGame string
+		wantCode int
+		wantOk   bool
+	}{
+		{"empty -> blackjack default", "", "blackjack", 0, true},
+		{"canonical name", "poker", "poker", 0, true},
+		{"alias resolves", "gin", "ginrummy", 0, true},
+		{"alias 7stud resolves", "7stud", "sevencardstud", 0, true},
+		{"case insensitive", "PoKeR", "poker", 0, true},
+		{"surrounding whitespace tolerated", "  poker  ", "poker", 0, true},
+		{"unknown -> exit 2", "nosuchgame", "", 2, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var stderr bytes.Buffer
+			got, code, ok := resolveStartGame(tt.flag, &stderr)
+			if got != tt.wantGame || code != tt.wantCode || ok != tt.wantOk {
+				t.Errorf("resolveStartGame(%q) = (%q, %d, %v), want (%q, %d, %v)",
+					tt.flag, got, code, ok, tt.wantGame, tt.wantCode, tt.wantOk)
+			}
+		})
+	}
+}
+
+// TestResolveStartGame_UnknownEmitsDidYouMean verifies the typo-recovery path:
+// "blackjac" → close enough to "blackjack" that we surface the suggestion.
+func TestResolveStartGame_UnknownEmitsDidYouMean(t *testing.T) {
+	var stderr bytes.Buffer
+	_, code, ok := resolveStartGame("blackjac", &stderr)
+	if ok {
+		t.Fatalf("expected ok=false for unknown game, got ok=true")
+	}
+	if code != 2 {
+		t.Errorf("expected exit 2 for unknown --start, got %d", code)
+	}
+	if !strings.Contains(stderr.String(), "blackjack") {
+		t.Errorf("expected Did-you-mean to mention blackjack; stderr=%q", stderr.String())
+	}
+}
+
+// TestBuildHelpTextDocumentsStartFlag verifies the --start flag is advertised
+// in the top-level help so users discover it without reading the source.
+// See issue #1604.
+func TestBuildHelpTextDocumentsStartFlag(t *testing.T) {
+	helpText := buildHelpText()
+	for _, want := range []string{"--start", "Initial game", "--start poker"} {
+		if !strings.Contains(helpText, want) {
+			t.Errorf("help text missing %q; got:\n%s", want, helpText)
+		}
+	}
+}

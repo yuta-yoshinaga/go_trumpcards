@@ -46,6 +46,56 @@ func TestExec_AlreadyLatest(t *testing.T) {
 	assert.Contains(t, out.String(), "v1.2.3")
 }
 
+// TestExec_PrintsCheckingLatest verifies issue #1606: a one-line "checking
+// latest release..." message goes to stderr before the GitHub API call so the
+// user knows the binary is alive during the up-to-60s HTTP timeout. Quiet
+// mode (SetQuiet(true)) must suppress it.
+func TestExec_PrintsCheckingLatest(t *testing.T) {
+	release := ghRelease{TagName: "v1.2.3"}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	t.Run("default emits message to stderr", func(t *testing.T) {
+		errOut := &bytes.Buffer{}
+		u := &Updater{
+			currentVersion: "1.2.3",
+			repoOwner:      "test",
+			repoName:       "test",
+			reader:         strings.NewReader(""),
+			writer:         &bytes.Buffer{},
+			errWriter:      errOut,
+			httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+		}
+		require.NoError(t, u.Exec())
+		// English / Japanese strings differ; assert on the substring common to both
+		// translations would be brittle, so check for known token in either locale.
+		body := errOut.String()
+		hasJa := strings.Contains(body, "最新リリース情報を取得中")
+		hasEn := strings.Contains(body, "Checking latest release")
+		assert.True(t, hasJa || hasEn, "checking-latest message missing from stderr: %q", body)
+	})
+
+	t.Run("SetQuiet(true) suppresses message", func(t *testing.T) {
+		errOut := &bytes.Buffer{}
+		u := &Updater{
+			currentVersion: "1.2.3",
+			repoOwner:      "test",
+			repoName:       "test",
+			reader:         strings.NewReader(""),
+			writer:         &bytes.Buffer{},
+			errWriter:      errOut,
+			httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+		}
+		u.SetQuiet(true)
+		require.NoError(t, u.Exec())
+		assert.NotContains(t, errOut.String(), "最新リリース情報を取得中")
+		assert.NotContains(t, errOut.String(), "Checking latest release")
+	})
+}
+
 // TestExec_UserCancels_Default verifies the default behavior (kept for
 // backwards compatibility): cancellation returns nil. Callers that want a
 // distinct exit code should call SetReportCancelledAsError(true) — see

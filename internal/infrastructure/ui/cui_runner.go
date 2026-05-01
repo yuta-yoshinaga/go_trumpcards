@@ -76,15 +76,19 @@ func printResult(res string) {
 	fmt.Println(res)
 }
 
-// RunCuiLoop 標準CUIゲームループを実行する
-// helpLines は "help" / "?" コマンドが入力されたときのみ表示される
-func RunCuiLoop(controller CuiExecer, helpLines []string) {
+// RunCuiLoop runs a single-game CUI loop. gameName is shown in the prompt
+// (e.g. "[blackjack] > ") so single-game mode matches the interactive-mode
+// prompt — this gives scrollback context and lets users tell ターミナル/タブ
+// apart when running multiple games in parallel. Pass "" to keep the legacy
+// bare "> " prompt. helpLines is shown when the user types "help" / "?".
+// See issue #1605.
+func RunCuiLoop(gameName string, controller CuiExecer, helpLines []string) {
 	setupSignalHandler()
 	fmt.Println(controller.Exec("r"))
 	fmt.Println(i18n.T("typeHelp"))
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		input, exit := readInput(scanner, "", os.Stdout)
+		input, exit := readInput(scanner, gameName, os.Stdout)
 		if exit {
 			break
 		}
@@ -96,7 +100,7 @@ func RunCuiLoop(controller CuiExecer, helpLines []string) {
 			continue
 		}
 		res := controller.Exec(input)
-		res = handlePromptLoop(scanner, controller, res, "", os.Stdout)
+		res = handlePromptLoop(scanner, controller, res, gameName, os.Stdout)
 		if res == i18n.QuitSentinel {
 			fmt.Println(i18n.T("bye"))
 			break

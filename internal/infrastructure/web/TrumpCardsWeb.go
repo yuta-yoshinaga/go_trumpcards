@@ -26,9 +26,10 @@ type gameEntry struct {
 
 // TrumpCardsWeb トランプカードゲームWebクラス
 type TrumpCardsWeb struct {
-	games  []gameEntry
-	quiet  bool      // when true, suppress human-friendly startup/shutdown messages
-	stderr io.Writer // injectable for tests; defaults to os.Stderr
+	games   []gameEntry
+	quiet   bool                   // when true, suppress human-friendly startup/shutdown messages
+	stderr  io.Writer              // injectable for tests; defaults to os.Stderr
+	onReady func(boundAddr string) // optional hook fired once after ln.Addr() resolves; see #1607
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -49,6 +50,15 @@ func (web *TrumpCardsWeb) SetQuiet(v bool) {
 // helper; production code relies on the default os.Stderr.
 func (web *TrumpCardsWeb) SetStderr(w io.Writer) {
 	web.stderr = w
+}
+
+// SetOnReady registers a one-shot callback fired after the listener binds
+// (so ln.Addr() resolves the actual port even when --port 0 was used) and
+// before Serve enters its accept loop. Callers use it to drive `--open`-
+// style hooks that need the resolved URL. Passing nil clears any previous
+// callback. See issue #1607.
+func (web *TrumpCardsWeb) SetOnReady(fn func(boundAddr string)) {
+	web.onReady = fn
 }
 
 // registerAll builds the per-game controllers from the central registry in
@@ -119,6 +129,13 @@ func (web *TrumpCardsWeb) Exec() error {
 	// stderr (the latter via the caller's quiet override). See issue #1536.
 	if host, _, splitErr := net.SplitHostPort(boundAddr); splitErr == nil {
 		web.maybeWarnExposed(host, boundAddr)
+	}
+	// Fire the one-shot ready hook after the address is bound and announced
+	// (so `--open` opens the resolved URL even with `--port 0`) but before
+	// Serve enters the accept loop — keeps timing close to "server is up".
+	// See issue #1607.
+	if web.onReady != nil {
+		web.onReady(boundAddr)
 	}
 
 	errCh := make(chan error, 1)
