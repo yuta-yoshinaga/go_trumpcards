@@ -193,8 +193,6 @@ function BridgePageContent() {
     });
   }, [apiExec, hideActionLog, bridgeConfig.cpuDifficulty]);
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <BridgeSkeleton />;

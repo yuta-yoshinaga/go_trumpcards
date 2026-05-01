@@ -40,9 +40,7 @@ describe('gameTheme', () => {
   });
 
   it('covers every game listed in gameRoutes', () => {
-    // Issue #1610: silent fallback on a missing key let new games ship without
-    // their own theme. The strict GameKey union catches this at compile time;
-    // this test guards against route additions that drift away from the union.
+    // Guards against route additions that drift away from the GameKey union.
     const themeKeys = new Set(Object.keys(gameTheme));
     const missing = gameRoutes
       .map((r) => (r.path === '/' ? 'blackjack' : r.path.replace(/^\//, '')))

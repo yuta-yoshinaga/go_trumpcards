@@ -83,7 +83,6 @@ function PigsTailPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pigtail');
   const { state, loading, exec: execApi } = useGameApi(pigtailApi.exec);
-  // Issue #1609: warn before tab close / reload while a round is in progress.
   useGameRoundGuard(!!state && !state.gameEndFlag);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);

@@ -246,8 +246,6 @@ function SevenCardStudPageContent() {
     enabled: canAct && !loading,
   });
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <HoldemSkeleton />;

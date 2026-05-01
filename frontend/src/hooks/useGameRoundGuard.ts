@@ -30,10 +30,6 @@ export function isGameRoundActive(state: unknown): boolean {
  * own phase state. When `true`, the browser-level `beforeunload` warning is
  * armed; SPA navigation is intentionally not intercepted (see the underlying
  * hook for rationale).
- *
- * Issue #1609 — applied across all long-form game pages so that accidental
- * tab close / reload during a round consistently warns the user, instead of
- * the prior BlackJack-only behavior.
  */
 export function useGameRoundGuard(active: boolean) {
   const { t } = useTranslation('common');

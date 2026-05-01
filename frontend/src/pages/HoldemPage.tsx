@@ -209,8 +209,6 @@ function HoldemPageContent() {
     bindings: actionBindings,
     enabled: canAct && !loading,
   });
-
-  // Issue #1609: warn before tab close / reload while a Holdem hand is active.
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <HoldemSkeleton />;

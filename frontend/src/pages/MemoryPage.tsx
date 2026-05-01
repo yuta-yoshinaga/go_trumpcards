@@ -140,8 +140,6 @@ function MemoryPageContent() {
     void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
   }, [exec, hideActionLog, memoryConfig.cpuDifficulty]);
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <MemorySkeleton />;

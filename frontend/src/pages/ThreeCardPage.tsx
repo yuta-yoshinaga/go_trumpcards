@@ -130,8 +130,6 @@ function ThreeCardPageContent() {
     enabled: !!state && !loading,
   });
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(isGameRoundActive(state));
 
   if (!state) return <ThreeCardSkeleton />;

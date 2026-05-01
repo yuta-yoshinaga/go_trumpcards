@@ -147,8 +147,6 @@ function PageOnePageContent() {
     });
   }, [gameCall, hideActionLog, pageOneConfig.cpuDifficulty, pageOneConfig.pointLimit]);
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <PageOneSkeleton />;

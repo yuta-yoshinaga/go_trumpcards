@@ -110,7 +110,6 @@ function OldMaidPageContent() {
     setSetupHesitation,
     setSetupMetaAI,
   } = useOldMaidGame();
-  // Issue #1609: warn before tab close / reload while a round is in progress.
   useGameRoundGuard(!!displayState && !displayState.gameEndFlag);
   const {
     hint: frontendHint,

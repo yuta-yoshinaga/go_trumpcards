@@ -74,7 +74,6 @@ function ClockSolitairePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('clocksolitaire');
   const { state, loading, error, exec: execApi, retry } = useGameApi(clocksolitaireApi.exec);
-  // Issue #1609: warn before tab close / reload while a round is in progress.
   useGameRoundGuard(isGameRoundActive(state));
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
   const handleStep = useCallback(() => execApi('step'), [execApi]);

@@ -183,8 +183,6 @@ function BadugiPageContent() {
     execAction('reset', undefined, undefined, { bettingLimit, cpuMetaAI });
   }, [execAction, hideActionLog, bettingLimit, cpuMetaAI]);
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <PokerSkeleton />;

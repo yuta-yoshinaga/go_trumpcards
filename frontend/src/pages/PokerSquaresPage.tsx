@@ -70,7 +70,6 @@ function PokerSquaresPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(pokersquaresApi.exec);
-  // Issue #1609: warn before tab close / reload while a round is in progress.
   useGameRoundGuard(isGameRoundActive(state));
   const {
     hint: frontendHint,

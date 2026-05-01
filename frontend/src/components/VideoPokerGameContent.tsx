@@ -156,8 +156,6 @@ export function VideoPokerGameContent({
     bindings: actionBindings,
     enabled: !!state && !loading,
   });
-
-  // Issue #1609: warn before tab close / reload while a video poker round is active.
   useGameRoundGuard(isGameRoundActive(state));
 
   if (!state) return null;

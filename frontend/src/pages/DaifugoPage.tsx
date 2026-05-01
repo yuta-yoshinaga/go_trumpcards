@@ -173,8 +173,6 @@ function DaifugoPageContent() {
     void exec('reset', [], configInput);
   }, [exec, configInput, hideActionLog]);
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <DaifugoSkeleton />;

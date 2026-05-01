@@ -195,8 +195,6 @@ function EuchrePageContent() {
     });
   }, [apiExec, hideActionLog, euchreConfig.cpuDifficulty, euchreConfig.pointLimit]);
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <EuchreSkeleton />;

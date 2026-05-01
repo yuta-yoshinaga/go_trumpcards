@@ -124,8 +124,6 @@ function PresidentPageContent() {
 
   const onReset = useCallback(() => handleResetWithConfig(), [handleResetWithConfig]);
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state || state.players.length < 4) {

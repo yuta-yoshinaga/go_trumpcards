@@ -291,8 +291,6 @@ function YukonPageContent() {
     bindings: actionBindings,
     enabled: !!isPlayingForKbd && !loading,
   });
-
-  // Issue #1609: warn before tab close / reload while a round is in progress.
   useGameRoundGuard(isGameRoundActive(state));
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;

@@ -58,7 +58,6 @@ export function GamePageShell({
   headerExtra,
   children,
 }: GamePageShellProps) {
-  // Issue #1609: warn before tab close / reload while a round is active so
   // long-form games (Hearts, Spades, Skat, …) don't silently lose state.
   useGameRoundGuard(!gameEndFlag);
   return (

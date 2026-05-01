@@ -82,7 +82,6 @@ function FiftyOnePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fiftyone');
   const { state, loading, error, exec: execApi, retry } = useGameApi(fiftyoneApi.exec);
-  // Issue #1609: warn before tab close / reload while a round is in progress.
   useGameRoundGuard(!!state && !state.gameEndFlag);
   const { cardWidth } = useCardDimensions();
   const [cpuDifficulty, setCpuDifficulty] = useState(1);

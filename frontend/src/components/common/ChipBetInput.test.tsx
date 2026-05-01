@@ -98,9 +98,8 @@ describe('ChipBetInput', () => {
   });
 
   it('does not invoke onChange when raw input has no digits under autoClamp=false', () => {
-    // Issue #1615: switched to type=text + inputMode=numeric. To preserve the
-    // prior "type=number rejects NaN" UX, all-non-digit input is dropped before
-    // calling onChange (rather than clamped to 0).
+    // The text/inputMode=numeric input drops all-non-digit input before
+    // calling onChange to preserve the type=number "reject NaN" behavior.
     const onChange = vi.fn();
     const { container } = render(
       <ChipBetInput id="bet" label="Bet" value={20} onChange={onChange} max={50} autoClamp={false} />,

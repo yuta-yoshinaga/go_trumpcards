@@ -78,7 +78,6 @@ function SpeedPageContent() {
     handleConfigChange,
     handleToggle,
   } = useSpeedGame();
-  // Issue #1609: warn before tab close / reload while a round is in progress.
   useGameRoundGuard(!!state && !state.gameEndFlag);
   const {
     hint: frontendHint,

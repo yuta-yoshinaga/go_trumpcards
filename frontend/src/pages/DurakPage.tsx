@@ -160,8 +160,6 @@ function DurakPageContent() {
     void gameExec('reset', undefined, undefined, durakConfig);
   }, [gameExec, hideActionLog, durakConfig]);
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <DurakSkeleton />;

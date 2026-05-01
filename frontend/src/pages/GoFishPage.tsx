@@ -130,8 +130,6 @@ function GoFishPageContent() {
     void exec('reset', undefined, undefined, { cpuDifficulty: goFishConfig.cpuDifficulty });
   }, [exec, hideActionLog, goFishConfig.cpuDifficulty]);
 
-  // Issue #1609: warn before tab close / reload while a round is in progress.
-
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) return <GoFishSkeleton />;
