@@ -9,6 +9,41 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// omahaNoArgCommands maps no-arg CUI commands to Omaha interactor calls.
+// Action(domain.OmahaActionX, 0, 0) is wrapped in a thin closure because
+// CommandMap binds func(T) string and the action enum/zero amounts have to be
+// supplied at registration time.
+var omahaNoArgCommands = cuiutil.NewCommandMap[usecase.OmahaInteractorIF]().
+	Add(func(oi usecase.OmahaInteractorIF) string {
+		return oi.Action(domain.OmahaActionFold, 0, 0)
+	}, "f", "fold").
+	Add(func(oi usecase.OmahaInteractorIF) string {
+		return oi.Action(domain.OmahaActionCheck, 0, 0)
+	}, "ck", "check").
+	Add(func(oi usecase.OmahaInteractorIF) string {
+		return oi.Action(domain.OmahaActionCall, 0, 0)
+	}, "c", "call").
+	Add(func(oi usecase.OmahaInteractorIF) string {
+		return oi.Action(domain.OmahaActionAllIn, 0, 0)
+	}, "a", "allin").
+	Add(usecase.OmahaInteractorIF.Rebuy, "rb", "rebuy").
+	Add(usecase.OmahaInteractorIF.SkipRebuy, "sr", "skiprebuy").
+	Add(usecase.OmahaInteractorIF.Addon, "ad", "addon").
+	Add(usecase.OmahaInteractorIF.SkipAddon, "sa", "skipaddon").
+	Add(usecase.OmahaInteractorIF.Muck, "m", "muck").
+	Add(usecase.OmahaInteractorIF.ShowHand, "sh", "show")
+
+// omahaArgfulCommands lists alias names for argful commands handled in the
+// Exec switch.
+var omahaArgfulCommands = []string{
+	"b", "bet", "ra", "raise",
+	"bl", "bettinglimit", "tm", "tournament",
+	"sb", "smallblind", "bb", "bigblind",
+	"lh", "levelhand", "ts", "tablesize",
+	"mai", "metaai",
+	"log", "l",
+}
+
 // OmahaCuiController オマハホールデムCUIコントローラークラス
 type OmahaCuiController struct {
 	oi usecase.OmahaInteractorIF
@@ -24,22 +59,12 @@ func (c *OmahaCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.oi.Reset() },
-		[]string{
-			"f", "fold", "ck", "check", "c", "call", "b", "bet", "ra", "raise",
-			"a", "allin", "bl", "bettinglimit", "tm", "tournament",
-			"sb", "smallblind", "bb", "bigblind", "lh", "levelhand", "ts", "tablesize",
-			"rb", "rebuy", "sr", "skiprebuy", "ad", "addon", "sa", "skipaddon", "m", "muck", "sh", "show",
-			"mai", "metaai",
-			"log", "l",
-		},
+		append(omahaNoArgCommands.Names(), omahaArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := omahaNoArgCommands.Lookup(cmd); ok {
+				return fn(c.oi), true
+			}
 			switch cmd {
-			case "f", "fold":
-				return c.oi.Action(domain.OmahaActionFold, 0, 0), true
-			case "ck", "check":
-				return c.oi.Action(domain.OmahaActionCheck, 0, 0), true
-			case "c", "call":
-				return c.oi.Action(domain.OmahaActionCall, 0, 0), true
 			case "b", "bet":
 				if len(args) < 1 {
 					return cuiutil.PromptRequest(i18n.T("promptBetAmount"), "b {0}"), true
@@ -58,8 +83,6 @@ func (c *OmahaCuiController) Exec(command string) string {
 					return err.Error(), true
 				}
 				return c.oi.Action(domain.OmahaActionRaise, amount, 0), true
-			case "a", "allin":
-				return c.oi.Action(domain.OmahaActionAllIn, 0, 0), true
 			case "bl", "bettinglimit":
 				if len(args) < 1 {
 					return i18n.T("holdem.bettingLimitRequired"), true
@@ -126,18 +149,6 @@ func (c *OmahaCuiController) Exec(command string) string {
 				cfg := c.oi.GetConfig()
 				cfg.TableSize = v
 				return c.oi.ResetWithConfig(cfg, nil), true
-			case "rb", "rebuy":
-				return c.oi.Rebuy(), true
-			case "sr", "skiprebuy":
-				return c.oi.SkipRebuy(), true
-			case "ad", "addon":
-				return c.oi.Addon(), true
-			case "sa", "skipaddon":
-				return c.oi.SkipAddon(), true
-			case "m", "muck":
-				return c.oi.Muck(), true
-			case "sh", "show":
-				return c.oi.ShowHand(), true
 			case "mai", "metaai":
 				if len(args) < 1 {
 					return i18n.T("metaAIRequired"), true

@@ -9,6 +9,19 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// canfieldNoArgCommands maps no-arg CUI commands to Canfield interactor methods.
+var canfieldNoArgCommands = cuiutil.NewCommandMap[usecase.CanfieldInteractorIF]().
+	Add(usecase.CanfieldInteractorIF.Draw, "d", "draw").
+	Add(usecase.CanfieldInteractorIF.GiveUp, "g", "giveup").
+	Add(usecase.CanfieldInteractorIF.AutoComplete, "ac", "autocomplete").
+	Add(usecase.CanfieldInteractorIF.Undo, "u", "undo").
+	Add(usecase.CanfieldInteractorIF.Hint, "h", "hint").
+	Add(usecase.CanfieldInteractorIF.ActionLog, "log", "l")
+
+// canfieldArgfulCommands lists alias names for argful commands handled in the
+// Exec switch.
+var canfieldArgfulCommands = []string{"m", "move"}
+
 // CanfieldCuiController キャンフィールドCUIコントローラークラス
 type CanfieldCuiController struct {
 	ci usecase.CanfieldInteractorIF
@@ -24,21 +37,16 @@ func (c *CanfieldCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.ci.Reset() },
-		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
+		append(canfieldNoArgCommands.Names(), canfieldArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := canfieldNoArgCommands.Lookup(cmd); ok {
+				return fn(c.ci), true
+			}
 			switch cmd {
-			case "d", "draw":
-				return c.ci.Draw(), true
 			case "m", "move":
 				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.ci.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.ci.AutoComplete(), true
-			case "u", "undo":
-				return c.ci.Undo(), true
 			default:
-				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
+				return "", false
 			}
 		},
 	)

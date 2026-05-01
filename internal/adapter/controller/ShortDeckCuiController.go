@@ -9,6 +9,43 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// shortDeckNoArgCommands maps no-arg CUI commands to ShortDeck interactor calls.
+// Action(domain.ShortDeckActionX, 0, 0) is wrapped in a thin closure because
+// CommandMap binds func(T) string and the action enum/zero amounts have to be
+// supplied at registration time. argful commands ("b 100", "sb 50", etc.) stay
+// in the switch in Exec because they need argument parsing.
+var shortDeckNoArgCommands = cuiutil.NewCommandMap[usecase.ShortDeckInteractorIF]().
+	Add(func(oi usecase.ShortDeckInteractorIF) string {
+		return oi.Action(domain.ShortDeckActionFold, 0, 0)
+	}, "f", "fold").
+	Add(func(oi usecase.ShortDeckInteractorIF) string {
+		return oi.Action(domain.ShortDeckActionCheck, 0, 0)
+	}, "ck", "check").
+	Add(func(oi usecase.ShortDeckInteractorIF) string {
+		return oi.Action(domain.ShortDeckActionCall, 0, 0)
+	}, "c", "call").
+	Add(func(oi usecase.ShortDeckInteractorIF) string {
+		return oi.Action(domain.ShortDeckActionAllIn, 0, 0)
+	}, "a", "allin").
+	Add(usecase.ShortDeckInteractorIF.Rebuy, "rb", "rebuy").
+	Add(usecase.ShortDeckInteractorIF.SkipRebuy, "sr", "skiprebuy").
+	Add(usecase.ShortDeckInteractorIF.Addon, "ad", "addon").
+	Add(usecase.ShortDeckInteractorIF.SkipAddon, "sa", "skipaddon").
+	Add(usecase.ShortDeckInteractorIF.Muck, "m", "muck").
+	Add(usecase.ShortDeckInteractorIF.ShowHand, "sh", "show")
+
+// shortDeckArgfulCommands lists alias names for the argful commands handled in
+// the Exec switch. The CommandMap covers no-arg aliases automatically; these
+// are listed by hand because they aren't bound through CommandMap.
+var shortDeckArgfulCommands = []string{
+	"b", "bet", "ra", "raise",
+	"bl", "bettinglimit", "tm", "tournament",
+	"sb", "smallblind", "bb", "bigblind",
+	"lh", "levelhand", "ts", "tablesize",
+	"mai", "metaai",
+	"log", "l",
+}
+
 // ShortDeckCuiController ショートデックホールデムCUIコントローラークラス
 type ShortDeckCuiController struct {
 	oi usecase.ShortDeckInteractorIF
@@ -24,22 +61,12 @@ func (c *ShortDeckCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.oi.Reset() },
-		[]string{
-			"f", "fold", "ck", "check", "c", "call", "b", "bet", "ra", "raise",
-			"a", "allin", "bl", "bettinglimit", "tm", "tournament",
-			"sb", "smallblind", "bb", "bigblind", "lh", "levelhand", "ts", "tablesize",
-			"rb", "rebuy", "sr", "skiprebuy", "ad", "addon", "sa", "skipaddon", "m", "muck", "sh", "show",
-			"mai", "metaai",
-			"log", "l",
-		},
+		append(shortDeckNoArgCommands.Names(), shortDeckArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := shortDeckNoArgCommands.Lookup(cmd); ok {
+				return fn(c.oi), true
+			}
 			switch cmd {
-			case "f", "fold":
-				return c.oi.Action(domain.ShortDeckActionFold, 0, 0), true
-			case "ck", "check":
-				return c.oi.Action(domain.ShortDeckActionCheck, 0, 0), true
-			case "c", "call":
-				return c.oi.Action(domain.ShortDeckActionCall, 0, 0), true
 			case "b", "bet":
 				if len(args) < 1 {
 					return cuiutil.PromptRequest(i18n.T("promptBetAmount"), "b {0}"), true
@@ -58,8 +85,6 @@ func (c *ShortDeckCuiController) Exec(command string) string {
 					return err.Error(), true
 				}
 				return c.oi.Action(domain.ShortDeckActionRaise, amount, 0), true
-			case "a", "allin":
-				return c.oi.Action(domain.ShortDeckActionAllIn, 0, 0), true
 			case "bl", "bettinglimit":
 				if len(args) < 1 {
 					return i18n.T("holdem.bettingLimitRequired"), true
@@ -126,18 +151,6 @@ func (c *ShortDeckCuiController) Exec(command string) string {
 				cfg := c.oi.GetConfig()
 				cfg.TableSize = v
 				return c.oi.ResetWithConfig(cfg, nil), true
-			case "rb", "rebuy":
-				return c.oi.Rebuy(), true
-			case "sr", "skiprebuy":
-				return c.oi.SkipRebuy(), true
-			case "ad", "addon":
-				return c.oi.Addon(), true
-			case "sa", "skipaddon":
-				return c.oi.SkipAddon(), true
-			case "m", "muck":
-				return c.oi.Muck(), true
-			case "sh", "show":
-				return c.oi.ShowHand(), true
 			case "mai", "metaai":
 				if len(args) < 1 {
 					return i18n.T("metaAIRequired"), true

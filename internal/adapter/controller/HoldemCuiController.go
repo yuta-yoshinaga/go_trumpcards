@@ -10,6 +10,43 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// holdemNoArgCommands maps no-arg CUI commands to Holdem interactor calls.
+// Action(domain.HoldemActionX, 0, 0) is wrapped in a thin closure because
+// CommandMap binds func(T) string and the action enum/zero amounts have to be
+// supplied at registration time. argful commands ("b 100", "sb 50", etc.) stay
+// in the switch in Exec because they need argument parsing.
+var holdemNoArgCommands = cuiutil.NewCommandMap[usecase.HoldemInteractorIF]().
+	Add(func(hi usecase.HoldemInteractorIF) string {
+		return hi.Action(domain.HoldemActionFold, 0, 0)
+	}, "f", "fold").
+	Add(func(hi usecase.HoldemInteractorIF) string {
+		return hi.Action(domain.HoldemActionCheck, 0, 0)
+	}, "ck", "check").
+	Add(func(hi usecase.HoldemInteractorIF) string {
+		return hi.Action(domain.HoldemActionCall, 0, 0)
+	}, "c", "call").
+	Add(func(hi usecase.HoldemInteractorIF) string {
+		return hi.Action(domain.HoldemActionAllIn, 0, 0)
+	}, "a", "allin").
+	Add(usecase.HoldemInteractorIF.Rebuy, "rb", "rebuy").
+	Add(usecase.HoldemInteractorIF.SkipRebuy, "sr", "skiprebuy").
+	Add(usecase.HoldemInteractorIF.Addon, "ad", "addon").
+	Add(usecase.HoldemInteractorIF.SkipAddon, "sa", "skipaddon").
+	Add(usecase.HoldemInteractorIF.Muck, "m", "muck").
+	Add(usecase.HoldemInteractorIF.ShowHand, "sh", "show")
+
+// holdemArgfulCommands lists alias names for the argful commands handled in
+// the Exec switch. The CommandMap covers no-arg aliases automatically; these
+// are listed by hand because they aren't bound through CommandMap.
+var holdemArgfulCommands = []string{
+	"b", "bet", "ra", "raise",
+	"bl", "bettinglimit", "tm", "tournament",
+	"sb", "smallblind", "bb", "bigblind",
+	"lh", "levelhand", "ts", "tablesize",
+	"mai", "metaai",
+	"log", "l",
+}
+
 // HoldemCuiController テキサスホールデムCUIコントローラークラス
 type HoldemCuiController struct {
 	hi usecase.HoldemInteractorIF
@@ -25,22 +62,12 @@ func (c *HoldemCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.hi.Reset() },
-		[]string{
-			"f", "fold", "ck", "check", "c", "call", "b", "bet", "ra", "raise",
-			"a", "allin", "bl", "bettinglimit", "tm", "tournament",
-			"sb", "smallblind", "bb", "bigblind", "lh", "levelhand", "ts", "tablesize",
-			"rb", "rebuy", "sr", "skiprebuy", "ad", "addon", "sa", "skipaddon", "m", "muck", "sh", "show",
-			"mai", "metaai",
-			"log", "l",
-		},
+		append(holdemNoArgCommands.Names(), holdemArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := holdemNoArgCommands.Lookup(cmd); ok {
+				return fn(c.hi), true
+			}
 			switch cmd {
-			case "f", "fold":
-				return c.hi.Action(domain.HoldemActionFold, 0, 0), true
-			case "ck", "check":
-				return c.hi.Action(domain.HoldemActionCheck, 0, 0), true
-			case "c", "call":
-				return c.hi.Action(domain.HoldemActionCall, 0, 0), true
 			case "b", "bet":
 				if len(args) < 1 {
 					return cuiutil.PromptRequest(i18n.T("promptBetAmount"), "b {0}"), true
@@ -59,8 +86,6 @@ func (c *HoldemCuiController) Exec(command string) string {
 					return err.Error(), true
 				}
 				return c.hi.Action(domain.HoldemActionRaise, amount, 0), true
-			case "a", "allin":
-				return c.hi.Action(domain.HoldemActionAllIn, 0, 0), true
 			case "bl", "bettinglimit":
 				if len(args) < 1 {
 					return i18n.T("holdem.bettingLimitRequired"), true
@@ -127,18 +152,6 @@ func (c *HoldemCuiController) Exec(command string) string {
 				cfg := c.hi.GetConfig()
 				cfg.TableSize = v
 				return c.hi.ResetWithConfig(cfg, nil), true
-			case "rb", "rebuy":
-				return c.hi.Rebuy(), true
-			case "sr", "skiprebuy":
-				return c.hi.SkipRebuy(), true
-			case "ad", "addon":
-				return c.hi.Addon(), true
-			case "sa", "skipaddon":
-				return c.hi.SkipAddon(), true
-			case "m", "muck":
-				return c.hi.Muck(), true
-			case "sh", "show":
-				return c.hi.ShowHand(), true
 			case "mai", "metaai":
 				if len(args) < 1 {
 					return i18n.T("metaAIRequired"), true
