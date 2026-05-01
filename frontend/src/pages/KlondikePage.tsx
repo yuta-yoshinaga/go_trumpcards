@@ -21,7 +21,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -87,14 +87,7 @@ const KL_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Klondike solitaire game page with tableau, stock/waste, and foundation. */
-export function KlondikePage() {
-  return (
-    <TutorialWrapper gameName="klondike" steps={KL_TUTORIAL_STEPS}>
-      <KlondikePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const KlondikePage = withTutorial(KlondikePageContent, 'klondike', KL_TUTORIAL_STEPS);
 /** Inner content of the Klondike page, wrapped by TutorialProvider. */
 function KlondikePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

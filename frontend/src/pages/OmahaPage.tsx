@@ -26,7 +26,7 @@ import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { OmahaSkeleton } from '../components/skeleton/OmahaSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -35,6 +35,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -105,14 +106,7 @@ const OMAHA_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Omaha Hold'em game page with community cards, betting, and showdown. */
-export function OmahaPage() {
-  return (
-    <TutorialWrapper gameName="omaha" steps={OH_TUTORIAL_STEPS}>
-      <OmahaPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const OmahaPage = withTutorial(OmahaPageContent, 'omaha', OH_TUTORIAL_STEPS);
 /** Inner content of the Omaha Hold'em page, wrapped by TutorialProvider. */
 function OmahaPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -140,9 +134,7 @@ function OmahaPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();

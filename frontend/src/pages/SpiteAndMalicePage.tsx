@@ -17,7 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -25,6 +25,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -116,14 +117,7 @@ function formatSamState(state: SpiteAndMaliceResponse): string {
 }
 
 /** Spite & Malice (Cat and Mouse) page — a 2-player race game vs CPU. */
-export function SpiteAndMalicePage() {
-  return (
-    <TutorialWrapper gameName="spiteandmalice" steps={SAM_TUTORIAL_STEPS}>
-      <SpiteAndMalicePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const SpiteAndMalicePage = withTutorial(SpiteAndMalicePageContent, 'spiteandmalice', SAM_TUTORIAL_STEPS);
 type Selection = { kind: 'hand'; idx: number } | { kind: 'goal' } | { kind: 'side'; idx: number } | null;
 
 function SpiteAndMalicePageContent() {
@@ -137,9 +131,7 @@ function SpiteAndMalicePageContent() {
 
   const [selection, setSelection] = useState<Selection>(null);
 
-  useEffect(() => {
-    void apiCall('reset');
-  }, [apiCall]);
+  useMountReset(apiCall);
 
   useEffect(() => {
     if (!state) return;

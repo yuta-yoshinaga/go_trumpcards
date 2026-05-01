@@ -22,7 +22,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -31,6 +31,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -79,14 +80,7 @@ const INDIAN_POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Indian Poker game page with opponent cards visible and human card hidden. */
-export function IndianPokerPage() {
-  return (
-    <TutorialWrapper gameName="indianpoker" steps={IP_TUTORIAL_STEPS}>
-      <IndianPokerPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const IndianPokerPage = withTutorial(IndianPokerPageContent, 'indianpoker', IP_TUTORIAL_STEPS);
 /** Inner content of the Indian Poker page, wrapped by TutorialProvider. */
 function IndianPokerPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -115,9 +109,7 @@ function IndianPokerPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();

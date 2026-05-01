@@ -21,7 +21,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { NapoleonSkeleton } from '../components/skeleton/NapoleonSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -116,14 +116,7 @@ const NAPOLEON_PHASE_KEYS: Readonly<Record<number, string>> = {
 const SUIT_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
 
 /** Renders the Napoleon game page with bidding, trump declaration, kitty exchange, trick play, and scoring. */
-export function NapoleonPage() {
-  return (
-    <TutorialWrapper gameName="napoleon" steps={NP_TUTORIAL_STEPS}>
-      <NapoleonPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const NapoleonPage = withTutorial(NapoleonPageContent, 'napoleon', NP_TUTORIAL_STEPS);
 /** Inner content of the Napoleon page, wrapped by TutorialProvider. */
 function NapoleonPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

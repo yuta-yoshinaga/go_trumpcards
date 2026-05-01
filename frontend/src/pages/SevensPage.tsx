@@ -20,7 +20,7 @@ import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { SevensSkeleton } from '../components/skeleton/SevensSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -60,14 +60,7 @@ const SV_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Sevens game page with board, player areas, and joker placement. */
-export function SevensPage() {
-  return (
-    <TutorialWrapper gameName="sevens" steps={SV_TUTORIAL_STEPS}>
-      <SevensPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const SevensPage = withTutorial(SevensPageContent, 'sevens', SV_TUTORIAL_STEPS);
 /** Inner content of the Sevens page, wrapped by TutorialProvider. */
 function SevensPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

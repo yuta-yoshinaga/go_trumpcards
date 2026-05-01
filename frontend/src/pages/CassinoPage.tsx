@@ -15,7 +15,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCassinoGame } from '../hooks/useCassinoGame';
 import { useCliGame } from '../hooks/useCliGame';
@@ -81,14 +81,7 @@ const CS_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Cassino (カッシーノ) game page. */
-export function CassinoPage() {
-  return (
-    <TutorialWrapper gameName="cassino" steps={CS_TUTORIAL_STEPS}>
-      <CassinoPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const CassinoPage = withTutorial(CassinoPageContent, 'cassino', CS_TUTORIAL_STEPS);
 function CassinoPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('cassino');

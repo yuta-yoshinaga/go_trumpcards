@@ -21,7 +21,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { OhHellSkeleton } from '../components/skeleton/OhHellSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -100,14 +100,7 @@ const OH_HELL_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Oh Hell game page with bidding, trick play, and scoring. */
-export function OhHellPage() {
-  return (
-    <TutorialWrapper gameName="ohhell" steps={OH_TUTORIAL_STEPS}>
-      <OhHellPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const OhHellPage = withTutorial(OhHellPageContent, 'ohhell', OH_TUTORIAL_STEPS);
 /** Inner content of the Oh Hell page, wrapped by TutorialProvider. */
 function OhHellPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

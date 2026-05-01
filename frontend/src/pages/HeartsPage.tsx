@@ -14,7 +14,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -92,14 +92,7 @@ const HEARTS_PHASE_KEYS: Readonly<Record<number, string>> = {
 const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 
 /** Renders the Hearts game page with card passing, trick play, and scoring. */
-export function HeartsPage() {
-  return (
-    <TutorialWrapper gameName="hearts" steps={HT_TUTORIAL_STEPS}>
-      <HeartsPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const HeartsPage = withTutorial(HeartsPageContent, 'hearts', HT_TUTORIAL_STEPS);
 /** Inner content of the Hearts page, wrapped by TutorialProvider. */
 function HeartsPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

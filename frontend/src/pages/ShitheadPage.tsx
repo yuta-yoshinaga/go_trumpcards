@@ -9,7 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -52,14 +52,7 @@ const SOURCE_FACE_UP = 'faceup';
 const SOURCE_FACE_DOWN = 'facedown';
 
 /** Renders the Shithead / Karma game page. */
-export function ShitheadPage() {
-  return (
-    <TutorialWrapper gameName="shithead" steps={SHITHEAD_TUTORIAL_STEPS}>
-      <ShitheadPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const ShitheadPage = withTutorial(ShitheadPageContent, 'shithead', SHITHEAD_TUTORIAL_STEPS);
 /** Inner content of the Shithead page. */
 function ShitheadPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

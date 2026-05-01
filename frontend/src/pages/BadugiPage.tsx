@@ -22,7 +22,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBadugiGame } from '../hooks/useBadugiGame';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -80,14 +80,7 @@ const BG_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Badugi (4-card draw lowball) game page. */
-export function BadugiPage() {
-  return (
-    <TutorialWrapper gameName="badugi" steps={BG_TUTORIAL_STEPS}>
-      <BadugiPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const BadugiPage = withTutorial(BadugiPageContent, 'badugi', BG_TUTORIAL_STEPS);
 /** Inner content of the Badugi page, wrapped by TutorialProvider. */
 function BadugiPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

@@ -20,7 +20,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { PyramidSkeleton } from '../components/skeleton/PyramidSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -75,14 +75,7 @@ const PY_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Pyramid Solitaire game page with pyramid, stock/waste, and controls. */
-export function PyramidPage() {
-  return (
-    <TutorialWrapper gameName="pyramid" steps={PY_TUTORIAL_STEPS}>
-      <PyramidPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PyramidPage = withTutorial(PyramidPageContent, 'pyramid', PY_TUTORIAL_STEPS);
 /** Inner content of the Pyramid page, wrapped by TutorialProvider. */
 function PyramidPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

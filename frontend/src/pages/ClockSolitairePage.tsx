@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { clocksolitaireApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,7 +17,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -25,6 +25,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ClockSolitaireResponse } from '../types/card';
@@ -79,9 +80,7 @@ function ClockSolitairePageContent() {
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   const handleAutoPlay = useCallback(() => execApi('autoplay'), [execApi]);
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
   const { cardWidth, cardHeight } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('clocksolitaire', state);
 
@@ -332,10 +331,4 @@ function ClockSolitairePageContent() {
 }
 
 /** Clock Solitaire game page wrapped with tutorial support. */
-export function ClockSolitairePage() {
-  return (
-    <TutorialWrapper gameName="clocksolitaire" steps={TUTORIAL_STEPS}>
-      <ClockSolitairePageContent />
-    </TutorialWrapper>
-  );
-}
+export const ClockSolitairePage = withTutorial(ClockSolitairePageContent, 'clocksolitaire', TUTORIAL_STEPS);

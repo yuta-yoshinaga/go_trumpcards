@@ -8,34 +8,36 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-// bjNoArgCommands 引数なしのブラックジャックコマンドマップ
-var bjNoArgCommands = map[string]func(usecase.BlackJackInteractorIF) string{
-	"h":                     usecase.BlackJackInteractorIF.Hit,
-	"hit":                   usecase.BlackJackInteractorIF.Hit,
-	"s":                     usecase.BlackJackInteractorIF.Stand,
-	"stand":                 usecase.BlackJackInteractorIF.Stand,
-	"d":                     usecase.BlackJackInteractorIF.DoubleDown,
-	"doubledown":            usecase.BlackJackInteractorIF.DoubleDown,
-	"sp":                    usecase.BlackJackInteractorIF.Split,
-	"split":                 usecase.BlackJackInteractorIF.Split,
-	"i":                     usecase.BlackJackInteractorIF.Insurance,
-	"insurance":             usecase.BlackJackInteractorIF.Insurance,
-	"di":                    usecase.BlackJackInteractorIF.DeclineInsurance,
-	"declineinsurance":      usecase.BlackJackInteractorIF.DeclineInsurance,
-	"sur":                   usecase.BlackJackInteractorIF.Surrender,
-	"surrender":             usecase.BlackJackInteractorIF.Surrender,
-	"es":                    usecase.BlackJackInteractorIF.EarlySurrender,
-	"earlysurrender":        usecase.BlackJackInteractorIF.EarlySurrender,
-	"des":                   usecase.BlackJackInteractorIF.DeclineEarlySurrender,
-	"declineearlysurrender": usecase.BlackJackInteractorIF.DeclineEarlySurrender,
-	"hint":                  usecase.BlackJackInteractorIF.ToggleHint,
-	"togglehint":            usecase.BlackJackInteractorIF.ToggleHint,
-	"soft17":                usecase.BlackJackInteractorIF.ToggleSoft17,
-	"togglesoft17":          usecase.BlackJackInteractorIF.ToggleSoft17,
-	"counting":              usecase.BlackJackInteractorIF.ToggleCounting,
-	"togglecounting":        usecase.BlackJackInteractorIF.ToggleCounting,
-	"das":                   usecase.BlackJackInteractorIF.ToggleDAS,
-	"toggledas":             usecase.BlackJackInteractorIF.ToggleDAS,
+// bjNoArgCommands maps no-arg CUI commands to BlackJack interactor methods.
+// Each Add registers one action under all of its aliases — no per-alias rows
+// or duplicated validCommands list. argful commands ("b 100", "sd 5", etc.)
+// stay in the switch in Exec because they need argument parsing.
+var bjNoArgCommands = cuiutil.NewCommandMap[usecase.BlackJackInteractorIF]().
+	Add(usecase.BlackJackInteractorIF.Hit, "h", "hit").
+	Add(usecase.BlackJackInteractorIF.Stand, "s", "stand").
+	Add(usecase.BlackJackInteractorIF.DoubleDown, "d", "doubledown").
+	Add(usecase.BlackJackInteractorIF.Split, "sp", "split").
+	Add(usecase.BlackJackInteractorIF.Insurance, "i", "insurance").
+	Add(usecase.BlackJackInteractorIF.DeclineInsurance, "di", "declineinsurance").
+	Add(usecase.BlackJackInteractorIF.Surrender, "sur", "surrender").
+	Add(usecase.BlackJackInteractorIF.EarlySurrender, "es", "earlysurrender").
+	Add(usecase.BlackJackInteractorIF.DeclineEarlySurrender, "des", "declineearlysurrender").
+	Add(usecase.BlackJackInteractorIF.ToggleHint, "hint", "togglehint").
+	Add(usecase.BlackJackInteractorIF.ToggleSoft17, "soft17", "togglesoft17").
+	Add(usecase.BlackJackInteractorIF.ToggleCounting, "counting", "togglecounting").
+	Add(usecase.BlackJackInteractorIF.ToggleDAS, "das", "toggledas")
+
+// bjArgfulCommands lists alias names for the argful commands handled in the
+// Exec switch. The CommandMap covers no-arg aliases automatically; these have
+// to be listed by hand because they aren't bound through CommandMap.
+var bjArgfulCommands = []string{
+	"b", "bet",
+	"ssr", "setsurrenderrule",
+	"sd", "setdeckcount",
+	"scc", "setcpucount",
+	"scs", "setcountingsystem",
+	"pen", "setpenetration",
+	"log", "l",
 }
 
 // BlackJackCuiController ブラックジャックCUIコントローラークラス
@@ -56,17 +58,9 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return bcc.bji.Reset() },
-		[]string{
-			"h", "hit", "s", "stand", "b", "bet", "d", "doubledown", "sp", "split",
-			"i", "insurance", "di", "declineinsurance", "sur", "surrender",
-			"es", "earlysurrender", "des", "declineearlysurrender",
-			"ssr", "setsurrenderrule", "hint", "togglehint", "soft17", "togglesoft17",
-			"counting", "togglecounting", "das", "toggledas",
-			"sd", "setdeckcount", "scc", "setcpucount", "scs", "setcountingsystem", "pen", "setpenetration",
-			"log", "l",
-		},
+		append(bjNoArgCommands.Names(), bjArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
-			if fn, ok := bjNoArgCommands[cmd]; ok {
+			if fn, ok := bjNoArgCommands.Lookup(cmd); ok {
 				return fn(bcc.bji), true
 			}
 			switch cmd {

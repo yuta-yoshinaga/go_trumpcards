@@ -17,7 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TonkSkeleton } from '../components/skeleton/TonkSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -84,14 +84,7 @@ const TONK_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Tonk game page with draw, discard, and knock phases. */
-export function TonkPage() {
-  return (
-    <TutorialWrapper gameName="tonk" steps={TONK_TUTORIAL_STEPS}>
-      <TonkPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const TonkPage = withTutorial(TonkPageContent, 'tonk', TONK_TUTORIAL_STEPS);
 /** Inner content of the Tonk page, wrapped by TutorialProvider. */
 function TonkPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

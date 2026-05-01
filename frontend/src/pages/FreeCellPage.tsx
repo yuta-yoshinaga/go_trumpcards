@@ -20,7 +20,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { FreeCellSkeleton } from '../components/skeleton/FreeCellSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -78,14 +78,7 @@ const FC_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the FreeCell solitaire game page with tableau, free cells, and foundation. */
-export function FreeCellPage() {
-  return (
-    <TutorialWrapper gameName="freecell" steps={FC_TUTORIAL_STEPS}>
-      <FreeCellPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const FreeCellPage = withTutorial(FreeCellPageContent, 'freecell', FC_TUTORIAL_STEPS);
 /** Inner content of the FreeCell page, wrapped by TutorialProvider. */
 function FreeCellPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

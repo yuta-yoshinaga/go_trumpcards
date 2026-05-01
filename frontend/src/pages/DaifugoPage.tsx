@@ -23,7 +23,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { DaifugoSkeleton } from '../components/skeleton/DaifugoSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCardSwipeSelection } from '../hooks/useCardSwipeSelection';
@@ -92,14 +92,7 @@ const DF_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Daifugo game page with card play, revolution, and rule settings. */
-export function DaifugoPage() {
-  return (
-    <TutorialWrapper gameName="daifugo" steps={DF_TUTORIAL_STEPS}>
-      <DaifugoPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const DaifugoPage = withTutorial(DaifugoPageContent, 'daifugo', DF_TUTORIAL_STEPS);
 /** Inner content of the Daifugo page, wrapped by TutorialProvider. */
 function DaifugoPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

@@ -1,6 +1,5 @@
-import { useMemo } from 'react';
 import { jokerpokerApi } from '../api/gameApi';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { VideoPokerGameContent } from '../components/VideoPokerGameContent';
 import { VIDEO_POKER_TUTORIAL_STEPS } from '../constants/videoPokerTutorial';
 import { JOKERPOKER_HELP, parseJokerpokerCommand } from '../utils/cli/commands/jokerpokerCommands';
@@ -22,26 +21,24 @@ const JP_PAYOUT_ROWS = [
   'kingsOrBetter',
 ];
 
-/** Renders the Joker Poker (Kings or Better) game page. */
-export function JokerPokerPage() {
-  const cliGameConfig = useMemo(
-    () => ({
-      parseCommand: parseJokerpokerCommand,
-      formatResponse: formatJokerpokerState,
-      helpText: JOKERPOKER_HELP,
-    }),
-    [],
-  );
+const CLI_GAME_CONFIG = {
+  parseCommand: parseJokerpokerCommand,
+  formatResponse: formatJokerpokerState,
+  helpText: JOKERPOKER_HELP,
+} as const;
+
+function JokerPokerPageContent() {
   return (
-    <TutorialWrapper gameName="jokerpoker" steps={VIDEO_POKER_TUTORIAL_STEPS}>
-      <VideoPokerGameContent
-        gameName="jokerpoker"
-        i18nNamespace="jokerpoker"
-        apiExec={jokerpokerApi.exec}
-        payoutTableRows={JP_PAYOUT_ROWS}
-        gamePath="/jokerpoker"
-        cliGameConfig={cliGameConfig}
-      />
-    </TutorialWrapper>
+    <VideoPokerGameContent
+      gameName="jokerpoker"
+      i18nNamespace="jokerpoker"
+      apiExec={jokerpokerApi.exec}
+      payoutTableRows={JP_PAYOUT_ROWS}
+      gamePath="/jokerpoker"
+      cliGameConfig={CLI_GAME_CONFIG}
+    />
   );
 }
+
+/** Renders the Joker Poker (Kings or Better) game page. */
+export const JokerPokerPage = withTutorial(JokerPokerPageContent, 'jokerpoker', VIDEO_POKER_TUTORIAL_STEPS);

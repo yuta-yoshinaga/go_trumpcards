@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { pigtailApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -14,13 +14,14 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PigsTailSkeleton } from '../components/skeleton/PigsTailSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { gameTheme } from '../styles/gameTheme';
 import type { PigsTailResponse } from '../types/card';
@@ -70,14 +71,7 @@ const PIGTAIL_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Pig's Tail game page. */
-export function PigsTailPage() {
-  return (
-    <TutorialWrapper gameName="pigtail" steps={PT_TUTORIAL_STEPS}>
-      <PigsTailPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PigsTailPage = withTutorial(PigsTailPageContent, 'pigtail', PT_TUTORIAL_STEPS);
 /** Inner content of the Pig's Tail page. */
 function PigsTailPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -88,9 +82,7 @@ function PigsTailPageContent() {
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pigtail', state);
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const phaseNames = usePhaseNames('pigtail', PIGTAIL_PHASE_KEYS);
 

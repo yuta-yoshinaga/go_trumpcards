@@ -21,7 +21,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { SpiderSkeleton } from '../components/skeleton/SpiderSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -84,14 +84,7 @@ const SPD_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Spider Solitaire game page with 10 tableau columns and stock. */
-export function SpiderPage() {
-  return (
-    <TutorialWrapper gameName="spider" steps={SPD_TUTORIAL_STEPS}>
-      <SpiderPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const SpiderPage = withTutorial(SpiderPageContent, 'spider', SPD_TUTORIAL_STEPS);
 /** Inner content of the Spider page, wrapped by TutorialProvider. */
 function SpiderPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
