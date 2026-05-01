@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { type CanfieldMoveZone, canfieldApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -19,14 +21,20 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { CanfieldResponse } from '../types/card';
 import { CanfieldPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { CANFIELD_HELP, parseCanfieldCommand } from '../utils/cli/commands/canfieldCommands';
+import { formatCanfieldState } from '../utils/cli/formatters/canfieldFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 /** Tutorial steps for the Canfield solitaire game. */
 const CF_TUTORIAL_STEPS: TutorialStep[] = [
@@ -78,6 +86,22 @@ function CanfieldPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('canfield', state);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('canfield');
+  const cliConfig: CliGameConfig<CanfieldResponse, Parameters<typeof canfieldApi.exec>> = useMemo(
+    () => ({
+      gameName: 'canfield',
+      parseCommand: parseCanfieldCommand,
+      formatResponse: formatCanfieldState,
+      helpText: CANFIELD_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, {
+    addInput,
+    addOutput,
+    addError,
+    clearLog,
+  });
 
   useEffect(() => {
     execApi('reset');
@@ -158,290 +182,301 @@ function CanfieldPageContent() {
         <span className="text-sm text-ds-text-muted">
           {t('moveCount')}: {state.moveCount}
         </span>
+        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
         <ManualButton gamePath="/canfield" />
       </PhaseIndicator>
 
-      <SettingsPanel
-        title={tc('settings.title', { ns: 'common' })}
-        groups={[
-          {
-            items: [
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <SettingsPanel
+            title={tc('settings.title', { ns: 'common' })}
+            groups={[
               {
-                type: 'checkbox' as const,
-                id: 'frontendHint',
-                label: tc('hint.toggle', { ns: 'tutorial' }),
-                checked: frontendHintEnabled,
-                onToggle: setFrontendHintEnabled,
+                items: [
+                  {
+                    type: 'checkbox' as const,
+                    id: 'frontendHint',
+                    label: tc('hint.toggle', { ns: 'tutorial' }),
+                    checked: frontendHintEnabled,
+                    onToggle: setFrontendHintEnabled,
+                  },
+                ],
               },
-            ],
-          },
-        ]}
-      />
+            ]}
+          />
 
-      <LandscapeBanner message={phaseName} />
+          <LandscapeBanner message={phaseName} />
 
-      <div className="flex-1 overflow-y-auto px-4 pt-3 lg:px-8">
-        {/* Foundation */}
-        <div className="mb-3 flex gap-2" data-tutorial="cf-foundation">
-          {state.foundation.map((pile, i) => {
-            const fZone: CanfieldMoveZone = { zone: 'foundation', col: i };
-            return (
-              <DropZone
-                key={`f-${i}`}
-                isDropTarget={dnd.isDropTarget(fZone)}
-                onDragOver={dnd.handleDragOver(fZone)}
-                onDrop={dnd.handleDrop(fZone)}
-                onDragLeave={dnd.handleDragLeave}
-              >
-                <div
-                  className="relative rounded border border-white/30"
+          <div className="flex-1 overflow-y-auto px-4 pt-3 lg:px-8">
+            {/* Foundation */}
+            <div className="mb-3 flex gap-2" data-tutorial="cf-foundation">
+              {state.foundation.map((pile, i) => {
+                const fZone: CanfieldMoveZone = { zone: 'foundation', col: i };
+                return (
+                  <DropZone
+                    key={`f-${i}`}
+                    isDropTarget={dnd.isDropTarget(fZone)}
+                    onDragOver={dnd.handleDragOver(fZone)}
+                    onDrop={dnd.handleDrop(fZone)}
+                    onDragLeave={dnd.handleDragLeave}
+                  >
+                    <div
+                      className="relative rounded border border-white/30"
+                      style={{ width: cardWidth, height: cardHeight }}
+                    >
+                      {pile.length > 0 ? (
+                        <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
+                      ) : (
+                        <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
+                          {t('foundation')}
+                        </span>
+                      )}
+                    </div>
+                  </DropZone>
+                );
+              })}
+            </div>
+
+            {/* Stock / Waste / Reserve */}
+            <div className="mb-3 flex gap-3" data-tutorial="cf-stock-waste">
+              <div className="flex flex-col items-center">
+                <button
+                  type="button"
+                  onClick={handleDraw}
+                  disabled={!isPlaying || loading}
+                  className="rounded border border-white/30"
+                  aria-label={t('stock')}
                   style={{ width: cardWidth, height: cardHeight }}
                 >
-                  {pile.length > 0 ? (
-                    <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
+                  {state.stockCount > 0 ? (
+                    <AnimatedCardBack width={cardWidth} />
                   ) : (
-                    <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
-                      {t('foundation')}
-                    </span>
+                    <span className="text-xs text-ds-text-muted/80">{t('empty')}</span>
+                  )}
+                </button>
+                <span className="mt-1 text-xs text-ds-text-muted">
+                  {t('stock')}: {state.stockCount}
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <div style={{ width: cardWidth, height: cardHeight }}>
+                  {topWaste ? (
+                    <button
+                      type="button"
+                      draggable={isPlaying && !loading}
+                      onDragStart={dnd.handleDragStart({ zone: 'waste' })}
+                      onDragEnd={dnd.handleDragEnd}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
+                    >
+                      <AnimatedCard card={topWaste} width={cardWidth} draggable={false} />
+                    </button>
+                  ) : (
+                    <div
+                      className="rounded border border-dashed border-white/30"
+                      style={{ width: cardWidth, height: cardHeight }}
+                    />
                   )}
                 </div>
-              </DropZone>
-            );
-          })}
-        </div>
+                <span className="mt-1 text-xs text-ds-text-muted">{t('waste')}</span>
+              </div>
 
-        {/* Stock / Waste / Reserve */}
-        <div className="mb-3 flex gap-3" data-tutorial="cf-stock-waste">
-          <div className="flex flex-col items-center">
-            <button
-              type="button"
-              onClick={handleDraw}
-              disabled={!isPlaying || loading}
-              className="rounded border border-white/30"
-              aria-label={t('stock')}
-              style={{ width: cardWidth, height: cardHeight }}
-            >
-              {state.stockCount > 0 ? (
-                <AnimatedCardBack width={cardWidth} />
-              ) : (
-                <span className="text-xs text-ds-text-muted/80">{t('empty')}</span>
-              )}
-            </button>
-            <span className="mt-1 text-xs text-ds-text-muted">
-              {t('stock')}: {state.stockCount}
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <div style={{ width: cardWidth, height: cardHeight }}>
-              {topWaste ? (
-                <button
-                  type="button"
-                  draggable={isPlaying && !loading}
-                  onDragStart={dnd.handleDragStart({ zone: 'waste' })}
-                  onDragEnd={dnd.handleDragEnd}
-                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''}`}
-                >
-                  <AnimatedCard card={topWaste} width={cardWidth} draggable={false} />
-                </button>
-              ) : (
-                <div
-                  className="rounded border border-dashed border-white/30"
-                  style={{ width: cardWidth, height: cardHeight }}
-                />
-              )}
+              <div className="flex flex-col items-center" data-tutorial="cf-reserve">
+                <div style={{ width: cardWidth, height: cardHeight }}>
+                  {topReserve ? (
+                    <button
+                      type="button"
+                      draggable={isPlaying && !loading}
+                      onDragStart={dnd.handleDragStart({ zone: 'reserve' })}
+                      onDragEnd={dnd.handleDragEnd}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${dnd.isDragSource({ zone: 'reserve' }) ? 'opacity-50' : ''}`}
+                    >
+                      <AnimatedCard card={topReserve} width={cardWidth} draggable={false} />
+                    </button>
+                  ) : (
+                    <div
+                      className="rounded border border-dashed border-white/30"
+                      style={{ width: cardWidth, height: cardHeight }}
+                    />
+                  )}
+                </div>
+                <span className="mt-1 text-xs text-ds-text-muted">
+                  {t('reserve')}: {state.reserve.length}
+                </span>
+              </div>
             </div>
-            <span className="mt-1 text-xs text-ds-text-muted">{t('waste')}</span>
-          </div>
 
-          <div className="flex flex-col items-center" data-tutorial="cf-reserve">
-            <div style={{ width: cardWidth, height: cardHeight }}>
-              {topReserve ? (
-                <button
-                  type="button"
-                  draggable={isPlaying && !loading}
-                  onDragStart={dnd.handleDragStart({ zone: 'reserve' })}
-                  onDragEnd={dnd.handleDragEnd}
-                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${dnd.isDragSource({ zone: 'reserve' }) ? 'opacity-50' : ''}`}
-                >
-                  <AnimatedCard card={topReserve} width={cardWidth} draggable={false} />
-                </button>
-              ) : (
-                <div
-                  className="rounded border border-dashed border-white/30"
-                  style={{ width: cardWidth, height: cardHeight }}
-                />
-              )}
-            </div>
-            <span className="mt-1 text-xs text-ds-text-muted">
-              {t('reserve')}: {state.reserve.length}
-            </span>
-          </div>
-        </div>
-
-        {/* Tableau */}
-        <div className="mb-3 flex gap-2" data-tutorial="cf-tableau">
-          {state.tableau.map((col, i) => {
-            const tZone: CanfieldMoveZone = { zone: 'tableau', col: i };
-            return (
-              <div key={`t-${i}`} className="flex flex-col gap-1">
-                <span className="text-xs text-ds-text-muted">#{i}</span>
-                <DropZone
-                  isDropTarget={dnd.isDropTarget(tZone)}
-                  onDragOver={dnd.handleDragOver(tZone)}
-                  onDrop={dnd.handleDrop(tZone)}
-                  onDragLeave={dnd.handleDragLeave}
-                >
-                  <div className="relative" style={{ width: cardWidth, minHeight: cardHeight }}>
-                    {col.length === 0 ? (
-                      <div
-                        className="rounded border border-dashed border-white/30"
-                        style={{ width: cardWidth, height: cardHeight }}
-                      />
-                    ) : (
-                      col.map((tc, j) => {
-                        const cardZone: CanfieldMoveZone = { zone: 'tableau', col: i, cardIndex: j };
-                        return (
-                          <div key={`t-${i}-${j}`} className="absolute" style={{ top: j * 24, left: 0 }}>
-                            <button
-                              type="button"
-                              draggable={isPlaying && !loading}
-                              onDragStart={dnd.handleDragStart(cardZone)}
-                              onDragEnd={dnd.handleDragEnd}
-                              className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
-                            >
-                              <AnimatedCard card={tc.card} width={cardWidth} draggable={false} />
-                            </button>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </DropZone>
-                {isPlaying && (
-                  <div className="flex flex-col gap-1">
-                    <button
-                      type="button"
-                      className={`${btnOutline} ${focusRingWhite} text-xs`}
-                      onClick={() => handleMoveWasteToTableau(i)}
-                      disabled={!topWaste || loading}
+            {/* Tableau */}
+            <div className="mb-3 flex gap-2" data-tutorial="cf-tableau">
+              {state.tableau.map((col, i) => {
+                const tZone: CanfieldMoveZone = { zone: 'tableau', col: i };
+                return (
+                  <div key={`t-${i}`} className="flex flex-col gap-1">
+                    <span className="text-xs text-ds-text-muted">#{i}</span>
+                    <DropZone
+                      isDropTarget={dnd.isDropTarget(tZone)}
+                      onDragOver={dnd.handleDragOver(tZone)}
+                      onDrop={dnd.handleDrop(tZone)}
+                      onDragLeave={dnd.handleDragLeave}
                     >
-                      W→{i}
-                    </button>
-                    <button
-                      type="button"
-                      className={`${btnOutline} ${focusRingWhite} text-xs`}
-                      onClick={() => handleMoveReserveToTableau(i)}
-                      disabled={!topReserve || loading}
-                    >
-                      R→{i}
-                    </button>
-                    <button
-                      type="button"
-                      className={`${btnOutline} ${focusRingWhite} text-xs`}
-                      onClick={() => handleMoveTableauToFoundation(i)}
-                      disabled={col.length === 0 || loading}
-                    >
-                      →F
-                    </button>
-                    {state.tableau.map((_, j) =>
-                      j === i ? null : (
+                      <div className="relative" style={{ width: cardWidth, minHeight: cardHeight }}>
+                        {col.length === 0 ? (
+                          <div
+                            className="rounded border border-dashed border-white/30"
+                            style={{ width: cardWidth, height: cardHeight }}
+                          />
+                        ) : (
+                          col.map((tc, j) => {
+                            const cardZone: CanfieldMoveZone = { zone: 'tableau', col: i, cardIndex: j };
+                            return (
+                              <div key={`t-${i}-${j}`} className="absolute" style={{ top: j * 24, left: 0 }}>
+                                <button
+                                  type="button"
+                                  draggable={isPlaying && !loading}
+                                  onDragStart={dnd.handleDragStart(cardZone)}
+                                  onDragEnd={dnd.handleDragEnd}
+                                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                >
+                                  <AnimatedCard card={tc.card} width={cardWidth} draggable={false} />
+                                </button>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </DropZone>
+                    {isPlaying && (
+                      <div className="flex flex-col gap-1">
                         <button
-                          key={`t-${i}-to-${j}`}
                           type="button"
                           className={`${btnOutline} ${focusRingWhite} text-xs`}
-                          onClick={() => handleMoveTableauToTableau(i, col.length - 1, j)}
+                          onClick={() => handleMoveWasteToTableau(i)}
+                          disabled={!topWaste || loading}
+                        >
+                          W→{i}
+                        </button>
+                        <button
+                          type="button"
+                          className={`${btnOutline} ${focusRingWhite} text-xs`}
+                          onClick={() => handleMoveReserveToTableau(i)}
+                          disabled={!topReserve || loading}
+                        >
+                          R→{i}
+                        </button>
+                        <button
+                          type="button"
+                          className={`${btnOutline} ${focusRingWhite} text-xs`}
+                          onClick={() => handleMoveTableauToFoundation(i)}
                           disabled={col.length === 0 || loading}
                         >
-                          →T{j}
+                          →F
                         </button>
-                      ),
+                        {state.tableau.map((_, j) =>
+                          j === i ? null : (
+                            <button
+                              key={`t-${i}-to-${j}`}
+                              type="button"
+                              className={`${btnOutline} ${focusRingWhite} text-xs`}
+                              onClick={() => handleMoveTableauToTableau(i, col.length - 1, j)}
+                              disabled={col.length === 0 || loading}
+                            >
+                              →T{j}
+                            </button>
+                          ),
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        {frontendHintEnabled && frontendHint && (
-          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
-        )}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            {frontendHintEnabled && frontendHint && (
+              <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+            )}
 
-        <ActionLogSection
-          isEndPhase={isEnded}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
+            <ActionLogSection
+              isEndPhase={isEnded}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
 
-      <GameFooter className={`${theme.footer} px-4 py-2.5`}>
-        <div className="flex flex-wrap items-center gap-2" data-tutorial="cf-action-buttons">
-          {isPlaying && (
-            <>
-              <button
-                type="button"
-                className={`${btnPrimary} ${focusRingWhite}`}
-                onClick={handleMoveReserveToFoundation}
-                disabled={!topReserve || loading}
-              >
-                {t('moveReserveToFoundation')}
-              </button>
-              <button
-                type="button"
-                className={`${btnPrimary} ${focusRingWhite}`}
-                onClick={handleMoveWasteToFoundation}
-                disabled={!topWaste || loading}
-              >
-                {t('moveWasteToFoundation')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSuccess} ${focusRingWhite}`}
-                onClick={handleHint}
-                disabled={loading}
-              >
-                {t('hint')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSuccess} ${focusRingWhite}`}
-                onClick={handleAutoComplete}
-                disabled={loading}
-              >
-                {t('autoComplete')}
-              </button>
-              <button
-                type="button"
-                className={`${btnOutline} ${focusRingWhite}`}
-                onClick={handleUndo}
-                disabled={!state.canUndo || loading}
-              >
-                {t('undo')}
-              </button>
-              <button
-                type="button"
-                className={`${btnDanger} ${focusRingWhite}`}
-                onClick={handleGiveUp}
-                disabled={loading}
-              >
-                {t('giveup')}
-              </button>
-            </>
-          )}
-          <GameResetButton
-            isGameEnd={isEnded}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="cf-reset-button"
-            className={focusRingWhite}
-          />
-        </div>
-      </GameFooter>
+          <GameFooter className={`${theme.footer} px-4 py-2.5`}>
+            <div className="flex flex-wrap items-center gap-2" data-tutorial="cf-action-buttons">
+              {isPlaying && (
+                <>
+                  <button
+                    type="button"
+                    className={`${btnPrimary} ${focusRingWhite}`}
+                    onClick={handleMoveReserveToFoundation}
+                    disabled={!topReserve || loading}
+                  >
+                    {t('moveReserveToFoundation')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnPrimary} ${focusRingWhite}`}
+                    onClick={handleMoveWasteToFoundation}
+                    disabled={!topWaste || loading}
+                  >
+                    {t('moveWasteToFoundation')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSuccess} ${focusRingWhite}`}
+                    onClick={handleHint}
+                    disabled={loading}
+                  >
+                    {t('hint')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSuccess} ${focusRingWhite}`}
+                    onClick={handleAutoComplete}
+                    disabled={loading}
+                  >
+                    {t('autoComplete')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnOutline} ${focusRingWhite}`}
+                    onClick={handleUndo}
+                    disabled={!state.canUndo || loading}
+                  >
+                    {t('undo')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnDanger} ${focusRingWhite}`}
+                    onClick={handleGiveUp}
+                    disabled={loading}
+                  >
+                    {t('giveup')}
+                  </button>
+                </>
+              )}
+              <GameResetButton
+                isGameEnd={isEnded}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="cf-reset-button"
+                className={focusRingWhite}
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
 
       <WinCelebration show={isGameClear} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />

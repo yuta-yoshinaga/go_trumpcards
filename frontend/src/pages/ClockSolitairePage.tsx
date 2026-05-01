@@ -9,6 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageHeading } from '../components/GamePageHeading';
 import { GameResetButton } from '../components/GameResetButton';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
 import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
@@ -21,6 +22,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -79,6 +81,7 @@ function ClockSolitairePageContent() {
     execApi('reset');
   }, [execApi]);
   const { cardWidth, cardHeight } = useCardDimensions();
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('clocksolitaire', state);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('clocksolitaire');
@@ -274,8 +277,19 @@ function ClockSolitairePageContent() {
             />
           </div>
 
+          {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
           <GameFooter className={`${theme.footer} px-4 py-2.5`}>
             <div className="flex flex-wrap items-center gap-2">
+              <label className="flex items-center gap-1 text-ds-text-primary text-xs">
+                <input
+                  type="checkbox"
+                  checked={hintEnabled}
+                  onChange={(e) => setHintEnabled(e.target.checked)}
+                  aria-label={tc('hint.toggle', { ns: 'tutorial' })}
+                />
+                {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
               {isPlaying && (
                 <div data-tutorial="clock-controls" className="flex gap-2">
                   <button

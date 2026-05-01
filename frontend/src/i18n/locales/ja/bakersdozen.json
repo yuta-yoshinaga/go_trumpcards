@@ -30,5 +30,9 @@
   "frontendHint": {
     "tableau": "タブロー列{{col}}",
     "foundation": "組札"
+  },
+  "hintReason": {
+    "toFoundation": "このカードを組札に上げると後の展開が楽になります",
+    "toTableau": "示唆された場札への移動でロックされたカードを動かしましょう"
   }
 }
