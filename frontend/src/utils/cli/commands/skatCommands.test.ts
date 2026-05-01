@@ -32,6 +32,16 @@ describe('parseSkatCommand', () => {
     });
   });
 
+  it('rejects out-of-range gameType', () => {
+    expect('error' in parseSkatCommand('g 0')).toBe(true);
+    expect('error' in parseSkatCommand('g 4')).toBe(true);
+  });
+
+  it('rejects out-of-range trumpSuit', () => {
+    expect('error' in parseSkatCommand('g 1 0')).toBe(true);
+    expect('error' in parseSkatCommand('g 1 5')).toBe(true);
+  });
+
   it('parses play', () => {
     expect(parseSkatCommand('p 5')).toEqual({ args: ['play', { cardIndex: 5 }] });
   });

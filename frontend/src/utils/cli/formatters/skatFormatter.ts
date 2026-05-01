@@ -28,8 +28,8 @@ const GAME_TYPE_NAMES: Record<number, string> = {
 
 const SUIT_NAMES: Record<number, string> = {
   0: '-',
-  1: '♣',
-  2: '♠',
+  1: '♠',
+  2: '♣',
   3: '♥',
   4: '♦',
 };

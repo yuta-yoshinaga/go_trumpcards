@@ -90,6 +90,56 @@ describe('formatShitheadState', () => {
     expect(result).toContain('skipped');
   });
 
+  it('renders empty discard pile placeholder', () => {
+    const result = formatShitheadState(makeState({ discardPile: [] }));
+    expect(result).toContain('discard top: [  ]');
+  });
+
+  it('renders human face-up cards when present', () => {
+    const result = formatShitheadState(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            isFinished: false,
+            rank: 0,
+            handCount: 0,
+            handCards: [],
+            faceUpCards: [{ design: 'SPADE', value: 11 }],
+            faceDownCount: 3,
+          },
+        ],
+      }),
+    );
+    expect(result).toContain('faceUp:');
+  });
+
+  it('renders finished player rank tag', () => {
+    const result = formatShitheadState(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            isFinished: true,
+            rank: 1,
+            handCount: 0,
+            handCards: [],
+            faceUpCards: [],
+            faceDownCount: 0,
+          },
+        ],
+      }),
+    );
+    expect(result).toContain('[done #1]');
+  });
+
+  it('renders message when present', () => {
+    const result = formatShitheadState(makeState({ message: 'Magic 7 played' }));
+    expect(result).toContain('Magic 7 played');
+  });
+
   it('shows game over with loser', () => {
     const result = formatShitheadState(
       makeState({

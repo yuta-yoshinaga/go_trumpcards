@@ -60,8 +60,14 @@ export function parseSkatCommand(input: string): CliParseResult<SkatArgs> {
     case 'game': {
       const gt = parseIntArg(args, 0);
       if ('error' in gt) return { error: 'Usage: g <gameType> [trumpSuit]  (1=suit 2=grand 3=null)' };
+      if (gt.value < 1 || gt.value > 3) {
+        return { error: 'gameType must be 1 (suit), 2 (grand), or 3 (null)' };
+      }
       const ts = args.length >= 2 ? parseIntArg(args, 1) : null;
       if (ts && 'error' in ts) return { error: 'Invalid trump suit' };
+      if (ts && !('error' in ts) && (ts.value < 1 || ts.value > 4)) {
+        return { error: 'trumpSuit must be 1 (spade), 2 (clover), 3 (heart), or 4 (diamond)' };
+      }
       return { args: ['game', { gameType: gt.value, trumpSuit: ts ? ts.value : undefined }] };
     }
     case 'p':

@@ -3,7 +3,7 @@ import { parseNertzCommand } from './nertzCommands';
 
 describe('parseNertzCommand', () => {
   it('parses simple commands', () => {
-    expect(parseNertzCommand('d')).toEqual({ args: ['d'] });
+    expect(parseNertzCommand('d')).toEqual({ args: ['d', { playerIdx: 0 }] });
     expect(parseNertzCommand('t')).toEqual({ args: ['tick'] });
     expect(parseNertzCommand('nr')).toEqual({ args: ['nr'] });
     expect(parseNertzCommand('u')).toEqual({ args: ['u'] });
@@ -14,25 +14,28 @@ describe('parseNertzCommand', () => {
 
   it('parses nertz-to-foundation move', () => {
     expect(parseNertzCommand('m n f')).toEqual({
-      args: ['m', { from: { zone: 'nertz', cardIndex: undefined }, to: { zone: 'foundation' } }],
+      args: ['m', { playerIdx: 0, from: { zone: 'nertz', cardIndex: undefined }, to: { zone: 'foundation' } }],
     });
   });
 
   it('parses waste-to-tableau move', () => {
     expect(parseNertzCommand('m w t2')).toEqual({
-      args: ['m', { from: { zone: 'waste', cardIndex: undefined }, to: { zone: 'tableau', col: 2 } }],
+      args: ['m', { playerIdx: 0, from: { zone: 'waste', cardIndex: undefined }, to: { zone: 'tableau', col: 2 } }],
     });
   });
 
   it('parses tableau-to-tableau with index', () => {
     expect(parseNertzCommand('m t0 3 t1')).toEqual({
-      args: ['m', { from: { zone: 'tableau', col: 0, cardIndex: 3 }, to: { zone: 'tableau', col: 1 } }],
+      args: ['m', { playerIdx: 0, from: { zone: 'tableau', col: 0, cardIndex: 3 }, to: { zone: 'tableau', col: 1 } }],
     });
   });
 
   it('parses tableau to specific foundation', () => {
     expect(parseNertzCommand('m t1 f2')).toEqual({
-      args: ['m', { from: { zone: 'tableau', col: 1, cardIndex: undefined }, to: { zone: 'foundation', idx: 2 } }],
+      args: [
+        'm',
+        { playerIdx: 0, from: { zone: 'tableau', col: 1, cardIndex: undefined }, to: { zone: 'foundation', idx: 2 } },
+      ],
     });
   });
 

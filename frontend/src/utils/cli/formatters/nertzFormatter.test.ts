@@ -92,4 +92,92 @@ describe('formatNertzState', () => {
     const result = formatNertzState(makeState({ winnerIdx: 1 }));
     expect(result).toContain('Round Winner');
   });
+
+  it('renders foundation top cards', () => {
+    const result = formatNertzState(
+      makeState({
+        foundations: [{ top: { design: 'SPADE', value: 5 }, suit: 1, size: 5 }],
+      }),
+    );
+    expect(result).toContain('foundation:');
+  });
+
+  it('renders empty foundations as placeholders', () => {
+    const result = formatNertzState(makeState({ foundations: [{ suit: 1, size: 0 }] }));
+    expect(result).toContain('foundation: [  ]');
+  });
+
+  it('renders human waste/nertz top placeholders when empty', () => {
+    const result = formatNertzState(
+      makeState({
+        players: [
+          {
+            name: 'You',
+            isHuman: true,
+            deckIdx: 0,
+            score: 0,
+            nertzSize: 0,
+            tableau: [[], [], [], []],
+            wasteSize: 0,
+            stockSize: 0,
+          },
+        ],
+      }),
+    );
+    expect(result).toContain('waste: [  ]');
+    expect(result).toContain('nertz: [  ]');
+  });
+
+  it('renders human waste/nertz top cards when present', () => {
+    const result = formatNertzState(
+      makeState({
+        players: [
+          {
+            name: 'You',
+            isHuman: true,
+            deckIdx: 0,
+            score: 0,
+            nertzSize: 5,
+            nertzTop: { design: 'CLOVER', value: 9 },
+            tableau: [[], [], [], []],
+            wasteTop: { design: 'DIAMOND', value: 3 },
+            wasteSize: 1,
+            stockSize: 25,
+          },
+        ],
+      }),
+    );
+    expect(result).toContain('waste:');
+    expect(result).toContain('nertz:');
+  });
+
+  it('renders empty tableau columns', () => {
+    const result = formatNertzState(
+      makeState({
+        players: [
+          {
+            name: 'You',
+            isHuman: true,
+            deckIdx: 0,
+            score: 0,
+            nertzSize: 0,
+            tableau: [[], [], [], []],
+            wasteSize: 0,
+            stockSize: 0,
+          },
+        ],
+      }),
+    );
+    expect(result).toContain('t0: [empty]');
+  });
+
+  it('renders unknown phase as UNKNOWN', () => {
+    const result = formatNertzState(makeState({ phase: 99 }));
+    expect(result).toContain('UNKNOWN');
+  });
+
+  it('renders message when present', () => {
+    const result = formatNertzState(makeState({ message: 'You drew a card' }));
+    expect(result).toContain('You drew a card');
+  });
 });

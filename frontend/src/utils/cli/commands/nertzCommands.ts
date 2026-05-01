@@ -32,7 +32,7 @@ export function parseNertzCommand(input: string): CliParseResult<NertzArgs> {
   switch (cmd) {
     case 'd':
     case 'draw':
-      return { args: ['d'] };
+      return { args: ['d', { playerIdx: 0 }] };
     case 't':
     case 'tick':
       return { args: ['tick'] };
@@ -111,7 +111,7 @@ function parseMoveCommand(args: string[]): CliParseResult<NertzArgs> {
   if ('error' in to) return { error: to.error };
 
   return {
-    args: ['m', { from: { ...from, cardIndex }, to }],
+    args: ['m', { playerIdx: 0, from: { ...from, cardIndex }, to }],
   };
 }
 

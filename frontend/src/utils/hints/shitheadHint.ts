@@ -3,6 +3,12 @@ import type { HintResult } from '../../types/hint';
 
 const MAGIC_TWO = 2;
 const MAGIC_TEN = 10;
+/** "High card" boundary: at value 7+ the magic-7 lock-in starts to bite,
+ * so spending a 10 (burn) here gains the most tempo. Matches Shithead's
+ * 7-rule (next play must be ≤ 7) — anything ≥ 7 is considered high. */
+const BURN_THRESHOLD = 7;
+/** "Pressure" boundary above which a magic 2 (reset) is worth spending. */
+const RESET_THRESHOLD = 9;
 
 /** Source identifiers (sync with internal/domain/Shithead.go). */
 const SOURCE_HAND = 'hand';
@@ -38,10 +44,10 @@ export function getShitheadHint(state: ShitheadResponse): HintResult | null {
   if (top === null) {
     return { targetAction: 'play.lowest', reason: 'hint.leadLowest', confidence: 'strong' };
   }
-  if (has10 && top.value >= 7) {
+  if (has10 && top.value >= BURN_THRESHOLD) {
     return { targetAction: 'play.ten', reason: 'hint.burnTen', confidence: 'strong' };
   }
-  if (has2 && top.value >= 9) {
+  if (has2 && top.value >= RESET_THRESHOLD) {
     return { targetAction: 'play.two', reason: 'hint.resetTwo', confidence: 'strong' };
   }
   return { targetAction: 'play.lowest', reason: 'hint.playLowest', confidence: 'moderate' };
