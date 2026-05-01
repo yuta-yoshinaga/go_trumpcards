@@ -19,6 +19,7 @@ Go implementations of 73 trump card game algorithms (blackjack, poker, hearts, k
 ```sh
 # Run games
 go run ./cmd/trumpcards                    # Interactive mode (switch games with 'switch <game>')
+go run ./cmd/trumpcards --start poker      # Interactive mode starting at poker (#1604)
 go run ./cmd/trumpcards --lang en          # Interactive mode in English
 go run ./cmd/trumpcards <game>             # Run a specific game (e.g., blackjack, poker, holdem)
 go run ./cmd/trumpcards --lang en <game>   # Run in English
@@ -34,6 +35,7 @@ go run ./cmd/trumpcards help blackjack  # Show help text for a specific game
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/trumpcards web --port 3000  # Start web server on custom port
 go run ./cmd/trumpcards web --host 127.0.0.1  # Bind to localhost only
+go run ./cmd/trumpcards web --open         # Start server and open browser (#1607)
 go run ./cmd/trumpcards completion bash  # Generate shell completion script (bash/zsh/fish)
 go run ./cmd/server                # Start REST API + web GUI server (direct)
 

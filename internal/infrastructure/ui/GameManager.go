@@ -1335,7 +1335,7 @@ func (m *GameManager) switchGame(name string) string {
 	}
 	if _, ok := m.games[name]; !ok {
 		msg := i18n.Tf("unknownGame", "name", name)
-		if suggestion := cuiutil.SuggestCommand(name, m.gameOrder, 2); suggestion != "" {
+		if suggestion := cuiutil.SuggestCommand(name, m.suggestionCandidates(), 2); suggestion != "" {
 			msg += "\n  " + i18n.Tf("didYouMean", "name", suggestion)
 		}
 		return i18n.MarkError(msg)
@@ -1350,6 +1350,33 @@ func (m *GameManager) switchGame(name string) string {
 		return msg + "\n" + initMsg
 	}
 	return msg
+}
+
+// suggestionCandidates returns the deduplicated set of canonical game names
+// and aliases for "did you mean" suggestions on `switch <typo>`. Mirrors the
+// helper in cmd/trumpcards/main.go added in #1555 so a typo of an alias (e.g.
+// "gni" for "gin") recovers the alias in interactive mode the same way it does
+// at the top-level CLI. The local `add` closure matches the style used by
+// helpSuggestionCandidates / suggestionCandidates(commands) in main.go so
+// future readers see one dedup pattern instead of two. See issues #1602, #1625.
+func (m *GameManager) suggestionCandidates() []string {
+	capacity := len(m.gameOrder) + len(GameAliases)
+	seen := make(map[string]struct{}, capacity)
+	out := make([]string, 0, capacity)
+	add := func(name string) {
+		if _, ok := seen[name]; ok {
+			return
+		}
+		seen[name] = struct{}{}
+		out = append(out, name)
+	}
+	for _, n := range m.gameOrder {
+		add(n)
+	}
+	for alias := range GameAliases {
+		add(alias)
+	}
+	return out
 }
 
 func (m *GameManager) listGames() string {

@@ -89,6 +89,21 @@ func TestHandlePromptLoop_EOF_ReturnsQuit(t *testing.T) {
 	assert.Empty(t, me.calls)
 }
 
+// TestHandlePromptLoop_GameNameInPrompt verifies issue #1605: the gameName
+// passed to handlePromptLoop threads through to the per-prompt readInput so
+// chained-prompt input lines also carry the "[gameName] > " context. This
+// matches the top-level readInput contract (issue #1605 makes the
+// single-game-mode loop use the same gameName as interactive mode).
+func TestHandlePromptLoop_GameNameInPrompt(t *testing.T) {
+	t.Parallel()
+	scanner := bufio.NewScanner(strings.NewReader("100\n"))
+	var buf bytes.Buffer
+	me := &promptMockExecer{results: []string{"bet ok"}}
+	prompt := cuiutil.PromptRequest("Enter bet amount:", "b {0}")
+	_ = handlePromptLoop(scanner, me, prompt, "blackjack", &buf)
+	assert.Contains(t, buf.String(), "[blackjack] > ", "prompt must include gameName context")
+}
+
 func TestHandlePromptLoop_MalformedPrompt(t *testing.T) {
 	t.Parallel()
 	scanner := bufio.NewScanner(strings.NewReader(""))

@@ -289,6 +289,31 @@ func TestGameManager_SwitchAliasMultiple(t *testing.T) {
 	}
 }
 
+// TestGameManager_SwitchAliasTypoSuggestion verifies that `switch <typo>` of
+// a known alias surfaces the alias as a "did you mean" suggestion (issue
+// #1602). Before #1602 the candidate list excluded aliases, so a typo of an
+// alias either suggested a far-off canonical name or nothing at all.
+func TestGameManager_SwitchAliasTypoSuggestion(t *testing.T) {
+	tests := []struct {
+		typo string
+		want string
+	}{
+		{"gni", "gin"},       // distance 2 from alias "gin"
+		{"7stu", "7stud"},    // distance 1 from alias "7stud"
+		{"crazy9", "crazy8"}, // distance 1 from alias "crazy8"
+	}
+	for _, tt := range tests {
+		t.Run(tt.typo, func(t *testing.T) {
+			mgr := NewGameManager("blackjack")
+			res := mgr.Exec("switch " + tt.typo)
+			assert.Equal(t, "blackjack", mgr.CurrentGame(), "current game must not change on unknown switch")
+			assert.Contains(t, res, "Unknown game")
+			assert.Contains(t, res, "Did you mean")
+			assert.Contains(t, res, tt.want)
+		})
+	}
+}
+
 func TestGameAliases_AllPointToValidGames(t *testing.T) {
 	gameSet := make(map[string]bool, len(GameNames()))
 	for _, name := range GameNames() {

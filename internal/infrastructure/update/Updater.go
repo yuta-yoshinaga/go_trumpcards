@@ -74,6 +74,10 @@ type Updater struct {
 	// message to errWriter, then returns without prompting or downloading.
 	// See issue #1484.
 	checkOnly bool
+	// quiet: when true, suppress the human-friendly "checking latest
+	// release..." status line that runs before the GitHub API call.
+	// See issue #1606.
+	quiet bool
 }
 
 // SetAutoConfirm enables or disables the automatic confirmation of updates,
@@ -120,6 +124,15 @@ func (u *Updater) SetReportCancelledAsError(v bool) {
 	u.reportCancelledAsError = v
 }
 
+// SetQuiet toggles suppression of the one-line "checking latest release..."
+// status message that runs before the GitHub API call. The message exists so
+// users on slow networks see that the binary is alive during the up-to-60s
+// HTTP timeout (issue #1606); --quiet / TRUMPCARDS_QUIET=1 callers turn it
+// off the same way they turn off other interactive-only output.
+func (u *Updater) SetQuiet(v bool) {
+	u.quiet = v
+}
+
 // SetCheckOnly toggles check-only (dry-run) mode. When enabled, Exec fetches
 // the latest release metadata, writes a tab-separated summary line
 // (`<latest>\t<status>\t<current>`) to writer and a human-friendly message to
@@ -139,6 +152,16 @@ func (u *Updater) SetCheckOnly(v bool) {
 // exit code via errors.Is. See issues #1449, #1484.
 func (u *Updater) Exec() error {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", u.repoOwner, u.repoName)
+
+	// Surface a one-line "checking..." message so the user knows the binary
+	// is alive during the GitHub API call (httpClient.Timeout is 60s — slow
+	// networks or rate-limited responses can otherwise look like a freeze).
+	// Goes to errWriter (stderr) so --check's stdout (machine-readable
+	// summary line) stays clean. Suppressed by SetQuiet(true). See #1606.
+	if !u.quiet {
+		_, _ = fmt.Fprintln(u.errWriter, i18n.T("updateCheckingLatest"))
+	}
+
 	resp, err := u.httpClient.Get(url) //nolint:noctx // simple GET to GitHub API
 	if err != nil {
 		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", err.Error()))

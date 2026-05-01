@@ -84,6 +84,31 @@ func TestSetQuiet_TogglesFlag(t *testing.T) {
 	}
 }
 
+// TestSetOnReady_StoresAndAcceptsNil verifies issue #1607: the SetOnReady
+// hook stores the callback so Exec can fire it after binding the listener,
+// and passing nil clears any previously registered hook. We don't drive a
+// full Exec here (would bind a real port and run accept loops); the unit
+// test only pins the setter contract.
+func TestSetOnReady_StoresAndAcceptsNil(t *testing.T) {
+	w := NewTrumpCardsWeb()
+	if w.onReady != nil {
+		t.Fatal("onReady must default to nil")
+	}
+	called := 0
+	w.SetOnReady(func(string) { called++ })
+	if w.onReady == nil {
+		t.Fatal("SetOnReady did not store the callback")
+	}
+	w.onReady("127.0.0.1:8080")
+	if called != 1 {
+		t.Fatalf("stored callback not invoked; calls=%d", called)
+	}
+	w.SetOnReady(nil)
+	if w.onReady != nil {
+		t.Fatal("SetOnReady(nil) did not clear the callback")
+	}
+}
+
 // TestSetStderr_RedirectsSink verifies the free-text sink is injectable.
 // Tests that don't want to read from os.Stderr (most of them) can point
 // SetStderr at a bytes.Buffer and still cover the emit paths.
