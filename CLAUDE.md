@@ -22,13 +22,8 @@ go run ./cmd/trumpcards                    # Interactive mode (switch games with
 go run ./cmd/trumpcards --lang en          # Interactive mode in English
 go run ./cmd/trumpcards <game>             # Run a specific game (e.g., blackjack, poker, holdem)
 go run ./cmd/trumpcards --lang en <game>   # Run in English
-# Available games: blackjack, poker, oldmaid, daifugo, sevens, doubt, holdem, omaha,
-# shortdeck, pineapple, crazypineapple, hearts, memory, klondike, freecell, baccarat, spades,
-# twotenjack, crazyeights, ginrummy, spider, napoleon, indianpoker, videopoker,
-# deuceswild, jokerpoker, euchre, pyramid, tripeaks, cribbage, threecard, caribbeanstud, texasholdembonus, ohhell,
-# bridge, speed, gofish, canasta, pinochle, golf, pigtail, sevencardstud,
-# clocksolitaire, durak, fortythieves, paigow, war, canfield, fiftyone, yukon, whist,
-# letitride, pokersquares, pageone, reddog, razz, badugi, scorpion, accordion, trash, sevenbridge, president, cassino, spanish21, calculation, spiteandmalice, skat, shithead, nertz, slapjack, egyptianratscrew, bakersdozen, tonk
+# Run `go run ./cmd/trumpcards games --short` for the canonical list of game names
+# (the SSoT lives in `internal/infrastructure/games/registry.go`).
 go run ./cmd/trumpcards games      # List all available games
 go run ./cmd/trumpcards games --short  # List game names only (for scripting)
 go run ./cmd/trumpcards update     # Self-update to the latest version
