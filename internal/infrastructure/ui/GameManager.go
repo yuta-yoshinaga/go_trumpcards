@@ -1356,21 +1356,25 @@ func (m *GameManager) switchGame(name string) string {
 // and aliases for "did you mean" suggestions on `switch <typo>`. Mirrors the
 // helper in cmd/trumpcards/main.go added in #1555 so a typo of an alias (e.g.
 // "gni" for "gin") recovers the alias in interactive mode the same way it does
-// at the top-level CLI. See issue #1602.
+// at the top-level CLI. The local `add` closure matches the style used by
+// helpSuggestionCandidates / suggestionCandidates(commands) in main.go so
+// future readers see one dedup pattern instead of two. See issues #1602, #1625.
 func (m *GameManager) suggestionCandidates() []string {
-	seen := make(map[string]struct{}, len(m.gameOrder)+len(GameAliases))
-	out := make([]string, 0, len(m.gameOrder)+len(GameAliases))
-	for _, n := range m.gameOrder {
-		if _, ok := seen[n]; !ok {
-			seen[n] = struct{}{}
-			out = append(out, n)
+	capacity := len(m.gameOrder) + len(GameAliases)
+	seen := make(map[string]struct{}, capacity)
+	out := make([]string, 0, capacity)
+	add := func(name string) {
+		if _, ok := seen[name]; ok {
+			return
 		}
+		seen[name] = struct{}{}
+		out = append(out, name)
+	}
+	for _, n := range m.gameOrder {
+		add(n)
 	}
 	for alias := range GameAliases {
-		if _, ok := seen[alias]; !ok {
-			seen[alias] = struct{}{}
-			out = append(out, alias)
-		}
+		add(alias)
 	}
 	return out
 }
