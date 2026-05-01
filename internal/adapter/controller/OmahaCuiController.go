@@ -31,7 +31,8 @@ var omahaNoArgCommands = cuiutil.NewCommandMap[usecase.OmahaInteractorIF]().
 	Add(usecase.OmahaInteractorIF.Addon, "ad", "addon").
 	Add(usecase.OmahaInteractorIF.SkipAddon, "sa", "skipaddon").
 	Add(usecase.OmahaInteractorIF.Muck, "m", "muck").
-	Add(usecase.OmahaInteractorIF.ShowHand, "sh", "show")
+	Add(usecase.OmahaInteractorIF.ShowHand, "sh", "show").
+	Add(usecase.OmahaInteractorIF.ActionLog, "log", "l")
 
 // omahaArgfulCommands lists alias names for argful commands handled in the
 // Exec switch.
@@ -41,7 +42,6 @@ var omahaArgfulCommands = []string{
 	"sb", "smallblind", "bb", "bigblind",
 	"lh", "levelhand", "ts", "tablesize",
 	"mai", "metaai",
-	"log", "l",
 }
 
 // OmahaCuiController オマハホールデムCUIコントローラークラス
@@ -161,7 +161,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				cfg.CpuMetaAI = v == 1
 				return c.oi.ResetWithConfig(cfg, nil), true
 			default:
-				return handleCuiLog(cmd, c.oi.ActionLog)
+				return "", false
 			}
 		},
 	)

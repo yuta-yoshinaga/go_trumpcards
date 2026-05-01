@@ -32,7 +32,8 @@ var shortDeckNoArgCommands = cuiutil.NewCommandMap[usecase.ShortDeckInteractorIF
 	Add(usecase.ShortDeckInteractorIF.Addon, "ad", "addon").
 	Add(usecase.ShortDeckInteractorIF.SkipAddon, "sa", "skipaddon").
 	Add(usecase.ShortDeckInteractorIF.Muck, "m", "muck").
-	Add(usecase.ShortDeckInteractorIF.ShowHand, "sh", "show")
+	Add(usecase.ShortDeckInteractorIF.ShowHand, "sh", "show").
+	Add(usecase.ShortDeckInteractorIF.ActionLog, "log", "l")
 
 // shortDeckArgfulCommands lists alias names for the argful commands handled in
 // the Exec switch. The CommandMap covers no-arg aliases automatically; these
@@ -43,7 +44,6 @@ var shortDeckArgfulCommands = []string{
 	"sb", "smallblind", "bb", "bigblind",
 	"lh", "levelhand", "ts", "tablesize",
 	"mai", "metaai",
-	"log", "l",
 }
 
 // ShortDeckCuiController ショートデックホールデムCUIコントローラークラス
@@ -163,7 +163,7 @@ func (c *ShortDeckCuiController) Exec(command string) string {
 				cfg.CpuMetaAI = v == 1
 				return c.oi.ResetWithConfig(cfg, nil), true
 			default:
-				return handleCuiLog(cmd, c.oi.ActionLog)
+				return "", false
 			}
 		},
 	)

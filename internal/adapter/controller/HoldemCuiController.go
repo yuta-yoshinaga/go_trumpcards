@@ -33,7 +33,8 @@ var holdemNoArgCommands = cuiutil.NewCommandMap[usecase.HoldemInteractorIF]().
 	Add(usecase.HoldemInteractorIF.Addon, "ad", "addon").
 	Add(usecase.HoldemInteractorIF.SkipAddon, "sa", "skipaddon").
 	Add(usecase.HoldemInteractorIF.Muck, "m", "muck").
-	Add(usecase.HoldemInteractorIF.ShowHand, "sh", "show")
+	Add(usecase.HoldemInteractorIF.ShowHand, "sh", "show").
+	Add(usecase.HoldemInteractorIF.ActionLog, "log", "l")
 
 // holdemArgfulCommands lists alias names for the argful commands handled in
 // the Exec switch. The CommandMap covers no-arg aliases automatically; these
@@ -44,7 +45,6 @@ var holdemArgfulCommands = []string{
 	"sb", "smallblind", "bb", "bigblind",
 	"lh", "levelhand", "ts", "tablesize",
 	"mai", "metaai",
-	"log", "l",
 }
 
 // HoldemCuiController テキサスホールデムCUIコントローラークラス
@@ -164,7 +164,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				cfg.CpuMetaAI = v == 1
 				return c.hi.ResetWithConfig(cfg, nil), true
 			default:
-				return handleCuiLog(cmd, c.hi.ActionLog)
+				return "", false
 			}
 		},
 	)

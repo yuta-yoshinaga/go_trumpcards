@@ -31,7 +31,8 @@ var sevenCardStudNoArgCommands = cuiutil.NewCommandMap[usecase.SevenCardStudInte
 	Add(usecase.SevenCardStudInteractorIF.Addon, "ad", "addon").
 	Add(usecase.SevenCardStudInteractorIF.SkipAddon, "sa", "skipaddon").
 	Add(usecase.SevenCardStudInteractorIF.Muck, "m", "muck").
-	Add(usecase.SevenCardStudInteractorIF.ShowHand, "sh", "show")
+	Add(usecase.SevenCardStudInteractorIF.ShowHand, "sh", "show").
+	Add(usecase.SevenCardStudInteractorIF.ActionLog, "log", "l")
 
 // sevenCardStudArgfulCommands lists alias names for argful commands handled in
 // the Exec switch.
@@ -41,7 +42,6 @@ var sevenCardStudArgfulCommands = []string{
 	"ante", "bi", "bringin", "sb", "smallbet", "bb", "bigbet",
 	"lh", "levelhand", "ts", "tablesize",
 	"mai", "metaai",
-	"log", "l",
 }
 
 // SevenCardStudCuiController セブンカードスタッドCUIコントローラークラス
@@ -183,7 +183,7 @@ func (c *SevenCardStudCuiController) Exec(command string) string {
 				cfg.CpuMetaAI = v == 1
 				return c.si.ResetWithConfig(cfg, nil), true
 			default:
-				return handleCuiLog(cmd, c.si.ActionLog)
+				return "", false
 			}
 		},
 	)

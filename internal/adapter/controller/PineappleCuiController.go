@@ -32,7 +32,8 @@ var pineappleNoArgCommands = cuiutil.NewCommandMap[usecase.PineappleInteractorIF
 	Add(usecase.PineappleInteractorIF.Addon, "ad", "addon").
 	Add(usecase.PineappleInteractorIF.SkipAddon, "sa", "skipaddon").
 	Add(usecase.PineappleInteractorIF.Muck, "m", "muck").
-	Add(usecase.PineappleInteractorIF.ShowHand, "sh", "show")
+	Add(usecase.PineappleInteractorIF.ShowHand, "sh", "show").
+	Add(usecase.PineappleInteractorIF.ActionLog, "log", "l")
 
 // pineappleArgfulCommands lists alias names for argful commands handled in the
 // Exec switch.
@@ -42,7 +43,6 @@ var pineappleArgfulCommands = []string{
 	"sb", "smallblind", "bb", "bigblind",
 	"lh", "levelhand", "ts", "tablesize",
 	"mai", "metaai",
-	"log", "l",
 }
 
 // PineappleCuiController パイナップルポーカーCUIコントローラークラス
@@ -171,7 +171,7 @@ func (c *PineappleCuiController) Exec(command string) string {
 				cfg.CpuMetaAI = v == 1
 				return c.pi.ResetWithConfig(cfg, nil), true
 			default:
-				return handleCuiLog(cmd, c.pi.ActionLog)
+				return "", false
 			}
 		},
 	)
