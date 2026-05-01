@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { threecardApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,7 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { ThreeCardSkeleton } from '../components/skeleton/ThreeCardSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,6 +26,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -70,14 +71,7 @@ const HAND_RANK_KEYS: Record<number, string> = {
 };
 
 /** Renders the Three Card Poker game page with betting, action, and result display. */
-export function ThreeCardPage() {
-  return (
-    <TutorialWrapper gameName="threecard" steps={TC_TUTORIAL_STEPS}>
-      <ThreeCardPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const ThreeCardPage = withTutorial(ThreeCardPageContent, 'threecard', TC_TUTORIAL_STEPS);
 /** Inner content of the Three Card Poker page, wrapped by TutorialProvider. */
 function ThreeCardPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -103,9 +97,7 @@ function ThreeCardPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const isBetPhase = state?.phase === ThreeCardPhase.BET;
   const isActionPhase = state?.phase === ThreeCardPhase.ACTION;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { type AccordionMoveZone, accordionApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,7 +19,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -27,6 +27,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -110,14 +111,7 @@ function formatAccordionState(state: AccordionResponse): string {
 }
 
 /** Renders the Accordion solitaire game page. */
-export function AccordionPage() {
-  return (
-    <TutorialWrapper gameName="accordion" steps={AC_TUTORIAL_STEPS}>
-      <AccordionPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const AccordionPage = withTutorial(AccordionPageContent, 'accordion', AC_TUTORIAL_STEPS);
 /** Inner content of the Accordion page. */
 function AccordionPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -131,9 +125,7 @@ function AccordionPageContent() {
     retry,
   } = useGameApi<AccordionResponse, ApiArgs>((...args) => accordionApi.exec(...args));
 
-  useEffect(() => {
-    void apiCall('reset');
-  }, [apiCall]);
+  useMountReset(apiCall);
 
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
 

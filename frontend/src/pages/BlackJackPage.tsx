@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi, spanish21Api } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -43,6 +43,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -72,6 +73,9 @@ function useSuggestionLabels(t: (key: string) => string): Record<number, string>
     [BJ_SUGGEST_SPLIT]: t('suggest.split'),
     [BJ_SUGGEST_SURRENDER]: t('suggest.surrender'),
     [BJ_SUGGEST_DECLINE_INSURANCE]: t('suggest.decline'),
+    // Basic-strategy "Ds" — double if allowed, otherwise stand. UI surfaces the
+    // primary intent ("double") because the stand fallback is an internal state
+    // used when the player can no longer double (post-split, low chips).
     [BJ_SUGGEST_DOUBLE_STAND]: t('suggest.double'),
   };
 }
@@ -185,9 +189,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   );
   const { handleCommand } = useCliGame(exec, bjCliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
+  useMountReset(exec);
 
   const phase = state?.phase ?? BjPhase.BET;
   const isRoundInProgress =

@@ -15,7 +15,7 @@ import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { TwoTenJackSkeleton } from '../components/skeleton/TwoTenJackSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -92,14 +92,7 @@ function trumpSymbol(trumpSuit: number): string {
 }
 
 /** Renders the Two Ten Jack game page: declare trump, trick play, and team scoring. */
-export function TwoTenJackPage() {
-  return (
-    <TutorialWrapper gameName="twotenjack" steps={TTJ_TUTORIAL_STEPS}>
-      <TwoTenJackPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const TwoTenJackPage = withTutorial(TwoTenJackPageContent, 'twotenjack', TTJ_TUTORIAL_STEPS);
 /** Inner content of the Two Ten Jack page, wrapped by TutorialProvider. */
 function TwoTenJackPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

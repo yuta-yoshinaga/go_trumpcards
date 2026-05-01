@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { type YukonMoveZone, yukonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -21,7 +21,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -30,6 +30,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -143,14 +144,7 @@ function formatYukonState(state: YukonResponse): string {
 }
 
 /** Renders the Yukon solitaire game page. */
-export function YukonPage() {
-  return (
-    <TutorialWrapper gameName="yukon" steps={YK_TUTORIAL_STEPS}>
-      <YukonPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const YukonPage = withTutorial(YukonPageContent, 'yukon', YK_TUTORIAL_STEPS);
 /** Inner content of the Yukon page. */
 function YukonPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -165,9 +159,7 @@ function YukonPageContent() {
     retry,
   } = useGameApi<YukonResponse, Parameters<typeof yukonApi.exec>>((...args) => yukonApi.exec(...args));
 
-  useEffect(() => {
-    void apiExec('reset');
-  }, [apiExec]);
+  useMountReset(apiExec);
 
   const [selectedSource, setSelectedSource] = useState<YukonMoveZone | null>(null);
 

@@ -17,7 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GinRummySkeleton } from '../components/skeleton/GinRummySkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -85,14 +85,7 @@ const GR_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Gin Rummy game page with draw, discard, knock, and layoff phases. */
-export function GinRummyPage() {
-  return (
-    <TutorialWrapper gameName="ginrummy" steps={GR_TUTORIAL_STEPS}>
-      <GinRummyPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const GinRummyPage = withTutorial(GinRummyPageContent, 'ginrummy', GR_TUTORIAL_STEPS);
 /** Inner content of the Gin Rummy page, wrapped by TutorialProvider. */
 function GinRummyPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

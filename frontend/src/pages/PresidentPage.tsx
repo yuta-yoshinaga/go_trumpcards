@@ -15,7 +15,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -77,14 +77,7 @@ const PRESIDENT_RANK_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the President (プレジデント) game page. */
-export function PresidentPage() {
-  return (
-    <TutorialWrapper gameName="president" steps={PR_TUTORIAL_STEPS}>
-      <PresidentPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PresidentPage = withTutorial(PresidentPageContent, 'president', PR_TUTORIAL_STEPS);
 function PresidentPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('president');

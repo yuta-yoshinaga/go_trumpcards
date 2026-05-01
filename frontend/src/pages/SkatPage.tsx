@@ -11,7 +11,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -69,14 +69,7 @@ const SKAT_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Skat (German trick-taking) game page. */
-export function SkatPage() {
-  return (
-    <TutorialWrapper gameName="skat" steps={SKAT_TUTORIAL_STEPS}>
-      <SkatPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const SkatPage = withTutorial(SkatPageContent, 'skat', SKAT_TUTORIAL_STEPS);
 /** Inner content of the Skat page. */
 function SkatPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

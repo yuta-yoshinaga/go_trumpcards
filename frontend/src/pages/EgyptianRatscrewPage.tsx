@@ -16,7 +16,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -24,6 +24,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { gameTheme } from '../styles/gameTheme';
 import type { EgyptianRatscrewResponse } from '../types/card';
 import { EgyptianRatscrewEventKind, EgyptianRatscrewPendingKind, EgyptianRatscrewPhase } from '../types/phases';
@@ -62,14 +63,7 @@ const ER_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Egyptian Ratscrew game page. */
-export function EgyptianRatscrewPage() {
-  return (
-    <TutorialWrapper gameName="egyptianratscrew" steps={ER_TUTORIAL_STEPS}>
-      <EgyptianRatscrewPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const EgyptianRatscrewPage = withTutorial(EgyptianRatscrewPageContent, 'egyptianratscrew', ER_TUTORIAL_STEPS);
 function EgyptianRatscrewPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('egyptianratscrew');
@@ -86,9 +80,7 @@ function EgyptianRatscrewPageContent() {
   const handleSlap = useCallback(() => execApi('slap'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   // CPU tick driver: poll only while a CPU action is pending. Narrow deps so
   // the interval is not torn down on every state change.

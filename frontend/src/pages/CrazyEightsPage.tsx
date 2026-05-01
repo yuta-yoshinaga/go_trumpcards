@@ -17,7 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { CrazyEightsSkeleton } from '../components/skeleton/CrazyEightsSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -92,14 +92,7 @@ const CE_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Crazy Eights game page with card play and suit selection. */
-export function CrazyEightsPage() {
-  return (
-    <TutorialWrapper gameName="crazyeights" steps={CE_TUTORIAL_STEPS}>
-      <CrazyEightsPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const CrazyEightsPage = withTutorial(CrazyEightsPageContent, 'crazyeights', CE_TUTORIAL_STEPS);
 /** Inner content of the Crazy Eights page, wrapped by TutorialProvider. */
 function CrazyEightsPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { letitrideApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,7 +19,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { LetItRideSkeleton } from '../components/skeleton/LetItRideSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -28,6 +28,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -77,14 +78,7 @@ const HAND_RANK_KEYS: Record<number, string> = {
 };
 
 /** Renders the Let It Ride game page with betting, decision, and result display. */
-export function LetItRidePage() {
-  return (
-    <TutorialWrapper gameName="letitride" steps={LIR_TUTORIAL_STEPS}>
-      <LetItRidePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const LetItRidePage = withTutorial(LetItRidePageContent, 'letitride', LIR_TUTORIAL_STEPS);
 /** Inner content of the Let It Ride page, wrapped by TutorialProvider. */
 function LetItRidePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -113,9 +107,7 @@ function LetItRidePageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const isBetPhase = state?.phase === LetItRidePhase.BET;
   const isFirstDecision = state?.phase === LetItRidePhase.FIRST_DECISION;

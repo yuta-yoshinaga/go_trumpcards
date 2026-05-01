@@ -34,7 +34,15 @@ export const BJ_SUGGEST_SPLIT = 4;
 export const BJ_SUGGEST_SURRENDER = 5;
 /** Suggested action: decline insurance. Must match domain `BJSuggestedAction` value. */
 export const BJ_SUGGEST_DECLINE_INSURANCE = 6;
-/** Suggested action: double if allowed, otherwise stand. Must match domain `BJSuggestedAction` value. */
+/**
+ * Suggested action: "Double if allowed, otherwise Stand" — basic strategy
+ * notation "Ds". Distinct from `BJ_SUGGEST_DOUBLE` because the backend emits
+ * this when the optimal action is double-down but the rules at this turn might
+ * disallow it (post-split, low chips). The UI displays it as plain "Double"
+ * via `useSuggestionLabels` in `BlackJackPage.tsx`.
+ *
+ * Must match domain `BJSuggestedAction` value.
+ */
 export const BJ_SUGGEST_DOUBLE_STAND = 7;
 
 /** Return a CSS class with highlight ring when the action is suggested. */

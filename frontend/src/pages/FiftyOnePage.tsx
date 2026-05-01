@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { fiftyoneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,7 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { FiftyOneSkeleton } from '../components/skeleton/FiftyOneSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -25,6 +25,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { gameTheme } from '../styles/gameTheme';
 import type { FiftyOneResponse } from '../types/card';
 import { FiftyOnePhase } from '../types/phases';
@@ -69,14 +70,7 @@ const FO_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Fifty-one (フィフティワン) game page. */
-export function FiftyOnePage() {
-  return (
-    <TutorialWrapper gameName="fiftyone" steps={FO_TUTORIAL_STEPS}>
-      <FiftyOnePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const FiftyOnePage = withTutorial(FiftyOnePageContent, 'fiftyone', FO_TUTORIAL_STEPS);
 /** Inner content of the Fifty-one page. */
 function FiftyOnePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -111,9 +105,7 @@ function FiftyOnePageContent() {
 
   const handleStop = useCallback(() => execApi('stop'), [execApi]);
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fiftyone');

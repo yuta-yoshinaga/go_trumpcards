@@ -17,7 +17,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { SkeletonHand } from '../components/skeleton/SkeletonHand';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -70,14 +70,7 @@ const DURAK_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Durak game page with attack/defense mechanics. */
-export function DurakPage() {
-  return (
-    <TutorialWrapper gameName="durak" steps={DURAK_TUTORIAL_STEPS}>
-      <DurakPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const DurakPage = withTutorial(DurakPageContent, 'durak', DURAK_TUTORIAL_STEPS);
 /** Loading skeleton for the Durak page. */
 function DurakSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();

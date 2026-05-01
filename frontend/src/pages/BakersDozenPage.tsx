@@ -20,7 +20,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { BakersDozenSkeleton } from '../components/skeleton/BakersDozenSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBakersDozenGame } from '../hooks/useBakersDozenGame';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
@@ -72,14 +72,7 @@ const BD_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Baker's Dozen solitaire game page with 13 tableau columns and 4 foundations. */
-export function BakersDozenPage() {
-  return (
-    <TutorialWrapper gameName="bakersdozen" steps={BD_TUTORIAL_STEPS}>
-      <BakersDozenPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const BakersDozenPage = withTutorial(BakersDozenPageContent, 'bakersdozen', BD_TUTORIAL_STEPS);
 /** Format a frontend hint zone for display. */
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, col: number): string {
   if (zone === 'foundation') return t('frontendHint.foundation');

@@ -20,7 +20,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { DoubtSkeleton } from '../components/skeleton/DoubtSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCardSwipeSelection } from '../hooks/useCardSwipeSelection';
@@ -90,14 +90,7 @@ const DT_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Doubt game page with card play, doubt window countdown, and config. */
-export function DoubtPage() {
-  return (
-    <TutorialWrapper gameName="doubt" steps={DT_TUTORIAL_STEPS}>
-      <DoubtPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const DoubtPage = withTutorial(DoubtPageContent, 'doubt', DT_TUTORIAL_STEPS);
 /** Inner content of the Doubt page, wrapped by TutorialProvider. */
 function DoubtPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

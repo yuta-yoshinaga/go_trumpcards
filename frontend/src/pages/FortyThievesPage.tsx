@@ -21,7 +21,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { FortyThievesSkeleton } from '../components/skeleton/FortyThievesSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -71,14 +71,7 @@ const FT_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Forty Thieves solitaire game page with tableau, stock/waste, and foundation. */
-export function FortyThievesPage() {
-  return (
-    <TutorialWrapper gameName="fortythieves" steps={FT_TUTORIAL_STEPS}>
-      <FortyThievesPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const FortyThievesPage = withTutorial(FortyThievesPageContent, 'fortythieves', FT_TUTORIAL_STEPS);
 /** Format a frontend hint zone for display. */
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, col: number): string {
   if (zone === 'waste') return t('frontendHint.waste');

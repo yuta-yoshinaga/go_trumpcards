@@ -22,7 +22,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -31,6 +31,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -88,14 +89,7 @@ const SCS_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Seven Card Stud game page with door cards, betting, and showdown. */
-export function SevenCardStudPage() {
-  return (
-    <TutorialWrapper gameName="sevencardstud" steps={SCS_TUTORIAL_STEPS}>
-      <SevenCardStudPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const SevenCardStudPage = withTutorial(SevenCardStudPageContent, 'sevencardstud', SCS_TUTORIAL_STEPS);
 /** Inner content of the Seven Card Stud page, wrapped by TutorialProvider. */
 function SevenCardStudPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -176,9 +170,7 @@ function SevenCardStudPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('sevencardstud', state);
   const turnStartRef = useRef(0);
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();

@@ -19,7 +19,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GolfSkeleton } from '../components/skeleton/GolfSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -73,14 +73,7 @@ const GOLF_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Golf Solitaire game page with 7 columns, stock/waste, and controls. */
-export function GolfPage() {
-  return (
-    <TutorialWrapper gameName="golf" steps={GOLF_TUTORIAL_STEPS}>
-      <GolfPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const GolfPage = withTutorial(GolfPageContent, 'golf', GOLF_TUTORIAL_STEPS);
 /** Inner content of the Golf page, wrapped by TutorialProvider. */
 function GolfPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

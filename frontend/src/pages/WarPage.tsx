@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { warApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -17,7 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { WarSkeleton } from '../components/skeleton/WarSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -25,6 +25,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { gameTheme } from '../styles/gameTheme';
 import type { WarResponse } from '../types/card';
 import { WarPhase } from '../types/phases';
@@ -60,14 +61,7 @@ const WR_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the War (戦争) game page. */
-export function WarPage() {
-  return (
-    <TutorialWrapper gameName="war" steps={WR_TUTORIAL_STEPS}>
-      <WarPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const WarPage = withTutorial(WarPageContent, 'war', WR_TUTORIAL_STEPS);
 /** Inner content of the War page. */
 function WarPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -85,9 +79,7 @@ function WarPageContent() {
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   const handleReset = useCallback(() => execApi('reset', { maxRounds }), [execApi, maxRounds]);
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('war');

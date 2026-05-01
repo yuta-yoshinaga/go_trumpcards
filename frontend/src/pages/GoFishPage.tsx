@@ -19,7 +19,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GoFishSkeleton } from '../components/skeleton/GoFishSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -76,14 +76,7 @@ const GOFISH_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Go Fish game page. */
-export function GoFishPage() {
-  return (
-    <TutorialWrapper gameName="gofish" steps={GF_TUTORIAL_STEPS}>
-      <GoFishPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const GoFishPage = withTutorial(GoFishPageContent, 'gofish', GF_TUTORIAL_STEPS);
 /** Inner content of the Go Fish page, wrapped by TutorialProvider. */
 function GoFishPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

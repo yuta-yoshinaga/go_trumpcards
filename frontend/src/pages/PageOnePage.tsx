@@ -17,7 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PageOneSkeleton } from '../components/skeleton/PageOneSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -73,14 +73,7 @@ const PAGEONE_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Page One game page with card play and declaration mechanic. */
-export function PageOnePage() {
-  return (
-    <TutorialWrapper gameName="pageone" steps={PAGEONE_TUTORIAL_STEPS}>
-      <PageOnePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PageOnePage = withTutorial(PageOnePageContent, 'pageone', PAGEONE_TUTORIAL_STEPS);
 /** Inner content of the Page One page, wrapped by TutorialProvider. */
 function PageOnePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

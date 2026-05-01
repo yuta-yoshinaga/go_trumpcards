@@ -20,7 +20,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { TriPeaksSkeleton } from '../components/skeleton/TriPeaksSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -83,14 +83,7 @@ const TP_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the TriPeaks Solitaire game page with three peaks, stock/waste, and controls. */
-export function TriPeaksPage() {
-  return (
-    <TutorialWrapper gameName="tripeaks" steps={TP_TUTORIAL_STEPS}>
-      <TriPeaksPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const TriPeaksPage = withTutorial(TriPeaksPageContent, 'tripeaks', TP_TUTORIAL_STEPS);
 /** Inner content of the TriPeaks page, wrapped by TutorialProvider. */
 function TriPeaksPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

@@ -17,7 +17,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { CribbageSkeleton } from '../components/skeleton/CribbageSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -85,14 +85,7 @@ const CB_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Cribbage game page with discard, pegging, show, and round phases. */
-export function CribbagePage() {
-  return (
-    <TutorialWrapper gameName="cribbage" steps={CB_TUTORIAL_STEPS}>
-      <CribbagePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const CribbagePage = withTutorial(CribbagePageContent, 'cribbage', CB_TUTORIAL_STEPS);
 /** Inline peg board showing score progress as a simple bar. */
 function PegBoard({ scores, pointLimit }: { scores: { name: string; score: number }[]; pointLimit: number }) {
   return (

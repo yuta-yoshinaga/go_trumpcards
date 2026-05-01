@@ -18,7 +18,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { MemorySkeleton } from '../components/skeleton/MemorySkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -76,14 +76,7 @@ const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Memory card matching game page with board grid and scores. */
-export function MemoryPage() {
-  return (
-    <TutorialWrapper gameName="memory" steps={MEM_TUTORIAL_STEPS}>
-      <MemoryPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const MemoryPage = withTutorial(MemoryPageContent, 'memory', MEM_TUTORIAL_STEPS);
 /** Inner content of the Memory page, wrapped by TutorialProvider. */
 function MemoryPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =

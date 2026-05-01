@@ -15,7 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -68,14 +68,7 @@ const SB_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Seven Bridge game page. */
-export function SevenBridgePage() {
-  return (
-    <TutorialWrapper gameName="sevenbridge" steps={SB_TUTORIAL_STEPS}>
-      <SevenBridgePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const SevenBridgePage = withTutorial(SevenBridgePageContent, 'sevenbridge', SB_TUTORIAL_STEPS);
 function SevenBridgePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sevenbridge');
