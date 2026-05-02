@@ -6,7 +6,7 @@ This directory contains Architecture Decision Records for the go_trumpcards proj
 
 Each ADR follows the format:
 
-- **Status**: Accepted / Superseded / Deprecated
+- **Status**: Proposed / Accepted / Superseded / Deprecated
 - **Context**: What problem or situation prompted this decision?
 - **Decision**: What was decided?
 - **Consequences**: What are the trade-offs and implications?
@@ -48,3 +48,4 @@ ADR番号は連番ではない — 欠番はリトマステスト導入時に非
 | [ADR-0028](0028-kv-session-persistence.md) | Cloudflare KV によるセッション永続化 | Accepted | 2026-03-28 |
 | [ADR-0029](0029-design-system.md) | デザインシステム (DESIGN.md) の導入 | Accepted | 2026-04-04 |
 | [ADR-0030](0030-design-tokens-only-in-source.md) | ソースコードではデザイントークンのみ使用 / 生Tailwindパレット禁止 | Accepted | 2026-04-19 |
+| [ADR-0031](0031-registry-consolidation.md) | 4 レイヤーゲームレジストリの取り扱い方針 | Proposed | 2026-05-02 |
