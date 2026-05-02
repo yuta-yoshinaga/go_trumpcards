@@ -41,58 +41,105 @@ type CuiExecer interface {
 	Exec(command string) string
 }
 
-// commandLister exposes the alias set a controller will accept. It's
-// implemented by any type whose value-set is reachable through CuiExecer +
-// reflection-free introspection — currently just *GameManager — so the
-// completer below can suggest game-specific aliases. Controllers that don't
-// implement it get only the common command set.
+// commandLister exposes the candidate sets the readline tab-completer can
+// offer. Implemented today by *GameManager; the interface lives here in the
+// infra layer so future controllers can opt in without dragging the ui
+// package into adapter/controller dependencies.
 type commandLister interface {
+	// CompletionCandidates returns commands that are valid as the first
+	// token on a line (i.e., callable directly). Bare game names are NOT
+	// valid first tokens — they only work as `switch <name>` — so
+	// implementations must omit them here and surface them via
+	// ArgumentCandidates("switch") instead.
 	CompletionCandidates() []string
+
+	// ArgumentCandidates returns valid completions for a token typed after
+	// cmd (e.g. game names for cmd="switch"). Return nil for commands
+	// without argument completion.
+	ArgumentCandidates(cmd string) []string
 }
 
-// commonCompletionCommands is the always-available command set. Mirrors
-// cui_controller_helper.go's commonCommands; duplicated here because that
-// list lives in the adapter layer and we want infra to stay independent.
+// commonCompletionCommands is the always-available first-token command set.
+// Mirrors cui_controller_helper.go's commonCommands; duplicated here because
+// that list lives in the adapter layer and we want infra to stay independent.
 var commonCompletionCommands = []string{
 	"q", "quit", "exit",
 	"r", "reset",
 	"help", "?",
 }
 
-// installCompleter wires a tab-completion function into r. The completer
-// expands the first token only — argful commands (e.g. "b 100") still need
-// the user to type the argument by hand, since alias completion can't know
-// game-state-dependent valid arguments.
+// installCompleter wires a tab-completion function into r. Two completion
+// modes:
+//
+//   - First token: union of commonCompletionCommands and the lister's
+//     standalone-runnable commands. Bare game names are intentionally
+//     excluded — completing `bla<Tab>` to `blackjack` would mislead the
+//     user, since `blackjack<Enter>` isn't a valid command (it has to be
+//     `switch blackjack`).
+//   - Second token after a recognised command (e.g. `switch <Tab>`):
+//     forwarded to lister.ArgumentCandidates(cmd). Returns nil for
+//     commands without argument completion (e.g. `b 100` — bet amounts
+//     are game-state-dependent and can't be enumerated).
 func installCompleter(r LineReader, lister commandLister) {
 	r.SetCompleter(func(prefix string) []string {
-		// liner passes the full line; we complete the first whitespace-bounded token.
 		fields := strings.Fields(prefix)
-		// If the cursor is past the first token, no completion (we don't know
-		// per-game arg shapes).
-		if len(fields) > 1 || (len(fields) == 1 && strings.HasSuffix(prefix, " ")) {
+		endsWithSpace := strings.HasSuffix(prefix, " ")
+
+		// Past the second token: argful commands (e.g. "b 100") have no
+		// general completion contract — game-state-dependent valid args
+		// aren't enumerable here.
+		if len(fields) > 2 || (len(fields) == 2 && endsWithSpace) {
 			return nil
 		}
-		var token string
-		if len(fields) == 1 {
-			token = fields[0]
+
+		// On the second token (cursor either after "cmd " or in the middle
+		// of "cmd arg"): consult the lister for argument completion.
+		if len(fields) == 2 || (len(fields) == 1 && endsWithSpace) {
+			if lister == nil {
+				return nil
+			}
+			cmd := fields[0]
+			argToken := ""
+			if len(fields) == 2 {
+				argToken = fields[1]
+			}
+			return filterByPrefix(lister.ArgumentCandidates(cmd), argToken)
 		}
-		candidates := commonCompletionCommands
+
+		// First token (or empty input): union of common + lister candidates.
+		// Start with a fresh slice so append never mutates the package-level
+		// commonCompletionCommands (its capacity is implementation-defined).
+		candidates := append([]string(nil), commonCompletionCommands...)
 		if lister != nil {
 			candidates = append(candidates, lister.CompletionCandidates()...)
 		}
-		var out []string
-		seen := make(map[string]bool, len(candidates))
-		for _, c := range candidates {
-			if seen[c] {
-				continue
-			}
-			seen[c] = true
-			if strings.HasPrefix(c, token) {
-				out = append(out, c)
-			}
+		token := ""
+		if len(fields) == 1 {
+			token = fields[0]
 		}
-		return out
+		return filterByPrefix(candidates, token)
 	})
+}
+
+// filterByPrefix returns the entries of candidates that start with token,
+// dedup-ed in original order. Returns nil (not an empty slice) when nothing
+// matches so callers can use the standard `if got != nil` idiom.
+func filterByPrefix(candidates []string, token string) []string {
+	if len(candidates) == 0 {
+		return nil
+	}
+	var out []string
+	seen := make(map[string]bool, len(candidates))
+	for _, c := range candidates {
+		if seen[c] {
+			continue
+		}
+		seen[c] = true
+		if strings.HasPrefix(c, token) {
+			out = append(out, c)
+		}
+	}
+	return out
 }
 
 // RunInteractiveCuiLoop runs an interactive multi-game CUI loop with game switching support.
@@ -106,11 +153,10 @@ func RunInteractiveCuiLoop(manager *GameManager) {
 	fmt.Println(i18n.T("typeHelp"))
 	reader := newDefaultLineReader()
 	defer func() { _ = reader.Close() }()
-	if lister, ok := any(manager).(commandLister); ok {
-		installCompleter(reader, lister)
-	} else {
-		installCompleter(reader, nil)
-	}
+	// *GameManager statically satisfies commandLister, so no type assertion
+	// is needed here. RunCuiLoop below uses one because its parameter is the
+	// CuiExecer interface and we don't know the concrete type.
+	installCompleter(reader, manager)
 	for {
 		input, exit := readInput(reader, manager.CurrentGame())
 		if exit {

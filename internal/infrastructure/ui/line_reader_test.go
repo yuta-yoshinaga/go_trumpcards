@@ -39,7 +39,7 @@ func TestScannerLineReader_NoOpsAreSafe(t *testing.T) {
 	assert.NoError(t, r.Close())
 }
 
-func TestInstallCompleter_FirstTokenOnly(t *testing.T) {
+func TestInstallCompleter_FirstToken(t *testing.T) {
 	t.Parallel()
 
 	var captured func(string) []string
@@ -48,7 +48,11 @@ func TestInstallCompleter_FirstTokenOnly(t *testing.T) {
 		set:        func(fn func(string) []string) { captured = fn },
 	}
 
-	installCompleter(r, &fakeLister{candidates: []string{"blackjack", "baccarat"}})
+	lister := &fakeLister{
+		topLevel: []string{"switch", "games"},
+		args:     map[string][]string{"switch": {"blackjack", "baccarat"}},
+	}
+	installCompleter(r, lister)
 
 	cases := []struct {
 		name   string
@@ -56,24 +60,24 @@ func TestInstallCompleter_FirstTokenOnly(t *testing.T) {
 		want   []string
 	}{
 		{
-			name:   "empty prefix returns all (common + game-specific)",
+			name:   "empty prefix returns common commands plus lister top-level",
 			prefix: "",
-			want:   []string{"q", "quit", "exit", "r", "reset", "help", "?", "blackjack", "baccarat"},
+			want:   []string{"q", "quit", "exit", "r", "reset", "help", "?", "switch", "games"},
 		},
 		{
-			name:   "single token completes by prefix",
-			prefix: "b",
-			want:   []string{"blackjack", "baccarat"},
-		},
-		{
-			name:   "second token suppresses completion",
-			prefix: "switch ",
-			want:   nil,
-		},
-		{
-			name:   "common command prefix matches",
+			name:   "first-token prefix matches common command",
 			prefix: "q",
 			want:   []string{"q", "quit"},
+		},
+		{
+			name:   "first-token prefix matches lister command",
+			prefix: "swi",
+			want:   []string{"switch"},
+		},
+		{
+			name:   "bare game name is NOT a first-token candidate",
+			prefix: "bla",
+			want:   nil,
 		},
 		{
 			name:   "non-matching prefix returns nothing",
@@ -90,7 +94,62 @@ func TestInstallCompleter_FirstTokenOnly(t *testing.T) {
 	}
 }
 
-func TestInstallCompleter_NilListerSkipsGameCandidates(t *testing.T) {
+func TestInstallCompleter_SecondTokenSwitchArgument(t *testing.T) {
+	t.Parallel()
+
+	var captured func(string) []string
+	r := &captureCompleterReader{
+		LineReader: newScannerLineReader(&bytes.Buffer{}, &bytes.Buffer{}),
+		set:        func(fn func(string) []string) { captured = fn },
+	}
+
+	lister := &fakeLister{
+		topLevel: []string{"switch", "games"},
+		args:     map[string][]string{"switch": {"blackjack", "baccarat", "poker"}},
+	}
+	installCompleter(r, lister)
+
+	cases := []struct {
+		name   string
+		prefix string
+		want   []string
+	}{
+		{
+			name:   "switch + space returns all game names",
+			prefix: "switch ",
+			want:   []string{"blackjack", "baccarat", "poker"},
+		},
+		{
+			name:   "switch + partial game name filters by prefix",
+			prefix: "switch b",
+			want:   []string{"blackjack", "baccarat"},
+		},
+		{
+			name:   "switch + unknown prefix returns nothing",
+			prefix: "switch zzz",
+			want:   nil,
+		},
+		{
+			name:   "command without arg-completion returns nothing on second token",
+			prefix: "games ",
+			want:   nil,
+		},
+		{
+			name:   "third token has no completion contract",
+			prefix: "switch blackjack ",
+			want:   nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := captured(tc.prefix)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestInstallCompleter_NilListerSkipsAllListerCandidates(t *testing.T) {
 	t.Parallel()
 	var captured func(string) []string
 	r := &captureCompleterReader{
@@ -98,28 +157,73 @@ func TestInstallCompleter_NilListerSkipsGameCandidates(t *testing.T) {
 		set:        func(fn func(string) []string) { captured = fn },
 	}
 	installCompleter(r, nil)
-	got := captured("h")
-	assert.Equal(t, []string{"help"}, got)
+	// First-token completion still works for the common-command set.
+	assert.Equal(t, []string{"help"}, captured("h"))
+	// Second-token completion is a no-op without a lister.
+	assert.Nil(t, captured("switch "))
+}
+
+// TestInstallCompleter_DoesNotMutatePackageSlice guards against accidentally
+// using `commonCompletionCommands` as the seed for the candidate slice. If
+// `append` ever resizes via the package-level backing array, the next call
+// would see corrupted output. We invoke the completer enough times that any
+// such corruption would surface as a length or content drift.
+func TestInstallCompleter_DoesNotMutatePackageSlice(t *testing.T) {
+	t.Parallel()
+	var captured func(string) []string
+	r := &captureCompleterReader{
+		LineReader: newScannerLineReader(&bytes.Buffer{}, &bytes.Buffer{}),
+		set:        func(fn func(string) []string) { captured = fn },
+	}
+	original := append([]string(nil), commonCompletionCommands...)
+	lister := &fakeLister{topLevel: []string{"switch", "games", "extra"}}
+	installCompleter(r, lister)
+	for range 5 {
+		_ = captured("")
+	}
+	assert.Equal(t, original, commonCompletionCommands,
+		"installCompleter must not mutate the package-level commonCompletionCommands slice")
 }
 
 func TestGameManager_CompletionCandidates(t *testing.T) {
 	t.Parallel()
 	mgr := NewGameManager("blackjack")
 	got := mgr.CompletionCandidates()
-	assert.Contains(t, got, "switch")
-	assert.Contains(t, got, "games")
-	assert.Contains(t, got, "blackjack")
-	assert.Contains(t, got, "poker")
+	// Only manager-level commands are first-token candidates. Bare game
+	// names are intentionally excluded — they're reachable via
+	// ArgumentCandidates("switch").
+	assert.Equal(t, []string{"switch", "games"}, got)
+}
+
+func TestGameManager_ArgumentCandidates(t *testing.T) {
+	t.Parallel()
+	mgr := NewGameManager("blackjack")
+
+	switchArgs := mgr.ArgumentCandidates("switch")
+	assert.Contains(t, switchArgs, "blackjack")
+	assert.Contains(t, switchArgs, "poker")
 	// Aliases get included (e.g. "gin" → "ginrummy").
-	assert.Contains(t, got, "gin", "aliases should be tab-completable")
+	assert.Contains(t, switchArgs, "gin", "aliases should be tab-completable as switch arguments")
+
+	// Non-arg-completing commands return nil.
+	assert.Nil(t, mgr.ArgumentCandidates("games"))
+	assert.Nil(t, mgr.ArgumentCandidates("help"))
+	assert.Nil(t, mgr.ArgumentCandidates("nonexistent"))
 }
 
-// fakeLister stubs commandLister with a fixed candidate set.
+// fakeLister stubs commandLister with fixed top-level and per-arg sets.
 type fakeLister struct {
-	candidates []string
+	topLevel []string
+	args     map[string][]string
 }
 
-func (f *fakeLister) CompletionCandidates() []string { return f.candidates }
+func (f *fakeLister) CompletionCandidates() []string { return f.topLevel }
+func (f *fakeLister) ArgumentCandidates(cmd string) []string {
+	if f.args == nil {
+		return nil
+	}
+	return f.args[cmd]
+}
 
 // captureCompleterReader wraps a LineReader to intercept SetCompleter so the
 // installed function can be invoked from a test. Everything else delegates
