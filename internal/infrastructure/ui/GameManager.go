@@ -1352,6 +1352,28 @@ func (m *GameManager) switchGame(name string) string {
 	return msg
 }
 
+// CompletionCandidates returns the manager-level commands valid as a first
+// token: `switch` and `games`. Bare game names are intentionally NOT
+// returned here because they aren't standalone commands — the manager's Exec
+// would forward `blackjack` to the active controller, which would reject it.
+// Game names are reachable via tab-completion as the second token of
+// `switch` (see ArgumentCandidates). Issue #1608.
+func (m *GameManager) CompletionCandidates() []string {
+	return []string{"switch", "games"}
+}
+
+// ArgumentCandidates returns valid completions for the token after cmd. For
+// `switch`, that's the canonical game name + alias set, so `switch bla<Tab>`
+// expands to `blackjack`. Returns nil for any other command since the
+// manager has no other argful commands at this layer (`help`, `?`, `q`,
+// `r`, `games` are all nullary). Issue #1608.
+func (m *GameManager) ArgumentCandidates(cmd string) []string {
+	if cmd == "switch" {
+		return m.suggestionCandidates()
+	}
+	return nil
+}
+
 // suggestionCandidates returns the deduplicated set of canonical game names
 // and aliases for "did you mean" suggestions on `switch <typo>`. Mirrors the
 // helper in cmd/trumpcards/main.go added in #1555 so a typo of an alias (e.g.

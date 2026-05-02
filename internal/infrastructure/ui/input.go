@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -9,24 +9,26 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// readInput はスキャナから1行を読み込み、EOFとエラーを処理します。
-// 入力テキストと、プログラムを終了すべきかを示すブール値を返します。
-// gameName が空でない場合、プロンプトに "[gameName] > " と表示します。
-// w はプロンプト出力先の io.Writer です（通常は os.Stdout）。
-func readInput(scanner *bufio.Scanner, gameName string, w io.Writer) (text string, exit bool) {
+// readInput reads one line from r, prepending the prompt with gameName when
+// non-empty. Returns (text, exit) — exit is true on EOF (pipe drained,
+// Ctrl+D, or Ctrl+C in liner-backed readers) and on any other read error.
+//
+// The prompt is constructed here rather than in cui_runner.go so the same
+// "[gameName] > " format is used by the top-level loop and the wizard-style
+// prompt loop (issue #1605).
+func readInput(r LineReader, gameName string) (text string, exit bool) {
+	prompt := "> "
 	if gameName != "" {
-		_, _ = fmt.Fprintf(w, "[%s] > ", gameName)
-	} else {
-		_, _ = fmt.Fprint(w, "> ")
+		prompt = "[" + gameName + "] > "
 	}
-	if !scanner.Scan() {
-		if err := scanner.Err(); err != nil {
-			fmt.Fprintln(os.Stderr, i18n.Tf("inputReadError", "error", err.Error()))
-		} else {
-			// EOF: pipe input exhausted or Ctrl+D
+	line, err := r.Prompt(prompt)
+	if err != nil {
+		if errors.Is(err, io.EOF) {
 			fmt.Println(i18n.T("bye"))
+		} else {
+			fmt.Fprintln(os.Stderr, i18n.Tf("inputReadError", "error", err.Error()))
 		}
 		return "", true
 	}
-	return scanner.Text(), false
+	return line, false
 }

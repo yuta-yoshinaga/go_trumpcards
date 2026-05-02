@@ -194,6 +194,8 @@ PORT=3000 trumpcards web         # カスタムポートで起動 (環境変数)
 source <(trumpcards completion bash)  # Bash 補完を有効化
 ```
 
+インタラクティブモードと単一ゲーム CLI モードでは readline (`peterh/liner`) を使用しており、↑/↓ で履歴呼び出し、Tab で先頭トークン (共通コマンドや `switch` / `games`) の補完および `switch <Tab>` でゲーム名の補完、Ctrl+R で履歴インクリメンタル検索、左矢印で行内編集ができます。履歴は `~/.trumpcards_history` に永続化されます (issue #1608)。
+
 ### Docker
 
 ```sh
