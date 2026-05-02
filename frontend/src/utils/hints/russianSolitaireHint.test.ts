@@ -32,7 +32,9 @@ describe('getRussianSolitaireHint', () => {
   });
 
   it('returns tableau hint when toZone is tableau', () => {
-    const hint = getRussianSolitaireHint(makeState({ hint: { fromCol: 3, cardIndex: 2, toZone: 'tableau', toCol: 5 } }));
+    const hint = getRussianSolitaireHint(
+      makeState({ hint: { fromCol: 3, cardIndex: 2, toZone: 'tableau', toCol: 5 } }),
+    );
     expect(hint).toEqual({
       targetAction: 'moveToTableau',
       reason: 'frontendHint.moveToTableau',
