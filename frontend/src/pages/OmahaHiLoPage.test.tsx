@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { actionLogApi, omahaHiLoApi } from '../api/gameApi';
+import { omahaHiLoApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OmahaResponse } from '../types/card';
 import { OmahaHiLoPage } from './OmahaHiLoPage';
