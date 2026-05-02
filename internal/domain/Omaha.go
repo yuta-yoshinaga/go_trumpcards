@@ -37,6 +37,12 @@ const (
 )
 
 // Omaha オマハホールデムクラス
+//
+// `hiLo` が true の場合は Omaha 8 or Better (Hi-Lo スプリットポット)
+// として動作する。ショーダウン時にハイハンド (既存の `EvalBestHand`) と
+// 8 or Better のローハンド (`EvalBestLowHand`) を並行して評価し、
+// 各サイドポットを 50/50 で分割する (奇数チップは Hi 側へ)。
+// qualified なローが 1 人もいない場合はハイ側が全額獲得する。
 type Omaha struct {
 	communityCardBettingBase
 	trumpCards      *TrumpCards
@@ -46,6 +52,7 @@ type Omaha struct {
 	dealerIdx       int
 	currentTurn     int
 	phase           int
+	hiLo            bool // Omaha 8 or Better (Hi-Lo) モード
 	config          OmahaConfig
 	roundResults    []HoldemResult
 	cpuActions      []HoldemCpuAction
@@ -91,6 +98,24 @@ func NewDefaultOmaha() *Omaha {
 	return NewOmaha(NewTrumpCards(0), NewOmahaPlayersForTable(cfg.TableSize), cfg)
 }
 
+// NewOmahaHiLo returns Omaha configured as Omaha 8 or Better (Hi-Lo split pot).
+func NewOmahaHiLo(trumpCards *TrumpCards, players []*OmahaPlayer, config OmahaConfig) *Omaha {
+	o := NewOmaha(trumpCards, players, config)
+	o.hiLo = true
+	return o
+}
+
+// NewDefaultOmahaHiLo returns Omaha 8 or Better with the default table size
+// and DefaultOmahaConfig. Single source of truth for CUI, Web, and Worker
+// construction sites for the Hi-Lo variant.
+func NewDefaultOmahaHiLo() *Omaha {
+	cfg := DefaultOmahaConfig()
+	return NewOmahaHiLo(NewTrumpCards(0), NewOmahaPlayersForTable(cfg.TableSize), cfg)
+}
+
+// GetIsHiLo returns true when the game is configured as Omaha 8 or Better.
+func (o *Omaha) GetIsHiLo() bool { return o.hiLo }
+
 // Reset ゲーム初期化
 func (o *Omaha) Reset() error {
 	o.phase = OmahaPhaseInit
@@ -125,6 +150,8 @@ func (o *Omaha) Reset() error {
 		p.SetCurrentBet(0)
 		p.handRank = 0
 		p.bestHand = nil
+		p.lowBestHand = nil
+		p.lowQualifies = false
 		if p.GetChips() <= 0 && !o.config.RebuyEnabled {
 			p.SetChips(o.config.InitChips)
 		}
@@ -481,12 +508,21 @@ func (o *Omaha) resolveShowdown() {
 	for _, p := range o.players {
 		if !p.GetFolded() {
 			p.EvalBestHand(o.communityCards)
+			if o.hiLo {
+				p.EvalBestLowHand(o.communityCards)
+			}
 		}
 	}
 
 	bp := toBettingPlayers(o.players)
 	o.sidePots = CalculateSidePots(bp, o.pot, o.startingChips)
-	wonAmounts := DistributePots(bp, o.sidePots)
+
+	var hiAmounts, lowAmounts map[int]int
+	if o.hiLo {
+		hiAmounts, lowAmounts = o.distributeHiLoPots(bp)
+	} else {
+		hiAmounts = DistributePots(bp, o.sidePots)
+	}
 
 	o.roundResults = make([]HoldemResult, 0)
 	humanLost := false
@@ -494,16 +530,24 @@ func (o *Omaha) resolveShowdown() {
 		if p.GetFolded() {
 			continue
 		}
+		hi := hiAmounts[i]
+		lo := lowAmounts[i] // nil map read returns 0
 		result := HoldemResult{
 			PlayerIdx: i,
 			HandRank:  p.GetHandRank(),
 			HandName:  o.getHandName(p.GetHandRank()),
 			BestHand:  p.GetBestHand(),
 			Kickers:   ExtractKickers(p.GetBestHand(), p.GetHandRank()),
-			WonAmount: wonAmounts[i],
+			WonAmount: hi + lo,
+		}
+		if o.hiLo {
+			result.HiWonAmount = hi
+			result.LowWonAmount = lo
+			result.LowQualifies = p.GetLowQualifies()
+			result.LowBestHand = p.GetLowBestHand()
 		}
 		o.roundResults = append(o.roundResults, result)
-		if p.GetIsHuman() && wonAmounts[i] == 0 {
+		if p.GetIsHuman() && (hi+lo) == 0 {
 			humanLost = true
 		}
 	}
@@ -513,6 +557,80 @@ func (o *Omaha) resolveShowdown() {
 	}
 
 	o.finalizeShowdown()
+}
+
+// distributeHiLoPots は各サイドポットをハイ/ロー 50:50 で分配する。
+// qualified なローが居ない場合はハイ側が全額獲得する。
+// 奇数チップは Hi 側に寄せる (ポーカー慣例)。複数勝者間の余りは
+// 既存 DistributePotsWithWinnerFunc と同じく winners[0] が引き取る。
+func (o *Omaha) distributeHiLoPots(bp []BettingPlayer) (hi, lo map[int]int) {
+	hi = make(map[int]int)
+	lo = make(map[int]int)
+	for _, sp := range o.sidePots {
+		hiWinners := FindPotWinners(bp, sp.EligiblePlayers)
+		if len(hiWinners) == 0 {
+			continue
+		}
+		loWinners := o.findOmahaLowWinners(sp.EligiblePlayers)
+
+		hiPot := sp.Amount
+		loPot := 0
+		if len(loWinners) > 0 {
+			loPot = sp.Amount / 2
+			hiPot = sp.Amount - loPot // 奇数チップは Hi 側に寄せる
+		}
+
+		distributeAmongWinners(bp, hiWinners, hiPot, hi)
+		distributeAmongWinners(bp, loWinners, loPot, lo)
+	}
+	return hi, lo
+}
+
+// findOmahaLowWinners は対象プレイヤーの中から有効なロー (8 or Better)
+// を持つベストプレイヤーを返す。qualified なローが 1 人もいなければ nil。
+// 同点はスプリット (compareRazzCards == 0)。
+func (o *Omaha) findOmahaLowWinners(eligible []int) []int {
+	var winners []int
+	var bestCards []*Card
+	for _, idx := range eligible {
+		p := o.players[idx]
+		if p.GetFolded() || !p.GetLowQualifies() {
+			continue
+		}
+		cards := p.GetLowBestHand()
+		if bestCards == nil {
+			bestCards = cards
+			winners = []int{idx}
+			continue
+		}
+		cmp := compareRazzCards(cards, bestCards)
+		if cmp < 0 {
+			bestCards = cards
+			winners = []int{idx}
+		} else if cmp == 0 {
+			winners = append(winners, idx)
+		}
+	}
+	return winners
+}
+
+// distributeAmongWinners は amount を winners 間で均等配分し、
+// 余りは winners[0] に寄せる。amount==0 または winners==nil は no-op。
+// チップ加算と won マップ更新を同時に行う。
+func distributeAmongWinners(bp []BettingPlayer, winners []int, amount int, won map[int]int) {
+	if amount <= 0 || len(winners) == 0 {
+		return
+	}
+	share := amount / len(winners)
+	remainder := amount % len(winners)
+	for i, w := range winners {
+		got := share
+		if i == 0 {
+			got += remainder
+		}
+		bp[w].AddChips(got)
+		won[w] += got
+	}
 }
 
 // finalizeShowdown ショーダウンを完了し、END フェーズに遷移する
@@ -1301,6 +1419,7 @@ type omahaJSON struct {
 	ActionLog       []*ActionLogEntry        `json:"al"`
 	Profile         *BettingHumanProfileData `json:"pf,omitempty"`
 	LastHumanPlayMs int                      `json:"hm"`
+	HiLo            bool                     `json:"hl,omitempty"`
 }
 
 // omahaMaxSliceLen caps slice sizes during deserialisation.
@@ -1335,6 +1454,7 @@ func (o *Omaha) MarshalJSON() ([]byte, error) {
 		RebuyPhaseType:  o.rebuyPhaseType,
 		ActionLog:       o.actionLog,
 		LastHumanPlayMs: o.lastHumanPlayMs,
+		HiLo:            o.hiLo,
 	}
 	if o.humanProfile != nil {
 		d := o.humanProfile.Export()
@@ -1423,6 +1543,7 @@ func (o *Omaha) UnmarshalJSON(data []byte) error {
 		o.actionLog = make([]*ActionLogEntry, 0)
 	}
 	o.lastHumanPlayMs = j.LastHumanPlayMs
+	o.hiLo = j.HiLo
 	if j.Profile != nil {
 		o.humanProfile = &BettingHumanProfile{}
 		o.humanProfile.Import(*j.Profile)

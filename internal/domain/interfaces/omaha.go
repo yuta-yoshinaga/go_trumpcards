@@ -65,4 +65,6 @@ type OmahaGame interface {
 	GetEquity() *domain.HoldemEquityResult
 	// GetPotOdds ポットオッズを取得する
 	GetPotOdds() float64
+	// GetIsHiLo Omaha 8 or Better (Hi-Lo) モードかどうか
+	GetIsHiLo() bool
 }

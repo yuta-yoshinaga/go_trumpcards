@@ -31,14 +31,24 @@ const (
 const holdemDefaultMaxRaises = bettingMaxRaisesPerRound
 
 // HoldemResult ショーダウン結果
+//
+// Omaha Hi-Lo (8 or Better) はショーダウン時にハイハンドとローハンドで
+// ポットを分割するため、Low* フィールドはオプショナル (Hi-Loルールでない
+// 場合は空/0)。`WonAmount` はハイ + ローの合計、`HiWonAmount`/`LowWonAmount`
+// は内訳。`LowQualifies` は 8 以下5枚で構成された有効なローが成立したか。
 type HoldemResult struct {
-	PlayerIdx int     // プレイヤーインデックス
-	HandRank  int     // ハンドランク
-	HandName  string  // ハンド名
-	BestHand  []*Card // ベスト5枚
-	Kickers   []int   // キッカーカード値
-	WonAmount int     // 獲得チップ
-	Mucked    bool    // マックしたかどうか
+	PlayerIdx    int     // プレイヤーインデックス
+	HandRank     int     // ハンドランク
+	HandName     string  // ハンド名
+	BestHand     []*Card // ベスト5枚
+	Kickers      []int   // キッカーカード値
+	WonAmount    int     // 獲得チップ (Hi-Loでは Hi + Lo の合計)
+	Mucked       bool    // マックしたかどうか
+	LowQualifies bool    `json:",omitempty"` // 有効なローハンドが成立したか
+	LowBestHand  []*Card `json:",omitempty"` // ローベスト5枚
+	LowKickers   []int   `json:",omitempty"` // ローキッカーカード値
+	HiWonAmount  int     `json:",omitempty"` // ハイサイド獲得チップ
+	LowWonAmount int     `json:",omitempty"` // ローサイド獲得チップ
 }
 
 // HoldemCpuAction CPU行動記録

@@ -8,3 +8,9 @@ package domain
 
 // SetBestHand ベストハンド設定（テスト用）
 func (op *OmahaPlayer) SetBestHand(hand []*Card) { op.bestHand = hand }
+
+// SetLowBestHand Hi-Lo用ローベストハンド設定（テスト用）
+func (op *OmahaPlayer) SetLowBestHand(hand []*Card) {
+	op.lowBestHand = hand
+	op.lowQualifies = hand != nil
+}

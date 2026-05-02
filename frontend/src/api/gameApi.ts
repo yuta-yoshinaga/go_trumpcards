@@ -99,6 +99,7 @@ const workerUrl: Record<string, string> = {
   poker: WORKER_CASINO,
   holdem: WORKER_CASINO,
   omaha: WORKER_CASINO,
+  omahahilo: WORKER_CASINO,
   shortdeck: WORKER_CASINO,
   indianpoker: WORKER_CASINO,
   videopoker: WORKER_CASINO,
@@ -438,6 +439,12 @@ export const holdemApi = createHoldemLikeApi<HoldemResponse>('holdem');
 
 /** API client for the Omaha Hold'em /omaha/exec endpoint. */
 export const omahaApi = createHoldemLikeApi<OmahaResponse>('omaha');
+
+/** API client for the Omaha Hi-Lo / 8 or Better /omahahilo/exec endpoint.
+ * Shares the OmahaResponse shape — additional Hi-Lo fields (LowBestHand,
+ * LowQualifies, HiWonAmount, LowWonAmount) are surfaced via omitempty
+ * JSON encoding so the same TypeScript type works for both. */
+export const omahaHiLoApi = createHoldemLikeApi<OmahaResponse>('omahahilo');
 
 /** API client for the Short Deck Hold'em /shortdeck/exec endpoint. */
 export const shortdeckApi = createHoldemLikeApi<ShortDeckResponse>('shortdeck');
@@ -1440,6 +1447,7 @@ const games = [
   'durak',
   'holdem',
   'omaha',
+  'omahahilo',
   'shortdeck',
   'pineapple',
   'crazypineapple',
