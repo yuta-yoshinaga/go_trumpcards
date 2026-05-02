@@ -42,6 +42,7 @@ import type {
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
+  RussianSolitaireResponse,
   ScorpionResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
@@ -112,6 +113,7 @@ import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
+import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
@@ -197,6 +199,7 @@ const hintFactories = {
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),
+  russiansolitaire: (s) => getRussianSolitaireHint(s as RussianSolitaireResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),

@@ -79,6 +79,7 @@ export type GameKey =
   | 'bakersdozen'
   | 'canfield'
   | 'yukon'
+  | 'russiansolitaire'
   | 'scorpion'
   | 'accordion'
   | 'pokersquares'
@@ -178,6 +179,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   bakersdozen: CASINO,
   canfield: CASINO,
   yukon: CASINO,
+  russiansolitaire: CASINO,
   scorpion: CASINO,
   accordion: CASINO,
   pokersquares: CASINO,

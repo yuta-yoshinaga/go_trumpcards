@@ -137,6 +137,7 @@ var registry = []*Game{
 	{Name: "canfield", Category: CategorySolo, Description: "Canfield Solitaire (キャンフィールド)"},
 	{Name: "fiftyone", Category: CategoryClassic, Description: "Fifty-one (フィフティワン)"},
 	{Name: "yukon", Category: CategorySolo, Description: "Yukon Solitaire (ユーコン)"},
+	{Name: "russiansolitaire", Category: CategorySolo, Description: "Russian Solitaire (ロシアンソリティア)"},
 	{Name: "whist", Category: CategoryClassic, Description: "Whist (ホイスト)"},
 	{Name: "letitride", Category: CategoryCasino, Description: "Let It Ride (レット・イット・ライド)"},
 	{Name: "pokersquares", Category: CategorySolo, Description: "Poker Squares (ポーカー・スクエアズ)"},

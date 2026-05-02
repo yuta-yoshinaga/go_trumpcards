@@ -498,6 +498,13 @@ export const YukonPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Russian Solitaire phase constants (sync: internal/domain/RussianSolitaire.go). */
+export const RussianSolitairePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Scorpion phase constants (sync: internal/domain/Scorpion.go). */
 export const ScorpionPhase = {
   PLAYING: 0,
