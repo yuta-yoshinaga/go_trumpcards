@@ -831,6 +831,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "russiansolitaire", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewRussianSolitaireCuiController(usecase.NewRussianSolitaireInteractor(
+				domain.NewDefaultRussianSolitaire(), new(presenter.RussianSolitaireCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "russiansolitaire.helpTitle",
+				CommandKeys: []string{
+					"russiansolitaire.helpMove",
+					"russiansolitaire.helpMoveTF",
+					"russiansolitaire.helpMoveTT",
+					"russiansolitaire.helpGiveUp",
+					"russiansolitaire.helpHint",
+					"russiansolitaire.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "whist", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewWhistCuiController(usecase.NewWhistInteractor(

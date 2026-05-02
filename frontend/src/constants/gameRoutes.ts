@@ -117,6 +117,12 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/bakersdozen', labelKey: 'nav.bakersdozen', icon: '🥖', page: 'BakersDozen' },
       { path: '/canfield', labelKey: 'nav.canfield', icon: '🎩', page: 'Canfield' },
       { path: '/yukon', labelKey: 'nav.yukon', icon: '🏔️', page: 'Yukon' },
+      {
+        path: '/russiansolitaire',
+        labelKey: 'nav.russiansolitaire',
+        icon: '🪆',
+        page: 'RussianSolitaire',
+      },
       { path: '/scorpion', labelKey: 'nav.scorpion', icon: '🦂', page: 'Scorpion' },
       { path: '/accordion', labelKey: 'nav.accordion', icon: '🪗', page: 'Accordion' },
       { path: '/pokersquares', labelKey: 'nav.pokersquares', icon: '🔢', page: 'PokerSquares' },

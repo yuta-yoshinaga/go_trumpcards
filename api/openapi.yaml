@@ -124,6 +124,8 @@ tags:
     description: Fifty-one (フィフティワン) game
   - name: yukon
     description: Yukon (ユーコン) game
+  - name: russiansolitaire
+    description: Russian Solitaire (ロシアンソリティア) game - Yukon variant requiring same-suit descending tableau moves
   - name: letitride
     description: Let It Ride (レットイットライド) game
   - name: pokersquares
@@ -5353,6 +5355,109 @@ paths:
         | `undo_n`         | —       | Undo N moves (requires `n`) |
         | `log`            | `l`     | View action log |
       operationId: yukonExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  foundation:
+                    type: array
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
+  /russiansolitaire/exec:
+    post:
+      tags:
+        - russiansolitaire
+      summary: Execute a Russian Solitaire (ロシアンソリティア) game command
+      description: |
+        Send a command to advance a Russian Solitaire session identified by `sessionId`.
+        Russian Solitaire is a Yukon variant: identical deal and "move any face-up card with
+        everything stacked on top" mechanic, but tableau-to-tableau moves require **same suit
+        descending** instead of Yukon's alternating colour. Build foundations by suit Ace to King.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All foundations complete |
+        | GameOver  | 2     | Player gave up or stalemate |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `move`           | `m`     | Move card(s) between zones (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-complete to foundations |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: russianSolitaireExec
       requestBody:
         required: true
         content:

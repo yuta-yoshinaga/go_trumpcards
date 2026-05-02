@@ -54,6 +54,7 @@ import type {
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
+  RussianSolitaireResponse,
   ScorpionResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
@@ -150,6 +151,7 @@ const workerUrl: Record<string, string> = {
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
   yukon: WORKER_SOLO,
+  russiansolitaire: WORKER_SOLO,
   scorpion: WORKER_SOLO,
   accordion: WORKER_SOLO,
   sevenbridge: WORKER_SOLO,
@@ -1213,6 +1215,20 @@ export const yukonApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('yukon');
 
+/** Source or target zone for a Russian Solitaire card move. */
+export interface RussianSolitaireMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Russian Solitaire /russiansolitaire/exec endpoint. */
+export const russianSolitaireApi = createSolitaireMoveApi<
+  RussianSolitaireResponse,
+  RussianSolitaireMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('russiansolitaire');
+
 /** Source or target zone for a Scorpion card move. */
 export interface ScorpionMoveZone {
   zone: string;
@@ -1492,6 +1508,7 @@ const games = [
   'calculation',
   'canfield',
   'yukon',
+  'russiansolitaire',
   'scorpion',
   'accordion',
   'sevenbridge',

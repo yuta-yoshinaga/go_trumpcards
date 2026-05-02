@@ -2676,6 +2676,31 @@ export interface YukonResponse {
   hint?: YukonHint;
 }
 
+// --- Russian Solitaire (ロシアンソリティア) ---
+
+/** A suggested move hint in Russian Solitaire. */
+export interface RussianSolitaireHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** API response shape for a Russian Solitaire game. */
+export interface RussianSolitaireResponse {
+  tableau: KlondikeTableauCard[][];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: RussianSolitaireHint;
+}
+
 // --- Scorpion (スコーピオン) ---
 
 /** A suggested move hint in Scorpion. */
