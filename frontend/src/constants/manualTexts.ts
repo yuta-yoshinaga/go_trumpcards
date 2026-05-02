@@ -41,6 +41,7 @@ import nertz from '../../../docs/manual/web/nertz.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
+import omahahilo from '../../../docs/manual/web/omahahilo.md?raw';
 import pageone from '../../../docs/manual/web/pageone.md?raw';
 import paigow from '../../../docs/manual/web/paigow.md?raw';
 import pigtail from '../../../docs/manual/web/pigtail.md?raw';
@@ -112,6 +113,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,
   '/omaha': omaha,
+  '/omahahilo': omahahilo,
   '/pageone': pageone,
   '/paigow': paigow,
   '/pineapple': pineapple,

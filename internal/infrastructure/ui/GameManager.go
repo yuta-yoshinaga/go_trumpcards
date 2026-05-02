@@ -188,6 +188,25 @@ var gameRegistry = []GameRegistryEntry{
 				}, holdemBlindKeys...),
 			})
 	}},
+	{Name: "omahahilo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOmahaCuiController(usecase.NewOmahaInteractor(
+				domain.NewDefaultOmahaHiLo(), new(presenter.OmahaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "omahahilo.helpTitle",
+				CommandKeys: append([]string{
+					"omaha.helpFold",
+					"omaha.helpCheck",
+					"omaha.helpCall",
+					"omaha.helpBet",
+					"omaha.helpRaise",
+					"omaha.helpAllIn",
+				}, tournamentRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"omaha.helpBettingLimit", "omaha.helpTournament",
+				}, holdemBlindKeys...),
+			})
+	}},
 	{Name: "shortdeck", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShortDeckCuiController(usecase.NewShortDeckInteractor(

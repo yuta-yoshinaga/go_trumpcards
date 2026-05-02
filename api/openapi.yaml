@@ -30,6 +30,8 @@ tags:
     description: Texas Hold'em game
   - name: omaha
     description: Omaha Hold'em game
+  - name: omahahilo
+    description: Omaha Hi-Lo / 8 or Better (split-pot variant of Omaha)
   - name: shortdeck
     description: Short Deck (6+ Hold'em) game
   - name: hearts
@@ -1019,6 +1021,57 @@ paths:
         The game uses the same phases, commands, and configuration options as
         Texas Hold'em.  See the `/holdem/exec` endpoint for full documentation.
       operationId: omahaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
+  /omahahilo/exec:
+    post:
+      tags:
+        - omahahilo
+      summary: Execute an Omaha Hi-Lo (8 or Better) game command
+      description: |
+        Send a command to advance the Omaha Hi-Lo (8 or Better) game session
+        identified by `sessionId`. Hi-Lo is a split-pot variant of Omaha:
+        the high half follows the standard Omaha rules; the low half is
+        awarded to the best A-5 lowball hand (5 distinct ranks all ≤ 8,
+        Ace = 1; straights and flushes ignored). Pots are split 50:50;
+        odd chips go to the high side. If no player qualifies for a low,
+        the high winner takes the full pot.
+
+        Reuses the Omaha request/response shape. Lo-hand cards and split-
+        pot amounts surface via the optional `lowQualifies`, `lowBestHand`,
+        `hiWonAmount`, and `lowWonAmount` fields in `HoldemResult`, plus
+        `isHiLo` on the top-level response. Commands and configuration
+        options are identical to `/omaha/exec`.
+      operationId: omahaHiLoExec
       requestBody:
         required: true
         content:
@@ -9621,6 +9674,19 @@ components:
           description: Best 5-card hand (only populated at showdown)
           items:
             $ref: '#/components/schemas/Card'
+        lowBestHand:
+          type: array
+          description: |
+            Omaha Hi-Lo only. Best 5-card low hand when qualified at
+            showdown (5 distinct ranks all ≤ 8, Ace = 1). Absent for
+            non-Hi-Lo games or unqualified players.
+          items:
+            $ref: '#/components/schemas/Card'
+        lowQualifies:
+          type: boolean
+          description: |
+            Omaha Hi-Lo only. True when the player has a qualifying low
+            hand at showdown.
         playStyleName:
           type: string
           description: |
@@ -9718,6 +9784,30 @@ components:
           type: boolean
           description: Whether the player mucked (hid) their hand at showdown
           example: false
+        lowQualifies:
+          type: boolean
+          description: |
+            Omaha Hi-Lo only. True when the player has a qualifying low hand
+            (5 distinct ranks all ≤ 8, Ace = 1). Absent for non-Hi-Lo games.
+        lowBestHand:
+          type: array
+          description: |
+            Omaha Hi-Lo only. Best 5-card low hand when qualified. Absent
+            otherwise.
+          items:
+            $ref: '#/components/schemas/Card'
+        lowKickers:
+          type: string
+          description: Omaha Hi-Lo only. Low-side kicker display string.
+        hiWonAmount:
+          type: integer
+          description: |
+            Omaha Hi-Lo only. Chips won from the high half of split pots.
+            `wonAmount` is the total (hi + lo). Absent for non-Hi-Lo games.
+        lowWonAmount:
+          type: integer
+          description: |
+            Omaha Hi-Lo only. Chips won from the low half of split pots.
 
     HoldemSidePot:
       type: object
@@ -9919,6 +10009,12 @@ components:
           type: boolean
           description: Whether the human player can muck (hide) their hand at showdown (available when human lost)
           example: false
+        isHiLo:
+          type: boolean
+          description: |
+            Omaha Hi-Lo only. True when this game is configured as
+            Omaha 8 or Better (split-pot variant). Absent for non-Hi-Lo
+            games.
         equity:
           $ref: '#/components/schemas/HoldemEquity'
         potOdds:
@@ -14817,6 +14913,19 @@ components:
           description: Best 5-card hand (only populated at showdown)
           items:
             $ref: '#/components/schemas/Card'
+        lowBestHand:
+          type: array
+          description: |
+            Omaha Hi-Lo only. Best 5-card low hand when qualified at
+            showdown (5 distinct ranks all ≤ 8, Ace = 1). Absent for
+            non-Hi-Lo games or unqualified players.
+          items:
+            $ref: '#/components/schemas/Card'
+        lowQualifies:
+          type: boolean
+          description: |
+            Omaha Hi-Lo only. True when the player has a qualifying low
+            hand at showdown.
         playStyleName:
           type: string
           description: |

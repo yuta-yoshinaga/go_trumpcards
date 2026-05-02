@@ -100,6 +100,7 @@ import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
+import { getOmahaHiLoHint } from '../utils/hints/omahaHiLoHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
@@ -146,6 +147,7 @@ const hintFactories = {
   spades: (s) => getSpadesHint(s as SpadesResponse),
   holdem: (s) => getHoldemHint(s as HoldemResponse),
   omaha: (s) => getOmahaHint(s as OmahaResponse),
+  omahahilo: (s) => getOmahaHiLoHint(s as OmahaResponse),
   shortdeck: (s) => getShortDeckHint(s as ShortDeckResponse),
   pineapple: (s) => getPineappleHint(s as PineappleResponse),
   crazypineapple: (s) => getCrazyPineappleHint(s as PineappleResponse),

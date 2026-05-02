@@ -46,6 +46,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/poker', labelKey: 'nav.poker', icon: '🂡', page: 'Poker' },
       { path: '/holdem', labelKey: 'nav.holdem', icon: '🤠', page: 'Holdem' },
       { path: '/omaha', labelKey: 'nav.omaha', icon: '4️⃣', page: 'Omaha' },
+      { path: '/omahahilo', labelKey: 'nav.omahahilo', icon: '½', page: 'OmahaHiLo' },
       { path: '/shortdeck', labelKey: 'nav.shortdeck', icon: '6️⃣', page: 'ShortDeck' },
       { path: '/pineapple', labelKey: 'nav.pineapple', icon: '🍍', page: 'Pineapple' },
       { path: '/crazypineapple', labelKey: 'nav.crazypineapple', icon: '🤪', page: 'CrazyPineapple' },

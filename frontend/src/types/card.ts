@@ -628,6 +628,10 @@ export interface HoldemPlayerData {
   handRank: number;
   handName: string;
   bestHand: Card[];
+  /** Best 5-card low hand (Omaha Hi-Lo only; populated at showdown when qualified). */
+  lowBestHand?: Card[];
+  /** True if the player has a qualifying low hand (Omaha Hi-Lo only). */
+  lowQualifies?: boolean;
   playStyleName: string;
   totalHands: number;
   vpip: number;
@@ -643,7 +647,10 @@ export interface HoldemCpuAction {
   amount: number;
 }
 
-/** Hold'em round result for a single player. */
+/** Hold'em round result for a single player.
+ *
+ * Hi-Lo (Omaha 8 or Better) split-pot games populate the optional Low* and
+ * HiWonAmount/LowWonAmount fields; for non-Hi-Lo games they are absent. */
 export interface HoldemResult {
   playerIdx: number;
   handRank: number;
@@ -652,6 +659,11 @@ export interface HoldemResult {
   bestHand: Card[];
   wonAmount: number;
   mucked: boolean;
+  lowBestHand?: Card[];
+  lowKickers?: string;
+  lowQualifies?: boolean;
+  hiWonAmount?: number;
+  lowWonAmount?: number;
 }
 
 /** Side pot in Hold'em with eligible players. */
@@ -700,6 +712,8 @@ export interface HoldemResponse {
   addonAfterHand: number;
   addonUsed: boolean[];
   muckAvailable: boolean;
+  /** True when the variant is Omaha Hi-Lo (8 or Better) — split-pot logic active. */
+  isHiLo?: boolean;
   equity?: HoldemEquity;
   potOdds?: number;
   metaAI?: BettingMetaAI;

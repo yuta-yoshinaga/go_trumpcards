@@ -19,6 +19,7 @@ func (owp *OmahaWebPresenter) Output(o interfaces.OmahaGame, lastErr error) stri
 func (owp *OmahaWebPresenter) buildOutput(o interfaces.OmahaGame, lastErr error) *controller.HoldemWebOutput {
 	resObj := buildCommunityCardBaseOutput(o)
 	resObj.Players = buildPokerPlayersOutput(o.GetPhase(), o.GetPlayerCnt(), func(i int) communityCardPresenterPlayer { return o.GetPlayer(i) }, domain.OmahaPhaseShowdown, domain.OmahaPhaseEnd, pokerHandName)
+	resObj.IsHiLo = o.GetIsHiLo()
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = owp.buildMessage(o, lastErr)
 	return resObj
 }
@@ -43,9 +44,20 @@ func (owp *OmahaWebPresenter) buildResultMessage(o interfaces.OmahaGame) (string
 		return "Game over.", "omaha.result.gameOver"
 	}
 
+	hiLo := o.GetIsHiLo()
 	for _, r := range results {
 		if o.GetPlayer(r.PlayerIdx).GetIsHuman() {
 			if r.WonAmount > 0 {
+				if hiLo {
+					switch {
+					case r.HiWonAmount > 0 && r.LowWonAmount > 0:
+						return "You scooped the pot (Hi + Lo).", "omahahilo.result.scoop"
+					case r.LowWonAmount > 0:
+						return "You won the low half.", "omahahilo.result.lowWin"
+					case r.HiWonAmount > 0:
+						return "You won the high half.", "omahahilo.result.hiWin"
+					}
+				}
 				return "You are the winner.", "omaha.result.win"
 			}
 		}

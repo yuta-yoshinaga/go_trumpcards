@@ -52,6 +52,13 @@ type communityCardPresenterPlayer interface {
 	GetBestHand() []*domain.Card
 }
 
+// lowHandPresenterPlayer はオプショナルなロー手札情報を提供するプレイヤー
+// インターフェース (Omaha Hi-Lo 用)。OmahaPlayer のみ実装している。
+type lowHandPresenterPlayer interface {
+	GetLowBestHand() []*domain.Card
+	GetLowQualifies() bool
+}
+
 // buildCommunityCardBaseOutput は HoldemWebOutput の共通フィールドを設定する。
 // SidePots, CpuActions, RoundResults, Players も共通ロジックで構築する。
 func buildCommunityCardBaseOutput(g communityCardPresenterGame) *controller.HoldemWebOutput {
@@ -153,6 +160,10 @@ func buildPokerPlayersOutput(phase, playerCnt int, getPlayer func(int) community
 			pObj.HandRank = player.GetHandRank()
 			pObj.HandName = handNameFn(player.GetHandRank())
 			pObj.BestHand = cardsToOutput(player.GetBestHand())
+			if lp, ok := player.(lowHandPresenterPlayer); ok && lp.GetLowQualifies() {
+				pObj.LowQualifies = true
+				pObj.LowBestHand = cardsToOutput(lp.GetLowBestHand())
+			}
 		} else {
 			pObj.BestHand = make([]*controller.WebOutputCard, 0)
 		}
@@ -188,17 +199,22 @@ func buildPokerCpuActions(actions []domain.HoldemCpuAction) []*controller.Holdem
 }
 
 // buildPokerRoundResults はラウンド結果を出力用に変換する。
+// Hi-Lo (Omaha 8 or Better) のラウンド結果には Low* / HiWonAmount /
+// LowWonAmount フィールドが populated されるため、それらを Web 出力に
+// マッピングする (omitempty で Hi-Lo 以外のゲームでは JSON に含まれない)。
 func buildPokerRoundResults(results []domain.HoldemResult) []*controller.HoldemWebOutputResult {
 	out := make([]*controller.HoldemWebOutputResult, 0)
 	for _, r := range results {
 		result := &controller.HoldemWebOutputResult{
-			PlayerIdx: r.PlayerIdx,
-			HandRank:  r.HandRank,
-			HandName:  r.HandName,
-			Kickers:   domain.FormatKickers(r.Kickers),
-			WonAmount: r.WonAmount,
-			Mucked:    r.Mucked,
-			BestHand:  make([]*controller.WebOutputCard, 0),
+			PlayerIdx:    r.PlayerIdx,
+			HandRank:     r.HandRank,
+			HandName:     r.HandName,
+			Kickers:      domain.FormatKickers(r.Kickers),
+			WonAmount:    r.WonAmount,
+			Mucked:       r.Mucked,
+			BestHand:     make([]*controller.WebOutputCard, 0),
+			HiWonAmount:  r.HiWonAmount,
+			LowWonAmount: r.LowWonAmount,
 		}
 		if r.Mucked {
 			result.HandRank = 0
@@ -206,6 +222,11 @@ func buildPokerRoundResults(results []domain.HoldemResult) []*controller.HoldemW
 			result.Kickers = ""
 		} else {
 			result.BestHand = cardsToOutput(r.BestHand)
+			if r.LowQualifies {
+				result.LowQualifies = true
+				result.LowBestHand = cardsToOutput(r.LowBestHand)
+				result.LowKickers = domain.FormatKickers(r.LowKickers)
+			}
 		}
 		out = append(out, result)
 	}

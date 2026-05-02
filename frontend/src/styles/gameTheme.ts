@@ -23,6 +23,7 @@ export type GameKey =
   | 'poker'
   | 'holdem'
   | 'omaha'
+  | 'omahahilo'
   | 'shortdeck'
   | 'pineapple'
   | 'crazypineapple'
@@ -121,6 +122,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   poker: POKER,
   holdem: POKER,
   omaha: POKER,
+  omahahilo: POKER,
   shortdeck: POKER,
   pineapple: POKER,
   crazypineapple: POKER,

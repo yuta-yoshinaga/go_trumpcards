@@ -22,7 +22,11 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 	var b strings.Builder
 
 	b.WriteString("==========\n")
-	b.WriteString("Omaha Hold'em\n")
+	if o.GetIsHiLo() {
+		b.WriteString("Omaha Hi-Lo (8 or Better)\n")
+	} else {
+		b.WriteString("Omaha Hold'em\n")
+	}
 	b.WriteString("==========\n")
 
 	cfg := o.GetConfig()
@@ -112,8 +116,19 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 			} else {
 				fmt.Fprintf(&b, "  %s", name)
 			}
+			if o.GetIsHiLo() && r.LowQualifies {
+				fmt.Fprintf(&b, " / Low: %s", cuiCardSliceStrEmoji(r.LowBestHand))
+			}
 			if r.WonAmount > 0 {
-				fmt.Fprintf(&b, " → %dチップ獲得", r.WonAmount)
+				if o.GetIsHiLo() && r.HiWonAmount > 0 && r.LowWonAmount > 0 {
+					fmt.Fprintf(&b, " → %dチップ獲得 (Hi:%d / Lo:%d)", r.WonAmount, r.HiWonAmount, r.LowWonAmount)
+				} else if o.GetIsHiLo() && r.LowWonAmount > 0 {
+					fmt.Fprintf(&b, " → %dチップ獲得 (Lo)", r.WonAmount)
+				} else if o.GetIsHiLo() && r.HiWonAmount > 0 {
+					fmt.Fprintf(&b, " → %dチップ獲得 (Hi)", r.WonAmount)
+				} else {
+					fmt.Fprintf(&b, " → %dチップ獲得", r.WonAmount)
+				}
 			}
 			b.WriteString("\n")
 		}
