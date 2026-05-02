@@ -364,3 +364,197 @@ func TestOmahaHiLo_DistributePots_Scoop(t *testing.T) {
 		t.Errorf("losing player got hi=%d lo=%d; want both 0", hi[1], lo[1])
 	}
 }
+
+// TestOmahaHiLo_ResolveShowdown_PopulatesResults:
+// resolveShowdown が hiLo モード時に HoldemResult の Lo* / HiWonAmount /
+// LowWonAmount を正しく populated することを統合テスト。実ホールカード +
+// コミュニティカードを与え、EvalBestHand / EvalBestLowHand が走る本物の
+// ショーダウンパスを exercise する。
+func TestOmahaHiLo_ResolveShowdown_PopulatesResults(t *testing.T) {
+	o := NewDefaultOmahaHiLo()
+	players := o.GetPlayers()
+
+	for _, p := range players {
+		p.cards = nil
+	}
+
+	// プレイヤー0: A♠ K♠ + (Q♠ J♠ 10♠ board) でロイヤル
+	players[0].AddCard(NewCard(CardDesignSpade, 1, false))
+	players[0].AddCard(NewCard(CardDesignSpade, 13, false))
+	players[0].AddCard(NewCard(CardDesignClover, 9, false))
+	players[0].AddCard(NewCard(CardDesignClover, 8, false))
+
+	// プレイヤー1: A♥ 2♥ + (3 4 5 board) でホイール
+	players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+	players[1].AddCard(NewCard(CardDesignHeart, 2, false))
+	players[1].AddCard(NewCard(CardDesignDiamond, 9, false))
+	players[1].AddCard(NewCard(CardDesignDiamond, 10, false))
+
+	for i := 2; i < o.GetPlayerCnt(); i++ {
+		players[i].SetFolded(true)
+	}
+
+	// コミュニティ: Q♠ J♠ 3♦ 4♦ 5♦
+	o.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 12, false),
+		NewCard(CardDesignSpade, 11, false),
+		NewCard(CardDesignDiamond, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+	})
+
+	o.SetSidePots([]SidePot{{Amount: 100, EligiblePlayers: []int{0, 1}}})
+	o.startingChips = []int{1000, 1000, 1000, 1000}
+	o.pot = 100
+	o.SetPhase(OmahaPhaseRiver)
+
+	o.resolveShowdown()
+
+	results := o.GetRoundResults()
+	if len(results) < 2 {
+		t.Fatalf("expected results for at least 2 players, got %d", len(results))
+	}
+	// プレイヤー1 は qualifying low (A-2-3-4-5) を持ち lo 半分を獲得する。
+	var r1 *HoldemResult
+	for i := range results {
+		if results[i].PlayerIdx == 1 {
+			r1 = &results[i]
+			break
+		}
+	}
+	if r1 == nil {
+		t.Fatalf("no result for player 1")
+	}
+	if !r1.LowQualifies {
+		t.Errorf("player1 LowQualifies = false; want true (board provides 3-4-5 + hole A-2)")
+	}
+	if r1.LowWonAmount == 0 {
+		t.Errorf("player1 LowWonAmount = 0; want > 0")
+	}
+	if len(r1.LowBestHand) != 5 {
+		t.Errorf("player1 LowBestHand len = %d; want 5", len(r1.LowBestHand))
+	}
+}
+
+// TestOmahaHiLo_NewOmahaHiLo_ConstructorContract verifies the
+// non-default constructor sets hiLo and yields a usable game.
+func TestOmahaHiLo_NewOmahaHiLo_ConstructorContract(t *testing.T) {
+	cfg := DefaultOmahaConfig()
+	o := NewOmahaHiLo(NewTrumpCards(0), NewOmahaPlayersForTable(cfg.TableSize), cfg)
+	if !o.GetIsHiLo() {
+		t.Fatalf("NewOmahaHiLo did not set hiLo")
+	}
+	if o.GetPlayerCnt() != cfg.TableSize {
+		t.Fatalf("player count = %d; want %d", o.GetPlayerCnt(), cfg.TableSize)
+	}
+}
+
+// TestIsQualifyingOmahaLow exercises the helper directly to cover
+// each rejection branch (wrong size, nil card, > 8, paired rank).
+func TestIsQualifyingOmahaLow(t *testing.T) {
+	mk := func(d, v int) *Card { return NewCard(d, v, false) }
+	cases := []struct {
+		name  string
+		cards []*Card
+		want  bool
+	}{
+		{
+			name: "wheel qualifies",
+			cards: []*Card{
+				mk(CardDesignSpade, 1), mk(CardDesignHeart, 2), mk(CardDesignDiamond, 3),
+				mk(CardDesignClover, 4), mk(CardDesignSpade, 5),
+			},
+			want: true,
+		},
+		{
+			name: "8-7-6-5-4 qualifies (worst lo)",
+			cards: []*Card{
+				mk(CardDesignSpade, 8), mk(CardDesignHeart, 7), mk(CardDesignDiamond, 6),
+				mk(CardDesignClover, 5), mk(CardDesignSpade, 4),
+			},
+			want: true,
+		},
+		{
+			name: "9 disqualifies (>8)",
+			cards: []*Card{
+				mk(CardDesignSpade, 9), mk(CardDesignHeart, 2), mk(CardDesignDiamond, 3),
+				mk(CardDesignClover, 4), mk(CardDesignSpade, 5),
+			},
+			want: false,
+		},
+		{
+			name: "pair disqualifies",
+			cards: []*Card{
+				mk(CardDesignSpade, 5), mk(CardDesignHeart, 5), mk(CardDesignDiamond, 3),
+				mk(CardDesignClover, 4), mk(CardDesignSpade, 2),
+			},
+			want: false,
+		},
+		{
+			name:  "wrong size disqualifies",
+			cards: []*Card{mk(CardDesignSpade, 1), mk(CardDesignHeart, 2)},
+			want:  false,
+		},
+		{
+			name: "nil card disqualifies",
+			cards: []*Card{
+				nil, mk(CardDesignHeart, 2), mk(CardDesignDiamond, 3),
+				mk(CardDesignClover, 4), mk(CardDesignSpade, 5),
+			},
+			want: false,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := isQualifyingOmahaLow(tc.cards); got != tc.want {
+				t.Errorf("isQualifyingOmahaLow = %v; want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+// TestOmahaPlayer_EvalBestLowHand_ZeroCards covers the early-return
+// path when the player has fewer than 2 cards or community has fewer
+// than 3.
+func TestOmahaPlayer_EvalBestLowHand_ZeroCards(t *testing.T) {
+	p := NewOmahaPlayer(true, HoldemStyleTAG)
+	// no hole cards
+	if p.EvalBestLowHand([]*Card{
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+	}) {
+		t.Errorf("expected false for zero hole cards")
+	}
+	// no community cards
+	p2 := NewOmahaPlayer(true, HoldemStyleTAG)
+	p2.AddCard(NewCard(CardDesignSpade, 1, false))
+	p2.AddCard(NewCard(CardDesignHeart, 2, false))
+	p2.AddCard(NewCard(CardDesignDiamond, 3, false))
+	p2.AddCard(NewCard(CardDesignClover, 4, false))
+	if p2.EvalBestLowHand([]*Card{}) {
+		t.Errorf("expected false for empty community cards")
+	}
+}
+
+// TestOmahaPlayer_GetLowComparisonCards_DefensiveCopy ensures
+// the returned slice is a defensive copy (mutating it doesn't leak
+// into the player's stored low hand).
+func TestOmahaPlayer_GetLowComparisonCards_DefensiveCopy(t *testing.T) {
+	p := NewOmahaPlayer(true, HoldemStyleTAG)
+	p.SetLowBestHand([]*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignDiamond, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+	})
+	cmp := p.GetLowComparisonCards()
+	if len(cmp) != 5 {
+		t.Fatalf("len=%d want 5", len(cmp))
+	}
+	cmp[0] = nil
+	if p.GetLowBestHand()[0] == nil {
+		t.Errorf("mutating returned slice leaked into player state")
+	}
+}

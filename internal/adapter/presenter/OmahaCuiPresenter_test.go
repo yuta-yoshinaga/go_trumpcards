@@ -665,3 +665,83 @@ func TestOmahaCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame.AssertExpectations(t)
 	})
 }
+
+// TestOmahaCuiPresenter_HiLo_Title asserts the heading switches to
+// "Omaha Hi-Lo (8 or Better)" when GetIsHiLo() is true.
+func TestOmahaCuiPresenter_HiLo_Title(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+	o := domain.NewDefaultOmahaHiLo()
+	o.SetPhase(domain.OmahaPhasePreFlop)
+
+	result := p.Output(o, nil)
+	assert.Contains(t, result, "Omaha Hi-Lo (8 or Better)")
+}
+
+// TestOmahaCuiPresenter_HiLo_ResultRendering exercises the Hi-Lo
+// result branches: low hand display when qualified, and the
+// (Hi:N / Lo:M) / (Hi) / (Lo) suffixes on chip totals.
+func TestOmahaCuiPresenter_HiLo_ResultRendering(t *testing.T) {
+	p := new(presenter.OmahaCuiPresenter)
+	cases := []struct {
+		name        string
+		hi, lo      int
+		lowCards    []*domain.Card
+		wantSubstrs []string
+	}{
+		{
+			name: "scoop with qualified low",
+			hi:   50, lo: 50,
+			lowCards: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 2, false),
+				domain.NewCard(domain.CardDesignDiamond, 3, false),
+				domain.NewCard(domain.CardDesignClover, 4, false),
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+			},
+			wantSubstrs: []string{"Low:", "Hi:50", "Lo:50"},
+		},
+		{
+			name: "hi only",
+			hi:   100, lo: 0,
+			lowCards:    nil,
+			wantSubstrs: []string{"(Hi)"},
+		},
+		{
+			name: "lo only",
+			hi:   0, lo: 50,
+			lowCards: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 2, false),
+				domain.NewCard(domain.CardDesignDiamond, 3, false),
+				domain.NewCard(domain.CardDesignClover, 4, false),
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+			},
+			wantSubstrs: []string{"(Lo)", "Low:"},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			o := domain.NewDefaultOmahaHiLo()
+			o.SetPhase(domain.OmahaPhaseEnd)
+			result := domain.HoldemResult{
+				PlayerIdx:    0,
+				HandRank:     domain.PokerHandHighCard,
+				HandName:     "High Card",
+				BestHand:     []*domain.Card{},
+				WonAmount:    tc.hi + tc.lo,
+				HiWonAmount:  tc.hi,
+				LowWonAmount: tc.lo,
+			}
+			if tc.lowCards != nil {
+				result.LowQualifies = true
+				result.LowBestHand = tc.lowCards
+			}
+			o.SetRoundResults([]domain.HoldemResult{result})
+
+			out := p.Output(o, nil)
+			for _, want := range tc.wantSubstrs {
+				assert.Contains(t, out, want, "expected output to contain %q", want)
+			}
+		})
+	}
+}

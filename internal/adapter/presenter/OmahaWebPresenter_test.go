@@ -979,3 +979,142 @@ func TestOmahaWebPresenter_Output_WithMetaAIProfile(t *testing.T) {
 	assert.True(t, out.MetaAI.Enabled)
 	assert.NotNil(t, out.Profile)
 }
+
+// --- Hi-Lo (Omaha 8 or Better) specific tests ---
+
+// TestOmahaWebPresenter_HiLo_IsHiLoFlag asserts that the IsHiLo flag
+// flows from the domain (NewDefaultOmahaHiLo) into the Web output.
+func TestOmahaWebPresenter_HiLo_IsHiLoFlag(t *testing.T) {
+	p := new(presenter.OmahaWebPresenter)
+	o := domain.NewDefaultOmahaHiLo()
+	o.SetPhase(domain.OmahaPhasePreFlop)
+
+	result := p.Output(o, nil)
+	var out controller.HoldemWebOutput
+	if err := json.Unmarshal([]byte(result), &out); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	assert.True(t, out.IsHiLo, "IsHiLo flag should propagate from domain to Web output")
+}
+
+// TestOmahaWebPresenter_HiLo_PlayerLowHand asserts that a qualifying
+// low hand on a non-folded player at showdown is surfaced via
+// LowBestHand / LowQualifies on the player output.
+func TestOmahaWebPresenter_HiLo_PlayerLowHand(t *testing.T) {
+	p := new(presenter.OmahaWebPresenter)
+	o := domain.NewDefaultOmahaHiLo()
+	o.SetPhase(domain.OmahaPhaseShowdown)
+
+	players := o.GetPlayers()
+	players[0].SetBestHand([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignSpade, 4, false),
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+	})
+	players[0].SetHandRank(domain.PokerHandStraightFlush)
+	players[0].SetLowBestHand([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignSpade, 2, false),
+		domain.NewCard(domain.CardDesignSpade, 3, false),
+		domain.NewCard(domain.CardDesignSpade, 4, false),
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+	})
+
+	result := p.Output(o, nil)
+	var out controller.HoldemWebOutput
+	if err := json.Unmarshal([]byte(result), &out); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	assert.True(t, out.IsHiLo)
+	assert.True(t, out.Players[0].LowQualifies, "human's low should be marked qualifying")
+	assert.Len(t, out.Players[0].LowBestHand, 5)
+}
+
+// TestOmahaWebPresenter_HiLo_ResultMessages exercises the Hi-Lo
+// branches of buildResultMessage (scoop, hiWin, lowWin) by setting
+// up a finished game (END phase) with the human's split-pot result.
+func TestOmahaWebPresenter_HiLo_ResultMessages(t *testing.T) {
+	p := new(presenter.OmahaWebPresenter)
+
+	cases := []struct {
+		name     string
+		hi       int
+		lo       int
+		wantCode string
+	}{
+		{"scoop", 50, 50, "omahahilo.result.scoop"},
+		{"hi only", 50, 0, "omahahilo.result.hiWin"},
+		{"lo only", 0, 50, "omahahilo.result.lowWin"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			o := domain.NewDefaultOmahaHiLo()
+			o.SetPhase(domain.OmahaPhaseEnd)
+			o.SetGameEndFlag(true)
+			o.SetRoundResults([]domain.HoldemResult{
+				{
+					PlayerIdx:    0,
+					HandRank:     domain.PokerHandStraight,
+					HandName:     "Straight",
+					BestHand:     []*domain.Card{},
+					WonAmount:    tc.hi + tc.lo,
+					HiWonAmount:  tc.hi,
+					LowWonAmount: tc.lo,
+					LowQualifies: tc.lo > 0,
+				},
+			})
+
+			result := p.Output(o, nil)
+			var out controller.HoldemWebOutput
+			if err := json.Unmarshal([]byte(result), &out); err != nil {
+				t.Fatalf("unmarshal: %v", err)
+			}
+			assert.Equal(t, tc.wantCode, out.MessageCode)
+		})
+	}
+}
+
+// TestOmahaWebPresenter_HiLo_RoundResultsFields asserts that
+// HoldemResult Hi-Lo fields propagate into the Web round-results
+// output (HiWonAmount/LowWonAmount/LowBestHand/LowQualifies).
+func TestOmahaWebPresenter_HiLo_RoundResultsFields(t *testing.T) {
+	p := new(presenter.OmahaWebPresenter)
+	o := domain.NewDefaultOmahaHiLo()
+	o.SetPhase(domain.OmahaPhaseEnd)
+
+	lowHand := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignHeart, 2, false),
+		domain.NewCard(domain.CardDesignDiamond, 3, false),
+		domain.NewCard(domain.CardDesignClover, 4, false),
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+	}
+	o.SetRoundResults([]domain.HoldemResult{
+		{
+			PlayerIdx:    0,
+			HandRank:     domain.PokerHandHighCard,
+			HandName:     "High Card",
+			BestHand:     []*domain.Card{},
+			WonAmount:    50,
+			HiWonAmount:  0,
+			LowWonAmount: 50,
+			LowQualifies: true,
+			LowBestHand:  lowHand,
+		},
+	})
+
+	result := p.Output(o, nil)
+	var out controller.HoldemWebOutput
+	if err := json.Unmarshal([]byte(result), &out); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if assert.Len(t, out.RoundResults, 1) {
+		r := out.RoundResults[0]
+		assert.Equal(t, 0, r.HiWonAmount)
+		assert.Equal(t, 50, r.LowWonAmount)
+		assert.True(t, r.LowQualifies)
+		assert.Len(t, r.LowBestHand, 5)
+	}
+}
