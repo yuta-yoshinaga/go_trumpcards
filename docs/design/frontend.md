@@ -36,6 +36,7 @@
   - [2.21 RedDogPage フェーズ別レンダリングフロー](#221-reddogpage-フェーズ別レンダリングフロー)
   - [2.22 ScorpionPage フェーズ別レンダリングフロー](#222-scorpionpage-フェーズ別レンダリングフロー)
   - [2.23 TrashPage フェーズ別レンダリングフロー](#223-trashpage-フェーズ別レンダリングフロー)
+  - [2.24 RussianSolitairePage フェーズ別レンダリングフロー](#224-russiansolitairepage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -242,6 +243,20 @@ classDiagram
         +boolean isStalemate
         +number undoToEscape
         +YukonHint hint
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    class RussianSolitaireResponse {
+        +KlondikeTableauCard[][] tableau
+        +Card[][] foundation
+        +number phase
+        +number moveCount
+        +boolean canUndo
+        +boolean isStalemate
+        +number undoToEscape
+        +RussianSolitaireHint hint
         +string message
         +string messageCode
         +object messageParams
@@ -740,6 +755,13 @@ classDiagram
         GAME_OVER = 2
     }
 
+    class RussianSolitairePhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
     class RedDogPhase {
         <<enumeration>>
         BET = 1
@@ -749,7 +771,7 @@ classDiagram
         END = 5
     }
 
-    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase, FortyThievesPhase, CanfieldPhase, YukonPhase は、\nそれぞれ同一の値を持つ別定数です"
+    note for KlondikePhase "KlondikePhase, FreeCellPhase, SpiderPhase, PyramidPhase, TriPeaksPhase, GolfPhase, ClockSolitairePhase, FortyThievesPhase, CanfieldPhase, YukonPhase, RussianSolitairePhase は、\nそれぞれ同一の値を持つ別定数です"
 
     note for DurakPhase "DurakPhase の定数は src/pages/DurakPage.tsx 内にローカル定義 (PHASE_ATTACK/DEFEND/BOUT_END)。\nPigsTailPhase の定数は src/pages/PigsTailPage.tsx 内にローカル定義 (PIGTAIL_PHASE_PLAY/END)。\nDaifugoPage は数値 Phase を持たず gameEndFlag と t('phase.play'/'phase.end') を使用する"
 ```
@@ -1765,6 +1787,16 @@ classDiagram
 
     YukonPage --|> GamePage : follows pattern
 
+    class RussianSolitairePage {
+        +7列タブロー表示 (表向き/伏せカード)
+        +4組札表示
+        +手数カウンター
+        +元に戻す/ヒント/オートコンプリートボタン
+        +ギブアップ/リセットボタン
+    }
+
+    RussianSolitairePage --|> GamePage : follows pattern
+
     class LetItRidePage {
         +チップ表示
         +ベット額入力
@@ -1847,7 +1879,7 @@ classDiagram
         +poker: [Poker, Holdem, Omaha, ShortDeck, Pineapple, SevenCardStud, Razz, Badugi, IndianPoker, VideoPoker, DeucesWild, JokerPoker]
         +trickTaking: [Hearts, Spades, TwoTenJack, OhHell, Euchre, Bridge, Napoleon, Whist]
         +matching: [OldMaid, Doubt, Durak, Daifugo, President, Cassino, Sevens, CrazyEights, PageOne, Speed, GoFish, Pinochle, PigsTail, War, FiftyOne, Trash, Slapjack]
-        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, Canfield, Yukon, Scorpion, Accordion, PokerSquares]
+        +solitaire: [Klondike, FreeCell, Spider, Pyramid, TriPeaks, Golf, Memory, ClockSolitaire, FortyThieves, Canfield, Yukon, RussianSolitaire, Scorpion, Accordion, PokerSquares]
         +rummy: [GinRummy, Canasta, Cribbage, SevenBridge]
     }
 
@@ -2681,6 +2713,49 @@ sequenceDiagram
     User->>Page: Reset ボタン
     Page->>Hook: dispatch reset
 ```
+
+### 2.24 RussianSolitairePage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as RussianSolitairePage
+    participant Hook as useRussianSolitaireGame
+    participant API as gameApi
+
+    Note over User,API: プレイフェーズ (phase=0)
+    User->>Page: タブローカード選択 → 移動先クリック
+    Page->>Hook: handleMove(src, dst)
+    Hook->>API: gameExec("move", {from, to})
+    API-->>Hook: RussianSolitaireResponse (phase=0)
+    Hook-->>Page: 再レンダリング → タブロー・組札更新
+
+    User->>Page: ヒントボタンクリック
+    Page->>Hook: handleHint()
+    Hook->>API: gameExec("hint")
+    API-->>Hook: RussianSolitaireResponse (hint付き)
+    Hook-->>Page: 再レンダリング → ヒントハイライト表示
+
+    User->>Page: オートコンプリートボタンクリック
+    Page->>Hook: handleAutoComplete()
+    Hook->>API: gameExec("autocomplete")
+    API-->>Hook: RussianSolitaireResponse (phase=0 or 1)
+    Hook-->>Page: 再レンダリング → 組札更新
+
+    User->>Page: 元に戻すボタンクリック
+    Page->>Hook: handleUndo()
+    Hook->>API: gameExec("undo")
+    API-->>Hook: RussianSolitaireResponse (phase=0)
+    Hook-->>Page: 再レンダリング → 前の状態に復元
+
+    Note over User,API: ゲームクリア (phase=1)
+    Page-->>User: クリアメッセージ表示
+
+    Note over User,API: ゲームオーバー (phase=2)
+    Page-->>User: ゲームオーバーメッセージ表示
+```
+
+YukonPage と同一のフロー。タブロー間の積み重ね判定はサーバ側 (`canPlaceOnTableau` で同スート降順チェック) で行われるため、フロントエンドの呼び出しシーケンスは Yukon と完全に一致する。
 
 ---
 
