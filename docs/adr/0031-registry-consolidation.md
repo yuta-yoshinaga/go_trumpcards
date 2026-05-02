@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Date
 
@@ -150,6 +150,10 @@ func TestWorkerRegistrationsCoverAllGames(t *testing.T) {
 ただし、案1 が望ましいケースもある: 「将来的にゲーム数を 200+ に拡張する予定がある」「ゲーム単位でデプロイ・バージョニングしたい」など、`games/` の物理的なディレクトリ分割そのものに価値がある場合。本プロジェクトは現状そのいずれにも該当しないため、案3 を推奨する。
 
 **本 ADR は提案段階であり、議論を踏まえて決定する**。Issue #1616 のコメントで合意形成後、本 ADR の Status を Accepted に更新する (またはより適切な案で書き換える)。
+
+### 採択結果 (2026-05-02)
+
+Issue #1616 で **案3 (現状維持 + ガードレール強化)** を採択。実装は `internal/infrastructure/games/registry_worker_consistency_test.go` の `TestWorkerRegistrationsCoverAllGames` として導入し、3 つの worker サブパッケージ (`casino` / `classic` / `solo`) のソースを `go/parser` で AST に展開して `RegisterKVGame` 呼び出しの第 1 引数を抽出、`games.ByCategory(...)` と集合一致を検査する形になった。`//go:build js && wasm` 配下のランタイムテストを書く案も検討したが、CI に wasm ランタイム (TinyGo / `GOOS=wasip1`) を新規導入する追加コストが見合わないと判断。AST 解析であれば既存の `go test -tags test ./...` で実行できる。
 
 ## Consequences
 
