@@ -90,7 +90,7 @@ var registry = []*Game{
 - **新規追加時の手作業は 1 行のみ**。
 - **build tag / Worker 構造を変えない** → WASM サイズへの影響ゼロ。
 - 生成物はコミットされる (git 上で diff レビュー可能)。
-- ジェネレータ自体は ~150 LoC で完結する見込み (テンプレート + struct → file)。
+- ジェネレータ自体は ~200 LoC で完結する見込み (テンプレート + struct → file、案2 採択時の見積もりと整合)。
 
 #### Cons
 
@@ -101,27 +101,35 @@ var registry = []*Game{
 
 ### 案3: 現状維持 + ガードレール強化
 
-`registry.go` を SSoT のまま、4 ファイルへの分散も維持。代わりに **「3 番の Worker 側登録漏れ」を CI で検出する仕組みを追加**:
+`registry.go` を SSoT のまま、4 ファイルへの分散も維持。代わりに **「③ Worker 側登録漏れ」を CI で検出する仕組みを追加**。
+
+実装上の制約: 既存の `casino/casino.go` 等は `//go:build js && wasm` で gated されており、これらの init() を実行して `Game.RegisterWorker` の populate 後を検査するには、テストも同じビルドタグ下で **WASM ランタイム上で実行** する必要がある (TinyGo + wasmer か `GOOS=wasip1` のいずれか — 現行 CI には未導入)。
+
+そのため、**ランタイム実行ではなくソースコードの AST 解析で同じ漏れを検出するアプローチを推奨**:
 
 ```go
-//go:build js && wasm
+// internal/infrastructure/games/registry_worker_consistency_test.go
+// (build tag なし — 通常の go test ./... で実行可能)
 
-// internal/infrastructure/games/{casino,classic,solo}/<cat>_test.go
-func TestAllCategoryGamesAreRegistered(t *testing.T) {
-    // games.ByCategory(Casino) で得られる N 件全てが
-    // RegisterKVGame で登録済みであることを assert。
+func TestWorkerRegistrationsCoverAllGames(t *testing.T) {
+    // 1. games.All() からカテゴリごとの期待ゲーム名集合を取得。
+    // 2. {casino,classic,solo}/{cat}.go を go/parser で AST に展開。
+    // 3. 各ファイルの init() 内の RegisterKVGame("name", ...) 呼び出しから
+    //    name 引数を抽出し、期待集合と一致することを assert。
 }
 ```
+
+実行時に `RegisterWorker != nil` を assert したい場合は、`registry.go:RegisterCategory` が既に同等のチェックを startup-time で行っており (ローカル `go run ./cmd/workers/casino` で漏れがあれば即座に panic)、CI の AST 検査と二重で守られる形になる。
 
 加えて `docs/new-game-checklist.md` を「リトマステスト的なテスト」へ寄せる:
 
 - ① + ② + ④ の不整合 → 既存 `TestRegistryMatchesCLI` で検出済み。
-- ③ の不整合 → 上記の `TestAllCategoryGamesAreRegistered` を新規追加。
+- ③ の不整合 → 上記の `TestWorkerRegistrationsCoverAllGames` を新規追加。
 - 結果: **4 ファイル中いずれか 1 つでも漏れたら CI が落ちる** 状態。
 
 #### Pros
 
-- **着手コストが小さい** (1 PR、~50 LoC)。
+- **着手コストが小さい** (1 PR、~90 LoC: テストファイル 1 つ + 軽い AST ヘルパー)。
 - **既存の build tag 構造を壊さない** → WASM サイズ影響ゼロ。
 - 73 ゲーム × 4 ファイルの認知負荷は残るが、**「漏れたら CI で気付ける」事実そのものが最大の改善**。
 - 案1・案2 と互換: 後から本格的なリファクタに移行しても、ガードレール自体は流用可能。
@@ -135,7 +143,7 @@ func TestAllCategoryGamesAreRegistered(t *testing.T) {
 
 **案3 (現状維持 + ガードレール強化) を第一候補とする**。理由:
 
-1. **着手コストとリスクのバランス**: 案1・2 は移行に数 PR / 数週間を要するうえ、build tag の取り扱いを誤ると WASM ビルドが silent に壊れる (1 MB 超過時のみ CI で検出)。案3 は ~50 LoC の test-only 変更で「漏れ検出」というコア課題を解決できる。
+1. **着手コストとリスクのバランス**: 案1・2 は移行に数 PR / 数週間を要するうえ、build tag の取り扱いを誤ると WASM ビルドが silent に壊れる (1 MB 超過時のみ CI で検出)。案3 は ~90 LoC の test-only 変更 (AST ベース) で「漏れ検出」というコア課題を解決できる。
 2. **新規ゲーム追加の頻度**: 直近 12 ヶ月で 73 ゲームに到達した後、ペースは緩やかになりつつある。残存する ROI は「加える側の摩擦低減」より「漏れの早期検出」の方が大きい。
 3. **方針変更の選択肢を保持**: ガードレールがあれば、後で案1 (per-game packages) に移行しても安全。一方、いきなり案1 に着手すると、移行中に発生する登録漏れを既存テストで検出できない。
 
@@ -149,8 +157,9 @@ func TestAllCategoryGamesAreRegistered(t *testing.T) {
 
 ### 案3 採択時 (推奨)
 
-- **追加コスト**: `internal/infrastructure/games/{casino,classic,solo}/<cat>_test.go` 各 1 ファイル (`//go:build js && wasm` テスト) ≈ 各 30 LoC × 3 = 90 LoC。
-- **CI コスト**: WASM build target でのテスト実行が必要 (現状未実施の可能性あり、要確認)。
+- **追加コスト**: `internal/infrastructure/games/registry_worker_consistency_test.go` 1 ファイル (build tag なし、AST 解析で 3 カテゴリを一括チェック) ≈ ~90 LoC。
+- **CI コスト**: ゼロ。`go test -tags test ./...` で実行されるため、現行の CI に追加ステップ不要。
+  - 代替案として `//go:build js && wasm` 下でランタイムテスト (`Game.RegisterWorker != nil` を assert) を書く方法もあるが、これは TinyGo + wasmer か `GOOS=wasip1 GOARCH=wasm` のいずれかを CI に追加する必要があり、Worker サブパッケージのビルドタグ変更も伴うため、**AST 解析ルートを推奨**。
 - **`docs/new-game-checklist.md` を更新**: 「漏れたら CI で気付く」前提に書き換え、心理的ハードルを下げる。
 - **後方互換**: 既存ファイル構造は無変更、外部 API への影響もなし。
 

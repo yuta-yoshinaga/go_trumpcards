@@ -6,7 +6,7 @@ This directory contains Architecture Decision Records for the go_trumpcards proj
 
 Each ADR follows the format:
 
-- **Status**: Accepted / Superseded / Deprecated
+- **Status**: Proposed / Accepted / Superseded / Deprecated
 - **Context**: What problem or situation prompted this decision?
 - **Decision**: What was decided?
 - **Consequences**: What are the trade-offs and implications?
