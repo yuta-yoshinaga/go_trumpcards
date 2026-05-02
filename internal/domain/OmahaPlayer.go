@@ -266,17 +266,17 @@ func (op *OmahaPlayer) EvalBestLowHand(communityCards []*Card) bool {
 	commTriples := combinations(communityCards, 3) // C(5,3) = 10
 
 	var bestCards []*Card
+	var hand [5]*Card
 	for _, pair := range holePairs {
+		hand[0], hand[1] = pair[0], pair[1]
 		for _, triple := range commTriples {
-			hand := make([]*Card, 0, 5)
-			hand = append(hand, pair...)
-			hand = append(hand, triple...)
-			if !isQualifyingOmahaLow(hand) {
+			hand[2], hand[3], hand[4] = triple[0], triple[1], triple[2]
+			if !isQualifyingOmahaLow(hand[:]) {
 				continue
 			}
-			if bestCards == nil || compareRazzCards(hand, bestCards) < 0 {
+			if bestCards == nil || compareRazzCards(hand[:], bestCards) < 0 {
 				bestCards = make([]*Card, 5)
-				copy(bestCards, hand)
+				copy(bestCards, hand[:])
 			}
 		}
 	}
@@ -291,11 +291,13 @@ func (op *OmahaPlayer) EvalBestLowHand(communityCards []*Card) bool {
 
 // isQualifyingOmahaLow は5枚カードがオマハ Hi-Lo の有効なロー
 // (8 or Better、ペア無し、Ace=1) を満たすか判定する。
+// ホットパス: showdown ごとにプレイヤー1人あたり最大60回呼ばれるため、
+// map ではなく uint16 のビットマスクで重複検出を行いアロケーションを避ける。
 func isQualifyingOmahaLow(cards []*Card) bool {
 	if len(cards) != 5 {
 		return false
 	}
-	seen := make(map[int]bool, 5)
+	var seen uint16
 	for _, c := range cards {
 		if c == nil {
 			return false
@@ -304,10 +306,11 @@ func isQualifyingOmahaLow(cards []*Card) bool {
 		if v < 1 || v > 8 {
 			return false
 		}
-		if seen[v] {
+		mask := uint16(1) << v
+		if seen&mask != 0 {
 			return false
 		}
-		seen[v] = true
+		seen |= mask
 	}
 	return true
 }

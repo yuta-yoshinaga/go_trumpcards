@@ -234,7 +234,7 @@ function OmahaHiLoPageContent() {
         )}
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         <TutorialButton />
-        <ManualButton gamePath="/omaha" />
+        <ManualButton gamePath="/omahahilo" />
       </PhaseIndicator>
 
       {cliEnabled ? (
@@ -289,8 +289,8 @@ function OmahaHiLoPageContent() {
               if (isLargeDesktop) {
                 return (
                   <PokerTableLayout
-                    communityCardsTutorial="oh-community-cards"
-                    cpuAreaTutorial="oh-cpu-area"
+                    communityCardsTutorial="ohl-community-cards"
+                    cpuAreaTutorial="ohl-cpu-area"
                     communityCards={communityCardsContent}
                     cpuPlayers={cpuPlayerCards}
                   />
@@ -305,7 +305,7 @@ function OmahaHiLoPageContent() {
                   >
                     {communityCardsContent}
                   </div>
-                  <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="oh-cpu-area">
+                  <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="ohl-cpu-area">
                     {cpuPlayerCards}
                   </CpuAccordion>
                 </>
@@ -524,7 +524,7 @@ function OmahaHiLoPageContent() {
               onReset={handleManualReset}
               requestConfirm={requestConfirm}
               loading={loading}
-              dataTutorial="oh-reset-button"
+              dataTutorial="ohl-reset-button"
               className="min-w-[90px]"
             />
           </GameFooter>
