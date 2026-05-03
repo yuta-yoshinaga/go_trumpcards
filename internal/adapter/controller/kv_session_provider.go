@@ -66,7 +66,25 @@ func (p *KVSessionProvider[T]) Acquire(id string, factory func() T) (T, SessionR
 				val = restored
 				return val, p.releaseFunc(key, &val), true
 			}
-			slog.Error("KV unmarshal failed, creating new session", "key", key, "error", err)
+			// Diagnostic: include data length and a printable prefix so we can
+			// see what GetString actually returned (e.g. an HTML error page vs
+			// truncated JSON vs corrupted state). Remove once root cause is
+			// identified — see PR #1640 follow-up.
+			prefix := data
+			if len(prefix) > 80 {
+				prefix = prefix[:80] + "..."
+			}
+			slog.Error(
+				"KV unmarshal failed, creating new session",
+				"key", key,
+				"error", err,
+				"data_len", len(data),
+				"data_prefix", prefix,
+			)
+		} else if err != nil {
+			// Also log unexpected GetString errors (separate from the
+			// "key not found" path which returns ("", nil)).
+			slog.Error("KV GetString failed", "key", key, "error", err)
 		}
 	}
 
