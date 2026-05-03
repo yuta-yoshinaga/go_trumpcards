@@ -1,0 +1,79 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "dealer": "親: {{name}}",
+  "currentBid": "ビッド: {{n}}",
+  "bidWinner": "ビッド勝者: {{name}}",
+  "trumpSuit": "切り札: {{suit}}",
+  "trumpUnset": "未確定",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "bid": "ビッド {{n}}",
+  "bidPass": "パス",
+  "bidNone": "未ビッド",
+  "currentTrick": "現在のトリック",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresBid": "ビッド",
+  "scoresTricks": "トリック",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "bidButton": "ビッド",
+  "passButton": "パス",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "bidPhase": "ビッド宣言 (0=パス, 2-4)",
+  "playPhase": {
+    "lead": "リードしてください (最初のカードがトランプを決定)",
+    "follow": "カードを出してください"
+  },
+  "trickEnd": "トリック終了",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "scoring": {
+    "high": "High (最強トランプ)",
+    "low": "Low (最弱トランプ)",
+    "jack": "Jack (Jトランプ)",
+    "game": "Game (ピップ合計最大)"
+  },
+  "hintBid": "推奨ビッド",
+  "hintPlay": "推奨カード",
+  "hintReason": {
+    "bid_strong": "強い手札なので入札",
+    "bid_pass": "弱い手札なのでパス",
+    "set_trump_lead": "リードでトランプを宣言",
+    "lead_strong": "強いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "トランプでカット",
+    "discard_low": "低いカードを捨てる"
+  },
+  "tutorial": {
+    "bidControls": "ビッドフェーズでは取れる得点数 (2-4) を宣言します。パスも可能です。",
+    "trickDisplay": "現在のトリックです。最初のリードカードのスートが切り札になります。",
+    "playerHand": "あなたの手札です。リードスートに従うかトランプでカット可能です。",
+    "playButton": "カードを選んだらこのボタンで出します。",
+    "scoreTable": "スコア表です。High/Low/Jack/Game の4ポイントを競います。",
+    "scoringInfo": "ビッド達成で +ポイント獲得、未達なら -ビッド数 (set back) になります。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

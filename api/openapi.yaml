@@ -162,6 +162,8 @@ tags:
     description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
   - name: casinowar
     description: Casino War (カジノウォー) game - simple player-vs-dealer table game; high card wins (Aces high), tie offers Surrender (forfeit half ante) or War (match ante and re-draw)
+  - name: pitch
+    description: Pitch / Setback (ピッチ / セットバック) game - 4-player single-handed Auction Pitch trick-taking; bid 0/2/3/4 then compete for High/Low/Jack/Game points (4 max); set back on a missed bid
 
 paths:
   /blackjack/exec:
@@ -7561,6 +7563,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CasinoWarResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /pitch/exec:
+    post:
+      tags:
+        - pitch
+      summary: Execute a Pitch (Setback) game command
+      description: |
+        Send a command to advance the Pitch / Setback (ピッチ / セットバック) game
+        session identified by `sessionId`. Pitch is a 4-player single-handed
+        Auction Pitch trick-taking game using a standard 52-card deck (24 cards
+        actually played). 6 cards are dealt to each player. Bidding: each player
+        in turn declares pass (0) or 2/3/4. The highest bidder leads, and the
+        first card played sets the trump suit. Each round awards up to 4 points:
+        High (highest trump played), Low (lowest trump played), Jack (J of trump
+        if dealt) and Game (single highest pip total: A=4, K=3, Q=2, J=1, 10=10).
+        Bidder must reach the bid or be set back by the bid amount. First to
+        PointLimit (default 7) wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player declares pass (0) or 2/3/4 |
+        | Play      | `1`   | Trick play (must follow lead suit OR play trump) |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | All 6 tricks played; advance with `nextround` |
+        | GameEnd   | `4`   | A player reached the point limit |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bid`       | `b`     | Place a bid (requires `bid` field, 0=pass, 2-4) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `hint`      | `h`     | Get a suggested action |
+        | `log`       | `l`     | View action log |
+      operationId: pitchExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PitchRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 3
+                value:
+                  command: bid
+                  bid: 3
+                  sessionId: my-session-001
+              pass:
+                summary: Pass during bidding
+                value:
+                  command: bid
+                  bid: 0
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PitchResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
@@ -15966,6 +16043,147 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template.
+
+    # -------------------------------------------------------------------------
+    # Pitch / Setback (ピッチ / セットバック)
+    # -------------------------------------------------------------------------
+    PitchRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bid` (`b`),
+            `play` (`p`), `next` (`n`), `nextround` (`nr`), `hint` (`h`), `log` (`l`).
+          enum: [reset, r, bid, b, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        bid:
+          type: integer
+          description: Bid value (0=pass, 2-4). Required for `bid` command.
+          minimum: 0
+          maximum: 4
+          example: 3
+        cardIndex:
+          type: integer
+          description: Index of the card to play. Required for `play` command.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters).
+          example: my-session-001
+
+    PitchResponse:
+      type: object
+      description: Current state of the Pitch game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+                description: "Player's bid (-1=not bid, 0=pass, 2-4)."
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd."
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        currentBid:
+          type: integer
+          description: Current highest bid (0=no bid yet).
+        bidWinnerIdx:
+          type: integer
+          description: Index of the winning bidder (-1=not yet decided).
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 0=unset, 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds."
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        validPlayIndices:
+          type: array
+          items:
+            type: integer
+          description: Indices of cards in the human player's hand that are legal to play.
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        hint:
+          type: object
+          properties:
+            cardIndex:
+              type: integer
+            bid:
+              type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
 
     PresidentRequest:
       type: object

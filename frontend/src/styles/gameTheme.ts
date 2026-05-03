@@ -38,6 +38,7 @@ export type GameKey =
   // Trick-taking
   | 'hearts'
   | 'spades'
+  | 'pitch'
   | 'twotenjack'
   | 'ohhell'
   | 'euchre'
@@ -139,6 +140,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Trick-taking
   hearts: BLUE,
   spades: BLUE,
+  pitch: BLUE,
   twotenjack: BLUE,
   ohhell: BLUE,
   euchre: BLUE,

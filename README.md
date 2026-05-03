@@ -95,6 +95,7 @@ Go + Clean Architecture で実装した76種類のトランプゲーム。CLI �
 | ベーカーズ・ダズン (Baker's Dozen) | `bakersdozen` | [CUI](docs/manual/cui/bakersdozen.md) / [Web](docs/manual/web/bakersdozen.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
 | カジノウォー (Casino War) | `casinowar` | [CUI](docs/manual/cui/casinowar.md) / [Web](docs/manual/web/casinowar.md) |
+| ピッチ / セットバック (Pitch / Setback) | `pitch` | [CUI](docs/manual/cui/pitch.md) / [Web](docs/manual/web/pitch.md) |
 
 ## Demo
 

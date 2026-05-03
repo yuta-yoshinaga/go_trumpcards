@@ -38,6 +38,7 @@ import type {
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
+  PitchResponse,
   PokerResponse,
   PokerSquaresResponse,
   PresidentResponse,
@@ -109,6 +110,7 @@ import { getPageOneHint } from '../utils/hints/pageoneHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
+import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
 import { getPresidentHint } from '../utils/hints/presidentHint';
@@ -149,6 +151,7 @@ const hintFactories = {
   poker: (s) => getPokerHint(s as PokerResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),
+  pitch: (s) => getPitchHint(s as PitchResponse),
   holdem: (s) => getHoldemHint(s as HoldemResponse),
   omaha: (s) => getOmahaHint(s as OmahaResponse),
   omahahilo: (s) => getOmahaHiLoHint(s as OmahaResponse),

@@ -1,0 +1,79 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Target Score",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "dealer": "Dealer: {{name}}",
+  "currentBid": "Bid: {{n}}",
+  "bidWinner": "Bidder: {{name}}",
+  "trumpSuit": "Trump: {{suit}}",
+  "trumpUnset": "(not set)",
+  "cards": "{{count}}",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "bid": "Bid {{n}}",
+  "bidPass": "Pass",
+  "bidNone": "Not bid",
+  "currentTrick": "Current trick",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresBid": "Bid",
+  "scoresTricks": "Tricks",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "bidButton": "Bid",
+  "passButton": "Pass",
+  "playButton": "Play",
+  "nextTrick": "Next trick",
+  "nextRound": "Next round",
+  "bidPhase": "Declare your bid (0=pass, 2-4)",
+  "playPhase": {
+    "lead": "Lead a card (first card sets trump)",
+    "follow": "Play a card"
+  },
+  "trickEnd": "Trick end",
+  "roundEnd": "Round end",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "scoring": {
+    "high": "High (highest trump)",
+    "low": "Low (lowest trump)",
+    "jack": "Jack (Jack of trump)",
+    "game": "Game (highest pip total)"
+  },
+  "hintBid": "Suggested bid",
+  "hintPlay": "Suggested card",
+  "hintReason": {
+    "bid_strong": "Strong hand — bid",
+    "bid_pass": "Weak hand — pass",
+    "set_trump_lead": "Lead to set trump",
+    "lead_strong": "Lead strong",
+    "follow_suit": "Follow suit",
+    "trump_cut": "Cut with trump",
+    "discard_low": "Discard low"
+  },
+  "tutorial": {
+    "bidControls": "Declare how many of the 4 points you can win (2-4) or pass.",
+    "trickDisplay": "The first card led sets the trump suit for the round.",
+    "playerHand": "You must follow lead suit OR play any trump.",
+    "playButton": "Play the selected card with this button.",
+    "scoreTable": "Score table — High / Low / Jack / Game make 4 points per round.",
+    "scoringInfo": "Make your bid: +points won. Miss it: -bid value (set back).",
+    "resetButton": "Use this button to start a new game."
+  }
+}

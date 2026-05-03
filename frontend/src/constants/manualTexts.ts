@@ -48,6 +48,7 @@ import paigow from '../../../docs/manual/web/paigow.md?raw';
 import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
+import pitch from '../../../docs/manual/web/pitch.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
 import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
 import president from '../../../docs/manual/web/president.md?raw';
@@ -133,6 +134,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,
   '/spider': spider,

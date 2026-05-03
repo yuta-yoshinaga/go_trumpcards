@@ -263,4 +263,12 @@ func init() {
 			return usecase.RestoreTonkInteractor(data, new(presenter.TonkWebPresenter))
 		},
 		controller.NewTonkWebControllerWithProvider)
+	games.RegisterKVGame("pitch", games.CategoryClassic,
+		func() usecase.PitchInteractorIF {
+			return usecase.NewPitchInteractor(domain.NewDefaultPitch(), new(presenter.PitchWebPresenter))
+		},
+		func(data []byte) (usecase.PitchInteractorIF, error) {
+			return usecase.RestorePitchInteractor(data, new(presenter.PitchWebPresenter))
+		},
+		controller.NewPitchWebControllerWithProvider)
 }

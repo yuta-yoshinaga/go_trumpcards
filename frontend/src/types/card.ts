@@ -879,6 +879,63 @@ export interface SpadesResponse {
   hint?: SpadesHint;
 }
 
+// --- Pitch (Setback / Auction Pitch) ---
+
+/** Pitch player data (4-player single-handed scoring). */
+export interface PitchPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Pitch trick. */
+export interface PitchTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Pitch game configuration. */
+export interface PitchConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Pitch. */
+export interface PitchHint {
+  cardIndex?: number;
+  bid?: number;
+  reason: string;
+}
+
+/** Full Pitch game state returned from the API. */
+export interface PitchResponse {
+  players: PitchPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  dealerIdx: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  currentBid: number;
+  bidWinnerIdx: number;
+  trumpSuit: number;
+  currentTrick: PitchTrickCard[];
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  validPlayIndices: number[];
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: PitchConfig;
+  hint?: PitchHint;
+}
+
 // --- Two Ten Jack (ツーテンジャック) ---
 
 /** Two Ten Jack player data (4-player team game: seats 0,2 vs 1,3). */
