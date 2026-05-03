@@ -563,6 +563,15 @@ export const RedDogPhase = {
   END: 5,
 } as const;
 
+/** Casino War phase constants (sync: internal/domain/CasinoWar.go). */
+export const CasinoWarPhase = {
+  BET: 1,
+  INITIAL_DEALT: 2,
+  TIE_DECISION: 3,
+  WAR_DEALT: 4,
+  END: 5,
+} as const;
+
 /** Nertz / Pounce phase constants (sync: internal/domain/Nertz.go). */
 export const NertzPhase = {
   IDLE: 0,

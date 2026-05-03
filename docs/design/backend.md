@@ -81,6 +81,7 @@
   - [3.47 PageOne フェーズ遷移](#347-pageone-フェーズ遷移)
   - [3.48 SevenBridge フェーズ遷移](#348-sevenbridge-フェーズ遷移)
   - [3.49 RussianSolitaire フェーズ遷移](#349-russiansolitaire-フェーズ遷移)
+  - [3.50 CasinoWar フェーズ遷移](#350-casinowar-フェーズ遷移)
 
 ---
 
@@ -378,6 +379,30 @@ classDiagram
 
     RedDog --> "1" TrumpCards
     RedDog --> "1" ChipHolder
+
+    class CasinoWar {
+        -trumpCards *TrumpCards
+        -playerCard *Card
+        -dealerCard *Card
+        -playerWarCard *Card
+        -dealerWarCard *Card
+        -burnCards []*Card
+        -chips ChipHolder
+        -ante int
+        -warBet int
+        -phase int
+        +Reset()
+        +Bet(amount int) error
+        +ResolveInitial()
+        +Surrender() error
+        +GoToWar() error
+        +ResolveWar()
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
+    }
+
+    CasinoWar --> "1" TrumpCards
+    CasinoWar --> "1" ChipHolder
 
     note for VideoPokerVariantConfig "DeucesWild・JokerPoker は独立したドメインクラスを持たず\nVideoPokerVariantConfig のファクトリ関数\n(DeucesWildConfig / JokerPokerConfig) として実装"
 ```
@@ -3234,5 +3259,27 @@ stateDiagram-v2
 ```
 
 RussianSolitaire は Yukon の派生ゲーム。タブローの積み重ねルールが「色違い降順」(Yukon) ではなく「同スート降順」となっており、それ以外のフロー (移動・アンドゥ・オートコンプリート) は Yukon と完全に同一。
+
+### 3.50 CasinoWar フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> InitialDealt : Bet(amount) (アンテ＋初手2枚配布)
+    InitialDealt --> End : ResolveInitial() (プレイヤー勝ち / 負け)
+    InitialDealt --> TieDecision : ResolveInitial() (タイ)
+    TieDecision --> End : Surrender() (アンテ半額返却)
+    TieDecision --> WarDealt : GoToWar() (焼き札3枚＋ウォーカード配布)
+    WarDealt --> End : ResolveWar()
+    End --> Bet : Reset()
+
+    note right of Bet : CasinoWarPhaseBet = 1
+    note right of InitialDealt : CasinoWarPhaseInitialDealt = 2
+    note right of TieDecision : CasinoWarPhaseTieDecision = 3
+    note right of WarDealt : CasinoWarPhaseWarDealt = 4
+    note right of End : CasinoWarPhaseEnd = 5
+```
+
+CasinoWar は RedDog と同じく `ChipHolder` を持つ単純なステートマシン。タイ時のみ追加判断が発生し、ウォー後のタイは「プレイヤー勝ち扱い」として扱う。RedDog と同じ A 高ランク評価 (`rankOf`) を再利用している。
 
 **注:** OldMaid・Daifugo・Sevens・President はターン制で進行する手札削り系のため、明示的なフェーズ定数を持ちません (currentTurn が巡回し、全プレイヤーの手札が 0 枚またはランクが確定するまで進行)。

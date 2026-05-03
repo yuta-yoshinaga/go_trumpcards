@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した74種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した76種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -94,6 +94,7 @@ Go + Clean Architecture で実装した74種類のトランプゲーム。CLI �
 | エジプシャン・ラットスクリュー (Egyptian Ratscrew) | `egyptianratscrew` | [CUI](docs/manual/cui/egyptianratscrew.md) / [Web](docs/manual/web/egyptianratscrew.md) |
 | ベーカーズ・ダズン (Baker's Dozen) | `bakersdozen` | [CUI](docs/manual/cui/bakersdozen.md) / [Web](docs/manual/web/bakersdozen.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
+| カジノウォー (Casino War) | `casinowar` | [CUI](docs/manual/cui/casinowar.md) / [Web](docs/manual/web/casinowar.md) |
 
 ## Demo
 

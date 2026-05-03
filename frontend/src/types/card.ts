@@ -2915,6 +2915,32 @@ export interface RedDogResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Casino War (カジノウォー) ---
+
+/** Casino War API response. */
+export interface CasinoWarResponse {
+  /** Player's initial card. */
+  playerCard?: Card;
+  /** Dealer's initial card. */
+  dealerCard?: Card;
+  /** Player's war card (only set after going to war). */
+  playerWarCard?: Card;
+  /** Dealer's war card (only set after going to war). */
+  dealerWarCard?: Card;
+  /** Burn cards face-down between initial and war (length 0 or 3). */
+  burnCards: Card[];
+  phase: number;
+  chips: number;
+  ante: number;
+  /** Additional bet placed when going to war (equal to ante). */
+  warBet: number;
+  result: number;
+  totalPayout: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 /** President player data. */
 export interface PresidentPlayerData {
   id: number;

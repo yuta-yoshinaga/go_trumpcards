@@ -160,6 +160,8 @@ tags:
     description: Baker's Dozen (ベーカーズ・ダズン) game - single-player open-information solitaire with 13 tableau columns of 4 cards each; kings auto-move to the bottom of each column at deal time
   - name: tonk
     description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
+  - name: casinowar
+    description: Casino War (カジノウォー) game - simple player-vs-dealer table game; high card wins (Aces high), tie offers Surrender (forfeit half ante) or War (match ante and re-draw)
 
 paths:
   /blackjack/exec:
@@ -7491,6 +7493,76 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TonkResponse'
+
+  /casinowar/exec:
+    post:
+      tags:
+        - casinowar
+      summary: Execute a Casino War game command
+      description: |
+        Send a command to advance the Casino War (カジノウォー) game session
+        identified by `sessionId`. Casino War is a single-player vs dealer
+        casino card game using a standard 52-card deck. Player places an ante
+        bet, then 1 card is dealt face-up to each side. Higher rank wins
+        (Aces are highest, suits irrelevant). On a tie, the player chooses
+        Surrender (forfeit half the ante) or War (post a bet equal to the
+        ante; three burn cards are drawn face-down, then one more card is
+        dealt to each side — player wins or ties → war bet pays 1:1 and ante
+        pushes; player loses → both bets are forfeit).
+
+        | Phase         | Value | Description |
+        |---------------|-------|-------------|
+        | Bet           | `1`   | Place ante bet |
+        | InitialDealt  | `2`   | 1 card each dealt (auto-resolved) |
+        | TieDecision   | `3`   | Surrender or go to War |
+        | WarDealt      | `4`   | War cards dealt (auto) |
+        | End           | `5`   | Round complete |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bet`       | `b`     | Place ante (requires `amount`) |
+        | `surrender` | —       | Tie: forfeit half ante and end the round |
+        | `war`       | —       | Tie: post a war bet equal to ante and re-draw |
+        | `log`       | —       | View action log |
+      operationId: casinowarExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CasinoWarRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 as ante
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              surrender:
+                summary: Surrender on a tie
+                value:
+                  command: surrender
+                  sessionId: my-session-001
+              war:
+                summary: Go to war on a tie
+                value:
+                  command: war
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasinoWarResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
 components:
   schemas:
@@ -15788,6 +15860,92 @@ components:
           type: integer
           description: "Spread value (|rank2 - rank1| - 1). 0 for pairs and consecutive ranks."
           example: 4
+        result:
+          type: integer
+          description: "Game result: 1=Win, 0=Draw/Push, -1=Lose."
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout returned to the player.
+          example: 0
+        message:
+          type: string
+          description: Human-readable status or result message.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code for i18n.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template.
+
+    # -------------------------------------------------------------------------
+    # Casino War (カジノウォー)
+    # -------------------------------------------------------------------------
+    CasinoWarRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, surrender, war, log]
+          description: Game command to execute.
+        amount:
+          type: integer
+          description: Bet amount (required for `bet` command). Must be a multiple of 10, min 10, max 10000.
+          example: 100
+        sessionId:
+          type: string
+          description: Session identifier for game state persistence.
+
+    CasinoWarResponse:
+      type: object
+      properties:
+        playerCard:
+          description: Player's initial card (present after `bet`).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        dealerCard:
+          description: Dealer's initial card (present after `bet`).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        playerWarCard:
+          description: Player's war card (present after `war`).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        dealerWarCard:
+          description: Dealer's war card (present after `war`).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        burnCards:
+          type: array
+          description: Three burn cards drawn face-down before the war cards (empty until `war` is invoked).
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Current game phase: 1=Bet, 2=InitialDealt, 3=TieDecision, 4=WarDealt, 5=End."
+          example: 1
+        chips:
+          type: integer
+          description: Player's chip balance.
+          example: 1000
+        ante:
+          type: integer
+          description: Ante bet amount.
+          example: 100
+        warBet:
+          type: integer
+          description: War bet amount (0 if no war was declared).
+          example: 0
         result:
           type: integer
           description: "Game result: 1=Win, 0=Draw/Push, -1=Lose."

@@ -1224,6 +1224,16 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"tonk.helpSetDifficulty", "tonk.helpSetLimit"},
 			})
 	}},
+	{Name: "casinowar", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCasinoWarCuiController(usecase.NewCasinoWarInteractor(
+				domain.NewDefaultCasinoWar(), new(presenter.CasinoWarCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "casinowar.helpTitle",
+				CommandKeys:       []string{"casinowar.helpBet", "casinowar.helpSurrender", "casinowar.helpWar"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

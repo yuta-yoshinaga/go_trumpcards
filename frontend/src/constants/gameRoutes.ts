@@ -37,6 +37,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/paigow', labelKey: 'nav.paigow', icon: '🀄', page: 'PaiGow' },
       { path: '/letitride', labelKey: 'nav.letitride', icon: '🎰', page: 'LetItRide' },
       { path: '/reddog', labelKey: 'nav.reddog', icon: '🐕', page: 'RedDog' },
+      { path: '/casinowar', labelKey: 'nav.casinowar', icon: '⚔️', page: 'CasinoWar' },
     ],
   },
   {
