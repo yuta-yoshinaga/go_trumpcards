@@ -49,7 +49,7 @@ describe('getPitchHint', () => {
 
   it('suggests pass with weak hand', () => {
     const state = makeState();
-    state.players[0].cards = [card('CLUB', 4), card('DIAMOND', 5), card('HEART', 6)];
+    state.players[0].cards = [card('CLOVER', 4), card('DIAMOND', 5), card('HEART', 6)];
     const hint = getPitchHint(state);
     expect(hint?.targetAction).toBe('bid:0');
   });
@@ -107,7 +107,7 @@ describe('getPitchHint', () => {
       trumpSuit: 1,
       currentTrick: [{ playerIdx: 1, card: card('HEART', 10) }],
     });
-    state.players[0].cards = [card('CLUB', 5), card('DIAMOND', 4)];
+    state.players[0].cards = [card('CLOVER', 5), card('DIAMOND', 4)];
     const hint = getPitchHint(state);
     expect(hint?.reason).toBe('hint.discardLow');
   });

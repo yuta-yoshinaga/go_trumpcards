@@ -25,7 +25,7 @@ vi.mock('../hooks/useCliMode', () => ({
 }));
 
 const mockApi = vi.mocked(pitchApi.exec);
-const _mockUseCliMode = vi.mocked(useCliMode);
+void useCliMode; // kept for vi.mock side-effect; unused locally
 
 const makeCard = (design: CardDesign, value: number) => ({ design, value });
 

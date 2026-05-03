@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { pitchApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -16,6 +17,7 @@ import { ManualButton } from '../components/ManualButton';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -90,7 +92,7 @@ const SUIT_LABELS: Readonly<Record<number, string>> = {
 
 const SUIT_DESIGNS: Readonly<Record<string, string>> = {
   SPADE: '♠',
-  CLUB: '♣',
+  CLOVER: '♣',
   HEART: '♥',
   DIAMOND: '♦',
 };
@@ -107,10 +109,6 @@ function cardLabel(c: { design: string; value: number }): string {
   return `${SUIT_DESIGNS[c.design] ?? c.design}${v}`;
 }
 
-function isRedSuit(design: string): boolean {
-  return design === 'HEART' || design === 'DIAMOND';
-}
-
 /** Pitch (Setback) game page. */
 export const PitchPage = withTutorial(PitchPageContent, 'pitch', PT_TUTORIAL_STEPS);
 
@@ -121,6 +119,7 @@ function PitchPageContent() {
   const { state, loading, error, exec: execApi, retry } = useGameApi(pitchApi.exec);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pitch', state);
   const [selectedCardIdx, setSelectedCardIdx] = useState<number | null>(null);
+  const { cardWidth } = useCardDimensions();
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pitch');
   const cliConfig: CliGameConfig<PitchResponse, Parameters<typeof pitchApi.exec>> = useMemo(
@@ -252,7 +251,7 @@ function PitchPageContent() {
             {/* Current trick */}
             <div
               data-tutorial="pt-trick-display"
-              className="border border-white/20 rounded p-2 min-h-[80px] mb-3 text-ds-text-primary"
+              className="border border-ds-border-subtle rounded p-2 min-h-[80px] mb-3 text-ds-text-primary"
             >
               <div className="text-xs uppercase opacity-60 mb-1">{t('currentTrick')}</div>
               {state.currentTrick.length === 0 ? (
@@ -265,11 +264,7 @@ function PitchPageContent() {
                       className="flex flex-col items-center"
                     >
                       <span className="text-[10px] opacity-60">{findPlayerName(state.players, tc.playerIdx)}</span>
-                      <span
-                        className={`px-2 py-1 rounded bg-white ${isRedSuit(tc.card.design) ? 'text-red-600' : 'text-gray-900'}`}
-                      >
-                        {cardLabel(tc.card)}
-                      </span>
+                      <CardImage card={tc.card} width={cardWidth} />
                     </div>
                   ))}
                 </div>
@@ -293,13 +288,13 @@ function PitchPageContent() {
                         type="button"
                         onClick={() => canSelect && setSelectedCardIdx(idx)}
                         disabled={!canSelect}
-                        className={`min-w-[44px] min-h-[44px] px-3 py-2 rounded border-2 transition-all
-                          ${isSelected ? 'border-yellow-400 ring-2 ring-yellow-300' : 'border-white/40'}
-                          ${canSelect ? 'bg-white opacity-100' : 'bg-white/40 opacity-50 cursor-not-allowed'}
-                          ${isRedSuit(c.design) ? 'text-red-600' : 'text-gray-900'}
+                        aria-label={cardLabel(c)}
+                        className={`min-w-[44px] min-h-[44px] rounded transition-all
+                          ${isSelected ? 'ring-2 ring-ds-accent' : ''}
+                          ${canSelect ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}
                         `}
                       >
-                        {cardLabel(c)}
+                        <CardImage card={c} width={cardWidth} />
                       </button>
                     );
                   })}
