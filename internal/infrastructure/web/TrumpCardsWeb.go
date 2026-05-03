@@ -81,7 +81,8 @@ func (web *TrumpCardsWeb) Exec() error {
 		mux.HandleFunc("POST /"+g.name+"/exec", g.controller.Exec)
 	}
 	RegisterSwaggerRoutes(mux)
-	mux.Handle("/", http.FileServer(http.Dir("public")))
+	const publicDir = "public"
+	mux.Handle("/", spaFallbackHandler(http.FileServer(http.Dir(publicDir)), publicDir))
 
 	// Apply CORS middleware if allowed origins are configured.
 	allowedOriginsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
