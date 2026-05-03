@@ -80,6 +80,13 @@ func TestSpaFallbackHandler(t *testing.T) {
 			target:     "/something",
 			wantStatus: http.StatusNotFound,
 		},
+		{
+			name:       "path traversal is neutralised: ../../etc/passwd cannot escape publicDir",
+			method:     http.MethodGet,
+			target:     "/../../etc/passwd",
+			wantStatus: http.StatusOK,
+			wantBody:   "<html>SPA</html>",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
