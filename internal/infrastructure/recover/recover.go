@@ -1,0 +1,43 @@
+// Package recover provides an HTTP middleware that turns Go panics into
+// JSON 500 responses so Cloudflare Workers don't surface their generic 1101
+// HTML error page (which loses CORS headers and shows up to users as a
+// "通信エラー" with no actionable detail).
+package recover
+
+import (
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"runtime/debug"
+)
+
+// Middleware wraps next so that any panic in the downstream handler is
+// caught, logged, and converted to a JSON 500 response. It must be wrapped
+// by the CORS middleware so the recovered response still carries the CORS
+// headers needed for the browser to read it.
+func Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			rec := recover()
+			if rec == nil {
+				return
+			}
+			slog.Error(
+				"handler panic",
+				"path", r.URL.Path,
+				"method", r.Method,
+				"panic", fmt.Sprint(rec),
+				"stack", string(debug.Stack()),
+			)
+			// If the handler already started writing a response, we cannot
+			// override status / headers, so just bail out.
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"message": fmt.Sprintf("internal error: %v", rec),
+			})
+		}()
+		next.ServeHTTP(w, r)
+	})
+}

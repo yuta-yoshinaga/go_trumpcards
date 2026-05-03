@@ -224,7 +224,7 @@ describe('GoFishPage', () => {
     renderWithProviders(<GoFishPage />);
     await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
 
-    fireEvent.click(screen.getByText('Go Fish 設定'));
+    fireEvent.click(screen.getByText('ゴーフィッシュ 設定'));
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: '2' } });
 
