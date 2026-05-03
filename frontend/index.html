@@ -6,7 +6,7 @@
     <script>
       (() => {
         try {
-          const s = localStorage.getItem('i18nextLng');
+          const s = localStorage.getItem('i18n_lang');
           if (s && (s === 'en' || s.indexOf('en-') === 0)) {
             document.documentElement.lang = 'en';
           }

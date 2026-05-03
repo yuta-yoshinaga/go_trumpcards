@@ -1,6 +1,6 @@
 import { type ComponentType, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { DesktopSidebar } from './components/DesktopSidebar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
@@ -53,6 +53,8 @@ export default function App() {
                     />
                   );
                 })}
+                {/* BlackJack lives at "/", but external links may use "/blackjack". */}
+                <Route path="/blackjack" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
           </div>
