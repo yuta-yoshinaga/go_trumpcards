@@ -1,7 +1,7 @@
 {
-  "title": "Go Fish",
+  "title": "ゴーフィッシュ",
   "setup": {
-    "title": "Go Fish 設定",
+    "title": "ゴーフィッシュ 設定",
     "cpuDifficulty": "CPU難易度",
     "easy": "Easy",
     "normal": "Normal",

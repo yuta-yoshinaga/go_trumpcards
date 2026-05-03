@@ -55,6 +55,9 @@ export default function App() {
                 })}
                 {/* BlackJack lives at "/", but external links may use "/blackjack". */}
                 <Route path="/blackjack" element={<Navigate to="/" replace />} />
+                {/* Unknown hash routes (e.g., "#/notagame") fall back to home
+                    instead of rendering an empty <main>. */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
           </div>
