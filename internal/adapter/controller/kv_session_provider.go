@@ -11,6 +11,15 @@ import (
 
 const kvSessionTTL = 3600 // 1 hour in seconds
 
+// kvNullSentinel is the literal string returned by syumai/workers
+// kv.GetString when the key does not exist. The underlying JS KV.get()
+// resolves to JS null on miss, and syscall/js Value.String() formats null
+// as "<null>" — so the binding surfaces that exact 6-byte string instead
+// of an empty result. Treat it as "key not found" alongside "".
+//
+// See: github.com/syumai/workers@v0.32.0/cloudflare/kv/get.go GetString.
+const kvNullSentinel = "<null>"
+
 // KVSessionProvider stores session state in Cloudflare KV.
 // It reads the session on Acquire and writes it back on Release.
 //
@@ -60,31 +69,18 @@ func (p *KVSessionProvider[T]) Acquire(id string, factory func() T) (T, SessionR
 
 	if p.ns != nil {
 		data, err := p.ns.GetString(key, nil)
-		if err == nil && data != "" {
-			restored, err := p.unmarshal([]byte(data))
-			if err == nil {
+		switch {
+		case err != nil:
+			slog.Error("KV GetString failed", "key", key, "error", err)
+		case data == "" || data == kvNullSentinel:
+			// Key not found — fall through to factory().
+		default:
+			restored, uerr := p.unmarshal([]byte(data))
+			if uerr == nil {
 				val = restored
 				return val, p.releaseFunc(key, &val), true
 			}
-			// Diagnostic: include data length and a printable prefix so we can
-			// see what GetString actually returned (e.g. an HTML error page vs
-			// truncated JSON vs corrupted state). Remove once root cause is
-			// identified — see PR #1640 follow-up.
-			prefix := data
-			if len(prefix) > 80 {
-				prefix = prefix[:80] + "..."
-			}
-			slog.Error(
-				"KV unmarshal failed, creating new session",
-				"key", key,
-				"error", err,
-				"data_len", len(data),
-				"data_prefix", prefix,
-			)
-		} else if err != nil {
-			// Also log unexpected GetString errors (separate from the
-			// "key not found" path which returns ("", nil)).
-			slog.Error("KV GetString failed", "key", key, "error", err)
+			slog.Error("KV unmarshal failed, creating new session", "key", key, "error", uerr)
 		}
 	}
 
