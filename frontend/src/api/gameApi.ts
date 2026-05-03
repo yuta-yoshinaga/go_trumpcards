@@ -50,6 +50,7 @@ import type {
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
+  PitchResponse,
   PokerResponse,
   PokerSquaresResponse,
   PresidentResponse,
@@ -119,6 +120,7 @@ const workerUrl: Record<string, string> = {
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
+  pitch: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
   bridge: WORKER_CLASSIC,
   napoleon: WORKER_CLASSIC,
@@ -556,7 +558,7 @@ export interface SpadesConfigInput {
 function createBidPlayApi<T, C>(game: string) {
   return {
     exec: (
-      command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint',
+      command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
       bid?: number,
       cardIndex?: number,
       config?: C,
@@ -566,6 +568,15 @@ function createBidPlayApi<T, C>(game: string) {
 
 /** API client for the Spades /spades/exec endpoint. */
 export const spadesApi = createBidPlayApi<SpadesResponse, SpadesConfigInput>('spades');
+
+/** Configuration options for Pitch (Setback) game settings. */
+export interface PitchConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Pitch /pitch/exec endpoint. */
+export const pitchApi = createBidPlayApi<PitchResponse, PitchConfigInput>('pitch');
 
 /** Configuration options for Two Ten Jack game settings. */
 export interface TwoTenJackConfigInput {
@@ -1537,6 +1548,7 @@ const games = [
   'bakersdozen',
   'tonk',
   'casinowar',
+  'pitch',
 ] as const;
 type Game = (typeof games)[number];
 

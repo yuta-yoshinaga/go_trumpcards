@@ -393,4 +393,9 @@ func init() {
 			return usecase.NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), new(presenter.CasinoWarWebPresenter))
 		},
 		controller.NewCasinoWarWebController)
+	BindWebControllerFor("pitch",
+		func() usecase.PitchInteractorIF {
+			return usecase.NewPitchInteractor(domain.NewDefaultPitch(), new(presenter.PitchWebPresenter))
+		},
+		controller.NewPitchWebController)
 }

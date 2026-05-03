@@ -49,6 +49,7 @@ import paigow from '../../../docs/manual/cui/paigow.md?raw';
 import pigtail from '../../../docs/manual/cui/pigtail.md?raw';
 import pineapple from '../../../docs/manual/cui/pineapple.md?raw';
 import pinochle from '../../../docs/manual/cui/pinochle.md?raw';
+import pitch from '../../../docs/manual/cui/pitch.md?raw';
 import poker from '../../../docs/manual/cui/poker.md?raw';
 import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
 import president from '../../../docs/manual/cui/president.md?raw';
@@ -135,6 +136,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,
   '/spider': spider,

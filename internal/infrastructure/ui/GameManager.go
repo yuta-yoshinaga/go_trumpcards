@@ -1234,6 +1234,17 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "pitch", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPitchCuiController(usecase.NewPitchInteractor(
+				domain.NewDefaultPitch(), new(presenter.PitchCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "pitch.helpTitle",
+				CommandKeys:       []string{"pitch.helpBid", "pitch.helpPlay", "pitch.helpNext", "pitch.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"pitch.helpSetDifficulty", "pitch.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
