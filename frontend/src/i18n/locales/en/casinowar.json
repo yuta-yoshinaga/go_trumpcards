@@ -1,0 +1,48 @@
+{
+  "title": "Casino War",
+  "betGuide": "Place an ante; one card is dealt to you and one to the dealer.",
+  "tieGuide": "Tie! Surrender (lose half ante) or go to War (match ante and re-draw).",
+  "label": {
+    "chips": "Chips",
+    "ante": "Ante",
+    "warBet": "War bet",
+    "playerCard": "You",
+    "dealerCard": "Dealer",
+    "initial": "Initial",
+    "burnCards": "Burn cards",
+    "warCards": "War cards"
+  },
+  "button": {
+    "bet": "Bet",
+    "surrender": "Surrender",
+    "war": "Go to war",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Bet",
+    "initialDealt": "Initial dealt",
+    "tieDecision": "Tie decision",
+    "warDealt": "War dealt",
+    "end": "Result"
+  },
+  "result": {
+    "playerWins": "Player wins!",
+    "dealerWins": "Player loses",
+    "tie": "Push",
+    "warWin": "War win!",
+    "warTieWin": "War tie — player wins!",
+    "warLoss": "War loss",
+    "surrender": "Surrendered"
+  },
+  "payout": {
+    "total": "Total payout"
+  },
+  "tutorial": {
+    "betControls": "Enter your ante and place the bet",
+    "actionButtons": "On a tie, choose surrender or go to war",
+    "results": "Result and payout shown here"
+  },
+  "hint": {
+    "warEv": "Going to war has a smaller house edge than surrender — recommended"
+  }
+}

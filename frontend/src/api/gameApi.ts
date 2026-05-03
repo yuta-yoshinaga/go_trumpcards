@@ -12,6 +12,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
   CrazyEightsResponse,
@@ -159,6 +160,7 @@ const workerUrl: Record<string, string> = {
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
+  casinowar: WORKER_CASINO,
   president: WORKER_CLASSIC,
   cassino: WORKER_CLASSIC,
   spiteandmalice: WORKER_CLASSIC,
@@ -1453,6 +1455,11 @@ export const letitrideApi = createBetAmountApi<LetItRideResponse, 'reset' | 'bet
 /** API client for the Red Dog /reddog/exec endpoint. */
 export const reddogApi = createBetAmountApi<RedDogResponse, 'reset' | 'bet' | 'raise' | 'stay' | 'log'>('reddog');
 
+/** API client for the Casino War /casinowar/exec endpoint. */
+export const casinowarApi = createBetAmountApi<CasinoWarResponse, 'reset' | 'bet' | 'surrender' | 'war' | 'log'>(
+  'casinowar',
+);
+
 const games = [
   'blackjack',
   'poker',
@@ -1529,6 +1536,7 @@ const games = [
   'egyptianratscrew',
   'bakersdozen',
   'tonk',
+  'casinowar',
 ] as const;
 type Game = (typeof games)[number];
 

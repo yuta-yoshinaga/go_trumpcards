@@ -9,6 +9,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
   CrazyEightsResponse,
@@ -75,6 +76,7 @@ import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
+import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
@@ -196,6 +198,7 @@ const hintFactories = {
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
   letitride: (s) => getLetitrideHint(s as LetItRideResponse),
   reddog: (s) => getReddogHint(s as RedDogResponse),
+  casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),

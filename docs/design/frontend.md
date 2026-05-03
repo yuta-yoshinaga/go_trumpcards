@@ -414,6 +414,23 @@ classDiagram
         +object messageParams
     }
 
+    class CasinoWarResponse {
+        +Card playerCard
+        +Card dealerCard
+        +Card playerWarCard
+        +Card dealerWarCard
+        +Card[] burnCards
+        +number phase
+        +number chips
+        +number ante
+        +number warBet
+        +number result
+        +number totalPayout
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
     note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全73ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
@@ -768,6 +785,15 @@ classDiagram
         INITIAL_DEALT = 2
         SPREAD_DECISION = 3
         PAIR_THIRD = 4
+        END = 5
+    }
+
+    class CasinoWarPhase {
+        <<enumeration>>
+        BET = 1
+        INITIAL_DEALT = 2
+        TIE_DECISION = 3
+        WAR_DEALT = 4
         END = 5
     }
 

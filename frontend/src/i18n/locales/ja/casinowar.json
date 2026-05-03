@@ -1,0 +1,48 @@
+{
+  "title": "カジノウォー",
+  "betGuide": "アンテをベットしてプレイヤーとディーラーに1枚ずつ配ります",
+  "tieGuide": "タイ！ サレンダー (アンテ半額没収) かウォー (同額追加ベットで再勝負) を選択",
+  "label": {
+    "chips": "チップ",
+    "ante": "アンテ",
+    "warBet": "ウォーベット",
+    "playerCard": "あなた",
+    "dealerCard": "ディーラー",
+    "initial": "初手",
+    "burnCards": "焼き札",
+    "warCards": "ウォーカード"
+  },
+  "button": {
+    "bet": "ベット",
+    "surrender": "サレンダー",
+    "war": "ウォー",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベット",
+    "initialDealt": "初手公開",
+    "tieDecision": "タイ判断",
+    "warDealt": "ウォー公開",
+    "end": "結果"
+  },
+  "result": {
+    "playerWins": "勝利！",
+    "dealerWins": "敗北",
+    "tie": "プッシュ",
+    "warWin": "ウォー勝利！",
+    "warTieWin": "ウォータイ — 勝利！",
+    "warLoss": "ウォー敗北",
+    "surrender": "サレンダー"
+  },
+  "payout": {
+    "total": "合計配当"
+  },
+  "tutorial": {
+    "betControls": "アンテ額を入力してベットします",
+    "actionButtons": "タイになったらサレンダーかウォーを選択します",
+    "results": "結果と配当が表示されます"
+  },
+  "hint": {
+    "warEv": "サレンダーよりウォーの方がハウスエッジが小さい — ウォー推奨"
+  }
+}

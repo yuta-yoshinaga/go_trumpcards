@@ -12,6 +12,7 @@ import calculation from '../../../docs/manual/web/calculation.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
 import canfield from '../../../docs/manual/web/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
+import casinowar from '../../../docs/manual/web/casinowar.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
@@ -87,6 +88,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
+  '/casinowar': casinowar,
   '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
   '/crazyeights': crazyeights,

@@ -388,4 +388,9 @@ func init() {
 			return usecase.NewTonkInteractor(domain.NewDefaultTonk(), new(presenter.TonkWebPresenter))
 		},
 		controller.NewTonkWebController)
+	BindWebControllerFor("casinowar",
+		func() usecase.CasinoWarInteractorIF {
+			return usecase.NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), new(presenter.CasinoWarWebPresenter))
+		},
+		controller.NewCasinoWarWebController)
 }
