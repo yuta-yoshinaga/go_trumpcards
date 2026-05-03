@@ -4,6 +4,7 @@ import { TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 test.describe('Routing E2E', () => {
   test('/blackjack deep-link redirects to BlackJack at /', async ({ page }) => {
     await page.addInitScript(() => {
+      localStorage.setItem('i18n_lang', 'ja');
       localStorage.setItem('tutorial_no_suggest', 'true');
     });
     await page.goto('/#/blackjack');

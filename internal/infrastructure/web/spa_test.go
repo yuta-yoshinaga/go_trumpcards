@@ -47,7 +47,7 @@ func TestSpaFallbackHandler(t *testing.T) {
 			wantBody:   "console.log('app');",
 		},
 		{
-			name:       "root serves index.html via underlying FileServer",
+			name:       "root path falls back to index.html (directory bypasses FileServer)",
 			method:     http.MethodGet,
 			target:     "/",
 			wantStatus: http.StatusOK,

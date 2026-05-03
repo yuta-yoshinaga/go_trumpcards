@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	trumpapi "github.com/yuta-yoshinaga/go_trumpcards/api"
 )
@@ -23,6 +24,7 @@ func RegisterSwaggerRoutes(mux *http.ServeMux) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/yaml")
+		w.Header().Set("Content-Length", strconv.Itoa(len(trumpapi.OpenAPISpec)))
 		if r.Method == http.MethodHead {
 			return
 		}
@@ -36,6 +38,7 @@ func RegisterSwaggerRoutes(mux *http.ServeMux) {
 			return
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Header().Set("Content-Length", strconv.Itoa(len(swaggerHTML)))
 		if r.Method == http.MethodHead {
 			return
 		}

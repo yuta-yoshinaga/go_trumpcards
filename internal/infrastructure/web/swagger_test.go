@@ -69,6 +69,13 @@ func TestRegisterSwaggerRoutes_MethodHandling(t *testing.T) {
 			if tt.method == http.MethodHead && rec.Body.Len() != 0 {
 				t.Fatalf("HEAD body should be empty, got %d bytes", rec.Body.Len())
 			}
+			// Successful GET/HEAD must advertise Content-Length so reverse
+			// proxies and download estimators don't have to fetch the body.
+			if rec.Code == http.StatusOK {
+				if cl := rec.Header().Get("Content-Length"); cl == "" || cl == "0" {
+					t.Fatalf("Content-Length missing or zero on %s %s, got %q", tt.method, tt.target, cl)
+				}
+			}
 		})
 	}
 }
