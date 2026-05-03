@@ -129,4 +129,65 @@ describe('CasinoWarPage', () => {
     renderWithProviders(<CasinoWarPage />);
     await waitFor(() => expect(mockUseCliMode).toHaveBeenCalledWith('casinowar'));
   });
+
+  it('renders initial cards in INITIAL_DEALT phase', async () => {
+    const initialDealtState: CasinoWarResponse = {
+      playerCard: card('SPADE', 10),
+      dealerCard: card('HEART', 5),
+      burnCards: [],
+      phase: CasinoWarPhase.INITIAL_DEALT,
+      chips: 900,
+      ante: 100,
+      warBet: 0,
+      result: 0,
+      totalPayout: 0,
+      message: '',
+    };
+    mockApi.mockResolvedValue(initialDealtState);
+    const { container } = renderWithProviders(<CasinoWarPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="cw-results"]')).toBeInTheDocument());
+  });
+
+  it('renders burn cards and war cards in WAR_DEALT phase', async () => {
+    const warDealtState: CasinoWarResponse = {
+      playerCard: card('SPADE', 7),
+      dealerCard: card('HEART', 7),
+      burnCards: [card('CLOVER', 2), card('CLOVER', 3), card('CLOVER', 4)],
+      playerWarCard: card('DIAMOND', 13),
+      dealerWarCard: card('SPADE', 5),
+      phase: CasinoWarPhase.WAR_DEALT,
+      chips: 800,
+      ante: 100,
+      warBet: 100,
+      result: 0,
+      totalPayout: 0,
+      message: '',
+    };
+    mockApi.mockResolvedValue(warDealtState);
+    renderWithProviders(<CasinoWarPage />);
+    await waitFor(() => expect(screen.getByText(/burn|焼き札|焼/i)).toBeInTheDocument());
+  });
+
+  it('renders the CLI terminal when useCliMode reports cliEnabled', async () => {
+    mockUseCliMode.mockReturnValueOnce({
+      cliEnabled: true,
+      toggleCli: vi.fn(),
+      logEntries: [],
+      addInput: vi.fn(),
+      addOutput: vi.fn(),
+      addError: vi.fn(),
+      clearLog: vi.fn(),
+    });
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<CasinoWarPage />);
+    await waitFor(() => expect(screen.queryAllByRole('button', { name: /ベット/ })).toHaveLength(0));
+  });
+
+  it('disables War button when chips < ante', async () => {
+    const broke: CasinoWarResponse = { ...tieState, chips: 50 };
+    mockApi.mockResolvedValue(broke);
+    renderWithProviders(<CasinoWarPage />);
+    const warBtn = await screen.findByRole('button', { name: /ウォー/ });
+    expect(warBtn).toBeDisabled();
+  });
 });

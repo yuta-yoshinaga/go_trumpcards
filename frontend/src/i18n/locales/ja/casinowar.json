@@ -28,7 +28,6 @@
   "result": {
     "playerWins": "勝利！",
     "dealerWins": "敗北",
-    "tie": "プッシュ",
     "warWin": "ウォー勝利！",
     "warTieWin": "ウォータイ — 勝利！",
     "warLoss": "ウォー敗北",

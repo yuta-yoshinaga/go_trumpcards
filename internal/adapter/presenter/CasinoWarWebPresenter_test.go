@@ -191,7 +191,9 @@ func TestCasinoWarWebPresenter_Output_WarLoss(t *testing.T) {
 	assert.Equal(t, "casinowar.result.warLoss", r.MessageCode)
 }
 
-func TestCasinoWarWebPresenter_Output_TieFallback(t *testing.T) {
+// TestCasinoWarWebPresenter_Output_NonWinFallsBackToLose は、Casino War では発生し得ない
+// GameResultDraw が万一返ってきた場合に dealerWins メッセージへフォールバックすることを保証する。
+func TestCasinoWarWebPresenter_Output_NonWinFallsBackToLose(t *testing.T) {
 	p := new(CasinoWarWebPresenter)
 	m := new(interfaces.MockCasinoWarGame)
 	m.On("GetChips").Return(1000)
@@ -205,9 +207,9 @@ func TestCasinoWarWebPresenter_Output_TieFallback(t *testing.T) {
 	m.On("GetAnte").Return(100)
 	m.On("GetWarBet").Return(0)
 	m.On("GetResult").Return(domain.GameResultDraw)
-	m.On("GetTotalPayout").Return(100)
+	m.On("GetTotalPayout").Return(0)
 	r := parseCasinoWarOutput(t, p.Output(m, nil))
-	assert.Equal(t, "casinowar.result.tie", r.MessageCode)
+	assert.Equal(t, "casinowar.result.dealerWins", r.MessageCode)
 }
 
 func TestCasinoWarWebPresenter_ActionLogOutput(t *testing.T) {

@@ -47,10 +47,11 @@ func (cp *CasinoWarWebPresenter) ActionLogOutput(cw interfaces.CasinoWarGame) st
 	return actionLogOutputJSON(cw)
 }
 
-// casinoWarEndMessage は終了時の表示メッセージと i18n キーを返す
+// casinoWarEndMessage は終了時の表示メッセージと i18n キーを返す。
+// Casino War は Win か Lose のいずれかでしか終了しない（タイは TieDecision フェーズで吸収される）ため、
+// Push は存在しない。Win 以外を Lose として扱う。
 func casinoWarEndMessage(cw interfaces.CasinoWarGame) (string, string) {
-	switch cw.GetResult() {
-	case domain.GameResultWin:
+	if cw.GetResult() == domain.GameResultWin {
 		if cw.GetWarBet() > 0 {
 			pr, dr := casinoWarRanks(cw)
 			if pr == dr {
@@ -59,17 +60,14 @@ func casinoWarEndMessage(cw interfaces.CasinoWarGame) (string, string) {
 			return "Player wins the war!", "casinowar.result.warWin"
 		}
 		return "Player wins!", "casinowar.result.playerWins"
-	case domain.GameResultLose:
-		if cw.GetWarBet() > 0 {
-			return "Player loses the war.", "casinowar.result.warLoss"
-		}
-		if cw.GetTotalPayout() > 0 {
-			return "Surrendered.", "casinowar.result.surrender"
-		}
-		return "Player loses.", "casinowar.result.dealerWins"
-	default:
-		return "Push.", "casinowar.result.tie"
 	}
+	if cw.GetWarBet() > 0 {
+		return "Player loses the war.", "casinowar.result.warLoss"
+	}
+	if cw.GetTotalPayout() > 0 {
+		return "Surrendered.", "casinowar.result.surrender"
+	}
+	return "Player loses.", "casinowar.result.dealerWins"
 }
 
 // casinoWarRanks は war 後の両者ランクを返す（同値判定用）

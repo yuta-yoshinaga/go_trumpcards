@@ -7,6 +7,7 @@ import type {
   BlackJackResponse,
   CanastaResponse,
   CaribbeanStudResponse,
+  CasinoWarResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoResponse,
@@ -922,6 +923,39 @@ describe('useGameHint', () => {
       message: '',
     };
     const { result } = renderHook(() => useGameHint('egyptianratscrew', state));
+    expect(result.current.hint).toBeNull();
+  });
+
+  it('routes casinowar through getCasinowarHint (recommend war on tie)', () => {
+    localStorage.setItem('hint_enabled_casinowar', 'true');
+    const state: CasinoWarResponse = {
+      burnCards: [],
+      phase: 3, // CasinoWarPhase.TIE_DECISION
+      chips: 900,
+      ante: 100,
+      warBet: 0,
+      result: 0,
+      totalPayout: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('casinowar', state));
+    expect(result.current.hint?.targetAction).toBe('war');
+    expect(result.current.hint?.reason).toBe('hint.warEv');
+  });
+
+  it('returns null casinowar hint outside tie decision phase', () => {
+    localStorage.setItem('hint_enabled_casinowar', 'true');
+    const state: CasinoWarResponse = {
+      burnCards: [],
+      phase: 1, // CasinoWarPhase.BET
+      chips: 1000,
+      ante: 0,
+      warBet: 0,
+      result: 0,
+      totalPayout: 0,
+      message: '',
+    };
+    const { result } = renderHook(() => useGameHint('casinowar', state));
     expect(result.current.hint).toBeNull();
   });
 });

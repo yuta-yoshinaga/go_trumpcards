@@ -74,9 +74,7 @@ func (cw *CasinoWar) Reset() {
 		cw.chips.SetChips(CasinoWarDefaultChips)
 	}
 	cw.trumpCards = NewTrumpCards(0)
-	for range 10 {
-		cw.trumpCards.Shuffle()
-	}
+	cw.trumpCards.Shuffle()
 }
 
 // Bet アンテをベットしプレイヤー／ディーラーに 1 枚ずつ配る
@@ -140,6 +138,9 @@ func (cw *CasinoWar) Surrender() error {
 	if cw.phase != CasinoWarPhaseTieDecision {
 		return NewDomainError(ErrWrongPhase, "Surrender is only allowed during the tie decision phase.")
 	}
+	// Bet enforces ante % CasinoWarMinBet == 0; CasinoWarMinBet (10) is even,
+	// so this integer division is exact. If CasinoWarMinBet ever becomes odd,
+	// the casino convention is to round down, which is what / does here.
 	refund := cw.ante / 2
 	cw.totalPayout = refund
 	if refund > 0 {

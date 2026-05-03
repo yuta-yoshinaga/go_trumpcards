@@ -28,7 +28,6 @@
   "result": {
     "playerWins": "Player wins!",
     "dealerWins": "Player loses",
-    "tie": "Push",
     "warWin": "War win!",
     "warTieWin": "War tie — player wins!",
     "warLoss": "War loss",

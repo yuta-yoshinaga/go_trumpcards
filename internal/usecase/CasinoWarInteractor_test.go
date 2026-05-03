@@ -6,7 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -126,5 +128,24 @@ func TestRestoreCasinoWarInteractor(t *testing.T) {
 	t.Run("invalid json", func(t *testing.T) {
 		_, err := RestoreCasinoWarInteractor([]byte("not json"), nil)
 		assert.Error(t, err)
+	})
+
+	t.Run("snapshot round-trip preserves phase, chips, ante", func(t *testing.T) {
+		mp := new(presenter.MockCasinoWarPresenter)
+		ci := NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), mp)
+
+		// Drive the game past Reset so the phase advances and ante is set.
+		ci.Game.Reset()
+		require.NoError(t, ci.Game.Bet(domain.CasinoWarMinBet))
+
+		data, err := ci.Snapshot()
+		require.NoError(t, err)
+
+		restored, err := RestoreCasinoWarInteractor(data, mp)
+		require.NoError(t, err)
+		require.NotNil(t, restored)
+		assert.Equal(t, ci.Game.GetPhase(), restored.Game.GetPhase())
+		assert.Equal(t, ci.Game.GetChips(), restored.Game.GetChips())
+		assert.Equal(t, ci.Game.GetAnte(), restored.Game.GetAnte())
 	})
 }

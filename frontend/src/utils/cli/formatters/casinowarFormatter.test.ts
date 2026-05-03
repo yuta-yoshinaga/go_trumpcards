@@ -72,4 +72,55 @@ describe('formatCasinowarState', () => {
     expect(out).toContain('payout: 200');
     expect(out).toContain('Player wins!');
   });
+
+  it('renders only player initial card when dealer card is absent', () => {
+    const out = formatCasinowarState(
+      state({
+        phase: CasinoWarPhase.INITIAL_DEALT,
+        playerCard: { design: 'SPADE', value: 9 },
+      }),
+    );
+    expect(out).toContain('player:');
+    expect(out).not.toContain('dealer:');
+  });
+
+  it('renders only dealer initial card when player card is absent', () => {
+    const out = formatCasinowarState(
+      state({
+        phase: CasinoWarPhase.INITIAL_DEALT,
+        dealerCard: { design: 'HEART', value: 11 },
+      }),
+    );
+    expect(out).toContain('dealer:');
+    expect(out).not.toContain('player:');
+  });
+
+  it('renders only player war card when dealer war card is absent', () => {
+    const out = formatCasinowarState(
+      state({
+        phase: CasinoWarPhase.WAR_DEALT,
+        playerWarCard: { design: 'DIAMOND', value: 12 },
+      }),
+    );
+    expect(out).toContain('War:');
+    expect(out).toContain('player:');
+    expect(out).not.toContain('dealer:');
+  });
+
+  it('renders LOSE result and payout 0 on dealer-win end', () => {
+    const out = formatCasinowarState(
+      state({
+        phase: CasinoWarPhase.END,
+        result: -1,
+        totalPayout: 0,
+      }),
+    );
+    expect(out).toContain('result: LOSE');
+    expect(out).toContain('payout: 0');
+  });
+
+  it('renders UNKNOWN phase fallback', () => {
+    const out = formatCasinowarState(state({ phase: 999 as unknown as number }));
+    expect(out).toContain('phase: UNKNOWN');
+  });
 });
