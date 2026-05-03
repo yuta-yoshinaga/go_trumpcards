@@ -167,6 +167,15 @@ function PitchPageContent() {
     hideActionLog();
     void execApi('reset', undefined, undefined, { cpuDifficulty, pointLimit });
   }, [execApi, hideActionLog, cpuDifficulty, pointLimit]);
+  const handleConfigChange = useCallback(
+    (key: 'cpuDifficulty' | 'pointLimit', value: number) => {
+      void execApi('reset', undefined, undefined, {
+        cpuDifficulty: key === 'cpuDifficulty' ? value : cpuDifficulty,
+        pointLimit: key === 'pointLimit' ? value : pointLimit,
+      });
+    },
+    [execApi, cpuDifficulty, pointLimit],
+  );
 
   if (!state) {
     return (
@@ -307,7 +316,35 @@ function PitchPageContent() {
 
           <GameFooter className={`${gameTheme.pitch.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={tc('settings.title')} groups={[]} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select',
+                      id: 'cpuDifficulty',
+                      label: t('settings.cpuDifficulty'),
+                      value: cpuDifficulty,
+                      options: [
+                        { value: 0, label: t('settings.easy') },
+                        { value: 1, label: t('settings.normal') },
+                        { value: 2, label: t('settings.hard') },
+                      ],
+                      onSelect: (v) => handleConfigChange('cpuDifficulty', Number(v)),
+                    },
+                    {
+                      type: 'select',
+                      id: 'pointLimit',
+                      label: t('settings.pointLimit'),
+                      value: pointLimit,
+                      options: [5, 7, 9, 11, 15, 21].map((v) => ({ value: v, label: String(v) })),
+                      onSelect: (v) => handleConfigChange('pointLimit', Number(v)),
+                    },
+                  ],
+                },
+              ]}
+            />
 
             {isBidPhase && (
               <div data-tutorial="pt-bid-controls" className="flex flex-wrap gap-2 items-center justify-center pb-2">

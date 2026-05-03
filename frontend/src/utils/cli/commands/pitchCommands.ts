@@ -52,7 +52,7 @@ export function parsePitchCommand(input: string): CliParseResult<PitchArgs> {
     case 'hint':
       return { args: ['hint'] };
     case 'log':
-      return { args: ['hint'] }; // log share-displays via hint endpoint when no log endpoint exists
+      return { args: ['log'] };
     case 'r':
     case 'reset':
       return { args: ['reset'] };

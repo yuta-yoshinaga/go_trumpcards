@@ -558,7 +558,7 @@ export interface SpadesConfigInput {
 function createBidPlayApi<T, C>(game: string) {
   return {
     exec: (
-      command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint',
+      command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
       bid?: number,
       cardIndex?: number,
       config?: C,

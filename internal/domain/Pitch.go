@@ -3,6 +3,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/rand"
 	"sort"
 )
@@ -526,7 +527,9 @@ func (p *Pitch) computeRoundPoints() []int {
 	highPlayer := -1
 	highRank := -1
 	lowPlayer := -1
-	lowRank := 99
+	// Sentinel above any possible trump rank (A maps to pitchRankValue=14).
+	const lowRankSentinel = math.MaxInt32
+	lowRank := lowRankSentinel
 	jackPlayer := -1
 	for playerIdx, pl := range p.players {
 		for _, trick := range pl.GetTricksTaken() {

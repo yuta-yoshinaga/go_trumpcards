@@ -30,7 +30,7 @@ function getBidHint(cards: Card[], currentBid: number): HintResult {
   if (estimated < 2 || estimated <= currentBid) {
     return { targetAction: 'bid:0', reason: 'hint.bidPass', confidence: 'moderate' };
   }
-  return { targetAction: `bid:${estimated}`, reason: 'hint.bidEstimate', confidence: 'strong' };
+  return { targetAction: `bid:${estimated}`, reason: 'hint.bidStrong', confidence: 'strong' };
 }
 
 /** Hint for play phase. */

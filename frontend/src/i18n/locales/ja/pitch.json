@@ -58,14 +58,14 @@
   },
   "hintBid": "推奨ビッド",
   "hintPlay": "推奨カード",
-  "hintReason": {
-    "bid_strong": "強い手札なので入札",
-    "bid_pass": "弱い手札なのでパス",
-    "set_trump_lead": "リードでトランプを宣言",
-    "lead_strong": "強いカードでリード",
-    "follow_suit": "リードスートに追随",
-    "trump_cut": "トランプでカット",
-    "discard_low": "低いカードを捨てる"
+  "hint": {
+    "bidStrong": "強い手札なので入札",
+    "bidPass": "弱い手札なのでパス",
+    "setTrumpLead": "リードでトランプを宣言",
+    "leadStrong": "強いカードでリード",
+    "followSuit": "リードスートに追随",
+    "trumpCut": "トランプでカット",
+    "discardLow": "低いカードを捨てる"
   },
   "tutorial": {
     "bidControls": "ビッドフェーズでは取れる得点数 (2-4) を宣言します。パスも可能です。",

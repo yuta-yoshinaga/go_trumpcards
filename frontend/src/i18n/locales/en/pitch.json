@@ -58,14 +58,14 @@
   },
   "hintBid": "Suggested bid",
   "hintPlay": "Suggested card",
-  "hintReason": {
-    "bid_strong": "Strong hand — bid",
-    "bid_pass": "Weak hand — pass",
-    "set_trump_lead": "Lead to set trump",
-    "lead_strong": "Lead strong",
-    "follow_suit": "Follow suit",
-    "trump_cut": "Cut with trump",
-    "discard_low": "Discard low"
+  "hint": {
+    "bidStrong": "Strong hand — bid",
+    "bidPass": "Weak hand — pass",
+    "setTrumpLead": "Lead to set trump",
+    "leadStrong": "Lead strong",
+    "followSuit": "Follow suit",
+    "trumpCut": "Cut with trump",
+    "discardLow": "Discard low"
   },
   "tutorial": {
     "bidControls": "Declare how many of the 4 points you can win (2-4) or pass.",
