@@ -116,6 +116,19 @@ describe('WarPage', () => {
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeDisabled());
   });
 
+  it('autoplay button calls exec with autoplay', async () => {
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByTestId('autoplay-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('autoplay-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autoplay'));
+  });
+
+  it('disables autoplay button on game end', async () => {
+    mockExec.mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByTestId('autoplay-button')).toBeDisabled());
+  });
+
   it('renders CLI terminal when enabled', async () => {
     mockUseCliMode.mockReturnValue({
       cliEnabled: true,

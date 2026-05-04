@@ -22,6 +22,12 @@ func (_m *MockWarGame) Step() error {
 	return ret.Error(0)
 }
 
+// AutoPlay モック
+func (_m *MockWarGame) AutoPlay() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
 // GetConfig モック
 func (_m *MockWarGame) GetConfig() domain.WarConfig {
 	ret := _m.Called()

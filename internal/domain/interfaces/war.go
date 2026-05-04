@@ -9,6 +9,8 @@ type WarGame interface {
 	Reset()
 	// Step 状態機械を1ステップ進める
 	Step() error
+	// AutoPlay 決着まで Step を自動で繰り返す
+	AutoPlay() error
 
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.WarConfig

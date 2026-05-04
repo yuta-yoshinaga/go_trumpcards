@@ -779,7 +779,7 @@ var gameRegistry = []GameRegistryEntry{
 				domain.NewDefaultWar(), new(presenter.WarCuiPresenter))),
 			CuiHelpSpec{
 				TitleKey:    "war.helpTitle",
-				CommandKeys: []string{"war.helpStep"},
+				CommandKeys: []string{"war.helpStep", "war.helpAutoPlay"},
 				SettingKeys: []string{"war.helpSetMax"},
 			})
 	}},

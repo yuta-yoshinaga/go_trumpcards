@@ -30,6 +30,7 @@ func TestWarWebController(t *testing.T) {
 	wiMock := new(usecase.MockWarInteractor)
 	wiMock.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 	wiMock.On("Step").Return(mockOutput)
+	wiMock.On("AutoPlay").Return(mockOutput)
 	wiMock.On("ActionLog").Return(`{"log":[]}`)
 	wiMock.On("GetConfig").Return(domain.DefaultWarConfig())
 
@@ -62,6 +63,20 @@ func TestWarWebController(t *testing.T) {
 	t.Run("step full word", func(t *testing.T) {
 		var input controller.WarWebInput
 		_ = json.Unmarshal([]byte(`{"command":"step","sessionId":"s1"}`), &input)
+		rec := execRequest(t, wwc.Exec, &input)
+		rec.CodeIs(http.StatusOK)
+	})
+
+	t.Run("autoplay short", func(t *testing.T) {
+		var input controller.WarWebInput
+		_ = json.Unmarshal([]byte(`{"command":"a","sessionId":"s1"}`), &input)
+		rec := execRequest(t, wwc.Exec, &input)
+		rec.CodeIs(http.StatusOK)
+	})
+
+	t.Run("autoplay full word", func(t *testing.T) {
+		var input controller.WarWebInput
+		_ = json.Unmarshal([]byte(`{"command":"autoplay","sessionId":"s1"}`), &input)
 		rec := execRequest(t, wwc.Exec, &input)
 		rec.CodeIs(http.StatusOK)
 	})
