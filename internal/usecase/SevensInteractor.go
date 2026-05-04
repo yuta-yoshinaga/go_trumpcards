@@ -85,10 +85,7 @@ func (si *SevensInteractor) ActionLog() string {
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 // 人間の手番になった場合でも選択肢がなければ自動処理する
 func (si *SevensInteractor) runCpuTurns() {
-	// Defensive cap: a non-terminating loop here would otherwise produce
-	// Cloudflare's "Worker hung" 1101 with no actionable detail. 200 turns
-	// is well above any legitimate game (4 players × 13 cards × passes).
-	for iter := 0; !si.Game.GetGameEndFlag() && iter < 200; iter++ {
+	for !si.Game.GetGameEndFlag() {
 		if si.Game.IsHumanTurn() {
 			// 人間に選択肢がなければ自動処理 (失格)
 			if !si.Game.HasAnyOption(si.Game.GetCurrentTurn()) {

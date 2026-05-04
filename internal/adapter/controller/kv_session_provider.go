@@ -69,12 +69,7 @@ func (p *KVSessionProvider[T]) Acquire(id string, factory func() T) (T, SessionR
 
 	if p.ns != nil {
 		data, err := p.ns.GetString(key, nil)
-		switch {
-		case err != nil:
-			slog.Error("KV GetString failed", "key", key, "error", err)
-		case data == "" || data == kvNullSentinel:
-			// Key not found — fall through to factory().
-		default:
+		if err == nil && data != "" && data != kvNullSentinel {
 			restored, uerr := p.unmarshal([]byte(data))
 			if uerr == nil {
 				val = restored
