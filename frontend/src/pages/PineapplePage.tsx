@@ -24,7 +24,7 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
-import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -34,6 +34,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -152,9 +154,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   );
   const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    apiExec('reset');
-  }, [apiExec]);
+  useMountReset(apiExec);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -230,10 +230,18 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     enabled: canAct && !loading,
   });
 
-  if (!state) return <HoldemSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="pineapple"
+        layout={{ kind: 'community-poker', community: 5, opponents: 3, opponentCards: 2, footerHandSize: 2 }}
+      />
+    );
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.holdem.bg}`} aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme[variant].bg}`} aria-busy={loading}>
       <GamePageHeading title={tc(`nav.${variant}`)} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct || canDiscard}>
@@ -342,7 +350,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
           </div>
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.holdem.footer} px-5 py-3`}>
+          <GameFooter className={`${gameTheme[variant].footer} px-5 py-3`}>
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="pn-player-hand">

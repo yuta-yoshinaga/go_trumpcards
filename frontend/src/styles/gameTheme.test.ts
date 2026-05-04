@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { gameRoutes } from '../constants/gameRoutes';
 import { gameTheme } from './gameTheme';
 
 describe('gameTheme', () => {
@@ -36,5 +37,14 @@ describe('gameTheme', () => {
       expect(value.bg, `${key}.bg`).toBeTruthy();
       expect(value.footer, `${key}.footer`).toBeTruthy();
     }
+  });
+
+  it('covers every game listed in gameRoutes', () => {
+    // Guards against route additions that drift away from the GameKey union.
+    const themeKeys = new Set(Object.keys(gameTheme));
+    const missing = gameRoutes
+      .map((r) => (r.path === '/' ? 'blackjack' : r.path.replace(/^\//, '')))
+      .filter((key) => !themeKeys.has(key));
+    expect(missing).toEqual([]);
   });
 });

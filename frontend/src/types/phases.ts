@@ -174,6 +174,15 @@ export const SpadesPhase = {
   GAME_END: 4,
 } as const;
 
+/** Pitch phase constants (sync: internal/domain/Pitch.go). */
+export const PitchPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 /** Two Ten Jack phase constants (sync: internal/domain/TwoTenJack.go). */
 export const TwoTenJackPhase = {
   DECLARE: 0,
@@ -498,6 +507,13 @@ export const YukonPhase = {
   GAME_OVER: 2,
 } as const;
 
+/** Russian Solitaire phase constants (sync: internal/domain/RussianSolitaire.go). */
+export const RussianSolitairePhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Scorpion phase constants (sync: internal/domain/Scorpion.go). */
 export const ScorpionPhase = {
   PLAYING: 0,
@@ -553,6 +569,15 @@ export const RedDogPhase = {
   INITIAL_DEALT: 2,
   SPREAD_DECISION: 3,
   PAIR_THIRD: 4,
+  END: 5,
+} as const;
+
+/** Casino War phase constants (sync: internal/domain/CasinoWar.go). */
+export const CasinoWarPhase = {
+  BET: 1,
+  INITIAL_DEALT: 2,
+  TIE_DECISION: 3,
+  WAR_DEALT: 4,
   END: 5,
 } as const;
 

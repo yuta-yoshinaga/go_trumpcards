@@ -6,7 +6,21 @@
     <script>
       (() => {
         try {
-          const s = localStorage.getItem('i18nextLng');
+          // Path-style deep links (e.g. /hearts) reach this page via the SPA
+          // fallback, but HashRouter only inspects the hash — so they would
+          // silently render the default route (BlackJack) without this fix.
+          // Normalise "/foo" to "/#/foo" before React mounts so external
+          // links and direct refreshes land on the intended game.
+          const p = window.location.pathname;
+          if (
+            p !== '/' &&
+            !window.location.hash &&
+            !/\.[a-z0-9]{2,5}$/i.test(p)
+          ) {
+            window.location.replace(`/#${p}${window.location.search}`);
+            return;
+          }
+          const s = localStorage.getItem('i18n_lang');
           if (s && (s === 'en' || s.indexOf('en-') === 0)) {
             document.documentElement.lang = 'en';
           }

@@ -18,9 +18,9 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { FreeCellSkeleton } from '../components/skeleton/FreeCellSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -28,6 +28,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -77,14 +78,7 @@ const FC_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the FreeCell solitaire game page with tableau, free cells, and foundation. */
-export function FreeCellPage() {
-  return (
-    <TutorialWrapper gameName="freecell" steps={FC_TUTORIAL_STEPS}>
-      <FreeCellPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const FreeCellPage = withTutorial(FreeCellPageContent, 'freecell', FC_TUTORIAL_STEPS);
 /** Inner content of the FreeCell page, wrapped by TutorialProvider. */
 function FreeCellPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -162,7 +156,9 @@ function FreeCellPageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
-  if (!state) return <FreeCellSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state) return <GameSkeleton gameKey="freecell" layout={{ kind: 'tableau', topRow: 8, tableau: 8 }} />;
 
   const isPlaying = state.phase === FreeCellPhase.PLAYING;
   const isGameClear = state.phase === FreeCellPhase.GAME_CLEAR;

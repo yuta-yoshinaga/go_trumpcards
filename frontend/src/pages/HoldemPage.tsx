@@ -24,9 +24,9 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
-import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -34,6 +34,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -104,14 +106,7 @@ const HOLDEM_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Texas Hold'em game page with community cards, betting, and showdown. */
-export function HoldemPage() {
-  return (
-    <TutorialWrapper gameName="holdem" steps={HE_TUTORIAL_STEPS}>
-      <HoldemPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const HoldemPage = withTutorial(HoldemPageContent, 'holdem', HE_TUTORIAL_STEPS);
 /** Inner content of the Texas Hold'em page, wrapped by TutorialProvider. */
 function HoldemPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -141,9 +136,7 @@ function HoldemPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('holdem', state);
   const turnStartRef = useRef(0);
 
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
+  useMountReset(exec);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -208,8 +201,15 @@ function HoldemPageContent() {
     bindings: actionBindings,
     enabled: canAct && !loading,
   });
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
-  if (!state) return <HoldemSkeleton />;
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="holdem"
+        layout={{ kind: 'community-poker', community: 5, opponents: 3, opponentCards: 2, footerHandSize: 2 }}
+      />
+    );
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.holdem.bg}`} aria-busy={loading}>

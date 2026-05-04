@@ -15,15 +15,16 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { GinRummySkeleton } from '../components/skeleton/GinRummySkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '../hooks/useGinRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -84,14 +85,7 @@ const GR_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Gin Rummy game page with draw, discard, knock, and layoff phases. */
-export function GinRummyPage() {
-  return (
-    <TutorialWrapper gameName="ginrummy" steps={GR_TUTORIAL_STEPS}>
-      <GinRummyPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const GinRummyPage = withTutorial(GinRummyPageContent, 'ginrummy', GR_TUTORIAL_STEPS);
 /** Inner content of the Gin Rummy page, wrapped by TutorialProvider. */
 function GinRummyPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -167,7 +161,15 @@ function GinRummyPageContent() {
     });
   }, [gameExec, hideActionLog, ginRummyConfig.cpuDifficulty, ginRummyConfig.pointLimit]);
 
-  if (!state) return <GinRummySkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="ginrummy"
+        layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 10 }}
+      />
+    );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDrawPhase = state.phase === GinRummyPhase.DRAW;

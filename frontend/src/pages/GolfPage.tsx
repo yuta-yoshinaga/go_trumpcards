@@ -17,14 +17,15 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { GolfSkeleton } from '../components/skeleton/GolfSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useGolfGame } from '../hooks/useGolfGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -72,14 +73,7 @@ const GOLF_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Golf Solitaire game page with 7 columns, stock/waste, and controls. */
-export function GolfPage() {
-  return (
-    <TutorialWrapper gameName="golf" steps={GOLF_TUTORIAL_STEPS}>
-      <GolfPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const GolfPage = withTutorial(GolfPageContent, 'golf', GOLF_TUTORIAL_STEPS);
 /** Inner content of the Golf page, wrapped by TutorialProvider. */
 function GolfPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -138,7 +132,15 @@ function GolfPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
-  if (!state) return <GolfSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="golf"
+        layout={{ kind: 'tiered-rows', rows: [5, 5, 5, 5, 5, 5, 5], stockWaste: true, columns: true }}
+      />
+    );
 
   const isPlaying = state.phase === GolfPhase.PLAYING;
   const isGameClear = state.phase === GolfPhase.GAME_CLEAR;

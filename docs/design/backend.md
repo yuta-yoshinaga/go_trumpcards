@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全73ゲーム)](#12-ゲームドメイン-全73ゲーム)
+  - [1.2 ゲームドメイン (全77ゲーム)](#12-ゲームドメイン-全77ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -24,6 +24,7 @@
   - [2.11 PigsTail ドローフロー](#211-pigstail-ドローフロー)
   - [2.12 FiftyOne 交換フロー](#212-fiftyone-交換フロー)
   - [2.17 Yukon ムーブフロー](#217-yukon-ムーブフロー)
+  - [2.18 RussianSolitaire ムーブフロー](#218-russiansolitaire-ムーブフロー)
   - [2.13 SevenCardStud ベッティングフロー](#213-sevencardstud-ベッティングフロー)
   - [2.14 Durak アタック・ディフェンスフロー](#214-durak-アタックディフェンスフロー)
   - [2.15 FortyThieves ドロー・ムーブフロー](#215-fortythieves-ドロームーブフロー)
@@ -79,6 +80,8 @@
   - [3.46 Cassino フェーズ遷移](#346-cassino-フェーズ遷移)
   - [3.47 PageOne フェーズ遷移](#347-pageone-フェーズ遷移)
   - [3.48 SevenBridge フェーズ遷移](#348-sevenbridge-フェーズ遷移)
+  - [3.49 RussianSolitaire フェーズ遷移](#349-russiansolitaire-フェーズ遷移)
+  - [3.50 CasinoWar フェーズ遷移](#350-casinowar-フェーズ遷移)
 
 ---
 
@@ -146,7 +149,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全73ゲーム)
+### 1.2 ゲームドメイン (全77ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -376,6 +379,30 @@ classDiagram
 
     RedDog --> "1" TrumpCards
     RedDog --> "1" ChipHolder
+
+    class CasinoWar {
+        -trumpCards *TrumpCards
+        -playerCard *Card
+        -dealerCard *Card
+        -playerWarCard *Card
+        -dealerWarCard *Card
+        -burnCards []*Card
+        -chips ChipHolder
+        -ante int
+        -warBet int
+        -phase int
+        +Reset()
+        +Bet(amount int) error
+        +ResolveInitial()
+        +Surrender() error
+        +GoToWar() error
+        +ResolveWar()
+        +GetPhase() int
+        +GetActionLog() []*ActionLogEntry
+    }
+
+    CasinoWar --> "1" TrumpCards
+    CasinoWar --> "1" ChipHolder
 
     note for VideoPokerVariantConfig "DeucesWild・JokerPoker は独立したドメインクラスを持たず\nVideoPokerVariantConfig のファクトリ関数\n(DeucesWildConfig / JokerPokerConfig) として実装"
 ```
@@ -1363,6 +1390,32 @@ classDiagram
     Scorpion --> "*" KlondikeTableauCard
     Scorpion --> "1" TrumpCards
 
+    class RussianSolitaire {
+        -trumpCards *TrumpCards
+        -tableau [7][]*KlondikeTableauCard
+        -foundation [4][]*Card
+        -phase RussianSolitairePhase
+        -moveCount int
+        -actionLog []*ActionLogEntry
+        -history []*russianSolitaireSnapshot
+        -isStalemate bool
+        +Reset()
+        +MoveTableauToTableau(fromCol int, cardIndex int, toCol int) error
+        +MoveTableauToFoundation(col int) error
+        +GetHint() *RussianSolitaireHint
+        +AutoComplete() error
+        +AllFaceUp() bool
+        +Undo() error
+        +UndoN(n int) error
+        +UndoToEscape() int
+        +CanUndo() bool
+        +GiveUp()
+        +GetPhase() RussianSolitairePhase
+    }
+
+    RussianSolitaire --> "*" KlondikeTableauCard
+    RussianSolitaire --> "1" TrumpCards
+
     class Canfield {
         -trumpCards *TrumpCards
         -tableau [4][]*CanfieldTableauCard
@@ -1491,7 +1544,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全73ゲーム共通)**
+**Interactor パターン (全77ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1563,8 +1616,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "73ゲーム × CUI/Web = 146 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "73ゲーム × CUI/Web = 146 Presenter 実装"
+    note for GameCuiController "77ゲーム × CUI/Web = 154 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "77ゲーム × CUI/Web = 154 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1631,8 +1684,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 62 controllers
-    GameManager --> "*" CuiExecer : holds 62 games
+    TrumpCardsWeb --> "*" GameWebController : holds 77 controllers
+    GameManager --> "*" CuiExecer : holds 77 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -2174,6 +2227,46 @@ sequenceDiagram
     Interactor->>Pres: Output(game, nil)
     Pres-->>User: ゲームクリア表示
 ```
+
+### 2.18 RussianSolitaire ムーブフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as RussianSolitaireInteractor
+    participant Domain as RussianSolitaire
+    participant Pres as Presenter
+
+    Note over User,Pres: タブロー間移動フロー (同スート降順ルール)
+    User->>Ctrl: move (from=tableau col=2 cardIndex=1, to=tableau col=5)
+    Ctrl->>Interactor: MoveTableauToTableau(2, 1, 5)
+    Interactor->>Domain: MoveTableauToTableau(2, 1, 5)
+    Domain->>Domain: canPlaceOnTableau() で同スート降順を判定 → カード群を列2から列5へ移動 → 裏向きカード表返し
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: タブロー更新表示
+
+    Note over User,Pres: ファウンデーション移動フロー
+    User->>Ctrl: move (from=tableau col=3, to=foundation)
+    Ctrl->>Interactor: MoveTableauToFoundation(3)
+    Interactor->>Domain: MoveTableauToFoundation(3)
+    Domain->>Domain: 列3の末尾カードをファウンデーションに積む → クリア判定
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ファウンデーション・タブロー更新表示
+
+    Note over User,Pres: オートコンプリートフロー
+    User->>Ctrl: autocomplete
+    Ctrl->>Interactor: AutoComplete()
+    Interactor->>Domain: AutoComplete()
+    Domain->>Domain: 全表向きカードをファウンデーションに自動積み → phase=GameClear
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: ゲームクリア表示
+```
+
+Yukon との違いはタブロー移動時の積み重ねルールのみ (alternating color → same suit)。それ以外のフローはまったく同じ。
 
 ### 2.17 RedDog ベット・スプレッドフロー
 
@@ -3145,5 +3238,48 @@ stateDiagram-v2
 ```
 
 SevenBridge (セブンブリッジ) はラミー系の手札削りゲーム。`Draw` フェーズで山札 / 鳴き (ポン・チー) のどちらかから 1 枚得て `Play` フェーズへ遷移、メルド作成・レイオフ・ディスカードを経てターンが交代する。
+
+### 3.49 RussianSolitaire フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : MoveTableauToTableau / MoveTableauToFoundation
+    Playing --> Playing : Undo / UndoN / GetHint
+    Playing --> GameClear : 全カードがファウンデーションに積まれた
+    Playing --> GameClear : AutoComplete()
+    Playing --> GameOver : GiveUp()
+    Playing --> GameOver : 手詰まり検出 (isStalemate)
+    GameClear --> [*]
+    GameOver --> [*]
+
+    note right of Playing : RussianSolitairePhasePlaying = 0
+    note right of GameClear : RussianSolitairePhaseGameClear = 1
+    note right of GameOver : RussianSolitairePhaseGameOver = 2
+```
+
+RussianSolitaire は Yukon の派生ゲーム。タブローの積み重ねルールが「色違い降順」(Yukon) ではなく「同スート降順」となっており、それ以外のフロー (移動・アンドゥ・オートコンプリート) は Yukon と完全に同一。
+
+### 3.50 CasinoWar フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> InitialDealt : Bet(amount) (アンテ＋初手2枚配布)
+    InitialDealt --> End : ResolveInitial() (プレイヤー勝ち / 負け)
+    InitialDealt --> TieDecision : ResolveInitial() (タイ)
+    TieDecision --> End : Surrender() (アンテ半額返却)
+    TieDecision --> WarDealt : GoToWar() (焼き札3枚＋ウォーカード配布)
+    WarDealt --> End : ResolveWar()
+    End --> Bet : Reset()
+
+    note right of Bet : CasinoWarPhaseBet = 1
+    note right of InitialDealt : CasinoWarPhaseInitialDealt = 2
+    note right of TieDecision : CasinoWarPhaseTieDecision = 3
+    note right of WarDealt : CasinoWarPhaseWarDealt = 4
+    note right of End : CasinoWarPhaseEnd = 5
+```
+
+CasinoWar は RedDog と同じく `ChipHolder` を持つ単純なステートマシン。タイ時のみ追加判断が発生し、ウォー後のタイは「プレイヤー勝ち扱い」として扱う。RedDog と同じ A 高ランク評価 (`rankOf`) を再利用している。
 
 **注:** OldMaid・Daifugo・Sevens・President はターン制で進行する手札削り系のため、明示的なフェーズ定数を持ちません (currentTurn が巡回し、全プレイヤーの手札が 0 枚またはランクが確定するまで進行)。

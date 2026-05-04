@@ -15,15 +15,17 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -110,14 +112,7 @@ function formatTrashState(state: TrashResponse): string {
   return lines.join('\n');
 }
 
-export function TrashPage() {
-  return (
-    <TutorialWrapper gameName="trash" steps={TR_TUTORIAL_STEPS}>
-      <TrashPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const TrashPage = withTutorial(TrashPageContent, 'trash', TR_TUTORIAL_STEPS);
 function TrashPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('trash');
@@ -127,9 +122,7 @@ function TrashPageContent() {
   const apiCall = gameApi.exec;
   const { hint, hintEnabled, setHintEnabled } = useGameHint('trash', state);
 
-  useEffect(() => {
-    void apiCall('reset');
-  }, [apiCall]);
+  useMountReset(apiCall);
 
   // Drive the CPU turn automatically. Whenever it becomes the CPU's turn
   // (current === 1) and the game has not ended, fire one step after a short
@@ -186,9 +179,11 @@ function TrashPageContent() {
     },
     [apiCall, state, playSound],
   );
+  useGameRoundGuard(isGameRoundActive(state));
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
-  if (!state) return <KlondikeSkeleton />;
+
+  if (!state) return <GameSkeleton gameKey="trash" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
 
   const isGameOver = state.phase === TrashPhase.GAME_OVER;
   const isAwaitWild = state.phase === TrashPhase.AWAIT_WILD;
@@ -203,7 +198,7 @@ function TrashPageContent() {
         : t('phase.playerTurn');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.klondike.bg}`} aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.trash.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.trash')} />
       <PhaseIndicator phaseName={phaseName}>
         <span>

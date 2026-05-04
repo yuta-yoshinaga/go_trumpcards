@@ -20,6 +20,3 @@ func (g *genericCuiGame) Controller() CuiExecer { return g.controller }
 
 // HelpLines returns the game's help lines.
 func (g *genericCuiGame) HelpLines() []string { return g.helpLines }
-
-// Exec runs the CUI game loop.
-func (g *genericCuiGame) Exec() { RunCuiLoop(g.controller, g.helpLines) }

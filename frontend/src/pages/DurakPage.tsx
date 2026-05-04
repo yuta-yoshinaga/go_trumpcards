@@ -15,15 +15,15 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { SkeletonHand } from '../components/skeleton/SkeletonHand';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, useDurakGame } from '../hooks/useDurakGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -38,8 +38,7 @@ const PHASE_ATTACK = 0;
 const PHASE_DEFEND = 1;
 const PHASE_BOUT_END = 2;
 
-/** Fallback theme for durak (matching/pass category). */
-const theme = gameTheme.durak ?? { bg: 'bg-game-bg-green', footer: 'bg-game-bg-green-dark border-white/20' };
+const theme = gameTheme.durak;
 
 /** Durak tutorial step definitions. */
 const DURAK_TUTORIAL_STEPS: TutorialStep[] = [
@@ -70,45 +69,7 @@ const DURAK_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Durak game page with attack/defense mechanics. */
-export function DurakPage() {
-  return (
-    <TutorialWrapper gameName="durak" steps={DURAK_TUTORIAL_STEPS}>
-      <DurakPageContent />
-    </TutorialWrapper>
-  );
-}
-
-/** Loading skeleton for the Durak page. */
-function DurakSkeleton() {
-  const { cardWidth, cardHeight } = useCardDimensions();
-  return (
-    <GameSkeleton
-      bgClass={theme.bg}
-      footerClassName={`${theme.footer} px-4 py-2.5`}
-      footer={
-        <>
-          <div className="mb-2">
-            <SkeletonHand cardWidth={cardWidth} cardHeight={cardHeight} count={6} />
-          </div>
-          <div className="h-8 w-32 rounded bg-white/10 animate-pulse mx-auto" />
-        </>
-      }
-    >
-      <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
-        <div className="h-4 w-24 rounded bg-white/10 animate-pulse mb-1" />
-        <div className="h-4 w-32 rounded bg-white/10 animate-pulse" />
-      </div>
-      <div className="flex gap-2 flex-wrap mb-3">
-        {Array.from({ length: 3 }, (_, i) => (
-          <div key={i} className="p-2 rounded bg-black/30">
-            <div className="h-4 w-16 rounded bg-white/10 animate-pulse mb-2" />
-            <SkeletonHand cardWidth={cardWidth} cardHeight={cardHeight} count={6} />
-          </div>
-        ))}
-      </div>
-    </GameSkeleton>
-  );
-}
+export const DurakPage = withTutorial(DurakPageContent, 'durak', DURAK_TUTORIAL_STEPS);
 
 /** Inner content of the Durak page, wrapped by TutorialProvider. */
 function DurakPageContent() {
@@ -160,7 +121,23 @@ function DurakPageContent() {
     void gameExec('reset', undefined, undefined, durakConfig);
   }, [gameExec, hideActionLog, durakConfig]);
 
-  if (!state) return <DurakSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="durak"
+        layout={{
+          kind: 'trick-taking',
+          titleBar: false,
+          opponents: 3,
+          opponentStyle: 'hand',
+          opponentHandSize: 6,
+          centerCard: true,
+          footerHandSize: 6,
+        }}
+      />
+    );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);

@@ -1,161 +1,29 @@
-import type { ReactNode } from 'react';
+import { type ComponentType, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { DesktopSidebar } from './components/DesktopSidebar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { SkipNavLink } from './components/SkipNavLink';
 import { gameRoutes } from './constants/gameRoutes';
-import { AccordionPage } from './pages/AccordionPage';
-import { BaccaratPage } from './pages/BaccaratPage';
-import { BadugiPage } from './pages/BadugiPage';
-import { BakersDozenPage } from './pages/BakersDozenPage';
-import { BlackJackPage } from './pages/BlackJackPage';
-import { BridgePage } from './pages/BridgePage';
-import { CalculationPage } from './pages/CalculationPage';
-import { CanastaPage } from './pages/CanastaPage';
-import { CanfieldPage } from './pages/CanfieldPage';
-import { CaribbeanStudPage } from './pages/CaribbeanStudPage';
-import { CassinoPage } from './pages/CassinoPage';
-import { ClockSolitairePage } from './pages/ClockSolitairePage';
-import { CrazyEightsPage } from './pages/CrazyEightsPage';
-import { CrazyPineapplePage } from './pages/CrazyPineapplePage';
-import { CribbagePage } from './pages/CribbagePage';
-import { DaifugoPage } from './pages/DaifugoPage';
-import { DeucesWildPage } from './pages/DeucesWildPage';
-import { DoubtPage } from './pages/DoubtPage';
-import { DurakPage } from './pages/DurakPage';
-import { EgyptianRatscrewPage } from './pages/EgyptianRatscrewPage';
-import { EuchrePage } from './pages/EuchrePage';
-import { FiftyOnePage } from './pages/FiftyOnePage';
-import { FortyThievesPage } from './pages/FortyThievesPage';
-import { FreeCellPage } from './pages/FreeCellPage';
-import { GinRummyPage } from './pages/GinRummyPage';
-import { GoFishPage } from './pages/GoFishPage';
-import { GolfPage } from './pages/GolfPage';
-import { HeartsPage } from './pages/HeartsPage';
-import { HoldemPage } from './pages/HoldemPage';
-import { IndianPokerPage } from './pages/IndianPokerPage';
-import { JokerPokerPage } from './pages/JokerPokerPage';
-import { KlondikePage } from './pages/KlondikePage';
-import { LetItRidePage } from './pages/LetItRidePage';
-import { MemoryPage } from './pages/MemoryPage';
-import { NapoleonPage } from './pages/NapoleonPage';
-import { NertzPage } from './pages/NertzPage';
-import { OhHellPage } from './pages/OhHellPage';
-import { OldMaidPage } from './pages/OldMaidPage';
-import { OmahaPage } from './pages/OmahaPage';
-import { PageOnePage } from './pages/PageOnePage';
-import { PaiGowPage } from './pages/PaiGowPage';
-import { PigsTailPage } from './pages/PigsTailPage';
-import { PineapplePage } from './pages/PineapplePage';
-import { PinochlePage } from './pages/PinochlePage';
-import { PokerPage } from './pages/PokerPage';
-import { PokerSquaresPage } from './pages/PokerSquaresPage';
-import { PresidentPage } from './pages/PresidentPage';
-import { PyramidPage } from './pages/PyramidPage';
-import { RazzPage } from './pages/RazzPage';
-import { RedDogPage } from './pages/RedDogPage';
-import { ScorpionPage } from './pages/ScorpionPage';
-import { SevenBridgePage } from './pages/SevenBridgePage';
-import { SevenCardStudPage } from './pages/SevenCardStudPage';
-import { SevensPage } from './pages/SevensPage';
-import { ShitheadPage } from './pages/ShitheadPage';
-import { ShortDeckPage } from './pages/ShortDeckPage';
-import { SkatPage } from './pages/SkatPage';
-import { SlapjackPage } from './pages/SlapjackPage';
-import { SpadesPage } from './pages/SpadesPage';
-import { Spanish21Page } from './pages/Spanish21Page';
-import { SpeedPage } from './pages/SpeedPage';
-import { SpiderPage } from './pages/SpiderPage';
-import { SpiteAndMalicePage } from './pages/SpiteAndMalicePage';
-import { TexasHoldemBonusPage } from './pages/TexasHoldemBonusPage';
-import { ThreeCardPage } from './pages/ThreeCardPage';
-import { TonkPage } from './pages/TonkPage';
-import { TrashPage } from './pages/TrashPage';
-import { TriPeaksPage } from './pages/TriPeaksPage';
-import { TwoTenJackPage } from './pages/TwoTenJackPage';
-import { VideoPokerPage } from './pages/VideoPokerPage';
-import { WarPage } from './pages/WarPage';
-import { WhistPage } from './pages/WhistPage';
-import { YukonPage } from './pages/YukonPage';
+import { resolvePageComponent } from './utils/resolvePageComponent';
 
-type GamePath = (typeof gameRoutes)[number]['path'];
-const pageByPath: Record<GamePath, ReactNode> = {
-  '/': <BlackJackPage />,
-  '/poker': <PokerPage />,
-  '/oldmaid': <OldMaidPage />,
-  '/daifugo': <DaifugoPage />,
-  '/sevens': <SevensPage />,
-  '/doubt': <DoubtPage />,
-  '/durak': <DurakPage />,
-  '/euchre': <EuchrePage />,
-  '/bridge': <BridgePage />,
-  '/holdem': <HoldemPage />,
-  '/omaha': <OmahaPage />,
-  '/pineapple': <PineapplePage />,
-  '/crazypineapple': <CrazyPineapplePage />,
-  '/sevencardstud': <SevenCardStudPage />,
-  '/razz': <RazzPage />,
-  '/badugi': <BadugiPage />,
-  '/shortdeck': <ShortDeckPage />,
-  '/hearts': <HeartsPage />,
-  '/spades': <SpadesPage />,
-  '/twotenjack': <TwoTenJackPage />,
-  '/ohhell': <OhHellPage />,
-  '/napoleon': <NapoleonPage />,
-  '/memory': <MemoryPage />,
-  '/klondike': <KlondikePage />,
-  '/freecell': <FreeCellPage />,
-  '/baccarat': <BaccaratPage />,
-  '/crazyeights': <CrazyEightsPage />,
-  '/ginrummy': <GinRummyPage />,
-  '/canasta': <CanastaPage />,
-  '/cribbage': <CribbagePage />,
-  '/spider': <SpiderPage />,
-  '/pyramid': <PyramidPage />,
-  '/tripeaks': <TriPeaksPage />,
-  '/indianpoker': <IndianPokerPage />,
-  '/videopoker': <VideoPokerPage />,
-  '/deuceswild': <DeucesWildPage />,
-  '/jokerpoker': <JokerPokerPage />,
-  '/spanish21': <Spanish21Page />,
-  '/threecard': <ThreeCardPage />,
-  '/caribbeanstud': <CaribbeanStudPage />,
-  '/texasholdembonus': <TexasHoldemBonusPage />,
-  '/paigow': <PaiGowPage />,
-  '/letitride': <LetItRidePage />,
-  '/speed': <SpeedPage />,
-  '/gofish': <GoFishPage />,
-  '/pinochle': <PinochlePage />,
-  '/golf': <GolfPage />,
-  '/pigtail': <PigsTailPage />,
-  '/war': <WarPage />,
-  '/fiftyone': <FiftyOnePage />,
-  '/clocksolitaire': <ClockSolitairePage />,
-  '/fortythieves': <FortyThievesPage />,
-  '/calculation': <CalculationPage />,
-  '/canfield': <CanfieldPage />,
-  '/yukon': <YukonPage />,
-  '/scorpion': <ScorpionPage />,
-  '/accordion': <AccordionPage />,
-  '/sevenbridge': <SevenBridgePage />,
-  '/trash': <TrashPage />,
-  '/whist': <WhistPage />,
-  '/pokersquares': <PokerSquaresPage />,
-  '/pageone': <PageOnePage />,
-  '/reddog': <RedDogPage />,
-  '/president': <PresidentPage />,
-  '/cassino': <CassinoPage />,
-  '/spiteandmalice': <SpiteAndMalicePage />,
-  '/skat': <SkatPage />,
-  '/shithead': <ShitheadPage />,
-  '/nertz': <NertzPage />,
-  '/slapjack': <SlapjackPage />,
-  '/egyptianratscrew': <EgyptianRatscrewPage />,
-  '/bakersdozen': <BakersDozenPage />,
-  '/tonk': <TonkPage />,
-};
+// Vite resolves this glob at build time; each match becomes its own chunk
+// because the importer is dynamic. Page components have heterogeneous prop
+// shapes (e.g., BlackJackPage takes a `variant`), so the value type is
+// `ComponentType<any>` — narrowed back to `ComponentType` (no props) in
+// `resolvePageComponent` since we render each as `<LazyPage />`.
+// biome-ignore lint/suspicious/noExplicitAny: Heterogeneous page prop shapes preclude a stricter generic here.
+const pageModules = import.meta.glob<Record<string, ComponentType<any>>>('./pages/*Page.tsx');
+
+const lazyPages = new Map<string, ComponentType>(
+  gameRoutes.map(({ path, page }) => [path, resolvePageComponent(pageModules, path, page)]),
+);
+
+/** Minimal `aria-busy` placeholder shown while a lazy game-page chunk loads. */
+function RouteSuspenseFallback() {
+  return <div role="status" aria-busy="true" className="flex-1" />;
+}
 
 /** Root application component with router and game page routes. */
 export default function App() {
@@ -170,9 +38,26 @@ export default function App() {
             <NavBar />
             <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col min-h-0">
               <Routes>
-                {gameRoutes.map(({ path }) => (
-                  <Route key={path} path={path} element={pageByPath[path]} />
-                ))}
+                {gameRoutes.map(({ path }) => {
+                  const LazyPage = lazyPages.get(path);
+                  if (!LazyPage) return null;
+                  return (
+                    <Route
+                      key={path}
+                      path={path}
+                      element={
+                        <Suspense fallback={<RouteSuspenseFallback />}>
+                          <LazyPage />
+                        </Suspense>
+                      }
+                    />
+                  );
+                })}
+                {/* BlackJack lives at "/", but external links may use "/blackjack". */}
+                <Route path="/blackjack" element={<Navigate to="/" replace />} />
+                {/* Unknown hash routes (e.g., "#/notagame") fall back to home
+                    instead of rendering an empty <main>. */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
           </div>

@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go implementations of 73 trump card game algorithms (blackjack, poker, hearts, klondike, baccarat, ...). Run `go run ./cmd/trumpcards games --short` for the canonical list. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go implementations of 77 trump card game algorithms (blackjack, poker, hearts, klondike, baccarat, ...). Run `go run ./cmd/trumpcards games --short` for the canonical list. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -19,6 +19,7 @@ Go implementations of 73 trump card game algorithms (blackjack, poker, hearts, k
 ```sh
 # Run games
 go run ./cmd/trumpcards                    # Interactive mode (switch games with 'switch <game>')
+go run ./cmd/trumpcards --start poker      # Interactive mode starting at poker (#1604)
 go run ./cmd/trumpcards --lang en          # Interactive mode in English
 go run ./cmd/trumpcards <game>             # Run a specific game (e.g., blackjack, poker, holdem)
 go run ./cmd/trumpcards --lang en <game>   # Run in English
@@ -34,6 +35,7 @@ go run ./cmd/trumpcards help blackjack  # Show help text for a specific game
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/trumpcards web --port 3000  # Start web server on custom port
 go run ./cmd/trumpcards web --host 127.0.0.1  # Bind to localhost only
+go run ./cmd/trumpcards web --open         # Start server and open browser (#1607)
 go run ./cmd/trumpcards completion bash  # Generate shell completion script (bash/zsh/fish)
 go run ./cmd/server                # Start REST API + web GUI server (direct)
 
@@ -129,9 +131,9 @@ Games are deployed to Cloudflare Workers as WASM binaries via TinyGo. Three work
 
 | Worker | Entry point | Games |
 |--------|-------------|-------|
-| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, shortdeck, pineapple, crazypineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, caribbeanstud, texasholdembonus, sevencardstud, paigow, letitride, reddog, razz, badugi, spanish21) |
-| **classic** | `cmd/workers/classic/main.go` | Trick-taking, matching & fishing (hearts, spades, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist, pageone, trash, president, cassino, spiteandmalice, skat, shithead, nertz, slapjack, egyptianratscrew, tonk) |
-| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, scorpion, accordion, pokersquares, calculation, bakersdozen, sevenbridge) |
+| **casino** | `cmd/workers/casino/main.go` | Table & poker games (blackjack, baccarat, poker, holdem, omaha, omahahilo, shortdeck, pineapple, crazypineapple, indianpoker, videopoker, deuceswild, jokerpoker, threecard, caribbeanstud, texasholdembonus, sevencardstud, paigow, letitride, reddog, razz, badugi, spanish21, casinowar) |
+| **classic** | `cmd/workers/classic/main.go` | Trick-taking, matching & fishing (hearts, spades, pitch, twotenjack, euchre, napoleon, oldmaid, doubt, daifugo, sevens, crazyeights, ohhell, bridge, speed, gofish, pinochle, pigtail, durak, war, fiftyone, whist, pageone, trash, president, cassino, spiteandmalice, skat, shithead, nertz, slapjack, egyptianratscrew, tonk) |
+| **solo** | `cmd/workers/solo/main.go` | Solitaire & rummy (klondike, freecell, spider, pyramid, tripeaks, memory, ginrummy, canasta, cribbage, golf, clocksolitaire, fortythieves, canfield, yukon, russiansolitaire, scorpion, accordion, pokersquares, calculation, bakersdozen, sevenbridge) |
 
 The worker entry points (`cmd/workers/{casino,classic,solo}/main.go`) are thin shells that blank-import the matching `internal/infrastructure/games/<category>` sub-package and call `games.RegisterCategory(mux, games.Category…)`. The registry itself (`internal/infrastructure/games/registry.go`) stores `{Name, Category, Description}` for each game (the description SSoT — `ui.gameRegistry` reads it from here); the Web-server factories live in `games_server.go` (excluded from WASM via build tags) and the Worker bindings live in per-category sub-packages — this split is what keeps each Cloudflare Worker binary under the 1 MB gzipped free-tier limit by letting TinyGo dead-code-eliminate the games from the other two categories.
 

@@ -46,6 +46,14 @@ func init() {
 			return usecase.RestoreOmahaInteractor(data, new(presenter.OmahaWebPresenter))
 		},
 		controller.NewOmahaWebControllerWithProvider)
+	games.RegisterKVGame("omahahilo", games.CategoryCasino,
+		func() usecase.OmahaInteractorIF {
+			return usecase.NewOmahaInteractor(domain.NewDefaultOmahaHiLo(), new(presenter.OmahaWebPresenter))
+		},
+		func(data []byte) (usecase.OmahaInteractorIF, error) {
+			return usecase.RestoreOmahaInteractor(data, new(presenter.OmahaWebPresenter))
+		},
+		controller.NewOmahaWebControllerWithProvider)
 	games.RegisterKVGame("shortdeck", games.CategoryCasino,
 		func() usecase.ShortDeckInteractorIF {
 			return usecase.NewShortDeckInteractor(domain.NewDefaultShortDeck(), new(presenter.ShortDeckWebPresenter))
@@ -190,4 +198,12 @@ func init() {
 			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
 		},
 		controller.NewBlackJackWebControllerWithProvider)
+	games.RegisterKVGame("casinowar", games.CategoryCasino,
+		func() usecase.CasinoWarInteractorIF {
+			return usecase.NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), new(presenter.CasinoWarWebPresenter))
+		},
+		func(data []byte) (usecase.CasinoWarInteractorIF, error) {
+			return usecase.RestoreCasinoWarInteractor(data, new(presenter.CasinoWarWebPresenter))
+		},
+		controller.NewCasinoWarWebControllerWithProvider)
 }

@@ -20,6 +20,10 @@ type HoldemWebInput struct {
 }
 
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
+//
+// Hi-Lo (Omaha 8 or Better) では、ショーダウン時に LowBestHand /
+// LowQualifies が populated される。それ以外のゲームでは omitempty に
+// より JSON 出力に含まれない。
 type HoldemWebOutputPlayer struct {
 	ID            int              `json:"id"`
 	IsHuman       bool             `json:"isHuman"`
@@ -31,6 +35,8 @@ type HoldemWebOutputPlayer struct {
 	HandRank      int              `json:"handRank"`
 	HandName      string           `json:"handName"`
 	BestHand      []*WebOutputCard `json:"bestHand"`
+	LowBestHand   []*WebOutputCard `json:"lowBestHand,omitempty"`
+	LowQualifies  bool             `json:"lowQualifies,omitempty"`
 	PlayStyleName string           `json:"playStyleName"`
 	TotalHands    int              `json:"totalHands"`
 	VPIP          int              `json:"vpip"`
@@ -47,14 +53,23 @@ type HoldemWebOutputCpuAction struct {
 }
 
 // HoldemWebOutputResult テキサスホールデムショーダウン結果
+//
+// Hi-Lo (Omaha 8 or Better) ではポット分割により Hi/Lo 内訳と
+// LowBestHand / LowKickers / LowQualifies が populated される。
+// Hi-Lo 以外のゲームでは omitempty で JSON 出力に含まれない。
 type HoldemWebOutputResult struct {
-	PlayerIdx int              `json:"playerIdx"`
-	HandRank  int              `json:"handRank"`
-	HandName  string           `json:"handName"`
-	Kickers   string           `json:"kickers"`
-	BestHand  []*WebOutputCard `json:"bestHand"`
-	WonAmount int              `json:"wonAmount"`
-	Mucked    bool             `json:"mucked"`
+	PlayerIdx    int              `json:"playerIdx"`
+	HandRank     int              `json:"handRank"`
+	HandName     string           `json:"handName"`
+	Kickers      string           `json:"kickers"`
+	BestHand     []*WebOutputCard `json:"bestHand"`
+	WonAmount    int              `json:"wonAmount"`
+	Mucked       bool             `json:"mucked"`
+	LowBestHand  []*WebOutputCard `json:"lowBestHand,omitempty"`
+	LowKickers   string           `json:"lowKickers,omitempty"`
+	LowQualifies bool             `json:"lowQualifies,omitempty"`
+	HiWonAmount  int              `json:"hiWonAmount,omitempty"`
+	LowWonAmount int              `json:"lowWonAmount,omitempty"`
 }
 
 // HoldemWebOutputSidePot テキサスホールデムサイドポット
@@ -122,6 +137,7 @@ type HoldemWebOutput struct {
 	AddonAfterHand   int                             `json:"addonAfterHand"`
 	RebuyPhaseType   int                             `json:"rebuyPhaseType"`
 	MuckAvailable    bool                            `json:"muckAvailable"`
+	IsHiLo           bool                            `json:"isHiLo,omitempty"`
 	Equity           *HoldemWebOutputEquity          `json:"equity,omitempty"`
 	PotOdds          *float64                        `json:"potOdds,omitempty"`
 	MetaAI           *HoldemWebOutputMetaAI          `json:"metaAI,omitempty"`

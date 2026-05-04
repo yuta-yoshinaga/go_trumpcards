@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { type CanfieldMoveZone, canfieldApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,13 +19,15 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -67,19 +69,13 @@ const CF_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Canfield solitaire game page. */
-export function CanfieldPage() {
-  return (
-    <TutorialWrapper gameName="canfield" steps={CF_TUTORIAL_STEPS}>
-      <CanfieldPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const CanfieldPage = withTutorial(CanfieldPageContent, 'canfield', CF_TUTORIAL_STEPS);
 /** Inner content of the Canfield page. */
 function CanfieldPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('canfield');
   const { state, loading, error, exec: execApi, retry } = useGameApi(canfieldApi.exec);
+  useGameRoundGuard(isGameRoundActive(state));
   const { cardWidth, cardHeight } = useCardDimensions();
   const {
     hint: frontendHint,
@@ -103,9 +99,7 @@ function CanfieldPageContent() {
     clearLog,
   });
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);

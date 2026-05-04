@@ -53,6 +53,11 @@ func init() {
 			return usecase.NewOmahaInteractor(domain.NewDefaultOmaha(), new(presenter.OmahaWebPresenter))
 		},
 		controller.NewOmahaWebController)
+	BindWebControllerFor("omahahilo",
+		func() usecase.OmahaInteractorIF {
+			return usecase.NewOmahaInteractor(domain.NewDefaultOmahaHiLo(), new(presenter.OmahaWebPresenter))
+		},
+		controller.NewOmahaWebController)
 	BindWebControllerFor("shortdeck",
 		func() usecase.ShortDeckInteractorIF {
 			return usecase.NewShortDeckInteractor(domain.NewDefaultShortDeck(), new(presenter.ShortDeckWebPresenter))
@@ -263,6 +268,11 @@ func init() {
 			return usecase.NewYukonInteractor(domain.NewDefaultYukon(), new(presenter.YukonWebPresenter))
 		},
 		controller.NewYukonWebController)
+	BindWebControllerFor("russiansolitaire",
+		func() usecase.RussianSolitaireInteractorIF {
+			return usecase.NewRussianSolitaireInteractor(domain.NewDefaultRussianSolitaire(), new(presenter.RussianSolitaireWebPresenter))
+		},
+		controller.NewRussianSolitaireWebController)
 	BindWebControllerFor("whist",
 		func() usecase.WhistInteractorIF {
 			return usecase.NewWhistInteractor(domain.NewDefaultWhist(), new(presenter.WhistWebPresenter))
@@ -378,4 +388,14 @@ func init() {
 			return usecase.NewTonkInteractor(domain.NewDefaultTonk(), new(presenter.TonkWebPresenter))
 		},
 		controller.NewTonkWebController)
+	BindWebControllerFor("casinowar",
+		func() usecase.CasinoWarInteractorIF {
+			return usecase.NewCasinoWarInteractor(domain.NewDefaultCasinoWar(), new(presenter.CasinoWarWebPresenter))
+		},
+		controller.NewCasinoWarWebController)
+	BindWebControllerFor("pitch",
+		func() usecase.PitchInteractorIF {
+			return usecase.NewPitchInteractor(domain.NewDefaultPitch(), new(presenter.PitchWebPresenter))
+		},
+		controller.NewPitchWebController)
 }

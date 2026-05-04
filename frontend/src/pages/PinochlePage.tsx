@@ -16,12 +16,13 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePinochleGame } from '../hooks/usePinochleGame';
 import { useSound } from '../providers/SoundProvider';
@@ -97,14 +98,7 @@ const PN_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Pinochle game page. */
-export function PinochlePage() {
-  return (
-    <TutorialWrapper gameName="pinochle" steps={PN_TUTORIAL_STEPS}>
-      <PinochlePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PinochlePage = withTutorial(PinochlePageContent, 'pinochle', PN_TUTORIAL_STEPS);
 /** Inner content of the Pinochle page. */
 function PinochlePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -165,6 +159,8 @@ function PinochlePageContent() {
     hideActionLog();
     handleReset();
   }, [handleReset, hideActionLog]);
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) {
     return (

@@ -628,6 +628,10 @@ export interface HoldemPlayerData {
   handRank: number;
   handName: string;
   bestHand: Card[];
+  /** Best 5-card low hand (Omaha Hi-Lo only; populated at showdown when qualified). */
+  lowBestHand?: Card[];
+  /** True if the player has a qualifying low hand (Omaha Hi-Lo only). */
+  lowQualifies?: boolean;
   playStyleName: string;
   totalHands: number;
   vpip: number;
@@ -643,7 +647,10 @@ export interface HoldemCpuAction {
   amount: number;
 }
 
-/** Hold'em round result for a single player. */
+/** Hold'em round result for a single player.
+ *
+ * Hi-Lo (Omaha 8 or Better) split-pot games populate the optional Low* and
+ * HiWonAmount/LowWonAmount fields; for non-Hi-Lo games they are absent. */
 export interface HoldemResult {
   playerIdx: number;
   handRank: number;
@@ -652,6 +659,11 @@ export interface HoldemResult {
   bestHand: Card[];
   wonAmount: number;
   mucked: boolean;
+  lowBestHand?: Card[];
+  lowKickers?: string;
+  lowQualifies?: boolean;
+  hiWonAmount?: number;
+  lowWonAmount?: number;
 }
 
 /** Side pot in Hold'em with eligible players. */
@@ -700,6 +712,8 @@ export interface HoldemResponse {
   addonAfterHand: number;
   addonUsed: boolean[];
   muckAvailable: boolean;
+  /** True when the variant is Omaha Hi-Lo (8 or Better) — split-pot logic active. */
+  isHiLo?: boolean;
   equity?: HoldemEquity;
   potOdds?: number;
   metaAI?: BettingMetaAI;
@@ -863,6 +877,63 @@ export interface SpadesResponse {
   messageParams?: Record<string, string>;
   config: SpadesConfig;
   hint?: SpadesHint;
+}
+
+// --- Pitch (Setback / Auction Pitch) ---
+
+/** Pitch player data (4-player single-handed scoring). */
+export interface PitchPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Pitch trick. */
+export interface PitchTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Pitch game configuration. */
+export interface PitchConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Pitch. */
+export interface PitchHint {
+  cardIndex?: number;
+  bid?: number;
+  reason: string;
+}
+
+/** Full Pitch game state returned from the API. */
+export interface PitchResponse {
+  players: PitchPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  dealerIdx: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  currentBid: number;
+  bidWinnerIdx: number;
+  trumpSuit: number;
+  currentTrick: PitchTrickCard[];
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  validPlayIndices: number[];
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: PitchConfig;
+  hint?: PitchHint;
 }
 
 // --- Two Ten Jack (ツーテンジャック) ---
@@ -2662,6 +2733,31 @@ export interface YukonResponse {
   hint?: YukonHint;
 }
 
+// --- Russian Solitaire (ロシアンソリティア) ---
+
+/** A suggested move hint in Russian Solitaire. */
+export interface RussianSolitaireHint {
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+/** API response shape for a Russian Solitaire game. */
+export interface RussianSolitaireResponse {
+  tableau: KlondikeTableauCard[][];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  undoToEscape?: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: RussianSolitaireHint;
+}
+
 // --- Scorpion (スコーピオン) ---
 
 /** A suggested move hint in Scorpion. */
@@ -2869,6 +2965,32 @@ export interface RedDogResponse {
   raise: number;
   /** Spread = |rank2 - rank1| - 1, 0 when consecutive or pair. */
   spread: number;
+  result: number;
+  totalPayout: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Casino War (カジノウォー) ---
+
+/** Casino War API response. */
+export interface CasinoWarResponse {
+  /** Player's initial card. */
+  playerCard?: Card;
+  /** Dealer's initial card. */
+  dealerCard?: Card;
+  /** Player's war card (only set after going to war). */
+  playerWarCard?: Card;
+  /** Dealer's war card (only set after going to war). */
+  dealerWarCard?: Card;
+  /** Burn cards face-down between initial and war (length 0 or 3). */
+  burnCards: Card[];
+  phase: number;
+  chips: number;
+  ante: number;
+  /** Additional bet placed when going to war (equal to ante). */
+  warBet: number;
   result: number;
   totalPayout: number;
   message: string;

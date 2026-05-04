@@ -12,6 +12,8 @@ type OmahaPlayer struct {
 	bettingPlayerBase                   // ベッティング共通状態
 	isHuman             bool            // 人間フラグ
 	bestHand            []*Card         // ベスト5枚
+	lowBestHand         []*Card         // Hi-Lo用ローベスト5枚 (qualified の場合のみ非nil)
+	lowQualifies        bool            // 8 or better のローが成立したかどうか
 	playStyle           HoldemPlayStyle // CPUプレイスタイル (Holdemと共通)
 	totalHands          int             // 総ハンド数 (セッション通算)
 	vpipCount           int             // VPIP対象ハンド数
@@ -129,6 +131,19 @@ func (op *OmahaPlayer) GetComparisonCards() []*Card {
 	return cards
 }
 
+// GetLowBestHand Hi-Lo用ローベスト5枚取得 (未評価/不成立時はnil)
+func (op *OmahaPlayer) GetLowBestHand() []*Card { return op.lowBestHand }
+
+// GetLowQualifies 8-or-better のローが成立したか
+func (op *OmahaPlayer) GetLowQualifies() bool { return op.lowQualifies }
+
+// GetLowComparisonCards Hi-Loロー比較用カード取得 (compareRazzCards 用)
+func (op *OmahaPlayer) GetLowComparisonCards() []*Card {
+	cards := make([]*Card, len(op.lowBestHand))
+	copy(cards, op.lowBestHand)
+	return cards
+}
+
 // omahaPlayerJSON is the JSON wire format for OmahaPlayer.
 type omahaPlayerJSON struct {
 	Player              *Player            `json:"p"`
@@ -136,6 +151,8 @@ type omahaPlayerJSON struct {
 	BettingPlayerBase   *bettingPlayerBase `json:"bp"`
 	IsHuman             bool               `json:"ih"`
 	BestHand            []*Card            `json:"bh"`
+	LowBestHand         []*Card            `json:"lh,omitempty"`
+	LowQualifies        bool               `json:"lq,omitempty"`
 	PlayStyle           HoldemPlayStyle    `json:"ps"`
 	TotalHands          int                `json:"th"`
 	VPIPCount           int                `json:"vc"`
@@ -154,6 +171,8 @@ func (op *OmahaPlayer) MarshalJSON() ([]byte, error) {
 		BettingPlayerBase:   &op.bettingPlayerBase,
 		IsHuman:             op.isHuman,
 		BestHand:            op.bestHand,
+		LowBestHand:         op.lowBestHand,
+		LowQualifies:        op.lowQualifies,
 		PlayStyle:           op.playStyle,
 		TotalHands:          op.totalHands,
 		VPIPCount:           op.vpipCount,
@@ -182,6 +201,8 @@ func (op *OmahaPlayer) UnmarshalJSON(data []byte) error {
 	}
 	op.isHuman = j.IsHuman
 	op.bestHand = j.BestHand
+	op.lowBestHand = j.LowBestHand
+	op.lowQualifies = j.LowQualifies
 	op.playStyle = j.PlayStyle
 	op.totalHands = j.TotalHands
 	op.vpipCount = j.VPIPCount
@@ -225,4 +246,71 @@ func (op *OmahaPlayer) EvalBestHand(communityCards []*Card) int {
 	op.handRank = bestRank
 	op.bestHand = bestCards
 	return op.handRank
+}
+
+// EvalBestLowHand Hi-Lo (8 or Better) 用のローベスト5枚を評価する。
+// オマハルール: ホールカードから必ず2枚、コミュニティカードから必ず3枚。
+// 5枚すべてが8以下 (Ace=1)、かつランクの重複が無い場合のみ qualified。
+// qualified なローが存在しない場合は (false, nil) で状態をクリアする。
+//
+// 戻り値: qualifying な低手が見つかったかどうか。
+func (op *OmahaPlayer) EvalBestLowHand(communityCards []*Card) bool {
+	op.lowQualifies = false
+	op.lowBestHand = nil
+
+	if len(op.cards) < 2 || len(communityCards) < 3 {
+		return false
+	}
+
+	holePairs := combinations(op.cards, 2)         // C(4,2) = 6
+	commTriples := combinations(communityCards, 3) // C(5,3) = 10
+
+	var bestCards []*Card
+	var hand [5]*Card
+	for _, pair := range holePairs {
+		hand[0], hand[1] = pair[0], pair[1]
+		for _, triple := range commTriples {
+			hand[2], hand[3], hand[4] = triple[0], triple[1], triple[2]
+			if !isQualifyingOmahaLow(hand[:]) {
+				continue
+			}
+			if bestCards == nil || compareRazzCards(hand[:], bestCards) < 0 {
+				bestCards = make([]*Card, 5)
+				copy(bestCards, hand[:])
+			}
+		}
+	}
+
+	if bestCards == nil {
+		return false
+	}
+	op.lowQualifies = true
+	op.lowBestHand = bestCards
+	return true
+}
+
+// isQualifyingOmahaLow は5枚カードがオマハ Hi-Lo の有効なロー
+// (8 or Better、ペア無し、Ace=1) を満たすか判定する。
+// ホットパス: showdown ごとにプレイヤー1人あたり最大60回呼ばれるため、
+// map ではなく uint16 のビットマスクで重複検出を行いアロケーションを避ける。
+func isQualifyingOmahaLow(cards []*Card) bool {
+	if len(cards) != 5 {
+		return false
+	}
+	var seen uint16
+	for _, c := range cards {
+		if c == nil {
+			return false
+		}
+		v := c.GetValue() // Ace == 1
+		if v < 1 || v > 8 {
+			return false
+		}
+		mask := uint16(1) << v
+		if seen&mask != 0 {
+			return false
+		}
+		seen |= mask
+	}
+	return true
 }

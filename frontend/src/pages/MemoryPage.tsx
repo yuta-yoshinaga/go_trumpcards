@@ -16,15 +16,16 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { MemorySkeleton } from '../components/skeleton/MemorySkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { AUTO_NEXT_DELAY_OPTIONS, CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -75,14 +76,7 @@ const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Memory card matching game page with board grid and scores. */
-export function MemoryPage() {
-  return (
-    <TutorialWrapper gameName="memory" steps={MEM_TUTORIAL_STEPS}>
-      <MemoryPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const MemoryPage = withTutorial(MemoryPageContent, 'memory', MEM_TUTORIAL_STEPS);
 /** Inner content of the Memory page, wrapped by TutorialProvider. */
 function MemoryPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -139,7 +133,22 @@ function MemoryPageContent() {
     void exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
   }, [exec, hideActionLog, memoryConfig.cpuDifficulty]);
 
-  if (!state) return <MemorySkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="memory"
+        layout={{
+          kind: 'card-grid',
+          count: 52,
+          cols: 'grid-cols-4 md:grid-cols-8 lg:grid-cols-13',
+          aspectRatio: 'aspect-[2/3] lg:aspect-auto',
+          gridClassName: 'lg:grid-rows-4 lg:h-full',
+          topPills: 4,
+        }}
+      />
+    );
 
   const isFlip1 = state.phase === MemoryPhase.FLIP1;
   const isFlip2 = state.phase === MemoryPhase.FLIP2;

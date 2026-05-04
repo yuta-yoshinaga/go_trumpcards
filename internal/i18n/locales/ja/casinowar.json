@@ -1,0 +1,6 @@
+{
+  "helpTitle": "Casino War (カジノウォー) コマンド",
+  "helpBet": "  b <金額>             ベット (アンテを賭けて1枚ずつ配る)",
+  "helpSurrender": "  surrender            タイ時に降参 (アンテの半額返却)",
+  "helpWar": "  war                  タイ時にウォー宣言 (同額追加ベット)"
+}

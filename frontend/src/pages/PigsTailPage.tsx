@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { pigtailApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -12,15 +12,18 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { ManualButton } from '../components/ManualButton';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { PigsTailSkeleton } from '../components/skeleton/PigsTailSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { gameTheme } from '../styles/gameTheme';
 import type { PigsTailResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
@@ -68,26 +71,18 @@ const PIGTAIL_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Pig's Tail game page. */
-export function PigsTailPage() {
-  return (
-    <TutorialWrapper gameName="pigtail" steps={PT_TUTORIAL_STEPS}>
-      <PigsTailPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PigsTailPage = withTutorial(PigsTailPageContent, 'pigtail', PT_TUTORIAL_STEPS);
 /** Inner content of the Pig's Tail page. */
 function PigsTailPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pigtail');
   const { state, loading, exec: execApi } = useGameApi(pigtailApi.exec);
+  useGameRoundGuard(!!state && !state.gameEndFlag);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pigtail', state);
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const phaseNames = usePhaseNames('pigtail', PIGTAIL_PHASE_KEYS);
 
@@ -124,7 +119,8 @@ function PigsTailPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  if (!state) return <PigsTailSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="pigtail" layout={{ kind: 'centered', rows: [2], shape: 'circle', bars: 4 }} />;
 
   const isGameEnd = state.gameEndFlag;
   const isHumanTurn = !isGameEnd && state.players[state.currentTurn]?.isHuman === true;
@@ -132,7 +128,7 @@ function PigsTailPageContent() {
   const loserIsHuman = isGameEnd && state.loserIdx >= 0 && state.players[state.loserIdx]?.isHuman === true;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pigtail.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.pigtail')} />
       <PhaseIndicator phaseName={currentPhaseName ?? ''}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -223,7 +219,7 @@ function PigsTailPageContent() {
 
           {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
-          <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+          <GameFooter className={`${gameTheme.pigtail.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center items-center flex-wrap">
               <label className="flex items-center gap-1 text-ds-text-primary text-xs">
                 <input

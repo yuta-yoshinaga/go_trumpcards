@@ -11,7 +11,14 @@ define build_worker
 	@echo "Building worker: $(1)"
 	@mkdir -p workers/$(1)/build
 	$(ASSETS_GEN) -mode=tinygo -o workers/$(1)/build
-	$(TINYGO) build -o workers/$(1)/build/app.wasm -target wasm -no-debug -opt=z ./cmd/workers/$(1)
+	# -stack-size=128KB: TinyGo's default 16KB main stack overflows when
+	# encoding/json walks the deep MarshalJSON chain produced by the
+	# Player → GamePlayer → RankedGamePlayer → SevensPlayer (etc.) embedded
+	# pointer hierarchy. 64KB was still insufficient for Sevens Reset →
+	# runCpuTurns → Output on staging, so we bump to 128KB. The flag only
+	# reserves linear memory at runtime (binary stays well under the
+	# Cloudflare Workers free-tier 1MB gzipped limit).
+	$(TINYGO) build -o workers/$(1)/build/app.wasm -target wasm -stack-size=128KB -no-debug -opt=z ./cmd/workers/$(1)
 	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz workers/$(1)/build/app.wasm -o workers/$(1)/build/app.wasm
 	@RAW=$$(stat -c%s workers/$(1)/build/app.wasm); GZIP=$$(gzip -c workers/$(1)/build/app.wasm | wc -c); \
 	echo "  $(1): $$RAW bytes raw, $$GZIP bytes gzip"

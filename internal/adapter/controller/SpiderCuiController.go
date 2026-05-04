@@ -10,6 +10,19 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// spiderNoArgCommands maps no-arg CUI commands to Spider interactor methods.
+var spiderNoArgCommands = cuiutil.NewCommandMap[usecase.SpiderInteractorIF]().
+	Add(usecase.SpiderInteractorIF.Deal, "d", "deal").
+	Add(usecase.SpiderInteractorIF.GiveUp, "g", "giveup").
+	Add(usecase.SpiderInteractorIF.AutoComplete, "ac", "autocomplete").
+	Add(usecase.SpiderInteractorIF.Undo, "u", "undo").
+	Add(usecase.SpiderInteractorIF.Hint, "h", "hint").
+	Add(usecase.SpiderInteractorIF.ActionLog, "log", "l")
+
+// spiderArgfulCommands lists alias names for argful commands handled in the
+// Exec switch.
+var spiderArgfulCommands = []string{"m", "move"}
+
 // SpiderCuiController スパイダーソリティアCUIコントローラークラス
 type SpiderCuiController struct {
 	si usecase.SpiderInteractorIF
@@ -33,21 +46,16 @@ func (c *SpiderCuiController) Exec(command string) string {
 			}
 			return c.si.Reset()
 		},
-		[]string{"d", "deal", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
+		append(spiderNoArgCommands.Names(), spiderArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := spiderNoArgCommands.Lookup(cmd); ok {
+				return fn(c.si), true
+			}
 			switch cmd {
-			case "d", "deal":
-				return c.si.Deal(), true
 			case "m", "move":
 				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.si.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.si.AutoComplete(), true
-			case "u", "undo":
-				return c.si.Undo(), true
 			default:
-				return handleCuiHintAndLog(cmd, c.si.Hint, c.si.ActionLog)
+				return "", false
 			}
 		},
 	)

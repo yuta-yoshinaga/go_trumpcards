@@ -11,6 +11,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestSetAutoConfirm(t *testing.T) {
@@ -44,6 +46,57 @@ func TestExec_AlreadyLatest(t *testing.T) {
 	err := u.Exec()
 	require.NoError(t, err)
 	assert.Contains(t, out.String(), "v1.2.3")
+}
+
+// TestExec_PrintsCheckingLatest verifies issue #1606: a one-line "checking
+// latest release..." message goes to stderr before the GitHub API call so the
+// user knows the binary is alive during the up-to-60s HTTP timeout. Quiet
+// mode (SetQuiet(true)) must suppress it.
+//
+// The expected message is read from i18n.T("updateCheckingLatest") rather
+// than a hardcoded literal so the test follows the translation if the key's
+// value is ever revised (PR #1625 review feedback).
+func TestExec_PrintsCheckingLatest(t *testing.T) {
+	release := ghRelease{TagName: "v1.2.3"}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(release)
+	}))
+	defer srv.Close()
+
+	wantMsg := i18n.T("updateCheckingLatest")
+	require.NotEmpty(t, wantMsg, "translation key updateCheckingLatest must resolve to a non-empty string")
+
+	t.Run("default emits message to stderr", func(t *testing.T) {
+		errOut := &bytes.Buffer{}
+		u := &Updater{
+			currentVersion: "1.2.3",
+			repoOwner:      "test",
+			repoName:       "test",
+			reader:         strings.NewReader(""),
+			writer:         &bytes.Buffer{},
+			errWriter:      errOut,
+			httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+		}
+		require.NoError(t, u.Exec())
+		assert.Contains(t, errOut.String(), wantMsg, "checking-latest message missing from stderr")
+	})
+
+	t.Run("SetQuiet(true) suppresses message", func(t *testing.T) {
+		errOut := &bytes.Buffer{}
+		u := &Updater{
+			currentVersion: "1.2.3",
+			repoOwner:      "test",
+			repoName:       "test",
+			reader:         strings.NewReader(""),
+			writer:         &bytes.Buffer{},
+			errWriter:      errOut,
+			httpClient:     &http.Client{Transport: &rewriteTransport{base: srv.Client().Transport, url: srv.URL}},
+		}
+		u.SetQuiet(true)
+		require.NoError(t, u.Exec())
+		assert.NotContains(t, errOut.String(), wantMsg, "checking-latest message must be suppressed in quiet mode")
+	})
 }
 
 // TestExec_UserCancels_Default verifies the default behavior (kept for

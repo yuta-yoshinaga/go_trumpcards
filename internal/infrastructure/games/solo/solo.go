@@ -126,6 +126,14 @@ func init() {
 			return usecase.RestoreYukonInteractor(data, new(presenter.YukonWebPresenter))
 		},
 		controller.NewYukonWebControllerWithProvider)
+	games.RegisterKVGame("russiansolitaire", games.CategorySolo,
+		func() usecase.RussianSolitaireInteractorIF {
+			return usecase.NewRussianSolitaireInteractor(domain.NewDefaultRussianSolitaire(), new(presenter.RussianSolitaireWebPresenter))
+		},
+		func(data []byte) (usecase.RussianSolitaireInteractorIF, error) {
+			return usecase.RestoreRussianSolitaireInteractor(data, new(presenter.RussianSolitaireWebPresenter))
+		},
+		controller.NewRussianSolitaireWebControllerWithProvider)
 	games.RegisterKVGame("pokersquares", games.CategorySolo,
 		func() usecase.PokerSquaresInteractorIF {
 			return usecase.NewPokerSquaresInteractor(domain.NewDefaultPokerSquares(), new(presenter.PokerSquaresWebPresenter))

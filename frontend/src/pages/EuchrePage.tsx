@@ -15,10 +15,10 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { EuchreSkeleton } from '../components/skeleton/EuchreSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,6 +26,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useEuchreGame } from '../hooks/useEuchreGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -105,14 +106,7 @@ const EUCHRE_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Euchre game page with pick-up, trump calling, trick play, and team scoring. */
-export function EuchrePage() {
-  return (
-    <TutorialWrapper gameName="euchre" steps={EU_TUTORIAL_STEPS}>
-      <EuchrePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const EuchrePage = withTutorial(EuchrePageContent, 'euchre', EU_TUTORIAL_STEPS);
 /** Inner content of the Euchre page, wrapped by TutorialProvider. */
 function EuchrePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -194,7 +188,10 @@ function EuchrePageContent() {
     });
   }, [apiExec, hideActionLog, euchreConfig.cpuDifficulty, euchreConfig.pointLimit]);
 
-  if (!state) return <EuchreSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return <GameSkeleton gameKey="euchre" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanTeam = humanPlayer?.team ?? 0;

@@ -20,9 +20,9 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBadugiGame } from '../hooks/useBadugiGame';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -30,6 +30,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
@@ -79,14 +80,7 @@ const BG_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Badugi (4-card draw lowball) game page. */
-export function BadugiPage() {
-  return (
-    <TutorialWrapper gameName="badugi" steps={BG_TUTORIAL_STEPS}>
-      <BadugiPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const BadugiPage = withTutorial(BadugiPageContent, 'badugi', BG_TUTORIAL_STEPS);
 /** Inner content of the Badugi page, wrapped by TutorialProvider. */
 function BadugiPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -182,10 +176,18 @@ function BadugiPageContent() {
     execAction('reset', undefined, undefined, { bettingLimit, cpuMetaAI });
   }, [execAction, hideActionLog, bettingLimit, cpuMetaAI]);
 
-  if (!state) return <PokerSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="badugi"
+        layout={{ kind: 'community-poker', opponents: 3, opponentCards: 5, footerHandSize: 5 }}
+      />
+    );
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.poker.bg}`} aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.badugi.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.badugi')} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseLabel} isHumanTurn={canAct || canExchange}>
@@ -255,7 +257,7 @@ function BadugiPageContent() {
           </div>
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.poker.footer} px-5 py-3`}>
+          <GameFooter className={`${gameTheme.badugi.footer} px-5 py-3`}>
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="bg-player-hand">

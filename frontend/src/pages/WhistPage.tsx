@@ -13,9 +13,9 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
-import { WhistSkeleton } from '../components/skeleton/WhistSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -85,14 +85,7 @@ const WHIST_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Whist game page with trump suit, trick play, and team scoring. */
-export function WhistPage() {
-  return (
-    <TutorialWrapper gameName="whist" steps={WH_TUTORIAL_STEPS}>
-      <WhistPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const WhistPage = withTutorial(WhistPageContent, 'whist', WH_TUTORIAL_STEPS);
 /** Inner content of the Whist page, wrapped by TutorialProvider. */
 function WhistPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -163,7 +156,8 @@ function WhistPageContent() {
     });
   }, [dispatch, hideActionLog, whistConfig.cpuDifficulty, whistConfig.pointLimit]);
 
-  if (!state) return <WhistSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="whist" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === WhistPhase.PLAY;

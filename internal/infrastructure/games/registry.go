@@ -5,7 +5,7 @@
 // binaries (TinyGo / WASM) stay under the 1 MB gzipped free-tier limit:
 //
 //   - registry.go (this file, no tag)  — types and bare metadata (Name +
-//     Category) for all 73 games. Cheap; no references to game code.
+//     Category) for all 77 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
 //   - casino/, classic/, solo/ (js && wasm) — per-category worker bindings.
@@ -94,6 +94,7 @@ var registry = []*Game{
 	{Name: "doubt", Category: CategoryClassic, Description: "Doubt (ダウト)"},
 	{Name: "holdem", Category: CategoryCasino, Description: "Texas Hold'em (テキサスホールデム)"},
 	{Name: "omaha", Category: CategoryCasino, Description: "Omaha Hold'em (オマハホールデム)"},
+	{Name: "omahahilo", Category: CategoryCasino, Description: "Omaha Hi-Lo / 8 or Better (オマハ ハイロー)"},
 	{Name: "shortdeck", Category: CategoryCasino, Description: "Short Deck (6+ Hold'em) (ショートデック)"},
 	{Name: "pineapple", Category: CategoryCasino, Description: "Pineapple Poker (パイナップルポーカー)"},
 	{Name: "crazypineapple", Category: CategoryCasino, Description: "Crazy Pineapple Poker (クレイジーパイナップル)"},
@@ -136,6 +137,7 @@ var registry = []*Game{
 	{Name: "canfield", Category: CategorySolo, Description: "Canfield Solitaire (キャンフィールド)"},
 	{Name: "fiftyone", Category: CategoryClassic, Description: "Fifty-one (フィフティワン)"},
 	{Name: "yukon", Category: CategorySolo, Description: "Yukon Solitaire (ユーコン)"},
+	{Name: "russiansolitaire", Category: CategorySolo, Description: "Russian Solitaire (ロシアンソリティア)"},
 	{Name: "whist", Category: CategoryClassic, Description: "Whist (ホイスト)"},
 	{Name: "letitride", Category: CategoryCasino, Description: "Let It Ride (レット・イット・ライド)"},
 	{Name: "pokersquares", Category: CategorySolo, Description: "Poker Squares (ポーカー・スクエアズ)"},
@@ -159,6 +161,8 @@ var registry = []*Game{
 	{Name: "egyptianratscrew", Category: CategoryClassic, Description: "Egyptian Ratscrew (エジプシャン・ラットスクリュー)"},
 	{Name: "bakersdozen", Category: CategorySolo, Description: "Baker's Dozen (ベーカーズ・ダズン)"},
 	{Name: "tonk", Category: CategoryClassic, Description: "Tonk (トンク)"},
+	{Name: "casinowar", Category: CategoryCasino, Description: "Casino War (カジノウォー)"},
+	{Name: "pitch", Category: CategoryClassic, Description: "Pitch / Setback (ピッチ / セットバック)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

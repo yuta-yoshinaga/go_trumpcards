@@ -18,15 +18,16 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { PyramidSkeleton } from '../components/skeleton/PyramidSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePyramidGame } from '../hooks/usePyramidGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -74,14 +75,7 @@ const PY_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Pyramid Solitaire game page with pyramid, stock/waste, and controls. */
-export function PyramidPage() {
-  return (
-    <TutorialWrapper gameName="pyramid" steps={PY_TUTORIAL_STEPS}>
-      <PyramidPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PyramidPage = withTutorial(PyramidPageContent, 'pyramid', PY_TUTORIAL_STEPS);
 /** Inner content of the Pyramid page, wrapped by TutorialProvider. */
 function PyramidPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -146,7 +140,10 @@ function PyramidPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
-  if (!state) return <PyramidSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state)
+    return <GameSkeleton gameKey="pyramid" layout={{ kind: 'tiered-rows', rows: [1, 2, 3, 4], stockWaste: true }} />;
 
   const isPlaying = state.phase === PyramidPhase.PLAYING;
   const isGameClear = state.phase === PyramidPhase.GAME_CLEAR;

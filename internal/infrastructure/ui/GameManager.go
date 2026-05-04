@@ -188,6 +188,25 @@ var gameRegistry = []GameRegistryEntry{
 				}, holdemBlindKeys...),
 			})
 	}},
+	{Name: "omahahilo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewOmahaCuiController(usecase.NewOmahaInteractor(
+				domain.NewDefaultOmahaHiLo(), new(presenter.OmahaCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "omahahilo.helpTitle",
+				CommandKeys: append([]string{
+					"omaha.helpFold",
+					"omaha.helpCheck",
+					"omaha.helpCall",
+					"omaha.helpBet",
+					"omaha.helpRaise",
+					"omaha.helpAllIn",
+				}, tournamentRebuyAddOnKeys...),
+				SettingKeys: append([]string{
+					"omaha.helpBettingLimit", "omaha.helpTournament",
+				}, holdemBlindKeys...),
+			})
+	}},
 	{Name: "shortdeck", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewShortDeckCuiController(usecase.NewShortDeckInteractor(
@@ -812,6 +831,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  l                        action log"},
 			})
 	}},
+	{Name: "russiansolitaire", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewRussianSolitaireCuiController(usecase.NewRussianSolitaireInteractor(
+				domain.NewDefaultRussianSolitaire(), new(presenter.RussianSolitaireCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "russiansolitaire.helpTitle",
+				CommandKeys: []string{
+					"russiansolitaire.helpMove",
+					"russiansolitaire.helpMoveTF",
+					"russiansolitaire.helpMoveTT",
+					"russiansolitaire.helpGiveUp",
+					"russiansolitaire.helpHint",
+					"russiansolitaire.helpAutoComplete",
+				},
+				ExtraCommandLines: []string{"  l                        action log"},
+			})
+	}},
 	{Name: "whist", NewCui: func() cuiGame {
 		return cuiEntry(
 			controller.NewWhistCuiController(usecase.NewWhistInteractor(
@@ -1188,6 +1224,27 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"tonk.helpSetDifficulty", "tonk.helpSetLimit"},
 			})
 	}},
+	{Name: "casinowar", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewCasinoWarCuiController(usecase.NewCasinoWarInteractor(
+				domain.NewDefaultCasinoWar(), new(presenter.CasinoWarCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "casinowar.helpTitle",
+				CommandKeys:       []string{"casinowar.helpBet", "casinowar.helpSurrender", "casinowar.helpWar"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
+	{Name: "pitch", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewPitchCuiController(usecase.NewPitchInteractor(
+				domain.NewDefaultPitch(), new(presenter.PitchCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "pitch.helpTitle",
+				CommandKeys:       []string{"pitch.helpBid", "pitch.helpPlay", "pitch.helpNext", "pitch.helpNextRound"},
+				ExtraCommandLines: []string{"  l                    action log"},
+				SettingKeys:       []string{"pitch.helpSetDifficulty", "pitch.helpSetLimit"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
@@ -1335,7 +1392,7 @@ func (m *GameManager) switchGame(name string) string {
 	}
 	if _, ok := m.games[name]; !ok {
 		msg := i18n.Tf("unknownGame", "name", name)
-		if suggestion := cuiutil.SuggestCommand(name, m.gameOrder, 2); suggestion != "" {
+		if suggestion := cuiutil.SuggestCommand(name, m.suggestionCandidates(), 2); suggestion != "" {
 			msg += "\n  " + i18n.Tf("didYouMean", "name", suggestion)
 		}
 		return i18n.MarkError(msg)
@@ -1350,6 +1407,55 @@ func (m *GameManager) switchGame(name string) string {
 		return msg + "\n" + initMsg
 	}
 	return msg
+}
+
+// CompletionCandidates returns the manager-level commands valid as a first
+// token: `switch` and `games`. Bare game names are intentionally NOT
+// returned here because they aren't standalone commands — the manager's Exec
+// would forward `blackjack` to the active controller, which would reject it.
+// Game names are reachable via tab-completion as the second token of
+// `switch` (see ArgumentCandidates). Issue #1608.
+func (m *GameManager) CompletionCandidates() []string {
+	return []string{"switch", "games"}
+}
+
+// ArgumentCandidates returns valid completions for the token after cmd. For
+// `switch`, that's the canonical game name + alias set, so `switch bla<Tab>`
+// expands to `blackjack`. Returns nil for any other command since the
+// manager has no other argful commands at this layer (`help`, `?`, `q`,
+// `r`, `games` are all nullary). Issue #1608.
+func (m *GameManager) ArgumentCandidates(cmd string) []string {
+	if cmd == "switch" {
+		return m.suggestionCandidates()
+	}
+	return nil
+}
+
+// suggestionCandidates returns the deduplicated set of canonical game names
+// and aliases for "did you mean" suggestions on `switch <typo>`. Mirrors the
+// helper in cmd/trumpcards/main.go added in #1555 so a typo of an alias (e.g.
+// "gni" for "gin") recovers the alias in interactive mode the same way it does
+// at the top-level CLI. The local `add` closure matches the style used by
+// helpSuggestionCandidates / suggestionCandidates(commands) in main.go so
+// future readers see one dedup pattern instead of two. See issues #1602, #1625.
+func (m *GameManager) suggestionCandidates() []string {
+	capacity := len(m.gameOrder) + len(GameAliases)
+	seen := make(map[string]struct{}, capacity)
+	out := make([]string, 0, capacity)
+	add := func(name string) {
+		if _, ok := seen[name]; ok {
+			return
+		}
+		seen[name] = struct{}{}
+		out = append(out, name)
+	}
+	for _, n := range m.gameOrder {
+		add(n)
+	}
+	for alias := range GameAliases {
+		add(alias)
+	}
+	return out
 }
 
 func (m *GameManager) listGames() string {

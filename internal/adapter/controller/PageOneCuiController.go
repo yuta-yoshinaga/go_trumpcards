@@ -8,6 +8,21 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// pageOneNoArgCommands maps no-arg CUI commands to PageOne interactor methods.
+var pageOneNoArgCommands = cuiutil.NewCommandMap[usecase.PageOneInteractorIF]().
+	Add(usecase.PageOneInteractorIF.Draw, "d", "draw").
+	Add(usecase.PageOneInteractorIF.Declare, "dc", "declare").
+	Add(usecase.PageOneInteractorIF.SkipDeclare, "sk", "skip").
+	Add(usecase.PageOneInteractorIF.NextRound, "nr", "nextround").
+	Add(usecase.PageOneInteractorIF.ActionLog, "log", "l")
+
+// pageOneArgfulCommands lists alias names for argful commands handled in the
+// Exec switch.
+var pageOneArgfulCommands = []string{
+	"p", "play",
+	"sd", "setdifficulty", "sl", "setlimit",
+}
+
 // PageOneCuiController ページワンCUIコントローラークラス
 type PageOneCuiController struct {
 	ci usecase.PageOneInteractorIF
@@ -26,24 +41,14 @@ func (c *PageOneCuiController) Exec(command string) string {
 			cfg := c.ci.GetConfig()
 			return c.ci.ResetWithConfig(cfg)
 		},
-		[]string{
-			"p", "play", "d", "draw",
-			"dc", "declare", "sk", "skip",
-			"nr", "nextround",
-			"sd", "setdifficulty", "sl", "setlimit", "log", "l",
-		},
+		append(pageOneNoArgCommands.Names(), pageOneArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := pageOneNoArgCommands.Lookup(cmd); ok {
+				return fn(c.ci), true
+			}
 			switch cmd {
 			case "p", "play":
 				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Play)
-			case "d", "draw":
-				return c.ci.Draw(), true
-			case "dc", "declare":
-				return c.ci.Declare(), true
-			case "sk", "skip":
-				return c.ci.SkipDeclare(), true
-			case "nr", "nextround":
-				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
 				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
 					cfg := c.ci.GetConfig()
@@ -57,7 +62,7 @@ func (c *PageOneCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return "", false
 			}
 		},
 	)

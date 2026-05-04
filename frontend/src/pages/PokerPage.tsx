@@ -21,15 +21,16 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
-import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { useSound } from '../providers/SoundProvider';
@@ -89,14 +90,7 @@ const PK_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the 5-card Draw Poker game page with betting and card exchange. */
-export function PokerPage() {
-  return (
-    <TutorialWrapper gameName="poker" steps={PK_TUTORIAL_STEPS}>
-      <PokerPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PokerPage = withTutorial(PokerPageContent, 'poker', PK_TUTORIAL_STEPS);
 /** Inner content of the Poker page, wrapped by TutorialProvider. */
 function PokerPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -186,7 +180,15 @@ function PokerPageContent() {
     enabled: canExchange,
   });
 
-  if (!state) return <PokerSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="poker"
+        layout={{ kind: 'community-poker', opponents: 3, opponentCards: 5, footerHandSize: 5 }}
+      />
+    );
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.poker.bg}`} aria-busy={loading}>

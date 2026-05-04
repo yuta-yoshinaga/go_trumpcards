@@ -1,12 +1,17 @@
 import { useCardDimensions } from '../../hooks/useCardDimensions';
-import { GameSkeleton } from './GameSkeleton';
 import { SkeletonHand } from './SkeletonHand';
+import { SkeletonShell } from './SkeletonShell';
 
-/** Renders a loading skeleton placeholder for the Speed page. */
+/**
+ * Loading skeleton placeholder for the Speed page. Speed is the lone bespoke
+ * skeleton — it does not use a `gameTheme` background (the page renders on
+ * `bg-ds-surface`), and its three-section layout (CPU hand top, center piles,
+ * player hand bottom) does not match any unified `GameSkeleton` layout variant.
+ */
 export function SpeedSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();
   return (
-    <GameSkeleton
+    <SkeletonShell
       bgClass="bg-ds-surface"
       footerClassName="border-white/20 px-4 py-2.5"
       footer={<div className="h-8 w-32 rounded bg-white/10 animate-pulse" />}
@@ -32,6 +37,6 @@ export function SpeedSkeleton() {
         <div className="h-4 w-24 rounded bg-white/10 animate-pulse" />
         <SkeletonHand cardWidth={cardWidth} cardHeight={cardHeight} count={4} />
       </div>
-    </GameSkeleton>
+    </SkeletonShell>
   );
 }

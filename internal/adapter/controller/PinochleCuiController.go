@@ -8,6 +8,22 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// pinochleNoArgCommands maps no-arg CUI commands to Pinochle interactor methods.
+var pinochleNoArgCommands = cuiutil.NewCommandMap[usecase.PinochleInteractorIF]().
+	Add(usecase.PinochleInteractorIF.Pass, "pa", "pass").
+	Add(usecase.PinochleInteractorIF.ConfirmMelds, "m", "meld").
+	Add(usecase.PinochleInteractorIF.NextTrick, "n", "next").
+	Add(usecase.PinochleInteractorIF.NextRound, "nr", "nextround").
+	Add(usecase.PinochleInteractorIF.Hint, "h", "hint").
+	Add(usecase.PinochleInteractorIF.ActionLog, "log", "l")
+
+// pinochleArgfulCommands lists alias names for argful commands handled in the
+// Exec switch.
+var pinochleArgfulCommands = []string{
+	"b", "bid", "t", "trump", "p", "play",
+	"sd", "setdifficulty", "sl", "setlimit",
+}
+
 // PinochleCuiController ピノクルCUIコントローラークラス
 type PinochleCuiController struct {
 	pi usecase.PinochleInteractorIF
@@ -41,30 +57,18 @@ func (c *PinochleCuiController) Exec(command string) string {
 			cfg := c.pi.GetConfig()
 			return c.pi.ResetWithConfig(cfg)
 		},
-		[]string{
-			"b", "bid", "pa", "pass",
-			"t", "trump", "m", "meld",
-			"p", "play", "n", "next",
-			"nr", "nextround",
-			"sd", "setdifficulty", "sl", "setlimit",
-			"h", "hint", "log", "l",
-		},
+		append(pinochleNoArgCommands.Names(), pinochleArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := pinochleNoArgCommands.Lookup(cmd); ok {
+				return fn(c.pi), true
+			}
 			switch cmd {
 			case "b", "bid":
 				return cuiutil.WithParsedInt(args, "Bid amount is required.", "Invalid bid amount: %s.", domain.PinochleMinBid, math.MaxInt, c.pi.Bid)
-			case "pa", "pass":
-				return c.pi.Pass(), true
 			case "t", "trump":
 				return cuiutil.WithParsedInt(args, "Suit is required (1-4).", "Invalid suit: %s.", 1, 4, c.pi.CallTrump)
-			case "m", "meld":
-				return c.pi.ConfirmMelds(), true
 			case "p", "play":
 				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.pi.Play)
-			case "n", "next":
-				return c.pi.NextTrick(), true
-			case "nr", "nextround":
-				return c.pi.NextRound(), true
 			case "sd", "setdifficulty":
 				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
 					cfg := c.pi.GetConfig()
@@ -77,10 +81,6 @@ func (c *PinochleCuiController) Exec(command string) string {
 					cfg.PointLimit = v
 					return c.pi.ResetWithConfig(cfg)
 				})
-			case "h", "hint":
-				return c.pi.Hint(), true
-			case "log", "l":
-				return c.pi.ActionLog(), true
 			default:
 				return "", false
 			}

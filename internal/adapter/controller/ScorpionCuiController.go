@@ -9,6 +9,19 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// scorpionNoArgCommands maps no-arg CUI commands to Scorpion interactor methods.
+var scorpionNoArgCommands = cuiutil.NewCommandMap[usecase.ScorpionInteractorIF]().
+	Add(usecase.ScorpionInteractorIF.Deal, "d", "deal").
+	Add(usecase.ScorpionInteractorIF.GiveUp, "g", "giveup").
+	Add(usecase.ScorpionInteractorIF.AutoComplete, "ac", "autocomplete").
+	Add(usecase.ScorpionInteractorIF.Undo, "u", "undo").
+	Add(usecase.ScorpionInteractorIF.Hint, "h", "hint").
+	Add(usecase.ScorpionInteractorIF.ActionLog, "log", "l")
+
+// scorpionArgfulCommands lists alias names for argful commands handled in the
+// Exec switch.
+var scorpionArgfulCommands = []string{"m", "move"}
+
 // ScorpionCuiController スコーピオンCUIコントローラークラス
 type ScorpionCuiController struct {
 	si usecase.ScorpionInteractorIF
@@ -24,21 +37,16 @@ func (c *ScorpionCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.si.Reset() },
-		[]string{"d", "deal", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
+		append(scorpionNoArgCommands.Names(), scorpionArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := scorpionNoArgCommands.Lookup(cmd); ok {
+				return fn(c.si), true
+			}
 			switch cmd {
-			case "d", "deal":
-				return c.si.Deal(), true
 			case "m", "move":
 				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.si.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.si.AutoComplete(), true
-			case "u", "undo":
-				return c.si.Undo(), true
 			default:
-				return handleCuiHintAndLog(cmd, c.si.Hint, c.si.ActionLog)
+				return "", false
 			}
 		},
 	)

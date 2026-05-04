@@ -19,15 +19,16 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
@@ -86,14 +87,7 @@ const KL_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Klondike solitaire game page with tableau, stock/waste, and foundation. */
-export function KlondikePage() {
-  return (
-    <TutorialWrapper gameName="klondike" steps={KL_TUTORIAL_STEPS}>
-      <KlondikePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const KlondikePage = withTutorial(KlondikePageContent, 'klondike', KL_TUTORIAL_STEPS);
 /** Inner content of the Klondike page, wrapped by TutorialProvider. */
 function KlondikePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -199,7 +193,9 @@ function KlondikePageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
-  if (!state) return <KlondikeSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state) return <GameSkeleton gameKey="klondike" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
 
   const isPlaying = state.phase === KlondikePhase.PLAYING;
   const isGameClear = state.phase === KlondikePhase.GAME_CLEAR;

@@ -9,12 +9,13 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, NertzPlayerData, NertzResponse, NertzTableauCard } from '../types/card';
@@ -43,14 +44,8 @@ const NERTZ_TUTORIAL_STEPS: TutorialStep[] = [
 
 type Selection = { kind: 'nertz' } | { kind: 'waste' } | { kind: 'tableau'; col: number; cardIndex: number } | null;
 
-/** Renders the Nertz / Pounce page wrapped in TutorialWrapper. */
-export function NertzPage() {
-  return (
-    <TutorialWrapper gameName="nertz" steps={NERTZ_TUTORIAL_STEPS}>
-      <NertzPageContent />
-    </TutorialWrapper>
-  );
-}
+/** Renders the Nertz / Pounce game page. */
+export const NertzPage = withTutorial(NertzPageContent, 'nertz', NERTZ_TUTORIAL_STEPS);
 
 function NertzPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -79,9 +74,7 @@ function NertzPageContent() {
 
   const [selection, setSelection] = useState<Selection>(null);
 
-  useEffect(() => {
-    void apiCall('reset');
-  }, [apiCall]);
+  useMountReset(apiCall);
 
   // CPU tick driver: while the round is active, periodically advance CPUs.
   useEffect(() => {

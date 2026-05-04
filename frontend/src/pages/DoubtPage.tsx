@@ -18,9 +18,9 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { DoubtSkeleton } from '../components/skeleton/DoubtSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCardSwipeSelection } from '../hooks/useCardSwipeSelection';
@@ -35,6 +35,7 @@ import {
 } from '../hooks/useDoubtGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, focusRingAccent } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -89,14 +90,7 @@ const DT_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Doubt game page with card play, doubt window countdown, and config. */
-export function DoubtPage() {
-  return (
-    <TutorialWrapper gameName="doubt" steps={DT_TUTORIAL_STEPS}>
-      <DoubtPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const DoubtPage = withTutorial(DoubtPageContent, 'doubt', DT_TUTORIAL_STEPS);
 /** Inner content of the Doubt page, wrapped by TutorialProvider. */
 function DoubtPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -220,7 +214,23 @@ function DoubtPageContent() {
     void exec('reset', undefined, undefined, undefined, doubtConfig);
   }, [exec, hideActionLog, doubtConfig]);
 
-  if (!state) return <DoubtSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="doubt"
+        layout={{
+          kind: 'trick-taking',
+          titleBar: false,
+          opponents: 3,
+          opponentStyle: 'hand',
+          opponentHandSize: 4,
+          trickArea: true,
+          footerHandSize: 5,
+        }}
+      />
+    );
 
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const isDoubtPhase = state.phase === DoubtPhase.DOUBT;

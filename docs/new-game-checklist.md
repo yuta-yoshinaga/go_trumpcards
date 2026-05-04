@@ -12,7 +12,7 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 6. **Infrastructure**: Register in `cmd/trumpcards/main.go` (CLI) and add four entries for the new game:
    - **(a)** `{Name: "<name>", Category: Category…}` in the `registry` slice in `internal/infrastructure/games/registry.go`. `Category` pins the game to one Cloudflare Worker (casino = table/poker, classic = trick-taking/matching, solo = solitaire/rummy).
    - **(b)** `BindWebController("<name>", …)` in `internal/infrastructure/games/games_server.go` — wires the HTTP server factory.
-   - **(c)** `games.BindWorker("<name>", games.Category…, …)` in the matching sub-package under `internal/infrastructure/games/{casino,classic,solo}/` — the per-category split is what keeps each Cloudflare Worker WASM binary under the 1 MB gzipped free-tier limit, so the sub-package must match the `Category` in (a). `games.BindWorker` panics at init if they disagree.
+   - **(c)** `games.RegisterKVGame("<name>", games.Category…, …)` in the matching sub-package under `internal/infrastructure/games/{casino,classic,solo}/` — the per-category split is what keeps each Cloudflare Worker WASM binary under the 1 MB gzipped free-tier limit, so the sub-package must match the `Category` in (a). `RegisterKVGame` panics at init if they disagree (via the underlying `games.BindWorker`), and `TestWorkerRegistrationsCoverAllGames` (in `registry_worker_consistency_test.go`) parses each sub-package source with `go/parser` and fails the build if the registry and a category's `RegisterKVGame` calls disagree (per ADR-0031, option 3).
    - **(d)** `GameRegistryEntry` entry in the `gameRegistry` slice in `internal/infrastructure/ui/GameManager.go` — the CLI-side wiring. Always use the `cuiEntry` helper with a `CuiHelpSpec`. For the standard help template, fill in `TitleKey`/`CommandKeys`/`SettingKeys`; for hand-authored help that does not fit the scaffold, set `CuiHelpSpec.Body` to the full help lines.
 6b. **Frontend worker URL**: verify `frontend/src/api/gameApi.ts` `workerUrl` maps the new game to the same worker name as its `Category`.
 7. **Run `goimports -w` and `golangci-lint run ./...`** on all new files
@@ -20,8 +20,8 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 
 ## Frontend (React)
 
-9. **Page**: `frontend/src/pages/<Game>Page.tsx` with test file, reuse `useGamePageSetup` hook, `usePhaseNames`, `gameReplay`, `useCardDimensions`, `gameExec` API helper
-10. **Shared components**: Use `PhaseIndicator`, `SettingsPanel`, `ConfirmDialog`, `ActionLogSection`, `GameFooter`, `GameMessageBox`, `AnimatedCardBack`, `ErrorBoundary`
+9. **Page**: `frontend/src/pages/<Game>Page.tsx` with test file, reuse `useGamePageSetup` hook, `usePhaseNames`, `gameReplay`, `useCardDimensions`, `gameExec` API helper. Add `useGameRoundGuard(!!state && !state.gameEndFlag)` so accidental tab close / reload during a round triggers the browser leave warning (pages using `GamePageShell` get this for free; otherwise call the hook directly).
+10. **Shared components**: Use `PhaseIndicator`, `SettingsPanel`, `ConfirmDialog`, `ActionLogSection`, `GameFooter`, `GameMessageBox`, `AnimatedCardBack`, `ErrorBoundary`. Add a `GameKey` entry in `frontend/src/styles/gameTheme.ts` and reference `gameTheme.<key>` (do not reuse another game's key; the strict union type catches missing entries at compile time).
 11. **CLI mode**: Wire `useCliMode`, `useCliGame`, `CliToggle`, and `CliTerminal` in the page. At minimum add a stub config (`parseCommand` returns error, empty `helpText`). Place `CliToggle` inside `PhaseIndicator` and wrap GUI content with `{cliEnabled ? <CliTerminal .../> : <>{/* GUI */}</>}`
 12. **i18n**: Add `frontend/src/i18n/locales/{ja,en}/<game>.json` translation files (include `tutorial` keys if tutorial is added)
 13. **Router**: Add route in `frontend/src/App.tsx` and NavBar entry in `frontend/src/constants/gameRoutes.ts`
@@ -64,6 +64,6 @@ Run through this cross-check for the new `<game>`:
 - [ ] `<Game>Page.tsx` is wrapped in `<TutorialWrapper>` and surfaces `TutorialButton` + `HintToggle`
 - [ ] `internal/infrastructure/games/registry.go` has a `{Name, Category}` entry for `<game>`
 - [ ] `internal/infrastructure/games/games_server.go` has a matching `BindWebController("<game>", ...)` call
-- [ ] `internal/infrastructure/games/<category>/<category>.go` has a matching `games.BindWorker("<game>", games.Category…, ...)` call in the correct category sub-package
+- [ ] `internal/infrastructure/games/<category>/<category>.go` has a matching `games.RegisterKVGame("<game>", games.Category…, ...)` call in the correct category sub-package
 - [ ] `internal/infrastructure/ui/GameManager.go` `gameRegistry` has a matching `GameRegistryEntry` for `<game>` (CLI wiring)
 - [ ] `frontend/src/api/gameApi.ts` `workerUrl` maps `<game>` to the worker matching that `Category`

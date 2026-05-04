@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { type ScorpionMoveZone, scorpionApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -19,9 +19,9 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -29,6 +29,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -148,14 +150,7 @@ function formatScorpionState(state: ScorpionResponse): string {
 }
 
 /** Renders the Scorpion solitaire game page. */
-export function ScorpionPage() {
-  return (
-    <TutorialWrapper gameName="scorpion" steps={SC_TUTORIAL_STEPS}>
-      <ScorpionPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const ScorpionPage = withTutorial(ScorpionPageContent, 'scorpion', SC_TUTORIAL_STEPS);
 /** Inner content of the Scorpion page. */
 function ScorpionPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -169,9 +164,7 @@ function ScorpionPageContent() {
     retry,
   } = useGameApi<ScorpionResponse, Parameters<typeof scorpionApi.exec>>((...args) => scorpionApi.exec(...args));
 
-  useEffect(() => {
-    void apiCall('reset');
-  }, [apiCall]);
+  useMountReset(apiCall);
 
   const [selectedSource, setSelectedSource] = useState<ScorpionMoveZone | null>(null);
 
@@ -297,9 +290,11 @@ function ScorpionPageContent() {
     bindings: actionBindings,
     enabled: !!isPlayingForKbd && !loading,
   });
+  useGameRoundGuard(isGameRoundActive(state));
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
-  if (!state) return <KlondikeSkeleton />;
+
+  if (!state) return <GameSkeleton gameKey="scorpion" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
 
   const isPlaying = state.phase === ScorpionPhase.PLAYING;
   const isGameClear = state.phase === ScorpionPhase.GAME_CLEAR;
@@ -313,7 +308,7 @@ function ScorpionPageContent() {
     selectedSource.cardIndex === cardIndex;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.klondike.bg}`} aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.scorpion.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.scorpion')} />
       <PhaseIndicator
         phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}

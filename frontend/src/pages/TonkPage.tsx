@@ -15,15 +15,16 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { TonkSkeleton } from '../components/skeleton/TonkSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTonkGame } from '../hooks/useTonkGame';
 import { useSound } from '../providers/SoundProvider';
@@ -83,14 +84,7 @@ const TONK_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Tonk game page with draw, discard, and knock phases. */
-export function TonkPage() {
-  return (
-    <TutorialWrapper gameName="tonk" steps={TONK_TUTORIAL_STEPS}>
-      <TonkPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const TonkPage = withTutorial(TonkPageContent, 'tonk', TONK_TUTORIAL_STEPS);
 /** Inner content of the Tonk page, wrapped by TutorialProvider. */
 function TonkPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -159,7 +153,15 @@ function TonkPageContent() {
     });
   }, [gameExec, hideActionLog, tonkConfig.cpuDifficulty, tonkConfig.pointLimit]);
 
-  if (!state) return <TonkSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="tonk"
+        layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, footerHandSize: 5 }}
+      />
+    );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDrawPhase = state.phase === TonkPhase.DRAW;

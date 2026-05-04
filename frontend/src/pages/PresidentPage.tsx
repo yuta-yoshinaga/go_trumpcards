@@ -15,13 +15,15 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePresidentGame } from '../hooks/usePresidentGame';
+import { gameTheme } from '../styles/gameTheme';
 import type { PresidentResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import {
@@ -75,14 +77,7 @@ const PRESIDENT_RANK_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the President (プレジデント) game page. */
-export function PresidentPage() {
-  return (
-    <TutorialWrapper gameName="president" steps={PR_TUTORIAL_STEPS}>
-      <PresidentPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PresidentPage = withTutorial(PresidentPageContent, 'president', PR_TUTORIAL_STEPS);
 function PresidentPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('president');
@@ -122,9 +117,11 @@ function PresidentPageContent() {
 
   const onReset = useCallback(() => handleResetWithConfig(), [handleResetWithConfig]);
 
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
   if (!state || state.players.length < 4) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-game-bg-green text-ds-text-muted" aria-busy>
+      <div className={`flex-1 flex items-center justify-center ${gameTheme.president.bg} text-ds-text-muted`} aria-busy>
         {tc('common.loading')}
       </div>
     );
@@ -138,7 +135,7 @@ function PresidentPageContent() {
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.president.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.president')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -276,7 +273,7 @@ function PresidentPageContent() {
             ]}
           />
 
-          <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+          <GameFooter className={`${gameTheme.president.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="pr-play-pass">
               <button
                 type="button"

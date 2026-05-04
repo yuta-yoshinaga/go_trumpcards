@@ -16,7 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCanastaGame } from '../hooks/useCanastaGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -24,6 +24,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -61,14 +62,7 @@ const CA_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Canasta game page. */
-export function CanastaPage() {
-  return (
-    <TutorialWrapper gameName="canasta" steps={CA_TUTORIAL_STEPS}>
-      <CanastaPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const CanastaPage = withTutorial(CanastaPageContent, 'canasta', CA_TUTORIAL_STEPS);
 /** Inner content of the Canasta page. */
 function CanastaPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -145,6 +139,8 @@ function CanastaPageContent() {
     onClear: clearSelection,
     enabled: !!isHumanTurn && !loading,
   });
+
+  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) {
     return (

@@ -15,9 +15,9 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { CrazyEightsSkeleton } from '../components/skeleton/CrazyEightsSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -25,6 +25,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCrazyEightsGame } from '../hooks/useCrazyEightsGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -91,14 +92,7 @@ const CE_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Crazy Eights game page with card play and suit selection. */
-export function CrazyEightsPage() {
-  return (
-    <TutorialWrapper gameName="crazyeights" steps={CE_TUTORIAL_STEPS}>
-      <CrazyEightsPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const CrazyEightsPage = withTutorial(CrazyEightsPageContent, 'crazyeights', CE_TUTORIAL_STEPS);
 /** Inner content of the Crazy Eights page, wrapped by TutorialProvider. */
 function CrazyEightsPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -165,7 +159,15 @@ function CrazyEightsPageContent() {
 
   const phaseNames = usePhaseNames('crazyeights', CRAZYEIGHTS_PHASE_KEYS);
 
-  if (!state) return <CrazyEightsSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="crazyeights"
+        layout={{ kind: 'trick-taking', centerCard: true, trickArea: true, footerHandSize: 5 }}
+      />
+    );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === CrazyEightsPhase.PLAY;

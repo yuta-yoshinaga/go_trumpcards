@@ -297,3 +297,9 @@ func (_m *MockOmahaGame) GetPotOdds() float64 {
 	ret := _m.Called()
 	return ret.Get(0).(float64)
 }
+
+// GetIsHiLo モック
+func (_m *MockOmahaGame) GetIsHiLo() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}

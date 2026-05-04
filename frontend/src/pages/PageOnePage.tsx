@@ -15,15 +15,16 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { PageOneSkeleton } from '../components/skeleton/PageOneSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePageOneGame } from '../hooks/usePageOneGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -72,14 +73,7 @@ const PAGEONE_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Page One game page with card play and declaration mechanic. */
-export function PageOnePage() {
-  return (
-    <TutorialWrapper gameName="pageone" steps={PAGEONE_TUTORIAL_STEPS}>
-      <PageOnePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PageOnePage = withTutorial(PageOnePageContent, 'pageone', PAGEONE_TUTORIAL_STEPS);
 /** Inner content of the Page One page, wrapped by TutorialProvider. */
 function PageOnePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -146,7 +140,15 @@ function PageOnePageContent() {
     });
   }, [gameCall, hideActionLog, pageOneConfig.cpuDifficulty, pageOneConfig.pointLimit]);
 
-  if (!state) return <PageOneSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="pageone"
+        layout={{ kind: 'trick-taking', centerCard: true, trickArea: true, footerHandSize: 5 }}
+      />
+    );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === PageOnePhase.PLAY;

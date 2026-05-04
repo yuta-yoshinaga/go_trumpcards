@@ -19,9 +19,9 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { FortyThievesSkeleton } from '../components/skeleton/FortyThievesSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -29,6 +29,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useFortyThievesGame } from '../hooks/useFortyThievesGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -70,14 +71,7 @@ const FT_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Forty Thieves solitaire game page with tableau, stock/waste, and foundation. */
-export function FortyThievesPage() {
-  return (
-    <TutorialWrapper gameName="fortythieves" steps={FT_TUTORIAL_STEPS}>
-      <FortyThievesPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const FortyThievesPage = withTutorial(FortyThievesPageContent, 'fortythieves', FT_TUTORIAL_STEPS);
 /** Format a frontend hint zone for display. */
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, col: number): string {
   if (zone === 'waste') return t('frontendHint.waste');
@@ -181,7 +175,9 @@ function FortyThievesPageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
-  if (!state) return <FortyThievesSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state) return <GameSkeleton gameKey="fortythieves" layout={{ kind: 'tableau', topRow: 10, tableau: 10 }} />;
 
   const isPlaying = state.phase === FortyThievesPhase.PLAYING;
   const isGameClear = state.phase === FortyThievesPhase.GAME_CLEAR;

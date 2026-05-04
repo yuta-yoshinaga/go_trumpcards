@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { texasholdembonusApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -16,9 +16,9 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { TexasHoldemBonusSkeleton } from '../components/skeleton/TexasHoldemBonusSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,6 +26,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -81,14 +83,7 @@ const HAND_RANK_KEYS: Record<number, string> = {
 };
 
 /** Renders the Texas Hold'em Bonus Poker game page with betting, action, and result display. */
-export function TexasHoldemBonusPage() {
-  return (
-    <TutorialWrapper gameName="texasholdembonus" steps={THB_TUTORIAL_STEPS}>
-      <TexasHoldemBonusPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const TexasHoldemBonusPage = withTutorial(TexasHoldemBonusPageContent, 'texasholdembonus', THB_TUTORIAL_STEPS);
 /** Inner content of the Texas Hold'em Bonus Poker page, wrapped by TutorialProvider. */
 function TexasHoldemBonusPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -117,9 +112,7 @@ function TexasHoldemBonusPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const isBetPhase = state?.phase === TexasHoldemBonusPhase.BET;
   const isPreFlopPhase = state?.phase === TexasHoldemBonusPhase.PRE_FLOP;
@@ -149,7 +142,9 @@ function TexasHoldemBonusPageContent() {
     enabled: !!state && !loading,
   });
 
-  if (!state) return <TexasHoldemBonusSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state) return <GameSkeleton gameKey="texasholdembonus" layout={{ kind: 'casino-table', sections: [2, 5, 2] }} />;
 
   const handleBet = () => execApi('bet', anteAmount, bonusAmount);
   const handlePlay = () => execApi('play');

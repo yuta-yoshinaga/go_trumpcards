@@ -21,9 +21,9 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { DaifugoSkeleton } from '../components/skeleton/DaifugoSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCardSwipeSelection } from '../hooks/useCardSwipeSelection';
@@ -32,6 +32,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -91,14 +92,7 @@ const DF_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Daifugo game page with card play, revolution, and rule settings. */
-export function DaifugoPage() {
-  return (
-    <TutorialWrapper gameName="daifugo" steps={DF_TUTORIAL_STEPS}>
-      <DaifugoPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const DaifugoPage = withTutorial(DaifugoPageContent, 'daifugo', DF_TUTORIAL_STEPS);
 /** Inner content of the Daifugo page, wrapped by TutorialProvider. */
 function DaifugoPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -172,7 +166,24 @@ function DaifugoPageContent() {
     void exec('reset', [], configInput);
   }, [exec, configInput, hideActionLog]);
 
-  if (!state) return <DaifugoSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="daifugo"
+        layout={{
+          kind: 'trick-taking',
+          titleBar: false,
+          opponents: 3,
+          opponentStyle: 'hand',
+          opponentHandSize: 4,
+          trickArea: true,
+          footerHandSize: 5,
+          footerButton: 'wide',
+        }}
+      />
+    );
 
   const pendingAction = state.pendingAction ?? 'none';
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;

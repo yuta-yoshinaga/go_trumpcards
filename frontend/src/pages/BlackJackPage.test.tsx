@@ -979,7 +979,9 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByLabelText('ベット額:')).toBeInTheDocument());
     fireEvent.change(screen.getByLabelText('ベット額:'), { target: { value: '50' } });
-    expect(screen.getByLabelText('ベット額:')).toHaveValue(50);
+    // ChipBetInput now uses type=text + inputMode=numeric (#1615), so the
+    // displayed value is a string rather than a number.
+    expect(screen.getByLabelText('ベット額:')).toHaveValue('50');
     mockExec.mockClear();
     mockExec.mockResolvedValue(actionPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));

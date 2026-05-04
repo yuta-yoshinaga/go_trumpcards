@@ -29,7 +29,9 @@ func completionSubcommands() []string {
 }
 
 // runCompletion outputs a shell completion script for the given shell name.
-// Returns 0 on success, 1 on error.
+// Returns 0 on success, 2 on usage error (missing arg or unsupported shell —
+// matches the documented EXIT CODES section in buildHelpText), 1 on a real
+// I/O failure while writing the script. See issue #1603.
 func runCompletion(args []string, stdoutIsTTY, noHint bool) int {
 	return runCompletionTo(args, os.Stdout, os.Stderr, stdoutIsTTY, noHint)
 }
@@ -42,10 +44,16 @@ func runCompletion(args []string, stdoutIsTTY, noHint bool) int {
 // preserving the onboarding comment for users who run it interactively
 // (`source <(…)` is a pipe, so hints stay out of the shell session too).
 // See issue #1450.
+//
+// Usage errors (no argument or unsupported shell) return 2 to match the
+// documented EXIT CODES table and the rest of the CLI (`parseSubFlags` also
+// returns 2 for unknown flags). A genuine I/O failure while writing the
+// script still returns 1 so CI can distinguish "you typed it wrong" from
+// "the disk is full". See issue #1603.
 func runCompletionTo(args []string, stdout, stderr io.Writer, stdoutIsTTY, noHint bool) int {
 	if len(args) != 1 {
 		_, _ = fmt.Fprintln(stderr, i18n.T("cliCompletionUsage"))
-		return 1
+		return 2
 	}
 	shell := args[0]
 	showHint := stdoutIsTTY && !noHint
@@ -71,7 +79,7 @@ func runCompletionTo(args []string, stdout, stderr io.Writer, stdoutIsTTY, noHin
 		if suggestion := cuiutil.SuggestCommand(shell, supportedCompletionShells, 2); suggestion != "" {
 			_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 		}
-		return 1
+		return 2
 	}
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliCompletionWriteError", "err", err.Error()))

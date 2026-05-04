@@ -9,6 +9,19 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// fortyThievesNoArgCommands maps no-arg CUI commands to FortyThieves methods.
+var fortyThievesNoArgCommands = cuiutil.NewCommandMap[usecase.FortyThievesInteractorIF]().
+	Add(usecase.FortyThievesInteractorIF.Draw, "d", "draw").
+	Add(usecase.FortyThievesInteractorIF.GiveUp, "g", "giveup").
+	Add(usecase.FortyThievesInteractorIF.AutoComplete, "ac", "autocomplete").
+	Add(usecase.FortyThievesInteractorIF.Undo, "u", "undo").
+	Add(usecase.FortyThievesInteractorIF.Hint, "h", "hint").
+	Add(usecase.FortyThievesInteractorIF.ActionLog, "log", "l")
+
+// fortyThievesArgfulCommands lists alias names for argful commands handled in
+// the Exec switch.
+var fortyThievesArgfulCommands = []string{"m", "move"}
+
 // FortyThievesCuiController フォーティシーブスCUIコントローラークラス
 type FortyThievesCuiController struct {
 	fi usecase.FortyThievesInteractorIF
@@ -26,21 +39,16 @@ func (c *FortyThievesCuiController) Exec(command string) string {
 		func(_ []string) string {
 			return c.fi.Reset()
 		},
-		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
+		append(fortyThievesNoArgCommands.Names(), fortyThievesArgfulCommands...),
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := fortyThievesNoArgCommands.Lookup(cmd); ok {
+				return fn(c.fi), true
+			}
 			switch cmd {
-			case "d", "draw":
-				return c.fi.Draw(), true
 			case "m", "move":
 				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.fi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.fi.AutoComplete(), true
-			case "u", "undo":
-				return c.fi.Undo(), true
 			default:
-				return handleCuiHintAndLog(cmd, c.fi.Hint, c.fi.ActionLog)
+				return "", false
 			}
 		},
 	)

@@ -112,7 +112,7 @@ export function CliTerminal({ logEntries, onCommand, disabled }: CliTerminalProp
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder={t('cli.prompt')}
-          className="flex-1 bg-transparent text-ds-text-primary outline-none placeholder:text-ds-text-muted"
+          className="flex-1 bg-transparent text-ds-text-primary outline-none placeholder:text-ds-text-muted min-h-[44px] py-2"
           aria-label={t('cli.prompt')}
           autoComplete="off"
           spellCheck={false}

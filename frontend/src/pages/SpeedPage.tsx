@@ -18,12 +18,13 @@ import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SpeedSkeleton } from '../components/skeleton/SpeedSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
 import { useSound } from '../providers/SoundProvider';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -50,14 +51,7 @@ const SPEED_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="sp-draw-pile"]', messageKey: 'tutorial.drawPile', placement: 'left', advanceOn: 'next' },
 ];
 /** Renders the Speed game page. */
-export function SpeedPage() {
-  return (
-    <TutorialWrapper gameName="speed" steps={SPEED_TUTORIAL_STEPS}>
-      <SpeedPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const SpeedPage = withTutorial(SpeedPageContent, 'speed', SPEED_TUTORIAL_STEPS);
 /** Inner content of the Speed page. */
 function SpeedPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -77,6 +71,7 @@ function SpeedPageContent() {
     handleConfigChange,
     handleToggle,
   } = useSpeedGame();
+  useGameRoundGuard(!!state && !state.gameEndFlag);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,

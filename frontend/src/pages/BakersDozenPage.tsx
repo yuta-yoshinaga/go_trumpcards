@@ -18,9 +18,9 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { BakersDozenSkeleton } from '../components/skeleton/BakersDozenSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBakersDozenGame } from '../hooks/useBakersDozenGame';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
@@ -28,6 +28,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -71,14 +72,7 @@ const BD_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Baker's Dozen solitaire game page with 13 tableau columns and 4 foundations. */
-export function BakersDozenPage() {
-  return (
-    <TutorialWrapper gameName="bakersdozen" steps={BD_TUTORIAL_STEPS}>
-      <BakersDozenPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const BakersDozenPage = withTutorial(BakersDozenPageContent, 'bakersdozen', BD_TUTORIAL_STEPS);
 /** Format a frontend hint zone for display. */
 function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => string, zone: string, col: number): string {
   if (zone === 'foundation') return t('frontendHint.foundation');
@@ -181,7 +175,9 @@ function BakersDozenPageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
-  if (!state) return <BakersDozenSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state) return <GameSkeleton gameKey="bakersdozen" layout={{ kind: 'tableau', topRow: 4, tableau: 13 }} />;
 
   const isPlaying = state.phase === BakersDozenPhase.PLAYING;
   const isGameClear = state.phase === BakersDozenPhase.GAME_CLEAR;

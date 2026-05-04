@@ -13,9 +13,9 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
-import { SpadesSkeleton } from '../components/skeleton/SpadesSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
@@ -91,14 +91,7 @@ const SPADES_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Spades game page with bidding, trick play, and scoring. */
-export function SpadesPage() {
-  return (
-    <TutorialWrapper gameName="spades" steps={SP_TUTORIAL_STEPS}>
-      <SpadesPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const SpadesPage = withTutorial(SpadesPageContent, 'spades', SP_TUTORIAL_STEPS);
 /** Inner content of the Spades page, wrapped by TutorialProvider. */
 function SpadesPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -180,7 +173,8 @@ function SpadesPageContent() {
     spadesConfig.bagPenaltyThreshold,
   ]);
 
-  if (!state) return <SpadesSkeleton />;
+  if (!state)
+    return <GameSkeleton gameKey="spades" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isBidPhase = state.phase === SpadesPhase.BID;

@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
 /** A single setting item (checkbox or select) in the settings panel. */
 export interface SettingsItem {
   type: 'checkbox' | 'select';
@@ -28,6 +31,50 @@ interface SettingsPanelProps {
 
 /** Renders a collapsible settings panel with grouped checkboxes and selects. */
 export function SettingsPanel({ title, groups }: SettingsPanelProps) {
+  const { t } = useTranslation('common');
+  const [openTipId, setOpenTipId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (openTipId === null) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenTipId(null);
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [openTipId]);
+
+  const renderHelp = (item: SettingsItem) => {
+    if (!item.tooltip) return null;
+    const isOpen = openTipId === item.id;
+    return (
+      <>
+        <button
+          type="button"
+          aria-label={isOpen ? t('settings.hideHelp') : t('settings.showHelp')}
+          aria-expanded={isOpen}
+          aria-controls={`${item.id}-tooltip`}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpenTipId(isOpen ? null : item.id);
+          }}
+          className="text-ds-text-muted hover:text-ds-accent w-11 h-11 inline-flex items-center justify-center rounded-full text-xs"
+        >
+          (?)
+        </button>
+        {isOpen && (
+          <span
+            id={`${item.id}-tooltip`}
+            role="tooltip"
+            className="basis-full text-xs text-ds-text-muted mt-1 max-w-prose"
+          >
+            {item.tooltip}
+          </span>
+        )}
+      </>
+    );
+  };
+
   return (
     <details className="px-4 pt-2">
       <summary className="text-ds-text-primary text-sm cursor-pointer select-none inline-flex items-center gap-1.5 hover:text-ds-accent transition-colors py-1">
@@ -54,32 +101,22 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               {group.items.map((item) =>
                 item.type === 'checkbox' ? (
-                  <label
-                    key={item.id}
-                    htmlFor={item.id}
-                    className="flex items-center gap-2 cursor-pointer relative group/tip min-h-[44px] px-1"
-                  >
-                    <input
-                      id={item.id}
-                      type="checkbox"
-                      checked={item.checked ?? false}
-                      disabled={item.disabled}
-                      onChange={(e) => item.onToggle?.(e.target.checked)}
-                      aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
-                    />
-                    {item.label}
-                    {item.tooltip && (
-                      <span
-                        id={`${item.id}-tooltip`}
-                        role="tooltip"
-                        className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-ds-surface-elevated text-ds-text-primary text-xs rounded px-2 py-1 whitespace-nowrap z-10"
-                      >
-                        {item.tooltip}
-                      </span>
-                    )}
-                  </label>
+                  <span key={item.id} className="flex flex-wrap items-center gap-2 px-1">
+                    <label htmlFor={item.id} className="flex items-center gap-2 cursor-pointer min-h-[44px]">
+                      <input
+                        id={item.id}
+                        type="checkbox"
+                        checked={item.checked ?? false}
+                        disabled={item.disabled}
+                        onChange={(e) => item.onToggle?.(e.target.checked)}
+                        aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
+                      />
+                      {item.label}
+                    </label>
+                    {renderHelp(item)}
+                  </span>
                 ) : (
-                  <span key={item.id} className="flex items-center gap-2 relative group/tip min-h-[44px] px-1">
+                  <span key={item.id} className="flex flex-wrap items-center gap-2 min-h-[44px] px-1">
                     <label htmlFor={item.id}>{item.label}</label>
                     <select
                       id={item.id}
@@ -95,15 +132,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                         </option>
                       ))}
                     </select>
-                    {item.tooltip && (
-                      <span
-                        id={`${item.id}-tooltip`}
-                        role="tooltip"
-                        className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-ds-surface-elevated text-ds-text-primary text-xs rounded px-2 py-1 whitespace-nowrap z-10"
-                      >
-                        {item.tooltip}
-                      </span>
-                    )}
+                    {renderHelp(item)}
                   </span>
                 ),
               )}

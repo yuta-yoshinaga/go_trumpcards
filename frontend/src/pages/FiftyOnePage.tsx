@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { fiftyoneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -15,15 +15,18 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { FiftyOneSkeleton } from '../components/skeleton/FiftyOneSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
+import { gameTheme } from '../styles/gameTheme';
 import type { FiftyOneResponse } from '../types/card';
 import { FiftyOnePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -67,19 +70,13 @@ const FO_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Fifty-one (フィフティワン) game page. */
-export function FiftyOnePage() {
-  return (
-    <TutorialWrapper gameName="fiftyone" steps={FO_TUTORIAL_STEPS}>
-      <FiftyOnePageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const FiftyOnePage = withTutorial(FiftyOnePageContent, 'fiftyone', FO_TUTORIAL_STEPS);
 /** Inner content of the Fifty-one page. */
 function FiftyOnePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fiftyone');
   const { state, loading, error, exec: execApi, retry } = useGameApi(fiftyoneApi.exec);
+  useGameRoundGuard(!!state && !state.gameEndFlag);
   const { cardWidth } = useCardDimensions();
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [selectedHandIdx, setSelectedHandIdx] = useState<number | null>(null);
@@ -108,9 +105,7 @@ function FiftyOnePageContent() {
 
   const handleStop = useCallback(() => execApi('stop'), [execApi]);
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fiftyone');
@@ -155,7 +150,8 @@ function FiftyOnePageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  if (!state || state.players.length < 4) return <FiftyOneSkeleton />;
+  if (!state || state.players.length < 4)
+    return <GameSkeleton gameKey="fiftyone" layout={{ kind: 'centered', rows: [5, 5] }} />;
 
   const isGameEnd = state.gameEndFlag || state.phase === FiftyOnePhase.GAME_END;
   const humanWon = isGameEnd && state.winnerIdx === 0;
@@ -165,7 +161,7 @@ function FiftyOnePageContent() {
   const canExchange = isHumanTurn && selectedHandIdx !== null && selectedTableIdx !== null;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.fiftyone.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.fiftyone')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -286,7 +282,7 @@ function FiftyOnePageContent() {
             ]}
           />
 
-          <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+          <GameFooter className={`${gameTheme.fiftyone.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="fo-action-buttons">
               <button
                 type="button"

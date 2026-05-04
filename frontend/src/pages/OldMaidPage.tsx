@@ -20,15 +20,16 @@ import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSettingsDialog } from '../components/oldmaid/OldMaidSettingsDialog';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -71,14 +72,7 @@ const OM_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Old Maid game page with settings dialog, player areas, and draw history. */
-export function OldMaidPage() {
-  return (
-    <TutorialWrapper gameName="oldmaid" steps={OM_TUTORIAL_STEPS}>
-      <OldMaidPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const OldMaidPage = withTutorial(OldMaidPageContent, 'oldmaid', OM_TUTORIAL_STEPS);
 /** Inner content of the Old Maid page, wrapped by TutorialProvider. */
 function OldMaidPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -109,6 +103,7 @@ function OldMaidPageContent() {
     setSetupHesitation,
     setSetupMetaAI,
   } = useOldMaidGame();
+  useGameRoundGuard(!!displayState && !displayState.gameEndFlag);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -162,7 +157,21 @@ function OldMaidPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
-  if (!displayState) return <OldMaidSkeleton />;
+  if (!displayState)
+    return (
+      <GameSkeleton
+        gameKey="oldmaid"
+        layout={{
+          kind: 'trick-taking',
+          titleBar: false,
+          opponents: 3,
+          opponentStyle: 'hand',
+          opponentHandSize: 3,
+          footerHandSize: 5,
+          footerButton: 'wide',
+        }}
+      />
+    );
 
   const state = displayState;
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;

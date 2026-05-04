@@ -9,6 +9,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
   CrazyEightsResponse,
@@ -37,11 +38,13 @@ import type {
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
+  PitchResponse,
   PokerResponse,
   PokerSquaresResponse,
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
+  RussianSolitaireResponse,
   ScorpionResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
@@ -74,6 +77,7 @@ import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
 import { getCaribbeanStudHint } from '../utils/hints/caribbeanstudHint';
+import { getCasinowarHint } from '../utils/hints/casinowarHint';
 import { getCassinoHint } from '../utils/hints/cassinoHint';
 import { getClocksolitaireHint } from '../utils/hints/clocksolitaireHint';
 import { getCrazyEightsHint } from '../utils/hints/crazyeightsHint';
@@ -100,17 +104,20 @@ import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
 import { getOldMaidHint } from '../utils/hints/oldmaidHint';
+import { getOmahaHiLoHint } from '../utils/hints/omahaHiLoHint';
 import { getOmahaHint } from '../utils/hints/omahaHint';
 import { getPageOneHint } from '../utils/hints/pageoneHint';
 import { getPigstailHint } from '../utils/hints/pigstailHint';
 import { getPineappleHint } from '../utils/hints/pineappleHint';
 import { getPinochleHint } from '../utils/hints/pinochleHint';
+import { getPitchHint } from '../utils/hints/pitchHint';
 import { getPokerHint } from '../utils/hints/pokerHint';
 import { getPokersquaresHint } from '../utils/hints/pokersquaresHint';
 import { getPresidentHint } from '../utils/hints/presidentHint';
 import { getPyramidHint } from '../utils/hints/pyramidHint';
 import { getRazzHint } from '../utils/hints/razzHint';
 import { getReddogHint } from '../utils/hints/reddogHint';
+import { getRussianSolitaireHint } from '../utils/hints/russianSolitaireHint';
 import { getScorpionHint } from '../utils/hints/scorpionHint';
 import { getSevenbridgeHint } from '../utils/hints/sevenbridgeHint';
 import { getSevensHint } from '../utils/hints/sevensHint';
@@ -144,8 +151,10 @@ const hintFactories = {
   poker: (s) => getPokerHint(s as PokerResponse),
   hearts: (s) => getHeartsHint(s as HeartsResponse),
   spades: (s) => getSpadesHint(s as SpadesResponse),
+  pitch: (s) => getPitchHint(s as PitchResponse),
   holdem: (s) => getHoldemHint(s as HoldemResponse),
   omaha: (s) => getOmahaHint(s as OmahaResponse),
+  omahahilo: (s) => getOmahaHiLoHint(s as OmahaResponse),
   shortdeck: (s) => getShortDeckHint(s as ShortDeckResponse),
   pineapple: (s) => getPineappleHint(s as PineappleResponse),
   crazypineapple: (s) => getCrazyPineappleHint(s as PineappleResponse),
@@ -192,9 +201,11 @@ const hintFactories = {
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
   letitride: (s) => getLetitrideHint(s as LetItRideResponse),
   reddog: (s) => getReddogHint(s as RedDogResponse),
+  casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),
+  russiansolitaire: (s) => getRussianSolitaireHint(s as RussianSolitaireResponse),
   scorpion: (s) => getScorpionHint(s as ScorpionResponse),
   accordion: (s) => getAccordionHint(s as AccordionResponse),
   calculation: (s) => getCalculationHint(s as CalculationResponse),

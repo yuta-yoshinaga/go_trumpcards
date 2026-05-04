@@ -28,8 +28,10 @@
     "durak": "Durak",
     "holdem": "Texas Hold'em",
     "omaha": "Omaha Hold'em",
+    "omahahilo": "Omaha Hi-Lo",
     "hearts": "Hearts",
     "spades": "Spades",
+    "pitch": "Pitch",
     "twotenjack": "Two Ten Jack",
     "memory": "Memory",
     "klondike": "Klondike",
@@ -69,6 +71,7 @@
     "fiftyone": "Fifty-one",
     "canfield": "Canfield",
     "yukon": "Yukon",
+    "russiansolitaire": "Russian Solitaire",
     "whist": "Whist",
     "letitride": "Let It Ride",
     "pokersquares": "Poker Squares",
@@ -91,7 +94,8 @@
     "slapjack": "Slapjack",
     "egyptianratscrew": "Egyptian Ratscrew",
     "bakersdozen": "Baker's Dozen",
-    "tonk": "Tonk"
+    "tonk": "Tonk",
+    "casinowar": "Casino War"
   },
   "sound": {
     "mute": "Mute sound",
@@ -101,7 +105,9 @@
     "loading": "Loading…"
   },
   "settings": {
-    "title": "Settings"
+    "title": "Settings",
+    "showHelp": "Show help",
+    "hideHelp": "Hide help"
   },
   "player": {
     "you": "You",
@@ -199,7 +205,12 @@
     "mucked": "Mucked",
     "player": "Player",
     "errorBoundaryTitle": "An error occurred",
-    "errorBoundaryRetry": "Retry"
+    "errorBoundaryRetry": "Retry",
+    "errorBoundaryReload": "Reload page",
+    "errorBoundaryReport": "Report issue",
+    "errorBoundaryHelp": "Sorry — choose how to recover below.",
+    "errorBoundaryRepeated": "The same error keeps occurring. Please reload the page.",
+    "errorBoundaryDetails": "Show error details"
   },
   "messageCode": {
     "blackjack.result.draw": "It is a draw.",
@@ -238,6 +249,13 @@
     "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "spades.result.humanWin": "Game over! You win!",
     "spades.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "pitch.result.humanWin": "Game over! You win!",
+    "pitch.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "pitch.bidPhase": "Declare your bid (0=pass, 2-4)",
+    "pitch.playPhase.lead": "Lead a card (first card sets trump)",
+    "pitch.playPhase.follow": "Play a card",
+    "pitch.trickEnd": "Trick end",
+    "pitch.roundEnd": "Round end",
     "twotenjack.result.humanWin": "Game over! Your team wins!",
     "twotenjack.result.cpuWin": "Game over! Opponent team wins!",
     "twotenjack.declarePhase": "Declare the trump suit",
@@ -333,6 +351,8 @@
     "spider.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
     "yukon.stalemate": "No moves can lead to a win. Please undo or give up.",
     "yukon.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
+    "russiansolitaire.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "russiansolitaire.stalemateWithEscape": "Stalemate. Undo {{count}} moves to find another play.",
     "freecell.playing": "Playing",
     "freecell.gameClear": "Game Clear! Moves: {{moveCount}}",
     "freecell.gameOver": "Game Over",

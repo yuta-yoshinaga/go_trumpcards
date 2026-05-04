@@ -13,6 +13,7 @@ import calculation from '../../../docs/manual/cui/calculation.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
 import canfield from '../../../docs/manual/cui/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
+import casinowar from '../../../docs/manual/cui/casinowar.md?raw';
 import cassino from '../../../docs/manual/cui/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/cui/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/cui/crazyeights.md?raw';
@@ -42,17 +43,20 @@ import nertz from '../../../docs/manual/cui/nertz.md?raw';
 import ohhell from '../../../docs/manual/cui/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/cui/oldmaid.md?raw';
 import omaha from '../../../docs/manual/cui/omaha.md?raw';
+import omahahilo from '../../../docs/manual/cui/omahahilo.md?raw';
 import pageone from '../../../docs/manual/cui/pageone.md?raw';
 import paigow from '../../../docs/manual/cui/paigow.md?raw';
 import pigtail from '../../../docs/manual/cui/pigtail.md?raw';
 import pineapple from '../../../docs/manual/cui/pineapple.md?raw';
 import pinochle from '../../../docs/manual/cui/pinochle.md?raw';
+import pitch from '../../../docs/manual/cui/pitch.md?raw';
 import poker from '../../../docs/manual/cui/poker.md?raw';
 import pokersquares from '../../../docs/manual/cui/pokersquares.md?raw';
 import president from '../../../docs/manual/cui/president.md?raw';
 import pyramid from '../../../docs/manual/cui/pyramid.md?raw';
 import razz from '../../../docs/manual/cui/razz.md?raw';
 import reddog from '../../../docs/manual/cui/reddog.md?raw';
+import russiansolitaire from '../../../docs/manual/cui/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/cui/scorpion.md?raw';
 import sevenbridge from '../../../docs/manual/cui/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/cui/sevencardstud.md?raw';
@@ -86,6 +90,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
+  '/casinowar': casinowar,
   '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
   '/crazyeights': crazyeights,
@@ -114,6 +119,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,
   '/omaha': omaha,
+  '/omahahilo': omahahilo,
   '/pageone': pageone,
   '/paigow': paigow,
   '/pineapple': pineapple,
@@ -130,6 +136,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,
   '/spider': spider,
@@ -141,6 +148,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/war': war,
   '/whist': whist,
   '/yukon': yukon,
+  '/russiansolitaire': russiansolitaire,
   '/scorpion': scorpion,
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,

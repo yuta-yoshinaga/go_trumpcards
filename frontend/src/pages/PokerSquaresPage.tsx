@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { pokersquaresApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -16,13 +16,15 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
@@ -54,14 +56,7 @@ const POKERSQUARES_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Poker Squares game page with a 5x5 placement grid and per-row/column scores. */
-export function PokerSquaresPage() {
-  return (
-    <TutorialWrapper gameName="pokersquares" steps={POKERSQUARES_TUTORIAL_STEPS}>
-      <PokerSquaresPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PokerSquaresPage = withTutorial(PokerSquaresPageContent, 'pokersquares', POKERSQUARES_TUTORIAL_STEPS);
 /** Inner content of the Poker Squares page, wrapped by TutorialProvider. */
 function PokerSquaresPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -69,6 +64,7 @@ function PokerSquaresPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(pokersquaresApi.exec);
+  useGameRoundGuard(isGameRoundActive(state));
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -87,9 +83,7 @@ function PokerSquaresPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const phaseNames = usePhaseNames('pokersquares', POKER_SQUARES_PHASE_KEYS);
 

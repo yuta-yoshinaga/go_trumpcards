@@ -1,0 +1,6 @@
+{
+  "helpTitle": "Casino War",
+  "helpBet": "  b <amount>           bet (places ante and deals one card each)",
+  "helpSurrender": "  surrender            tie: forfeit half the ante and end the round",
+  "helpWar": "  war                  tie: place an additional bet equal to ante and re-draw"
+}

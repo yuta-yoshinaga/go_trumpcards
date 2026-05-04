@@ -80,23 +80,26 @@ func TestWriteInstallHint_UnsupportedShell(t *testing.T) {
 	assert.Empty(t, buf.String())
 }
 
+// Usage errors (no arg, extra args, unsupported shell) must exit 2 to match
+// the documented EXIT CODES table and the rest of the CLI. Genuine I/O
+// failures while writing the script still exit 1. See issue #1603.
 func TestRunCompletion_NoArgs(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := runCompletionTo(nil, &stdout, &stderr, false, false)
-	assert.Equal(t, 1, code)
+	assert.Equal(t, 2, code)
 	assert.Contains(t, stderr.String(), "trumpcards completion")
 }
 
 func TestRunCompletion_ExtraArgs(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := runCompletionTo([]string{"bash", "extra"}, &stdout, &stderr, false, false)
-	assert.Equal(t, 1, code)
+	assert.Equal(t, 2, code)
 }
 
 func TestRunCompletion_UnsupportedShell(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := runCompletionTo([]string{"powershell"}, &stdout, &stderr, false, false)
-	assert.Equal(t, 1, code)
+	assert.Equal(t, 2, code)
 	assert.Contains(t, stderr.String(), "powershell")
 }
 
@@ -112,7 +115,7 @@ func TestRunCompletion_UnsupportedShell_DidYouMean(t *testing.T) {
 		t.Run(tt.input, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
 			code := runCompletionTo([]string{tt.input}, &stdout, &stderr, false, false)
-			assert.Equal(t, 1, code)
+			assert.Equal(t, 2, code)
 			assert.Contains(t, stderr.String(), tt.want, "expected suggestion %q for input %q", tt.want, tt.input)
 		})
 	}
@@ -121,7 +124,7 @@ func TestRunCompletion_UnsupportedShell_DidYouMean(t *testing.T) {
 func TestRunCompletion_UnsupportedShell_NoSuggestion(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	code := runCompletionTo([]string{"powershell"}, &stdout, &stderr, false, false)
-	assert.Equal(t, 1, code)
+	assert.Equal(t, 2, code)
 	// "powershell" is too far from any supported shell — no Did-you-mean line.
 	assert.NotContains(t, stderr.String(), "Did you mean")
 	assert.NotContains(t, stderr.String(), "もしかして")

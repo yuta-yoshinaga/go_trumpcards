@@ -12,6 +12,7 @@ import type {
   CanastaResponse,
   CanfieldResponse,
   CaribbeanStudResponse,
+  CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
   CrazyEightsResponse,
@@ -49,11 +50,13 @@ import type {
   PigsTailResponse,
   PineappleResponse,
   PinochleResponse,
+  PitchResponse,
   PokerResponse,
   PokerSquaresResponse,
   PresidentResponse,
   PyramidResponse,
   RedDogResponse,
+  RussianSolitaireResponse,
   ScorpionResponse,
   SevenBridgeResponse,
   SevenCardStudResponse,
@@ -99,6 +102,7 @@ const workerUrl: Record<string, string> = {
   poker: WORKER_CASINO,
   holdem: WORKER_CASINO,
   omaha: WORKER_CASINO,
+  omahahilo: WORKER_CASINO,
   shortdeck: WORKER_CASINO,
   indianpoker: WORKER_CASINO,
   videopoker: WORKER_CASINO,
@@ -116,6 +120,7 @@ const workerUrl: Record<string, string> = {
   calculation: WORKER_SOLO,
   hearts: WORKER_CLASSIC,
   spades: WORKER_CLASSIC,
+  pitch: WORKER_CLASSIC,
   euchre: WORKER_CLASSIC,
   bridge: WORKER_CLASSIC,
   napoleon: WORKER_CLASSIC,
@@ -149,6 +154,7 @@ const workerUrl: Record<string, string> = {
   fortythieves: WORKER_SOLO,
   canfield: WORKER_SOLO,
   yukon: WORKER_SOLO,
+  russiansolitaire: WORKER_SOLO,
   scorpion: WORKER_SOLO,
   accordion: WORKER_SOLO,
   sevenbridge: WORKER_SOLO,
@@ -156,6 +162,7 @@ const workerUrl: Record<string, string> = {
   whist: WORKER_CLASSIC,
   letitride: WORKER_CASINO,
   reddog: WORKER_CASINO,
+  casinowar: WORKER_CASINO,
   president: WORKER_CLASSIC,
   cassino: WORKER_CLASSIC,
   spiteandmalice: WORKER_CLASSIC,
@@ -439,6 +446,12 @@ export const holdemApi = createHoldemLikeApi<HoldemResponse>('holdem');
 /** API client for the Omaha Hold'em /omaha/exec endpoint. */
 export const omahaApi = createHoldemLikeApi<OmahaResponse>('omaha');
 
+/** API client for the Omaha Hi-Lo / 8 or Better /omahahilo/exec endpoint.
+ * Shares the OmahaResponse shape — additional Hi-Lo fields (LowBestHand,
+ * LowQualifies, HiWonAmount, LowWonAmount) are surfaced via omitempty
+ * JSON encoding so the same TypeScript type works for both. */
+export const omahaHiLoApi = createHoldemLikeApi<OmahaResponse>('omahahilo');
+
 /** API client for the Short Deck Hold'em /shortdeck/exec endpoint. */
 export const shortdeckApi = createHoldemLikeApi<ShortDeckResponse>('shortdeck');
 
@@ -545,7 +558,7 @@ export interface SpadesConfigInput {
 function createBidPlayApi<T, C>(game: string) {
   return {
     exec: (
-      command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint',
+      command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
       bid?: number,
       cardIndex?: number,
       config?: C,
@@ -555,6 +568,15 @@ function createBidPlayApi<T, C>(game: string) {
 
 /** API client for the Spades /spades/exec endpoint. */
 export const spadesApi = createBidPlayApi<SpadesResponse, SpadesConfigInput>('spades');
+
+/** Configuration options for Pitch (Setback) game settings. */
+export interface PitchConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Pitch /pitch/exec endpoint. */
+export const pitchApi = createBidPlayApi<PitchResponse, PitchConfigInput>('pitch');
 
 /** Configuration options for Two Ten Jack game settings. */
 export interface TwoTenJackConfigInput {
@@ -1206,6 +1228,20 @@ export const yukonApi = createSolitaireMoveApi<
   'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
 >('yukon');
 
+/** Source or target zone for a Russian Solitaire card move. */
+export interface RussianSolitaireMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** API client for the Russian Solitaire /russiansolitaire/exec endpoint. */
+export const russianSolitaireApi = createSolitaireMoveApi<
+  RussianSolitaireResponse,
+  RussianSolitaireMoveZone,
+  'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo' | 'undo_n'
+>('russiansolitaire');
+
 /** Source or target zone for a Scorpion card move. */
 export interface ScorpionMoveZone {
   zone: string;
@@ -1430,6 +1466,11 @@ export const letitrideApi = createBetAmountApi<LetItRideResponse, 'reset' | 'bet
 /** API client for the Red Dog /reddog/exec endpoint. */
 export const reddogApi = createBetAmountApi<RedDogResponse, 'reset' | 'bet' | 'raise' | 'stay' | 'log'>('reddog');
 
+/** API client for the Casino War /casinowar/exec endpoint. */
+export const casinowarApi = createBetAmountApi<CasinoWarResponse, 'reset' | 'bet' | 'surrender' | 'war' | 'log'>(
+  'casinowar',
+);
+
 const games = [
   'blackjack',
   'poker',
@@ -1440,6 +1481,7 @@ const games = [
   'durak',
   'holdem',
   'omaha',
+  'omahahilo',
   'shortdeck',
   'pineapple',
   'crazypineapple',
@@ -1484,6 +1526,7 @@ const games = [
   'calculation',
   'canfield',
   'yukon',
+  'russiansolitaire',
   'scorpion',
   'accordion',
   'sevenbridge',
@@ -1504,6 +1547,8 @@ const games = [
   'egyptianratscrew',
   'bakersdozen',
   'tonk',
+  'casinowar',
+  'pitch',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した73種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した77種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -27,6 +27,7 @@ Go + Clean Architecture で実装した73種類のトランプゲーム。CLI �
 | ダウト (Doubt) | `doubt` | [CUI](docs/manual/cui/doubt.md) / [Web](docs/manual/web/doubt.md) |
 | テキサスホールデム (Texas Hold'em) | `holdem` | [CUI](docs/manual/cui/holdem.md) / [Web](docs/manual/web/holdem.md) |
 | オマハホールデム (Omaha Hold'em) | `omaha` | [CUI](docs/manual/cui/omaha.md) / [Web](docs/manual/web/omaha.md) |
+| オマハ ハイロー (Omaha Hi-Lo / 8 or Better) | `omahahilo` | [CUI](docs/manual/cui/omahahilo.md) / [Web](docs/manual/web/omahahilo.md) |
 | ショートデック (Short Deck / 6+ Hold'em) | `shortdeck` | [CUI](docs/manual/cui/shortdeck.md) / [Web](docs/manual/web/shortdeck.md) |
 | パイナップルポーカー (Pineapple Poker) | `pineapple` | [CUI](docs/manual/cui/pineapple.md) / [Web](docs/manual/web/pineapple.md) |
 | クレイジーパイナップル (Crazy Pineapple Poker) | `crazypineapple` | [CUI](docs/manual/cui/crazypineapple.md) / [Web](docs/manual/web/crazypineapple.md) |
@@ -70,6 +71,7 @@ Go + Clean Architecture で実装した73種類のトランプゲーム。CLI �
 | キャンフィールド (Canfield) | `canfield` | [CUI](docs/manual/cui/canfield.md) / [Web](docs/manual/web/canfield.md) |
 | フィフティワン (Fifty-one) | `fiftyone` | [CUI](docs/manual/cui/fiftyone.md) / [Web](docs/manual/web/fiftyone.md) |
 | ユーコン (Yukon) | `yukon` | [CUI](docs/manual/cui/yukon.md) / [Web](docs/manual/web/yukon.md) |
+| ロシアンソリティア (Russian Solitaire) | `russiansolitaire` | [CUI](docs/manual/cui/russiansolitaire.md) / [Web](docs/manual/web/russiansolitaire.md) |
 | ホイスト (Whist) | `whist` | [CUI](docs/manual/cui/whist.md) / [Web](docs/manual/web/whist.md) |
 | ポーカー・スクエア (Poker Squares) | `pokersquares` | [CUI](docs/manual/cui/pokersquares.md) / [Web](docs/manual/web/pokersquares.md) |
 | ページワン (Page One) | `pageone` | [CUI](docs/manual/cui/pageone.md) / [Web](docs/manual/web/pageone.md) |
@@ -92,6 +94,8 @@ Go + Clean Architecture で実装した73種類のトランプゲーム。CLI �
 | エジプシャン・ラットスクリュー (Egyptian Ratscrew) | `egyptianratscrew` | [CUI](docs/manual/cui/egyptianratscrew.md) / [Web](docs/manual/web/egyptianratscrew.md) |
 | ベーカーズ・ダズン (Baker's Dozen) | `bakersdozen` | [CUI](docs/manual/cui/bakersdozen.md) / [Web](docs/manual/web/bakersdozen.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
+| カジノウォー (Casino War) | `casinowar` | [CUI](docs/manual/cui/casinowar.md) / [Web](docs/manual/web/casinowar.md) |
+| ピッチ / セットバック (Pitch / Setback) | `pitch` | [CUI](docs/manual/cui/pitch.md) / [Web](docs/manual/web/pitch.md) |
 
 ## Demo
 
@@ -178,11 +182,13 @@ go run ./cmd/trumpcards
 
 ```sh
 trumpcards                       # インタラクティブモード (ゲーム選択・切り替え可能)
+trumpcards --start poker         # インタラクティブモードを poker から開始 (--start, issue #1604)
 trumpcards --lang en             # インタラクティブモード (英語)
 trumpcards blackjack             # ブラックジャック CLI
 trumpcards --lang en blackjack   # ブラックジャック CLI (英語)
 trumpcards web                   # REST API + Web GUI サーバー起動
 trumpcards web --port 3000       # カスタムポートで起動 (--port フラグ)
+trumpcards web --open            # サーバー起動後にブラウザを自動オープン (--open, issue #1607)
 trumpcards update                # 最新版にセルフアップデート
 trumpcards version               # バージョン情報を表示 (--version と等価)
 trumpcards version --short       # バージョン番号のみ出力 (機械読み取り用)
@@ -191,6 +197,8 @@ trumpcards help blackjack        # 特定ゲームの操作方法を表示
 PORT=3000 trumpcards web         # カスタムポートで起動 (環境変数)
 source <(trumpcards completion bash)  # Bash 補完を有効化
 ```
+
+インタラクティブモードと単一ゲーム CLI モードでは readline (`peterh/liner`) を使用しており、↑/↓ で履歴呼び出し、Tab で先頭トークン (共通コマンドや `switch` / `games`) の補完および `switch <Tab>` でゲーム名の補完、Ctrl+R で履歴インクリメンタル検索、左矢印で行内編集ができます。履歴は `~/.trumpcards_history` に永続化されます (issue #1608)。
 
 ### Docker
 

@@ -17,14 +17,15 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { GoFishSkeleton } from '../components/skeleton/GoFishSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useGoFishGame } from '../hooks/useGoFishGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -75,14 +76,7 @@ const GOFISH_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 /** Renders the Go Fish game page. */
-export function GoFishPage() {
-  return (
-    <TutorialWrapper gameName="gofish" steps={GF_TUTORIAL_STEPS}>
-      <GoFishPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const GoFishPage = withTutorial(GoFishPageContent, 'gofish', GF_TUTORIAL_STEPS);
 /** Inner content of the Go Fish page, wrapped by TutorialProvider. */
 function GoFishPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -129,7 +123,9 @@ function GoFishPageContent() {
     void exec('reset', undefined, undefined, { cpuDifficulty: goFishConfig.cpuDifficulty });
   }, [exec, hideActionLog, goFishConfig.cpuDifficulty]);
 
-  if (!state) return <GoFishSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state) return <GameSkeleton gameKey="gofish" layout={{ kind: 'trick-taking', footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);

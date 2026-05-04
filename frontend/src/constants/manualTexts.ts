@@ -12,6 +12,7 @@ import calculation from '../../../docs/manual/web/calculation.md?raw';
 import canasta from '../../../docs/manual/web/canasta.md?raw';
 import canfield from '../../../docs/manual/web/canfield.md?raw';
 import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
+import casinowar from '../../../docs/manual/web/casinowar.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
@@ -41,17 +42,20 @@ import nertz from '../../../docs/manual/web/nertz.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
 import oldmaid from '../../../docs/manual/web/oldmaid.md?raw';
 import omaha from '../../../docs/manual/web/omaha.md?raw';
+import omahahilo from '../../../docs/manual/web/omahahilo.md?raw';
 import pageone from '../../../docs/manual/web/pageone.md?raw';
 import paigow from '../../../docs/manual/web/paigow.md?raw';
 import pigtail from '../../../docs/manual/web/pigtail.md?raw';
 import pineapple from '../../../docs/manual/web/pineapple.md?raw';
 import pinochle from '../../../docs/manual/web/pinochle.md?raw';
+import pitch from '../../../docs/manual/web/pitch.md?raw';
 import poker from '../../../docs/manual/web/poker.md?raw';
 import pokersquares from '../../../docs/manual/web/pokersquares.md?raw';
 import president from '../../../docs/manual/web/president.md?raw';
 import pyramid from '../../../docs/manual/web/pyramid.md?raw';
 import razz from '../../../docs/manual/web/razz.md?raw';
 import reddog from '../../../docs/manual/web/reddog.md?raw';
+import russiansolitaire from '../../../docs/manual/web/russiansolitaire.md?raw';
 import scorpion from '../../../docs/manual/web/scorpion.md?raw';
 import sevenbridge from '../../../docs/manual/web/sevenbridge.md?raw';
 import sevencardstud from '../../../docs/manual/web/sevencardstud.md?raw';
@@ -85,6 +89,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/canasta': canasta,
   '/canfield': canfield,
   '/caribbeanstud': caribbeanstud,
+  '/casinowar': casinowar,
   '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
   '/crazyeights': crazyeights,
@@ -112,6 +117,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/ohhell': ohhell,
   '/oldmaid': oldmaid,
   '/omaha': omaha,
+  '/omahahilo': omahahilo,
   '/pageone': pageone,
   '/paigow': paigow,
   '/pineapple': pineapple,
@@ -128,6 +134,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/sevens': sevens,
   '/shortdeck': shortdeck,
   '/spades': spades,
+  '/pitch': pitch,
   '/spanish21': spanish21,
   '/speed': speed,
   '/spider': spider,
@@ -140,6 +147,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/fiftyone': fiftyone,
   '/whist': whist,
   '/yukon': yukon,
+  '/russiansolitaire': russiansolitaire,
   '/scorpion': scorpion,
   '/sevenbridge': sevenbridge,
   '/accordion': accordion,

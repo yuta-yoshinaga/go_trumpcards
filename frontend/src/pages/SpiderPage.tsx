@@ -19,15 +19,16 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { SpiderSkeleton } from '../components/skeleton/SpiderSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { useSound } from '../providers/SoundProvider';
@@ -83,14 +84,7 @@ const SPD_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Spider Solitaire game page with 10 tableau columns and stock. */
-export function SpiderPage() {
-  return (
-    <TutorialWrapper gameName="spider" steps={SPD_TUTORIAL_STEPS}>
-      <SpiderPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const SpiderPage = withTutorial(SpiderPageContent, 'spider', SPD_TUTORIAL_STEPS);
 /** Inner content of the Spider page, wrapped by TutorialProvider. */
 function SpiderPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -173,7 +167,9 @@ function SpiderPageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
-  if (!state) return <SpiderSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state) return <GameSkeleton gameKey="spider" layout={{ kind: 'tableau', topRow: 3, tableau: 10 }} />;
 
   const isPlaying = state.phase === SpiderPhase.PLAYING;
   const isGameClear = state.phase === SpiderPhase.GAME_CLEAR;

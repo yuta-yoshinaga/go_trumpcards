@@ -30,6 +30,8 @@ tags:
     description: Texas Hold'em game
   - name: omaha
     description: Omaha Hold'em game
+  - name: omahahilo
+    description: Omaha Hi-Lo / 8 or Better (split-pot variant of Omaha)
   - name: shortdeck
     description: Short Deck (6+ Hold'em) game
   - name: hearts
@@ -122,6 +124,8 @@ tags:
     description: Fifty-one (フィフティワン) game
   - name: yukon
     description: Yukon (ユーコン) game
+  - name: russiansolitaire
+    description: Russian Solitaire (ロシアンソリティア) game - Yukon variant requiring same-suit descending tableau moves
   - name: letitride
     description: Let It Ride (レットイットライド) game
   - name: pokersquares
@@ -156,6 +160,10 @@ tags:
     description: Baker's Dozen (ベーカーズ・ダズン) game - single-player open-information solitaire with 13 tableau columns of 4 cards each; kings auto-move to the bottom of each column at deal time
   - name: tonk
     description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
+  - name: casinowar
+    description: Casino War (カジノウォー) game - simple player-vs-dealer table game; high card wins (Aces high), tie offers Surrender (forfeit half ante) or War (match ante and re-draw)
+  - name: pitch
+    description: Pitch / Setback (ピッチ / セットバック) game - 4-player single-handed Auction Pitch trick-taking; bid 0/2/3/4 then compete for High/Low/Jack/Game points (4 max); set back on a missed bid
 
 paths:
   /blackjack/exec:
@@ -1019,6 +1027,57 @@ paths:
         The game uses the same phases, commands, and configuration options as
         Texas Hold'em.  See the `/holdem/exec` endpoint for full documentation.
       operationId: omahaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
+  /omahahilo/exec:
+    post:
+      tags:
+        - omahahilo
+      summary: Execute an Omaha Hi-Lo (8 or Better) game command
+      description: |
+        Send a command to advance the Omaha Hi-Lo (8 or Better) game session
+        identified by `sessionId`. Hi-Lo is a split-pot variant of Omaha:
+        the high half follows the standard Omaha rules; the low half is
+        awarded to the best A-5 lowball hand (5 distinct ranks all ≤ 8,
+        Ace = 1; straights and flushes ignored). Pots are split 50:50;
+        odd chips go to the high side. If no player qualifies for a low,
+        the high winner takes the full pot.
+
+        Reuses the Omaha request/response shape. Lo-hand cards and split-
+        pot amounts surface via the optional `lowQualifies`, `lowBestHand`,
+        `hiWonAmount`, and `lowWonAmount` fields in `HoldemResult`, plus
+        `isHiLo` on the top-level response. Commands and configuration
+        options are identical to `/omaha/exec`.
+      operationId: omahaHiLoExec
       requestBody:
         required: true
         content:
@@ -5375,6 +5434,109 @@ paths:
         '400':
           description: Bad request
 
+  /russiansolitaire/exec:
+    post:
+      tags:
+        - russiansolitaire
+      summary: Execute a Russian Solitaire (ロシアンソリティア) game command
+      description: |
+        Send a command to advance a Russian Solitaire session identified by `sessionId`.
+        Russian Solitaire is a Yukon variant: identical deal and "move any face-up card with
+        everything stacked on top" mechanic, but tableau-to-tableau moves require **same suit
+        descending** instead of Yukon's alternating colour. Build foundations by suit Ace to King.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | 0     | Game in progress |
+        | GameClear | 1     | All foundations complete |
+        | GameOver  | 2     | Player gave up or stalemate |
+
+        | Command          | Aliases | Description |
+        |------------------|---------|-------------|
+        | `reset`          | `r`     | Start / restart a game |
+        | `move`           | `m`     | Move card(s) between zones (requires `from`, `to`) |
+        | `giveup`         | `g`     | Give up the current game |
+        | `hint`           | `h`     | Get a move suggestion |
+        | `autocomplete`   | `ac`    | Auto-complete to foundations |
+        | `undo`           | `u`     | Undo last move |
+        | `undo_n`         | —       | Undo N moves (requires `n`) |
+        | `log`            | `l`     | View action log |
+      operationId: russianSolitaireExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau]
+                    col:
+                      type: integer
+                    cardIndex:
+                      type: integer
+                to:
+                  type: object
+                  properties:
+                    zone:
+                      type: string
+                      enum: [tableau, foundation]
+                    col:
+                      type: integer
+                n:
+                  type: integer
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tableau:
+                    type: array
+                  foundation:
+                    type: array
+                  phase:
+                    type: integer
+                  moveCount:
+                    type: integer
+                  canUndo:
+                    type: boolean
+                  isStalemate:
+                    type: boolean
+                  undoToEscape:
+                    type: integer
+                  hint:
+                    type: object
+                    properties:
+                      fromCol:
+                        type: integer
+                      cardIndex:
+                        type: integer
+                      toZone:
+                        type: string
+                      toCol:
+                        type: integer
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request
+
   /scorpion/exec:
     post:
       tags:
@@ -7333,6 +7495,151 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TonkResponse'
+
+  /casinowar/exec:
+    post:
+      tags:
+        - casinowar
+      summary: Execute a Casino War game command
+      description: |
+        Send a command to advance the Casino War (カジノウォー) game session
+        identified by `sessionId`. Casino War is a single-player vs dealer
+        casino card game using a standard 52-card deck. Player places an ante
+        bet, then 1 card is dealt face-up to each side. Higher rank wins
+        (Aces are highest, suits irrelevant). On a tie, the player chooses
+        Surrender (forfeit half the ante) or War (post a bet equal to the
+        ante; three burn cards are drawn face-down, then one more card is
+        dealt to each side — player wins or ties → war bet pays 1:1 and ante
+        pushes; player loses → both bets are forfeit).
+
+        | Phase         | Value | Description |
+        |---------------|-------|-------------|
+        | Bet           | `1`   | Place ante bet |
+        | InitialDealt  | `2`   | 1 card each dealt (auto-resolved) |
+        | TieDecision   | `3`   | Surrender or go to War |
+        | WarDealt      | `4`   | War cards dealt (auto) |
+        | End           | `5`   | Round complete |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bet`       | `b`     | Place ante (requires `amount`) |
+        | `surrender` | —       | Tie: forfeit half ante and end the round |
+        | `war`       | —       | Tie: post a war bet equal to ante and re-draw |
+        | `log`       | —       | View action log |
+      operationId: casinowarExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CasinoWarRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 as ante
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              surrender:
+                summary: Surrender on a tie
+                value:
+                  command: surrender
+                  sessionId: my-session-001
+              war:
+                summary: Go to war on a tie
+                value:
+                  command: war
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasinoWarResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /pitch/exec:
+    post:
+      tags:
+        - pitch
+      summary: Execute a Pitch (Setback) game command
+      description: |
+        Send a command to advance the Pitch / Setback (ピッチ / セットバック) game
+        session identified by `sessionId`. Pitch is a 4-player single-handed
+        Auction Pitch trick-taking game using a standard 52-card deck (24 cards
+        actually played). 6 cards are dealt to each player. Bidding: each player
+        in turn declares pass (0) or 2/3/4. The highest bidder leads, and the
+        first card played sets the trump suit. Each round awards up to 4 points:
+        High (highest trump played), Low (lowest trump played), Jack (J of trump
+        if dealt) and Game (single highest pip total: A=4, K=3, Q=2, J=1, 10=10).
+        Bidder must reach the bid or be set back by the bid amount. First to
+        PointLimit (default 7) wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player declares pass (0) or 2/3/4 |
+        | Play      | `1`   | Trick play (must follow lead suit OR play trump) |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | All 6 tricks played; advance with `nextround` |
+        | GameEnd   | `4`   | A player reached the point limit |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bid`       | `b`     | Place a bid (requires `bid` field, 0=pass, 2-4) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `hint`      | `h`     | Get a suggested action |
+        | `log`       | `l`     | View action log |
+      operationId: pitchExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PitchRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 3
+                value:
+                  command: bid
+                  bid: 3
+                  sessionId: my-session-001
+              pass:
+                summary: Pass during bidding
+                value:
+                  command: bid
+                  bid: 0
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PitchResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
 components:
   schemas:
@@ -9621,6 +9928,19 @@ components:
           description: Best 5-card hand (only populated at showdown)
           items:
             $ref: '#/components/schemas/Card'
+        lowBestHand:
+          type: array
+          description: |
+            Omaha Hi-Lo only. Best 5-card low hand when qualified at
+            showdown (5 distinct ranks all ≤ 8, Ace = 1). Absent for
+            non-Hi-Lo games or unqualified players.
+          items:
+            $ref: '#/components/schemas/Card'
+        lowQualifies:
+          type: boolean
+          description: |
+            Omaha Hi-Lo only. True when the player has a qualifying low
+            hand at showdown.
         playStyleName:
           type: string
           description: |
@@ -9718,6 +10038,30 @@ components:
           type: boolean
           description: Whether the player mucked (hid) their hand at showdown
           example: false
+        lowQualifies:
+          type: boolean
+          description: |
+            Omaha Hi-Lo only. True when the player has a qualifying low hand
+            (5 distinct ranks all ≤ 8, Ace = 1). Absent for non-Hi-Lo games.
+        lowBestHand:
+          type: array
+          description: |
+            Omaha Hi-Lo only. Best 5-card low hand when qualified. Absent
+            otherwise.
+          items:
+            $ref: '#/components/schemas/Card'
+        lowKickers:
+          type: string
+          description: Omaha Hi-Lo only. Low-side kicker display string.
+        hiWonAmount:
+          type: integer
+          description: |
+            Omaha Hi-Lo only. Chips won from the high half of split pots.
+            `wonAmount` is the total (hi + lo). Absent for non-Hi-Lo games.
+        lowWonAmount:
+          type: integer
+          description: |
+            Omaha Hi-Lo only. Chips won from the low half of split pots.
 
     HoldemSidePot:
       type: object
@@ -9919,6 +10263,12 @@ components:
           type: boolean
           description: Whether the human player can muck (hide) their hand at showdown (available when human lost)
           example: false
+        isHiLo:
+          type: boolean
+          description: |
+            Omaha Hi-Lo only. True when this game is configured as
+            Omaha 8 or Better (split-pot variant). Absent for non-Hi-Lo
+            games.
         equity:
           $ref: '#/components/schemas/HoldemEquity'
         potOdds:
@@ -14817,6 +15167,19 @@ components:
           description: Best 5-card hand (only populated at showdown)
           items:
             $ref: '#/components/schemas/Card'
+        lowBestHand:
+          type: array
+          description: |
+            Omaha Hi-Lo only. Best 5-card low hand when qualified at
+            showdown (5 distinct ranks all ≤ 8, Ace = 1). Absent for
+            non-Hi-Lo games or unqualified players.
+          items:
+            $ref: '#/components/schemas/Card'
+        lowQualifies:
+          type: boolean
+          description: |
+            Omaha Hi-Lo only. True when the player has a qualifying low
+            hand at showdown.
         playStyleName:
           type: string
           description: |
@@ -15594,6 +15957,233 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template.
+
+    # -------------------------------------------------------------------------
+    # Casino War (カジノウォー)
+    # -------------------------------------------------------------------------
+    CasinoWarRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, surrender, war, log]
+          description: Game command to execute.
+        amount:
+          type: integer
+          description: Bet amount (required for `bet` command). Must be a multiple of 10, min 10, max 10000.
+          example: 100
+        sessionId:
+          type: string
+          description: Session identifier for game state persistence.
+
+    CasinoWarResponse:
+      type: object
+      properties:
+        playerCard:
+          description: Player's initial card (present after `bet`).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        dealerCard:
+          description: Dealer's initial card (present after `bet`).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        playerWarCard:
+          description: Player's war card (present after `war`).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        dealerWarCard:
+          description: Dealer's war card (present after `war`).
+          oneOf:
+            - $ref: '#/components/schemas/Card'
+            - type: "null"
+        burnCards:
+          type: array
+          description: Three burn cards drawn face-down before the war cards (empty until `war` is invoked).
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Current game phase: 1=Bet, 2=InitialDealt, 3=TieDecision, 4=WarDealt, 5=End."
+          example: 1
+        chips:
+          type: integer
+          description: Player's chip balance.
+          example: 1000
+        ante:
+          type: integer
+          description: Ante bet amount.
+          example: 100
+        warBet:
+          type: integer
+          description: War bet amount (0 if no war was declared).
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1=Win, 0=Draw/Push, -1=Lose."
+          example: 0
+        totalPayout:
+          type: integer
+          description: Total payout returned to the player.
+          example: 0
+        message:
+          type: string
+          description: Human-readable status or result message.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code for i18n.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template.
+
+    # -------------------------------------------------------------------------
+    # Pitch / Setback (ピッチ / セットバック)
+    # -------------------------------------------------------------------------
+    PitchRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command. Accepted values: `reset` (`r`), `bid` (`b`),
+            `play` (`p`), `next` (`n`), `nextround` (`nr`), `hint` (`h`), `log` (`l`).
+          enum: [reset, r, bid, b, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        bid:
+          type: integer
+          description: Bid value (0=pass, 2-4). Required for `bid` command.
+          minimum: 0
+          maximum: 4
+          example: 3
+        cardIndex:
+          type: integer
+          description: Index of the card to play. Required for `play` command.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters).
+          example: my-session-001
+
+    PitchResponse:
+      type: object
+      description: Current state of the Pitch game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+                description: "Player's bid (-1=not bid, 0=pass, 2-4)."
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0=Bid, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd."
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        dealerIdx:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        currentBid:
+          type: integer
+          description: Current highest bid (0=no bid yet).
+        bidWinnerIdx:
+          type: integer
+          description: Index of the winning bidder (-1=not yet decided).
+        trumpSuit:
+          type: integer
+          description: "Trump suit: 0=unset, 1=Spades, 2=Clubs, 3=Hearts, 4=Diamonds."
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        validPlayIndices:
+          type: array
+          items:
+            type: integer
+          description: Indices of cards in the human player's hand that are legal to play.
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        hint:
+          type: object
+          properties:
+            cardIndex:
+              type: integer
+            bid:
+              type: integer
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
 
     PresidentRequest:
       type: object

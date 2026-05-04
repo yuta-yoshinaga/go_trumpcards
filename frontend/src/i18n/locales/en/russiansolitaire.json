@@ -1,0 +1,38 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Russian Solitaire",
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "autoCompleteNotReady": "Available once every card is face up",
+  "undo": "Undo",
+  "empty": "Empty",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "stalemate": "Stalemate",
+  "frontendHint": {
+    "moveToFoundation": "A card can be moved to the foundation",
+    "moveToTableau": "A card can be moved between tableau columns"
+  },
+  "tutorial": {
+    "foundation": "Build up cards A→K by suit here.",
+    "tableau": "Cards are dealt here. Click or drag face-up cards. Tableau-to-tableau moves require the SAME suit, descending.",
+    "controls": "Action buttons: hint, give up, undo.",
+    "resetButton": "Start a new game."
+  },
+  "nav": {
+    "russiansolitaire": "Russian Solitaire"
+  }
+}

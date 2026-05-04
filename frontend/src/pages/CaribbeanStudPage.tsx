@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { caribbeanstudApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -16,9 +16,9 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { CaribbeanStudSkeleton } from '../components/skeleton/CaribbeanStudSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,6 +26,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -75,14 +77,7 @@ const HAND_RANK_KEYS: Record<number, string> = {
 };
 
 /** Renders the Caribbean Stud Poker game page with betting, action, and result display. */
-export function CaribbeanStudPage() {
-  return (
-    <TutorialWrapper gameName="caribbeanstud" steps={CSP_TUTORIAL_STEPS}>
-      <CaribbeanStudPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const CaribbeanStudPage = withTutorial(CaribbeanStudPageContent, 'caribbeanstud', CSP_TUTORIAL_STEPS);
 /** Inner content of the Caribbean Stud Poker page, wrapped by TutorialProvider. */
 function CaribbeanStudPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -112,9 +107,7 @@ function CaribbeanStudPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   const isBetPhase = state?.phase === CaribbeanStudPhase.BET;
   const isActionPhase = state?.phase === CaribbeanStudPhase.ACTION;
@@ -139,7 +132,9 @@ function CaribbeanStudPageContent() {
     enabled: !!state && !loading,
   });
 
-  if (!state) return <CaribbeanStudSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state) return <GameSkeleton gameKey="caribbeanstud" layout={{ kind: 'casino-table', sections: [5, 5] }} />;
 
   const handleBet = () => {
     execApi('bet', anteAmount, jackpotAmount);
@@ -160,7 +155,7 @@ function CaribbeanStudPageContent() {
   const phaseName = isBetPhase ? t('phase.bet') : isActionPhase ? t('phase.action') : t('phase.end');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.threecard.bg}`} aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.caribbeanstud.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.caribbeanstud')} />
       <PhaseIndicator phaseName={phaseName}>
         <span>
@@ -326,7 +321,7 @@ function CaribbeanStudPageContent() {
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 
-          <GameFooter className={`${gameTheme.threecard.footer} px-4 pt-3`}>
+          <GameFooter className={`${gameTheme.caribbeanstud.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel title={t('settings.title')} groups={[]} />
             {isBetPhase && (

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { warApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -15,15 +15,18 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { WarSkeleton } from '../components/skeleton/WarSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
+import { gameTheme } from '../styles/gameTheme';
 import type { WarResponse } from '../types/card';
 import { WarPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -58,19 +61,13 @@ const WR_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the War (戦争) game page. */
-export function WarPage() {
-  return (
-    <TutorialWrapper gameName="war" steps={WR_TUTORIAL_STEPS}>
-      <WarPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const WarPage = withTutorial(WarPageContent, 'war', WR_TUTORIAL_STEPS);
 /** Inner content of the War page. */
 function WarPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('war');
   const { state, loading, error, exec: execApi, retry } = useGameApi(warApi.exec);
+  useGameRoundGuard(!!state && !state.gameEndFlag);
   const { cardWidth } = useCardDimensions();
   const [maxRounds, setMaxRounds] = useState(DEFAULT_MAX_ROUNDS);
   const {
@@ -82,9 +79,7 @@ function WarPageContent() {
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   const handleReset = useCallback(() => execApi('reset', { maxRounds }), [execApi, maxRounds]);
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('war');
@@ -115,7 +110,8 @@ function WarPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  if (!state || state.players.length < 2) return <WarSkeleton />;
+  if (!state || state.players.length < 2)
+    return <GameSkeleton gameKey="war" layout={{ kind: 'centered', rows: [2], gap: 'wide' }} />;
 
   const isGameEnd = state.gameEndFlag || state.phase === WarPhase.GAME_END;
   const humanWon = isGameEnd && state.winnerIdx === 0;
@@ -131,7 +127,7 @@ function WarPageContent() {
         : t('phase.reveal');
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading}>
+    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.war.bg}`} aria-busy={loading}>
       <GamePageHeading title={tc('nav.war')} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={!isGameEnd}>
         <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
@@ -264,7 +260,7 @@ function WarPageContent() {
             ]}
           />
 
-          <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
+          <GameFooter className={`${gameTheme.war.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center">
               <button
                 type="button"

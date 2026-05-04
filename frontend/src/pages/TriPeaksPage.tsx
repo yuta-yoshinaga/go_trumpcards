@@ -18,15 +18,16 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
-import { TriPeaksSkeleton } from '../components/skeleton/TriPeaksSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useTriPeaksGame } from '../hooks/useTriPeaksGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -82,14 +83,7 @@ const TP_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the TriPeaks Solitaire game page with three peaks, stock/waste, and controls. */
-export function TriPeaksPage() {
-  return (
-    <TutorialWrapper gameName="tripeaks" steps={TP_TUTORIAL_STEPS}>
-      <TriPeaksPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const TriPeaksPage = withTutorial(TriPeaksPageContent, 'tripeaks', TP_TUTORIAL_STEPS);
 /** Inner content of the TriPeaks page, wrapped by TutorialProvider. */
 function TriPeaksPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -153,7 +147,10 @@ function TriPeaksPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
-  if (!state) return <TriPeaksSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state)
+    return <GameSkeleton gameKey="tripeaks" layout={{ kind: 'tiered-rows', rows: [3, 6, 9, 10], stockWaste: true }} />;
 
   const isPlaying = state.phase === TriPeaksPhase.PLAYING;
   const isGameClear = state.phase === TriPeaksPhase.GAME_CLEAR;

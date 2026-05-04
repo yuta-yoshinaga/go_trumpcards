@@ -15,9 +15,9 @@ import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { PaiGowSkeleton } from '../components/skeleton/PaiGowSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -25,6 +25,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -79,14 +81,7 @@ const PG_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Pai Gow Poker game page with betting, hand setting, and result display. */
-export function PaiGowPage() {
-  return (
-    <TutorialWrapper gameName="paigow" steps={PG_TUTORIAL_STEPS}>
-      <PaiGowPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const PaiGowPage = withTutorial(PaiGowPageContent, 'paigow', PG_TUTORIAL_STEPS);
 /** Inner content of the Pai Gow Poker page, wrapped by TutorialProvider. */
 function PaiGowPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -112,9 +107,7 @@ function PaiGowPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    execApi('reset');
-  }, [execApi]);
+  useMountReset(execApi);
 
   // Reset selection when phase changes
   useEffect(() => {
@@ -163,7 +156,9 @@ function PaiGowPageContent() {
     enabled: !!state && !loading,
   });
 
-  if (!state) return <PaiGowSkeleton />;
+  useGameRoundGuard(isGameRoundActive(state));
+
+  if (!state) return <GameSkeleton gameKey="paigow" layout={{ kind: 'casino-table', sections: [7, 7] }} />;
 
   const handleBet = () => {
     execApi('bet', betAmount);

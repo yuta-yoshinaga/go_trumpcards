@@ -18,14 +18,15 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
-import { SevensSkeleton } from '../components/skeleton/SevensSkeleton';
+import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnSecondary } from '../styles/buttonStyles';
@@ -59,14 +60,7 @@ const SV_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** Renders the Sevens game page with board, player areas, and joker placement. */
-export function SevensPage() {
-  return (
-    <TutorialWrapper gameName="sevens" steps={SV_TUTORIAL_STEPS}>
-      <SevensPageContent />
-    </TutorialWrapper>
-  );
-}
-
+export const SevensPage = withTutorial(SevensPageContent, 'sevens', SV_TUTORIAL_STEPS);
 /** Inner content of the Sevens page, wrapped by TutorialProvider. */
 function SevensPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -166,7 +160,22 @@ function SevensPageContent() {
     cfgJokerConsBan,
   ]);
 
-  if (!state) return <SevensSkeleton />;
+  useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  if (!state)
+    return (
+      <GameSkeleton
+        gameKey="sevens"
+        layout={{
+          kind: 'card-grid',
+          count: 52,
+          cols: 'grid-cols-13',
+          aspectRatio: 'aspect-square',
+          topPills: 3,
+          footerHandSize: 5,
+        }}
+      />
+    );
 
   const tablePlaced = state.tablePlaced;
   const tunnelEnabled = state.config.tunnelEnabled;

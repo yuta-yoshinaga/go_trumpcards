@@ -1,6 +1,5 @@
-import { useMemo } from 'react';
 import { videopokerApi } from '../api/gameApi';
-import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
+import { withTutorial } from '../components/tutorial/withTutorial';
 import { VideoPokerGameContent } from '../components/VideoPokerGameContent';
 import { VIDEO_POKER_TUTORIAL_STEPS } from '../constants/videoPokerTutorial';
 import { parseVideopokerCommand, VIDEOPOKER_HELP } from '../utils/cli/commands/videopokerCommands';
@@ -20,26 +19,24 @@ const JOB_PAYOUT_ROWS = [
   'jacksOrBetter',
 ];
 
-/** Renders the Video Poker (Jacks or Better) game page. */
-export function VideoPokerPage() {
-  const cliGameConfig = useMemo(
-    () => ({
-      parseCommand: parseVideopokerCommand,
-      formatResponse: formatVideopokerState,
-      helpText: VIDEOPOKER_HELP,
-    }),
-    [],
-  );
+const CLI_GAME_CONFIG = {
+  parseCommand: parseVideopokerCommand,
+  formatResponse: formatVideopokerState,
+  helpText: VIDEOPOKER_HELP,
+} as const;
+
+function VideoPokerPageContent() {
   return (
-    <TutorialWrapper gameName="videopoker" steps={VIDEO_POKER_TUTORIAL_STEPS}>
-      <VideoPokerGameContent
-        gameName="videopoker"
-        i18nNamespace="videopoker"
-        apiExec={videopokerApi.exec}
-        payoutTableRows={JOB_PAYOUT_ROWS}
-        gamePath="/videopoker"
-        cliGameConfig={cliGameConfig}
-      />
-    </TutorialWrapper>
+    <VideoPokerGameContent
+      gameName="videopoker"
+      i18nNamespace="videopoker"
+      apiExec={videopokerApi.exec}
+      payoutTableRows={JOB_PAYOUT_ROWS}
+      gamePath="/videopoker"
+      cliGameConfig={CLI_GAME_CONFIG}
+    />
   );
 }
+
+/** Renders the Video Poker (Jacks or Better) game page. */
+export const VideoPokerPage = withTutorial(VideoPokerPageContent, 'videopoker', VIDEO_POKER_TUTORIAL_STEPS);
