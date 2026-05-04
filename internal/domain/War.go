@@ -134,8 +134,9 @@ func (w *War) Step() error {
 
 // warAutoPlayMaxSteps caps the AutoPlay loop. With MaxRounds defaulting to 500
 // and a generous safety factor for nested wars, this is well above any
-// realistic play-out length while preventing runaway iteration.
-const warAutoPlayMaxSteps = 100000
+// realistic play-out length while preventing runaway iteration. Declared as a
+// var (not const) so tests can lower it to exercise the cap-hit branch.
+var warAutoPlayMaxSteps = 100000
 
 // AutoPlay 自動プレイ（決着まで Step を繰り返す）
 func (w *War) AutoPlay() error {
@@ -150,7 +151,7 @@ func (w *War) AutoPlay() error {
 			return fmt.Errorf("step %d: %w", i+1, err)
 		}
 	}
-	return nil
+	return fmt.Errorf("auto-play reached maximum steps (%d) without finishing", warAutoPlayMaxSteps)
 }
 
 // stepReveal 両者の山札から1枚ずつめくる

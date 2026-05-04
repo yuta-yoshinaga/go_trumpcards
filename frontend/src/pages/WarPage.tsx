@@ -97,7 +97,7 @@ function WarPageContent() {
         const cmd = input.trim().toLowerCase();
         if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
         if (cmd === 'step' || cmd === 's') return { args: ['step'] };
-        if (cmd === 'autoplay' || cmd === 'auto' || cmd === 'a') return { args: ['autoplay'] };
+        if (cmd === 'autoplay' || cmd === 'a') return { args: ['autoplay'] };
         if (cmd === 'log' || cmd === 'l') return { args: ['log'] };
         return { error: `Unknown command: ${cmd}` };
       },

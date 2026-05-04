@@ -337,3 +337,21 @@ func TestWar_AutoPlay_AfterEndReturnsErr(t *testing.T) {
 	err := w.AutoPlay()
 	assert.ErrorIs(t, err, ErrGameEnded)
 }
+
+func TestWar_AutoPlay_HitsCapWithoutFinishing(t *testing.T) {
+	// Lower the cap below the steps required for either side to win so the
+	// loop exhausts before gameEndFlag flips. AutoPlay must surface an error
+	// rather than silently report success.
+	orig := warAutoPlayMaxSteps
+	warAutoPlayMaxSteps = 1
+	t.Cleanup(func() { warAutoPlayMaxSteps = orig })
+
+	w := setupWarWithPiles(t,
+		[]*Card{card(10), card(9), card(8)},
+		[]*Card{card(5), card(4), card(3)},
+	)
+	err := w.AutoPlay()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "auto-play reached maximum steps")
+	assert.False(t, w.GetGameEndFlag())
+}
