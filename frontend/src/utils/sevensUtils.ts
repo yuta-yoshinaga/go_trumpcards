@@ -86,6 +86,28 @@ export function hasAnyPlayablePosition(
   return false;
 }
 
+/**
+ * Returns every (suit, value) coordinate where the joker can legally land.
+ * Used by the page to auto-place the joker when there is exactly one option,
+ * so the player avoids a redundant click on a single highlighted cell.
+ */
+export function listJokerPlacements(
+  tablePlaced: number[],
+  tunnelEnabled: boolean,
+  endStopEnabled: boolean,
+  tunnelSkipWidth = 0,
+): Array<{ suit: number; value: number }> {
+  const result: Array<{ suit: number; value: number }> = [];
+  for (let suit = 1; suit <= 4; suit++) {
+    for (let v = 1; v <= 13; v++) {
+      if (isPositionPlayable(tablePlaced, suit, v, tunnelEnabled, endStopEnabled, tunnelSkipWidth)) {
+        result.push({ suit, value: v });
+      }
+    }
+  }
+  return result;
+}
+
 /** Check if a hand contains only joker cards. */
 export function hasOnlyJokers(cards: Card[]): boolean {
   return cards.length > 0 && cards.every((c) => c.design === 'JOKER');
