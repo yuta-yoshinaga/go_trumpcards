@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { sevensApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -38,7 +38,7 @@ import { parseSevensCommand, SEVENS_HELP } from '../utils/cli/commands/sevensCom
 import { formatSevensState } from '../utils/cli/formatters/sevensFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
-import { actionDesc } from '../utils/sevensUtils';
+import { actionDesc, listJokerPlacements } from '../utils/sevensUtils';
 
 /** Sevens tutorial step definitions. */
 const SV_TUTORIAL_STEPS: TutorialStep[] = [
@@ -161,6 +161,23 @@ function SevensPageContent() {
   ]);
 
   useGameRoundGuard(!!state && !state.gameEndFlag);
+
+  // Auto-place: when the player has just selected a joker and the board offers
+  // exactly one legal slot, skip the redundant click and dispatch the placement
+  // immediately. Anything more than one slot still requires the player to pick
+  // (otherwise we'd remove their strategic choice).
+  useEffect(() => {
+    if (jokerCardIdx === null || !state || loading) return;
+    const slots = listJokerPlacements(
+      state.tablePlaced,
+      state.config.tunnelEnabled,
+      state.config.endStopEnabled,
+      state.config.tunnelSkipWidth,
+    );
+    if (slots.length === 1) {
+      handleJokerPlace(slots[0].suit, slots[0].value);
+    }
+  }, [jokerCardIdx, state, loading, handleJokerPlace]);
 
   if (!state)
     return (

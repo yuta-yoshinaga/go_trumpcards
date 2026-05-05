@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isCardPlayable, isPositionPlayable, wrapValue } from './sevensUtils';
+import { isCardPlayable, isPositionPlayable, listJokerPlacements, wrapValue } from './sevensUtils';
 
 describe('wrapValue', () => {
   it('returns value unchanged for 1-13', () => {
@@ -86,5 +86,33 @@ describe('isCardPlayable with tunnelSkipWidth', () => {
     expect(isCardPlayable(joker, board7Only, false, false, [joker], false, false, false, 0)).toBe(true);
     // With skip=3, additional positions are playable
     expect(isCardPlayable(joker, board7Only, false, false, [joker], false, false, false, 3)).toBe(true);
+  });
+});
+
+describe('listJokerPlacements', () => {
+  it('returns the 6 and 8 positions on each suit when only 7 is placed', () => {
+    // Standard opening: every suit has only its 7 placed.
+    const board7Only = [0, 128, 128, 128, 128];
+    const slots = listJokerPlacements(board7Only, false, false, 0);
+    // 4 suits * 2 neighbours (6 and 8) = 8 placements
+    expect(slots).toHaveLength(8);
+    // Spot-check that suit 1 (♠) offers values 6 and 8.
+    const spadeValues = slots
+      .filter((s) => s.suit === 1)
+      .map((s) => s.value)
+      .sort((a, b) => a - b);
+    expect(spadeValues).toEqual([6, 8]);
+  });
+
+  it('returns a single slot when only one suit has been opened', () => {
+    // Bit 7 set on spade only.
+    const board = [0, 128, 0, 0, 0];
+    const slots = listJokerPlacements(board, false, false, 0);
+    expect(slots).toHaveLength(2); // 6 and 8 of spades
+  });
+
+  it('returns an empty list when the board is empty (no anchors to extend)', () => {
+    const empty = [0, 0, 0, 0, 0];
+    expect(listJokerPlacements(empty, false, false, 0)).toEqual([]);
   });
 });
