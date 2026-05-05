@@ -194,15 +194,14 @@ function CribbagePageContent() {
   // briefly reads the toast before the turn rotates to the opponent. Computed
   // here (before the early return) so the hooks order stays stable across
   // renders.
+  const currentPlayer = state?.players[state.currentPlayerIdx ?? -1];
   const shouldAutoGo =
     state?.phase === CribbagePhase.PEGGING &&
-    state?.players[state.currentPlayerIdx]?.isHuman === true &&
-    !state?.players
-      .find((p) => p.isHuman)
-      ?.cards?.some((c) => {
-        const cv = c.value >= 10 ? 10 : c.value;
-        return state.pegCount + cv <= 31;
-      }) &&
+    currentPlayer?.isHuman === true &&
+    !currentPlayer.cards?.some((c) => {
+      const cv = c.value >= 10 ? 10 : c.value;
+      return state.pegCount + cv <= 31;
+    }) &&
     !loading;
   const [autoGoNoticeVisible, setAutoGoNoticeVisible] = useState(false);
   useEffect(() => {
