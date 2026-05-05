@@ -12,8 +12,9 @@ export function isCompleteBadugiHand(cards: ReadonlyArray<Card>): boolean {
   const suits = new Set<string>();
   for (const c of cards) {
     if (c.design === 'JOKER') return false;
+    if (ranks.has(c.value) || suits.has(c.design)) return false;
     ranks.add(c.value);
     suits.add(c.design);
   }
-  return ranks.size === 4 && suits.size === 4;
+  return true;
 }

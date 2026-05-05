@@ -163,7 +163,11 @@ function BadugiPageContent() {
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
   // Stand-pat protection: warn the player when their 4 cards are already a complete Badugi
   // (4 distinct ranks + 4 distinct suits). Exchanging from this state can only weaken the hand.
-  const humanHasCompleteBadugi = isCompleteBadugiHand(humanPlayer?.cards ?? []);
+  // Memoised so the Set allocations only run when the hand actually changes.
+  const humanHasCompleteBadugi = useMemo(
+    () => (canExchange ? isCompleteBadugiHand(humanPlayer?.cards ?? []) : false),
+    [canExchange, humanPlayer?.cards],
+  );
 
   useCardKeyboardNav({
     cardCount,
