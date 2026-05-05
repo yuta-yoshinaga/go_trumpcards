@@ -172,6 +172,18 @@ function PinochlePageContent() {
     }
   }, [state?.phase]);
 
+  // Memoised highlight keys — the underlying meld card list rarely changes,
+  // and recomputing the Set on every render (incl. unrelated state churn like
+  // bidAmount edits) is wasted work. Computed before the early return so the
+  // hook order stays stable on first render when state is still null.
+  const highlightedCardKeys = useMemo(() => {
+    if (!state || highlightedMeldIdx === null) return new Set<string>();
+    const humanIdxLocal = state.players.findIndex((p) => p.isHuman);
+    const meld = humanIdxLocal >= 0 ? state.playerMelds[humanIdxLocal]?.[highlightedMeldIdx] : null;
+    if (!meld) return new Set<string>();
+    return new Set<string>(meld.cards.map((c) => `${c.design}-${c.value}`));
+  }, [state, highlightedMeldIdx]);
+
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) {
@@ -189,15 +201,6 @@ function PinochlePageContent() {
   const isTrumpTurn = phase === PinochlePhase.TRUMP && state.players?.[state.currentPlayerIdx]?.isHuman;
   const isPlayTurn = phase === PinochlePhase.PLAY && state.players?.[state.currentPlayerIdx]?.isHuman;
   const isGameEnd = phase === PinochlePhase.GAME_END || state.gameEndFlag;
-  // Build a Set of "design-value" keys so the hand renderer can ring every
-  // copy of a card that participates in the highlighted meld. Pinochle uses
-  // a double deck, so two copies of the same rank+suit are equivalent for
-  // the meld and should both glow.
-  const highlightedMeld =
-    humanIdx >= 0 && highlightedMeldIdx !== null ? state.playerMelds[humanIdx]?.[highlightedMeldIdx] : null;
-  const highlightedCardKeys = new Set<string>(
-    highlightedMeld?.cards.map((c: { design: string; value: number }) => `${c.design}-${c.value}`) ?? [],
-  );
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pinochle.bg}`} aria-busy={loading}>
@@ -373,7 +376,7 @@ function PinochlePageContent() {
                       disabled={loading || !isPlayTurn || !isValid}
                       aria-label={cardAlt(card)}
                       data-meld-highlighted={inHighlightedMeld ? 'true' : undefined}
-                      className={`transition-transform${inHighlightedMeld ? ' ring-4 ring-ds-accent' : ''}`}
+                      className={`transition${inHighlightedMeld ? ' ring-4 ring-ds-accent' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,
