@@ -23,7 +23,6 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -117,10 +116,10 @@ function SpiderPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('spider', state);
-  // Stock area uses the standard card preset; tableau uses responsive 10-column dimensions
-  // so a 375 px viewport doesn't crush each card below 28 px (#1648).
-  const { cardHeight, cardWidth } = useCardDimensions();
-  const tableau = useResponsiveTableau(10);
+  // Responsive 10-column dimensions matching this page's `px-4` scroll container and `gap-0.5`
+  // tableau so a 375 px viewport doesn't crush each card below 28 px (#1648). Stock uses the
+  // same dimensions so cards don't visibly pop when the deal animation moves them to the tableau.
+  const tableau = useResponsiveTableau(10, { padX: 32, gapPx: 2 });
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spider');
   const cliConfig: CliGameConfig<SpiderResponse, Parameters<typeof spiderApi.exec>> = useMemo(
@@ -241,14 +240,14 @@ function SpiderPageContent() {
                 </div>
                 {state.stockCount > 0 ? (
                   <AnimatedCardBack
-                    width={cardWidth}
+                    width={tableau.cw}
                     onClick={isPlaying ? handleDealGuarded : undefined}
                     ariaLabel={t('deal')}
                     onFlipComplete={() => playSound('cardFlip')}
                   />
                 ) : (
                   <div
-                    style={{ width: cardWidth, height: cardHeight }}
+                    style={{ width: tableau.cw, height: tableau.ch }}
                     className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
                   >
                     {t('empty')}

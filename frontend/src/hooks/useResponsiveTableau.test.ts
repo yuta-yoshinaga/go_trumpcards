@@ -27,13 +27,28 @@ describe('useResponsiveTableau', () => {
     expect(result.current.co).toBe(CARD_DIMENSIONS.largeDesktop.cardOverlap);
   });
 
-  it('shrinks card width to fit 10 columns on a 375px mobile viewport', () => {
+  it('shrinks card width to fit 10 columns on a 375px mobile viewport (default px-2/gap-1)', () => {
     setWidth(375);
     const { result } = renderHook(() => useResponsiveTableau(10));
-    // Expected ~ floor((375 - 16 - 9*4) / 10) = 32, clamped to [28, 40].
-    expect(result.current.cw).toBeGreaterThanOrEqual(28);
+    // floor((375 - 16 padX - 9 * 4 gap) / 10) = floor(32.3) = 32, clamped to [24, mobile.cardWidth].
+    expect(result.current.cw).toBe(32);
     expect(result.current.cw).toBeLessThanOrEqual(CARD_DIMENSIONS.mobile.cardWidth);
     expect(result.current.ch).toBe(Math.round(result.current.cw * 1.5));
+  });
+
+  it('honors custom padX/gapPx so SpiderPage (px-4 / gap-0.5) gets accurate sizing', () => {
+    setWidth(375);
+    const { result } = renderHook(() => useResponsiveTableau(10, { padX: 32, gapPx: 2 }));
+    // floor((375 - 32 padX - 9 * 2 gap) / 10) = floor(32.5) = 32 — matches Spider's actual layout.
+    expect(result.current.cw).toBe(32);
+  });
+
+  it('diverges from defaults on a narrower viewport when Spider-style padding is used', () => {
+    setWidth(320);
+    const ftLike = renderHook(() => useResponsiveTableau(10)).result.current;
+    const spiderLike = renderHook(() => useResponsiveTableau(10, { padX: 32, gapPx: 2 })).result.current;
+    // Different layouts → different card widths once the viewport is tight enough.
+    expect(spiderLike.cw).not.toBe(ftLike.cw);
   });
 
   it('exposes a larger tap strip per stacked card on mobile (co >= 0.55 * cw)', () => {

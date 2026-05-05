@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { CARD_DIMENSIONS, useCardDimensions, useWindowWidth } from './useCardDimensions';
+import { useCardDimensions, useWindowWidth } from './useCardDimensions';
 
 /** Responsive card dimensions for a multi-column tableau layout. */
 export interface ResponsiveTableauDimensions {
@@ -11,6 +11,14 @@ export interface ResponsiveTableauDimensions {
   co: number;
   /** Horizontal fan offset (in px) used by waste piles next to the tableau. */
   wasteFan: number;
+}
+
+/** Caller-supplied mobile layout dimensions matching the page's actual CSS. */
+export interface ResponsiveTableauConfig {
+  /** Total horizontal padding (left + right) of the tableau's scroll container, in px. Defaults to 16 (Tailwind `px-2`). */
+  padX?: number;
+  /** Gap between adjacent tableau columns, in px. Defaults to 4 (Tailwind `gap-1`). */
+  gapPx?: number;
 }
 
 /** Minimum visual card width in px. Anything smaller is unreadable on a 375 px portrait phone. */
@@ -27,24 +35,33 @@ const MIN_CARD_WIDTH = 24;
 const MOBILE_VERTICAL_OVERLAP_RATIO = 0.58;
 /** Default fan offset in px used when the waste pile is rendered alongside the tableau. */
 const DESKTOP_WASTE_FAN = 15;
+const DEFAULT_PAD_X = 16;
+const DEFAULT_GAP_PX = 4;
 
 /**
  * Hook that returns responsive card dimensions for an N-column tableau.
  *
  * On mobile viewports (< 640 px) the card width is computed from the available viewport so all
  * `numCols` columns fit without horizontal scroll. On desktop / large-desktop the standard
- * preset from {@link CARD_DIMENSIONS} is returned unchanged.
+ * preset from `CARD_DIMENSIONS` is returned unchanged.
+ *
+ * The optional `config` lets callers override the assumed scroll-container padding and inter-column
+ * gap so the calculation matches the page's actual Tailwind classes — without it the math implicitly
+ * assumes `px-2` / `gap-1`.
  */
-export function useResponsiveTableau(numCols: number): ResponsiveTableauDimensions {
+export function useResponsiveTableau(
+  numCols: number,
+  config: ResponsiveTableauConfig = {},
+): ResponsiveTableauDimensions {
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
+  const padX = config.padX ?? DEFAULT_PAD_X;
+  const gapPx = config.gapPx ?? DEFAULT_GAP_PX;
 
   return useMemo<ResponsiveTableauDimensions>(() => {
     if (!isMobile) {
       return { cw: cardWidth, ch: cardHeight, co: cardOverlap, wasteFan: DESKTOP_WASTE_FAN };
     }
-    const padX = 16;
-    const gapPx = 4;
     const availableWidth = windowWidth - padX - (numCols - 1) * gapPx;
     const colW = Math.floor(availableWidth / numCols);
     const cw = Math.min(Math.max(colW, MIN_CARD_WIDTH), cardWidth);
@@ -52,5 +69,5 @@ export function useResponsiveTableau(numCols: number): ResponsiveTableauDimensio
     const co = Math.round(cw * MOBILE_VERTICAL_OVERLAP_RATIO);
     const wasteFan = Math.round(cw * 0.3);
     return { cw, ch, co, wasteFan };
-  }, [isMobile, windowWidth, numCols, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, windowWidth, numCols, padX, gapPx, cardWidth, cardHeight, cardOverlap]);
 }
