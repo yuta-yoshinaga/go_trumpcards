@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { pokersquaresApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -90,6 +90,24 @@ function PokerSquaresPageContent() {
   const isComplete = state?.phase === PokerSquaresPhase.COMPLETE;
   const isPlaying = state?.phase === PokerSquaresPhase.PLAYING;
 
+  // Cross-highlight: while the player hovers/focuses an empty cell, highlight its row + column
+  // and the corresponding row/col score badges so they can preview which lines a placement affects.
+  const [crossHover, setCrossHover] = useState<{ row: number; col: number } | null>(null);
+  const clearCrossHover = useCallback(() => setCrossHover(null), []);
+
+  // Disabled buttons do not always fire pointerleave/blur, so the hover state can get stuck after
+  // a click (cell becomes filled) or while an API call is in flight. Clear defensively whenever
+  // the loading flag flips on or the hovered cell becomes filled by the latest server state.
+  useEffect(() => {
+    if (loading) {
+      setCrossHover(null);
+      return;
+    }
+    if (crossHover && state?.board[crossHover.row]?.[crossHover.col]?.card) {
+      setCrossHover(null);
+    }
+  }, [loading, state?.board, crossHover]);
+
   const handlePlace = (row: number, col: number) => {
     execApi('place', row, col);
   };
@@ -174,20 +192,27 @@ function PokerSquaresPageContent() {
                             const cellAction = `cell-${rowIdx}-${colIdx}`;
                             const isHintTarget =
                               frontendHintEnabled && frontendHint?.targetAction === cellAction && !filled;
+                            const inCross =
+                              crossHover !== null && (crossHover.row === rowIdx || crossHover.col === colIdx);
                             return (
                               <button
                                 type="button"
                                 key={`cell-${rowIdx}-${colIdx}`}
                                 data-testid={`cell-${rowIdx}-${colIdx}`}
                                 data-hint-action={cellAction}
+                                data-cross-hover={inCross ? 'true' : undefined}
                                 aria-label={
                                   cell.card ? cardAlt(cell.card) : `${t('label.empty')} ${rowIdx + 1}-${colIdx + 1}`
                                 }
                                 onClick={() => handlePlace(rowIdx, colIdx)}
+                                onPointerEnter={() => !filled && setCrossHover({ row: rowIdx, col: colIdx })}
+                                onPointerLeave={clearCrossHover}
+                                onFocus={() => !filled && setCrossHover({ row: rowIdx, col: colIdx })}
+                                onBlur={clearCrossHover}
                                 disabled={!isPlaying || loading || filled || !state.currentCard}
                                 className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
                                   filled ? '' : 'cursor-pointer'
-                                } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
+                                } ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}${inCross ? ' bg-white/10' : ''}`}
                               >
                                 {cell.card ? (
                                   <AnimatedCard card={cell.card} width={cardWidth} />
@@ -197,7 +222,9 @@ function PokerSquaresPageContent() {
                                       width: cardWidth,
                                       height: Math.round(cardWidth * 1.4),
                                     }}
-                                    className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-game-text-muted text-xs"
+                                    className={`rounded border-2 border-dashed flex items-center justify-center text-game-text-muted text-xs ${
+                                      inCross ? 'border-ds-accent' : 'border-white/30'
+                                    }`}
                                   >
                                     +
                                   </div>
@@ -213,16 +240,24 @@ function PokerSquaresPageContent() {
                         data-testid="ps-row-scores"
                         data-tutorial="ps-scores"
                       >
-                        {state.rowScores.map((s, i) => (
-                          <div
-                            key={`row-score-${i}`}
-                            data-testid={`row-score-${i}`}
-                            style={{ height: Math.round(cardWidth * 1.4) }}
-                            className="flex items-center justify-center text-ds-text-primary text-sm font-mono px-2 rounded bg-black/30 min-w-[2.5rem]"
-                          >
-                            {s}
-                          </div>
-                        ))}
+                        {state.rowScores.map((s, i) => {
+                          const highlighted = crossHover?.row === i;
+                          return (
+                            <div
+                              key={`row-score-${i}`}
+                              data-testid={`row-score-${i}`}
+                              data-cross-hover={highlighted ? 'true' : undefined}
+                              style={{ height: Math.round(cardWidth * 1.4) }}
+                              className={`flex items-center justify-center text-sm font-mono px-2 rounded min-w-[2.5rem] ${
+                                highlighted
+                                  ? 'text-ds-accent bg-ds-accent/15 ring-1 ring-ds-accent'
+                                  : 'text-ds-text-primary bg-black/30'
+                              }`}
+                            >
+                              {s}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                     <div
@@ -230,16 +265,24 @@ function PokerSquaresPageContent() {
                       style={{ gridTemplateColumns: `repeat(5, minmax(0, 1fr))` }}
                       data-testid="ps-col-scores"
                     >
-                      {state.colScores.map((s, i) => (
-                        <div
-                          key={`col-score-${i}`}
-                          data-testid={`col-score-${i}`}
-                          style={{ width: cardWidth }}
-                          className="text-center text-ds-text-primary text-sm font-mono py-1 rounded bg-black/30"
-                        >
-                          {s}
-                        </div>
-                      ))}
+                      {state.colScores.map((s, i) => {
+                        const highlighted = crossHover?.col === i;
+                        return (
+                          <div
+                            key={`col-score-${i}`}
+                            data-testid={`col-score-${i}`}
+                            data-cross-hover={highlighted ? 'true' : undefined}
+                            style={{ width: cardWidth }}
+                            className={`text-center text-sm font-mono py-1 rounded ${
+                              highlighted
+                                ? 'text-ds-accent bg-ds-accent/15 ring-1 ring-ds-accent'
+                                : 'text-ds-text-primary bg-black/30'
+                            }`}
+                          >
+                            {s}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
