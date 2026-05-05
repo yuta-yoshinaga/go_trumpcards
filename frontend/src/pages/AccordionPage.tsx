@@ -20,6 +20,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -213,6 +214,48 @@ function AccordionPageContent() {
     },
     [selectedIdx, dispatchMove],
   );
+
+  // Keyboard shortcuts: arrow keys scrub the selection, `1`/`3` perform the
+  // two legal merges, `u`/`h`/`g` mirror the action buttons. Hook reads from
+  // the live state so it stays in sync without a separate effect.
+  const pileCount = state?.pileCount ?? 0;
+  const moveSelection = useCallback(
+    (delta: number) => {
+      setSelectedIdx((prev) => {
+        if (prev === null) return delta > 0 ? 0 : Math.max(0, pileCount - 1);
+        const next = prev + delta;
+        if (next < 0 || next >= pileCount) return prev;
+        return next;
+      });
+    },
+    [pileCount],
+  );
+  const mergeFromSelection = useCallback(
+    (offset: 1 | 3) => {
+      if (selectedIdx === null) return;
+      const target = selectedIdx - offset;
+      if (target < 0) return;
+      dispatchMove(selectedIdx, target);
+    },
+    [dispatchMove, selectedIdx],
+  );
+  const accordionBindings = useMemo(
+    () => [
+      { key: 'ArrowLeft', action: () => moveSelection(-1) },
+      { key: 'ArrowRight', action: () => moveSelection(1) },
+      { key: '1', action: () => mergeFromSelection(1) },
+      { key: '3', action: () => mergeFromSelection(3) },
+      { key: 'u', action: handleUndo },
+      { key: 'h', action: handleHint },
+      { key: 'g', action: handleGiveUp },
+      { key: 'Escape', action: () => setSelectedIdx(null) },
+    ],
+    [moveSelection, mergeFromSelection, handleUndo, handleHint, handleGiveUp],
+  );
+  useActionKeyboardNav({
+    bindings: accordionBindings,
+    enabled: state?.phase === AccordionPhase.PLAYING && !loading,
+  });
   useGameRoundGuard(isGameRoundActive(state));
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;

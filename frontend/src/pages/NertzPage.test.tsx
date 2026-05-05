@@ -184,4 +184,42 @@ describe('NertzPage', () => {
     mockExec.mockResolvedValue(playingState);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('tick'), { timeout: 2000 });
   });
+
+  it('pressing "d" draws stock for the human', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('d', { playerIdx: 0 }));
+  });
+
+  it('pressing "1" while a card is selected dispatches a move to foundation 0', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByText(/♥7/)).toBeInTheDocument());
+
+    // Pick the Nertz pile via 'n' first, then ask for foundation 0.
+    fireEvent.keyDown(document, { key: 'n' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('m', {
+        playerIdx: 0,
+        from: { zone: 'nertz' },
+        to: { zone: 'foundation', idx: 0 },
+      }),
+    );
+  });
 });
