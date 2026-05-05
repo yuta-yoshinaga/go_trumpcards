@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, cribbageApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -217,6 +217,56 @@ describe('CribbagePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'カードを出す' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('peg', 0));
+  });
+
+  it('auto-dispatches go after a brief delay when the human has no playable card and shows the notice', async () => {
+    vi.useFakeTimers();
+    try {
+      const goState: CribbageResponse = {
+        ...peggingPhaseState,
+        pegCount: 28,
+        players: [
+          {
+            ...peggingPhaseState.players[0],
+            cardCount: 1,
+            cards: [{ design: 'HEART', value: 10 }], // 28+10=38 > 31, no playable card.
+          },
+          peggingPhaseState.players[1],
+        ],
+      };
+      mockExec.mockResolvedValue(goState);
+      renderWithProviders(<CribbagePage />);
+      // The auto-Go notice appears as soon as the no-playable state is reflected.
+      await vi.waitFor(() => expect(screen.getByTestId('cb-auto-go-notice')).toBeInTheDocument());
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(goState);
+      // Advance past the 1s delay; the timeout should fire 'go' without any user click.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+      expect(mockExec).toHaveBeenCalledWith('go');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not auto-dispatch go when the human has at least one playable card', async () => {
+    vi.useFakeTimers();
+    try {
+      mockExec.mockResolvedValue(peggingPhaseState);
+      renderWithProviders(<CribbagePage />);
+      await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Go' })).toBeInTheDocument());
+      // No notice while the player can still peg.
+      expect(screen.queryByTestId('cb-auto-go-notice')).not.toBeInTheDocument();
+      mockExec.mockClear();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2000);
+      });
+      expect(mockExec).not.toHaveBeenCalledWith('go');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('calls go command when go button is clicked', async () => {
