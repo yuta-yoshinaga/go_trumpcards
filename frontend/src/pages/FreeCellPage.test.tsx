@@ -697,6 +697,68 @@ describe('FreeCellPage', () => {
       expect(cardButton).toHaveAttribute('draggable', 'true');
     });
 
+    it('marks only the deepest movable cards as draggable when free cells + empty cols are exhausted', async () => {
+      // Construct a stack of 3 cards in column 0 with all free cells full and no empty tableau cols.
+      // Supermove limit becomes (1+0)*2^0 = 1, so only the bottom card (cardIndex=2) can move.
+      const tightState: FreeCellResponse = {
+        ...playingState,
+        tableau: [
+          [card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)],
+          [card('DIAMOND', 1)],
+          [card('SPADE', 2)],
+          [card('HEART', 3)],
+          [card('DIAMOND', 4)],
+          [card('CLOVER', 5)],
+          [card('SPADE', 6)],
+          [card('HEART', 7)],
+        ],
+        freeCells: [card('DIAMOND', 8), card('CLOVER', 9), card('SPADE', 10), card('HEART', 11)],
+      };
+      mockExec.mockResolvedValue(tightState);
+      renderWithProviders(<FreeCellPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      // Bottom card of the 3-card stack is movable; the two above are not.
+      const topButton = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
+      const middleButton = screen.getByAltText('♥ Q').closest('button') as HTMLButtonElement;
+      const bottomButton = screen.getByAltText('♣ J').closest('button') as HTMLButtonElement;
+      expect(bottomButton).toHaveAttribute('draggable', 'true');
+      expect(bottomButton).not.toHaveAttribute('data-supermove-blocked');
+      expect(middleButton).toHaveAttribute('draggable', 'false');
+      expect(middleButton).toHaveAttribute('data-supermove-blocked', 'true');
+      expect(topButton).toHaveAttribute('draggable', 'false');
+      expect(topButton).toHaveAttribute('data-supermove-blocked', 'true');
+    });
+
+    it('lets the entire stack drag when free cells + empty cols allow it', async () => {
+      // 3-card stack, 2 empty free cells, 0 empty cols → limit = (1+2)*2^0 = 3 → all 3 movable.
+      const looseState: FreeCellResponse = {
+        ...playingState,
+        tableau: [
+          [card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)],
+          [card('DIAMOND', 1)],
+          [card('SPADE', 2)],
+          [card('HEART', 3)],
+          [card('DIAMOND', 4)],
+          [card('CLOVER', 5)],
+          [card('SPADE', 6)],
+          [card('HEART', 7)],
+        ],
+        freeCells: [card('DIAMOND', 8), card('CLOVER', 9), null, null],
+      };
+      mockExec.mockResolvedValue(looseState);
+      renderWithProviders(<FreeCellPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      const topButton = screen.getByAltText('♠ K').closest('button') as HTMLButtonElement;
+      const middleButton = screen.getByAltText('♥ Q').closest('button') as HTMLButtonElement;
+      const bottomButton = screen.getByAltText('♣ J').closest('button') as HTMLButtonElement;
+      expect(topButton).toHaveAttribute('draggable', 'true');
+      expect(middleButton).toHaveAttribute('draggable', 'true');
+      expect(bottomButton).toHaveAttribute('draggable', 'true');
+      expect(topButton).not.toHaveAttribute('data-supermove-blocked');
+    });
+
     it('free cell card is draggable when playing', async () => {
       mockExec.mockResolvedValue(withFreeCellCardState);
       renderWithProviders(<FreeCellPage />);

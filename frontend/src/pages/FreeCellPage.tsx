@@ -165,6 +165,15 @@ function FreeCellPageContent() {
   const isGameOver = state.phase === FreeCellPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
 
+  // Supermove limit: a tableau stack of N cards can only move when
+  // (1 + freeCells) * 2^emptyCols >= N. We compute the upper-bound limit (the
+  // optimistic case where the destination is NOT one of the empty columns) and
+  // mark anything deeper than that as undraggable, with a red ring + tooltip
+  // so the player sees the cap before the engine rejects the move.
+  const emptyFreeCells = state.freeCells.filter((c) => c === null).length;
+  const emptyTableauCols = state.tableau.filter((col: (Card | null)[]) => col.length === 0).length;
+  const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
+
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
     selectedSource.zone === zone &&
@@ -338,6 +347,8 @@ function FreeCellPageContent() {
                                 col: colIdx,
                                 cardIndex: cardIdx,
                               };
+                              const stackSize = col.length - cardIdx;
+                              const exceedsSupermove = stackSize > supermoveLimit;
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
@@ -357,10 +368,16 @@ function FreeCellPageContent() {
                                       disabled={!isPlaying || loading}
                                       aria-label={cardAlt(card)}
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
-                                      draggable={isPlaying && !loading}
+                                      draggable={isPlaying && !loading && !exceedsSupermove}
                                       onDragStart={dnd.handleDragStart(cardZone)}
                                       onDragEnd={dnd.handleDragEnd}
-                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                      title={
+                                        exceedsSupermove
+                                          ? t('supermoveLimitTooltip', { limit: supermoveLimit })
+                                          : undefined
+                                      }
+                                      data-supermove-blocked={exceedsSupermove ? 'true' : undefined}
+                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}${exceedsSupermove ? ' opacity-60 ring-1 ring-ds-error' : ''}`}
                                     >
                                       <AnimatedCard
                                         card={card}
