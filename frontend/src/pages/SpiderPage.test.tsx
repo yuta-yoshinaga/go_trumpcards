@@ -108,17 +108,53 @@ describe('SpiderPage', () => {
     // Column index headers should not be rendered
   });
 
-  it('clicking deal button dispatches deal', async () => {
+  it('clicking deal button dispatches deal when no empty columns exist', async () => {
+    const filledTableauState: SpiderResponse = {
+      ...playingState,
+      tableau: makeTableau(Array.from({ length: 10 }, () => [{ card: card('SPADE', 13), faceUp: true }])),
+    };
+    mockExec.mockResolvedValue(filledTableauState);
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getAllByRole('button', { name: '配る' }).length).toBeGreaterThanOrEqual(1));
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue(filledTableauState);
     // The footer button is the last one
     const dealButtons = screen.getAllByRole('button', { name: '配る' });
     fireEvent.click(dealButtons[dealButtons.length - 1]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
+  });
+
+  it('clicking deal with empty columns triggers shake on empty placeholders and skips API', async () => {
+    // playingState has empty columns 2..9
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getByTestId('spd-empty-col-2')).toBeInTheDocument());
+
+    // Before click: no shake class
+    expect(screen.getByTestId('spd-empty-col-2').className).not.toContain('animate-shake');
+
+    mockExec.mockClear();
+    const dealButtons = screen.getAllByRole('button', { name: '配る' });
+    fireEvent.click(dealButtons[dealButtons.length - 1]);
+
+    // After click: shake class applied to every empty column placeholder
+    await waitFor(() => {
+      expect(screen.getByTestId('spd-empty-col-2').className).toContain('animate-shake');
+    });
+    expect(screen.getByTestId('spd-empty-col-9').className).toContain('animate-shake');
+
+    // API was NOT called with deal
+    expect(mockExec).not.toHaveBeenCalledWith('deal');
+  });
+
+  it('deal button exposes empty-column reason via title when blocked', async () => {
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(screen.getAllByRole('button', { name: '配る' }).length).toBeGreaterThanOrEqual(1));
+
+    const dealButtons = screen.getAllByRole('button', { name: '配る' });
+    const footerDeal = dealButtons[dealButtons.length - 1];
+    expect(footerDeal).toHaveAttribute('title', '空の列をすべて埋めないと配れません');
   });
 
   it('clicking undo button dispatches undo', async () => {
@@ -345,12 +381,16 @@ describe('SpiderPage', () => {
     }
   });
 
-  it('pressing d triggers deal in PLAYING phase', async () => {
-    mockExec.mockResolvedValue(playingState);
+  it('pressing d triggers deal in PLAYING phase when no empty columns', async () => {
+    const filledTableauState: SpiderResponse = {
+      ...playingState,
+      tableau: makeTableau(Array.from({ length: 10 }, () => [{ card: card('SPADE', 13), faceUp: true }])),
+    };
+    mockExec.mockResolvedValue(filledTableauState);
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue(filledTableauState);
     fireEvent.keyDown(document, { key: 'd' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));
   });
@@ -417,11 +457,16 @@ describe('SpiderPage', () => {
   });
 
   it('stock card back is clickable during playing phase', async () => {
+    const filledTableauState: SpiderResponse = {
+      ...playingState,
+      tableau: makeTableau(Array.from({ length: 10 }, () => [{ card: card('SPADE', 13), faceUp: true }])),
+    };
+    mockExec.mockResolvedValue(filledTableauState);
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByText(/山札/)).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue(filledTableauState);
     const dealLabels = screen.getAllByLabelText('配る');
     fireEvent.click(dealLabels[0]);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('deal'));

@@ -28,6 +28,7 @@
   "hintAvailable": "ヒントがあります",
   "stalemate": "手詰まりです",
   "dealsRemaining": "残り{{count}}回配れます",
+  "cannotDealEmptyColExists": "空の列をすべて埋めないと配れません",
   "tutorial": {
     "stockPile": "山札です。クリックすると各列に1枚ずつカードが配られます。全ての列にカードがある必要があります。",
     "tableau": "タブローです。同じスートの降順でカードを並べます。AからKまで揃うと自動的に除去されます。",

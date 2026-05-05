@@ -224,6 +224,20 @@ function ScorpionPageContent() {
     playSound('cardPlace');
   }, [apiCall, playSound]);
 
+  // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
+  const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
+  const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
+  const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
+  const handleDealGuarded = useCallback(() => {
+    if (dealBlockedByEmpty) {
+      setEmptyDealAttemptKey((k) => k + 1);
+      return;
+    }
+    // Reset on a successful deal so a future empty-column attempt can re-trigger the shake.
+    setEmptyDealAttemptKey(0);
+    handleDeal();
+  }, [dealBlockedByEmpty, handleDeal]);
+
   const handleGiveUp = useCallback(() => {
     void apiCall('giveup');
   }, [apiCall]);
@@ -281,9 +295,9 @@ function ScorpionPageContent() {
       { key: 'a', action: handleAutoComplete },
       { key: 'g', action: handleGiveUp },
       { key: 'z', action: handleUndo },
-      { key: 'd', action: handleDeal },
+      { key: 'd', action: handleDealGuarded },
     ],
-    [handleHint, handleAutoComplete, handleGiveUp, handleUndo, handleDeal],
+    [handleHint, handleAutoComplete, handleGiveUp, handleUndo, handleDealGuarded],
   );
 
   useActionKeyboardNav({
@@ -359,14 +373,16 @@ function ScorpionPageContent() {
                       isDropTarget={dnd.isDropTarget({ zone: 'tableau', col: colIdx })}
                     >
                       <button
+                        key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
                         type="button"
                         className={`border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted ${focusRingWhite} ${
                           selectedSource ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
-                        }`}
+                        }${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
                         style={{ width: sc.cw, height: sc.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
                         disabled={!isPlaying || !selectedSource}
                         aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
+                        data-testid={`sc-empty-col-${colIdx.toString()}`}
                       >
                         {t('empty')}
                       </button>
@@ -475,8 +491,9 @@ function ScorpionPageContent() {
                   <button
                     type="button"
                     className={btnSuccess}
-                    onClick={handleDeal}
+                    onClick={handleDealGuarded}
                     disabled={loading || state.stockCount === 0}
+                    title={dealBlockedByEmpty ? t('cannotDealEmptyColExists') : undefined}
                   >
                     {t('deal')}
                   </button>

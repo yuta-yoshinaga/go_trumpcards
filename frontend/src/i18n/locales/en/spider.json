@@ -28,6 +28,7 @@
   "hintAvailable": "Hint available",
   "stalemate": "No more moves",
   "dealsRemaining": "{{count}} deals remaining",
+  "cannotDealEmptyColExists": "Fill every empty column before dealing",
   "tutorial": {
     "stockPile": "Stock pile. Click to deal one card to each column. All columns must have cards.",
     "tableau": "Tableau columns. Arrange cards in same-suit descending order. Ace-to-King sequences are removed.",
