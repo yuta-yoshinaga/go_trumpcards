@@ -25,6 +25,7 @@
   "highestBid": "最高ビッド",
   "trumpSuit": "切り札",
   "meldScore": "メルド得点",
+  "meldHighlightHint": "メルドバッジをクリックすると手札の対応カードがハイライトされます",
   "trickPoints": "トリック得点",
   "round": "ラウンド",
   "trick": "トリック",

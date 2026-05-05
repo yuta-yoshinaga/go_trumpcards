@@ -25,6 +25,7 @@
   "highestBid": "Highest Bid",
   "trumpSuit": "Trump Suit",
   "meldScore": "Meld Score",
+  "meldHighlightHint": "Click a meld badge to highlight the cards that form it",
   "trickPoints": "Trick Points",
   "round": "Round",
   "trick": "Trick",

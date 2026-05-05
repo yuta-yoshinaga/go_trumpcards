@@ -126,6 +126,10 @@ function PinochlePageContent() {
   const phaseNames = usePhaseNames('pinochle', PINOCHLE_PHASE_KEYS);
 
   const [bidAmount, setBidAmount] = useState(20);
+  // Index into the human player's meld list. When set, every hand card whose
+  // (design, value) appears in that meld is ringed so the player can read the
+  // meld back to the cards. Reset on phase exit.
+  const [highlightedMeldIdx, setHighlightedMeldIdx] = useState<number | null>(null);
 
   // Auto-update bid amount when highest bid changes
   // CLI mode
@@ -160,6 +164,14 @@ function PinochlePageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
+  // Drop the meld highlight whenever the meld phase exits so a stale ring
+  // doesn't carry into the trick-play phase.
+  useEffect(() => {
+    if (state?.phase !== PinochlePhase.MELD) {
+      setHighlightedMeldIdx(null);
+    }
+  }, [state?.phase]);
+
   useGameRoundGuard(!!state && !state.gameEndFlag);
 
   if (!state) {
@@ -172,10 +184,20 @@ function PinochlePageContent() {
 
   const phase = state.phase;
   const humanPlayer = state.players?.find((p) => p.isHuman);
+  const humanIdx = humanPlayer ? state.players.indexOf(humanPlayer) : -1;
   const isBidTurn = phase === PinochlePhase.BID && state.players?.[state.bidPlayerIdx]?.isHuman;
   const isTrumpTurn = phase === PinochlePhase.TRUMP && state.players?.[state.currentPlayerIdx]?.isHuman;
   const isPlayTurn = phase === PinochlePhase.PLAY && state.players?.[state.currentPlayerIdx]?.isHuman;
   const isGameEnd = phase === PinochlePhase.GAME_END || state.gameEndFlag;
+  // Build a Set of "design-value" keys so the hand renderer can ring every
+  // copy of a card that participates in the highlighted meld. Pinochle uses
+  // a double deck, so two copies of the same rank+suit are equivalent for
+  // the meld and should both glow.
+  const highlightedMeld =
+    humanIdx >= 0 && highlightedMeldIdx !== null ? state.playerMelds[humanIdx]?.[highlightedMeldIdx] : null;
+  const highlightedCardKeys = new Set<string>(
+    highlightedMeld?.cards.map((c: { design: string; value: number }) => `${c.design}-${c.value}`) ?? [],
+  );
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pinochle.bg}`} aria-busy={loading}>
@@ -284,13 +306,36 @@ function PinochlePageContent() {
                   melds.length > 0 ? (
                     <div key={pIdx} className="text-ds-text-muted text-sm mb-1">
                       <span className="font-semibold">{playerName(pIdx, state.players[pIdx]?.isHuman)}: </span>
-                      {melds.map((m: PinochleMeldData, mIdx: number) => (
-                        <span key={mIdx} className="mr-2">
-                          {t(`meldTypes.${m.type}`)} ({m.points})
-                        </span>
-                      ))}
+                      {melds.map((m: PinochleMeldData, mIdx: number) => {
+                        const isHumanMeld = pIdx === humanIdx && phase === PinochlePhase.MELD;
+                        const isActive = isHumanMeld && highlightedMeldIdx === mIdx;
+                        if (!isHumanMeld) {
+                          return (
+                            <span key={mIdx} className="mr-2">
+                              {t(`meldTypes.${m.type}`)} ({m.points})
+                            </span>
+                          );
+                        }
+                        return (
+                          <button
+                            key={mIdx}
+                            type="button"
+                            onClick={() => setHighlightedMeldIdx((prev) => (prev === mIdx ? null : mIdx))}
+                            data-testid={`pn-meld-badge-${mIdx}`}
+                            data-active={isActive ? 'true' : undefined}
+                            className={`mr-2 inline-block px-2 py-0.5 rounded text-xs ${
+                              isActive ? 'bg-ds-accent text-black font-bold' : 'bg-black/20 hover:bg-ds-accent/30'
+                            }`}
+                          >
+                            {t(`meldTypes.${m.type}`)} ({m.points})
+                          </button>
+                        );
+                      })}
                     </div>
                   ) : null,
+                )}
+                {phase === PinochlePhase.MELD && highlightedCardKeys.size > 0 && (
+                  <div className="text-ds-text-muted text-xs mt-1">{t('meldHighlightHint')}</div>
                 )}
               </div>
             )}
@@ -319,6 +364,7 @@ function PinochlePageContent() {
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="pn-player-hand">
                 {humanPlayer.cards.map((card, idx) => {
                   const isValid = state.validPlayIndices?.includes(idx);
+                  const inHighlightedMeld = highlightedCardKeys.has(`${card.design}-${card.value}`);
                   return (
                     <button
                       type="button"
@@ -326,7 +372,8 @@ function PinochlePageContent() {
                       onClick={() => isPlayTurn && isValid && handlePlay(idx)}
                       disabled={loading || !isPlayTurn || !isValid}
                       aria-label={cardAlt(card)}
-                      className="transition-transform"
+                      data-meld-highlighted={inHighlightedMeld ? 'true' : undefined}
+                      className={`transition-transform${inHighlightedMeld ? ' ring-4 ring-ds-accent' : ''}`}
                       style={{
                         background: 'none',
                         padding: 0,

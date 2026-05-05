@@ -198,6 +198,60 @@ describe('PinochlePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld'));
   });
 
+  it('clicking a meld badge highlights the matching cards in the human hand', async () => {
+    // Construct a meld-phase state where the human holds the cards forming
+    // a Common Marriage (K♥ + Q♥), plus an unrelated A♠ that should NOT
+    // glow when the marriage badge is selected.
+    const meldStateWithHumanMeld: PinochleResponse = {
+      ...meldPhaseState,
+      players: makePlayers([
+        {
+          id: 0,
+          isHuman: true,
+          cardCount: 3,
+          cards: [
+            { design: 'HEART', value: 13 },
+            { design: 'HEART', value: 12 },
+            { design: 'SPADE', value: 1 },
+          ],
+        },
+      ]),
+      playerMelds: [
+        [
+          {
+            type: 1, // PinochleMeldCommonMarriage
+            points: 20,
+            cards: [
+              { design: 'HEART', value: 13 },
+              { design: 'HEART', value: 12 },
+            ],
+          },
+        ],
+        [],
+        [],
+        [],
+      ],
+    };
+    mockExec.mockResolvedValue(meldStateWithHumanMeld);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => expect(screen.getByTestId('pn-meld-badge-0')).toBeInTheDocument());
+
+    // Before click — no card carries the highlight marker.
+    expect(screen.queryByLabelText('♥ K')).not.toHaveAttribute('data-meld-highlighted');
+    expect(screen.queryByLabelText('♥ Q')).not.toHaveAttribute('data-meld-highlighted');
+
+    fireEvent.click(screen.getByTestId('pn-meld-badge-0'));
+
+    // After click — both Hearts in the meld glow; the unrelated Spade A doesn't.
+    expect(screen.getByLabelText('♥ K')).toHaveAttribute('data-meld-highlighted', 'true');
+    expect(screen.getByLabelText('♥ Q')).toHaveAttribute('data-meld-highlighted', 'true');
+    expect(screen.getByLabelText('♠ A')).not.toHaveAttribute('data-meld-highlighted');
+
+    // Clicking the active badge a second time clears the highlight.
+    fireEvent.click(screen.getByTestId('pn-meld-badge-0'));
+    expect(screen.getByLabelText('♥ K')).not.toHaveAttribute('data-meld-highlighted');
+  });
+
   it('renders play phase with human cards', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<PinochlePage />);
