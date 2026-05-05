@@ -296,7 +296,7 @@ func (s *SpiteAndMalice) AutoComplete() error {
 	// a generous cap (2 decks * full deck rotations) — the loop normally exits
 	// via "no playable move" long before this and the cap is just defensive.
 	const maxIterations = 1024
-	for iter := 0; iter < maxIterations; iter++ {
+	for range maxIterations {
 		if s.phase != SpiteAndMalicePhasePlaying || s.IsCpuTurn() {
 			return nil
 		}
