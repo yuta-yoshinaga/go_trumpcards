@@ -141,6 +141,8 @@ function SpiderPageContent() {
       setEmptyDealAttemptKey((k) => k + 1);
       return;
     }
+    // Reset on a successful deal so a future empty-column attempt can re-trigger the shake.
+    setEmptyDealAttemptKey(0);
     handleDeal();
   }, [dealBlockedByEmpty, handleDeal]);
 
@@ -406,7 +408,6 @@ function SpiderPageContent() {
                     onClick={handleDealGuarded}
                     disabled={loading || isAutoCompleting}
                     title={dealBlockedByEmpty ? t('cannotDealEmptyColExists') : undefined}
-                    aria-describedby={dealBlockedByEmpty ? 'spd-deal-blocked-reason' : undefined}
                   >
                     {t('deal')}
                   </button>

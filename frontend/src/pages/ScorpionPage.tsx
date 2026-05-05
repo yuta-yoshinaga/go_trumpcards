@@ -233,6 +233,8 @@ function ScorpionPageContent() {
       setEmptyDealAttemptKey((k) => k + 1);
       return;
     }
+    // Reset on a successful deal so a future empty-column attempt can re-trigger the shake.
+    setEmptyDealAttemptKey(0);
     handleDeal();
   }, [dealBlockedByEmpty, handleDeal]);
 
