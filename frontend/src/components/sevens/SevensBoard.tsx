@@ -91,7 +91,8 @@ function Board({
                         data-joker-placeable="true"
                       >
                         {/* Translucent joker glyph hints that this cell will accept the held joker.
-                            The cell label (rank) sits underneath at full strength so the value is still legible. */}
+                            The rank label is rendered after this span so it stacks on top in DOM
+                            order, keeping the value legible at full strength. */}
                         <span
                           aria-hidden="true"
                           className="absolute inset-0 flex items-center justify-center text-[0.85em] opacity-40"

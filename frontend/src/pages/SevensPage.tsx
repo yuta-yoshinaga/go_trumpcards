@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { sevensApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -166,18 +166,45 @@ function SevensPageContent() {
   // exactly one legal slot, skip the redundant click and dispatch the placement
   // immediately. Anything more than one slot still requires the player to pick
   // (otherwise we'd remove their strategic choice).
+  //
+  // Important: useSevensGame only clears jokerCardIdx on a *successful* api
+  // response. If the placement fails (network error, server-side validation),
+  // loading flips back to false but jokerCardIdx is still non-null, which
+  // would cause the effect to re-fire and dispatch the same failing placement
+  // forever. We guard with a ref that tracks "we already tried auto-placing
+  // for this jokerCardIdx", and only reset it once the index changes.
+  const tablePlacedForAuto = state?.tablePlaced;
+  const tunnelEnabledForAuto = state?.config.tunnelEnabled;
+  const endStopEnabledForAuto = state?.config.endStopEnabled;
+  const tunnelSkipWidthForAuto = state?.config.tunnelSkipWidth;
+  const lastAutoAttemptedRef = useRef<number | null>(null);
   useEffect(() => {
-    if (jokerCardIdx === null || !state || loading) return;
+    // Reset the guard whenever the joker selection clears or changes.
+    if (jokerCardIdx === null) {
+      lastAutoAttemptedRef.current = null;
+      return;
+    }
+    if (lastAutoAttemptedRef.current === jokerCardIdx) return;
+    if (loading || tablePlacedForAuto === undefined) return;
     const slots = listJokerPlacements(
-      state.tablePlaced,
-      state.config.tunnelEnabled,
-      state.config.endStopEnabled,
-      state.config.tunnelSkipWidth,
+      tablePlacedForAuto,
+      tunnelEnabledForAuto ?? false,
+      endStopEnabledForAuto ?? false,
+      tunnelSkipWidthForAuto ?? 0,
     );
     if (slots.length === 1) {
+      lastAutoAttemptedRef.current = jokerCardIdx;
       handleJokerPlace(slots[0].suit, slots[0].value);
     }
-  }, [jokerCardIdx, state, loading, handleJokerPlace]);
+  }, [
+    jokerCardIdx,
+    loading,
+    tablePlacedForAuto,
+    tunnelEnabledForAuto,
+    endStopEnabledForAuto,
+    tunnelSkipWidthForAuto,
+    handleJokerPlace,
+  ]);
 
   if (!state)
     return (
