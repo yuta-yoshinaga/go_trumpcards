@@ -37,9 +37,15 @@ describe('calcTonkHandTotal', () => {
 });
 
 describe('TonkOnDealCelebration', () => {
-  it('does not render when show=false', () => {
+  it('keeps the aria-live container in the DOM but hidden when show=false', () => {
     render(<TonkOnDealCelebration show={false} />);
-    expect(screen.queryByTestId('tonk-on-deal-celebration')).not.toBeInTheDocument();
+    // Container is always rendered so screen readers see a stable live region
+    // (announcements inside a region added on the same tick are often dropped).
+    const container = screen.getByTestId('tonk-on-deal-celebration');
+    expect(container).toBeInTheDocument();
+    expect(container).toHaveAttribute('data-visible', 'false');
+    expect(container).toHaveClass('invisible');
+    expect(screen.queryByText('TONK!')).not.toBeInTheDocument();
   });
 
   it('renders the TONK! banner when show=true', () => {
@@ -50,7 +56,9 @@ describe('TonkOnDealCelebration', () => {
         winnerName="あなた"
       />,
     );
-    expect(screen.getByTestId('tonk-on-deal-celebration')).toBeInTheDocument();
+    const container = screen.getByTestId('tonk-on-deal-celebration');
+    expect(container).toHaveAttribute('data-visible', 'true');
+    expect(container).not.toHaveClass('invisible');
     expect(screen.getByText('TONK!')).toBeInTheDocument();
     expect(screen.getByText(/50/)).toBeInTheDocument();
     expect(screen.getByText(/あなた/)).toBeInTheDocument();
@@ -58,17 +66,20 @@ describe('TonkOnDealCelebration', () => {
 
   it('auto-dismisses after the configured delay', () => {
     render(<TonkOnDealCelebration show={true} dismissAfterMs={1500} winnerCards={[card('SPADE', 13)]} />);
-    expect(screen.getByTestId('tonk-on-deal-celebration')).toBeInTheDocument();
+    expect(screen.getByTestId('tonk-on-deal-celebration')).toHaveAttribute('data-visible', 'true');
     act(() => {
       vi.advanceTimersByTime(1500);
     });
-    expect(screen.queryByTestId('tonk-on-deal-celebration')).not.toBeInTheDocument();
+    // The live region remains in the DOM but is now hidden and the inner banner is gone.
+    const container = screen.getByTestId('tonk-on-deal-celebration');
+    expect(container).toHaveAttribute('data-visible', 'false');
+    expect(screen.queryByText('TONK!')).not.toBeInTheDocument();
   });
 
   it('keeps banner visible when dismissAfterMs=0', () => {
     render(<TonkOnDealCelebration show={true} dismissAfterMs={0} winnerCards={[]} />);
     vi.advanceTimersByTime(10_000);
-    expect(screen.getByTestId('tonk-on-deal-celebration')).toBeInTheDocument();
+    expect(screen.getByTestId('tonk-on-deal-celebration')).toHaveAttribute('data-visible', 'true');
   });
 
   it('uses assertive aria-live so screen readers announce the win', () => {

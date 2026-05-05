@@ -55,36 +55,40 @@ export function TonkOnDealCelebration({
 
   const points = calcTonkHandTotal(winnerCards);
 
-  if (!visible) return null;
-
+  // Outer aria-live region is always present so screen readers see the
+  // announcement appear inside an existing live region instead of an entire
+  // new region popping into the DOM (the latter is silently dropped on
+  // several SR/browser combinations).
   return (
-    <motion.div
+    <div
       role="status"
       aria-live="assertive"
       data-testid="tonk-on-deal-celebration"
-      className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: reduced ? 0 : 0.25 }}
+      data-visible={visible ? 'true' : 'false'}
+      className={`fixed inset-0 z-50 flex items-center justify-center pointer-events-none${visible ? '' : ' invisible'}`}
     >
-      <motion.div
-        className="px-8 py-6 rounded-2xl bg-black/80 border-2 border-ds-accent text-center shadow-2xl"
-        initial={reduced ? { scale: 1 } : { scale: 0.6, rotate: -4 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ duration: reduced ? 0 : 0.45, type: 'spring', stiffness: 220, damping: 16 }}
-      >
-        <div className="text-ds-accent text-5xl sm:text-6xl font-bold tracking-widest drop-shadow">
-          {t('tonkOnDealBanner.title')}
-        </div>
-        {points > 0 && (
-          <div className="text-ds-text-primary text-xl sm:text-2xl mt-2">
-            {t('tonkOnDealBanner.points', { points })}
+      {visible && (
+        <motion.div
+          className="px-8 py-6 rounded-2xl bg-black/80 border-2 border-ds-accent text-center shadow-2xl"
+          initial={reduced ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.6, rotate: -4 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: reduced ? 0 : 0.45, type: 'spring', stiffness: 220, damping: 16 }}
+        >
+          <div className="text-ds-accent text-5xl sm:text-6xl font-bold tracking-widest drop-shadow">
+            {t('tonkOnDealBanner.title')}
           </div>
-        )}
-        {winnerName && (
-          <div className="text-ds-text-muted text-base mt-1">{t('tonkOnDealBanner.winner', { name: winnerName })}</div>
-        )}
-      </motion.div>
-    </motion.div>
+          {points > 0 && (
+            <div className="text-ds-text-primary text-xl sm:text-2xl mt-2">
+              {t('tonkOnDealBanner.points', { points })}
+            </div>
+          )}
+          {winnerName && (
+            <div className="text-ds-text-muted text-base mt-1">
+              {t('tonkOnDealBanner.winner', { name: winnerName })}
+            </div>
+          )}
+        </motion.div>
+      )}
+    </div>
   );
 }
