@@ -158,8 +158,10 @@ function PageOnePageContent() {
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanMustDeclare = isMustDeclare && state.players[state.currentPlayerIdx]?.isHuman === true;
   // Last-card alert: easy to miss the "Page One!" declaration window without strong feedback.
-  const humanAtOneCard = (humanPlayer?.cards.length ?? 0) === 1 && !humanPlayer?.hasDeclared;
-  const showLastCardBanner = !isGameEnd && !isRoundEnd && humanAtOneCard;
+  // Use cardCount for both human + CPU so the "1 card left" check stays consistent across roles.
+  const isGameActive = !isGameEnd && !isRoundEnd;
+  const humanAtOneCard = (humanPlayer?.cardCount ?? 0) === 1 && !humanPlayer?.hasDeclared;
+  const showLastCardBanner = isGameActive && humanAtOneCard;
 
   return (
     <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pageone.bg}`} aria-busy={loading}>
@@ -249,13 +251,13 @@ function PageOnePageContent() {
                 {state.players
                   .filter((p) => !p.isHuman)
                   .map((p) => {
-                    const cpuAtOne = p.cardCount === 1 && !p.hasDeclared && !isRoundEnd && !isGameEnd;
+                    const cpuAtOne = p.cardCount === 1 && !p.hasDeclared && isGameActive;
                     return (
                       <div
                         key={p.id}
                         data-testid={`po-cpu-${p.id}`}
                         className={`mb-2 p-2 rounded ${
-                          cpuAtOne ? 'bg-ds-warning/15 ring-1 ring-ds-warning' : 'bg-black/30'
+                          cpuAtOne ? 'bg-ds-warning/15 ring-2 ring-ds-warning' : 'bg-black/30'
                         }`}
                       >
                         <div className="text-ds-text-muted text-sm">
@@ -266,8 +268,12 @@ function PageOnePageContent() {
                           {cpuAtOne && (
                             <span
                               data-testid={`po-cpu-${p.id}-last-card-badge`}
-                              className="ml-2 inline-block px-2 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs font-bold animate-pulse"
+                              className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-ds-warning/30 text-ds-warning text-xs font-bold"
                             >
+                              <span
+                                aria-hidden="true"
+                                className="inline-block w-2 h-2 rounded-full bg-ds-warning animate-pulse"
+                              />
                               {t('cpuLastCardBadge')}
                             </span>
                           )}
@@ -309,8 +315,9 @@ function PageOnePageContent() {
                 role="alert"
                 aria-live="assertive"
                 data-testid="po-last-card-banner"
-                className="mb-2 px-3 py-2 rounded bg-ds-warning/20 border border-ds-warning text-ds-warning text-sm font-bold animate-pulse"
+                className="mb-2 px-3 py-2 rounded bg-ds-warning/20 border-2 border-ds-warning text-ds-warning text-sm font-bold flex items-center gap-2"
               >
+                <span aria-hidden="true" className="inline-block w-2 h-2 rounded-full bg-ds-warning animate-pulse" />
                 {t('lastCardBanner')}
               </div>
             )}
