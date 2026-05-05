@@ -10,6 +10,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -165,6 +166,42 @@ function NertzPageContent() {
     },
     [dispatchMove, isHumanTurn, selection],
   );
+
+  // Keyboard shortcuts for the realtime competitive flow — matches the issue
+  // spec (`d` to draw stock, `n`/`w` to pick the Nertz/waste pile, `1-9` to
+  // route a held card to a foundation index, `u` to undo).
+  const handleFoundationKey = useCallback(
+    (idx: number) => {
+      if (!state || idx >= state.foundations.length) return;
+      if (selection) {
+        dispatchMove({ zone: 'foundation', idx });
+      }
+    },
+    [dispatchMove, selection, state],
+  );
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDrawStock },
+      { key: 'n', action: handleSelectNertz },
+      { key: 'w', action: handleSelectWaste },
+      { key: 'u', action: handleUndo },
+      { key: '1', action: () => handleFoundationKey(0) },
+      { key: '2', action: () => handleFoundationKey(1) },
+      { key: '3', action: () => handleFoundationKey(2) },
+      { key: '4', action: () => handleFoundationKey(3) },
+      { key: '5', action: () => handleFoundationKey(4) },
+      { key: '6', action: () => handleFoundationKey(5) },
+      { key: '7', action: () => handleFoundationKey(6) },
+      { key: '8', action: () => handleFoundationKey(7) },
+      { key: '9', action: () => handleFoundationKey(8) },
+      { key: 'Escape', action: () => setSelection(null) },
+    ],
+    [handleDrawStock, handleSelectNertz, handleSelectWaste, handleUndo, handleFoundationKey],
+  );
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: state?.phase === NertzPhase.PLAYING && !loading,
+  });
 
   const phaseName = useMemo(() => {
     if (isGameEnd) return t('phase.gameEnd');
