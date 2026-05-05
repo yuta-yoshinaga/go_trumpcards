@@ -21,6 +21,7 @@
   "discardButton": "Discard to Crib",
   "pegButton": "Play Card",
   "goButton": "Go",
+  "autoGoNotice": "No playable card — Go was declared automatically",
   "showNextButton": "Show Next",
   "nextRound": "Next Round",
   "discardPhase": "Select 2 cards to discard to the crib",
