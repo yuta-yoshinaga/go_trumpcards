@@ -51,6 +51,15 @@ describe('warApi', () => {
     );
   });
 
+  it('autoplay sends command=autoplay', async () => {
+    mockFetch.mockReturnValue(ok(payload));
+    await warApi.exec('autoplay');
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/war/exec',
+      expect.objectContaining({ body: JSON.stringify({ command: 'autoplay', sessionId }) }),
+    );
+  });
+
   it('reset with config includes maxRounds', async () => {
     mockFetch.mockReturnValue(ok(payload));
     await warApi.exec('reset', { maxRounds: 200 });

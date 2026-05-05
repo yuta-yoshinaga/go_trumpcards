@@ -53,6 +53,12 @@ const WR_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
+    target: '[data-tutorial="wr-autoplay-button"]',
+    messageKey: 'tutorial.autoplayButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
     target: '[data-tutorial="wr-reset-button"]',
     messageKey: 'tutorial.resetButton',
     placement: 'top',
@@ -77,6 +83,7 @@ function WarPageContent() {
   } = useGameHint('war', state);
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
+  const handleAutoPlay = useCallback(() => execApi('autoplay'), [execApi]);
   const handleReset = useCallback(() => execApi('reset', { maxRounds }), [execApi, maxRounds]);
 
   useMountReset(execApi);
@@ -90,6 +97,7 @@ function WarPageContent() {
         const cmd = input.trim().toLowerCase();
         if (cmd === 'reset' || cmd === 'r') return { args: ['reset'] };
         if (cmd === 'step' || cmd === 's') return { args: ['step'] };
+        if (cmd === 'autoplay' || cmd === 'a') return { args: ['autoplay'] };
         if (cmd === 'log' || cmd === 'l') return { args: ['log'] };
         return { error: `Unknown command: ${cmd}` };
       },
@@ -104,7 +112,12 @@ function WarPageContent() {
         if (s.message) lines.push(s.message);
         return lines.join('\n');
       },
-      helpText: ['s/step  - Flip next card', 'r/reset - Reset game', 'l/log   - Show action log'],
+      helpText: [
+        's/step     - Flip next card',
+        'a/autoplay - Auto play to end',
+        'r/reset    - Reset game',
+        'l/log      - Show action log',
+      ],
     }),
     [],
   );
@@ -271,6 +284,16 @@ function WarPageContent() {
                 data-tutorial="wr-step-button"
               >
                 {t('button.step')}
+              </button>
+              <button
+                type="button"
+                onClick={handleAutoPlay}
+                disabled={loading || isGameEnd}
+                className="px-6 py-2 rounded-lg bg-ds-success hover:bg-ds-success-hover text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                data-testid="autoplay-button"
+                data-tutorial="wr-autoplay-button"
+              >
+                {t('button.autoplay')}
               </button>
               <GameResetButton
                 isGameEnd={isGameEnd}

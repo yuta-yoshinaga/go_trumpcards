@@ -117,6 +117,46 @@ func TestWarInteractor_Step(t *testing.T) {
 	})
 }
 
+func TestWarInteractor_AutoPlay(t *testing.T) {
+	out := `{"phase":3,"gameEndFlag":true}`
+
+	t.Run("success", func(t *testing.T) {
+		wpMock := new(presenter.MockWarPresenter)
+		wpMock.On("Output", mock.Anything, nil).Return(out)
+		gameMock := new(interfaces.MockWarGame)
+		gameMock.On("GetGameEndFlag").Return(false)
+		gameMock.On("AutoPlay").Return(nil)
+
+		wi := usecase.NewWarInteractor(gameMock, wpMock)
+		assert.Equal(t, out, wi.AutoPlay())
+		gameMock.AssertCalled(t, "AutoPlay")
+	})
+
+	t.Run("autoplay error", func(t *testing.T) {
+		errOut := `{"error":"wrong phase"}`
+		wpMock := new(presenter.MockWarPresenter)
+		wpMock.On("Output", mock.Anything, mock.MatchedBy(func(err error) bool { return err != nil })).Return(errOut)
+		gameMock := new(interfaces.MockWarGame)
+		gameMock.On("GetGameEndFlag").Return(false)
+		gameMock.On("AutoPlay").Return(domain.ErrWrongPhase)
+
+		wi := usecase.NewWarInteractor(gameMock, wpMock)
+		assert.Equal(t, errOut, wi.AutoPlay())
+	})
+
+	t.Run("game ended blocks autoplay", func(t *testing.T) {
+		endOut := `{"gameEnd":true}`
+		wpMock := new(presenter.MockWarPresenter)
+		wpMock.On("Output", mock.Anything, mock.Anything).Return(endOut)
+		gameMock := new(interfaces.MockWarGame)
+		gameMock.On("GetGameEndFlag").Return(true)
+
+		wi := usecase.NewWarInteractor(gameMock, wpMock)
+		assert.Equal(t, endOut, wi.AutoPlay())
+		gameMock.AssertNotCalled(t, "AutoPlay")
+	})
+}
+
 func TestWarInteractor_GetConfig(t *testing.T) {
 	cfg := domain.WarConfig{MaxRounds: 300}
 	gameMock := new(interfaces.MockWarGame)

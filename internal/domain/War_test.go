@@ -307,3 +307,51 @@ func TestWar_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, logs)
 	assert.Equal(t, "reveal", logs[0].ActionType)
 }
+
+func TestWar_AutoPlay_RunsToEnd(t *testing.T) {
+	// Player wins outright in two Step() calls; AutoPlay should drive to end.
+	w := setupWarWithPiles(t, []*Card{card(10)}, []*Card{card(5)})
+	assert.NoError(t, w.AutoPlay())
+	assert.True(t, w.GetGameEndFlag())
+	assert.Equal(t, WarPhaseGameEnd, w.GetPhase())
+	assert.Equal(t, 0, w.GetWinnerIdx())
+}
+
+func TestWar_AutoPlay_ResolvesNestedWarToEnd(t *testing.T) {
+	// Tie cascade where player ultimately wins everything: AutoPlay must
+	// not stop midway through WarBury / Resolved transitions.
+	w := setupWarWithPiles(t,
+		[]*Card{card(7), card(2), card(2), card(2), card(10)},
+		[]*Card{card(7), card(3), card(3), card(3), card(5)},
+	)
+	assert.NoError(t, w.AutoPlay())
+	assert.True(t, w.GetGameEndFlag())
+	assert.Equal(t, 0, w.GetWinnerIdx())
+}
+
+func TestWar_AutoPlay_AfterEndReturnsErr(t *testing.T) {
+	// Once the game has ended, AutoPlay must refuse to run further.
+	w := setupWarWithPiles(t, []*Card{card(10)}, []*Card{card(5)})
+	assert.NoError(t, w.AutoPlay())
+	assert.True(t, w.GetGameEndFlag())
+	err := w.AutoPlay()
+	assert.ErrorIs(t, err, ErrGameEnded)
+}
+
+func TestWar_AutoPlay_HitsCapWithoutFinishing(t *testing.T) {
+	// Lower the cap below the steps required for either side to win so the
+	// loop exhausts before gameEndFlag flips. AutoPlay must surface an error
+	// rather than silently report success.
+	orig := warAutoPlayMaxSteps
+	warAutoPlayMaxSteps = 1
+	t.Cleanup(func() { warAutoPlayMaxSteps = orig })
+
+	w := setupWarWithPiles(t,
+		[]*Card{card(10), card(9), card(8)},
+		[]*Card{card(5), card(4), card(3)},
+	)
+	err := w.AutoPlay()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "auto-play reached maximum steps")
+	assert.False(t, w.GetGameEndFlag())
+}

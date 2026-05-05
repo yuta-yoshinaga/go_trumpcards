@@ -16,6 +16,8 @@ type WarInteractorIF interface {
 	ResetWithConfig(cfg domain.WarConfig) string
 	// Step 状態機械を1ステップ進める
 	Step() string
+	// AutoPlay 決着まで自動で進める
+	AutoPlay() string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.WarConfig
 	// ActionLog 棋譜を出力する
@@ -53,6 +55,14 @@ func (wi *WarInteractor) Step() string {
 		return wi.wp.Output(wi.Game, err)
 	}
 	return wi.wp.Output(wi.Game, nil)
+}
+
+// AutoPlay 決着まで自動で進める
+func (wi *WarInteractor) AutoPlay() string {
+	if out, blocked := guardGameEnd(wi.Game, wi.wp); blocked {
+		return out
+	}
+	return execAndPresent(wi.Game, wi.wp, wi.Game.AutoPlay)
 }
 
 // GetConfig 現在の設定を取得

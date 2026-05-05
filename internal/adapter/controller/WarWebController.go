@@ -79,6 +79,9 @@ func warDispatch(
 	case "r", "reset":
 		bc.writePresenterResponse(w, wi.ResetWithConfig(param.ToConfig()))
 		return true
+	case "a", "autoplay":
+		bc.writePresenterResponse(w, wi.AutoPlay())
+		return true
 	}
 	return dispatchResetStepLog(param.Command, bc, w, wi)
 }

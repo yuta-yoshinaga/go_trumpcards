@@ -21,6 +21,7 @@ func NewWarCuiController(wi usecase.WarInteractorIF) *WarCuiController {
 //	q / quit        → ゲーム終了
 //	r / reset       → ゲームリセット
 //	s / step        → 次の1ステップを進める (めくり/解決/戦争解決)
+//	a / autoplay    → 決着まで自動で進める
 //	sm / setmax <n> → MaxRounds を設定してリセット
 //	log / l         → 棋譜表示
 func (c *WarCuiController) Exec(command string) string {
@@ -30,11 +31,13 @@ func (c *WarCuiController) Exec(command string) string {
 			cfg := c.wi.GetConfig()
 			return c.wi.ResetWithConfig(cfg)
 		},
-		[]string{"s", "step", "sm", "setmax", "log", "l"},
+		[]string{"s", "step", "a", "autoplay", "sm", "setmax", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "s", "step":
 				return c.wi.Step(), true
+			case "a", "autoplay":
+				return c.wi.AutoPlay(), true
 			case "sm", "setmax":
 				val := cuiutil.ParseOptionalInt(args, 0, domain.WarDefaultMaxRounds)
 				cfg := c.wi.GetConfig()

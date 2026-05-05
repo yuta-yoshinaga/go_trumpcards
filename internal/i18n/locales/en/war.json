@@ -1,5 +1,6 @@
 {
   "helpTitle": "War (戦争)",
   "helpStep": "  s                    flip next card / resolve round / resolve war",
+  "helpAutoPlay": "  a                    auto play until the game ends",
   "helpSetMax": "  sm <n>               set MaxRounds (10-10000) and reset"
 }
