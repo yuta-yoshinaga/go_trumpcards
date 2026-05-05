@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { type ReplaySpeed, useReplaySpeed } from '../../hooks/useReplaySpeed';
+import { isReplaySpeed, type ReplaySpeed, useReplaySpeed } from '../../hooks/useReplaySpeed';
 import { type SettingsGroup, SettingsPanel } from './SettingsPanel';
 
 const SPEED_OPTIONS: ReadonlyArray<ReplaySpeed> = ['normal', 'fast', 'instant'];
@@ -29,7 +29,13 @@ export function ReplaySpeedSettingsPanel() {
             value,
             label: t(`settings.replaySpeed.${value}`),
           })),
-          onSelect: (value) => setSpeed(value as ReplaySpeed),
+          // SettingsPanel's onSelect emits the raw <option> value. The select
+          // is rendered exclusively from SPEED_OPTIONS, but `isReplaySpeed`
+          // makes the cast type-safe even if a future refactor adds a stray
+          // option (and silences the assertion the linter would otherwise need).
+          onSelect: (value) => {
+            if (isReplaySpeed(value)) setSpeed(value);
+          },
         },
       ],
     },

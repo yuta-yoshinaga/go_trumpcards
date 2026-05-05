@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   DEFAULT_REPLAY_SPEED,
   getReplaySpeedMultiplier,
+  isReplaySpeed,
   multiplierForSpeed,
   REPLAY_SPEED_STORAGE_KEY,
   useReplaySpeed,
@@ -35,6 +36,63 @@ describe('useReplaySpeed', () => {
     act(() => result.current[1]('instant'));
     expect(result.current[0]).toBe('instant');
     expect(localStorage.getItem(REPLAY_SPEED_STORAGE_KEY)).toBe('instant');
+  });
+
+  it('syncs to changes from another tab via the storage event', () => {
+    const { result } = renderHook(() => useReplaySpeed());
+    expect(result.current[0]).toBe(DEFAULT_REPLAY_SPEED);
+
+    act(() => {
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: REPLAY_SPEED_STORAGE_KEY,
+          newValue: 'fast',
+        }),
+      );
+    });
+    expect(result.current[0]).toBe('fast');
+  });
+
+  it('falls back to default when another tab clears the key', () => {
+    localStorage.setItem(REPLAY_SPEED_STORAGE_KEY, 'instant');
+    const { result } = renderHook(() => useReplaySpeed());
+    expect(result.current[0]).toBe('instant');
+
+    act(() => {
+      window.dispatchEvent(
+        new StorageEvent('storage', {
+          key: REPLAY_SPEED_STORAGE_KEY,
+          newValue: null,
+        }),
+      );
+    });
+    expect(result.current[0]).toBe(DEFAULT_REPLAY_SPEED);
+  });
+
+  it('ignores storage events for unrelated keys or invalid values', () => {
+    const { result } = renderHook(() => useReplaySpeed());
+    expect(result.current[0]).toBe(DEFAULT_REPLAY_SPEED);
+
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'someOther', newValue: 'fast' }));
+      window.dispatchEvent(new StorageEvent('storage', { key: REPLAY_SPEED_STORAGE_KEY, newValue: 'turbo' }));
+    });
+    expect(result.current[0]).toBe(DEFAULT_REPLAY_SPEED);
+  });
+});
+
+describe('isReplaySpeed', () => {
+  it.each([
+    ['normal', true],
+    ['fast', true],
+    ['instant', true],
+    ['turbo', false],
+    ['', false],
+    [null, false],
+    [undefined, false],
+    [42, false],
+  ] as const)('returns %s -> %s', (value, expected) => {
+    expect(isReplaySpeed(value)).toBe(expected);
   });
 });
 
