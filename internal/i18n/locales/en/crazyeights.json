@@ -5,5 +5,6 @@
   "helpSuit": "  s <1-4>              choose suit (1=♠, 2=♣, 3=♥, 4=♦)",
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetLimit": "  sl <n>               point limit"
+  "helpSetLimit": "  sl <n>               point limit",
+  "promptSuit": "Choose a suit (1=♠, 2=♣, 3=♥, 4=♦):"
 }

@@ -5,8 +5,22 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
+
+// playWithSuitPrompt runs Play(idx) and, when the human just played an 8
+// (game is now waiting for a suit choice), inlines a follow-up suit prompt so
+// the user does not have to type "s <n>" on a separate line. The presenter
+// output for the play step is consumed by the prompt loop and replaced with
+// the post-suit state, mirroring how other "wizard" CUI flows behave.
+func (c *CrazyEightsCuiController) playWithSuitPrompt(cardIndex int) string {
+	res := c.ci.Play(cardIndex)
+	if c.ci.IsHumanChooseSuitTurn() {
+		return cuiutil.PromptRequest(i18n.T("crazyeights.promptSuit"), "s {0}")
+	}
+	return res
+}
 
 // CrazyEightsCuiController クレイジーエイトCUIコントローラークラス
 type CrazyEightsCuiController struct {
@@ -34,7 +48,7 @@ func (c *CrazyEightsCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Play)
+				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.playWithSuitPrompt)
 			case "d", "draw":
 				return c.ci.Draw(), true
 			case "s", "suit":
