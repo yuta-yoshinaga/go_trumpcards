@@ -50,3 +50,8 @@ func (_m *MockCrazyEightsInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()
 	return ret.Get(0).([]byte), ret.Error(1)
 }
+
+// IsHumanChooseSuitTurn モック
+func (_m *MockCrazyEightsInteractor) IsHumanChooseSuitTurn() bool {
+	return _m.Called().Bool(0)
+}

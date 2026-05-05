@@ -5,5 +5,6 @@
   "helpSuit": "  s <1-4>              スート選択 (1=♠, 2=♣, 3=♥, 4=♦)",
   "helpNextRound": "  nr                   次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetLimit": "  sl <n>               ポイント上限"
+  "helpSetLimit": "  sl <n>               ポイント上限",
+  "promptSuit": "スートを選択してください (1=♠, 2=♣, 3=♥, 4=♦):"
 }
