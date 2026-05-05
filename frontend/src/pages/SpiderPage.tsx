@@ -29,6 +29,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { useSound } from '../providers/SoundProvider';
@@ -116,7 +117,10 @@ function SpiderPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('spider', state);
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  // Stock area uses the standard card preset; tableau uses responsive 10-column dimensions
+  // so a 375 px viewport doesn't crush each card below 28 px (#1648).
+  const { cardHeight, cardWidth } = useCardDimensions();
+  const tableau = useResponsiveTableau(10);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spider');
   const cliConfig: CliGameConfig<SpiderResponse, Parameters<typeof spiderApi.exec>> = useMemo(
@@ -272,14 +276,14 @@ function SpiderPageContent() {
                         onDragLeave={dnd.handleDragLeave}
                         className="relative block"
                       >
-                        <div className="relative" style={{ minHeight: cardHeight }}>
+                        <div className="relative" style={{ minHeight: tableau.ch }}>
                           {col.length === 0 ? (
                             <button
                               key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
-                              style={{ height: cardHeight }}
+                              style={{ height: tableau.ch }}
                               data-testid={`spd-empty-col-${colIdx.toString()}`}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
                             >
@@ -296,7 +300,7 @@ function SpiderPageContent() {
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
                                   className="absolute left-0 right-0"
-                                  style={{ top: cardIdx * cardOverlap }}
+                                  style={{ top: cardIdx * tableau.co }}
                                 >
                                   {tc.faceUp && tc.card ? (
                                     <button
@@ -324,7 +328,7 @@ function SpiderPageContent() {
                                     >
                                       <AnimatedCard
                                         card={tc.card}
-                                        width={cardWidth}
+                                        width={tableau.cw}
                                         draggable={false}
                                         style={{ width: '100%' }}
                                         onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
@@ -332,7 +336,7 @@ function SpiderPageContent() {
                                     </button>
                                   ) : (
                                     <AnimatedCardBack
-                                      width={cardWidth}
+                                      width={tableau.cw}
                                       style={{ width: '100%' }}
                                       onFlipComplete={() => playSound('cardFlip')}
                                     />
@@ -341,7 +345,7 @@ function SpiderPageContent() {
                               );
                             })
                           )}
-                          {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                          {col.length > 0 && <div style={{ height: (col.length - 1) * tableau.co + tableau.ch }} />}
                         </div>
                       </DropZone>
                     </div>
