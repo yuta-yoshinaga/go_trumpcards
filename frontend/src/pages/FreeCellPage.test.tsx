@@ -757,6 +757,8 @@ describe('FreeCellPage', () => {
       expect(middleButton).toHaveAttribute('draggable', 'true');
       expect(bottomButton).toHaveAttribute('draggable', 'true');
       expect(topButton).not.toHaveAttribute('data-supermove-blocked');
+      expect(middleButton).not.toHaveAttribute('data-supermove-blocked');
+      expect(bottomButton).not.toHaveAttribute('data-supermove-blocked');
     });
 
     it('free cell card is draggable when playing', async () => {

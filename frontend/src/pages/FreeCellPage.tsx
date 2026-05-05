@@ -377,7 +377,16 @@ function FreeCellPageContent() {
                                           : undefined
                                       }
                                       data-supermove-blocked={exceedsSupermove ? 'true' : undefined}
-                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}${exceedsSupermove ? ' opacity-60 ring-1 ring-ds-error' : ''}`}
+                                      className={[
+                                        'p-0 border-0 bg-transparent cursor-pointer w-full rounded',
+                                        focusRingWhite,
+                                        isSourceSelected('tableau', colIdx, undefined, cardIdx) &&
+                                          'ring-2 ring-ds-warning',
+                                        dnd.isDragSource(cardZone) && 'opacity-50',
+                                        exceedsSupermove && 'opacity-60 ring-1 ring-ds-error',
+                                      ]
+                                        .filter(Boolean)
+                                        .join(' ')}
                                     >
                                       <AnimatedCard
                                         card={card}
