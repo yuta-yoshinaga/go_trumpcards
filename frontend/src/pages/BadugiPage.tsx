@@ -40,6 +40,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BadugiResponse } from '../types/card';
 import { BadugiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { isCompleteBadugiHand } from '../utils/badugiUtils';
 import { cardAlt } from '../utils/cardAlt';
 import { BADUGI_HELP, parseBadugiCommand } from '../utils/cli/commands/badugiCommands';
 import { formatBadugiState } from '../utils/cli/formatters/badugiFormatter';
@@ -160,6 +161,13 @@ function BadugiPageContent() {
   const minRaise = state?.minRaise ?? 10;
   const cardCount = humanPlayer?.cards?.length ?? 0;
   const cpuPlayers = useMemo(() => state?.players?.filter((p) => !p.isHuman) ?? [], [state?.players]);
+  // Stand-pat protection: warn the player when their 4 cards are already a complete Badugi
+  // (4 distinct ranks + 4 distinct suits). Exchanging from this state can only weaken the hand.
+  // Memoised so the Set allocations only run when the hand actually changes.
+  const humanHasCompleteBadugi = useMemo(
+    () => (canExchange ? isCompleteBadugiHand(humanPlayer?.cards ?? []) : false),
+    [canExchange, humanPlayer?.cards],
+  );
 
   useCardKeyboardNav({
     cardCount,
@@ -361,19 +369,33 @@ function BadugiPageContent() {
             {/* Exchange controls */}
             {canExchange && (
               <div className="text-center mb-2" data-tutorial="bg-exchange-button">
+                {humanHasCompleteBadugi && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    data-testid="bg-complete-badugi-banner"
+                    className="mb-2 inline-block px-3 py-1 rounded bg-ds-accent/15 border border-ds-accent text-ds-accent text-sm font-bold"
+                  >
+                    {t('completeBadugiBanner')}
+                  </div>
+                )}
                 <button
                   type="button"
                   className={`${btnWarning} min-w-[90px]`}
                   disabled={loading}
                   onClick={() => execAction('exchange', selected)}
+                  data-testid="bg-exchange-btn"
                 >
                   {t('exchangeLabel')}
                 </button>
                 <button
                   type="button"
-                  className={`${btnSuccess} min-w-[90px]`}
+                  className={`${btnSuccess} min-w-[90px]${
+                    humanHasCompleteBadugi ? ' ring-2 ring-ds-accent animate-pulse' : ''
+                  }`}
                   disabled={loading}
                   onClick={() => execAction('stand')}
+                  data-testid="bg-stand-btn"
                 >
                   {t('standLabel')}
                 </button>

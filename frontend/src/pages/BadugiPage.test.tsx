@@ -185,6 +185,44 @@ describe('BadugiPage', () => {
     );
   });
 
+  it('shows the complete-Badugi banner and pulses the stand button when the hand is already a 4-card Badugi', async () => {
+    // The default humanPlayer() has 4 distinct ranks AND 4 distinct suits → complete Badugi.
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByTestId('bg-stand-btn')).toBeInTheDocument());
+
+    expect(screen.getByTestId('bg-complete-badugi-banner')).toBeInTheDocument();
+    expect(screen.getByTestId('bg-stand-btn').className).toContain('animate-pulse');
+  });
+
+  it('hides the banner and skips the pulse when the hand is incomplete (suit dupe)', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.DRAW,
+        drawIndex: 1,
+        currentTurn: 0,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'SPADE', value: 2 },
+              { design: 'DIAMOND', value: 3 },
+              { design: 'CLOVER', value: 4 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByTestId('bg-stand-btn')).toBeInTheDocument());
+
+    expect(screen.queryByTestId('bg-complete-badugi-banner')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bg-stand-btn').className).not.toContain('animate-pulse');
+  });
+
   it('marks a selected card as pressed in draw phase', async () => {
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
     renderWithProviders(<BadugiPage />);
