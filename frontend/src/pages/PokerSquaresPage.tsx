@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { pokersquaresApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -94,6 +94,19 @@ function PokerSquaresPageContent() {
   // and the corresponding row/col score badges so they can preview which lines a placement affects.
   const [crossHover, setCrossHover] = useState<{ row: number; col: number } | null>(null);
   const clearCrossHover = useCallback(() => setCrossHover(null), []);
+
+  // Disabled buttons do not always fire pointerleave/blur, so the hover state can get stuck after
+  // a click (cell becomes filled) or while an API call is in flight. Clear defensively whenever
+  // the loading flag flips on or the hovered cell becomes filled by the latest server state.
+  useEffect(() => {
+    if (loading) {
+      setCrossHover(null);
+      return;
+    }
+    if (crossHover && state?.board[crossHover.row]?.[crossHover.col]?.card) {
+      setCrossHover(null);
+    }
+  }, [loading, state?.board, crossHover]);
 
   const handlePlace = (row: number, col: number) => {
     execApi('place', row, col);
