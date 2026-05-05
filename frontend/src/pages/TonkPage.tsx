@@ -16,6 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { TonkOnDealCelebration } from '../components/TonkOnDealCelebration';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -414,6 +415,21 @@ function TonkPageContent() {
         </>
       )}
       <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
+      {(() => {
+        // Tonk-on-deal sets winnerIdx >= 0; guard defensively so we never index
+        // players[-1] (which would surface as "CPU 0 wins" via playerName).
+        const winner =
+          state && state.winnerIdx >= 0 && state.winnerIdx < state.players.length
+            ? state.players[state.winnerIdx]
+            : undefined;
+        return (
+          <TonkOnDealCelebration
+            show={!!state?.isTonk && (isRoundEnd || isGameEnd) && winner !== undefined}
+            winnerCards={winner?.cards ?? []}
+            winnerName={winner ? playerName(winner.id, winner.isHuman) : undefined}
+          />
+        );
+      })()}
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );

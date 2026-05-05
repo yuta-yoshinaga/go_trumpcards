@@ -32,6 +32,11 @@
   "discardPhase": "手札から1枚捨てるか、ノック (デッドウッド5点以下) してください",
   "roundEnd": "ラウンド終了",
   "tonkOnDeal": "配牌Tonk成立！即勝利です",
+  "tonkOnDealBanner": {
+    "title": "TONK!",
+    "points": "{{points}}点 即勝利",
+    "winner": "{{name}} の勝利"
+  },
   "knockerMelds": "ノッカーのメルド",
   "knockerDeadwood": "ノッカーのデッドウッド",
   "result": {
