@@ -29,6 +29,8 @@
   "skipButton": "Skip (Penalty)",
   "nextRound": "Next Round",
   "declaredBadge": "PAGE ONE!",
+  "lastCardBanner": "⚠ Only 1 card left — don't forget to declare Page One!",
+  "cpuLastCardBadge": "⚠ 1 card left",
   "playPhase": "Play a card or draw from the pile",
   "mustDeclarePhase": "Only 1 card left! Declare Page One!",
   "roundEnd": "Round over",
