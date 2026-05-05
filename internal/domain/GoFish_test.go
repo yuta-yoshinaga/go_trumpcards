@@ -287,6 +287,25 @@ func TestGoFish_JSON_RoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetConfig(), restored.GetConfig())
 }
 
+// TestGoFish_JSON_RoundTrip_PreservesCpuMemories pins #1655: goFishMemoryEntry
+// fields are unexported, so the previous wire format silently flattened every
+// entry to its zero value on restore. The round-trip must keep ask history.
+func TestGoFish_JSON_RoundTrip_PreservesCpuMemories(t *testing.T) {
+	g := newTestGoFish()
+	g.cpuMemories = []goFishMemoryEntry{
+		{askerIdx: 0, targetIdx: 2, rank: 5, hadCards: false, turnSeen: 1},
+		{askerIdx: 1, targetIdx: 3, rank: 11, hadCards: true, turnSeen: 4},
+	}
+
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+
+	var restored GoFish
+	require.NoError(t, json.Unmarshal(data, &restored))
+
+	assert.Equal(t, g.cpuMemories, restored.cpuMemories)
+}
+
 func TestGoFish_ActionLog(t *testing.T) {
 	g := newTestGoFish()
 	g.players[0].AddCard(NewCard(CardDesignSpade, 3, false))

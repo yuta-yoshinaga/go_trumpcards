@@ -52,5 +52,6 @@ wrangler.toml の `[env.staging]` セクションで staging/prod の KV を分�
 - **セッション永続化**: Workers 版でも Docker 版と同等のゲーム体験が実現
 - **KV 無料枠制約**: 書き込み 1,000回/日のためデモ用途に限定（1アクション=1書き込み）
 - **Undo 非永続**: ソリティア系ゲームの Undo 履歴（snapshot）は KV に保存しない。復元後は Undo 不可
-- **CPU 記憶非永続**: CPU プレイヤーの `memoryManager` は復元時にリセット。CPU は再度学習する
+- **CPU 記憶永続**: CPU プレイヤーの `memoryManager` (Old Maid / Go Fish / Memory / Doubt) は KV に永続化され、復元後も Hard 難易度の戦略が維持される (#1655 で対応)。データ量が小さいため KV 1MB 制限への影響は無視できる
+- ~~**CPU 記憶非永続**: CPU プレイヤーの `memoryManager` は復元時にリセット。CPU は再度学習する~~ — #1655 で解消済み
 - **コード量増加**: 全26ゲームに MarshalJSON/UnmarshalJSON を追加（約5,000行）。パターンは統一されており保守性は維持

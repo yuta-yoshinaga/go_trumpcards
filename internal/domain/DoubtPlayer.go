@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 )
 
@@ -14,23 +15,55 @@ type cardMemoryEntry struct {
 // GetTurnSeen MemoryEntryインターフェース実装
 func (e cardMemoryEntry) GetTurnSeen() int { return e.turnSeen }
 
+// cardMemoryEntryJSON is the wire format for cardMemoryEntry. Fields on the
+// underlying struct are unexported so we need an explicit marshaller.
+type cardMemoryEntryJSON struct {
+	Value    int `json:"v"`
+	TurnSeen int `json:"t"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (e cardMemoryEntry) MarshalJSON() ([]byte, error) {
+	return json.Marshal(cardMemoryEntryJSON{
+		Value:    e.value,
+		TurnSeen: e.turnSeen,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (e *cardMemoryEntry) UnmarshalJSON(data []byte) error {
+	var j cardMemoryEntryJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	e.value = j.Value
+	e.turnSeen = j.TurnSeen
+	return nil
+}
+
 // DoubtPlayer ダウトプレイヤークラス
 type DoubtPlayer struct {
 	*GamePlayer
 	memoryManager[cardMemoryEntry]
 }
 
-// doubtPlayerJSON is the JSON wire format for DoubtPlayer.
+// doubtPlayerMaxMemoryLen caps the deserialised memory slice length so a
+// hostile session blob cannot allocate unbounded memory.
+const doubtPlayerMaxMemoryLen = 1000
+
+// doubtPlayerJSON is the JSON wire format for DoubtPlayer. Persisting
+// cardMemories keeps Hard-difficulty CPUs from forgetting every revealed
+// value when a session is restored (see ADR-0028 / issue #1655).
 type doubtPlayerJSON struct {
-	GamePlayer *GamePlayer `json:"gp"`
-	// CPU memory (cardMemories) is intentionally omitted;
-	// CPU will re-learn after restore.
+	GamePlayer   *GamePlayer       `json:"gp"`
+	CardMemories []cardMemoryEntry `json:"cm,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (p *DoubtPlayer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(doubtPlayerJSON{
-		GamePlayer: p.GamePlayer,
+		GamePlayer:   p.GamePlayer,
+		CardMemories: p.cardMemories,
 	})
 }
 
@@ -40,13 +73,15 @@ func (p *DoubtPlayer) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
+	if len(j.CardMemories) > doubtPlayerMaxMemoryLen {
+		return fmt.Errorf("doubtPlayer: input array exceeds maximum allowed size")
+	}
 	if j.GamePlayer != nil {
 		p.GamePlayer = j.GamePlayer
 	} else {
 		p.GamePlayer = NewGamePlayer(false)
 	}
-	// CPU memory is reset on restore; CPU will re-learn.
-	p.ResetMemory()
+	p.cardMemories = j.CardMemories
 	return nil
 }
 

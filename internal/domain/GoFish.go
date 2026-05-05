@@ -64,6 +64,43 @@ type goFishMemoryEntry struct {
 // GetTurnSeen MemoryEntry インタフェース
 func (e goFishMemoryEntry) GetTurnSeen() int { return e.turnSeen }
 
+// goFishMemoryEntryJSON is the wire format for goFishMemoryEntry. The struct
+// fields are unexported, so without an explicit marshaller the entries would
+// silently round-trip as zero values and the Hard CPU would lose its
+// ask-history after a session restore.
+type goFishMemoryEntryJSON struct {
+	AskerIdx  int  `json:"a"`
+	TargetIdx int  `json:"g"`
+	Rank      int  `json:"r"`
+	HadCards  bool `json:"h"`
+	TurnSeen  int  `json:"t"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (e goFishMemoryEntry) MarshalJSON() ([]byte, error) {
+	return json.Marshal(goFishMemoryEntryJSON{
+		AskerIdx:  e.askerIdx,
+		TargetIdx: e.targetIdx,
+		Rank:      e.rank,
+		HadCards:  e.hadCards,
+		TurnSeen:  e.turnSeen,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (e *goFishMemoryEntry) UnmarshalJSON(data []byte) error {
+	var j goFishMemoryEntryJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	e.askerIdx = j.AskerIdx
+	e.targetIdx = j.TargetIdx
+	e.rank = j.Rank
+	e.hadCards = j.HadCards
+	e.turnSeen = j.TurnSeen
+	return nil
+}
+
 // GoFish Go Fishゲームクラス
 type GoFish struct {
 	trumpCards  *TrumpCards
