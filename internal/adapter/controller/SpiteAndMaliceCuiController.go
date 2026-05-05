@@ -30,7 +30,7 @@ func (c *SpiteAndMaliceCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.si.Reset() },
-		[]string{"ph", "pg", "ps", "d", "discard", "cpu", "h", "hint", "log", "l"},
+		[]string{"ph", "pg", "ps", "d", "discard", "cpu", "ac", "autocomplete", "h", "hint", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "ph":
@@ -43,6 +43,8 @@ func (c *SpiteAndMaliceCuiController) Exec(command string) string {
 				return c.handleDiscard(args), true
 			case "cpu":
 				return c.si.CpuStep(), true
+			case "ac", "autocomplete":
+				return c.si.AutoComplete(), true
 			default:
 				return handleCuiHintAndLog(cmd, c.si.Hint, c.si.ActionLog)
 			}

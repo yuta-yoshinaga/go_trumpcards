@@ -22,6 +22,8 @@ type SpiteAndMaliceInteractorIF interface {
 	Discard(handIdx, sideIdx int) string
 	// CpuStep CPU の手番を 1 ステップ進める
 	CpuStep() string
+	// AutoComplete 自明な手をまとめて適用する
+	AutoComplete() string
 	// Hint 推奨手を出力する
 	Hint() string
 	// ActionLog 棋譜を出力する
@@ -68,6 +70,11 @@ func (si *SpiteAndMaliceInteractor) Discard(handIdx, sideIdx int) string {
 // CpuStep CPU の手番を 1 ステップ進める
 func (si *SpiteAndMaliceInteractor) CpuStep() string {
 	return execAndPresent(si.Game, si.sp, si.Game.CpuStep)
+}
+
+// AutoComplete 自明な手をまとめて適用する
+func (si *SpiteAndMaliceInteractor) AutoComplete() string {
+	return execAndPresent(si.Game, si.sp, si.Game.AutoComplete)
 }
 
 // Hint 推奨手を出力する

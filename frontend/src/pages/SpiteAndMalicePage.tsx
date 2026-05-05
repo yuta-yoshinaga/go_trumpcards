@@ -67,6 +67,9 @@ function parseSamCommand(input: string): CliParseResult<ApiArgs> {
       return { args: ['reset'] };
     case 'cpu':
       return { args: ['cpu'] };
+    case 'ac':
+    case 'autocomplete':
+      return { args: ['autocomplete'] };
     case 'l':
     case 'log':
       return { args: ['log'] };
@@ -155,6 +158,7 @@ function SpiteAndMalicePageContent() {
         'ps <s> <f>     Play side[s] top to foundation f',
         'd <h> <s>      Discard hand[h] to side[s] (ends turn)',
         'cpu            Advance CPU turn',
+        'ac             Auto-complete (play every legal foundation move)',
         'h              Hint',
         'r              Reset',
         'l              Action log',
@@ -172,6 +176,11 @@ function SpiteAndMalicePageContent() {
     void apiCall('reset');
     playSound('shuffle');
   }, [apiCall, playSound]);
+
+  const handleAutoComplete = useCallback(() => {
+    setSelection(null);
+    void apiCall('autocomplete');
+  }, [apiCall]);
 
   const isHumanTurn = state ? state.current === 0 : false;
   const isGameOver = state ? state.phase === SpiteAndMalicePhase.GAME_OVER : false;
@@ -351,6 +360,18 @@ function SpiteAndMalicePageContent() {
                 loading={loading}
                 dataTutorial="sam-reset"
               />
+
+              {!isGameOver && isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleAutoComplete}
+                  disabled={loading || !state.canAutoComplete}
+                  data-testid="sam-autocomplete-btn"
+                >
+                  {t('autoComplete')}
+                </button>
+              )}
 
               {isGameOver && (
                 <button type="button" className={btnOutline} onClick={() => showActionLog()} disabled={loading}>

@@ -1379,7 +1379,7 @@ export const calculationApi = createSolitaireMoveApi<
 >('calculation');
 
 /** Command verbs accepted by the Spite & Malice /spiteandmalice/exec endpoint. */
-export type SpiteAndMaliceCommand = 'reset' | 'move' | 'discard' | 'cpu' | 'hint' | 'log';
+export type SpiteAndMaliceCommand = 'reset' | 'move' | 'discard' | 'cpu' | 'autocomplete' | 'hint' | 'log';
 
 /** API client for the Spite & Malice /spiteandmalice/exec endpoint. */
 export const spiteAndMaliceApi = {

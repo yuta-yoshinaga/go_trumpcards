@@ -37,6 +37,14 @@ func (_m *MockSpiteAndMaliceGame) CpuStep() error {
 	return _m.Called().Error(0)
 }
 
+func (_m *MockSpiteAndMaliceGame) AutoComplete() error {
+	return _m.Called().Error(0)
+}
+
+func (_m *MockSpiteAndMaliceGame) CanAutoComplete() bool {
+	return _m.Called().Bool(0)
+}
+
 func (_m *MockSpiteAndMaliceGame) IsCpuTurn() bool {
 	return _m.Called().Bool(0)
 }

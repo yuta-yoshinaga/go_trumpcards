@@ -22,6 +22,7 @@ func setupSpiteAndMaliceWebMockDefaults(g *interfaces.MockSpiteAndMaliceGame) {
 	g.On("GetStockSize").Return(40).Maybe()
 	g.On("GetCompletedSize").Return(0).Maybe()
 	g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
+	g.On("CanAutoComplete").Return(false).Maybe()
 	var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 	foundations[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
 	g.On("GetFoundations").Return(foundations).Maybe()
@@ -74,6 +75,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		g.On("GetStockSize").Return(0).Maybe()
 		g.On("GetCompletedSize").Return(0).Maybe()
 		g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
+		g.On("CanAutoComplete").Return(false).Maybe()
 		var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 		g.On("GetFoundations").Return(foundations).Maybe()
 		for i := range domain.SpiteAndMaliceFoundationCnt {
@@ -96,6 +98,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		g.On("GetStockSize").Return(0).Maybe()
 		g.On("GetCompletedSize").Return(0).Maybe()
 		g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
+		g.On("CanAutoComplete").Return(false).Maybe()
 		var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 		g.On("GetFoundations").Return(foundations).Maybe()
 		for i := range domain.SpiteAndMaliceFoundationCnt {
@@ -121,6 +124,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 			g.On("GetStockSize").Return(0).Maybe()
 			g.On("GetCompletedSize").Return(0).Maybe()
 			g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
+			g.On("CanAutoComplete").Return(false).Maybe()
 			var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 			g.On("GetFoundations").Return(foundations).Maybe()
 			for i := range domain.SpiteAndMaliceFoundationCnt {
@@ -156,6 +160,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		g.On("GetStockSize").Return(0).Maybe()
 		g.On("GetCompletedSize").Return(0).Maybe()
 		g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
+		g.On("CanAutoComplete").Return(false).Maybe()
 		var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 		g.On("GetFoundations").Return(foundations).Maybe()
 		for i := range domain.SpiteAndMaliceFoundationCnt {

@@ -19,6 +19,10 @@ type SpiteAndMaliceGame interface {
 	Discard(handIdx, sideIdx int) error
 	// CpuStep CPU の手番を 1 ステップ進める
 	CpuStep() error
+	// AutoComplete 自明な (foundation に出せる) 手を連続で適用する
+	AutoComplete() error
+	// CanAutoComplete AutoComplete が有効に働く状態か
+	CanAutoComplete() bool
 	// IsCpuTurn 現在のターンが CPU か
 	IsCpuTurn() bool
 	// GetHint 現在ターンの推奨手を返す

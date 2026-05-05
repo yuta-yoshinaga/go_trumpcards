@@ -522,6 +522,63 @@ func TestSpiteAndMalice_CpuStep_EasyDifficulty(t *testing.T) {
 	assert.Equal(t, 1, total)
 }
 
+// --- AutoComplete ---
+
+func TestSpiteAndMalice_AutoComplete_PlaysGoalThenHandThenSide(t *testing.T) {
+	g := newTestSpiteAndMalice()
+	g.SetCurrent(SpiteAndMaliceHumanIdx)
+	// Foundation 0 currently holds 1; legal next play is 2.
+	g.SetFoundation(0, []*Card{mkCard(CardDesignSpade, 1)})
+	// Hand has the 2 (playable on foundation 0) and a 9 (no anchor).
+	g.SetPlayerHand(SpiteAndMaliceHumanIdx, []*Card{mkCard(CardDesignHeart, 2), mkCard(CardDesignHeart, 9)})
+	// Goal top is 3 — playable after the 2.
+	g.SetPlayerGoal(SpiteAndMaliceHumanIdx, []*Card{mkCard(CardDesignClover, 3)})
+
+	require.NoError(t, g.AutoComplete())
+
+	// Foundation 0 should now have 1, 2, 3 stacked.
+	assert.Equal(t, 3, g.GetFoundationTopValue(0))
+	// Goal got drained, hand drained the 2; the 9 stays.
+	human := g.GetPlayer(SpiteAndMaliceHumanIdx)
+	assert.Equal(t, 0, human.GoalSize())
+	assert.Equal(t, 1, human.HandSize())
+	// Auto-complete should not rotate the turn.
+	assert.Equal(t, SpiteAndMaliceHumanIdx, g.GetCurrent())
+}
+
+func TestSpiteAndMalice_AutoComplete_NoOpWhenNothingPlayable(t *testing.T) {
+	g := newTestSpiteAndMalice()
+	g.SetCurrent(SpiteAndMaliceHumanIdx)
+	// Foundation empty; hand has no Ace and no wild — nothing legal.
+	g.SetPlayerHand(SpiteAndMaliceHumanIdx, []*Card{mkCard(CardDesignSpade, 5), mkCard(CardDesignHeart, 8)})
+	moveCountBefore := g.GetMoveCount()
+	require.NoError(t, g.AutoComplete())
+	assert.Equal(t, moveCountBefore, g.GetMoveCount(), "no moves should have been made")
+}
+
+func TestSpiteAndMalice_AutoComplete_RefusesOnCpuTurn(t *testing.T) {
+	g := newTestSpiteAndMalice()
+	g.SetCurrent(SpiteAndMaliceCpuIdx)
+	err := g.AutoComplete()
+	require.Error(t, err)
+}
+
+func TestSpiteAndMalice_CanAutoComplete_TrueWhenMoveAvailable(t *testing.T) {
+	g := newTestSpiteAndMalice()
+	g.SetCurrent(SpiteAndMaliceHumanIdx)
+	g.SetFoundation(0, []*Card{mkCard(CardDesignSpade, 1)})
+	g.SetPlayerHand(SpiteAndMaliceHumanIdx, []*Card{mkCard(CardDesignHeart, 2)})
+	assert.True(t, g.CanAutoComplete())
+}
+
+func TestSpiteAndMalice_CanAutoComplete_FalseOnCpuTurn(t *testing.T) {
+	g := newTestSpiteAndMalice()
+	g.SetCurrent(SpiteAndMaliceCpuIdx)
+	g.SetFoundation(0, []*Card{mkCard(CardDesignSpade, 1)})
+	g.SetPlayerHand(SpiteAndMaliceCpuIdx, []*Card{mkCard(CardDesignHeart, 2)})
+	assert.False(t, g.CanAutoComplete())
+}
+
 func TestSpiteAndMalicePlayer_JSONRoundTrip(t *testing.T) {
 	p := NewSpiteAndMalicePlayer(true)
 	p.AddToHand(mkCard(CardDesignSpade, 1))
