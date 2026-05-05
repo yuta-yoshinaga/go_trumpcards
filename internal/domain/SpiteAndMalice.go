@@ -290,9 +290,12 @@ func (s *SpiteAndMalice) AutoComplete() error {
 	if s.IsCpuTurn() {
 		return errors.New("not human turn")
 	}
-	// Bounded loop: a single AutoComplete call can never play more moves than
-	// the number of cards in play, so we cap by player + foundation capacity.
-	maxIterations := SpiteAndMaliceFoundationCnt * SpiteAndMaliceFoundationMax * SpiteAndMalicePlayerCnt
+	// Bounded loop: AutoComplete only ever processes the human's piles, but
+	// completed foundations refill from the shared stock so a single call can
+	// chain more moves than CardCnt * 2 in pathological end-game states. Use
+	// a generous cap (2 decks * full deck rotations) — the loop normally exits
+	// via "no playable move" long before this and the cap is just defensive.
+	const maxIterations = 1024
 	for iter := 0; iter < maxIterations; iter++ {
 		if s.phase != SpiteAndMalicePhasePlaying || s.IsCpuTurn() {
 			return nil
