@@ -3,6 +3,7 @@ import type { sevensApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
 import type { SettingsGroup } from '../components/common/SettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -466,6 +467,7 @@ function SevensPageContent() {
 
             <div data-tutorial="sv-settings">
               <SettingsPanel title={t('config.title')} groups={settingsGroups} />
+              <ReplaySpeedSettingsPanel />
             </div>
 
             <ErrorAlert message={error} onRetry={retry} />

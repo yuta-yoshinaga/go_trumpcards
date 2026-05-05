@@ -3,6 +3,7 @@ import type { oldmaidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -226,6 +227,7 @@ function OldMaidPageContent() {
               },
             ]}
           />
+          <ReplaySpeedSettingsPanel />
           {/* Scrollable: CPU rows + discard + status + logs + result */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* Mode badge */}
