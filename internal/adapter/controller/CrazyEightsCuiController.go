@@ -9,6 +9,16 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// CrazyEightsCuiController クレイジーエイトCUIコントローラークラス
+type CrazyEightsCuiController struct {
+	ci usecase.CrazyEightsInteractorIF
+}
+
+// NewCrazyEightsCuiController コンストラクタ
+func NewCrazyEightsCuiController(ci usecase.CrazyEightsInteractorIF) *CrazyEightsCuiController {
+	return &CrazyEightsCuiController{ci: ci}
+}
+
 // playWithSuitPrompt runs Play(idx) and, when the human just played an 8
 // (game is now waiting for a suit choice), inlines a follow-up suit prompt so
 // the user does not have to type "s <n>" on a separate line. The presenter
@@ -20,16 +30,6 @@ func (c *CrazyEightsCuiController) playWithSuitPrompt(cardIndex int) string {
 		return cuiutil.PromptRequest(i18n.T("crazyeights.promptSuit"), "s {0}")
 	}
 	return res
-}
-
-// CrazyEightsCuiController クレイジーエイトCUIコントローラークラス
-type CrazyEightsCuiController struct {
-	ci usecase.CrazyEightsInteractorIF
-}
-
-// NewCrazyEightsCuiController コンストラクタ
-func NewCrazyEightsCuiController(ci usecase.CrazyEightsInteractorIF) *CrazyEightsCuiController {
-	return &CrazyEightsCuiController{ci: ci}
 }
 
 // Exec コマンド実行

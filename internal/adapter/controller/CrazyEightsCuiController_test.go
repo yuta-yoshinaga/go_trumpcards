@@ -100,6 +100,8 @@ func TestCrazyEightsCuiController_Exec(t *testing.T) {
 		assert.True(t, cuiutil.IsPromptRequest(result), "expected a PROMPT response, got %q", result)
 		_, tmpl := cuiutil.ParsePromptRequest(result)
 		assert.Equal(t, "s {0}", tmpl)
+		m.AssertCalled(t, "Play", 0)
+		m.AssertCalled(t, "IsHumanChooseSuitTurn")
 	})
 
 	t.Run("playing a non-8 returns the play result unchanged (no prompt)", func(t *testing.T) {
@@ -109,6 +111,8 @@ func TestCrazyEightsCuiController_Exec(t *testing.T) {
 		c := controller.NewCrazyEightsCuiController(m)
 		result := c.Exec("p 2")
 		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Play", 2)
+		m.AssertCalled(t, "IsHumanChooseSuitTurn")
 	})
 
 	// draw
