@@ -69,6 +69,7 @@ func (p *SpiteAndMaliceWebPresenter) buildBase(g interfaces.SpiteAndMaliceGame) 
 	cfg := g.GetConfig()
 	resObj.GoalSize = cfg.GoalSize
 	resObj.CpuDifficulty = int(cfg.CpuDifficulty)
+	resObj.CanAutoComplete = g.CanAutoComplete()
 
 	foundations := g.GetFoundations()
 	for i := range domain.SpiteAndMaliceFoundationCnt {

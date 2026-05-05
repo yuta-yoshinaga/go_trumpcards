@@ -35,6 +35,10 @@ func (_m *MockSpiteAndMaliceInteractor) CpuStep() string {
 	return _m.Called().Get(0).(string)
 }
 
+func (_m *MockSpiteAndMaliceInteractor) AutoComplete() string {
+	return _m.Called().Get(0).(string)
+}
+
 func (_m *MockSpiteAndMaliceInteractor) Hint() string {
 	return _m.Called().Get(0).(string)
 }

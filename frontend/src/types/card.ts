@@ -3148,6 +3148,8 @@ export interface SpiteAndMaliceResponse {
   winner: number;
   goalSize: number;
   cpuDifficulty: number;
+  /** True when the human can auto-complete at least one foundation move on their turn. */
+  canAutoComplete: boolean;
   hint?: SpiteAndMaliceHint;
   message: string;
   messageCode?: string;

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spiteAndMaliceApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -41,6 +41,7 @@ const baseState: SpiteAndMaliceResponse = {
   winner: -1,
   goalSize: 20,
   cpuDifficulty: 1,
+  canAutoComplete: false,
   message: '',
   messageCode: 'spiteandmalice.playing',
 };
@@ -104,5 +105,37 @@ describe('SpiteAndMalicePage', () => {
     mockExec.mockResolvedValue(loseState);
     renderWithProviders(<SpiteAndMalicePage />);
     await waitFor(() => expect(screen.getAllByText(/ゲームオーバー|Game Over/).length).toBeGreaterThan(0));
+  });
+
+  it('renders the autocomplete button on human turn and disables it when canAutoComplete=false', async () => {
+    mockExec.mockResolvedValue(baseState);
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(screen.getByTestId('sam-autocomplete-btn')).toBeInTheDocument());
+    expect(screen.getByTestId('sam-autocomplete-btn')).toBeDisabled();
+  });
+
+  it('enables the autocomplete button when canAutoComplete=true and dispatches the command on click', async () => {
+    const playableState: SpiteAndMaliceResponse = { ...baseState, canAutoComplete: true };
+    mockExec.mockResolvedValue(playableState);
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(screen.getByTestId('sam-autocomplete-btn')).toBeEnabled());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playableState);
+    fireEvent.click(screen.getByTestId('sam-autocomplete-btn'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('hides the autocomplete button on CPU turn and at game over', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    const { unmount } = renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('sam-autocomplete-btn')).not.toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValue(winState);
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() => expect(screen.getAllByText(/ゲームオーバー|Game Over/).length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('sam-autocomplete-btn')).not.toBeInTheDocument();
   });
 });

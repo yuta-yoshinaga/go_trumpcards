@@ -19,6 +19,7 @@
   "moveCount": "手数",
   "endTurn": "ターン終了",
   "discard": "ディスカード",
+  "autoComplete": "自動完成",
   "selectSource": "出すカードを選んでください",
   "selectFoundation": "出すファウンデーションを選んでください",
   "selectSide": "捨てるサイドパイルを選んでください",

@@ -39,18 +39,19 @@ type SpiteAndMaliceWebHint struct {
 
 // SpiteAndMaliceWebOutput Spite & Malice Web 出力
 type SpiteAndMaliceWebOutput struct {
-	Phase          int                                                     `json:"phase"`
-	Current        int                                                     `json:"current"`
-	Players        [domain.SpiteAndMalicePlayerCnt]SpiteAndMaliceWebPlayer `json:"players"`
-	Foundations    [domain.SpiteAndMaliceFoundationCnt][]*WebOutputCard    `json:"foundations"`
-	FoundationTops [domain.SpiteAndMaliceFoundationCnt]int                 `json:"foundationTops"`
-	StockSize      int                                                     `json:"stockSize"`
-	CompletedSize  int                                                     `json:"completedSize"`
-	MoveCount      int                                                     `json:"moveCount"`
-	Winner         int                                                     `json:"winner"`
-	GoalSize       int                                                     `json:"goalSize"`
-	CpuDifficulty  int                                                     `json:"cpuDifficulty"`
-	Hint           *SpiteAndMaliceWebHint                                  `json:"hint,omitempty"`
+	Phase           int                                                     `json:"phase"`
+	Current         int                                                     `json:"current"`
+	Players         [domain.SpiteAndMalicePlayerCnt]SpiteAndMaliceWebPlayer `json:"players"`
+	Foundations     [domain.SpiteAndMaliceFoundationCnt][]*WebOutputCard    `json:"foundations"`
+	FoundationTops  [domain.SpiteAndMaliceFoundationCnt]int                 `json:"foundationTops"`
+	StockSize       int                                                     `json:"stockSize"`
+	CompletedSize   int                                                     `json:"completedSize"`
+	MoveCount       int                                                     `json:"moveCount"`
+	Winner          int                                                     `json:"winner"`
+	GoalSize        int                                                     `json:"goalSize"`
+	CpuDifficulty   int                                                     `json:"cpuDifficulty"`
+	CanAutoComplete bool                                                    `json:"canAutoComplete"`
+	Hint            *SpiteAndMaliceWebHint                                  `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -79,6 +80,8 @@ func spiteAndMaliceDispatch(bc *baseController, w http.ResponseWriter, si usecas
 		return spiteAndMaliceDiscardDispatch(bc, w, si, param, newDefault)
 	case "cpu":
 		bc.writePresenterResponse(w, si.CpuStep())
+	case "ac", "autocomplete":
+		bc.writePresenterResponse(w, si.AutoComplete())
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, si.Reset, si.Hint, si.ActionLog)
 	}

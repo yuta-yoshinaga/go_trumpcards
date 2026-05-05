@@ -275,6 +275,59 @@ func (s *SpiteAndMalice) CpuStep() error {
 	return errors.New("invalid cpu hint")
 }
 
+// AutoComplete plays every immediately-legal foundation move from the human's
+// own piles (goal → hand → side) without rotating the turn. It stops when no
+// playable move remains or the game ends. Discards are intentionally skipped
+// since those rotate the turn and may give the opponent a strategic opening,
+// which the player should always confirm by hand.
+//
+// CanAutoComplete must guard the call site — it returns true only when the
+// human is on turn and at least one safe foundation move exists.
+func (s *SpiteAndMalice) AutoComplete() error {
+	if s.phase != SpiteAndMalicePhasePlaying {
+		return errors.New("game is over")
+	}
+	if s.IsCpuTurn() {
+		return errors.New("not human turn")
+	}
+	// Bounded loop: a single AutoComplete call can never play more moves than
+	// the number of cards in play, so we cap by player + foundation capacity.
+	maxIterations := SpiteAndMaliceFoundationCnt * SpiteAndMaliceFoundationMax * SpiteAndMalicePlayerCnt
+	for iter := 0; iter < maxIterations; iter++ {
+		if s.phase != SpiteAndMalicePhasePlaying || s.IsCpuTurn() {
+			return nil
+		}
+		move := s.findPlayableMove(s.current)
+		if move == nil {
+			return nil
+		}
+		var err error
+		switch move.Source {
+		case SpiteAndMaliceSourceGoal:
+			err = s.PlayFromGoal(move.FoundationIdx)
+		case SpiteAndMaliceSourceHand:
+			err = s.PlayFromHand(move.Index, move.FoundationIdx)
+		case SpiteAndMaliceSourceSide:
+			err = s.PlayFromSide(move.Index, move.FoundationIdx)
+		default:
+			return errors.New("invalid auto-complete move")
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return errors.New("auto-complete exceeded iteration cap")
+}
+
+// CanAutoComplete reports whether the player has a playable foundation move
+// available right now. The frontend uses this to enable / disable the button.
+func (s *SpiteAndMalice) CanAutoComplete() bool {
+	if s.phase != SpiteAndMalicePhasePlaying || s.IsCpuTurn() {
+		return false
+	}
+	return s.findPlayableMove(s.current) != nil
+}
+
 // GetHint 現在ターンの推奨手を返す (人間向け)。ゲーム終了時は nil。
 func (s *SpiteAndMalice) GetHint() *SpiteAndMaliceHint {
 	if s.phase != SpiteAndMalicePhasePlaying {
