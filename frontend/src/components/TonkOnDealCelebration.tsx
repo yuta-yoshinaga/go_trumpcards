@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { type ReactElement, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import type { Card } from '../types/card';
@@ -37,7 +37,7 @@ export function TonkOnDealCelebration({
   winnerCards = [],
   winnerName,
   dismissAfterMs = 3500,
-}: TonkOnDealCelebrationProps): JSX.Element | null {
+}: TonkOnDealCelebrationProps): ReactElement | null {
   const { t } = useTranslation('tonk');
   const reduced = useReducedMotion();
   const [visible, setVisible] = useState(false);
