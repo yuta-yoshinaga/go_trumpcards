@@ -105,9 +105,9 @@ export function VideoPokerGameContent({
   const { hint, hintEnabled, setHintEnabled } = useGameHint(gameName, state);
   // Auto-hold: when the deal completes, pre-select the cards the hint engine
   // recommends so the player can hit Draw without re-discovering the optimal
-  // hold themselves. Off-by-default for variants that ship with hint=off so
-  // the player doesn't get spoiled before they ask for hints. Persisted per
-  // variant so each game (videopoker / deuceswild / jokerpoker) is independent.
+  // hold themselves. Default ON to match real-machine behaviour; persisted
+  // per variant so each game (videopoker / deuceswild / jokerpoker) keeps
+  // its own toggle.
   const [autoHoldEnabled, setAutoHoldEnabled] = useLocalStorageToggle(`auto_hold_${gameName}`, true);
 
   useEffect(() => {
