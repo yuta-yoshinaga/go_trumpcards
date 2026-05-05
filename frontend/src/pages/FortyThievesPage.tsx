@@ -23,13 +23,13 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useFortyThievesGame } from '../hooks/useFortyThievesGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -123,22 +123,7 @@ function FortyThievesPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('fortythieves', state);
-  const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
-  const windowWidth = useWindowWidth();
-
-  // Responsive card dimensions for 10-column layout
-  const ft = useMemo(() => {
-    if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap, wasteFan: 15 };
-    const padX = 16;
-    const gapPx = 4;
-    const cols = 10;
-    const colW = Math.floor((windowWidth - padX - (cols - 1) * gapPx) / cols);
-    const cw = Math.min(Math.max(colW, 24), cardWidth);
-    const ch = Math.round(cw * 1.5);
-    const co = Math.round(cw * 0.48);
-    const wasteFan = Math.round(cw * 0.3);
-    return { cw, ch, co, wasteFan };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  const ft = useResponsiveTableau(10);
 
   const isPlayingForKbd = state?.phase === FortyThievesPhase.PLAYING;
 

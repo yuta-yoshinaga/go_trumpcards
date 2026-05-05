@@ -23,12 +23,12 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSpiderGame } from '../hooks/useSpiderGame';
 import { useSound } from '../providers/SoundProvider';
@@ -116,7 +116,10 @@ function SpiderPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('spider', state);
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  // Responsive 10-column dimensions matching this page's `px-4` scroll container and `gap-0.5`
+  // tableau so a 375 px viewport doesn't crush each card below 28 px (#1648). Stock uses the
+  // same dimensions so cards don't visibly pop when the deal animation moves them to the tableau.
+  const tableau = useResponsiveTableau(10, { padX: 32, gapPx: 2 });
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spider');
   const cliConfig: CliGameConfig<SpiderResponse, Parameters<typeof spiderApi.exec>> = useMemo(
@@ -237,14 +240,14 @@ function SpiderPageContent() {
                 </div>
                 {state.stockCount > 0 ? (
                   <AnimatedCardBack
-                    width={cardWidth}
+                    width={tableau.cw}
                     onClick={isPlaying ? handleDealGuarded : undefined}
                     ariaLabel={t('deal')}
                     onFlipComplete={() => playSound('cardFlip')}
                   />
                 ) : (
                   <div
-                    style={{ width: cardWidth, height: cardHeight }}
+                    style={{ width: tableau.cw, height: tableau.ch }}
                     className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
                   >
                     {t('empty')}
@@ -272,14 +275,14 @@ function SpiderPageContent() {
                         onDragLeave={dnd.handleDragLeave}
                         className="relative block"
                       >
-                        <div className="relative" style={{ minHeight: cardHeight }}>
+                        <div className="relative" style={{ minHeight: tableau.ch }}>
                           {col.length === 0 ? (
                             <button
                               key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
-                              style={{ height: cardHeight }}
+                              style={{ height: tableau.ch }}
                               data-testid={`spd-empty-col-${colIdx.toString()}`}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
                             >
@@ -296,7 +299,7 @@ function SpiderPageContent() {
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
                                   className="absolute left-0 right-0"
-                                  style={{ top: cardIdx * cardOverlap }}
+                                  style={{ top: cardIdx * tableau.co }}
                                 >
                                   {tc.faceUp && tc.card ? (
                                     <button
@@ -324,7 +327,7 @@ function SpiderPageContent() {
                                     >
                                       <AnimatedCard
                                         card={tc.card}
-                                        width={cardWidth}
+                                        width={tableau.cw}
                                         draggable={false}
                                         style={{ width: '100%' }}
                                         onDealComplete={() => playSound('cardDeal', { pitchVariation: 0.03 })}
@@ -332,7 +335,7 @@ function SpiderPageContent() {
                                     </button>
                                   ) : (
                                     <AnimatedCardBack
-                                      width={cardWidth}
+                                      width={tableau.cw}
                                       style={{ width: '100%' }}
                                       onFlipComplete={() => playSound('cardFlip')}
                                     />
@@ -341,7 +344,7 @@ function SpiderPageContent() {
                               );
                             })
                           )}
-                          {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
+                          {col.length > 0 && <div style={{ height: (col.length - 1) * tableau.co + tableau.ch }} />}
                         </div>
                       </DropZone>
                     </div>
