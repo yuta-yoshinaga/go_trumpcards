@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { SpiderMoveZone, spiderApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -132,6 +132,18 @@ function SpiderPageContent() {
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
 
+  // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
+  const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
+  const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
+  const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
+  const handleDealGuarded = useCallback(() => {
+    if (dealBlockedByEmpty) {
+      setEmptyDealAttemptKey((k) => k + 1);
+      return;
+    }
+    handleDeal();
+  }, [dealBlockedByEmpty, handleDeal]);
+
   const dispatchMove = useCallback(
     (source: SpiderMoveZone, target: SpiderMoveZone) => {
       void exec('move', source, target);
@@ -153,13 +165,13 @@ function SpiderPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'd', action: handleDeal },
+      { key: 'd', action: handleDealGuarded },
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
       { key: 'g', action: handleGiveUp },
       { key: 'z', action: handleUndo },
     ],
-    [handleDeal, handleHint, handleAutoComplete, handleGiveUp, handleUndo],
+    [handleDealGuarded, handleHint, handleAutoComplete, handleGiveUp, handleUndo],
   );
 
   useActionKeyboardNav({
@@ -224,7 +236,7 @@ function SpiderPageContent() {
                 {state.stockCount > 0 ? (
                   <AnimatedCardBack
                     width={cardWidth}
-                    onClick={isPlaying ? handleDeal : undefined}
+                    onClick={isPlaying ? handleDealGuarded : undefined}
                     ariaLabel={t('deal')}
                     onFlipComplete={() => playSound('cardFlip')}
                   />
@@ -261,11 +273,13 @@ function SpiderPageContent() {
                         <div className="relative" style={{ minHeight: cardHeight }}>
                           {col.length === 0 ? (
                             <button
+                              key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
                               disabled={!isPlaying || loading || !selectedSource}
                               style={{ height: cardHeight }}
-                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                              data-testid={`spd-empty-col-${colIdx.toString()}`}
+                              className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
                             >
                               {t('empty')}
                             </button>
@@ -389,8 +403,10 @@ function SpiderPageContent() {
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={handleDeal}
+                    onClick={handleDealGuarded}
                     disabled={loading || isAutoCompleting}
+                    title={dealBlockedByEmpty ? t('cannotDealEmptyColExists') : undefined}
+                    aria-describedby={dealBlockedByEmpty ? 'spd-deal-blocked-reason' : undefined}
                   >
                     {t('deal')}
                   </button>

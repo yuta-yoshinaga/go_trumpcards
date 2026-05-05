@@ -114,6 +114,52 @@ describe('ScorpionPage', () => {
     expect(screen.getByRole('button', { name: '配る' })).toBeDisabled();
   });
 
+  it('clicking deal with empty columns triggers shake on empty placeholders and skips API', async () => {
+    const stateWithEmptyCol: ScorpionResponse = {
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [], // empty
+        [{ card: card('CLOVER', 5), faceUp: true }],
+        [{ card: card('DIAMOND', 10), faceUp: true }],
+        [{ card: card('SPADE', 3), faceUp: true }],
+        [{ card: card('HEART', 7), faceUp: true }],
+        [{ card: card('CLOVER', 2), faceUp: true }],
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithEmptyCol);
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-empty-col-1')).toBeInTheDocument());
+    expect(screen.getByTestId('sc-empty-col-1').className).not.toContain('animate-shake');
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('sc-empty-col-1').className).toContain('animate-shake');
+    });
+    expect(mockExec).not.toHaveBeenCalledWith('deal');
+  });
+
+  it('deal button exposes empty-column reason via title when blocked', async () => {
+    const stateWithEmptyCol: ScorpionResponse = {
+      ...playingState,
+      tableau: [
+        [{ card: card('SPADE', 13), faceUp: true }],
+        [],
+        [{ card: card('CLOVER', 5), faceUp: true }],
+        [{ card: card('DIAMOND', 10), faceUp: true }],
+        [{ card: card('SPADE', 3), faceUp: true }],
+        [{ card: card('HEART', 7), faceUp: true }],
+        [{ card: card('CLOVER', 2), faceUp: true }],
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithEmptyCol);
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '配る' })).toHaveAttribute('title', '空の列をすべて埋めないと配れません');
+  });
+
   it('autocomplete button triggers autocomplete command', async () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

@@ -21,6 +21,7 @@
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
   "stalemate": "Stalemate",
+  "cannotDealEmptyColExists": "Fill every empty column before dealing",
   "landscapeBanner": "Landscape mode recommended",
   "frontendHint": {
     "moveToTableau": "A card can be moved between tableau columns",

@@ -21,6 +21,7 @@
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
   "stalemate": "手詰まりです",
+  "cannotDealEmptyColExists": "空の列をすべて埋めないと配れません",
   "landscapeBanner": "横向き画面推奨",
   "frontendHint": {
     "moveToTableau": "場札間で移動可能なカードがあります",
