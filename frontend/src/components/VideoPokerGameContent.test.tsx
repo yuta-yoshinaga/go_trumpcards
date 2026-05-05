@@ -102,6 +102,9 @@ function renderContent() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Clear localStorage so the per-variant autoHold/hint toggles start at
+  // their hardcoded defaults rather than carrying state across test cases.
+  localStorage.clear();
 });
 
 describe('VideoPokerGameContent', () => {
@@ -134,6 +137,9 @@ describe('VideoPokerGameContent', () => {
       .mockResolvedValueOnce(resultPhaseWin);
     renderContent();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    // Disable auto-hold before entering draw so the test can drive holds
+    // purely from explicit clicks (auto-hold seeds the state on phase entry).
+    fireEvent.click(screen.getByTestId('vp-auto-hold-toggle'));
     fireEvent.click(screen.getByRole('button', { name: /ディール/ }));
     await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
 
@@ -157,6 +163,37 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(resultPhaseLose);
     renderContent();
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+  });
+
+  it('auto-hold pre-selects the hint-recommended cards on entering draw phase', async () => {
+    // drawPhaseState hand = [A♠, J♥, 5♣, 8♦, K♠]. With no pairs/draws, the
+    // base hint engine recommends holding the high cards (J + K → idx 1, 4).
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(drawPhaseState);
+    renderContent();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /ディール/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false'); // A — not a high card under threshold=11
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'true'); // J
+    expect(cardButtons[2]).toHaveAttribute('aria-pressed', 'false'); // 5
+    expect(cardButtons[3]).toHaveAttribute('aria-pressed', 'false'); // 8
+    expect(cardButtons[4]).toHaveAttribute('aria-pressed', 'true'); // K
+  });
+
+  it('toggling auto-hold off then dealing leaves all cards unheld', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(drawPhaseState);
+    renderContent();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByTestId('vp-auto-hold-toggle'));
+    fireEvent.click(screen.getByRole('button', { name: /ディール/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /ドロー/ })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    for (const btn of cardButtons) {
+      expect(btn).toHaveAttribute('aria-pressed', 'false');
+    }
   });
 
   it('next game button fires reset directly without confirm dialog', async () => {

@@ -8,13 +8,15 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
+import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { VideoPokerResponse } from '../types/card';
+import type { Card, VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
 import type { CliGameConfig } from '../utils/cli/types';
+import { getVideoPokerBaseHint } from '../utils/hints/videoPokerBaseHint';
 import { ActionLogPanel } from './ActionLogPanel';
 import { CliTerminal } from './cli/CliTerminal';
 import { CliToggle } from './cli/CliToggle';
@@ -30,6 +32,13 @@ import { AnimatedCard } from './motion/AnimatedCard';
 import { WinCelebration } from './motion/WinCelebration';
 import { PhaseIndicator } from './PhaseIndicator';
 import { TutorialButton } from './tutorial/TutorialButton';
+
+/** Per-variant predicate identifying wild cards (Deuces Wild = twos, Joker Poker = jokers, default = none). */
+const WILD_CARD_PREDICATE: Record<'videopoker' | 'deuceswild' | 'jokerpoker', (card: Card) => boolean> = {
+  videopoker: () => false,
+  deuceswild: (card) => card.value === 2,
+  jokerpoker: (card) => card.design === 'JOKER',
+};
 
 /** Props for the VideoPokerGameContent shared component. */
 export interface VideoPokerGameContentProps {
@@ -94,6 +103,12 @@ export function VideoPokerGameContent({
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { hint, hintEnabled, setHintEnabled } = useGameHint(gameName, state);
+  // Auto-hold: when the deal completes, pre-select the cards the hint engine
+  // recommends so the player can hit Draw without re-discovering the optimal
+  // hold themselves. Default ON to match real-machine behaviour; persisted
+  // per variant so each game (videopoker / deuceswild / jokerpoker) keeps
+  // its own toggle.
+  const [autoHoldEnabled, setAutoHoldEnabled] = useLocalStorageToggle(`auto_hold_${gameName}`, true);
 
   useEffect(() => {
     execApi('reset');
@@ -103,10 +118,28 @@ export function VideoPokerGameContent({
   const isDrawPhase = state?.phase === VideoPokerPhase.DRAW;
   const isResultPhase = state?.phase === VideoPokerPhase.RESULT;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-apply auto-hold only on the phase transition into DRAW (a fresh hand). Adding autoHoldEnabled / state / gameName to the deps would overwrite the player's manual hold edits whenever any of those change mid-draw.
   useEffect(() => {
-    if (isDrawPhase) {
-      setHeldCards([false, false, false, false, false]);
+    if (!isDrawPhase) return;
+    // Default: nothing held. When auto-hold is enabled, compute the
+    // recommendation directly via getVideoPokerBaseHint so it works
+    // regardless of whether the player has the hint UI toggled on.
+    const next: boolean[] = [false, false, false, false, false];
+    if (autoHoldEnabled && state) {
+      const autoHint = getVideoPokerBaseHint(state, WILD_CARD_PREDICATE[gameName]);
+      if (autoHint?.targetAction.startsWith('hold:')) {
+        const csv = autoHint.targetAction.slice('hold:'.length);
+        if (csv.length > 0) {
+          for (const raw of csv.split(',')) {
+            const idx = Number.parseInt(raw, 10);
+            if (Number.isInteger(idx) && idx >= 0 && idx < next.length) {
+              next[idx] = true;
+            }
+          }
+        }
+      }
     }
+    setHeldCards(next);
   }, [isDrawPhase]);
 
   const toggleHold = useCallback(
@@ -273,10 +306,19 @@ export function VideoPokerGameContent({
                 </button>
               </div>
             )}
-            <div className="flex justify-center pb-2">
+            <div className="flex flex-wrap justify-center gap-x-4 pb-2">
               <label className="text-ds-text-primary text-sm flex items-center gap-2 min-h-[44px]">
                 <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
                 {tc('hint.toggle', { ns: 'tutorial' })}
+              </label>
+              <label className="text-ds-text-primary text-sm flex items-center gap-2 min-h-[44px]">
+                <input
+                  type="checkbox"
+                  checked={autoHoldEnabled}
+                  onChange={(e) => setAutoHoldEnabled(e.target.checked)}
+                  data-testid="vp-auto-hold-toggle"
+                />
+                {t('label.autoHold')}
               </label>
             </div>
           </GameFooter>
