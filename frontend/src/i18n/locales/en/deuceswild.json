@@ -4,7 +4,8 @@
     "chips": "Chips: {{chips}}",
     "bet": "Bet: {{bet}} coin(s)",
     "payout": "Payout: {{payout}}",
-    "betAmount": "Coins"
+    "betAmount": "Coins",
+    "autoHold": "Auto-hold"
   },
   "button": {
     "deal": "Deal",
