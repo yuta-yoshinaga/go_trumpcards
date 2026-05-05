@@ -16,6 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { TonkOnDealCelebration } from '../components/TonkOnDealCelebration';
 import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -414,6 +415,11 @@ function TonkPageContent() {
         </>
       )}
       <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
+      <TonkOnDealCelebration
+        show={!!state?.isTonk && (isRoundEnd || isGameEnd)}
+        winnerCards={state?.players[state?.winnerIdx ?? -1]?.cards ?? []}
+        winnerName={state ? playerName(state.winnerIdx, state.players[state.winnerIdx]?.isHuman ?? false) : undefined}
+      />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );
