@@ -212,6 +212,60 @@ describe('PokerSquaresPage', () => {
     expect(screen.getByTestId('col-score-4')).toHaveTextContent('8');
   });
 
+  it('cross-highlights the row, column, and matching score badges when an empty cell is hovered', async () => {
+    mockApi.mockResolvedValue(playingState);
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-2-3')).toBeInTheDocument());
+
+    fireEvent.pointerEnter(screen.getByTestId('cell-2-3'));
+
+    // Hovered cell + every cell in row 2 and col 3 should carry the cross-hover marker.
+    expect(screen.getByTestId('cell-2-3')).toHaveAttribute('data-cross-hover', 'true');
+    expect(screen.getByTestId('cell-2-0')).toHaveAttribute('data-cross-hover', 'true');
+    expect(screen.getByTestId('cell-0-3')).toHaveAttribute('data-cross-hover', 'true');
+    expect(screen.getByTestId('cell-4-3')).toHaveAttribute('data-cross-hover', 'true');
+    // A cell off the cross stays unmarked.
+    expect(screen.getByTestId('cell-0-0')).not.toHaveAttribute('data-cross-hover');
+
+    // Score badges for the hovered line should highlight; others should not.
+    expect(screen.getByTestId('row-score-2')).toHaveAttribute('data-cross-hover', 'true');
+    expect(screen.getByTestId('col-score-3')).toHaveAttribute('data-cross-hover', 'true');
+    expect(screen.getByTestId('row-score-0')).not.toHaveAttribute('data-cross-hover');
+    expect(screen.getByTestId('col-score-0')).not.toHaveAttribute('data-cross-hover');
+  });
+
+  it('clears cross-highlight when the pointer leaves the cell', async () => {
+    mockApi.mockResolvedValue(playingState);
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-1-1')).toBeInTheDocument());
+
+    const cell = screen.getByTestId('cell-1-1');
+    fireEvent.pointerEnter(cell);
+    expect(cell).toHaveAttribute('data-cross-hover', 'true');
+    fireEvent.pointerLeave(cell);
+    expect(cell).not.toHaveAttribute('data-cross-hover');
+    expect(screen.getByTestId('row-score-1')).not.toHaveAttribute('data-cross-hover');
+  });
+
+  it('does not cross-highlight when hovering a filled cell', async () => {
+    const filledState: PokerSquaresResponse = {
+      ...playingState,
+      board: (() => {
+        const b = emptyBoard();
+        b[0][0] = { card: card('HEART', 13) };
+        return b;
+      })(),
+      placedCount: 1,
+    };
+    mockApi.mockResolvedValue(filledState);
+    renderWithProviders(<PokerSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeInTheDocument());
+
+    fireEvent.pointerEnter(screen.getByTestId('cell-0-0'));
+    expect(screen.getByTestId('cell-0-0')).not.toHaveAttribute('data-cross-hover');
+    expect(screen.getByTestId('row-score-0')).not.toHaveAttribute('data-cross-hover');
+  });
+
   it('renders the CLI terminal when CLI mode is enabled', async () => {
     mockUseCliMode.mockReturnValue({
       cliEnabled: true,
