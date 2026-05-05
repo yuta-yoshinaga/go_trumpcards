@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -272,6 +273,7 @@ function PresidentPageContent() {
               },
             ]}
           />
+          <ReplaySpeedSettingsPanel />
 
           <GameFooter className={`${gameTheme.president.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="pr-play-pass">

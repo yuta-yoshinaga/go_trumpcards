@@ -107,7 +107,15 @@
   "settings": {
     "title": "Settings",
     "showHelp": "Show help",
-    "hideHelp": "Hide help"
+    "hideHelp": "Hide help",
+    "replaySpeed": {
+      "title": "Animation",
+      "label": "CPU animation speed",
+      "tooltip": "Adjust how fast CPU turn animations play back. Fast is roughly 3× speed; Instant skips delays entirely.",
+      "normal": "Normal",
+      "fast": "Fast",
+      "instant": "Instant"
+    }
   },
   "player": {
     "you": "You",
