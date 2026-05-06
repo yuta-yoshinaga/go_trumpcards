@@ -504,7 +504,17 @@ func (s *bakersDozenSnapshot) UnmarshalJSON(data []byte) error {
 		}
 	}
 	s.tableau = j.Tableau
+	for i := range BakersDozenTableauCnt {
+		if s.tableau[i] == nil {
+			s.tableau[i] = make([]*BakersDozenTableauCard, 0)
+		}
+	}
 	s.foundation = j.Foundation
+	for i := range BakersDozenFoundationCnt {
+		if s.foundation[i] == nil {
+			s.foundation[i] = make([]*Card, 0)
+		}
+	}
 	s.phase = j.Phase
 	s.moveCount = j.MoveCount
 	s.isStalemate = j.IsStalemate
@@ -554,7 +564,17 @@ func (bd *BakersDozen) UnmarshalJSON(data []byte) error {
 		bd.trumpCards = NewTrumpCardsWithDecks(1, 0)
 	}
 	bd.tableau = j.Tableau
+	for i := range BakersDozenTableauCnt {
+		if bd.tableau[i] == nil {
+			bd.tableau[i] = make([]*BakersDozenTableauCard, 0)
+		}
+	}
 	bd.foundation = j.Foundation
+	for i := range BakersDozenFoundationCnt {
+		if bd.foundation[i] == nil {
+			bd.foundation[i] = make([]*Card, 0)
+		}
+	}
 	bd.phase = j.Phase
 	bd.moveCount = j.MoveCount
 	bd.actionLog = j.ActionLog

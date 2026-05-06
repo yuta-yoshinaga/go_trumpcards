@@ -473,8 +473,11 @@ func (s *golfSnapshot) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Stock) > golfMaxSliceLen || len(j.Waste) > golfMaxSliceLen {
-		return fmt.Errorf("golf: snapshot array exceeds maximum allowed size")
+	if len(j.Stock) > golfMaxSliceLen {
+		return fmt.Errorf("golf: snapshot stock exceeds maximum allowed size")
+	}
+	if len(j.Waste) > golfMaxSliceLen {
+		return fmt.Errorf("golf: snapshot waste exceeds maximum allowed size")
 	}
 	s.layout = j.Layout
 	s.stock = j.Stock
