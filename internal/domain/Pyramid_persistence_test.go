@@ -110,6 +110,30 @@ func TestPyramid_SnapshotStockRespectsMaxSliceLen(t *testing.T) {
 	require.Error(t, err, "oversized snapshot stock must be rejected")
 }
 
+// TestPyramid_SnapshotWasteRespectsMaxSliceLen rejects payloads that
+// smuggle an oversized inner Waste slice inside a history snapshot.
+func TestPyramid_SnapshotWasteRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigWaste := make([]map[string]any, pyramidMaxSliceLen+1)
+	for i := range bigWaste {
+		bigWaste[i] = map[string]any{}
+	}
+	snapshot := map[string]any{
+		"wa": bigWaste,
+	}
+	payload := map[string]any{
+		"tc": nil,
+		"hi": []any{snapshot},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Pyramid
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized snapshot waste must be rejected")
+}
+
 // TestPyramid_SnapshotPyramidRowRespectsMaxSliceLen rejects payloads that
 // smuggle an oversized Pyramid row slice inside a history snapshot.
 func TestPyramid_SnapshotPyramidRowRespectsMaxSliceLen(t *testing.T) {
