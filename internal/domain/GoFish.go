@@ -676,6 +676,10 @@ func (g *GoFish) GetHumanAction() *GoFishCpuAction { return g.humanAction }
 // GetActionLog 棋譜を取得する
 func (g *GoFish) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
+// goFishMaxSliceLen caps slice sizes during deserialisation, matching
+// ADR-0028's defensive policy for KV-restored session blobs.
+const goFishMaxSliceLen = 1000
+
 // goFishJSON is the JSON wire format for GoFish.
 type goFishJSON struct {
 	TrumpCards        *TrumpCards         `json:"tc"`
@@ -731,6 +735,13 @@ func (g *GoFish) UnmarshalJSON(data []byte) error {
 	var j goFishJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	if len(j.Players) > goFishMaxSliceLen ||
+		len(j.LastCardsReceived) > goFishMaxSliceLen ||
+		len(j.CpuActions) > goFishMaxSliceLen ||
+		len(j.ActionLog) > goFishMaxSliceLen ||
+		len(j.CpuMemories) > goFishMaxSliceLen {
+		return fmt.Errorf("goFish: input array exceeds maximum allowed size")
 	}
 	g.trumpCards = j.TrumpCards
 	g.players = j.Players
