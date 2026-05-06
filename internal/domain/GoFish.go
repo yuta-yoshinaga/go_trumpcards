@@ -64,6 +64,43 @@ type goFishMemoryEntry struct {
 // GetTurnSeen MemoryEntry インタフェース
 func (e goFishMemoryEntry) GetTurnSeen() int { return e.turnSeen }
 
+// goFishMemoryEntryJSON is the wire format for goFishMemoryEntry. The struct
+// fields are unexported, so without an explicit marshaller the entries would
+// silently round-trip as zero values and the Hard CPU would lose its
+// ask-history after a session restore.
+type goFishMemoryEntryJSON struct {
+	AskerIdx  int  `json:"a"`
+	TargetIdx int  `json:"g"`
+	Rank      int  `json:"r"`
+	HadCards  bool `json:"h"`
+	TurnSeen  int  `json:"t"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (e goFishMemoryEntry) MarshalJSON() ([]byte, error) {
+	return json.Marshal(goFishMemoryEntryJSON{
+		AskerIdx:  e.askerIdx,
+		TargetIdx: e.targetIdx,
+		Rank:      e.rank,
+		HadCards:  e.hadCards,
+		TurnSeen:  e.turnSeen,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (e *goFishMemoryEntry) UnmarshalJSON(data []byte) error {
+	var j goFishMemoryEntryJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	e.askerIdx = j.AskerIdx
+	e.targetIdx = j.TargetIdx
+	e.rank = j.Rank
+	e.hadCards = j.HadCards
+	e.turnSeen = j.TurnSeen
+	return nil
+}
+
 // GoFish Go Fishゲームクラス
 type GoFish struct {
 	trumpCards  *TrumpCards
@@ -639,6 +676,10 @@ func (g *GoFish) GetHumanAction() *GoFishCpuAction { return g.humanAction }
 // GetActionLog 棋譜を取得する
 func (g *GoFish) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
+// goFishMaxSliceLen caps slice sizes during deserialisation, matching
+// ADR-0028's defensive policy for KV-restored session blobs.
+const goFishMaxSliceLen = 1000
+
 // goFishJSON is the JSON wire format for GoFish.
 type goFishJSON struct {
 	TrumpCards        *TrumpCards         `json:"tc"`
@@ -694,6 +735,13 @@ func (g *GoFish) UnmarshalJSON(data []byte) error {
 	var j goFishJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	if len(j.Players) > goFishMaxSliceLen ||
+		len(j.LastCardsReceived) > goFishMaxSliceLen ||
+		len(j.CpuActions) > goFishMaxSliceLen ||
+		len(j.ActionLog) > goFishMaxSliceLen ||
+		len(j.CpuMemories) > goFishMaxSliceLen {
+		return fmt.Errorf("goFish: input array exceeds maximum allowed size")
 	}
 	g.trumpCards = j.TrumpCards
 	g.players = j.Players

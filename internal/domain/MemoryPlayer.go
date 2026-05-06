@@ -16,6 +16,35 @@ type memoryCardEntry struct {
 // GetTurnSeen MemoryEntryインターフェース実装
 func (e memoryCardEntry) GetTurnSeen() int { return e.turnSeen }
 
+// memoryCardEntryJSON is the wire format for memoryCardEntry. Fields on the
+// underlying struct are unexported so we need an explicit marshaller.
+type memoryCardEntryJSON struct {
+	Position int `json:"p"`
+	Rank     int `json:"r"`
+	TurnSeen int `json:"t"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (e memoryCardEntry) MarshalJSON() ([]byte, error) {
+	return json.Marshal(memoryCardEntryJSON{
+		Position: e.position,
+		Rank:     e.rank,
+		TurnSeen: e.turnSeen,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (e *memoryCardEntry) UnmarshalJSON(data []byte) error {
+	var j memoryCardEntryJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	e.position = j.Position
+	e.rank = j.Rank
+	e.turnSeen = j.TurnSeen
+	return nil
+}
+
 // MemoryPlayer 神経衰弱プレイヤークラス
 type MemoryPlayer struct {
 	*GamePlayer
@@ -112,21 +141,23 @@ func (p *MemoryPlayer) GetMemoryCount() int {
 	return len(p.cardMemories)
 }
 
-// memoryPlayerJSON is the JSON wire format for MemoryPlayer.
+// memoryPlayerJSON is the JSON wire format for MemoryPlayer. Persisting
+// cardMemories keeps the Hard-difficulty CPU from forgetting every revealed
+// card when a session is restored (see ADR-0028 / issue #1655).
 type memoryPlayerJSON struct {
-	GamePlayer *GamePlayer `json:"gp"`
-	PairCount  int         `json:"pc"`
-	Pairs      [][2]*Card  `json:"pa"`
-	// CPU memory (cardMemories) is intentionally omitted;
-	// CPU will re-learn after restore.
+	GamePlayer   *GamePlayer       `json:"gp"`
+	PairCount    int               `json:"pc"`
+	Pairs        [][2]*Card        `json:"pa"`
+	CardMemories []memoryCardEntry `json:"cm,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (p *MemoryPlayer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(memoryPlayerJSON{
-		GamePlayer: p.GamePlayer,
-		PairCount:  p.pairCount,
-		Pairs:      p.pairs,
+		GamePlayer:   p.GamePlayer,
+		PairCount:    p.pairCount,
+		Pairs:        p.pairs,
+		CardMemories: p.cardMemories,
 	})
 }
 
@@ -139,7 +170,7 @@ func (p *MemoryPlayer) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Pairs) > memoryPlayerMaxSliceLen {
+	if len(j.Pairs) > memoryPlayerMaxSliceLen || len(j.CardMemories) > memoryPlayerMaxSliceLen {
 		return fmt.Errorf("memoryPlayer: input array exceeds maximum allowed size")
 	}
 	if j.GamePlayer != nil {
@@ -152,7 +183,6 @@ func (p *MemoryPlayer) UnmarshalJSON(data []byte) error {
 	if p.pairs == nil {
 		p.pairs = make([][2]*Card, 0)
 	}
-	// CPU memory is reset on restore; CPU will re-learn.
-	p.ResetMemory()
+	p.cardMemories = j.CardMemories
 	return nil
 }
