@@ -94,3 +94,99 @@ func TestKlondike_HistoryRespectsMaxSliceLen(t *testing.T) {
 	err = json.Unmarshal(data, &restored)
 	require.Error(t, err, "oversized history must be rejected")
 }
+
+// TestKlondike_TableauColumnRespectsMaxSliceLen rejects payloads with an
+// oversized inner Tableau column at the top level — without this guard a
+// fixed 7-column array could still allocate gigabytes by stuffing the
+// columns themselves with millions of cards.
+func TestKlondike_TableauColumnRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigCol := make([]map[string]any, klondikeMaxSliceLen+1)
+	for i := range bigCol {
+		bigCol[i] = map[string]any{"c": nil, "f": false}
+	}
+	payload := map[string]any{
+		"tc": nil,
+		"tb": []any{bigCol, nil, nil, nil, nil, nil, nil},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Klondike
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized tableau column must be rejected")
+}
+
+// TestKlondike_FoundationPileRespectsMaxSliceLen rejects payloads with an
+// oversized inner Foundation pile at the top level.
+func TestKlondike_FoundationPileRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigPile := make([]map[string]any, klondikeMaxSliceLen+1)
+	for i := range bigPile {
+		bigPile[i] = map[string]any{}
+	}
+	payload := map[string]any{
+		"tc": nil,
+		"fd": []any{bigPile, nil, nil, nil},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Klondike
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized foundation pile must be rejected")
+}
+
+// TestKlondike_SnapshotTableauColumnRespectsMaxSliceLen rejects payloads
+// that smuggle an oversized inner Tableau column inside a history snapshot.
+// Without the per-column guard inside klondikeSnapshot.UnmarshalJSON, a
+// payload with 1000 history entries × 7 cols × 1000 cards would still
+// allocate ~7 million card pointers despite the existing maxSliceLen check
+// on the history array length.
+func TestKlondike_SnapshotTableauColumnRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigCol := make([]map[string]any, klondikeMaxSliceLen+1)
+	for i := range bigCol {
+		bigCol[i] = map[string]any{"c": nil, "f": false}
+	}
+	snapshot := map[string]any{
+		"tb": []any{bigCol, nil, nil, nil, nil, nil, nil},
+	}
+	payload := map[string]any{
+		"tc": nil,
+		"hi": []any{snapshot},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Klondike
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized snapshot tableau column must be rejected")
+}
+
+// TestKlondike_SnapshotFoundationPileRespectsMaxSliceLen rejects payloads
+// that smuggle an oversized inner Foundation pile inside a history snapshot.
+func TestKlondike_SnapshotFoundationPileRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigPile := make([]map[string]any, klondikeMaxSliceLen+1)
+	for i := range bigPile {
+		bigPile[i] = map[string]any{}
+	}
+	snapshot := map[string]any{
+		"fd": []any{bigPile, nil, nil, nil},
+	}
+	payload := map[string]any{
+		"tc": nil,
+		"hi": []any{snapshot},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Klondike
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized snapshot foundation pile must be rejected")
+}

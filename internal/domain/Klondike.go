@@ -774,6 +774,16 @@ func (s *klondikeSnapshot) UnmarshalJSON(data []byte) error {
 	if len(j.Stock) > klondikeMaxSliceLen || len(j.Waste) > klondikeMaxSliceLen {
 		return fmt.Errorf("klondike: snapshot array exceeds maximum allowed size")
 	}
+	for _, col := range j.Tableau {
+		if len(col) > klondikeMaxSliceLen {
+			return fmt.Errorf("klondike: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > klondikeMaxSliceLen {
+			return fmt.Errorf("klondike: snapshot foundation pile exceeds maximum allowed size")
+		}
+	}
 	s.tableau = j.Tableau
 	s.stock = j.Stock
 	if s.stock == nil {
@@ -825,6 +835,16 @@ func (k *Klondike) UnmarshalJSON(data []byte) error {
 		len(j.ActionLog) > klondikeMaxSliceLen || len(j.History) > klondikeMaxSliceLen {
 		return fmt.Errorf("klondike: input array exceeds maximum allowed size")
 	}
+	for _, col := range j.Tableau {
+		if len(col) > klondikeMaxSliceLen {
+			return fmt.Errorf("klondike: tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > klondikeMaxSliceLen {
+			return fmt.Errorf("klondike: foundation pile exceeds maximum allowed size")
+		}
+	}
 
 	k.trumpCards = j.TrumpCards
 	if k.trumpCards == nil {
@@ -851,6 +871,9 @@ func (k *Klondike) UnmarshalJSON(data []byte) error {
 		k.drawCount = 1
 	}
 	k.history = j.History
+	if k.history == nil {
+		k.history = make([]*klondikeSnapshot, 0)
+	}
 	k.scoringMode = j.ScoringMode
 	k.isStalemate = j.IsStalemate
 	k.noProgressCycles = j.NoProgressCycles
