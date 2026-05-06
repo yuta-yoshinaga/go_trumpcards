@@ -439,6 +439,56 @@ type golfJSON struct {
 	MoveCount   int                               `json:"mc"`
 	ActionLog   []*ActionLogEntry                 `json:"al"`
 	IsStalemate bool                              `json:"sm"`
+	History     []*golfSnapshot                   `json:"hi,omitempty"`
+}
+
+// golfSnapshotJSON is the wire format for a single undo snapshot.
+// golfSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// golfJSON's short keys to keep the KV payload compact (#1654).
+type golfSnapshotJSON struct {
+	Layout      [GolfColCnt][GolfRowCnt]*GolfCard `json:"ly"`
+	Stock       []*Card                           `json:"st"`
+	Waste       []*Card                           `json:"wa"`
+	Phase       GolfPhase                         `json:"ps"`
+	MoveCount   int                               `json:"mc"`
+	IsStalemate bool                              `json:"sm"`
+}
+
+// MarshalJSON implements json.Marshaler for golfSnapshot.
+func (s *golfSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(golfSnapshotJSON{
+		Layout:      s.layout,
+		Stock:       s.stock,
+		Waste:       s.waste,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for golfSnapshot.
+func (s *golfSnapshot) UnmarshalJSON(data []byte) error {
+	var j golfSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > golfMaxSliceLen || len(j.Waste) > golfMaxSliceLen {
+		return fmt.Errorf("golf: snapshot array exceeds maximum allowed size")
+	}
+	s.layout = j.Layout
+	s.stock = j.Stock
+	if s.stock == nil {
+		s.stock = make([]*Card, 0)
+	}
+	s.waste = j.Waste
+	if s.waste == nil {
+		s.waste = make([]*Card, 0)
+	}
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -452,6 +502,7 @@ func (g *Golf) MarshalJSON() ([]byte, error) {
 		MoveCount:   g.moveCount,
 		ActionLog:   g.actionLog,
 		IsStalemate: g.isStalemate,
+		History:     g.history,
 	})
 }
 
@@ -465,7 +516,7 @@ func (g *Golf) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Stock) > golfMaxSliceLen || len(j.Waste) > golfMaxSliceLen ||
-		len(j.ActionLog) > golfMaxSliceLen {
+		len(j.ActionLog) > golfMaxSliceLen || len(j.History) > golfMaxSliceLen {
 		return fmt.Errorf("golf: input array exceeds maximum allowed size")
 	}
 
@@ -488,8 +539,10 @@ func (g *Golf) UnmarshalJSON(data []byte) error {
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
-	// Undo history is not serialised; set to nil on restore.
-	g.history = nil
+	g.history = j.History
+	if g.history == nil {
+		g.history = make([]*golfSnapshot, 0)
+	}
 	g.isStalemate = j.IsStalemate
 	return nil
 }

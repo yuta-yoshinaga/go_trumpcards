@@ -461,6 +461,54 @@ type bakersDozenJSON struct {
 	MoveCount   int                                              `json:"mc"`
 	ActionLog   []*ActionLogEntry                                `json:"al"`
 	IsStalemate bool                                             `json:"sl"`
+	History     []*bakersDozenSnapshot                           `json:"hi,omitempty"`
+}
+
+// bakersDozenSnapshotJSON is the wire format for a single undo snapshot.
+// bakersDozenSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// bakersDozenJSON's short keys to keep the KV payload compact (#1654).
+type bakersDozenSnapshotJSON struct {
+	Tableau     [BakersDozenTableauCnt][]*BakersDozenTableauCard `json:"tb"`
+	Foundation  [BakersDozenFoundationCnt][]*Card                `json:"fd"`
+	Phase       BakersDozenPhase                                 `json:"ps"`
+	MoveCount   int                                              `json:"mc"`
+	IsStalemate bool                                             `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for bakersDozenSnapshot.
+func (s *bakersDozenSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(bakersDozenSnapshotJSON{
+		Tableau:     s.tableau,
+		Foundation:  s.foundation,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for bakersDozenSnapshot.
+func (s *bakersDozenSnapshot) UnmarshalJSON(data []byte) error {
+	var j bakersDozenSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	for _, col := range j.Tableau {
+		if len(col) > bakersDozenMaxSliceLen {
+			return fmt.Errorf("bakersdozen: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > bakersDozenMaxSliceLen {
+			return fmt.Errorf("bakersdozen: snapshot foundation pile exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.foundation = j.Foundation
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -473,6 +521,7 @@ func (bd *BakersDozen) MarshalJSON() ([]byte, error) {
 		MoveCount:   bd.moveCount,
 		ActionLog:   bd.actionLog,
 		IsStalemate: bd.isStalemate,
+		History:     bd.history,
 	})
 }
 
@@ -485,8 +534,19 @@ func (bd *BakersDozen) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.ActionLog) > bakersDozenMaxSliceLen {
+	if len(j.ActionLog) > bakersDozenMaxSliceLen ||
+		len(j.History) > bakersDozenMaxSliceLen {
 		return fmt.Errorf("bakersdozen: input array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > bakersDozenMaxSliceLen {
+			return fmt.Errorf("bakersdozen: tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > bakersDozenMaxSliceLen {
+			return fmt.Errorf("bakersdozen: foundation pile exceeds maximum allowed size")
+		}
 	}
 
 	bd.trumpCards = j.TrumpCards
@@ -501,7 +561,10 @@ func (bd *BakersDozen) UnmarshalJSON(data []byte) error {
 	if bd.actionLog == nil {
 		bd.actionLog = make([]*ActionLogEntry, 0)
 	}
-	bd.history = nil
+	bd.history = j.History
+	if bd.history == nil {
+		bd.history = make([]*bakersDozenSnapshot, 0)
+	}
 	bd.isStalemate = j.IsStalemate
 	return nil
 }
