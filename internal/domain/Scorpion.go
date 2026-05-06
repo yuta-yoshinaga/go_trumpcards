@@ -576,7 +576,7 @@ func (s *scorpionSnapshot) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Stock) > scorpionMaxSliceLen {
-		return fmt.Errorf("scorpion: snapshot array exceeds maximum allowed size")
+		return fmt.Errorf("scorpion: snapshot stock exceeds maximum allowed size")
 	}
 	for _, col := range j.Tableau {
 		if len(col) > scorpionMaxSliceLen {
