@@ -197,7 +197,7 @@ function BakersDozenPageContent() {
       cancelReset={cancelReset}
       headerExtra={
         <>
-          <span>
+          <span className="text-sm text-ds-text-muted">
             {t('moveCount')}: {state.moveCount}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
