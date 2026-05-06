@@ -614,6 +614,73 @@ type canfieldJSON struct {
 	Phase      CanfieldPhase                              `json:"ps"`
 	MoveCount  int                                        `json:"mc"`
 	ActionLog  []*ActionLogEntry                          `json:"al"`
+	History    []*canfieldSnapshot                        `json:"hi,omitempty"`
+}
+
+// canfieldSnapshotJSON is the wire format for a single undo snapshot.
+// canfieldSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// canfieldJSON's short keys to keep the KV payload compact (#1654).
+type canfieldSnapshotJSON struct {
+	Tableau    [CanfieldTableauCnt][]*CanfieldTableauCard `json:"tb"`
+	Reserve    []*Card                                    `json:"rv"`
+	Stock      []*Card                                    `json:"st"`
+	Waste      []*Card                                    `json:"wa"`
+	Foundation [CanfieldFoundationCnt][]*Card             `json:"fd"`
+	Phase      CanfieldPhase                              `json:"ps"`
+	MoveCount  int                                        `json:"mc"`
+}
+
+// MarshalJSON implements json.Marshaler for canfieldSnapshot.
+func (s *canfieldSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(canfieldSnapshotJSON{
+		Tableau:    s.tableau,
+		Reserve:    s.reserve,
+		Stock:      s.stock,
+		Waste:      s.waste,
+		Foundation: s.foundation,
+		Phase:      s.phase,
+		MoveCount:  s.moveCount,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for canfieldSnapshot.
+func (s *canfieldSnapshot) UnmarshalJSON(data []byte) error {
+	var j canfieldSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Reserve) > canfieldMaxSliceLen || len(j.Stock) > canfieldMaxSliceLen ||
+		len(j.Waste) > canfieldMaxSliceLen {
+		return fmt.Errorf("canfield: snapshot array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > canfieldMaxSliceLen {
+			return fmt.Errorf("canfield: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > canfieldMaxSliceLen {
+			return fmt.Errorf("canfield: snapshot foundation pile exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.reserve = j.Reserve
+	if s.reserve == nil {
+		s.reserve = make([]*Card, 0)
+	}
+	s.stock = j.Stock
+	if s.stock == nil {
+		s.stock = make([]*Card, 0)
+	}
+	s.waste = j.Waste
+	if s.waste == nil {
+		s.waste = make([]*Card, 0)
+	}
+	s.foundation = j.Foundation
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -629,6 +696,7 @@ func (c *Canfield) MarshalJSON() ([]byte, error) {
 		Phase:      c.phase,
 		MoveCount:  c.moveCount,
 		ActionLog:  c.actionLog,
+		History:    c.history,
 	})
 }
 
@@ -642,8 +710,19 @@ func (c *Canfield) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Reserve) > canfieldMaxSliceLen || len(j.Stock) > canfieldMaxSliceLen ||
-		len(j.Waste) > canfieldMaxSliceLen || len(j.ActionLog) > canfieldMaxSliceLen {
+		len(j.Waste) > canfieldMaxSliceLen || len(j.ActionLog) > canfieldMaxSliceLen ||
+		len(j.History) > canfieldMaxSliceLen {
 		return fmt.Errorf("canfield: input array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > canfieldMaxSliceLen {
+			return fmt.Errorf("canfield: tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > canfieldMaxSliceLen {
+			return fmt.Errorf("canfield: foundation pile exceeds maximum allowed size")
+		}
 	}
 	c.trumpCards = j.TrumpCards
 	if c.trumpCards == nil {
@@ -670,6 +749,9 @@ func (c *Canfield) UnmarshalJSON(data []byte) error {
 	if c.actionLog == nil {
 		c.actionLog = make([]*ActionLogEntry, 0)
 	}
-	c.history = nil
+	c.history = j.History
+	if c.history == nil {
+		c.history = make([]*canfieldSnapshot, 0)
+	}
 	return nil
 }
