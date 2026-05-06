@@ -19,8 +19,16 @@ export interface GamePageShellProps {
   isHumanTurn: boolean;
   /** Path used by ManualButton to load the game manual (e.g., "/hearts"). */
   gamePath: string;
-  /** Whether a game-end condition has been reached, controls WinCelebration. */
+  /** Whether a game-end condition has been reached, controls WinCelebration default and the round-leave guard. */
   gameEndFlag: boolean;
+  /**
+   * Optional override for whether to display the win celebration. Defaults to `gameEndFlag`.
+   * Pages that only celebrate on a player win (e.g., War, Slapjack, RedDog) should pass
+   * a stricter condition like `gameEndFlag && humanWon`.
+   */
+  winShow?: boolean;
+  /** Optional callback invoked when WinCelebration plays — typically used to trigger sound effects. */
+  onCelebrate?: () => void;
   /** Whether an async operation is in progress; forwarded to aria-busy on the outer container. */
   loading: boolean;
   /** Whether the reset confirmation dialog is open. */
@@ -51,6 +59,8 @@ export function GamePageShell({
   isHumanTurn,
   gamePath,
   gameEndFlag,
+  winShow,
+  onCelebrate,
   loading,
   confirmOpen,
   confirmReset,
@@ -69,7 +79,7 @@ export function GamePageShell({
         <ManualButton gamePath={gamePath} />
       </PhaseIndicator>
       {children}
-      <WinCelebration show={gameEndFlag} />
+      <WinCelebration show={winShow ?? gameEndFlag} onCelebrate={onCelebrate} />
       <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );
