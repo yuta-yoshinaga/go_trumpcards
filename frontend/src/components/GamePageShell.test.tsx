@@ -15,7 +15,12 @@ vi.mock('./ManualButton', () => ({
 }));
 
 vi.mock('./motion/WinCelebration', () => ({
-  WinCelebration: ({ show }: { show: boolean }) => (show ? <div data-testid="win-celebration">Win!</div> : null),
+  WinCelebration: ({ show, onCelebrate }: { show: boolean; onCelebrate?: () => void }) =>
+    show ? (
+      <button type="button" data-testid="win-celebration" onClick={() => onCelebrate?.()}>
+        Win!
+      </button>
+    ) : null,
 }));
 
 vi.mock('./GameResetDialog', () => ({
@@ -184,5 +189,34 @@ describe('GamePageShell', () => {
       </GamePageShell>,
     );
     expect(container.firstChild).toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('uses winShow override when provided (suppress celebration even at game end)', () => {
+    render(
+      <GamePageShell {...baseProps} gameEndFlag={true} winShow={false}>
+        <div />
+      </GamePageShell>,
+    );
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+  });
+
+  it('uses winShow override when provided (show celebration before gameEndFlag flips)', () => {
+    render(
+      <GamePageShell {...baseProps} gameEndFlag={false} winShow={true}>
+        <div />
+      </GamePageShell>,
+    );
+    expect(screen.getByTestId('win-celebration')).toBeInTheDocument();
+  });
+
+  it('forwards onCelebrate to WinCelebration', () => {
+    const onCelebrate = vi.fn();
+    render(
+      <GamePageShell {...baseProps} gameEndFlag={true} onCelebrate={onCelebrate}>
+        <div />
+      </GamePageShell>,
+    );
+    fireEvent.click(screen.getByTestId('win-celebration'));
+    expect(onCelebrate).toHaveBeenCalledOnce();
   });
 });
