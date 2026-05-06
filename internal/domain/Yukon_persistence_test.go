@@ -65,9 +65,10 @@ func TestYukon_PersistsHistoryRestoresExactSnapshot(t *testing.T) {
 	var restored Yukon
 	require.NoError(t, json.Unmarshal(data, &restored))
 
-	// Undo once: returns to the snapshot we took just before clearing tableau[0]
-	// (which itself captured the post-clear state, since takeSnapshot copies the
-	// current state — confirm history pop count is correct).
+	// The first Undo restores from the second snapshot (post-mutation, with
+	// tableau[0] empty); the second Undo restores from the first snapshot
+	// (pre-mutation initial state). Only after both pops should tableau[0]
+	// regain its original length.
 	require.NoError(t, restored.Undo())
 	require.NoError(t, restored.Undo())
 	assert.Equal(t, preMutationTableau0Len, len(restored.tableau[0]),
@@ -119,4 +120,48 @@ func TestYukon_SnapshotTableauColumnRespectsMaxSliceLen(t *testing.T) {
 	var restored Yukon
 	err = json.Unmarshal(data, &restored)
 	require.Error(t, err, "oversized snapshot tableau column must be rejected")
+}
+
+// TestYukon_TopLevelTableauColumnRespectsMaxSliceLen rejects payloads
+// with an oversized Tableau column at the top level.
+func TestYukon_TopLevelTableauColumnRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigCol := make([]map[string]any, yukonMaxSliceLen+1)
+	for i := range bigCol {
+		bigCol[i] = map[string]any{}
+	}
+	tableau := make([]any, 7)
+	tableau[0] = bigCol
+	payload := map[string]any{
+		"tc": nil,
+		"tb": tableau,
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Yukon
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized top-level tableau column must be rejected")
+}
+
+// TestYukon_TopLevelFoundationPileRespectsMaxSliceLen rejects payloads
+// with an oversized Foundation pile at the top level.
+func TestYukon_TopLevelFoundationPileRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigPile := make([]map[string]any, yukonMaxSliceLen+1)
+	for i := range bigPile {
+		bigPile[i] = map[string]any{}
+	}
+	payload := map[string]any{
+		"tc": nil,
+		"fd": []any{bigPile, nil, nil, nil},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Yukon
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized top-level foundation pile must be rejected")
 }

@@ -130,3 +130,46 @@ func TestCanfield_SnapshotStockRespectsMaxSliceLen(t *testing.T) {
 	err = json.Unmarshal(data, &restored)
 	require.Error(t, err, "oversized snapshot stock must be rejected")
 }
+
+// TestCanfield_TopLevelTableauColumnRespectsMaxSliceLen rejects payloads
+// with an oversized Tableau column at the top level.
+func TestCanfield_TopLevelTableauColumnRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigCol := make([]map[string]any, canfieldMaxSliceLen+1)
+	for i := range bigCol {
+		bigCol[i] = map[string]any{}
+	}
+	// Canfield has 4 tableau columns.
+	payload := map[string]any{
+		"tc": nil,
+		"tb": []any{bigCol, nil, nil, nil},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Canfield
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized top-level tableau column must be rejected")
+}
+
+// TestCanfield_TopLevelFoundationPileRespectsMaxSliceLen rejects payloads
+// with an oversized Foundation pile at the top level.
+func TestCanfield_TopLevelFoundationPileRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigPile := make([]map[string]any, canfieldMaxSliceLen+1)
+	for i := range bigPile {
+		bigPile[i] = map[string]any{}
+	}
+	payload := map[string]any{
+		"tc": nil,
+		"fd": []any{bigPile, nil, nil, nil},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored Canfield
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized top-level foundation pile must be rejected")
+}

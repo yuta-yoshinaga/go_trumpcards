@@ -603,9 +603,9 @@ func (y *Yukon) UnmarshalJSON(data []byte) error {
 	if len(j.ActionLog) > yukonMaxSliceLen || len(j.History) > yukonMaxSliceLen {
 		return fmt.Errorf("yukon: input array exceeds maximum allowed size")
 	}
-	for i := range YukonTableauCnt {
-		if len(j.Tableau[i]) > yukonMaxSliceLen {
-			return fmt.Errorf("yukon: input array exceeds maximum allowed size")
+	for _, col := range j.Tableau {
+		if len(col) > yukonMaxSliceLen {
+			return fmt.Errorf("yukon: tableau column exceeds maximum allowed size")
 		}
 	}
 	for _, pile := range j.Foundation {
