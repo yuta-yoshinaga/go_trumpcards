@@ -20,6 +20,7 @@ Every game page (`src/pages/<X>Page.tsx`) follows the same skeleton — copy fro
    - Pass `headerExtra` for any per-page header chips (e.g. `<CliToggle>`, chip / score readouts).
    - Pass `winShow` when the celebration condition is stricter than plain `gameEndFlag` (e.g. `humanWon` for two-player games where only the human's win is celebrated).
    - Pass `onCelebrate` to trigger sound effects or other side effects when the celebration starts.
+   - Omit `isHumanTurn` for single-player solitaire pages with no "your turn / waiting" concept — the shell forwards `undefined` to `PhaseIndicator` and the turn label is hidden.
 
 Shared building blocks:
 
