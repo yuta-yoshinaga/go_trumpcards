@@ -115,3 +115,29 @@ func TestTriPeaks_SnapshotStockRespectsMaxSliceLen(t *testing.T) {
 	err = json.Unmarshal(data, &restored)
 	require.Error(t, err, "oversized snapshot stock must be rejected")
 }
+
+// TestTriPeaks_SnapshotWasteRespectsMaxSliceLen rejects payloads that
+// smuggle an oversized inner Waste slice inside a history snapshot.
+// The Stock and Waste branches share a combined `||` guard, so this is
+// a separate test to exercise the Waste path explicitly.
+func TestTriPeaks_SnapshotWasteRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigWaste := make([]map[string]any, triPeaksMaxSliceLen+1)
+	for i := range bigWaste {
+		bigWaste[i] = map[string]any{}
+	}
+	snapshot := map[string]any{
+		"wa": bigWaste,
+	}
+	payload := map[string]any{
+		"tc": nil,
+		"hi": []any{snapshot},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored TriPeaks
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized snapshot waste must be rejected")
+}

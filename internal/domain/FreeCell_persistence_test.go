@@ -121,6 +121,50 @@ func TestFreeCell_SnapshotTableauColumnRespectsMaxSliceLen(t *testing.T) {
 	require.Error(t, err, "oversized snapshot tableau column must be rejected")
 }
 
+// TestFreeCell_TopLevelTableauColumnRespectsMaxSliceLen rejects payloads
+// with an oversized Tableau column at the top level (not nested inside a
+// snapshot). Mirrors the snapshot-level guard so callers cannot bypass
+// the OOM defence by inflating the live tableau directly.
+func TestFreeCell_TopLevelTableauColumnRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigCol := make([]map[string]any, freeCellMaxSliceLen+1)
+	for i := range bigCol {
+		bigCol[i] = map[string]any{}
+	}
+	payload := map[string]any{
+		"tc": nil,
+		"tb": []any{bigCol, nil, nil, nil, nil, nil, nil, nil},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored FreeCell
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized top-level tableau column must be rejected")
+}
+
+// TestFreeCell_TopLevelFoundationPileRespectsMaxSliceLen rejects payloads
+// with an oversized Foundation pile at the top level.
+func TestFreeCell_TopLevelFoundationPileRespectsMaxSliceLen(t *testing.T) {
+	t.Parallel()
+
+	bigPile := make([]map[string]any, freeCellMaxSliceLen+1)
+	for i := range bigPile {
+		bigPile[i] = map[string]any{}
+	}
+	payload := map[string]any{
+		"tc": nil,
+		"fd": []any{bigPile, nil, nil, nil},
+	}
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var restored FreeCell
+	err = json.Unmarshal(data, &restored)
+	require.Error(t, err, "oversized top-level foundation pile must be rejected")
+}
+
 // TestFreeCell_SnapshotFoundationPileRespectsMaxSliceLen rejects payloads
 // that smuggle an oversized inner Foundation pile inside a history snapshot.
 func TestFreeCell_SnapshotFoundationPileRespectsMaxSliceLen(t *testing.T) {
