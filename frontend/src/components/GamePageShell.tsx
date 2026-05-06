@@ -41,8 +41,14 @@ export interface GamePageShellProps {
   confirmReset: () => void;
   /** Callback to cancel the reset action. */
   cancelReset: () => void;
-  /** Extra elements rendered inside the PhaseIndicator alongside TutorialButton/ManualButton. */
+  /** Extra elements rendered inside the PhaseIndicator before TutorialButton/ManualButton. */
   headerExtra?: ReactNode;
+  /**
+   * Extra elements rendered inside the PhaseIndicator after ManualButton.
+   * Use this when a stat or chip needs to appear at the right edge of the header
+   * (e.g. Spider's `completed: N/8`). Most pages will only need `headerExtra`.
+   */
+  headerEnd?: ReactNode;
   /**
    * Game-specific content placed between the PhaseIndicator and the win/reset overlays.
    * Typically includes: settings panel, scrollable game area, and GameFooter.
@@ -70,6 +76,7 @@ export function GamePageShell({
   confirmReset,
   cancelReset,
   headerExtra,
+  headerEnd,
   children,
 }: GamePageShellProps) {
   // long-form games (Hearts, Spades, Skat, …) don't silently lose state.
@@ -81,6 +88,7 @@ export function GamePageShell({
         {headerExtra}
         <TutorialButton />
         <ManualButton gamePath={gamePath} />
+        {headerEnd}
       </PhaseIndicator>
       {children}
       <WinCelebration show={winShow ?? gameEndFlag} onCelebrate={onCelebrate} />
