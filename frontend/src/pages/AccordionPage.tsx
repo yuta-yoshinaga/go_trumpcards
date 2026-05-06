@@ -7,18 +7,13 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -27,7 +22,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, focusRingWhite } from '../styles/buttonStyles';
@@ -256,7 +250,6 @@ function AccordionPageContent() {
     bindings: accordionBindings,
     enabled: state?.phase === AccordionPhase.PLAYING && !loading,
   });
-  useGameRoundGuard(isGameRoundActive(state));
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
   if (!state) return <GameSkeleton gameKey="accordion" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
@@ -269,20 +262,29 @@ function AccordionPageContent() {
   const phaseName = isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.accordion.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.accordion')} />
-      <PhaseIndicator phaseName={phaseName}>
-        <span>
-          {t('moveCount')}: {state.moveCount}
-        </span>
-        <span>
-          {t('piles')}: {state.pileCount}
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/accordion" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.accordion')}
+      gameThemeBg={gameTheme.accordion.bg}
+      phaseName={phaseName}
+      gamePath="/accordion"
+      gameEndFlag={isEnded}
+      winShow={isGameClear}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {t('moveCount')}: {state.moveCount}
+          </span>
+          <span>
+            {t('piles')}: {state.pileCount}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -415,9 +417,6 @@ function AccordionPageContent() {
           </div>
         </>
       )}
-
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      {isGameClear && <WinCelebration show={true} />}
-    </div>
+    </GamePageShell>
   );
 }
