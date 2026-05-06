@@ -64,6 +64,8 @@
     "negativeEV": "Negative expected value — fold recommended",
     "strongHandRank": "Strong hand — raise recommended",
     "decentHandRank": "Decent hand — call recommended",
-    "weakHandRank": "Weak hand — fold recommended"
+    "weakHandRank": "Weak hand — fold recommended",
+    "scoopChance": "Scoop range (hi + lo) — raise recommended",
+    "lowDraw": "Low likely to qualify — call to chase the half"
   }
 }
