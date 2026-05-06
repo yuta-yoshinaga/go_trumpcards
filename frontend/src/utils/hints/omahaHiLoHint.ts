@@ -65,32 +65,46 @@ function isHighStrong(state: OmahaResponse, handRank: number): boolean {
 }
 
 /** Low-draw quality classifier:
- *  - 'qualified': board already has ≥3 unique low ranks, so the low pot will qualify
- *  - 'viable':    fewer board low ranks, but enough cards still to come that low can still complete
- *  - 'none':      hole cards or board make a qualifying low impossible
+ *  - 'qualified': a valid 2-hole + 3-board split of unique low ranks already exists on the board
+ *  - 'viable':    no qualified split yet, but cards still to come can still complete one
+ *  - 'none':      a qualifying low is impossible given current hole cards and board
+ *
+ * Checks every pair of hole low ranks for ≥3 exclusive board low ranks to avoid
+ * counting overlapping ranks (e.g. A-2 in both hole and board cannot form a 5-rank low).
  */
 function evaluateLowDraw(hole: Card[], community: Card[], phase: number): 'qualified' | 'viable' | 'none' {
-  const holeLowRanks = uniqueLowRanks(hole);
-  if (holeLowRanks < HOLE_LOW_REQUIRED) return 'none';
+  const holeRanks = uniqueLowRanks(hole);
+  if (holeRanks.size < HOLE_LOW_REQUIRED) return 'none';
 
-  const boardLowRanks = uniqueLowRanks(community);
-  if (boardLowRanks >= BOARD_LOW_REQUIRED) return 'qualified';
+  const boardRanks = uniqueLowRanks(community);
+  const holeArr = Array.from(holeRanks);
+
+  const exclusiveBoardCount = (r1: number, r2: number): number =>
+    Array.from(boardRanks).filter((br) => br !== r1 && br !== r2).length;
+
+  const isQualified = holeArr.some((r1, i) =>
+    holeArr.slice(i + 1).some((r2) => exclusiveBoardCount(r1, r2) >= BOARD_LOW_REQUIRED),
+  );
+  if (isQualified) return 'qualified';
 
   const cardsToCome = TOTAL_COMMUNITY_CARDS - communityCardCount(phase);
-  if (boardLowRanks + cardsToCome < BOARD_LOW_REQUIRED) return 'none';
+  if (cardsToCome === 0) return 'none';
 
-  return 'viable';
+  const isViable = holeArr.some((r1, i) =>
+    holeArr.slice(i + 1).some((r2) => exclusiveBoardCount(r1, r2) + cardsToCome >= BOARD_LOW_REQUIRED),
+  );
+  return isViable ? 'viable' : 'none';
 }
 
-/** Counts unique ranks ≤ LOW_RANK_MAX in the given card set. Ace = 1 plays low. */
-function uniqueLowRanks(cards: Card[]): number {
+/** Returns unique ranks ≤ LOW_RANK_MAX in the given card set. Ace = 1 plays low. */
+function uniqueLowRanks(cards: Card[]): Set<number> {
   const seen = new Set<number>();
   for (const card of cards) {
     if (card.value >= 1 && card.value <= LOW_RANK_MAX) {
       seen.add(card.value);
     }
   }
-  return seen.size;
+  return seen;
 }
 
 /** Number of community cards visible in each phase (matches HoldemPhase). */

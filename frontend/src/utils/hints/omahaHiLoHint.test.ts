@@ -174,4 +174,17 @@ describe('getOmahaHiLoHint', () => {
     const hint = getOmahaHiLoHint(state);
     expect(hint?.reason).toBe('hint.strongHandRank');
   });
+
+  it('falls back to base hint when hole and board share all low ranks (overlap blocks qualifying low)', () => {
+    // hole A-2 + board A-2-3: the only available hole pair {A,2} leaves just {3} on the
+    // board side (1 rank) — need 3 exclusive board low ranks → evaluates to 'none'.
+    const state = makeState({
+      phase: HoldemPhase.RIVER,
+      communityCards: [c(1), cd(2), ch(3), cc(13), c(12)],
+    });
+    state.players[0].cards = [c(1), cd(2), ch(11), cc(10)];
+    state.players[0].handRank = 3; // strong high
+    const hint = getOmahaHiLoHint(state);
+    expect(hint?.reason).toBe('hint.strongHandRank'); // scoop hint must NOT fire
+  });
 });
