@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"golang.org/x/term"
@@ -56,19 +58,20 @@ var SlapjackRealtimeKeyMap = map[rune]string{
 // realtimeCuiCore drives the realtime CUI loop without touching the
 // terminal or starting goroutines. Tests feed deterministic key/tick
 // channels; the production runner wires raw stdin and a time.Ticker on
-// top. Loop exits when keys is closed, ticks is closed, or a key maps
-// to realtimeQuitCommand.
+// top. Loop exits when the keys channel closes (stdin EOF), the quit
+// channel closes (signal received), or a key maps to realtimeQuitCommand.
 //
 // The initial reset ("r") is dispatched once on entry so the player sees
 // a fresh game without having to type anything.
-func realtimeCuiCore(execer CuiExecer, keys <-chan rune, ticks <-chan struct{}, w io.Writer, mapping map[rune]string) {
+func realtimeCuiCore(execer CuiExecer, keys <-chan rune, ticks <-chan struct{}, quit <-chan struct{}, w io.Writer, mapping map[rune]string) {
 	writeRealtimeOutput(w, execer.Exec("r"))
-	for keys != nil || ticks != nil {
+	for {
 		select {
 		case k, ok := <-keys:
 			if !ok {
-				keys = nil
-				continue
+				// stdin closed: nobody can quit interactively; exit so
+				// the production loop can restore the terminal.
+				return
 			}
 			cmd, mapped := mapping[k]
 			if !mapped {
@@ -80,10 +83,15 @@ func realtimeCuiCore(execer CuiExecer, keys <-chan rune, ticks <-chan struct{}, 
 			writeRealtimeOutput(w, execer.Exec(cmd))
 		case _, ok := <-ticks:
 			if !ok {
+				// Ticker stopped: continue serving keys until they close
+				// too. Disable the ticks branch so the closed channel
+				// doesn't busy-loop the select.
 				ticks = nil
 				continue
 			}
 			writeRealtimeOutput(w, execer.Exec(realtimeTickCommand))
+		case <-quit:
+			return
 		}
 	}
 }
@@ -102,13 +110,18 @@ func writeRealtimeOutput(w io.Writer, out string) {
 // Ratscrew. When stdin is not a TTY (piped input, CI, WSL2 with redirected
 // stdio), it falls back to the standard line-mode loop so non-interactive
 // scripts keep working.
+//
+// Signal handling is local rather than via the package-level
+// setupSignalHandler — the latter calls os.Exit on SIGINT/SIGTERM, which
+// bypasses the deferred term.Restore and leaves the user's terminal in
+// raw mode. Here we close a quit channel instead, letting the loop return
+// normally and the deferred restore run.
 func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []string) {
 	stdinFd := int(os.Stdin.Fd())
 	if !term.IsTerminal(stdinFd) {
 		RunCuiLoop(gameName, controller, helpLines)
 		return
 	}
-	setupSignalHandler()
 	state, err := term.MakeRaw(stdinFd)
 	if err != nil {
 		// Raw mode failed (rare — e.g., unusual shells); degrade to line mode.
@@ -122,26 +135,43 @@ func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []strin
 		fmt.Println(line)
 	}
 
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(sigCh)
+
+	quit := make(chan struct{})
+	go func() {
+		<-sigCh
+		close(quit)
+	}()
+
 	keys := make(chan rune)
 	go readRealtimeKeys(os.Stdin, keys)
 
 	ticker := time.NewTicker(SlapjackRealtimeTickInterval)
 	defer ticker.Stop()
-	ticks := make(chan struct{})
+	ticks := make(chan struct{}, 1)
 	done := make(chan struct{})
 	go func() {
 		defer close(ticks)
 		for {
 			select {
 			case <-ticker.C:
-				ticks <- struct{}{}
+				// Non-blocking send so a busy core (e.g., printing a long
+				// log) cannot back up a tick queue and trigger a flurry of
+				// stale ticks once it catches up. Reflex gameplay only
+				// cares about the next tick, not missed ones.
+				select {
+				case ticks <- struct{}{}:
+				default:
+				}
 			case <-done:
 				return
 			}
 		}
 	}()
 
-	realtimeCuiCore(controller, keys, ticks, os.Stdout, SlapjackRealtimeKeyMap)
+	realtimeCuiCore(controller, keys, ticks, quit, os.Stdout, SlapjackRealtimeKeyMap)
 	close(done)
 	fmt.Println(i18n.T("bye"))
 }
