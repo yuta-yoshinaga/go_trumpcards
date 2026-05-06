@@ -6,17 +6,12 @@ import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -24,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -75,7 +69,6 @@ function ClockSolitairePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('clocksolitaire');
   const { state, loading, error, exec: execApi, retry } = useGameApi(clocksolitaireApi.exec);
-  useGameRoundGuard(isGameRoundActive(state));
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   const handleAutoPlay = useCallback(() => execApi('autoplay'), [execApi]);
@@ -148,17 +141,26 @@ function ClockSolitairePageContent() {
   const radius = Math.min(cardWidth * 5, 180);
 
   return (
-    <div className={`flex min-h-screen flex-1 flex-col ${theme.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.clocksolitaire')} />
-      <PhaseIndicator phaseName={phaseName}>
-        <span className="text-sm text-ds-text-muted">
-          {t('stepCount')}: {state.stepCount}
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/clocksolitaire" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.clocksolitaire')}
+      gameThemeBg={theme.bg}
+      phaseName={phaseName}
+      gamePath="/clocksolitaire"
+      gameEndFlag={isEnded}
+      winShow={isGameClear}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span className="text-sm text-ds-text-muted">
+            {t('stepCount')}: {state.stepCount}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -323,10 +325,7 @@ function ClockSolitairePageContent() {
           </GameFooter>
         </>
       )}
-
-      <WinCelebration show={state.phase === ClockSolitairePhase.GAME_CLEAR} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
 

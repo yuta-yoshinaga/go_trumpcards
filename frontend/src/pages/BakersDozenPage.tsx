@@ -8,18 +8,13 @@ import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBakersDozenGame } from '../hooks/useBakersDozenGame';
@@ -28,7 +23,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -175,8 +169,6 @@ function BakersDozenPageContent() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
-  useGameRoundGuard(isGameRoundActive(state));
-
   if (!state) return <GameSkeleton gameKey="bakersdozen" layout={{ kind: 'tableau', topRow: 4, tableau: 13 }} />;
 
   const isPlaying = state.phase === BakersDozenPhase.PLAYING;
@@ -191,19 +183,27 @@ function BakersDozenPageContent() {
     selectedSource.cardIndex === cardIndex;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.bakersdozen.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.bakersdozen')} />
-      {/* Phase indicator */}
-      <PhaseIndicator
-        phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
-      >
-        <span>
-          {t('moveCount')}: {state.moveCount}
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/bakersdozen" />
-      </PhaseIndicator>
+    <GamePageShell
+      title={tc('nav.bakersdozen')}
+      gameThemeBg={gameTheme.bakersdozen.bg}
+      phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
+      gamePath="/bakersdozen"
+      gameEndFlag={isEnded}
+      winShow={isGameClear}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span className="text-sm text-ds-text-muted">
+            {t('moveCount')}: {state.moveCount}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       <LandscapeBanner message={t('landscapeBanner')} />
 
       {cliEnabled ? (
@@ -445,8 +445,6 @@ function BakersDozenPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={state.phase === BakersDozenPhase.GAME_CLEAR} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
