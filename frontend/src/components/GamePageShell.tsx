@@ -15,8 +15,12 @@ export interface GamePageShellProps {
   gameThemeBg: string;
   /** Current phase label shown in the PhaseIndicator. */
   phaseName: string;
-  /** Whether it is the human player's turn, controls the turn indicator color. */
-  isHumanTurn: boolean;
+  /**
+   * Whether it is the human player's turn, controls the turn indicator color.
+   * Optional — when omitted, the PhaseIndicator hides the turn indicator entirely
+   * (used by single-player solitaire pages without a "your turn / waiting" concept).
+   */
+  isHumanTurn?: boolean;
   /** Path used by ManualButton to load the game manual (e.g., "/hearts"). */
   gamePath: string;
   /** Whether a game-end condition has been reached, controls WinCelebration default and the round-leave guard. */

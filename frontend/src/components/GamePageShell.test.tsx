@@ -58,6 +58,18 @@ const baseProps = {
   cancelReset: vi.fn(),
 };
 
+const propsWithoutTurn = {
+  title: 'TriPeaks',
+  gameThemeBg: 'bg-game-bg-blue',
+  phaseName: 'Play Phase',
+  gamePath: '/tripeaks',
+  gameEndFlag: false,
+  loading: false,
+  confirmOpen: false,
+  confirmReset: vi.fn(),
+  cancelReset: vi.fn(),
+};
+
 describe('GamePageShell', () => {
   it('renders children inside the shell', () => {
     render(
@@ -218,5 +230,18 @@ describe('GamePageShell', () => {
     );
     fireEvent.click(screen.getByTestId('win-celebration'));
     expect(onCelebrate).toHaveBeenCalledOnce();
+  });
+
+  it('omits the turn-indicator span when isHumanTurn is not provided', () => {
+    render(
+      <GamePageShell {...propsWithoutTurn}>
+        <div />
+      </GamePageShell>,
+    );
+    // PhaseIndicator should still render the phase name…
+    expect(screen.getByText('Play Phase')).toBeInTheDocument();
+    // …but no "your turn / waiting" label is rendered when the prop is undefined.
+    expect(screen.queryByText('あなたのターン')).not.toBeInTheDocument();
+    expect(screen.queryByText('待機中')).not.toBeInTheDocument();
   });
 });
