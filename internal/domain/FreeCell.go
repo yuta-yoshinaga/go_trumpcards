@@ -743,6 +743,59 @@ type freeCellJSON struct {
 	MoveCount   int                            `json:"mc"`
 	ActionLog   []*ActionLogEntry              `json:"al"`
 	IsStalemate bool                           `json:"sm"`
+	History     []*freeCellSnapshot            `json:"hi,omitempty"`
+}
+
+// freeCellSnapshotJSON is the wire format for a single undo snapshot.
+// freeCellSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// freeCellJSON's short keys to keep the KV payload compact (#1654).
+type freeCellSnapshotJSON struct {
+	Tableau     [FreeCellTableauCnt][]*Card    `json:"tb"`
+	FreeCells   [FreeCellCellCnt]*Card         `json:"fc"`
+	Foundation  [FreeCellFoundationCnt][]*Card `json:"fd"`
+	Phase       FreeCellPhase                  `json:"ps"`
+	MoveCount   int                            `json:"mc"`
+	IsStalemate bool                           `json:"sm"`
+}
+
+// MarshalJSON implements json.Marshaler for freeCellSnapshot, projecting
+// the unexported fields onto an exported wire shape so that
+// FreeCell.MarshalJSON can persist the undo history (#1654).
+func (s *freeCellSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(freeCellSnapshotJSON{
+		Tableau:     s.tableau,
+		FreeCells:   s.freeCells,
+		Foundation:  s.foundation,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for freeCellSnapshot.
+func (s *freeCellSnapshot) UnmarshalJSON(data []byte) error {
+	var j freeCellSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	for _, col := range j.Tableau {
+		if len(col) > freeCellMaxSliceLen {
+			return fmt.Errorf("freeCell: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > freeCellMaxSliceLen {
+			return fmt.Errorf("freeCell: snapshot foundation pile exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.freeCells = j.FreeCells
+	s.foundation = j.Foundation
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -756,6 +809,7 @@ func (f *FreeCell) MarshalJSON() ([]byte, error) {
 		MoveCount:   f.moveCount,
 		ActionLog:   f.actionLog,
 		IsStalemate: f.isStalemate,
+		History:     f.history,
 	})
 }
 
@@ -768,8 +822,18 @@ func (f *FreeCell) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.ActionLog) > freeCellMaxSliceLen {
+	if len(j.ActionLog) > freeCellMaxSliceLen || len(j.History) > freeCellMaxSliceLen {
 		return fmt.Errorf("freeCell: input array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > freeCellMaxSliceLen {
+			return fmt.Errorf("freeCell: tableau column exceeds maximum allowed size")
+		}
+	}
+	for _, pile := range j.Foundation {
+		if len(pile) > freeCellMaxSliceLen {
+			return fmt.Errorf("freeCell: foundation pile exceeds maximum allowed size")
+		}
 	}
 
 	f.trumpCards = j.TrumpCards
@@ -785,8 +849,10 @@ func (f *FreeCell) UnmarshalJSON(data []byte) error {
 	if f.actionLog == nil {
 		f.actionLog = make([]*ActionLogEntry, 0)
 	}
-	// Undo history is not serialised; set to nil on restore.
-	f.history = nil
+	f.history = j.History
+	if f.history == nil {
+		f.history = make([]*freeCellSnapshot, 0)
+	}
 	f.isStalemate = j.IsStalemate
 	return nil
 }
