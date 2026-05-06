@@ -551,6 +551,12 @@ func TestSpiteAndMalice_AutoComplete_NoOpWhenNothingPlayable(t *testing.T) {
 	g.SetCurrent(SpiteAndMaliceHumanIdx)
 	// Foundation empty; hand has no Ace and no wild — nothing legal.
 	g.SetPlayerHand(SpiteAndMaliceHumanIdx, []*Card{mkCard(CardDesignSpade, 5), mkCard(CardDesignHeart, 8)})
+	// Reset() leaves the goal pile shuffle-dependent; pin its top to a
+	// non-playable mid-rank so AutoComplete never plays from goal either.
+	g.SetPlayerGoal(SpiteAndMaliceHumanIdx, []*Card{mkCard(CardDesignClover, 7)})
+	for s := range SpiteAndMaliceSideCnt {
+		g.SetPlayerSide(SpiteAndMaliceHumanIdx, s, nil)
+	}
 	moveCountBefore := g.GetMoveCount()
 	require.NoError(t, g.AutoComplete())
 	assert.Equal(t, moveCountBefore, g.GetMoveCount(), "no moves should have been made")
