@@ -15,6 +15,15 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+const playSoundMock = vi.fn();
+vi.mock('../providers/SoundProvider', async () => {
+  const actual = await vi.importActual<typeof import('../providers/SoundProvider')>('../providers/SoundProvider');
+  return {
+    ...actual,
+    useSound: () => ({ playSound: playSoundMock, muted: false, toggleMute: vi.fn() }),
+  };
+});
+
 const mockExec = vi.mocked(spiderApi.exec);
 
 function makeTableau(cols: SpiderTableauCard[][]): SpiderTableauCard[][] {
@@ -72,6 +81,7 @@ const gameOverState: SpiderResponse = {
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  playSoundMock.mockClear();
 });
 
 describe('SpiderPage', () => {
@@ -223,6 +233,12 @@ describe('SpiderPage', () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームクリア'));
+  });
+
+  it('game clear plays winFanfare sound via onCelebrate', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() => expect(playSoundMock).toHaveBeenCalledWith('winFanfare'));
   });
 
   it('game over shows phase text', async () => {

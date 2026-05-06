@@ -232,6 +232,24 @@ describe('GamePageShell', () => {
     expect(onCelebrate).toHaveBeenCalledOnce();
   });
 
+  it('renders headerEnd after ManualButton (right of buttons)', () => {
+    render(
+      <GamePageShell
+        {...baseProps}
+        headerExtra={<span data-testid="header-extra">extra</span>}
+        headerEnd={<span data-testid="header-end">end</span>}
+      >
+        <div />
+      </GamePageShell>,
+    );
+    const extra = screen.getByTestId('header-extra');
+    const manual = screen.getByRole('button', { name: 'manual-/hearts' });
+    const end = screen.getByTestId('header-end');
+    // headerExtra → TutorialButton → ManualButton → headerEnd, in DOM order.
+    expect(extra.compareDocumentPosition(manual) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(manual.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('omits the turn-indicator span when isHumanTurn is not provided', () => {
     render(
       <GamePageShell {...propsWithoutTurn}>

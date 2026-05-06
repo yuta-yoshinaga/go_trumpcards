@@ -216,10 +216,12 @@ function SpiderPageContent() {
             {t('score')}: {state.score}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-          <span className="ml-3" data-tutorial="spd-completed-suits">
-            {t('completed')}: {state.completedSuits}/8
-          </span>
         </>
+      }
+      headerEnd={
+        <span className="ml-3" data-tutorial="spd-completed-suits">
+          {t('completed')}: {state.completedSuits}/8
+        </span>
       }
     >
       {cliEnabled ? (
