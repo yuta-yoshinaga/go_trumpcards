@@ -14,7 +14,12 @@ Every game page (`src/pages/<X>Page.tsx`) follows the same skeleton — copy fro
 2. **Standard hooks**: `useGamePageSetup(gameName)` provides i18n + action-log + reset-confirm state; `useGameApi(apiFn, opts)` manages server state with loading / error / retry.
 3. **Mount-time reset**: pages call the api command `"reset"` inside a `useEffect` on mount to fetch a fresh game from the server.
 4. **Skeleton fallback**: render `<XSkeleton />` while `state` is `null`.
-5. **`GamePageShell`** wraps most pages and provides the background, page heading, phase indicator, reset confirmation dialog, and win celebration overlay (#1650). Migration recipe for unmigrated pages: replace the outer `<div className="flex-1 flex flex-col min-h-0 ${theme.bg}" aria-busy={loading}>` block with `<GamePageShell>`, drop the imports and JSX for `GamePageHeading`, `PhaseIndicator`, `TutorialButton`, `ManualButton`, `WinCelebration`, `GameResetDialog`, and `useGameRoundGuard` (the shell calls them), and pass `headerExtra` for any per-page header chips (e.g. `<CliToggle>`, chips/score readouts) and `winShow` / `onCelebrate` when the celebration condition or sound cue isn't a plain `gameEndFlag`.
+5. **`GamePageShell`** wraps most pages and provides the background, page heading, phase indicator, reset confirmation dialog, and win celebration overlay (#1650). Migration recipe for unmigrated pages:
+   - Replace the outer `<div className="flex-1 flex flex-col min-h-0 ${theme.bg}" aria-busy={loading}>` block with `<GamePageShell>`.
+   - Drop imports and JSX for `GamePageHeading`, `PhaseIndicator`, `TutorialButton`, `ManualButton`, `WinCelebration`, `GameResetDialog`, and `useGameRoundGuard` — the shell calls them all.
+   - Pass `headerExtra` for any per-page header chips (e.g. `<CliToggle>`, chip / score readouts).
+   - Pass `winShow` when the celebration condition is stricter than plain `gameEndFlag` (e.g. `humanWon` for two-player games where only the human's win is celebrated).
+   - Pass `onCelebrate` to trigger sound effects or other side effects when the celebration starts.
 
 Shared building blocks:
 

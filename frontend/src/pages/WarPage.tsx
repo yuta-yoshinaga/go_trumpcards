@@ -140,7 +140,7 @@ function WarPageContent() {
       isHumanTurn={!isGameEnd}
       gamePath="/war"
       gameEndFlag={isGameEnd}
-      winShow={isGameEnd && humanWon}
+      winShow={humanWon}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
