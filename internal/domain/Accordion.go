@@ -294,12 +294,58 @@ func (a *Accordion) appendLog(actionType, detail string, cards []*Card) {
 
 // accordionJSON is the JSON wire format for Accordion.
 type accordionJSON struct {
-	TrumpCards  *TrumpCards       `json:"tc"`
-	Piles       [][]*Card         `json:"pl"`
-	Phase       AccordionPhase    `json:"ps"`
-	MoveCount   int               `json:"mc"`
-	ActionLog   []*ActionLogEntry `json:"al"`
-	IsStalemate bool              `json:"sl"`
+	TrumpCards  *TrumpCards          `json:"tc"`
+	Piles       [][]*Card            `json:"pl"`
+	Phase       AccordionPhase       `json:"ps"`
+	MoveCount   int                  `json:"mc"`
+	ActionLog   []*ActionLogEntry    `json:"al"`
+	IsStalemate bool                 `json:"sl"`
+	History     []*accordionSnapshot `json:"hi,omitempty"`
+}
+
+// accordionSnapshotJSON is the wire format for a single undo snapshot.
+// accordionSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// accordionJSON's short keys to keep the KV payload compact (#1654).
+type accordionSnapshotJSON struct {
+	Piles       [][]*Card      `json:"pl"`
+	Phase       AccordionPhase `json:"ps"`
+	MoveCount   int            `json:"mc"`
+	IsStalemate bool           `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for accordionSnapshot.
+func (s *accordionSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(accordionSnapshotJSON{
+		Piles:       s.piles,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for accordionSnapshot.
+func (s *accordionSnapshot) UnmarshalJSON(data []byte) error {
+	var j accordionSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Piles) > accordionMaxSliceLen {
+		return fmt.Errorf("accordion: snapshot piles exceeds maximum allowed size")
+	}
+	for _, pile := range j.Piles {
+		if len(pile) > accordionMaxSliceLen {
+			return fmt.Errorf("accordion: snapshot pile exceeds maximum allowed size")
+		}
+	}
+	s.piles = j.Piles
+	if s.piles == nil {
+		s.piles = make([][]*Card, 0)
+	}
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -311,6 +357,7 @@ func (a *Accordion) MarshalJSON() ([]byte, error) {
 		MoveCount:   a.moveCount,
 		ActionLog:   a.actionLog,
 		IsStalemate: a.isStalemate,
+		History:     a.history,
 	})
 }
 
@@ -326,7 +373,8 @@ func (a *Accordion) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Piles) > accordionMaxSliceLen || len(j.ActionLog) > accordionMaxSliceLen {
+	if len(j.Piles) > accordionMaxSliceLen || len(j.ActionLog) > accordionMaxSliceLen ||
+		len(j.History) > accordionMaxSliceLen {
 		return fmt.Errorf("accordion: input array exceeds maximum allowed size")
 	}
 	for _, pile := range j.Piles {
@@ -348,7 +396,10 @@ func (a *Accordion) UnmarshalJSON(data []byte) error {
 	if a.actionLog == nil {
 		a.actionLog = make([]*ActionLogEntry, 0)
 	}
-	a.history = nil
+	a.history = j.History
+	if a.history == nil {
+		a.history = make([]*accordionSnapshot, 0)
+	}
 	a.isStalemate = j.IsStalemate
 	return nil
 }
