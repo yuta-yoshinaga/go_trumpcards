@@ -622,6 +622,63 @@ type spiderJSON struct {
 	ActionLog      []*ActionLogEntry                      `json:"al"`
 	Difficulty     SpiderDifficulty                       `json:"df"`
 	IsStalemate    bool                                   `json:"sm"`
+	History        []*spiderSnapshot                      `json:"hi,omitempty"`
+}
+
+// spiderSnapshotJSON is the wire format for a single undo snapshot.
+// spiderSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// spiderJSON's short keys to keep the KV payload compact (#1654).
+type spiderSnapshotJSON struct {
+	Tableau        [SpiderTableauCnt][]*SpiderTableauCard `json:"tb"`
+	Stock          []*Card                                `json:"st"`
+	CompletedSuits int                                    `json:"cs"`
+	Phase          SpiderPhase                            `json:"ps"`
+	MoveCount      int                                    `json:"mc"`
+	Score          int                                    `json:"sc"`
+	IsStalemate    bool                                   `json:"sm"`
+}
+
+// MarshalJSON implements json.Marshaler for spiderSnapshot, projecting
+// the unexported fields onto an exported wire shape so that
+// Spider.MarshalJSON can persist the undo history (#1654).
+func (s *spiderSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(spiderSnapshotJSON{
+		Tableau:        s.tableau,
+		Stock:          s.stock,
+		CompletedSuits: s.completedSuits,
+		Phase:          s.phase,
+		MoveCount:      s.moveCount,
+		Score:          s.score,
+		IsStalemate:    s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for spiderSnapshot.
+func (s *spiderSnapshot) UnmarshalJSON(data []byte) error {
+	var j spiderSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > spiderMaxSliceLen {
+		return fmt.Errorf("spider: snapshot array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > spiderMaxSliceLen {
+			return fmt.Errorf("spider: snapshot tableau column exceeds maximum allowed size")
+		}
+	}
+	s.tableau = j.Tableau
+	s.stock = j.Stock
+	if s.stock == nil {
+		s.stock = make([]*Card, 0)
+	}
+	s.completedSuits = j.CompletedSuits
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.score = j.Score
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -637,6 +694,7 @@ func (s *Spider) MarshalJSON() ([]byte, error) {
 		ActionLog:      s.actionLog,
 		Difficulty:     s.difficulty,
 		IsStalemate:    s.isStalemate,
+		History:        s.history,
 	})
 }
 
@@ -649,8 +707,14 @@ func (s *Spider) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Stock) > spiderMaxSliceLen || len(j.ActionLog) > spiderMaxSliceLen {
+	if len(j.Stock) > spiderMaxSliceLen || len(j.ActionLog) > spiderMaxSliceLen ||
+		len(j.History) > spiderMaxSliceLen {
 		return fmt.Errorf("spider: input array exceeds maximum allowed size")
+	}
+	for _, col := range j.Tableau {
+		if len(col) > spiderMaxSliceLen {
+			return fmt.Errorf("spider: tableau column exceeds maximum allowed size")
+		}
 	}
 
 	s.trumpCards = j.TrumpCards
@@ -670,8 +734,10 @@ func (s *Spider) UnmarshalJSON(data []byte) error {
 	if s.actionLog == nil {
 		s.actionLog = make([]*ActionLogEntry, 0)
 	}
-	// Undo history is not serialised; set to nil on restore.
-	s.history = nil
+	s.history = j.History
+	if s.history == nil {
+		s.history = make([]*spiderSnapshot, 0)
+	}
 	s.difficulty = j.Difficulty
 	if s.difficulty == 0 {
 		s.difficulty = SpiderDifficulty1Suit
