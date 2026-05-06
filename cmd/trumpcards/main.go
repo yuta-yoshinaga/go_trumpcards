@@ -1215,6 +1215,16 @@ func printGamesJSON(category string, w io.Writer) error {
 	return enc.Encode(out)
 }
 
+// realtimeGames are the CUI games that run with the realtime runner
+// (raw-mode keystrokes + auto-tick goroutine) instead of the standard
+// line-based loop. Slapjack and Egyptian Ratscrew rely on a fast tick
+// cadence for CPU pending actions; the line-based loop forced the user
+// to type "tick" to advance, which broke the "reflexes" gameplay (#1653).
+var realtimeGames = map[string]bool{
+	"slapjack":         true,
+	"egyptianratscrew": true,
+}
+
 // buildGameCommands generates command handlers for all games from the registry.
 func buildGameCommands() map[string]func() int {
 	registry := ui.GameRegistry()
@@ -1223,7 +1233,11 @@ func buildGameCommands() map[string]func() int {
 		e := entry // capture loop variable
 		commands[e.Name] = func() int {
 			g := e.NewCui()
-			ui.RunCuiLoop(e.Name, g.Controller(), g.HelpLines())
+			if realtimeGames[e.Name] {
+				ui.RunRealtimeCuiLoop(e.Name, g.Controller(), g.HelpLines())
+			} else {
+				ui.RunCuiLoop(e.Name, g.Controller(), g.HelpLines())
+			}
 			return 0
 		}
 	}
