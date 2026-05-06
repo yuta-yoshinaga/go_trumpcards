@@ -445,6 +445,73 @@ type calculationJSON struct {
 	MoveCount   int                               `json:"mc"`
 	ActionLog   []*ActionLogEntry                 `json:"al"`
 	IsStalemate bool                              `json:"sl"`
+	History     []*calculationSnapshot            `json:"hi,omitempty"`
+}
+
+// calculationSnapshotJSON is the wire format for a single undo snapshot.
+// calculationSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// calculationJSON's short keys to keep the KV payload compact (#1654).
+type calculationSnapshotJSON struct {
+	Foundations [CalculationFoundationCnt][]*Card `json:"fd"`
+	Wastes      [CalculationWasteCnt][]*Card      `json:"wa"`
+	Stock       []*Card                           `json:"st"`
+	Phase       CalculationPhase                  `json:"ps"`
+	MoveCount   int                               `json:"mc"`
+	IsStalemate bool                              `json:"sl"`
+}
+
+// MarshalJSON implements json.Marshaler for calculationSnapshot.
+func (s *calculationSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(calculationSnapshotJSON{
+		Foundations: s.foundations,
+		Wastes:      s.wastes,
+		Stock:       s.stock,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for calculationSnapshot.
+func (s *calculationSnapshot) UnmarshalJSON(data []byte) error {
+	var j calculationSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > calculationMaxSliceLen {
+		return fmt.Errorf("calculation: snapshot stock exceeds maximum allowed size")
+	}
+	for i := range CalculationFoundationCnt {
+		if len(j.Foundations[i]) > calculationMaxSliceLen {
+			return fmt.Errorf("calculation: snapshot foundation %d exceeds maximum allowed size", i)
+		}
+	}
+	for i := range CalculationWasteCnt {
+		if len(j.Wastes[i]) > calculationMaxSliceLen {
+			return fmt.Errorf("calculation: snapshot waste %d exceeds maximum allowed size", i)
+		}
+	}
+	s.foundations = j.Foundations
+	for i := range CalculationFoundationCnt {
+		if s.foundations[i] == nil {
+			s.foundations[i] = make([]*Card, 0)
+		}
+	}
+	s.wastes = j.Wastes
+	for i := range CalculationWasteCnt {
+		if s.wastes[i] == nil {
+			s.wastes[i] = make([]*Card, 0)
+		}
+	}
+	s.stock = j.Stock
+	if s.stock == nil {
+		s.stock = make([]*Card, 0)
+	}
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -458,6 +525,7 @@ func (c *Calculation) MarshalJSON() ([]byte, error) {
 		MoveCount:   c.moveCount,
 		ActionLog:   c.actionLog,
 		IsStalemate: c.isStalemate,
+		History:     c.history,
 	})
 }
 
@@ -470,7 +538,8 @@ func (c *Calculation) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Stock) > calculationMaxSliceLen || len(j.ActionLog) > calculationMaxSliceLen {
+	if len(j.Stock) > calculationMaxSliceLen || len(j.ActionLog) > calculationMaxSliceLen ||
+		len(j.History) > calculationMaxSliceLen {
 		return fmt.Errorf("calculation: input array exceeds maximum allowed size")
 	}
 	for i := range CalculationFoundationCnt {
@@ -510,8 +579,10 @@ func (c *Calculation) UnmarshalJSON(data []byte) error {
 	if c.actionLog == nil {
 		c.actionLog = make([]*ActionLogEntry, 0)
 	}
-	// Undo history is not serialised; set to nil on restore.
-	c.history = nil
+	c.history = j.History
+	if c.history == nil {
+		c.history = make([]*calculationSnapshot, 0)
+	}
 	c.isStalemate = j.IsStalemate
 	return nil
 }
