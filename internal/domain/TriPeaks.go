@@ -512,6 +512,58 @@ type triPeaksJSON struct {
 	MoveCount   int                                           `json:"mc"`
 	ActionLog   []*ActionLogEntry                             `json:"al"`
 	IsStalemate bool                                          `json:"sm"`
+	History     []*triPeaksSnapshot                           `json:"hi,omitempty"`
+}
+
+// triPeaksSnapshotJSON is the wire format for a single undo snapshot.
+// triPeaksSnapshot uses unexported fields, so we project to/from this
+// shape with explicit Marshal/Unmarshal methods. Field names match
+// triPeaksJSON's short keys to keep the KV payload compact (#1654).
+type triPeaksSnapshotJSON struct {
+	Layout      [TriPeaksRowCnt][TriPeaksColCnt]*TriPeaksCard `json:"ly"`
+	Stock       []*Card                                       `json:"st"`
+	Waste       []*Card                                       `json:"wa"`
+	Phase       TriPeaksPhase                                 `json:"ps"`
+	MoveCount   int                                           `json:"mc"`
+	IsStalemate bool                                          `json:"sm"`
+}
+
+// MarshalJSON implements json.Marshaler for triPeaksSnapshot, projecting
+// the unexported fields onto an exported wire shape so that
+// TriPeaks.MarshalJSON can persist the undo history (#1654).
+func (s *triPeaksSnapshot) MarshalJSON() ([]byte, error) {
+	return json.Marshal(triPeaksSnapshotJSON{
+		Layout:      s.layout,
+		Stock:       s.stock,
+		Waste:       s.waste,
+		Phase:       s.phase,
+		MoveCount:   s.moveCount,
+		IsStalemate: s.isStalemate,
+	})
+}
+
+// UnmarshalJSON implements json.Unmarshaler for triPeaksSnapshot.
+func (s *triPeaksSnapshot) UnmarshalJSON(data []byte) error {
+	var j triPeaksSnapshotJSON
+	if err := json.Unmarshal(data, &j); err != nil {
+		return err
+	}
+	if len(j.Stock) > triPeaksMaxSliceLen || len(j.Waste) > triPeaksMaxSliceLen {
+		return fmt.Errorf("tripeaks: snapshot array exceeds maximum allowed size")
+	}
+	s.layout = j.Layout
+	s.stock = j.Stock
+	if s.stock == nil {
+		s.stock = make([]*Card, 0)
+	}
+	s.waste = j.Waste
+	if s.waste == nil {
+		s.waste = make([]*Card, 0)
+	}
+	s.phase = j.Phase
+	s.moveCount = j.MoveCount
+	s.isStalemate = j.IsStalemate
+	return nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -525,6 +577,7 @@ func (t *TriPeaks) MarshalJSON() ([]byte, error) {
 		MoveCount:   t.moveCount,
 		ActionLog:   t.actionLog,
 		IsStalemate: t.isStalemate,
+		History:     t.history,
 	})
 }
 
@@ -538,7 +591,7 @@ func (t *TriPeaks) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Stock) > triPeaksMaxSliceLen || len(j.Waste) > triPeaksMaxSliceLen ||
-		len(j.ActionLog) > triPeaksMaxSliceLen {
+		len(j.ActionLog) > triPeaksMaxSliceLen || len(j.History) > triPeaksMaxSliceLen {
 		return fmt.Errorf("tripeaks: input array exceeds maximum allowed size")
 	}
 
@@ -561,8 +614,10 @@ func (t *TriPeaks) UnmarshalJSON(data []byte) error {
 	if t.actionLog == nil {
 		t.actionLog = make([]*ActionLogEntry, 0)
 	}
-	// Undo history is not serialised; set to nil on restore.
-	t.history = nil
+	t.history = j.History
+	if t.history == nil {
+		t.history = make([]*triPeaksSnapshot, 0)
+	}
 	t.isStalemate = j.IsStalemate
 	return nil
 }
