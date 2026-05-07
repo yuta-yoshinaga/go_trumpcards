@@ -953,17 +953,45 @@ func hasHelpFlag(args []string) bool {
 	return false
 }
 
-// buildHelpText generates the CLI help text with the games section derived from the registry.
+// gameCategoryPreview is the number of representative game names rendered per
+// category in the top-level --help GAMES summary. Five names is enough to
+// hint at the variety in each category (e.g. casino → blackjack, baccarat,
+// poker, omaha, holdem) without pushing COMMANDS / OPTIONS off the screen.
+const gameCategoryPreview = 5
+
+// buildHelpText generates the CLI help text with the games section derived
+// from the registry.
+//
+// The GAMES section used to enumerate every one of the 77 games (#1694),
+// which pushed COMMANDS / OPTIONS / EXIT CODES off the visible terminal in
+// the common 24–40 line case. Now it presents a category-grouped summary
+// with a pointer to `trumpcards games` for the full list, mirroring the
+// `git --help` / `kubectl --help` / `cargo --help` style.
 func buildHelpText() string {
 	var sb strings.Builder
-	sb.WriteString(`USAGE:
+	fmt.Fprintf(&sb, `USAGE:
   trumpcards [--lang ja|en] [game]
   trumpcards --help
 
 GAMES:
-`)
-	for _, entry := range ui.GameRegistry() {
-		fmt.Fprintf(&sb, "  %-16s %s\n", entry.Name, entry.Description())
+  %d games across 3 categories. Run 'trumpcards games' for the full list,
+  or 'trumpcards games --category <casino|classic|solo>' to filter.
+
+`, len(ui.GameRegistry()))
+	for _, cat := range []games.Category{games.CategoryCasino, games.CategoryClassic, games.CategorySolo} {
+		entries := games.ByCategory(cat)
+		preview := make([]string, 0, gameCategoryPreview)
+		for i, g := range entries {
+			if i >= gameCategoryPreview {
+				break
+			}
+			preview = append(preview, g.Name)
+		}
+		more := ""
+		if len(entries) > gameCategoryPreview {
+			more = ", …"
+		}
+		fmt.Fprintf(&sb, "  %-8s (%2d)  %s%s\n", cat.String(), len(entries), strings.Join(preview, ", "), more)
 	}
 	sb.WriteString(`
 COMMANDS:
