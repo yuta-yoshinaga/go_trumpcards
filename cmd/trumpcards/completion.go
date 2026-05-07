@@ -137,9 +137,16 @@ func writeInstallHint(w io.Writer, shell string) {
 func writeBashCompletion(w io.Writer) error {
 	cmds := strings.Join(completionSubcommands(), " ")
 	games := strings.Join(completionGameTargets(), " ")
+	// `commands` (every game + alias + subcommand) and `games` (game targets
+	// only, used by --start and `help <target>`) are declared once at the
+	// top of the function so each case reuses them, avoiding the previous
+	// duplicate `local games="..."` blocks and ensuring `help` stays in
+	// lockstep with the canonical subcommand list (review feedback on #1756).
 	script := fmt.Sprintf(`_trumpcards() {
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
+    local commands="%[1]s"
+    local games="%[2]s"
 
     case "$prev" in
         --lang)
@@ -151,7 +158,6 @@ func writeBashCompletion(w io.Writer) error {
             return
             ;;
         --start)
-            local games="%[2]s"
             COMPREPLY=( $(compgen -W "$games" -- "$cur") )
             return
             ;;
@@ -179,8 +185,7 @@ func writeBashCompletion(w io.Writer) error {
             return
             ;;
         help)
-            local games="%[2]s"
-            COMPREPLY=( $(compgen -W "$games completion games help update version web" -- "$cur") )
+            COMPREPLY=( $(compgen -W "$commands" -- "$cur") )
             return
             ;;
         version)
@@ -194,7 +199,6 @@ func writeBashCompletion(w io.Writer) error {
         return
     fi
 
-    local commands="%[1]s"
     COMPREPLY=( $(compgen -W "$commands" -- "$cur") )
 }
 complete -F _trumpcards trumpcards
@@ -260,7 +264,7 @@ _trumpcards() {
                         '(-p --port)'{-p,--port}'[Port number]:port:' \
                         '--host[Bind address]:host:' \
                         '(-q --quiet)'{-q,--quiet}'[Suppress startup/shutdown messages]' \
-                        '(-o --open)'{-o,--open}'[Open the URL in the default browser]'
+                        '(-o --open)'{-o,--open}'[Open the resolved URL in the default browser]'
                     ;;
                 version)
                     _arguments \
@@ -352,7 +356,7 @@ func buildCompletionEntries() []completionEntry {
 		return s
 	}
 
-	entries := make([]completionEntry, 0, len(ui.GameNames())+len(ui.GameAliases)+4)
+	entries := make([]completionEntry, 0, len(ui.GameNames())+len(ui.GameAliases)+6)
 	for _, name := range ui.GameNames() {
 		entries = append(entries, completionEntry{name, stripJa(descs[name])})
 	}

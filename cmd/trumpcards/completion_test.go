@@ -76,6 +76,29 @@ func TestWriteFishCompletion(t *testing.T) {
 	assert.Contains(t, script, "-l dry-run", "fish completion missing update --dry-run flag")
 }
 
+// TestCompletionGameTargets_ExcludesSubcommands guards the contract that
+// completionGameTargets() returns only game names and their aliases — never
+// non-game subcommands. This is what makes `--start` and `help <target>`
+// safe to back with the helper instead of completionSubcommands(): a future
+// refactor that accidentally rolls subcommands into this list would silently
+// let `trumpcards --start web` through and pin a regression.
+func TestCompletionGameTargets_ExcludesSubcommands(t *testing.T) {
+	targets := completionGameTargets()
+	set := make(map[string]struct{}, len(targets))
+	for _, n := range targets {
+		set[n] = struct{}{}
+	}
+	for _, sub := range []string{"web", "completion", "games", "update", "version", "help"} {
+		if _, found := set[sub]; found {
+			t.Errorf("completionGameTargets() must not include subcommand %q", sub)
+		}
+	}
+	// Sanity-check that real games still come through.
+	if _, ok := set["blackjack"]; !ok {
+		t.Errorf("completionGameTargets() should include 'blackjack'")
+	}
+}
+
 func TestWriteInstallHint(t *testing.T) {
 	tests := []struct {
 		shell    string
