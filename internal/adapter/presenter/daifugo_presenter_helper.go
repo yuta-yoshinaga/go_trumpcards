@@ -1,26 +1,30 @@
 package presenter
 
-import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+)
 
 const (
 	daifugoRankMin = 1
 	daifugoRankMax = 4
 )
 
-// daifugoRankName は大富豪のプレイヤーランク（1-4）に対応する日本語名を返します。
-// 範囲外のランクには「不明」を返します。
+// daifugoRankName returns the localized Daifugo rank label (1=Daifugo,
+// 2=Fugo, 3=Heimin, 4=Daihinmin). Out-of-range ranks fall back to the
+// generic "unknown" key.
 func daifugoRankName(rank int) string {
 	switch rank {
 	case 1:
-		return "大富豪"
+		return i18n.T("daifugo.rank1")
 	case 2:
-		return "富豪"
+		return i18n.T("daifugo.rank2")
 	case 3:
-		return "平民"
+		return i18n.T("daifugo.rank3")
 	case 4:
-		return "大貧民"
+		return i18n.T("daifugo.rank4")
 	default:
-		return "不明"
+		return i18n.T("daifugo.rankUnknown")
 	}
 }
 
