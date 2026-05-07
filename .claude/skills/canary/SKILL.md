@@ -1,1 +1,0 @@
-/home/yuta/work/go_trumpcards/.claude/skills/gstack/canary/SKILL.md

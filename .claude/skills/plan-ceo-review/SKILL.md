@@ -1,1 +1,0 @@
-/home/yuta/work/go_trumpcards/.claude/skills/gstack/plan-ceo-review/SKILL.md
