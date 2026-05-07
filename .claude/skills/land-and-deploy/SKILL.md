@@ -1,0 +1,1 @@
+/home/yuta/work/go_trumpcards/.claude/skills/gstack/land-and-deploy/SKILL.md

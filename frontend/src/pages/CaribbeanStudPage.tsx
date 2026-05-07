@@ -152,7 +152,8 @@ function CaribbeanStudPageContent() {
       gameThemeBg={gameTheme.caribbeanstud.bg}
       phaseName={phaseName}
       gamePath="/caribbeanstud"
-      gameEndFlag={isEndPhase}
+      isHumanTurn={isBetPhase || isActionPhase}
+      gameEndFlag={isEndPhase || isBetPhase}
       winShow={isEndPhase && state.result > 0}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}

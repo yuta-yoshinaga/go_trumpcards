@@ -266,7 +266,11 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
       gameThemeBg={gameTheme[themeKey].bg}
       phaseName={phaseNames[phase] ?? t('phase.bet')}
       isHumanTurn={
-        phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER ? true : phase === BjPhase.END ? false : undefined
+        phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER || phase === BjPhase.INSURANCE
+          ? true
+          : phase === BjPhase.END
+            ? false
+            : undefined
       }
       gamePath={gamePath}
       gameEndFlag={!isRoundInProgress}

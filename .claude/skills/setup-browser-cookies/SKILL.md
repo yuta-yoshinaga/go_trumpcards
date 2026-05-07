@@ -1,0 +1,1 @@
+/home/yuta/work/go_trumpcards/.claude/skills/gstack/setup-browser-cookies/SKILL.md
