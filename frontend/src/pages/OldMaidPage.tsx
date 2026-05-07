@@ -8,21 +8,16 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
-import { WinCelebration } from '../components/motion/WinCelebration';
 import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea';
 import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSettingsDialog } from '../components/oldmaid/OldMaidSettingsDialog';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -30,7 +25,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -104,7 +98,6 @@ function OldMaidPageContent() {
     setSetupHesitation,
     setSetupMetaAI,
   } = useOldMaidGame();
-  useGameRoundGuard(!!displayState && !displayState.gameEndFlag);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -194,19 +187,21 @@ function OldMaidPageContent() {
   }
 
   return (
-    <div
-      key={shakeKey}
-      className={`flex-1 flex flex-col min-h-0 ${gameTheme.oldmaid.bg}${shakeKey > 0 ? ' animate-shake' : ''}`}
-      aria-busy={loading}
-      aria-live="polite"
+    <GamePageShell
+      title={tc('nav.oldmaid')}
+      gameThemeBg={`${gameTheme.oldmaid.bg}${shakeKey > 0 ? ' animate-shake' : ''}`}
+      phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')}
+      isHumanTurn={isHumanTurn}
+      gamePath="/oldmaid"
+      gameEndFlag={!!state.gameEndFlag}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      outerKey={shakeKey}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <GamePageHeading title={tc('nav.oldmaid')} />
-      <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/oldmaid" />
-      </PhaseIndicator>
-
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -430,8 +425,6 @@ function OldMaidPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
       <OldMaidSettingsDialog
         open={settingsOpen}
         mode={setupMode}
@@ -453,6 +446,6 @@ function OldMaidPageContent() {
           setSettingsOpen(false);
         }}
       />
-    </div>
+    </GamePageShell>
   );
 }
