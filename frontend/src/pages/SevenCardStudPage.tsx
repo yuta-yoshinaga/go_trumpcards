@@ -247,7 +247,8 @@ function SevenCardStudPageContent() {
       phaseName={phaseNames[phase] ?? t('phase.init')}
       isHumanTurn={canAct}
       gamePath="/sevencardstud"
-      gameEndFlag={phase === SevenCardStudPhase.END}
+      gameEndFlag={phase === SevenCardStudPhase.SHOWDOWN || phase === SevenCardStudPhase.END}
+      winShow={phase === SevenCardStudPhase.END}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}

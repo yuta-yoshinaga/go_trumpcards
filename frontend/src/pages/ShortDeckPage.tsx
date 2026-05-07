@@ -209,7 +209,8 @@ function ShortDeckPageContent() {
       phaseName={phaseNames[phase] ?? t('phase.init')}
       isHumanTurn={canAct}
       gamePath="/shortdeck"
-      gameEndFlag={phase === HoldemPhase.END}
+      gameEndFlag={phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END}
+      winShow={phase === HoldemPhase.END}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}

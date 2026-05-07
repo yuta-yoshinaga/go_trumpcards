@@ -123,7 +123,8 @@ function SevenBridgePageContent() {
       phaseName={phaseNames[state?.phase ?? 0] ?? ''}
       isHumanTurn={!!isHumanTurn}
       gamePath="/sevenbridge"
-      gameEndFlag={isGameEnd}
+      gameEndFlag={!state || isGameEnd}
+      winShow={isGameEnd}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
