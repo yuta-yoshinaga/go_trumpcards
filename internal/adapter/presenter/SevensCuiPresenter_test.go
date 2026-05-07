@@ -644,7 +644,10 @@ func TestSevensCuiPresenter_English(t *testing.T) {
 
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "[CPU actions]")
-		assert.Contains(t, result, "passed")
+		// The forced-pass branch ("no playable card") is what the fixture
+		// triggers — pin the assertion to that key so a future regression
+		// that produces an unrelated 'passed' substring fails CI.
+		assert.Contains(t, result, "passed (no playable card)")
 	})
 
 	t.Run("game-end summary uses rank-line keys", func(t *testing.T) {

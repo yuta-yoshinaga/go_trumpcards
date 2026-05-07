@@ -168,14 +168,17 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 		b.WriteString(i18n.T("sevens.gameEnd") + "\n")
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			player := s.GetPlayer(i)
-			fmt.Fprintln(&b, i18n.Tf("sevens.rankLine",
-				"name", cuiPlayerName(s.GetPlayer(i), i),
-				"rank", strconv.Itoa(player.GetRank())))
+			if player == nil {
+				continue
+			}
+			b.WriteString(i18n.Tf("sevens.rankLine",
+				"name", cuiPlayerName(player, i),
+				"rank", strconv.Itoa(player.GetRank())) + "\n")
 		}
 	} else {
 		currentTurn := s.GetCurrentTurn()
 		currentName := cuiPlayerName(s.GetPlayer(currentTurn), currentTurn)
-		fmt.Fprintln(&b, i18n.Tf("sevens.turnLine", "name", currentName))
+		b.WriteString(i18n.Tf("sevens.turnLine", "name", currentName) + "\n")
 		b.WriteString(i18n.T("sevens.playHint") + "\n")
 		if config.JokerCount > 0 {
 			b.WriteString(i18n.T("sevens.jokerHint") + "\n")
