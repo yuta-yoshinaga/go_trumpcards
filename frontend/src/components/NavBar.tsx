@@ -226,15 +226,17 @@ export function NavBar() {
         ) : (
           <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3">
             {gameCategories.map(({ labelKey, icon: catIcon, routes }) => {
-              const hasActivePage = routes.some(({ path }) => path === pathname);
               return (
                 <details
                   key={labelKey}
                   className="nav-category sm:flex sm:items-center"
-                  open={isMobile || hasActivePage}
+                  open
                   onToggle={(e) => {
-                    // On mobile or medium desktop (sm-lg), force details to stay open
-                    if ((isMobile || isMediumDesktop) && !e.currentTarget.open) {
+                    // NavBar is lg:hidden, so we are always on mobile or
+                    // medium desktop. Force categories to stay open on every
+                    // applicable breakpoint so the full 77-game catalog is
+                    // discoverable on first visit (#1698).
+                    if (!e.currentTarget.open) {
                       e.currentTarget.open = true;
                     }
                   }}

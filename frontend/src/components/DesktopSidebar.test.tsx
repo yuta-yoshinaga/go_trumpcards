@@ -32,6 +32,10 @@ afterEach(() => {
   i18n.changeLanguage('ja');
   localStorage.removeItem('trumpcards-favorite-games');
   localStorage.removeItem('trumpcards-recent-games');
+  // Accordion expansion state bleeds across tests otherwise — the
+  // "toggles category open/closed on click" test writes a collapse, and
+  // the "expands every category by default" assertions then fail.
+  localStorage.removeItem('trumpcards-category-expansion');
 });
 
 describe('DesktopSidebar', () => {
@@ -256,34 +260,34 @@ describe('DesktopSidebar', () => {
       }
     });
 
-    it('expands category containing the active game', () => {
+    it('expands every category by default on first visit', () => {
+      // #1698: every category must be discoverable on first load so the
+      // 77-game catalog is visible without 5 extra clicks. Across all 6
+      // categories, every <details> should start with the `open` attribute.
       renderSidebar('/poker');
-      const pokerCategory = screen.getByText(labelFor('nav.category.poker'));
-      expect(pokerCategory.closest('details')).toHaveAttribute('open');
+      const allCategories = ['nav.category.table', 'nav.category.poker', 'nav.category.solitaire'];
+      for (const labelKey of allCategories) {
+        const heading = screen.getByText(labelFor(labelKey));
+        expect(heading.closest('details')).toHaveAttribute('open');
+      }
     });
 
-    it('collapses categories without the active game', () => {
-      renderSidebar('/poker');
-      const tableCategory = screen.getByText(labelFor('nav.category.table'));
-      expect(tableCategory.closest('details')).not.toHaveAttribute('open');
-      const solitaireCategory = screen.getByText(labelFor('nav.category.solitaire'));
-      expect(solitaireCategory.closest('details')).not.toHaveAttribute('open');
-    });
-
-    it('expands table category by default when on home page', () => {
+    it('expands every category by default on the home page', () => {
       renderSidebar('/');
-      const tableCategory = screen.getByText(labelFor('nav.category.table'));
-      expect(tableCategory.closest('details')).toHaveAttribute('open');
+      for (const labelKey of ['nav.category.table', 'nav.category.poker', 'nav.category.solitaire']) {
+        const heading = screen.getByText(labelFor(labelKey));
+        expect(heading.closest('details')).toHaveAttribute('open');
+      }
     });
 
     it('toggles category open/closed on click', () => {
       renderSidebar('/poker');
       const tableCategory = screen.getByText(labelFor('nav.category.table'));
-      expect(tableCategory.closest('details')).not.toHaveAttribute('open');
-      fireEvent.click(tableCategory);
       expect(tableCategory.closest('details')).toHaveAttribute('open');
       fireEvent.click(tableCategory);
       expect(tableCategory.closest('details')).not.toHaveAttribute('open');
+      fireEvent.click(tableCategory);
+      expect(tableCategory.closest('details')).toHaveAttribute('open');
     });
   });
 
