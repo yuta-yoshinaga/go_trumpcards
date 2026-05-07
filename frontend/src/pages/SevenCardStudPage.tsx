@@ -10,18 +10,13 @@ import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
@@ -30,7 +25,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -238,8 +232,6 @@ function SevenCardStudPageContent() {
     enabled: canAct && !loading,
   });
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return (
       <GameSkeleton
@@ -249,37 +241,42 @@ function SevenCardStudPageContent() {
     );
 
   return (
-    <div
-      className={`flex-1 flex flex-col min-h-0 ${gameTheme.sevencardstud.bg}`}
-      aria-busy={loading}
-      aria-live="polite"
+    <GamePageShell
+      title={tc('nav.sevencardstud')}
+      gameThemeBg={gameTheme.sevencardstud.bg}
+      phaseName={phaseNames[phase] ?? t('phase.init')}
+      isHumanTurn={canAct}
+      gamePath="/sevencardstud"
+      gameEndFlag={phase === SevenCardStudPhase.END}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span data-tutorial="scs-pot-display">
+            {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
+          </span>
+          <span>
+            {t('anteBringIn')}:{' '}
+            <strong>
+              {state?.ante ?? 0}/{state?.bringIn ?? 0}
+            </strong>
+          </span>
+          <span>
+            {tc('label.dealer')}{' '}
+            <strong>
+              {tc('label.player')} {state?.dealerIdx ?? 0}
+            </strong>
+          </span>
+          {state?.tournamentMode && (
+            <span>{t('handNumber', { count: state.handCount, level: state.anteLevelHands })}</span>
+          )}
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
     >
-      <GamePageHeading title={tc('nav.sevencardstud')} />
-      {/* Phase indicator + info bar */}
-      <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
-        <span data-tutorial="scs-pot-display">
-          {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
-        </span>
-        <span>
-          {t('anteBringIn')}:{' '}
-          <strong>
-            {state?.ante ?? 0}/{state?.bringIn ?? 0}
-          </strong>
-        </span>
-        <span>
-          {tc('label.dealer')}{' '}
-          <strong>
-            {tc('label.player')} {state?.dealerIdx ?? 0}
-          </strong>
-        </span>
-        {state?.tournamentMode && (
-          <span>{t('handNumber', { count: state.handCount, level: state.anteLevelHands })}</span>
-        )}
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/sevencardstud" />
-      </PhaseIndicator>
-
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -564,8 +561,6 @@ function SevenCardStudPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={phase === SevenCardStudPhase.END} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
