@@ -193,7 +193,8 @@ func TestFlagSetVisitedDistinguishesExplicitFromDefault(t *testing.T) {
 // TestRunWebRejectsExplicitInvalidPort covers the bug Gemini and Claude
 // flagged: under the previous portUnset=-1 sentinel, `--port -1` silently
 // fell through to the default 8080. With the fs.Visit approach the explicit
-// -1 must be rejected with cliInvalidPort and exit 1 before any bind.
+// -1 must be rejected with cliInvalidPort and exit 2 (usage error, per the
+// documented EXIT CODES in builtinSubcommandHelp["web"]) before any bind.
 func TestRunWebRejectsExplicitInvalidPort(t *testing.T) {
 	origArgs := os.Args
 	origCmdLine := flag.CommandLine
@@ -231,11 +232,14 @@ func TestRunWebRejectsExplicitInvalidPort(t *testing.T) {
 	_, _ = outBuf.ReadFrom(rOut)
 	_, _ = errBuf.ReadFrom(rErr)
 
-	if exit != 1 {
-		t.Errorf("exit = %d, want 1 (stderr=%q)", exit, errBuf.String())
+	if exit != 2 {
+		t.Errorf("exit = %d, want 2 (usage error; stderr=%q)", exit, errBuf.String())
 	}
 	if !strings.Contains(errBuf.String(), "-1") {
 		t.Errorf("stderr should mention the offending port; got: %q", errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "help web") {
+		t.Errorf("stderr should include cliTryHelp hint; got: %q", errBuf.String())
 	}
 	// Guard against regression: the old sentinel behavior would silently
 	// pass through and try to bind 8080, leaving PORT untouched.
