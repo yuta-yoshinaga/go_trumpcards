@@ -969,16 +969,21 @@ const gameCategoryPreview = 5
 // `git --help` / `kubectl --help` / `cargo --help` style.
 func buildHelpText() string {
 	var sb strings.Builder
+	categories := games.AllCategories()
+	categoryNames := make([]string, len(categories))
+	for i, c := range categories {
+		categoryNames[i] = c.String()
+	}
 	fmt.Fprintf(&sb, `USAGE:
   trumpcards [--lang ja|en] [game]
   trumpcards --help
 
 GAMES:
-  %d games across 3 categories. Run 'trumpcards games' for the full list,
-  or 'trumpcards games --category <casino|classic|solo>' to filter.
+  %d games across %d categories. Run 'trumpcards games' for the full list,
+  or 'trumpcards games --category <%s>' to filter.
 
-`, len(ui.GameRegistry()))
-	for _, cat := range []games.Category{games.CategoryCasino, games.CategoryClassic, games.CategorySolo} {
+`, len(ui.GameRegistry()), len(categories), strings.Join(categoryNames, "|"))
+	for _, cat := range categories {
 		entries := games.ByCategory(cat)
 		preview := make([]string, 0, gameCategoryPreview)
 		for i, g := range entries {

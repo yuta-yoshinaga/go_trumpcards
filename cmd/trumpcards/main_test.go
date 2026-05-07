@@ -1730,7 +1730,9 @@ func TestBuildHelpTextGamesSummaryStaysCompact(t *testing.T) {
 	if commandsIdx < 0 {
 		t.Fatalf("COMMANDS: header not found in help text")
 	}
-	if commandsIdx > 20 {
+	// commandsIdx is 0-based; index 20 = line 21, which would violate the
+	// stated "first 20 lines" bound. Use >= so the guard is strict.
+	if commandsIdx >= 20 {
 		t.Errorf("COMMANDS: appears at line %d; expected <= 20 so it stays visible on a default terminal", commandsIdx+1)
 	}
 }
