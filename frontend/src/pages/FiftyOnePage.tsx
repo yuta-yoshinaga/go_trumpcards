@@ -6,17 +6,12 @@ import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -24,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { gameTheme } from '../styles/gameTheme';
 import type { FiftyOneResponse } from '../types/card';
@@ -76,7 +70,6 @@ function FiftyOnePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('fiftyone');
   const { state, loading, error, exec: execApi, retry } = useGameApi(fiftyoneApi.exec);
-  useGameRoundGuard(!!state && !state.gameEndFlag);
   const { cardWidth } = useCardDimensions();
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [selectedHandIdx, setSelectedHandIdx] = useState<number | null>(null);
@@ -161,14 +154,20 @@ function FiftyOnePageContent() {
   const canExchange = isHumanTurn && selectedHandIdx !== null && selectedTableIdx !== null;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.fiftyone.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.fiftyone')} />
-      <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/fiftyone" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.fiftyone')}
+      gameThemeBg={gameTheme.fiftyone.bg}
+      phaseName={phaseName}
+      isHumanTurn={isHumanTurn}
+      gamePath="/fiftyone"
+      gameEndFlag={isGameEnd}
+      winShow={humanWon}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -326,11 +325,8 @@ function FiftyOnePageContent() {
               />
             </div>
           </GameFooter>
-
-          <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-          <WinCelebration show={isGameEnd && humanWon} />
         </>
       )}
-    </div>
+    </GamePageShell>
   );
 }
