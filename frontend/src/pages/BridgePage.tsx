@@ -7,16 +7,11 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, useBridgeGame } from '../hooks/useBridgeGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -24,7 +19,6 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -186,8 +180,6 @@ function BridgePageContent() {
     });
   }, [apiExec, hideActionLog, bridgeConfig.cpuDifficulty]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return <GameSkeleton gameKey="bridge" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 13 }} />;
 
@@ -212,15 +204,20 @@ function BridgePageContent() {
   };
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.bridge.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.bridge')} />
-      {/* Phase indicator */}
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanBidTurn || isHumanTurn}>
-        <ManualButton gamePath="/bridge" />
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.bridge')}
+      gameThemeBg={gameTheme.bridge.bg}
+      phaseName={phaseNames[state.phase]}
+      isHumanTurn={isHumanBidTurn || isHumanTurn}
+      gamePath="/bridge"
+      gameEndFlag={isGameEnd}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -619,8 +616,6 @@ function BridgePageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
