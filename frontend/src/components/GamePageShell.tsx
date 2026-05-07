@@ -41,6 +41,13 @@ export interface GamePageShellProps {
   confirmReset: () => void;
   /** Callback to cancel the reset action. */
   cancelReset: () => void;
+  /**
+   * Optional `key` applied to the outer container. Use for animations that must
+   * restart on demand by remounting the subtree (e.g., Old Maid's shake-key
+   * pattern, where the wrapper needs to re-mount every time an invalid action
+   * triggers `animate-shake`).
+   */
+  outerKey?: string | number;
   /** Extra elements rendered inside the PhaseIndicator before TutorialButton/ManualButton. */
   headerExtra?: ReactNode;
   /**
@@ -75,6 +82,7 @@ export function GamePageShell({
   confirmOpen,
   confirmReset,
   cancelReset,
+  outerKey,
   headerExtra,
   headerEnd,
   children,
@@ -82,7 +90,7 @@ export function GamePageShell({
   // long-form games (Hearts, Spades, Skat, …) don't silently lose state.
   useGameRoundGuard(!gameEndFlag);
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading}>
+    <div key={outerKey} className={`flex-1 flex flex-col min-h-0 ${gameThemeBg}`} aria-busy={loading}>
       <GamePageHeading title={title} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         {headerExtra}
