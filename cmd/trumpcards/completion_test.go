@@ -24,6 +24,15 @@ func TestWriteBashCompletion(t *testing.T) {
 	for _, cmd := range completionSubcommands() {
 		assert.Contains(t, script, cmd, "bash completion missing subcommand %q", cmd)
 	}
+	// Issue #1693: flags added since the last completion update must be
+	// reachable via Tab completion. Each is asserted in its applicable
+	// context (--start completes a game, web has --open / --quiet,
+	// update has --check / --dry-run, version subcommand exists).
+	assert.Contains(t, script, "--start", "bash completion missing global --start flag")
+	assert.Contains(t, script, "--quiet", "bash completion missing global --quiet flag")
+	assert.Contains(t, script, "--open", "bash completion missing web --open flag")
+	assert.Contains(t, script, "--check", "bash completion missing update --check flag")
+	assert.Contains(t, script, "--dry-run", "bash completion missing update --dry-run flag")
 }
 
 func TestWriteZshCompletion(t *testing.T) {
@@ -37,6 +46,13 @@ func TestWriteZshCompletion(t *testing.T) {
 	for _, cmd := range completionSubcommands() {
 		assert.Contains(t, script, "'"+cmd+":", "zsh completion missing subcommand %q", cmd)
 	}
+	// Issue #1693: flags added since the last completion update must be
+	// reachable via Tab completion in zsh as well.
+	assert.Contains(t, script, "--start", "zsh completion missing global --start flag")
+	assert.Contains(t, script, "--quiet", "zsh completion missing global --quiet flag")
+	assert.Contains(t, script, "--open", "zsh completion missing web --open flag")
+	assert.Contains(t, script, "--check", "zsh completion missing update --check flag")
+	assert.Contains(t, script, "--dry-run", "zsh completion missing update --dry-run flag")
 }
 
 func TestWriteFishCompletion(t *testing.T) {
@@ -51,6 +67,13 @@ func TestWriteFishCompletion(t *testing.T) {
 	for _, cmd := range completionSubcommands() {
 		assert.Contains(t, script, "-a "+cmd, "fish completion missing subcommand %q", cmd)
 	}
+	// Issue #1693: flags added since the last completion update must be
+	// reachable via Tab completion in fish as well.
+	assert.Contains(t, script, "-l start", "fish completion missing global --start flag")
+	assert.Contains(t, script, "-l quiet", "fish completion missing global --quiet flag")
+	assert.Contains(t, script, "-l open", "fish completion missing web --open flag")
+	assert.Contains(t, script, "-l check", "fish completion missing update --check flag")
+	assert.Contains(t, script, "-l dry-run", "fish completion missing update --dry-run flag")
 }
 
 func TestWriteInstallHint(t *testing.T) {

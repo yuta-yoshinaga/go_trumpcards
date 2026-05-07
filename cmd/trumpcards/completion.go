@@ -18,12 +18,26 @@ var supportedCompletionShells = []string{"bash", "zsh", "fish"}
 // completionSubcommands returns the sorted list of all subcommands for shell completion,
 // derived from the game registry and aliases.
 func completionSubcommands() []string {
-	names := make([]string, 0, len(ui.GameNames())+len(ui.GameAliases)+5)
+	names := make([]string, 0, len(ui.GameNames())+len(ui.GameAliases)+6)
 	names = append(names, ui.GameNames()...)
 	for alias := range ui.GameAliases {
 		names = append(names, alias)
 	}
-	names = append(names, "completion", "games", "help", "update", "web")
+	names = append(names, "completion", "games", "help", "update", "version", "web")
+	sort.Strings(names)
+	return names
+}
+
+// completionGameTargets returns the sorted list of every game name + alias,
+// without the non-game subcommands. Used to back the value-completion of
+// `--start`, which only accepts a game (issue #1604), and the argument
+// completion of `help <game>`.
+func completionGameTargets() []string {
+	names := make([]string, 0, len(ui.GameNames())+len(ui.GameAliases))
+	names = append(names, ui.GameNames()...)
+	for alias := range ui.GameAliases {
+		names = append(names, alias)
+	}
 	sort.Strings(names)
 	return names
 }
@@ -122,6 +136,7 @@ func writeInstallHint(w io.Writer, shell string) {
 
 func writeBashCompletion(w io.Writer) error {
 	cmds := strings.Join(completionSubcommands(), " ")
+	games := strings.Join(completionGameTargets(), " ")
 	script := fmt.Sprintf(`_trumpcards() {
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
@@ -135,19 +150,24 @@ func writeBashCompletion(w io.Writer) error {
             COMPREPLY=( $(compgen -W "auto always never" -- "$cur") )
             return
             ;;
+        --start)
+            local games="%[2]s"
+            COMPREPLY=( $(compgen -W "$games" -- "$cur") )
+            return
+            ;;
         completion)
             COMPREPLY=( $(compgen -W "bash zsh fish" -- "$cur") )
             return
             ;;
         update)
-            COMPREPLY=( $(compgen -W "--yes -y" -- "$cur") )
+            COMPREPLY=( $(compgen -W "--yes -y --check --dry-run" -- "$cur") )
             return
             ;;
         --port|-p|--host)
             return
             ;;
         web)
-            COMPREPLY=( $(compgen -W "--port -p --host" -- "$cur") )
+            COMPREPLY=( $(compgen -W "--port -p --host --open -o --quiet -q" -- "$cur") )
             return
             ;;
         --category)
@@ -158,18 +178,27 @@ func writeBashCompletion(w io.Writer) error {
             COMPREPLY=( $(compgen -W "--short --aliases --json --category" -- "$cur") )
             return
             ;;
+        help)
+            local games="%[2]s"
+            COMPREPLY=( $(compgen -W "$games completion games help update version web" -- "$cur") )
+            return
+            ;;
+        version)
+            COMPREPLY=( $(compgen -W "--short" -- "$cur") )
+            return
+            ;;
     esac
 
     if [[ "$cur" == -* ]]; then
-        COMPREPLY=( $(compgen -W "--help --lang --color --no-color --version --version-short -h -V" -- "$cur") )
+        COMPREPLY=( $(compgen -W "--help --lang --color --no-color --version --version-short --start --quiet -h -V -q" -- "$cur") )
         return
     fi
 
-    local commands="%s"
+    local commands="%[1]s"
     COMPREPLY=( $(compgen -W "$commands" -- "$cur") )
 }
 complete -F _trumpcards trumpcards
-`, cmds)
+`, cmds, games)
 	_, err := fmt.Fprint(w, script)
 	return err
 }
@@ -182,20 +211,25 @@ func writeZshCompletion(w io.Writer) error {
 		desc := strings.ReplaceAll(e.desc, "'", `'\''`)
 		fmt.Fprintf(&sb, "        '%s:%s'\n", e.name, desc)
 	}
+	games := strings.Join(completionGameTargets(), " ")
 	script := fmt.Sprintf(`#compdef trumpcards
 
 _trumpcards() {
     local -a commands
     commands=(
-%s    )
+%[1]s    )
+    local -a game_targets
+    game_targets=(%[2]s)
 
     _arguments \
         '(-h --help)'{-h,--help}'[Show help message]' \
         '(-V --version)'{-V,--version}'[Show version information]' \
         '--version-short[Print version number only]' \
+        '(-q --quiet)'{-q,--quiet}'[Suppress non-essential output]' \
         '--lang[Language]:language:(ja en)' \
         '--color[Color output mode]:mode:(auto always never)' \
         '--no-color[DEPRECATED alias for --color=never]' \
+        '--start[Initial game for interactive mode]:game:(${game_targets})' \
         '1:command:->cmds' \
         '*::arg:->args'
 
@@ -210,7 +244,9 @@ _trumpcards() {
                     ;;
                 update)
                     _arguments \
-                        '(-y --yes)'{-y,--yes}'[Skip confirmation prompt]'
+                        '(-y --yes)'{-y,--yes}'[Skip confirmation prompt]' \
+                        '--check[Check for an update without installing]' \
+                        '--dry-run[Alias for --check]'
                     ;;
                 games)
                     _arguments \
@@ -222,7 +258,16 @@ _trumpcards() {
                 web)
                     _arguments \
                         '(-p --port)'{-p,--port}'[Port number]:port:' \
-                        '--host[Bind address]:host:'
+                        '--host[Bind address]:host:' \
+                        '(-q --quiet)'{-q,--quiet}'[Suppress startup/shutdown messages]' \
+                        '(-o --open)'{-o,--open}'[Open the URL in the default browser]'
+                    ;;
+                version)
+                    _arguments \
+                        '--short[Print version number only]'
+                    ;;
+                help)
+                    _values 'target' "${game_targets[@]}" completion games help update version web
                     ;;
             esac
             ;;
@@ -230,7 +275,7 @@ _trumpcards() {
 }
 
 _trumpcards "$@"
-`, sb.String())
+`, sb.String(), games)
 	_, err := fmt.Fprint(w, script)
 	return err
 }
@@ -243,6 +288,7 @@ func writeFishCompletion(w io.Writer) error {
 		desc := strings.ReplaceAll(e.desc, "'", `\'`)
 		fmt.Fprintf(&sb, "complete -c trumpcards -n __fish_use_subcommand -a %s -d '%s'\n", e.name, desc)
 	}
+	games := strings.Join(completionGameTargets(), " ")
 	script := fmt.Sprintf(`# Fish completion for trumpcards
 complete -c trumpcards -f
 
@@ -250,17 +296,21 @@ complete -c trumpcards -f
 complete -c trumpcards -l help -s h -d 'Show help message'
 complete -c trumpcards -l version -s V -d 'Show version information'
 complete -c trumpcards -l version-short -d 'Print version number only'
+complete -c trumpcards -l quiet -s q -d 'Suppress non-essential output'
 complete -c trumpcards -l lang -x -a 'ja en' -d 'Language'
 complete -c trumpcards -l color -x -a 'auto always never' -d 'Color output mode'
 complete -c trumpcards -l no-color -d 'DEPRECATED alias for --color=never'
+complete -c trumpcards -l start -x -a '%[2]s' -d 'Initial game for interactive mode'
 
 # Subcommands
-%s
+%[1]s
 # completion subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
 
 # update subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from update' -l yes -s y -d 'Skip confirmation prompt'
+complete -c trumpcards -n '__fish_seen_subcommand_from update' -l check -d 'Check for an update without installing'
+complete -c trumpcards -n '__fish_seen_subcommand_from update' -l dry-run -d 'Alias for --check'
 
 # games subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from games' -l short -d 'Print game names only'
@@ -271,7 +321,15 @@ complete -c trumpcards -n '__fish_seen_subcommand_from games' -l category -x -a 
 # web subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from web' -l port -s p -d 'Port number' -x
 complete -c trumpcards -n '__fish_seen_subcommand_from web' -l host -d 'Bind address' -x
-`, sb.String())
+complete -c trumpcards -n '__fish_seen_subcommand_from web' -l quiet -s q -d 'Suppress startup/shutdown messages'
+complete -c trumpcards -n '__fish_seen_subcommand_from web' -l open -s o -d 'Open the resolved URL in the default browser'
+
+# version subcommand
+complete -c trumpcards -n '__fish_seen_subcommand_from version' -l short -d 'Print version number only'
+
+# help subcommand (game or subcommand argument)
+complete -c trumpcards -n '__fish_seen_subcommand_from help' -a '%[2]s completion games help update version web'
+`, sb.String(), games)
 	_, err := fmt.Fprint(w, script)
 	return err
 }
@@ -306,6 +364,7 @@ func buildCompletionEntries() []completionEntry {
 		completionEntry{"games", "List available games"},
 		completionEntry{"help", "Show help, optionally for a specific game"},
 		completionEntry{"update", "Self-update to the latest version"},
+		completionEntry{"version", "Show version information"},
 		completionEntry{"web", "Start REST API + web GUI server"},
 	)
 	sort.Slice(entries, func(i, j int) bool { return entries[i].name < entries[j].name })
