@@ -8,16 +8,11 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -26,7 +21,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -234,8 +228,6 @@ function BaccaratPageContent() {
     enabled: !!state && !loading,
   });
 
-  useGameRoundGuard(isGameRoundActive(state));
-
   if (!state) return <GameSkeleton gameKey="baccarat" layout={{ kind: 'casino-table', sections: [2, 2] }} />;
 
   const handleBet = () => {
@@ -251,16 +243,24 @@ function BaccaratPageContent() {
   };
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.baccarat.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.baccarat')} />
-      {/* Phase indicator */}
-      <PhaseIndicator phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}>
-        <span>{t('label.chips', { chips: state.chips })}</span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/baccarat" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.baccarat')}
+      gameThemeBg={gameTheme.baccarat.bg}
+      phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}
+      gamePath="/baccarat"
+      gameEndFlag={isEndPhase}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>{t('label.chips', { chips: state.chips })}</span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -449,8 +449,6 @@ function BaccaratPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={state.phase === BaccaratPhase.END} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
