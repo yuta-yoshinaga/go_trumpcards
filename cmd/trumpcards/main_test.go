@@ -238,6 +238,9 @@ func TestRunWebRejectsExplicitInvalidPort(t *testing.T) {
 	if !strings.Contains(errBuf.String(), "-1") {
 		t.Errorf("stderr should mention the offending port; got: %q", errBuf.String())
 	}
+	if !strings.Contains(errBuf.String(), "help web") {
+		t.Errorf("stderr should include cliTryHelp hint; got: %q", errBuf.String())
+	}
 	// Guard against regression: the old sentinel behavior would silently
 	// pass through and try to bind 8080, leaving PORT untouched.
 	if got := os.Getenv("PORT"); got != "" {

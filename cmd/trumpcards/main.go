@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"slices"
 	"sort"
 	"strconv"
@@ -383,6 +384,7 @@ func run() int {
 				// Aligns with the documented EXIT CODES: 2 reads as "the
 				// invocation itself is wrong" so systemd / CI can branch on it.
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(port)))
+				fmt.Fprintln(os.Stderr, i18n.Tf("cliTryHelp", "cmd", "web"))
 				return 2
 			}
 			_ = os.Setenv("PORT", strconv.Itoa(port))
@@ -420,14 +422,31 @@ func run() int {
 				})
 			}
 		}
+		// Track which signal (if any) triggers the server's shutdown so we can
+		// return 130 (SIGINT) or 143 (SIGTERM) rather than always returning 0.
+		// Both this channel and TrumpCardsWeb's internal signal.NotifyContext
+		// receive the signal concurrently; TrumpCardsWeb handles graceful
+		// shutdown while this channel records which signal was received.
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 		if err := w.Exec(); err != nil {
+			signal.Stop(sigCh)
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliWebStartFailed", "err", err.Error()))
 			if errors.Is(err, syscall.EADDRINUSE) {
 				fmt.Fprintln(os.Stderr, i18n.T("cliWebPortInUseHint"))
 			}
 			return 1
 		}
-		return 0
+		signal.Stop(sigCh)
+		select {
+		case sig := <-sigCh:
+			if sig == syscall.SIGTERM {
+				return 143
+			}
+			return 130
+		default:
+			return 0
+		}
 	}
 
 	// Commands that parse their own sub-flags; skip the extra-args warning for these.
@@ -544,12 +563,12 @@ var builtinSubcommandHelp = map[string][]string{
 		"  event always fires regardless. The default 127.0.0.1 bind never warns.",
 		"",
 		"EXIT CODES:",
-		"    0  Graceful shutdown (Ctrl+C / SIGTERM after the server started cleanly)",
+		"    0  Server exited cleanly without receiving a signal",
 		"    1  Server start failure (includes EADDRINUSE / port already in use —",
 		"       systemd / Docker `restart: on-failure` should retry on this code)",
 		"    2  Usage error (unknown flag, --port out of range)",
-		"  130  Terminated by SIGINT before reaching graceful shutdown (128 + 2)",
-		"  143  Terminated by SIGTERM before reaching graceful shutdown (128 + 15)",
+		"  130  Graceful shutdown triggered by SIGINT (Ctrl+C)  (128 + 2)",
+		"  143  Graceful shutdown triggered by SIGTERM  (128 + 15)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards web",
