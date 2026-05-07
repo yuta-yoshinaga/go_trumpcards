@@ -250,6 +250,25 @@ describe('GamePageShell', () => {
     expect(manual.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it('remounts the outer container when outerKey changes (drives shake animation)', () => {
+    const { container, rerender } = render(
+      <GamePageShell {...baseProps} outerKey={0}>
+        <div data-testid="game-body" />
+      </GamePageShell>,
+    );
+    const firstBody = screen.getByTestId('game-body');
+    rerender(
+      <GamePageShell {...baseProps} outerKey={1}>
+        <div data-testid="game-body" />
+      </GamePageShell>,
+    );
+    // Changing outerKey forces React to unmount the previous subtree and mount a new one,
+    // which is what restarts the shake CSS animation. Verify by ensuring the body element
+    // is no longer the same DOM node.
+    expect(container.contains(firstBody)).toBe(false);
+    expect(screen.getByTestId('game-body')).toBeInTheDocument();
+  });
+
   it('omits the turn-indicator span when isHumanTurn is not provided', () => {
     render(
       <GamePageShell {...propsWithoutTurn}>
