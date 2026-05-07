@@ -167,10 +167,10 @@ function TonkPageContent() {
     <GamePageShell
       title={tc('nav.tonk')}
       gameThemeBg={gameTheme.tonk.bg}
-      phaseName={phaseNames[state.phase]}
+      phaseName={phaseNames[state.phase] ?? ''}
       isHumanTurn={isHumanTurn}
       gamePath="/tonk"
-      gameEndFlag={!!state.gameEndFlag}
+      gameEndFlag={isGameEnd}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
