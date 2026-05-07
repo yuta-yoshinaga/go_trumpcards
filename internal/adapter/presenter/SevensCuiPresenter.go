@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // sevensPlayerStr returns the display string for a single Sevens player.
@@ -14,13 +16,20 @@ func sevensPlayerStr(player *domain.SevensPlayer, i int) string {
 	var b strings.Builder
 	b.WriteString(cuiPlayerName(player, i))
 	if player.GetIsFinished() {
-		fmt.Fprintf(&b, ": 上がり/失格 (ランク: %d位)\n", player.GetRank())
+		b.WriteString(i18n.Tf("sevens.playerOut", "rank", strconv.Itoa(player.GetRank())))
+		b.WriteString("\n")
 	} else {
+		count := strconv.Itoa(player.GetCardsSize())
+		used := strconv.Itoa(player.GetPassesUsed())
 		if player.GetMaxPasses() == 0 {
-			fmt.Fprintf(&b, ": %d枚 (パス: %d/∞)\n", player.GetCardsSize(), player.GetPassesUsed())
+			b.WriteString(i18n.Tf("sevens.playerActiveUnlimited", "count", count, "used", used))
 		} else {
-			fmt.Fprintf(&b, ": %d枚 (パス: %d/%d)\n", player.GetCardsSize(), player.GetPassesUsed(), player.GetMaxPasses())
+			b.WriteString(i18n.Tf("sevens.playerActiveLimited",
+				"count", count,
+				"used", used,
+				"max", strconv.Itoa(player.GetMaxPasses())))
 		}
+		b.WriteString("\n")
 		if player.GetIsHuman() {
 			b.WriteString(cuiIndexedCardListStr(player))
 			b.WriteString("\n")
@@ -33,69 +42,90 @@ func sevensPlayerStr(player *domain.SevensPlayer, i int) string {
 func sevensActionStr(playerName string, action *domain.SevensCpuAction) string {
 	if action.PlayedCard == nil {
 		if action.ForcedPass {
-			return fmt.Sprintf("%sがパスしました (出せるカードなし)\n", playerName)
+			return i18n.Tf("sevens.actionPassedNoCard", "name", playerName) + "\n"
 		}
-		return fmt.Sprintf("%sがパスしました\n", playerName)
+		return i18n.Tf("sevens.actionPassed", "name", playerName) + "\n"
 	}
 	if action.PlayedCard.GetDesign() == domain.CardDesignJoker && action.TargetSuit > 0 {
-		return fmt.Sprintf("%sが %s → %s %d を出しました\n",
-			playerName, cuiCardStr(action.PlayedCard),
-			cuiSuitName(action.TargetSuit), action.TargetValue)
+		return i18n.Tf("sevens.actionPlayedJoker",
+			"name", playerName,
+			"joker", cuiCardStr(action.PlayedCard),
+			"suit", cuiSuitName(action.TargetSuit),
+			"value", strconv.Itoa(action.TargetValue)) + "\n"
 	}
-	return fmt.Sprintf("%sが %s を出しました\n", playerName, cuiCardStr(action.PlayedCard))
+	return i18n.Tf("sevens.actionPlayed",
+		"name", playerName,
+		"card", cuiCardStr(action.PlayedCard)) + "\n"
 }
 
-// SevensCuiPresenter 7並べCUIプレゼンタークラス
+// sevensRuleLabels appends the active rule badges to b. The conditional
+// list mirrors the original guard expression so the "Rules:" header is
+// only emitted when at least one non-default rule is in play.
+func sevensRuleLabels(b *strings.Builder, config *domain.SevensConfig) {
+	hasNonDefault := config.TunnelEnabled ||
+		config.TunnelSkipWidth >= 2 ||
+		config.JokerCount > 0 ||
+		config.CpuStrategy != domain.SevensCpuSimple ||
+		config.MaxPasses != domain.SevensMaxPasses ||
+		config.NoJokerFinish ||
+		config.JokerReclaimEnabled ||
+		config.EndStopEnabled ||
+		config.JokerConsecutiveBanned
+	if !hasNonDefault {
+		return
+	}
+	b.WriteString(i18n.T("sevens.ruleLabel"))
+	if config.TunnelEnabled {
+		b.WriteString(" " + color.Yellow(i18n.T("sevens.ruleTunnel")))
+	}
+	if config.TunnelSkipWidth >= 2 {
+		b.WriteString(" " + color.Yellow(i18n.Tf("sevens.ruleTunnelSkip", "width", strconv.Itoa(config.TunnelSkipWidth))))
+	}
+	if config.JokerCount > 0 {
+		b.WriteString(" " + color.Yellow(i18n.Tf("sevens.ruleJokers", "count", strconv.Itoa(config.JokerCount))))
+	}
+	switch config.CpuStrategy {
+	case domain.SevensCpuStrategic:
+		b.WriteString(" " + color.Yellow(i18n.T("sevens.ruleCpuStrategic")))
+	case domain.SevensCpuHarassment:
+		b.WriteString(" " + color.Yellow(i18n.T("sevens.ruleCpuHarassment")))
+	}
+	if config.MaxPasses == 0 {
+		b.WriteString(" " + color.Yellow(i18n.T("sevens.ruleUnlimitedPasses")))
+	} else if config.MaxPasses != domain.SevensMaxPasses {
+		b.WriteString(" " + color.Yellow(i18n.Tf("sevens.rulePassLimit", "count", strconv.Itoa(config.MaxPasses))))
+	}
+	if config.NoJokerFinish {
+		b.WriteString(" " + color.Yellow(i18n.T("sevens.ruleNoJokerFinish")))
+	}
+	if config.JokerReclaimEnabled {
+		b.WriteString(" " + color.Yellow(i18n.T("sevens.ruleJokerReclaim")))
+	}
+	if config.EndStopEnabled {
+		b.WriteString(" " + color.Yellow(i18n.T("sevens.ruleEndStop")))
+	}
+	if config.JokerConsecutiveBanned {
+		b.WriteString(" " + color.Yellow(i18n.T("sevens.ruleNoConsecutiveJokers")))
+	}
+	b.WriteString("\n")
+}
+
+// SevensCuiPresenter renders the Sevens CUI view.
 type SevensCuiPresenter struct{}
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *SevensCuiPresenter) ActionLogOutput(s interfaces.SevensGame) string {
 	return actionLogOutputText(s)
 }
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) string {
 	var b strings.Builder
 
 	b.WriteString("==========\n")
-	b.WriteString("Sevens (7並べ)\n")
+	b.WriteString(i18n.T("sevens.helpTitle") + "\n")
 	config := s.GetConfig()
-	if config.TunnelEnabled || config.TunnelSkipWidth >= 2 || config.JokerCount > 0 || config.CpuStrategy != domain.SevensCpuSimple || config.MaxPasses != domain.SevensMaxPasses || config.NoJokerFinish || config.JokerReclaimEnabled || config.EndStopEnabled || config.JokerConsecutiveBanned {
-		b.WriteString("ルール:")
-		if config.TunnelEnabled {
-			b.WriteString(" " + color.Yellow("[トンネル]"))
-		}
-		if config.TunnelSkipWidth >= 2 {
-			b.WriteString(" " + color.Yellow(fmt.Sprintf("[トンネルスキップ%d]", config.TunnelSkipWidth)))
-		}
-		if config.JokerCount > 0 {
-			b.WriteString(" " + color.Yellow(fmt.Sprintf("[ジョーカー×%d]", config.JokerCount)))
-		}
-		switch config.CpuStrategy {
-		case domain.SevensCpuStrategic:
-			b.WriteString(" " + color.Yellow("[CPU戦略]"))
-		case domain.SevensCpuHarassment:
-			b.WriteString(" " + color.Yellow("[嫌がらせ特化]"))
-		}
-		if config.MaxPasses == 0 {
-			b.WriteString(" " + color.Yellow("[パス無制限]"))
-		} else if config.MaxPasses != domain.SevensMaxPasses {
-			b.WriteString(" " + color.Yellow(fmt.Sprintf("[パス%d回]", config.MaxPasses)))
-		}
-		if config.NoJokerFinish {
-			b.WriteString(" " + color.Yellow("[ジョーカー上がり禁止]"))
-		}
-		if config.JokerReclaimEnabled {
-			b.WriteString(" " + color.Yellow("[ジョーカー回収]"))
-		}
-		if config.EndStopEnabled {
-			b.WriteString(" " + color.Yellow("[片側ストップ]"))
-		}
-		if config.JokerConsecutiveBanned {
-			b.WriteString(" " + color.Yellow("[ジョーカー連続禁止]"))
-		}
-		b.WriteString("\n")
-	}
+	sevensRuleLabels(&b, &config)
 	b.WriteString("==========\n")
 
 	for i := 0; i < s.GetPlayerCnt(); i++ {
@@ -104,8 +134,8 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 
 	b.WriteString("----------\n")
 
-	// ボード状態
-	b.WriteString("ボード:\n")
+	// Board state
+	b.WriteString(i18n.T("sevens.boardLabel") + "\n")
 	suits := []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond}
 	suitNames := []string{"SPADE", "CLOVER", "HEART", "DIAMOND"}
 	mins := s.GetTableMinVals()
@@ -114,40 +144,44 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 		fmt.Fprintf(&b, "  %s: %d〜%d\n", suitNames[i], mins[suit], maxs[suit])
 	}
 
-	// 人間の前の行動
+	// Human's previous action
 	humanAction := s.GetHumanAction()
 	if humanAction != nil {
 		b.WriteString(sevensActionStr(cuiPlayerName(s.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx), humanAction))
 	}
 
-	// CPUの行動履歴を表示
+	// CPU action history
 	cpuActions := s.GetCpuActions()
 	if len(cpuActions) > 0 {
-		b.WriteString(color.Bold("[CPUの行動]") + "\n")
+		b.WriteString(color.Bold(i18n.T("sevens.cpuActionsLabel")) + "\n")
 		for _, action := range cpuActions {
 			actPlayerName := cuiPlayerName(s.GetPlayer(action.PlayerIdx), action.PlayerIdx)
 			b.WriteString(sevensActionStr(actPlayerName, action))
 		}
 	}
 
-	// エラーメッセージ
 	if lastErr != nil {
 		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
 	}
 
 	if s.GetGameEndFlag() {
-		b.WriteString("ゲーム終了！\n")
+		b.WriteString(i18n.T("sevens.gameEnd") + "\n")
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			player := s.GetPlayer(i)
-			fmt.Fprintf(&b, "  %s: %d位\n", cuiPlayerName(s.GetPlayer(i), i), player.GetRank())
+			if player == nil {
+				continue
+			}
+			b.WriteString(i18n.Tf("sevens.rankLine",
+				"name", cuiPlayerName(player, i),
+				"rank", strconv.Itoa(player.GetRank())) + "\n")
 		}
 	} else {
 		currentTurn := s.GetCurrentTurn()
 		currentName := cuiPlayerName(s.GetPlayer(currentTurn), currentTurn)
-		fmt.Fprintf(&b, "手番: %s\n", currentName)
-		b.WriteString("p [インデックス] でカードを出す / p でパス\n")
+		b.WriteString(i18n.Tf("sevens.turnLine", "name", currentName) + "\n")
+		b.WriteString(i18n.T("sevens.playHint") + "\n")
 		if config.JokerCount > 0 {
-			b.WriteString("j [カードインデックス] [スート] [値] でジョーカーを配置\n")
+			b.WriteString(i18n.T("sevens.jokerHint") + "\n")
 		}
 	}
 

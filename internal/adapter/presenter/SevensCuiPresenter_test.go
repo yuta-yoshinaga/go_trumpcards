@@ -7,6 +7,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -595,5 +596,90 @@ func TestSevensCuiPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, result, "棋譜はありません")
 		mockGame.AssertExpectations(t)
+	})
+}
+
+// TestSevensCuiPresenter_English verifies issue #1699 Phase 2: every
+// previously-hardcoded Japanese string in SevensCuiPresenter now follows
+// the active locale. The default ja path is already exercised by the
+// table-driven tests above; this suite re-runs the same setup under
+// LANG=en and checks that the English keys win out.
+func TestSevensCuiPresenter_English(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	tsp := new(presenter.SevensCuiPresenter)
+
+	t.Run("initial state uses English labels", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "Sevens")
+		// cui_common labels (Phase 1) flow through the helpers.
+		assert.Contains(t, result, "You: 1 cards")
+		assert.Contains(t, result, "CPU 1: 1 cards")
+		assert.Contains(t, result, "Turn: You")
+		// Sevens-scoped labels migrated in this PR.
+		assert.Contains(t, result, "Board:")
+		assert.Contains(t, result, "p [index] to play a card")
+	})
+
+	t.Run("CPU pass action renders in English", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // not playable → forced pass
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		_ = s.PlayerPlay(0)
+		s.CpuPlay()
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "[CPU actions]")
+		// The forced-pass branch ("no playable card") is what the fixture
+		// triggers — pin the assertion to that key so a future regression
+		// that produces an unrelated 'passed' substring fails CI.
+		assert.Contains(t, result, "passed (no playable card)")
+	})
+
+	t.Run("game-end summary uses rank-line keys", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[1].SetIsFinished(true)
+		players[1].SetRank(1)
+		players[2].SetIsFinished(true)
+		players[2].SetRank(2)
+		players[3].SetIsFinished(true)
+		players[3].SetRank(3)
+		_ = s.PlayerPlay(0)
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "Game over!")
+		assert.Contains(t, result, "rank 1")
+	})
+
+	t.Run("non-default rules render English badges", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.DefaultSevensConfig()
+		cfg.JokerCount = 2
+		cfg.NoJokerFinish = true
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "Rules:")
+		assert.Contains(t, result, "[joker x2]")
+		assert.Contains(t, result, "[no joker finish]")
 	})
 }
