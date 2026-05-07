@@ -414,7 +414,7 @@ function SevensPageContent() {
                   <div
                     key={`cpu-action-${a.playerIdx}-${i}`}
                     data-testid={a.forcedPass ? `cpu-action-forced-pass-${i}` : `cpu-action-${i}`}
-                    className={a.forcedPass ? 'text-ds-warning/80' : 'text-ds-text-primary'}
+                    className={a.forcedPass ? 'text-ds-warning' : 'text-ds-text-primary'}
                   >
                     {actionDesc(state.players, a, t)}
                   </div>

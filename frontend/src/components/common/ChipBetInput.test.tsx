@@ -75,7 +75,10 @@ describe('ChipBetInput', () => {
     const input = screen.getByLabelText('Bet');
     expect(input.className).toContain('bg-ds-surface');
     expect(input.className).toContain('border-ds-error');
-    expect(input.className).toContain('text-ds-error');
+    // Foreground is text-ds-text-primary (10.1:1 AAA on surface). Pairing
+    // text-ds-error with bg-ds-surface only hits ~2.7:1 — fails AA — so the
+    // error semantic comes from the coloured border, not the text colour.
+    expect(input.className).toContain('text-ds-text-primary');
     expect(input).toHaveAttribute('aria-invalid', 'true');
   });
 

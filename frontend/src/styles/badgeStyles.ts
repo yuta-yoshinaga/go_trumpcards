@@ -18,14 +18,38 @@
 
 const BADGE_BASE = 'rounded-lg py-2 px-3.5 text-xs border';
 
-/** Neutral info badge — surface bg, primary text, subtle border. */
+/**
+ * Neutral info badge — surface bg, primary text, subtle border.
+ *
+ * Intentionally uses `text-ds-text-primary` (10.1:1 AAA on surface) rather
+ * than `text-ds-info`: the info token (#5B8FB9) hits only ~4.5:1 on the
+ * surface background, right at the AA boundary, so we lean on the
+ * border-coloured `border-ds-info` would have given for semantic signal
+ * is replaced by `border-ds-border-subtle` — info badges read as quiet
+ * notifications, not warnings.
+ */
 export const badgeInfo = `${BADGE_BASE} bg-ds-surface text-ds-text-primary border-ds-border-subtle`;
 
-/** Success badge — surface bg, success text + border. */
+/**
+ * Success badge — surface bg, success text (5.8:1 AA on surface) + matching
+ * border. Use for "round won", "auto-go", or other positive confirmations.
+ */
 export const badgeSuccess = `${BADGE_BASE} bg-ds-surface text-ds-success border-ds-success`;
 
-/** Warning badge — surface bg, warning text + border. Use for "forced", "involuntary", or "restricted" states. */
+/**
+ * Warning badge — surface bg, warning text (6.3:1 AA on surface) + matching
+ * border. Use for "forced", "involuntary", or "restricted" states.
+ */
 export const badgeWarning = `${BADGE_BASE} bg-ds-surface text-ds-warning border-ds-warning`;
 
-/** Error badge — surface bg, error text + border. Use for "fold", "out", "bust", or error notifications. */
-export const badgeError = `${BADGE_BASE} bg-ds-surface text-ds-error border-ds-error`;
+/**
+ * Error badge — surface bg, primary text (10.1:1 AAA on surface) + error
+ * border. Use for "fold", "out", "bust", or error notifications.
+ *
+ * Foreground is intentionally `text-ds-text-primary` rather than
+ * `text-ds-error`: the error token (#B83A3A) only hits ~2.7:1 on the
+ * surface background — well below WCAG AA — so the semantic signal
+ * comes entirely from the coloured border while the message stays
+ * fully readable.
+ */
+export const badgeError = `${BADGE_BASE} bg-ds-surface text-ds-text-primary border-ds-error`;
