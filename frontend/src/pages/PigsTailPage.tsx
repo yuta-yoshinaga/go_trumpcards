@@ -5,22 +5,16 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { gameTheme } from '../styles/gameTheme';
@@ -77,7 +71,6 @@ function PigsTailPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pigtail');
   const { state, loading, exec: execApi } = useGameApi(pigtailApi.exec);
-  useGameRoundGuard(!!state && !state.gameEndFlag);
   const handleDraw = useCallback(() => execApi('draw'), [execApi]);
   const handleReset = useCallback(() => execApi('reset'), [execApi]);
   const { hint, hintEnabled, setHintEnabled } = useGameHint('pigtail', state);
@@ -128,14 +121,19 @@ function PigsTailPageContent() {
   const loserIsHuman = isGameEnd && state.loserIdx >= 0 && state.players[state.loserIdx]?.isHuman === true;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pigtail.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.pigtail')} />
-      <PhaseIndicator phaseName={currentPhaseName ?? ''}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/pigtail" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.pigtail')}
+      gameThemeBg={gameTheme.pigtail.bg}
+      phaseName={currentPhaseName ?? ''}
+      gamePath="/pigtail"
+      gameEndFlag={!!isGameEnd}
+      winShow={isGameEnd && !loserIsHuman}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -255,16 +253,14 @@ function PigsTailPageContent() {
             </div>
           </GameFooter>
 
-          <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
           <ActionLogSection
             isEndPhase={isGameEnd}
             actionLog={actionLog}
             showActionLog={showActionLog}
             hideActionLog={hideActionLog}
           />
-          <WinCelebration show={isGameEnd && !loserIsHuman} />
         </>
       )}
-    </div>
+    </GamePageShell>
   );
 }
