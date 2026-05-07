@@ -7,16 +7,11 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -25,7 +20,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCrazyEightsGame } from '../hooks/useCrazyEightsGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
@@ -159,8 +153,6 @@ function CrazyEightsPageContent() {
 
   const phaseNames = usePhaseNames('crazyeights', CRAZYEIGHTS_PHASE_KEYS);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return (
       <GameSkeleton
@@ -177,14 +169,20 @@ function CrazyEightsPageContent() {
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.crazyeights.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.crazyeights')} />
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn || isChooseSuit}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/crazyeights" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.crazyeights')}
+      gameThemeBg={gameTheme.crazyeights.bg}
+      phaseName={phaseNames[state.phase]}
+      isHumanTurn={isHumanTurn || isChooseSuit}
+      gamePath="/crazyeights"
+      gameEndFlag={!!state.gameEndFlag}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -392,8 +390,6 @@ function CrazyEightsPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
