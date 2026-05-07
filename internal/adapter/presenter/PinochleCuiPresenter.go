@@ -2,44 +2,59 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// pinochleMeldTypeName メルド種類名
-var pinochleMeldTypeName = map[domain.PinochleMeldType]string{
-	domain.PinochleMeldDix:                "ディクス",
-	domain.PinochleMeldCommonMarriage:     "コモンマリッジ",
-	domain.PinochleMeldRoyalMarriage:      "ロイヤルマリッジ",
-	domain.PinochleMeldPinochle:           "ピノクル",
-	domain.PinochleMeldJacksAround:        "ジャックアラウンド",
-	domain.PinochleMeldQueensAround:       "クイーンアラウンド",
-	domain.PinochleMeldKingsAround:        "キングアラウンド",
-	domain.PinochleMeldAcesAround:         "エースアラウンド",
-	domain.PinochleMeldRun:                "ラン",
-	domain.PinochleMeldDoublePinochle:     "ダブルピノクル",
-	domain.PinochleMeldDoubleJacksAround:  "ダブルジャックアラウンド",
-	domain.PinochleMeldDoubleQueensAround: "ダブルクイーンアラウンド",
-	domain.PinochleMeldDoubleKingsAround:  "ダブルキングアラウンド",
-	domain.PinochleMeldDoubleAcesAround:   "ダブルエースアラウンド",
-	domain.PinochleMeldDoubleRun:          "ダブルラン",
+// pinochleMeldTypeKey maps a meld type constant to the i18n key holding
+// its localized name. The lookup indirection lets the displayed string
+// follow the active locale.
+var pinochleMeldTypeKey = map[domain.PinochleMeldType]string{
+	domain.PinochleMeldDix:                "pinochle.meldDix",
+	domain.PinochleMeldCommonMarriage:     "pinochle.meldCommonMarriage",
+	domain.PinochleMeldRoyalMarriage:      "pinochle.meldRoyalMarriage",
+	domain.PinochleMeldPinochle:           "pinochle.meldPinochle",
+	domain.PinochleMeldJacksAround:        "pinochle.meldJacksAround",
+	domain.PinochleMeldQueensAround:       "pinochle.meldQueensAround",
+	domain.PinochleMeldKingsAround:        "pinochle.meldKingsAround",
+	domain.PinochleMeldAcesAround:         "pinochle.meldAcesAround",
+	domain.PinochleMeldRun:                "pinochle.meldRun",
+	domain.PinochleMeldDoublePinochle:     "pinochle.meldDoublePinochle",
+	domain.PinochleMeldDoubleJacksAround:  "pinochle.meldDoubleJacksAround",
+	domain.PinochleMeldDoubleQueensAround: "pinochle.meldDoubleQueensAround",
+	domain.PinochleMeldDoubleKingsAround:  "pinochle.meldDoubleKingsAround",
+	domain.PinochleMeldDoubleAcesAround:   "pinochle.meldDoubleAcesAround",
+	domain.PinochleMeldDoubleRun:          "pinochle.meldDoubleRun",
+}
+
+// pinochleMeldName returns the localized meld name for the given type, or
+// the type's numeric form when the key is missing (defensive fallback for
+// future meld types added to the domain layer before the locale catches up).
+func pinochleMeldName(t domain.PinochleMeldType) string {
+	if key, ok := pinochleMeldTypeKey[t]; ok {
+		return i18n.T(key)
+	}
+	return fmt.Sprintf("meld#%d", int(t))
 }
 
 // pinochlePlayerStr returns the display string for a single Pinochle player.
 func pinochlePlayerStr(player *domain.PinochlePlayer, i int) string {
 	var b strings.Builder
 	name := cuiPlayerName(player, i)
-	fmt.Fprintf(&b, "%s: チーム%d ビッド:%d メルド:%d点 トリック:%dT/%d点 %d枚\n",
-		name,
-		player.GetTeam(),
-		player.GetBid(),
-		player.GetMeldScore(),
-		player.GetTrickCount(),
-		player.GetTrickPoints(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("pinochle.playerLine",
+		"name", name,
+		"team", strconv.Itoa(player.GetTeam()),
+		"bid", strconv.Itoa(player.GetBid()),
+		"meldPts", strconv.Itoa(player.GetMeldScore()),
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"trickPts", strconv.Itoa(player.GetTrickPoints()),
+		"cards", strconv.Itoa(player.GetCardsSize()),
+	))
+	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player))
 		b.WriteString("\n")
@@ -47,61 +62,76 @@ func pinochlePlayerStr(player *domain.PinochlePlayer, i int) string {
 	return b.String()
 }
 
-// PinochleCuiPresenter ピノクルCUIプレゼンタークラス
+// PinochleCuiPresenter renders the Pinochle CUI view.
 type PinochleCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *PinochleCuiPresenter) Output(g interfaces.PinochleGame, lastErr error) string {
-	return buildCuiOutput("Pinochle (ピノクル)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  トリック: %d\n", g.GetRoundNumber(), g.GetTrickNumber())
-		fmt.Fprintf(b, "ディーラー: %s\n", cuiPlayerName(g.GetPlayer(g.GetDealerIdx()), g.GetDealerIdx()))
+	return buildCuiOutput(i18n.T("pinochle.helpTitle"), func(b *strings.Builder) {
+		fmt.Fprintln(b, i18n.Tf("pinochle.round",
+			"round", strconv.Itoa(g.GetRoundNumber()),
+			"trick", strconv.Itoa(g.GetTrickNumber())))
+		fmt.Fprintln(b, i18n.Tf("pinochle.dealer",
+			"name", cuiPlayerName(g.GetPlayer(g.GetDealerIdx()), g.GetDealerIdx())))
 
 		trumpSuit := g.GetTrumpSuit()
-		if trumpSuit > 0 && g.GetHighestBidder() >= 0 {
-			fmt.Fprintf(b, "切り札: %s (ビッドチーム: チーム%d)\n", cuiSuitName(trumpSuit), g.GetPlayer(g.GetHighestBidder()).GetTeam())
-		} else if trumpSuit > 0 {
-			fmt.Fprintf(b, "切り札: %s\n", cuiSuitName(trumpSuit))
-		} else {
-			b.WriteString("切り札: 未決定\n")
+		switch {
+		case trumpSuit > 0 && g.GetHighestBidder() >= 0:
+			fmt.Fprintln(b, i18n.Tf("pinochle.trumpWithBidder",
+				"suit", cuiSuitName(trumpSuit),
+				"team", strconv.Itoa(g.GetPlayer(g.GetHighestBidder()).GetTeam())))
+		case trumpSuit > 0:
+			fmt.Fprintln(b, i18n.Tf("pinochle.trumpOnly", "suit", cuiSuitName(trumpSuit)))
+		default:
+			fmt.Fprintln(b, i18n.T("pinochle.trumpUndecided"))
 		}
 
-		fmt.Fprintf(b, "最高ビッド: %d", g.GetHighestBid())
 		if g.GetHighestBidder() >= 0 {
-			fmt.Fprintf(b, " (%s)", cuiPlayerName(g.GetPlayer(g.GetHighestBidder()), g.GetHighestBidder()))
+			fmt.Fprintln(b, i18n.Tf("pinochle.highestBidWithName",
+				"bid", strconv.Itoa(g.GetHighestBid()),
+				"name", cuiPlayerName(g.GetPlayer(g.GetHighestBidder()), g.GetHighestBidder())))
+		} else {
+			fmt.Fprintln(b, i18n.Tf("pinochle.highestBid", "bid", strconv.Itoa(g.GetHighestBid())))
 		}
-		b.WriteString("\n")
 
-		// チームスコア
-		fmt.Fprintf(b, "チーム0: %d点  チーム1: %d点\n", g.GetTeamScore(0), g.GetTeamScore(1))
+		// Team scores
+		fmt.Fprintln(b, i18n.Tf("pinochle.teamScores",
+			"a", strconv.Itoa(g.GetTeamScore(0)),
+			"b", strconv.Itoa(g.GetTeamScore(1))))
 
-		// プレイヤー情報
+		// Player rows
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(pinochlePlayerStr(g.GetPlayer(i), i))
 		}
 
-		// メルド情報
+		// Meld details (only during meld + round-end phases)
 		phase := g.GetPhase()
 		if phase == domain.PinochlePhaseMeld || phase == domain.PinochlePhaseRoundEnd {
 			melds := g.GetPlayerMelds()
 			for i := range domain.PinochlePlayerCnt {
 				if len(melds[i]) > 0 {
-					fmt.Fprintf(b, "%sのメルド:\n", cuiPlayerName(g.GetPlayer(i), i))
+					fmt.Fprintln(b, i18n.Tf("pinochle.playerMeldsHeader",
+						"name", cuiPlayerName(g.GetPlayer(i), i)))
 					for _, m := range melds[i] {
-						fmt.Fprintf(b, "  %s: %d点\n", pinochleMeldTypeName[m.Type], m.Points)
+						fmt.Fprintln(b, i18n.Tf("pinochle.playerMeldLine",
+							"type", pinochleMeldName(m.Type),
+							"points", strconv.Itoa(m.Points)))
 					}
 				}
 			}
 		}
 
-		// 現在のトリック
+		// Current trick
 		trick := g.GetCurrentTrick()
 		if len(trick) > 0 {
-			b.WriteString("テーブル: ")
+			b.WriteString(i18n.T("pinochle.tableLabel"))
 			for j, tc := range trick {
 				if j > 0 {
 					b.WriteString(", ")
 				}
-				fmt.Fprintf(b, "%s=%s", cuiPlayerName(g.GetPlayer(tc.PlayerIdx), tc.PlayerIdx), cuiCardStr(tc.Card))
+				b.WriteString(i18n.Tf("pinochle.tableCard",
+					"name", cuiPlayerName(g.GetPlayer(tc.PlayerIdx), tc.PlayerIdx),
+					"card", cuiCardStr(tc.Card)))
 			}
 			b.WriteString("\n")
 		}
@@ -110,59 +140,62 @@ func (p *PinochleCuiPresenter) Output(g interfaces.PinochleGame, lastErr error) 
 	})
 }
 
-// HintOutput ヒント情報を出力
+// HintOutput emits the current Pinochle hint. Multiple hint fields are
+// joined with a single space so future hints that combine, e.g.,
+// BidAmount + Pass don't render as run-on text. Today only one field is
+// populated at a time, but the join is cheap insurance against the next
+// PinochleHint variant.
 func (p *PinochleCuiPresenter) HintOutput(g interfaces.PinochleGame) string {
 	hint := g.GetHint()
 	if hint == nil {
-		return "ヒントなし"
+		return i18n.T("pinochle.hintNone")
 	}
-	var b strings.Builder
-	b.WriteString("ヒント: ")
+	var parts []string
 	if hint.BidAmount != nil {
-		fmt.Fprintf(&b, "ビッド %d", *hint.BidAmount)
+		parts = append(parts, i18n.Tf("pinochle.hintBid", "n", strconv.Itoa(*hint.BidAmount)))
 	}
 	if hint.Pass != nil && *hint.Pass {
-		b.WriteString("パス推奨")
+		parts = append(parts, i18n.T("pinochle.hintPass"))
 	}
 	if hint.Suit != nil {
-		fmt.Fprintf(&b, "スート %s", cuiSuitName(*hint.Suit))
+		parts = append(parts, i18n.Tf("pinochle.hintSuit", "suit", cuiSuitName(*hint.Suit)))
 	}
 	if hint.CardIndex != nil {
-		fmt.Fprintf(&b, "カード %d", *hint.CardIndex)
+		parts = append(parts, i18n.Tf("pinochle.hintCard", "idx", strconv.Itoa(*hint.CardIndex)))
 	}
-	return b.String()
+	return i18n.T("pinochle.hintPrefix") + strings.Join(parts, " ")
 }
 
-// ActionLogOutput 棋譜を出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *PinochleCuiPresenter) ActionLogOutput(g interfaces.PinochleGame) string {
 	return actionLogOutputText(g)
 }
 
-// buildCuiMessage CUI用メッセージを構築
+// buildCuiMessage writes the per-phase prompt or end-of-game banner.
 func (p *PinochleCuiPresenter) buildCuiMessage(b *strings.Builder, g interfaces.PinochleGame, lastErr error) {
 	if lastErr != nil {
-		fmt.Fprintf(b, "エラー: %s\n", lastErr.Error())
+		fmt.Fprintln(b, i18n.Tf("pinochle.errorPrefix", "err", lastErr.Error()))
 		return
 	}
 	if g.GetGameEndFlag() {
-		fmt.Fprintf(b, "ゲーム終了！ チーム%dの勝ち！\n", g.GetWinnerTeam())
+		fmt.Fprintln(b, i18n.Tf("pinochle.gameEndTeamWin", "team", strconv.Itoa(g.GetWinnerTeam())))
 		return
 	}
 	switch g.GetPhase() {
 	case domain.PinochlePhaseBid:
-		fmt.Fprintf(b, "%sのビッド番です。(bid <n> / pass)\n",
-			cuiPlayerName(g.GetPlayer(g.GetBidPlayerIdx()), g.GetBidPlayerIdx()))
+		fmt.Fprintln(b, i18n.Tf("pinochle.promptBid",
+			"name", cuiPlayerName(g.GetPlayer(g.GetBidPlayerIdx()), g.GetBidPlayerIdx())))
 	case domain.PinochlePhaseTrump:
-		fmt.Fprintf(b, "%sがトランプスートを選んでください。(trump <1-4>)\n",
-			cuiPlayerName(g.GetPlayer(g.GetCurrentPlayerIdx()), g.GetCurrentPlayerIdx()))
+		fmt.Fprintln(b, i18n.Tf("pinochle.promptTrump",
+			"name", cuiPlayerName(g.GetPlayer(g.GetCurrentPlayerIdx()), g.GetCurrentPlayerIdx())))
 	case domain.PinochlePhaseMeld:
-		b.WriteString("メルドフェーズです。(meld で確認して次に進む)\n")
+		fmt.Fprintln(b, i18n.T("pinochle.promptMeld"))
 	case domain.PinochlePhasePlay:
-		fmt.Fprintf(b, "%sの番です。(play <i>)\n",
-			cuiPlayerName(g.GetPlayer(g.GetCurrentPlayerIdx()), g.GetCurrentPlayerIdx()))
+		fmt.Fprintln(b, i18n.Tf("pinochle.promptPlay",
+			"name", cuiPlayerName(g.GetPlayer(g.GetCurrentPlayerIdx()), g.GetCurrentPlayerIdx())))
 	case domain.PinochlePhaseTrickEnd:
-		b.WriteString("トリック終了。(next で次のトリックへ)\n")
+		fmt.Fprintln(b, i18n.T("pinochle.promptTrickEnd"))
 	case domain.PinochlePhaseRoundEnd:
-		b.WriteString("ラウンド終了。(nextround で次のラウンドへ)\n")
+		fmt.Fprintln(b, i18n.T("pinochle.promptRoundEnd"))
 	}
 }
