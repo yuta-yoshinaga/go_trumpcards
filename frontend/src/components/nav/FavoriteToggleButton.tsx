@@ -28,10 +28,15 @@ interface FavoriteToggleButtonProps {
  */
 export function FavoriteToggleButton({ path, pressed, onToggle, className }: FavoriteToggleButtonProps) {
   const { t } = useTranslation('common');
+  // Static label per WAI-ARIA APG toggle button pattern: pairing a static
+  // aria-label with aria-pressed lets screen readers announce "Favorites,
+  // toggle button, pressed". A dynamic "Add/Remove" label here would
+  // communicate state twice (once via the label, once via aria-pressed)
+  // and confuse assistive tech.
   return (
     <button
       type="button"
-      aria-label={pressed ? t('nav.removeFavorite') : t('nav.addFavorite')}
+      aria-label={t('nav.favoriteGames')}
       aria-pressed={pressed}
       onClick={() => onToggle(path)}
       className={className(pressed)}

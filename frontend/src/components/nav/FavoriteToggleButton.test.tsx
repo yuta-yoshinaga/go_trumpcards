@@ -34,13 +34,17 @@ describe('FavoriteToggleButton', () => {
     expect(className).toHaveBeenCalledWith(true);
   });
 
-  it('uses different aria-labels for add vs. remove', () => {
+  it('exposes a static accessible name regardless of pressed state', () => {
+    // Per the WAI-ARIA APG toggle pattern, state is communicated via
+    // aria-pressed alone — the accessible name stays the noun ("Favorites")
+    // so screen readers announce "Favorites, toggle button, pressed/not pressed"
+    // instead of double-encoding the state in both label and pressed flag.
     const { rerender } = render(
       <FavoriteToggleButton path="/spades" pressed={false} onToggle={() => undefined} className={() => 'cls'} />,
     );
-    expect(screen.getByRole('button')).toHaveAccessibleName('お気に入りに追加');
+    expect(screen.getByRole('button')).toHaveAccessibleName('お気に入り');
 
     rerender(<FavoriteToggleButton path="/spades" pressed={true} onToggle={() => undefined} className={() => 'cls'} />);
-    expect(screen.getByRole('button')).toHaveAccessibleName('お気に入りから削除');
+    expect(screen.getByRole('button')).toHaveAccessibleName('お気に入り');
   });
 });
