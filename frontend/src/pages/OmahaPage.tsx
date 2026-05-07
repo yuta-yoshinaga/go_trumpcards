@@ -12,20 +12,15 @@ import { EquityDisplay } from '../components/EquityDisplay';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HudStats } from '../components/HudStats';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
@@ -34,7 +29,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -201,8 +195,6 @@ function OmahaPageContent() {
     enabled: canAct && !loading,
   });
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return (
       <GameSkeleton
@@ -212,30 +204,39 @@ function OmahaPageContent() {
     );
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.omaha.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.omaha')} />
-      {/* Phase indicator + info bar */}
-      <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
-        <span data-tutorial="oh-pot-display">
-          {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
-        </span>
-        <span>
-          SB/BB:{' '}
-          <strong>
-            {state?.smallBlind ?? 0}/{state?.bigBlind ?? 0}
-          </strong>
-        </span>
-        <span>
-          {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
-        </span>
-        {state?.tournamentMode && (
-          <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
-        )}
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/omaha" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.omaha')}
+      gameThemeBg={gameTheme.omaha.bg}
+      phaseName={phaseNames[phase] ?? t('phase.init')}
+      isHumanTurn={canAct}
+      gamePath="/omaha"
+      gameEndFlag={phase === OmahaPhase.END}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span data-tutorial="oh-pot-display">
+            {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
+          </span>
+          <span>
+            SB/BB:{' '}
+            <strong>
+              {state?.smallBlind ?? 0}/{state?.bigBlind ?? 0}
+            </strong>
+          </span>
+          <span>
+            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+          </span>
+          {state?.tournamentMode && (
+            <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
+          )}
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -529,8 +530,6 @@ function OmahaPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={phase === OmahaPhase.END} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
