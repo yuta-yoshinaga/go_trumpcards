@@ -143,7 +143,7 @@ function EgyptianRatscrewPageContent() {
       title={tc('nav.egyptianratscrew')}
       gameThemeBg={gameTheme.egyptianratscrew.bg}
       phaseName={phaseName}
-      isHumanTurn={!isGameEnd && state.isHumanTurn}
+      isHumanTurn={isGameEnd ? undefined : state.isHumanTurn}
       gamePath="/egyptianratscrew"
       gameEndFlag={isGameEnd}
       winShow={humanWon}

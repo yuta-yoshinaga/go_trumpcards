@@ -145,7 +145,7 @@ function SlapjackPageContent() {
       title={tc('nav.slapjack')}
       gameThemeBg={gameTheme.slapjack.bg}
       phaseName={phaseName}
-      isHumanTurn={!isGameEnd && state.isHumanTurn}
+      isHumanTurn={isGameEnd ? undefined : state.isHumanTurn}
       gamePath="/slapjack"
       gameEndFlag={isGameEnd}
       winShow={humanWon}
