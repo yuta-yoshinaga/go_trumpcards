@@ -207,7 +207,7 @@ function EuchrePageContent() {
       phaseName={phaseNames[state.phase]}
       isHumanTurn={isHumanBidTurn || isHumanTurn || isHumanDiscard}
       gamePath="/euchre"
-      gameEndFlag={!!state.gameEndFlag}
+      gameEndFlag={isGameEnd}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}

@@ -178,7 +178,7 @@ function DurakPageContent() {
       phaseName={phaseName}
       isHumanTurn={isHumanTurn}
       gamePath="/durak"
-      gameEndFlag={!!state.gameEndFlag}
+      gameEndFlag={isGameEnd}
       winShow={humanWon}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}

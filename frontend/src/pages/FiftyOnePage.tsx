@@ -160,8 +160,8 @@ function FiftyOnePageContent() {
       phaseName={phaseName}
       isHumanTurn={isHumanTurn}
       gamePath="/fiftyone"
-      gameEndFlag={!!isGameEnd}
-      winShow={isGameEnd && humanWon}
+      gameEndFlag={isGameEnd}
+      winShow={humanWon}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
