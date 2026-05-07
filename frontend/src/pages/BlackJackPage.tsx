@@ -25,16 +25,12 @@ import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { LossFeedback } from '../components/motion/LossFeedback';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -42,7 +38,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -197,7 +192,6 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
     phase === BjPhase.EARLY_SURRENDER ||
     phase === BjPhase.INSURANCE ||
     phase === BjPhase.ACTION;
-  useGameRoundGuard(isRoundInProgress);
   const hands = state?.hands ?? [];
   const currentHandIdx = state?.currentHandIdx ?? 0;
   const currentHand = hands[currentHandIdx];
@@ -267,40 +261,47 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
     );
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme[themeKey].bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc(navTitleKey)} />
-      {/* Phase indicator + info bar */}
-      <PhaseIndicator
-        phaseName={phaseNames[phase] ?? t('phase.bet')}
-        isHumanTurn={
-          phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER
-            ? true
-            : phase === BjPhase.END
-              ? false
-              : undefined
-        }
-      >
-        <span>
-          {t('player')} {state.player.chips} chips
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath={gamePath} />
-        <span>
-          {t('deck')} {state.deckCount}
-          {t('deckUnit')}
-        </span>
-        {countingEnabled && (
+    <GamePageShell
+      title={tc(navTitleKey)}
+      gameThemeBg={gameTheme[themeKey].bg}
+      phaseName={phaseNames[phase] ?? t('phase.bet')}
+      isHumanTurn={
+        phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER ? true : phase === BjPhase.END ? false : undefined
+      }
+      gamePath={gamePath}
+      gameEndFlag={!isRoundInProgress}
+      winShow={phase === BjPhase.END}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={false}
+      confirmReset={() => {}}
+      cancelReset={() => {}}
+      headerExtra={
+        <>
           <span>
-            {t(`countingSystemNames.${countingSystem}`)} RC={state.runningCount}{' '}
-            {countingSystem === BJ_COUNTING_KO ? t('trueCountNA') : `TC=${state.trueCount.toFixed(1)}`}
+            {t('player')} {state.player.chips} chips
           </span>
-        )}
-        <span>
-          {tc('label.dealer')} {state.dealer.chips} chips
-        </span>
-      </PhaseIndicator>
-
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+      headerEnd={
+        <>
+          <span>
+            {t('deck')} {state.deckCount}
+            {t('deckUnit')}
+          </span>
+          {countingEnabled && (
+            <span>
+              {t(`countingSystemNames.${countingSystem}`)} RC={state.runningCount}{' '}
+              {countingSystem === BJ_COUNTING_KO ? t('trueCountNA') : `TC=${state.trueCount.toFixed(1)}`}
+            </span>
+          )}
+          <span>
+            {tc('label.dealer')} {state.dealer.chips} chips
+          </span>
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -615,8 +616,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={phase === BjPhase.END} onCelebrate={() => playSound('winFanfare')} />
       <LossFeedback show={hands.some((h) => h.busted)} />
-    </div>
+    </GamePageShell>
   );
 }
