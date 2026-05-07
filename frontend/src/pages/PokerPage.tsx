@@ -190,6 +190,10 @@ function PokerPageContent() {
       isHumanTurn={canAct || canExchange}
       gamePath="/poker"
       gameEndFlag={phase === PokerPhase.END}
+      winShow={
+        phase === PokerPhase.END &&
+        state.roundResults.some((r) => state.players[r.playerIdx]?.isHuman && r.wonAmount > 0)
+      }
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
