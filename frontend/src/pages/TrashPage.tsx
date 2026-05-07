@@ -6,17 +6,12 @@ import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { LandscapeBanner } from '../components/LandscapeBanner';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -24,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnOutline, focusRingWhite } from '../styles/buttonStyles';
@@ -179,7 +173,6 @@ function TrashPageContent() {
     },
     [apiCall, state, playSound],
   );
-  useGameRoundGuard(isGameRoundActive(state));
 
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
@@ -198,17 +191,26 @@ function TrashPageContent() {
         : t('phase.playerTurn');
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.trash.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.trash')} />
-      <PhaseIndicator phaseName={phaseName}>
-        <span>
-          {tc('moveCount', { defaultValue: 'Moves' })}: {state.moveCount}
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/trash" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.trash')}
+      gameThemeBg={gameTheme.trash.bg}
+      phaseName={phaseName}
+      gamePath="/trash"
+      gameEndFlag={isGameOver}
+      winShow={isGameOver && state.winner === 0}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>
+            {tc('moveCount', { defaultValue: 'Moves' })}: {state.moveCount}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -298,10 +300,7 @@ function TrashPageContent() {
           </div>
         </>
       )}
-
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      {isGameOver && state.winner === 0 && <WinCelebration show={true} />}
-    </div>
+    </GamePageShell>
   );
 }
 
