@@ -82,6 +82,10 @@ var globalNamespaces = map[string]bool{
 
 func loadTranslations(fsys fs.FS, lang string) map[string]string {
 	result := map[string]string{}
+	// Adding a file here that should be merged into the global namespace
+	// (no "<file>." key prefix) requires also adding it to globalNamespaces
+	// above. The two declarations are companions: this slice picks the file
+	// up at all, and the map decides whether its keys are prefixed.
 	files := []string{"common", "cui_common", "blackjack", "poker", "oldmaid", "daifugo", "sevens", "doubt", "holdem", "omaha", "omahahilo", "shortdeck", "hearts", "memory", "klondike", "freecell", "baccarat", "spades", "crazyeights", "ginrummy", "spider", "napoleon", "indianpoker", "videopoker", "euchre", "pyramid", "cribbage", "tripeaks", "threecard", "ohhell", "pineapple", "crazypineapple", "speed", "pigtail", "sevencardstud", "clocksolitaire", "twotenjack", "caribbeanstud", "texasholdembonus", "war", "canfield", "fiftyone", "yukon", "whist", "pageone", "reddog", "razz", "badugi", "scorpion", "accordion", "trash", "spanish21", "skat", "shithead", "nertz", "slapjack", "egyptianratscrew", "tonk", "casinowar", "pinochle"}
 	for _, file := range files {
 		path := "locales/" + lang + "/" + file + ".json"
