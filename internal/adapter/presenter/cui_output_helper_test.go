@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestCuiTrickBlock(t *testing.T) {
@@ -34,6 +36,14 @@ func TestCuiTrickBlock(t *testing.T) {
 		}
 		cuiTrickBlock(&b, tricks, getIdx, getCardStr, getName)
 		assert.Equal(t, "トリック: You=S-A, CPU1=H-5\n", b.String())
+	})
+	// Issue #1699 Phase 1: trick line label follows the active locale.
+	t.Run("with cards (en)", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		var b strings.Builder
+		cuiTrickBlock(&b, []fakeTrick{{pidx: 0, cardStr: "S-A"}}, getIdx, getCardStr, getName)
+		assert.Equal(t, "Trick: You=S-A\n", b.String())
 	})
 }
 
@@ -70,6 +80,24 @@ func TestLookupHintReason(t *testing.T) {
 	})
 	t.Run("nil game reasons uses shared", func(t *testing.T) {
 		assert.Equal(t, "低いカードでリード", lookupHintReason("lead_low", nil))
+	})
+	// Issue #1699 Phase 1: shared hint-reason strings follow the active locale
+	// instead of always rendering as Japanese.
+	t.Run("shared reason in English", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		assert.Equal(t, "Follow the lead suit", lookupHintReason("follow_suit", nil))
+		assert.Equal(t, "Lead with a low card", lookupHintReason("lead_low", nil))
+	})
+	t.Run("game-specific override still wins under English", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		// Game-specific reasons are not yet i18n-aware, so they still pass through
+		// verbatim. The English assertion intentionally keeps the original
+		// (non-translated) game-specific text to document the boundary: the
+		// shared layer is locale-aware, per-game overrides are not (Phase 2/3).
+		override := map[string]string{"follow_suit": "Custom"}
+		assert.Equal(t, "Custom", lookupHintReason("follow_suit", override))
 	})
 }
 

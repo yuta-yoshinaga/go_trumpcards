@@ -1,0 +1,21 @@
+{
+  "cuiPlayerYou": "あなた",
+  "cuiPlayerCpu": "CPU {{idx}}",
+  "cuiPlayerUnknown": "UNKNOWN",
+  "cuiBettingActionFold": "フォールド",
+  "cuiBettingActionCheck": "チェック",
+  "cuiBettingActionCall": "コール",
+  "cuiBettingActionBet": "ベット",
+  "cuiBettingActionRaise": "レイズ",
+  "cuiBettingActionAllIn": "オールイン",
+  "cuiBettingActionUnknown": "不明",
+  "cuiTrickLine": "トリック: {{cards}}",
+  "cuiHintFollowSuit": "リードスートに追随",
+  "cuiHintLeadLow": "低いカードでリード",
+  "cuiHintLeadStrong": "強いカードでリード",
+  "cuiHintDiscardHigh": "高いカードを捨てる",
+  "cuiHintTrumpCut": "切り札でカット",
+  "cuiHintStrategicBid": "戦略的なビッド",
+  "cuiHintStrongHand": "強い手札",
+  "cuiHintWeakHand": "弱い手札"
+}

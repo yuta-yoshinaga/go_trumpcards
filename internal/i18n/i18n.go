@@ -69,11 +69,22 @@ func Tf(key string, params ...string) string {
 	return s
 }
 
+// globalNamespaces lists locale files whose keys are merged into the
+// translation map without a "<file>." prefix. Game files are namespaced
+// instead (e.g. "blackjack.helpTitle") so distinct games can reuse the
+// same short key. cui_common is shared by every CUI presenter and lives
+// alongside common.json — its keys all begin with "cui*" so collisions
+// with common.json are impossible.
+var globalNamespaces = map[string]bool{
+	"common":     true,
+	"cui_common": true,
+}
+
 func loadTranslations(fsys fs.FS, lang string) map[string]string {
 	result := map[string]string{}
-	games := []string{"common", "blackjack", "poker", "oldmaid", "daifugo", "sevens", "doubt", "holdem", "omaha", "omahahilo", "shortdeck", "hearts", "memory", "klondike", "freecell", "baccarat", "spades", "crazyeights", "ginrummy", "spider", "napoleon", "indianpoker", "videopoker", "euchre", "pyramid", "cribbage", "tripeaks", "threecard", "ohhell", "pineapple", "crazypineapple", "speed", "pigtail", "sevencardstud", "clocksolitaire", "twotenjack", "caribbeanstud", "texasholdembonus", "war", "canfield", "fiftyone", "yukon", "whist", "pageone", "reddog", "razz", "badugi", "scorpion", "accordion", "trash", "spanish21", "skat", "shithead", "nertz", "slapjack", "egyptianratscrew", "tonk", "casinowar"}
-	for _, game := range games {
-		path := "locales/" + lang + "/" + game + ".json"
+	files := []string{"common", "cui_common", "blackjack", "poker", "oldmaid", "daifugo", "sevens", "doubt", "holdem", "omaha", "omahahilo", "shortdeck", "hearts", "memory", "klondike", "freecell", "baccarat", "spades", "crazyeights", "ginrummy", "spider", "napoleon", "indianpoker", "videopoker", "euchre", "pyramid", "cribbage", "tripeaks", "threecard", "ohhell", "pineapple", "crazypineapple", "speed", "pigtail", "sevencardstud", "clocksolitaire", "twotenjack", "caribbeanstud", "texasholdembonus", "war", "canfield", "fiftyone", "yukon", "whist", "pageone", "reddog", "razz", "badugi", "scorpion", "accordion", "trash", "spanish21", "skat", "shithead", "nertz", "slapjack", "egyptianratscrew", "tonk", "casinowar"}
+	for _, file := range files {
+		path := "locales/" + lang + "/" + file + ".json"
 		data, err := fs.ReadFile(fsys, path)
 		if err != nil {
 			continue
@@ -83,10 +94,10 @@ func loadTranslations(fsys fs.FS, lang string) map[string]string {
 			continue
 		}
 		for k, v := range m {
-			if game == "common" {
+			if globalNamespaces[file] {
 				result[k] = v
 			} else {
-				result[game+"."+k] = v
+				result[file+"."+k] = v
 			}
 		}
 	}
