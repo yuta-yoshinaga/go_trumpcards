@@ -175,6 +175,34 @@ func TestT_HelpLines_GamePrefixed_en(t *testing.T) {
 	assert.NotEqual(t, "poker.helpTitle", i18n.T("poker.helpTitle"))
 }
 
+// TestT_CuiCommonKeys_Unprefixed verifies issue #1699 Phase 1: cui_common.json
+// keys are loaded into the global namespace (no "cui_common." prefix) so CUI
+// presenters can call i18n.T("cuiPlayerYou") directly. The "cui*" prefix on
+// every key prevents collisions with common.json.
+func TestT_CuiCommonKeys_Unprefixed(t *testing.T) {
+	i18n.SetLang("ja")
+	assert.Equal(t, "あなた", i18n.T("cuiPlayerYou"))
+	assert.Equal(t, "フォールド", i18n.T("cuiBettingActionFold"))
+	assert.Equal(t, "リードスートに追随", i18n.T("cuiHintFollowSuit"))
+
+	i18n.SetLang("en")
+	assert.Equal(t, "You", i18n.T("cuiPlayerYou"))
+	assert.Equal(t, "Fold", i18n.T("cuiBettingActionFold"))
+	assert.Equal(t, "Follow the lead suit", i18n.T("cuiHintFollowSuit"))
+}
+
+// TestTf_CuiCpuName_BothLangs verifies the {{idx}} substitution path.
+// Same English/Japanese template, but exercised through the loader to
+// guard against the prefix logic regressing.
+func TestTf_CuiCpuName_BothLangs(t *testing.T) {
+	for _, lang := range []string{"ja", "en"} {
+		t.Run(lang, func(t *testing.T) {
+			i18n.SetLang(lang)
+			assert.Equal(t, "CPU 2", i18n.Tf("cuiPlayerCpu", "idx", "2"))
+		})
+	}
+}
+
 // Reset to ja after all tests to avoid polluting other packages
 func TestSetLang_ResetToJa(t *testing.T) {
 	i18n.SetLang("ja")

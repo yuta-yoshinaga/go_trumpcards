@@ -1,3 +1,6 @@
+//go:build test
+// +build test
+
 package presenter
 
 import (
@@ -7,6 +10,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestCuiCardStr(t *testing.T) {
@@ -373,6 +377,50 @@ func TestCuiBettingActionName(t *testing.T) {
 			assert.Equal(t, tt.expected, cuiBettingActionName(tt.action))
 		})
 	}
+}
+
+// TestCuiBettingActionName_English verifies issue #1699 Phase 1: betting
+// action names follow the active locale rather than always rendering as
+// hardcoded Japanese.
+func TestCuiBettingActionName_English(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja") // restore default for other tests
+
+	tests := []struct {
+		action   int
+		expected string
+	}{
+		{domain.PokerActionFold, "Fold"},
+		{domain.PokerActionCheck, "Check"},
+		{domain.PokerActionCall, "Call"},
+		{domain.PokerActionBet, "Bet"},
+		{domain.PokerActionRaise, "Raise"},
+		{domain.PokerActionAllIn, "All-in"},
+		{999, "Unknown"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.expected, func(t *testing.T) {
+			assert.Equal(t, tt.expected, cuiBettingActionName(tt.action))
+		})
+	}
+}
+
+// TestCuiPlayerName_English verifies issue #1699 Phase 1: player display
+// names follow the active locale ("You" / "CPU N" instead of always
+// "あなた" / "CPU N").
+func TestCuiPlayerName_English(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+
+	assert.Equal(t, "You", cuiPlayerName(&mockCuiPlayer{isHuman: true}, 0))
+	assert.Equal(t, "CPU 2", cuiPlayerName(&mockCuiPlayer{isHuman: false}, 2))
+	assert.Equal(t, "UNKNOWN", cuiPlayerName[*mockCuiPlayer](nil, 0))
 }
 
 func TestIsRedSuit(t *testing.T) {

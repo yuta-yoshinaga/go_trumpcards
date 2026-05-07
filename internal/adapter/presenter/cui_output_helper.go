@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // buildCuiOutput constructs a CUI output string with a standard "==========" header block and footer.
@@ -37,7 +38,7 @@ func cuiTrickBlock[TC any](b *strings.Builder, trick []TC, playerIdx func(TC) in
 		pidx := playerIdx(tc)
 		parts[i] = fmt.Sprintf("%s=%s", getPlayerName(pidx), cardStr(tc))
 	}
-	fmt.Fprintf(b, "トリック: %s\n", strings.Join(parts, ", "))
+	fmt.Fprintln(b, i18n.Tf("cuiTrickLine", "cards", strings.Join(parts, ", ")))
 }
 
 // cuiErrorBlock writes the error line if lastErr is non-nil.
@@ -47,16 +48,18 @@ func cuiErrorBlock(b *strings.Builder, lastErr error) {
 	}
 }
 
-// sharedHintReasons holds translations common across trick-taking games.
-var sharedHintReasons = map[string]string{
-	"follow_suit":   "リードスートに追随",
-	"lead_low":      "低いカードでリード",
-	"lead_strong":   "強いカードでリード",
-	"discard_high":  "高いカードを捨てる",
-	"trump_cut":     "切り札でカット",
-	"strategic_bid": "戦略的なビッド",
-	"strong_hand":   "強い手札",
-	"weak_hand":     "弱い手札",
+// sharedHintReasonKeys maps a hint-reason identifier to the i18n key
+// shared across trick-taking games. The displayed string follows the
+// active locale via i18n.T (issue #1699 Phase 1).
+var sharedHintReasonKeys = map[string]string{
+	"follow_suit":   "cuiHintFollowSuit",
+	"lead_low":      "cuiHintLeadLow",
+	"lead_strong":   "cuiHintLeadStrong",
+	"discard_high":  "cuiHintDiscardHigh",
+	"trump_cut":     "cuiHintTrumpCut",
+	"strategic_bid": "cuiHintStrategicBid",
+	"strong_hand":   "cuiHintStrongHand",
+	"weak_hand":     "cuiHintWeakHand",
 }
 
 // lookupHintReason looks up a hint reason string from game-specific map, then shared map.
@@ -64,8 +67,8 @@ func lookupHintReason(reason string, gameReasons map[string]string) string {
 	if s, ok := gameReasons[reason]; ok {
 		return s
 	}
-	if s, ok := sharedHintReasons[reason]; ok {
-		return s
+	if key, ok := sharedHintReasonKeys[reason]; ok {
+		return i18n.T(key)
 	}
 	return reason
 }
