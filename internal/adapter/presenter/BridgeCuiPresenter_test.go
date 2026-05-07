@@ -12,6 +12,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // setupBridgeCuiMock creates a MockBridgeGame with sensible defaults for CUI tests.
@@ -452,5 +453,77 @@ func TestBridgeCuiPresenter_HintOutput(t *testing.T) {
 			result := p.HintOutput(m)
 			assert.Contains(t, result, expected, "reason: "+key)
 		}
+	})
+}
+
+// TestBridgeCuiPresenter_English verifies issue #1699 Phase 2: every
+// previously-hardcoded Japanese string in BridgeCuiPresenter now follows
+// the active locale. The default ja path is exercised by the assertions
+// above; this suite re-runs Output / HintOutput under LANG=en and checks
+// the English keys win out.
+func TestBridgeCuiPresenter_English(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	p := new(presenter.BridgeCuiPresenter)
+
+	t.Run("output uses English headers and prompts", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Contract Bridge")
+		assert.Contains(t, result, "Round: 1")
+		assert.Contains(t, result, "Trick: 1")
+		assert.Contains(t, result, "Dealer: You")
+		assert.Contains(t, result, "Trump: SPADE")
+		assert.Contains(t, result, "Vulnerability:")
+		assert.Contains(t, result, "Team 0:")
+		assert.NotContains(t, result, "ラウンド") // no Japanese leakage
+	})
+
+	t.Run("output uses English game-end banner", func(t *testing.T) {
+		m, _ := setupBridgeCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerTeam")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerTeam").Return(0)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Game over!")
+		assert.Contains(t, result, "Team 0 wins")
+		assert.NotContains(t, result, "ゲーム終了")
+	})
+
+	t.Run("hint none uses English", func(t *testing.T) {
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetHint").Return((*domain.BridgeHint)(nil))
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "No hint available")
+	})
+
+	t.Run("hint card with bridge-specific reason", func(t *testing.T) {
+		idx := 0
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetHint").Return(&domain.BridgeHint{CardIndex: &idx, Reason: "support_partner"})
+		player := domain.NewBridgePlayer(true, 0)
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		m.On("GetPlayer", 0).Return(player)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "support partner")
+		assert.NotContains(t, result, "パートナー")
+	})
+
+	// strategic_bid is intentionally NOT in bridgeHintReasonKeys — it lives
+	// in cui_common (Phase 1) so Bridge / Spades / Skat / OhHell / Napoleon
+	// share one translation. Pin the shared-fallthrough path under en.
+	t.Run("strategic_bid falls through to cui_common in English", func(t *testing.T) {
+		idx := 0
+		m := new(interfaces.MockBridgeGame)
+		m.On("GetHint").Return(&domain.BridgeHint{CardIndex: &idx, Reason: "strategic_bid"})
+		player := domain.NewBridgePlayer(true, 0)
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		m.On("GetPlayer", 0).Return(player)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "strategic bid")
 	})
 }
