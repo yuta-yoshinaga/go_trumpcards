@@ -162,7 +162,7 @@ function PageOnePageContent() {
       phaseName={phaseNames[state.phase]}
       isHumanTurn={isHumanTurn || isHumanMustDeclare}
       gamePath="/pageone"
-      gameEndFlag={!!state.gameEndFlag}
+      gameEndFlag={!!isGameEnd}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
