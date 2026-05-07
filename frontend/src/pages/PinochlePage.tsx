@@ -7,22 +7,16 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, usePinochleGame } from '../hooks/usePinochleGame';
 import { useSound } from '../providers/SoundProvider';
@@ -184,8 +178,6 @@ function PinochlePageContent() {
     return new Set<string>(meld.cards.map((c) => `${c.design}-${c.value}`));
   }, [state, highlightedMeldIdx]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state) {
     return (
       <div className="p-4 text-center text-ds-text-primary">
@@ -203,14 +195,21 @@ function PinochlePageContent() {
   const isGameEnd = phase === PinochlePhase.GAME_END || state.gameEndFlag;
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pinochle.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.pinochle')} />
-      <PhaseIndicator phaseName={phaseNames[phase]} isHumanTurn={isBidTurn || isTrumpTurn || isPlayTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/pinochle" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.pinochle')}
+      gameThemeBg={gameTheme.pinochle.bg}
+      phaseName={phaseNames[phase]}
+      isHumanTurn={isBidTurn || isTrumpTurn || isPlayTurn}
+      gamePath="/pinochle"
+      gameEndFlag={!!isGameEnd}
+      winShow={isGameEnd}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -465,8 +464,6 @@ function PinochlePageContent() {
           </GameFooter>
         </>
       )}
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      <WinCelebration show={isGameEnd} onCelebrate={() => playSound('winFanfare')} />
-    </div>
+    </GamePageShell>
   );
 }
