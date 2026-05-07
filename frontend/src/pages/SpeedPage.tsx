@@ -7,24 +7,18 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SpeedSkeleton } from '../components/skeleton/SpeedSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
 import { useSound } from '../providers/SoundProvider';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -71,7 +65,6 @@ function SpeedPageContent() {
     handleConfigChange,
     handleToggle,
   } = useSpeedGame();
-  useGameRoundGuard(!!state && !state.gameEndFlag);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -157,14 +150,21 @@ function SpeedPageContent() {
       : t('phase.play');
 
   return (
-    <div className="flex flex-col h-full gap-2 p-2" aria-busy={loading}>
-      <GamePageHeading title={tc('nav.speed')} />
-      <PhaseIndicator phaseName={phaseName} isHumanTurn={isPlayPhase}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/speed" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.speed')}
+      gameThemeBg=""
+      phaseName={phaseName}
+      isHumanTurn={isPlayPhase}
+      gamePath="/speed"
+      gameEndFlag={isGameEnd}
+      winShow={!!isGameEnd && humanWon}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -341,8 +341,6 @@ function SpeedPageContent() {
           </GameFooter>
         </>
       )}
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-      <WinCelebration show={!!isGameEnd && humanWon} onCelebrate={() => playSound('winFanfare')} />
-    </div>
+    </GamePageShell>
   );
 }
