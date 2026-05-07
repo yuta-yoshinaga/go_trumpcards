@@ -135,7 +135,7 @@ function PresidentPageContent() {
       isHumanTurn={isHumanTurn}
       gamePath="/president"
       gameEndFlag={!!isGameEnd}
-      winShow={isGameEnd && humanWon}
+      winShow={humanWon}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
