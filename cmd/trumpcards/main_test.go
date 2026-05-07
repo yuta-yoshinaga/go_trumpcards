@@ -1703,3 +1703,40 @@ func TestBuildHelpTextDocumentsStartFlag(t *testing.T) {
 		}
 	}
 }
+
+// TestBuildHelpTextGamesSummaryStaysCompact verifies issue #1694: the
+// top-level --help GAMES section must NOT enumerate every one of the 77
+// games (which used to push COMMANDS / OPTIONS off a 24-line terminal).
+// Instead it shows a category-grouped summary and points at
+// `trumpcards games` for the full list.
+func TestBuildHelpTextGamesSummaryStaysCompact(t *testing.T) {
+	helpText := buildHelpText()
+
+	// The category summary must appear, with a pointer to `games`.
+	for _, want := range []string{"GAMES:", "trumpcards games", "casino", "classic", "solo"} {
+		if !strings.Contains(helpText, want) {
+			t.Errorf("help text missing %q; got:\n%s", want, helpText)
+		}
+	}
+
+	// The COMMANDS section must reach the top of the screen on a 24-line
+	// terminal — this is the regression from #1694. With 6 USAGE lines and
+	// a 5-line GAMES summary we expect COMMANDS to land within the first 20
+	// lines (the issue had it at line ~84).
+	lines := strings.Split(helpText, "\n")
+	commandsIdx := -1
+	for i, line := range lines {
+		if strings.HasPrefix(line, "COMMANDS:") {
+			commandsIdx = i
+			break
+		}
+	}
+	if commandsIdx < 0 {
+		t.Fatalf("COMMANDS: header not found in help text")
+	}
+	// commandsIdx is 0-based; index 20 = line 21, which would violate the
+	// stated "first 20 lines" bound. Use >= so the guard is strict.
+	if commandsIdx >= 20 {
+		t.Errorf("COMMANDS: appears at line %d; expected <= 20 so it stays visible on a default terminal", commandsIdx+1)
+	}
+}
