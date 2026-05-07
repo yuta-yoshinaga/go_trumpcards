@@ -152,7 +152,7 @@ function SpeedPageContent() {
   return (
     <GamePageShell
       title={tc('nav.speed')}
-      gameThemeBg=""
+      gameThemeBg="gap-2 p-2"
       phaseName={phaseName}
       isHumanTurn={isPlayPhase}
       gamePath="/speed"
