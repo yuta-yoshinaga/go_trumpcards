@@ -9,25 +9,19 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { useSound } from '../providers/SoundProvider';
 import { btnSecondary } from '../styles/buttonStyles';
@@ -160,8 +154,6 @@ function SevensPageContent() {
     cfgEndStop,
     cfgJokerConsBan,
   ]);
-
-  useGameRoundGuard(!!state && !state.gameEndFlag);
 
   // Auto-place: when the player has just selected a joker and the board offers
   // exactly one legal slot, skip the redundant click and dispatch the placement
@@ -340,14 +332,20 @@ function SevensPageContent() {
   ];
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.sevens.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.sevens')} />
-      <PhaseIndicator phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')} isHumanTurn={isHumanTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/sevens" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.sevens')}
+      gameThemeBg={gameTheme.sevens.bg}
+      phaseName={state.gameEndFlag ? t('phase.end') : t('phase.play')}
+      isHumanTurn={isHumanTurn}
+      gamePath="/sevens"
+      gameEndFlag={!!state.gameEndFlag}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -503,8 +501,6 @@ function SevensPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={!!state?.gameEndFlag} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
