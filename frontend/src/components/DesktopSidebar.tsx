@@ -7,6 +7,7 @@ import { useFavoriteGames } from '../hooks/useFavoriteGames';
 import { useGameRouteSearch } from '../hooks/useGameRouteSearch';
 import { useRecentGames } from '../hooks/useRecentGames';
 import { focusRingWhite } from '../styles/buttonStyles';
+import { FavoriteToggleButton } from './nav/FavoriteToggleButton';
 import { NavLangToggle } from './nav/NavLangToggle';
 import { SoundToggle } from './SoundToggle';
 import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
@@ -160,14 +161,14 @@ export function DesktopSidebar() {
                       <span aria-hidden="true">{icon}</span>
                       {t(routeLabel)}
                     </Link>
-                    <button
-                      type="button"
-                      aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
-                      onClick={() => toggleFavorite(path)}
-                      className={`text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
-                    >
-                      {isFavorite(path) ? '★' : '☆'}
-                    </button>
+                    <FavoriteToggleButton
+                      path={path}
+                      pressed={isFavorite(path)}
+                      onToggle={toggleFavorite}
+                      className={() =>
+                        `text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`
+                      }
+                    />
                   </div>
                 ))
             )}
@@ -194,14 +195,14 @@ export function DesktopSidebar() {
                         <span aria-hidden="true">{icon}</span>
                         {t(routeLabel)}
                       </Link>
-                      <button
-                        type="button"
-                        aria-label={isFavorite(path) ? t('nav.removeFavorite') : t('nav.addFavorite')}
-                        onClick={() => toggleFavorite(path)}
-                        className={`text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`}
-                      >
-                        {isFavorite(path) ? '★' : '☆'}
-                      </button>
+                      <FavoriteToggleButton
+                        path={path}
+                        pressed={isFavorite(path)}
+                        onToggle={toggleFavorite}
+                        className={() =>
+                          `text-ds-accent min-w-[44px] min-h-[44px] flex items-center justify-center text-sm shrink-0 hover:scale-110 transition-transform ${focusRingWhite}`
+                        }
+                      />
                     </div>
                   ))}
                 </div>
