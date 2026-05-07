@@ -12,17 +12,12 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -30,7 +25,6 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { useSound } from '../providers/SoundProvider';
@@ -180,8 +174,6 @@ function PokerPageContent() {
     enabled: canExchange,
   });
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return (
       <GameSkeleton
@@ -191,29 +183,42 @@ function PokerPageContent() {
     );
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.poker.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.poker')} />
-      {/* Phase indicator + info bar */}
-      <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct || canExchange}>
-        <span>
-          {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
-        </span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/poker" />
-        <span>
-          {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
-        </span>
-        {(state?.jokerCount ?? 0) > 0 && (
+    <GamePageShell
+      title={tc('nav.poker')}
+      gameThemeBg={gameTheme.poker.bg}
+      phaseName={phaseNames[phase] ?? t('phase.init')}
+      isHumanTurn={canAct || canExchange}
+      gamePath="/poker"
+      gameEndFlag={phase === PokerPhase.END}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
           <span>
-            {t('joker')} <strong>{state?.jokerCount}</strong>
+            {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
           </span>
-        )}
-        {state?.isLowball && (
-          <span className="bg-ds-warning text-white px-2 py-0.5 rounded text-xs font-bold">[{t('lowballMode')}]</span>
-        )}
-      </PhaseIndicator>
-
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+      headerEnd={
+        <>
+          <span>
+            {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
+          </span>
+          {(state?.jokerCount ?? 0) > 0 && (
+            <span>
+              {t('joker')} <strong>{state?.jokerCount}</strong>
+            </span>
+          )}
+          {state?.isLowball && (
+            <span className="bg-ds-warning text-white px-2 py-0.5 rounded text-xs font-bold">[{t('lowballMode')}]</span>
+          )}
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -473,8 +478,6 @@ function PokerPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={phase === PokerPhase.END} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }

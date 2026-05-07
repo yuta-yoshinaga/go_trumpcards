@@ -9,13 +9,9 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
-import { PhaseIndicator } from '../components/PhaseIndicator';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -23,7 +19,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -134,7 +129,6 @@ function PitchPageContent() {
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useMountReset(execApi);
-  useGameRoundGuard(isGameRoundActive(state));
 
   // clear card selection when phase or trick changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: phase/trick deps drive re-evaluation
@@ -188,14 +182,19 @@ function PitchPageContent() {
   const phaseName = t(`phase.${PHASE_KEYS[state.phase] ?? 'bid'}`);
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pitch.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.pitch')} />
-      <PhaseIndicator phaseName={phaseName}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/pitch" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.pitch')}
+      gameThemeBg={gameTheme.pitch.bg}
+      phaseName={phaseName}
+      isHumanTurn={isHumanBidTurn || isHumanPlayTurn}
+      gamePath="/pitch"
+      gameEndFlag={isGameEnd}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -436,7 +435,6 @@ function PitchPageContent() {
           </GameFooter>
         </>
       )}
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
