@@ -7,7 +7,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -23,15 +22,10 @@ import { CliToggle } from './cli/CliToggle';
 import { ErrorAlert } from './ErrorAlert';
 import { GameFooter } from './GameFooter';
 import { GameMessageBox } from './GameMessageBox';
-import { GamePageHeading } from './GamePageHeading';
+import { GamePageShell } from './GamePageShell';
 import { GameResetButton } from './GameResetButton';
-import { GameResetDialog } from './GameResetDialog';
 import { HintTooltip } from './hint/HintTooltip';
-import { ManualButton } from './ManualButton';
 import { AnimatedCard } from './motion/AnimatedCard';
-import { WinCelebration } from './motion/WinCelebration';
-import { PhaseIndicator } from './PhaseIndicator';
-import { TutorialButton } from './tutorial/TutorialButton';
 
 /** Per-variant predicate identifying wild cards (Deuces Wild = twos, Joker Poker = jokers, default = none). */
 const WILD_CARD_PREDICATE: Record<'videopoker' | 'deuceswild' | 'jokerpoker', (card: Card) => boolean> = {
@@ -189,22 +183,32 @@ export function VideoPokerGameContent({
     bindings: actionBindings,
     enabled: !!state && !loading,
   });
-  useGameRoundGuard(isGameRoundActive(state));
 
   if (!state) return null;
 
   const displayHeld = isDrawPhase ? heldCards : (state.heldIndices ?? []);
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme[gameName].bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc(`nav.${gameName}`)} />
-      <PhaseIndicator phaseName={phaseName} isHumanTurn={isBetPhase || isDrawPhase}>
-        <span>{t('label.chips', { chips: state.chips })}</span>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath={gamePath} />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc(`nav.${gameName}`)}
+      gameThemeBg={gameTheme[gameName].bg}
+      phaseName={phaseName}
+      isHumanTurn={isBetPhase || isDrawPhase}
+      gamePath={gamePath}
+      gameEndFlag={isResultPhase}
+      winShow={isResultPhase && state.result === 1}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          <span>{t('label.chips', { chips: state.chips })}</span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -324,8 +328,6 @@ export function VideoPokerGameContent({
           </GameFooter>
         </>
       )}
-      <WinCelebration show={isResultPhase && state.result === 1} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
