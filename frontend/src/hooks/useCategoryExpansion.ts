@@ -38,22 +38,27 @@ export function useCategoryExpansion() {
 
   const isExpanded = useCallback((labelKey: string) => map[labelKey] !== false, [map]);
 
-  const setExpanded = useCallback((labelKey: string, open: boolean) => {
-    setMap((prev) => {
+  const setExpanded = useCallback(
+    (labelKey: string, open: boolean) => {
       // Missing entries are treated as "open" (the implicit default), so a
       // toggle that lands on the same value is a no-op — including the very
-      // first interaction where prev[labelKey] is undefined and open is true.
-      const current = prev[labelKey] ?? true;
-      if (current === open) return prev;
-      const next = { ...prev, [labelKey]: open };
+      // first interaction where map[labelKey] is undefined and open is true.
+      const current = map[labelKey] ?? true;
+      if (current === open) return;
+      const next = { ...map, [labelKey]: open };
+      // Side effect outside the setState updater: React may invoke updater
+      // functions more than once (e.g. StrictMode in development), so calling
+      // localStorage.setItem inside one would write twice for the same
+      // transition. Computing next state up here keeps the updater pure.
       try {
         localStorage.setItem(CATEGORY_EXPANSION_KEY, JSON.stringify(next));
       } catch {
         /* private mode / storage full / etc. */
       }
-      return next;
-    });
-  }, []);
+      setMap(next);
+    },
+    [map],
+  );
 
   return { isExpanded, setExpanded };
 }

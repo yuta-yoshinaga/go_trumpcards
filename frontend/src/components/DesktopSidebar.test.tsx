@@ -32,6 +32,10 @@ afterEach(() => {
   i18n.changeLanguage('ja');
   localStorage.removeItem('trumpcards-favorite-games');
   localStorage.removeItem('trumpcards-recent-games');
+  // Accordion expansion state bleeds across tests otherwise — the
+  // "toggles category open/closed on click" test writes a collapse, and
+  // the "expands every category by default" assertions then fail.
+  localStorage.removeItem('trumpcards-category-expansion');
 });
 
 describe('DesktopSidebar', () => {
