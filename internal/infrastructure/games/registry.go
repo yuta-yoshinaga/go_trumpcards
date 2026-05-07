@@ -188,6 +188,16 @@ func ByCategory(cat Category) []Game {
 	return out
 }
 
+// AllCategories returns every Category value in canonical display order
+// (casino, classic, solo). The returned slice is fresh per call so callers
+// cannot mutate package state. Adding a new Category value to the iota above
+// requires extending this slice — that intentional coupling is the SSoT
+// guarantee that consumers (e.g. the CLI --help summary) cannot drift out
+// of sync with the registry.
+func AllCategories() []Category {
+	return []Category{CategoryCasino, CategoryClassic, CategorySolo}
+}
+
 // descriptionCache holds Name→Description for every registered game. Built
 // once at package load from the static registry; safe to return by reference
 // because the registry is never mutated after init.
