@@ -2,22 +2,24 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// PineappleCuiPresenter パイナップルポーカーCUIプレゼンタークラス
+// PineappleCuiPresenter renders the Pineapple Poker CUI view.
 type PineappleCuiPresenter struct{}
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (pp *PineappleCuiPresenter) ActionLogOutput(p interfaces.PineappleGame) string {
 	return actionLogOutputText(p)
 }
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr error) string {
 	var b strings.Builder
 
@@ -25,77 +27,76 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 	b.WriteString("Pineapple Poker\n")
 	b.WriteString("==========\n")
 
-	// トーナメントモードヘッダー
 	cfg := p.GetConfig()
 	if cfg.TournamentMode {
-		fmt.Fprintf(&b, "トーナメント ハンド#%d SB:%d BB:%d (レベルアップ:%dハンド毎)\n",
-			p.GetHandCount(), cfg.SmallBlind, cfg.BigBlind, cfg.BlindLevelHands)
+		b.WriteString(i18n.Tf("pineapple.tournamentLine",
+			"hand", strconv.Itoa(p.GetHandCount()),
+			"sb", strconv.Itoa(cfg.SmallBlind),
+			"bb", strconv.Itoa(cfg.BigBlind),
+			"levelup", strconv.Itoa(cfg.BlindLevelHands)) + "\n")
 		if cfg.RebuyEnabled {
-			fmt.Fprintf(&b, "リバイ: %dチップ (最大%d回, %dハンド目まで)\n",
-				cfg.RebuyChips, cfg.RebuyMaxCount, cfg.RebuyPeriodHands)
+			b.WriteString(i18n.Tf("pineapple.rebuyLine",
+				"chips", strconv.Itoa(cfg.RebuyChips),
+				"max", strconv.Itoa(cfg.RebuyMaxCount),
+				"period", strconv.Itoa(cfg.RebuyPeriodHands)) + "\n")
 		}
 		if cfg.AddonEnabled {
-			fmt.Fprintf(&b, "アドオン: %dチップ (%dハンド目に提供)\n",
-				cfg.AddonChips, cfg.AddonAfterHand)
+			b.WriteString(i18n.Tf("pineapple.addonLine",
+				"chips", strconv.Itoa(cfg.AddonChips),
+				"after", strconv.Itoa(cfg.AddonAfterHand)) + "\n")
 		}
 	}
 
-	// テーブルサイズ
-	fmt.Fprintf(&b, "テーブル: %d-max\n", p.GetPlayerCnt())
+	b.WriteString(i18n.Tf("pineapple.tableMax", "n", strconv.Itoa(p.GetPlayerCnt())) + "\n")
+	b.WriteString(i18n.Tf("pineapple.dealerLine", "idx", strconv.Itoa(p.GetDealerIdx())) + "\n")
 
-	// ディーラー位置
-	fmt.Fprintf(&b, "ディーラー: Player %d\n", p.GetDealerIdx())
-
-	// コミュニティカード
 	cc := p.GetCommunityCards()
 	if len(cc) == 0 {
-		b.WriteString("コミュニティ: (なし)\n")
+		b.WriteString(i18n.T("pineapple.communityNone") + "\n")
 	} else {
-		fmt.Fprintf(&b, "コミュニティ: %s\n", cuiCardSliceStrEmoji(cc))
+		b.WriteString(i18n.Tf("pineapple.communityCards", "cards", cuiCardSliceStrEmoji(cc)) + "\n")
 	}
 
-	// ポット
-	fmt.Fprintf(&b, "ポット: %d\n", p.GetPot())
+	b.WriteString(i18n.Tf("pineapple.potLine", "pot", strconv.Itoa(p.GetPot())) + "\n")
 
-	// ベッティングリミット
 	if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
-		fmt.Fprintf(&b, "リミット: %s\n", domain.BettingLimitNames[cfg.BettingLimit])
+		b.WriteString(i18n.Tf("pineapple.limitLine", "name", domain.BettingLimitNames[cfg.BettingLimit]) + "\n")
 	}
 
-	// プレイヤー情報
 	b.WriteString("----------\n")
 	for i := 0; i < p.GetPlayerCnt(); i++ {
 		player := p.GetPlayer(i)
 		b.WriteString(cuiPlayerNameWithStyle(player, i))
-
-		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
+		b.WriteString(i18n.Tf("pineapple.playerChips", "chips", strconv.Itoa(player.GetChips())))
 
 		if player.GetTotalHands() > 0 {
-			fmt.Fprintf(&b, " VPIP:%d%% PFR:%d%% 3Bet:%d%% AF:%s", player.GetVPIP(), player.GetPFR(), player.GetThreeBet(), player.GetAFDisplay())
+			b.WriteString(i18n.Tf("pineapple.playerStats",
+				"vpip", strconv.Itoa(player.GetVPIP()),
+				"pfr", strconv.Itoa(player.GetPFR()),
+				"tb", strconv.Itoa(player.GetThreeBet()),
+				"af", player.GetAFDisplay()))
 		}
 
 		if player.GetFolded() {
-			b.WriteString(" " + color.BoldYellow("[フォールド]"))
+			b.WriteString(" " + color.BoldYellow(i18n.T("pineapple.playerFolded")))
 		} else if player.GetAllIn() {
-			b.WriteString(" " + color.BoldYellow("[オールイン]"))
+			b.WriteString(" " + color.BoldYellow(i18n.T("pineapple.playerAllIn")))
 		}
 
 		if player.GetCurrentBet() > 0 {
-			fmt.Fprintf(&b, " ベット:%d", player.GetCurrentBet())
+			b.WriteString(i18n.Tf("pineapple.playerBet", "bet", strconv.Itoa(player.GetCurrentBet())))
 		}
 		b.WriteString("\n")
 
-		// 人間のカードを表示
 		if player.GetIsHuman() && !player.GetFolded() {
-			fmt.Fprintf(&b, "  手札: %s\n", cuiCardListStrEmoji(player))
+			b.WriteString(i18n.Tf("pineapple.humanHand", "cards", cuiCardListStrEmoji(player)) + "\n")
 		}
 	}
 
-	// CPU行動記録
 	cpuActions := p.GetCpuActions()
 	if len(cpuActions) > 0 {
 		b.WriteString("----------\n")
-		b.WriteString(color.Bold("[CPU行動]") + "\n")
+		b.WriteString(color.Bold(i18n.T("pineapple.cpuActionsHeader")) + "\n")
 		for _, action := range cpuActions {
 			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, cuiBettingActionName(action.Action))
 			if action.Amount > 0 {
@@ -105,49 +106,46 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 		}
 	}
 
-	// ディスカードフェーズ
 	if p.GetPhase() == domain.PineapplePhaseDiscard {
 		b.WriteString("----------\n")
-		b.WriteString("--- ディスカードフェーズ ---\n")
-		b.WriteString("手札から1枚選んでディスカードしてください\n")
+		b.WriteString(i18n.T("pineapple.discardHeader") + "\n")
+		b.WriteString(i18n.T("pineapple.discardPrompt") + "\n")
 	}
 
-	// ショーダウン結果
 	results := p.GetRoundResults()
 	if len(results) > 0 && (p.GetPhase() == domain.PineapplePhaseEnd || p.GetPhase() == domain.PineapplePhaseShowdown) {
 		b.WriteString("==========\n")
-		b.WriteString(color.Bold("[結果]") + "\n")
+		b.WriteString(color.Bold(i18n.T("pineapple.resultsHeader")) + "\n")
 		for _, r := range results {
 			name := cuiPlayerName(p.GetPlayer(r.PlayerIdx), r.PlayerIdx)
 			kickers := ""
 			if ks := domain.FormatKickers(r.Kickers); ks != "" {
-				kickers = " (キッカー: " + ks + ")"
+				kickers = i18n.Tf("pineapple.resultKickers", "kickers", ks)
 			}
-			if r.Mucked {
-				fmt.Fprintf(&b, "  %s: マック", name)
-			} else if r.HandName != "" {
+			switch {
+			case r.Mucked:
+				b.WriteString(i18n.Tf("pineapple.resultMucked", "name", name))
+			case r.HandName != "":
 				fmt.Fprintf(&b, "  %s: %s%s", name, r.HandName, kickers)
-			} else {
+			default:
 				fmt.Fprintf(&b, "  %s", name)
 			}
 			if r.WonAmount > 0 {
-				fmt.Fprintf(&b, " → %dチップ獲得", r.WonAmount)
+				b.WriteString(i18n.Tf("pineapple.wonAmount", "total", strconv.Itoa(r.WonAmount)))
 			}
 			b.WriteString("\n")
 		}
 	}
 
-	// マックプロンプト
 	if p.IsMuckAvailable() {
 		b.WriteString("----------\n")
-		b.WriteString("マックしますか? (m=マック / sh=ショー)\n")
+		b.WriteString(i18n.T("pineapple.muckPrompt") + "\n")
 	}
 
-	// リバイ/アドオンプロンプト
 	if p.GetPhase() == domain.PineapplePhaseRebuy {
 		b.WriteString("----------\n")
-		rebuyPhaseType := p.GetRebuyPhaseType()
-		if rebuyPhaseType == domain.PineappleRebuyPhaseRebuy {
+		switch p.GetRebuyPhaseType() {
+		case domain.PineappleRebuyPhaseRebuy:
 			rebuyCounts := p.GetRebuyCounts()
 			humanIdx := -1
 			for i := 0; i < p.GetPlayerCnt(); i++ {
@@ -157,23 +155,22 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 				}
 			}
 			if humanIdx >= 0 {
-				fmt.Fprintf(&b, "リバイしますか? (%dチップ, %d/%d回使用済) (rb=リバイ / sr=スキップ)\n",
-					cfg.RebuyChips, rebuyCounts[humanIdx], cfg.RebuyMaxCount)
+				b.WriteString(i18n.Tf("pineapple.rebuyPrompt",
+					"chips", strconv.Itoa(cfg.RebuyChips),
+					"used", strconv.Itoa(rebuyCounts[humanIdx]),
+					"max", strconv.Itoa(cfg.RebuyMaxCount)) + "\n")
 			}
-		} else if rebuyPhaseType == domain.PineappleRebuyPhaseAddon {
-			fmt.Fprintf(&b, "アドオンしますか? (%dチップ) (ad=アドオン / sa=スキップ)\n",
-				cfg.AddonChips)
+		case domain.PineappleRebuyPhaseAddon:
+			b.WriteString(i18n.Tf("pineapple.addonPrompt", "chips", strconv.Itoa(cfg.AddonChips)) + "\n")
 		}
 	}
 
-	// エラーメッセージ
 	if lastErr != nil {
 		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
 	}
 
-	// ゲーム終了メッセージ
 	if p.GetGameEndFlag() {
-		b.WriteString("ゲーム終了\n")
+		b.WriteString(i18n.T("pineapple.gameEnd") + "\n")
 	}
 
 	return b.String()
