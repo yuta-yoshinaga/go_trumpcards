@@ -239,7 +239,8 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       phaseName={phaseNames[phase] ?? t('phase.init')}
       isHumanTurn={canAct || canDiscard}
       gamePath={`/${variant}`}
-      gameEndFlag={phase === PineapplePhase.END}
+      gameEndFlag={!!state?.gameEndFlag}
+      winShow={phase === PineapplePhase.END}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}

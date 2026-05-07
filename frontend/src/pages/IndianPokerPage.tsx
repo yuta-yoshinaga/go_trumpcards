@@ -185,7 +185,8 @@ function IndianPokerPageContent() {
       phaseName={phaseNames[phase] ?? t('phase.init')}
       isHumanTurn={canAct}
       gamePath="/indianpoker"
-      gameEndFlag={phase === IndianPokerPhase.END}
+      gameEndFlag={!!state.gameEndFlag}
+      winShow={phase === IndianPokerPhase.END}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
