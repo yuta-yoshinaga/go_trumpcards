@@ -511,6 +511,21 @@ func TestNapoleonCuiPresenter_English(t *testing.T) {
 		assert.Contains(t, result, "strategic declaration")
 	})
 
+	// strategic_bid is intentionally NOT in napoleonHintReasonKeys — it's
+	// shared with Bridge, Spades, Skat, OhHell and lives in
+	// sharedHintReasonKeys (cui_common). The fallthrough path in
+	// napoleonHintReasonStr (per-game miss → lookupHintReason → cui_common)
+	// is what makes it render. This test pins that path under LANG=en.
+	t.Run("strategic_bid falls through to shared key in English", func(t *testing.T) {
+		bid := 14
+		m := setupNapoleonCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
+		m.On("GetHint").Return(&domain.NapoleonHint{Bid: &bid, Reason: "strategic_bid"})
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "bid 14")
+		assert.Contains(t, result, "strategic bid")
+	})
+
 	t.Run("output uses English game-end banner (Napoleon side)", func(t *testing.T) {
 		m, _ := setupNapoleonCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
