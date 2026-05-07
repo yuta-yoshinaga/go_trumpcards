@@ -7,15 +7,10 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -23,7 +18,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { isGameRoundActive, useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
@@ -64,7 +58,6 @@ function PokerSquaresPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const { state, loading, error, exec: execApi, retry } = useGameApi(pokersquaresApi.exec);
-  useGameRoundGuard(isGameRoundActive(state));
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -120,19 +113,28 @@ function PokerSquaresPageContent() {
   }, [handleReset, hideActionLog]);
 
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.pokersquares.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.pokersquares')} />
-      <PhaseIndicator phaseName={state ? phaseNames[state.phase] : ''}>
-        {state && (
-          <span>
-            {t('label.totalScore')}: {state.totalScore}
-          </span>
-        )}
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/pokersquares" />
-      </PhaseIndicator>
-
+    <GamePageShell
+      title={tc('nav.pokersquares')}
+      gameThemeBg={gameTheme.pokersquares.bg}
+      phaseName={state ? phaseNames[state.phase] : ''}
+      gamePath="/pokersquares"
+      gameEndFlag={isComplete}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={
+        <>
+          {state && (
+            <span>
+              {t('label.totalScore')}: {state.totalScore}
+            </span>
+          )}
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
+      }
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -338,8 +340,6 @@ function PokerSquaresPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration show={isComplete} onCelebrate={() => playSound('winFanfare')} />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
