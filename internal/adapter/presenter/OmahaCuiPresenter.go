@@ -102,9 +102,9 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 		b.WriteString("----------\n")
 		b.WriteString(color.Bold(i18n.T("omaha.cpuActionsHeader")) + "\n")
 		for _, action := range cpuActions {
-			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, cuiBettingActionName(action.Action))
+			b.WriteString(i18n.Tf("omaha.cpuActionLine", "idx", strconv.Itoa(action.PlayerIdx), "action", cuiBettingActionName(action.Action)))
 			if action.Amount > 0 {
-				fmt.Fprintf(&b, " (%d)", action.Amount)
+				b.WriteString(i18n.Tf("omaha.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))
 			}
 			b.WriteString("\n")
 		}
@@ -124,9 +124,9 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 			case r.Mucked:
 				b.WriteString(i18n.Tf("omaha.resultMucked", "name", name))
 			case r.HandName != "":
-				fmt.Fprintf(&b, "  %s: %s%s", name, r.HandName, kickers)
+				b.WriteString(i18n.Tf("omaha.resultHand", "name", name, "hand", r.HandName, "kickers", kickers))
 			default:
-				fmt.Fprintf(&b, "  %s", name)
+				b.WriteString(i18n.Tf("omaha.resultPlayerOnly", "name", name))
 			}
 			if o.GetIsHiLo() && r.LowQualifies {
 				b.WriteString(i18n.Tf("omaha.resultLow", "cards", cuiCardSliceStrEmoji(r.LowBestHand)))
