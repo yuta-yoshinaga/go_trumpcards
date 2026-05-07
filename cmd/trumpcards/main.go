@@ -379,8 +379,11 @@ func run() int {
 		}
 		if flagSetVisited(fs, "port", "p") {
 			if !portInRange(port) {
+				// Usage error (out-of-range value), not a runtime failure.
+				// Aligns with the documented EXIT CODES: 2 reads as "the
+				// invocation itself is wrong" so systemd / CI can branch on it.
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidPort", "port", strconv.Itoa(port)))
-				return 1
+				return 2
 			}
 			_ = os.Setenv("PORT", strconv.Itoa(port))
 		}
@@ -540,6 +543,14 @@ var builtinSubcommandHelp = map[string][]string{
 		"  by --quiet / TRUMPCARDS_QUIET=1, and slog's structured 'web server listening'",
 		"  event always fires regardless. The default 127.0.0.1 bind never warns.",
 		"",
+		"EXIT CODES:",
+		"    0  Graceful shutdown (Ctrl+C / SIGTERM after the server started cleanly)",
+		"    1  Server start failure (includes EADDRINUSE / port already in use —",
+		"       systemd / Docker `restart: on-failure` should retry on this code)",
+		"    2  Usage error (unknown flag, --port out of range)",
+		"  130  Terminated by SIGINT before reaching graceful shutdown (128 + 2)",
+		"  143  Terminated by SIGTERM before reaching graceful shutdown (128 + 15)",
+		"",
 		"EXAMPLES:",
 		"  trumpcards web",
 		"  trumpcards web --port 3000",
@@ -590,6 +601,11 @@ var builtinSubcommandHelp = map[string][]string{
 		"      --no-hint   Suppress installation hint comments in the output",
 		"                  (implied when stdout is not a TTY, e.g. shell redirection)",
 		"",
+		"EXIT CODES:",
+		"  0  Script written successfully",
+		"  1  Write error (e.g. broken pipe, full disk)",
+		"  2  Usage error (missing shell argument or unsupported shell name)",
+		"",
 		"EXAMPLES:",
 		"  source <(trumpcards completion bash)",
 		"  trumpcards completion bash > /etc/bash_completion.d/trumpcards",
@@ -614,6 +630,11 @@ var builtinSubcommandHelp = map[string][]string{
 		"                           casino, classic, or solo. Combinable with --short / --json.",
 		"                           Invalid value exits 2.",
 		"",
+		"EXIT CODES:",
+		"  0  List printed successfully",
+		"  1  --json: encoding error while writing the JSON array",
+		"  2  Usage error (unknown flag, invalid --category value)",
+		"",
 		"EXAMPLES:",
 		"  trumpcards games",
 		"  trumpcards games --short",
@@ -626,6 +647,10 @@ var builtinSubcommandHelp = map[string][]string{
 		"USAGE:",
 		"  trumpcards help [game|command]",
 		"",
+		"EXIT CODES:",
+		"  0  Help printed (top-level, a known game, or a known subcommand)",
+		"  1  Unknown game / command name (a 'did you mean…' hint is offered when close)",
+		"",
 		"EXAMPLES:",
 		"  trumpcards help",
 		"  trumpcards help blackjack",
@@ -637,6 +662,10 @@ var builtinSubcommandHelp = map[string][]string{
 		"",
 		"FLAGS:",
 		"      --short   Print the version number only (machine-readable)",
+		"",
+		"EXIT CODES:",
+		"  0  Version printed successfully",
+		"  2  Usage error (unknown flag)",
 		"",
 		"EXAMPLES:",
 		"  trumpcards version              # full info: trumpcards <ver> (commit: <sha>, built: <date>)",
