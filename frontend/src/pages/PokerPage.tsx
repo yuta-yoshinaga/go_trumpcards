@@ -28,6 +28,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { useSound } from '../providers/SoundProvider';
+import { badgeError } from '../styles/badgeStyles';
 import { btnSuccess, btnWarning, focusRingAccent } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -390,7 +391,7 @@ function PokerPageContent() {
             {canExchange && oddsError && (
               <div
                 role="alert"
-                className="bg-ds-error/20 border border-ds-error rounded-lg px-4 py-2 mb-2 text-white text-xs flex items-center justify-between gap-2"
+                className={`${badgeError} mb-2 flex items-center justify-between gap-2`}
                 data-testid="odds-error"
               >
                 <span>{t('oddsFetchFailed')}</span>

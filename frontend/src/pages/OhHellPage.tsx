@@ -292,7 +292,7 @@ function OhHellPageContent() {
                   <div className="text-ds-warning text-center mb-2" data-tutorial="oh-bid-controls">
                     <div>{t('bidPhase', { max: state.handSize })}</div>
                     {state.restrictedBid >= 0 && (
-                      <div className="text-ds-warning/80 text-sm">{t('restrictedBid', { n: state.restrictedBid })}</div>
+                      <div className="text-ds-warning text-sm">{t('restrictedBid', { n: state.restrictedBid })}</div>
                     )}
                   </div>
                 )}

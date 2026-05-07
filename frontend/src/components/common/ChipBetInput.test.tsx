@@ -73,7 +73,9 @@ describe('ChipBetInput', () => {
   it('applies error styling and aria-invalid when invalid is true', () => {
     render(<ChipBetInput id="bet" label="Bet" value={5} onChange={() => {}} max={50} invalid />);
     const input = screen.getByLabelText('Bet');
-    expect(input.className).toContain('bg-ds-error/40');
+    expect(input.className).toContain('bg-ds-surface');
+    expect(input.className).toContain('border-ds-error');
+    expect(input.className).toContain('text-ds-error');
     expect(input).toHaveAttribute('aria-invalid', 'true');
   });
 

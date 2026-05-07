@@ -24,6 +24,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { useSound } from '../providers/SoundProvider';
+import { badgeSuccess, badgeWarning } from '../styles/badgeStyles';
 import { btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -400,7 +401,7 @@ function SevensPageContent() {
             {state.humanAction && (
               <div
                 data-testid={state.humanAction.forcedPass ? 'human-action-forced-pass' : 'human-action'}
-                className={`rounded-lg py-2 px-3.5 my-2 text-xs ${state.humanAction.forcedPass ? 'bg-ds-error/50 text-ds-warning/80 border border-ds-error/50' : 'bg-black/40 text-ds-success/80'}`}
+                className={`my-2 ${state.humanAction.forcedPass ? badgeWarning : badgeSuccess}`}
               >
                 {actionDesc(state.players, state.humanAction, t)}
               </div>
