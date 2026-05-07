@@ -193,7 +193,8 @@ func TestFlagSetVisitedDistinguishesExplicitFromDefault(t *testing.T) {
 // TestRunWebRejectsExplicitInvalidPort covers the bug Gemini and Claude
 // flagged: under the previous portUnset=-1 sentinel, `--port -1` silently
 // fell through to the default 8080. With the fs.Visit approach the explicit
-// -1 must be rejected with cliInvalidPort and exit 1 before any bind.
+// -1 must be rejected with cliInvalidPort and exit 2 (usage error, per the
+// documented EXIT CODES in builtinSubcommandHelp["web"]) before any bind.
 func TestRunWebRejectsExplicitInvalidPort(t *testing.T) {
 	origArgs := os.Args
 	origCmdLine := flag.CommandLine
@@ -231,11 +232,14 @@ func TestRunWebRejectsExplicitInvalidPort(t *testing.T) {
 	_, _ = outBuf.ReadFrom(rOut)
 	_, _ = errBuf.ReadFrom(rErr)
 
-	if exit != 1 {
-		t.Errorf("exit = %d, want 1 (stderr=%q)", exit, errBuf.String())
+	if exit != 2 {
+		t.Errorf("exit = %d, want 2 (usage error; stderr=%q)", exit, errBuf.String())
 	}
 	if !strings.Contains(errBuf.String(), "-1") {
 		t.Errorf("stderr should mention the offending port; got: %q", errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "help web") {
+		t.Errorf("stderr should include cliTryHelp hint; got: %q", errBuf.String())
 	}
 	// Guard against regression: the old sentinel behavior would silently
 	// pass through and try to bind 8080, leaving PORT untouched.
@@ -1697,5 +1701,42 @@ func TestBuildHelpTextDocumentsStartFlag(t *testing.T) {
 		if !strings.Contains(helpText, want) {
 			t.Errorf("help text missing %q; got:\n%s", want, helpText)
 		}
+	}
+}
+
+// TestBuildHelpTextGamesSummaryStaysCompact verifies issue #1694: the
+// top-level --help GAMES section must NOT enumerate every one of the 77
+// games (which used to push COMMANDS / OPTIONS off a 24-line terminal).
+// Instead it shows a category-grouped summary and points at
+// `trumpcards games` for the full list.
+func TestBuildHelpTextGamesSummaryStaysCompact(t *testing.T) {
+	helpText := buildHelpText()
+
+	// The category summary must appear, with a pointer to `games`.
+	for _, want := range []string{"GAMES:", "trumpcards games", "casino", "classic", "solo"} {
+		if !strings.Contains(helpText, want) {
+			t.Errorf("help text missing %q; got:\n%s", want, helpText)
+		}
+	}
+
+	// The COMMANDS section must reach the top of the screen on a 24-line
+	// terminal — this is the regression from #1694. With 6 USAGE lines and
+	// a 5-line GAMES summary we expect COMMANDS to land within the first 20
+	// lines (the issue had it at line ~84).
+	lines := strings.Split(helpText, "\n")
+	commandsIdx := -1
+	for i, line := range lines {
+		if strings.HasPrefix(line, "COMMANDS:") {
+			commandsIdx = i
+			break
+		}
+	}
+	if commandsIdx < 0 {
+		t.Fatalf("COMMANDS: header not found in help text")
+	}
+	// commandsIdx is 0-based; index 20 = line 21, which would violate the
+	// stated "first 20 lines" bound. Use >= so the guard is strict.
+	if commandsIdx >= 20 {
+		t.Errorf("COMMANDS: appears at line %d; expected <= 20 so it stays visible on a default terminal", commandsIdx+1)
 	}
 }
