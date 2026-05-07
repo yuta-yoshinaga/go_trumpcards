@@ -118,7 +118,8 @@ function PokerSquaresPageContent() {
       gameThemeBg={gameTheme.pokersquares.bg}
       phaseName={state ? phaseNames[state.phase] : ''}
       gamePath="/pokersquares"
-      gameEndFlag={isComplete}
+      gameEndFlag={!state || isComplete}
+      winShow={isComplete}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}
