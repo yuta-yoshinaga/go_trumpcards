@@ -10,11 +10,9 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// pinochleMeldTypeKey maps a meld type constant to the i18n key holding the
-// localized meld name. The displayed string follows the active locale via
-// i18n.T (issue #1699 Phase 2). The previous implementation hardcoded
-// Japanese names directly in a map, which the English presenter could not
-// override.
+// pinochleMeldTypeKey maps a meld type constant to the i18n key holding
+// its localized name. The lookup indirection lets the displayed string
+// follow the active locale.
 var pinochleMeldTypeKey = map[domain.PinochleMeldType]string{
 	domain.PinochleMeldDix:                "pinochle.meldDix",
 	domain.PinochleMeldCommonMarriage:     "pinochle.meldCommonMarriage",
@@ -131,9 +129,9 @@ func (p *PinochleCuiPresenter) Output(g interfaces.PinochleGame, lastErr error) 
 				if j > 0 {
 					b.WriteString(", ")
 				}
-				fmt.Fprintf(b, "%s=%s",
-					cuiPlayerName(g.GetPlayer(tc.PlayerIdx), tc.PlayerIdx),
-					cuiCardStr(tc.Card))
+				b.WriteString(i18n.Tf("pinochle.tableCard",
+					"name", cuiPlayerName(g.GetPlayer(tc.PlayerIdx), tc.PlayerIdx),
+					"card", cuiCardStr(tc.Card)))
 			}
 			b.WriteString("\n")
 		}
@@ -142,27 +140,30 @@ func (p *PinochleCuiPresenter) Output(g interfaces.PinochleGame, lastErr error) 
 	})
 }
 
-// HintOutput emits the current Pinochle hint.
+// HintOutput emits the current Pinochle hint. Multiple hint fields are
+// joined with a single space so future hints that combine, e.g.,
+// BidAmount + Pass don't render as run-on text. Today only one field is
+// populated at a time, but the join is cheap insurance against the next
+// PinochleHint variant.
 func (p *PinochleCuiPresenter) HintOutput(g interfaces.PinochleGame) string {
 	hint := g.GetHint()
 	if hint == nil {
 		return i18n.T("pinochle.hintNone")
 	}
-	var b strings.Builder
-	b.WriteString(i18n.T("pinochle.hintPrefix"))
+	var parts []string
 	if hint.BidAmount != nil {
-		b.WriteString(i18n.Tf("pinochle.hintBid", "n", strconv.Itoa(*hint.BidAmount)))
+		parts = append(parts, i18n.Tf("pinochle.hintBid", "n", strconv.Itoa(*hint.BidAmount)))
 	}
 	if hint.Pass != nil && *hint.Pass {
-		b.WriteString(i18n.T("pinochle.hintPass"))
+		parts = append(parts, i18n.T("pinochle.hintPass"))
 	}
 	if hint.Suit != nil {
-		b.WriteString(i18n.Tf("pinochle.hintSuit", "suit", cuiSuitName(*hint.Suit)))
+		parts = append(parts, i18n.Tf("pinochle.hintSuit", "suit", cuiSuitName(*hint.Suit)))
 	}
 	if hint.CardIndex != nil {
-		b.WriteString(i18n.Tf("pinochle.hintCard", "idx", strconv.Itoa(*hint.CardIndex)))
+		parts = append(parts, i18n.Tf("pinochle.hintCard", "idx", strconv.Itoa(*hint.CardIndex)))
 	}
-	return b.String()
+	return i18n.T("pinochle.hintPrefix") + strings.Join(parts, " ")
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

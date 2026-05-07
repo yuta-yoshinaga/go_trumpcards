@@ -36,6 +36,7 @@
   "playerMeldsHeader": "{{name}}のメルド:",
   "playerMeldLine": "  {{type}}: {{points}}点",
   "tableLabel": "テーブル: ",
+  "tableCard": "{{name}}={{card}}",
   "hintNone": "ヒントなし",
   "hintPrefix": "ヒント: ",
   "hintBid": "ビッド {{n}}",

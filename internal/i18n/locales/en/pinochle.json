@@ -36,6 +36,7 @@
   "playerMeldsHeader": "Melds — {{name}}:",
   "playerMeldLine": "  {{type}}: {{points}}pt",
   "tableLabel": "Table: ",
+  "tableCard": "{{name}}={{card}}",
   "hintNone": "No hint",
   "hintPrefix": "Hint: ",
   "hintBid": "bid {{n}}",

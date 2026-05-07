@@ -328,4 +328,26 @@ func TestPinochleCuiPresenter_English(t *testing.T) {
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "card 3")
 	})
+
+	t.Run("output uses English game-end banner", func(t *testing.T) {
+		m, _ := setupPinochleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerTeam")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerTeam").Return(0)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Game over!")
+		assert.Contains(t, result, "Team 0 wins")
+		assert.NotContains(t, result, "チーム") // no Japanese leakage
+	})
+
+	t.Run("output uses English headers, dealer, scores, prompt", func(t *testing.T) {
+		m, _ := setupPinochleCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Round: 1")
+		assert.Contains(t, result, "Trick: 1")
+		assert.Contains(t, result, "Dealer: You")
+		assert.Contains(t, result, "Team 0: 0pt")
+		assert.Contains(t, result, "to play")
+	})
 }
