@@ -6,16 +6,11 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageHeading } from '../components/GamePageHeading';
+import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
-import { GameResetDialog } from '../components/GameResetDialog';
 import { HintTooltip } from '../components/hint/HintTooltip';
-import { ManualButton } from '../components/ManualButton';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { WinCelebration } from '../components/motion/WinCelebration';
-import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { TutorialButton } from '../components/tutorial/TutorialButton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -23,7 +18,6 @@ import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, useDurakGame } from '../hooks/useDurakGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { useGameRoundGuard } from '../hooks/useGameRoundGuard';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -121,8 +115,6 @@ function DurakPageContent() {
     void gameExec('reset', undefined, undefined, durakConfig);
   }, [gameExec, hideActionLog, durakConfig]);
 
-  useGameRoundGuard(!!state && !state.gameEndFlag);
-
   if (!state)
     return (
       <GameSkeleton
@@ -177,15 +169,24 @@ function DurakPageContent() {
     }
   };
 
-  return (
-    <div className={`flex-1 flex flex-col min-h-0 ${theme.bg}`} aria-busy={loading}>
-      <GamePageHeading title={tc('nav.durak')} />
-      <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
-        <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
-        <TutorialButton />
-        <ManualButton gamePath="/durak" />
-      </PhaseIndicator>
+  const humanWon = isGameEnd && humanPlayer !== undefined && state.loserIdx >= 0 && state.loserIdx !== humanPlayer.id;
 
+  return (
+    <GamePageShell
+      title={tc('nav.durak')}
+      gameThemeBg={theme.bg}
+      phaseName={phaseName}
+      isHumanTurn={isHumanTurn}
+      gamePath="/durak"
+      gameEndFlag={!!state.gameEndFlag}
+      winShow={humanWon}
+      onCelebrate={() => playSound('winFanfare')}
+      loading={loading}
+      confirmOpen={confirmOpen}
+      confirmReset={confirmReset}
+      cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
+    >
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -442,11 +443,6 @@ function DurakPageContent() {
           </GameFooter>
         </>
       )}
-      <WinCelebration
-        show={isGameEnd && humanPlayer !== undefined && state.loserIdx >= 0 && state.loserIdx !== humanPlayer.id}
-        onCelebrate={() => playSound('winFanfare')}
-      />
-      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
-    </div>
+    </GamePageShell>
   );
 }
