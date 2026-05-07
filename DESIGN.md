@@ -118,6 +118,17 @@ These use design system tokens for game UX color-coding. They are scoped to poke
 
 > **Accessibility note:** Primary text meets AAA in both modes. Muted text and accent intentionally target AA (WCAG 2.1 Level AA) — these are used for secondary/decorative content where AAA is not required.
 
+### Opacity rule
+
+Do **not** mix Tailwind opacity suffixes (`/50`, `/80`, `/40`, `/15`, …) with design tokens for the **text or background of meaningful information** (state badges, alerts, error notices, forced-action banners). Opacity-multiplied colors break the contrast ratios above because the resulting effective color depends on whatever sits beneath (typically a felt-green / felt-blue game table), which collapses contrast unpredictably.
+
+For state badges (info / success / warning / error) use the predefined helpers in [`frontend/src/styles/badgeStyles.ts`](frontend/src/styles/badgeStyles.ts) (`badgeInfo` / `badgeSuccess` / `badgeWarning` / `badgeError`), which guarantee opaque surface backgrounds on top of any game theme.
+
+Allowed uses of opacity suffixes:
+- Glassmorphism overlays (`--glass-bg`)
+- Decorative shadows / tints / hover scrims (where text contrast is unaffected)
+- Animated pulses and rings around active turn indicators (the underlying text is opaque)
+
 ## Spacing
 - **Base unit:** 4px
 - **Density:** Comfortable — card games need breathing room for board readability

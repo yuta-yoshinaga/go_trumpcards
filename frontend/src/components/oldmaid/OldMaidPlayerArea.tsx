@@ -161,7 +161,7 @@ export function OldMaidPlayerArea({
         {onToggleSuspect && !player.isFinished && !gameEndFlag && (
           <button
             type="button"
-            className="ml-1 px-1.5 py-0.5 text-xs rounded bg-ds-error/60 hover:bg-ds-error text-white"
+            className="ml-1 px-1.5 py-0.5 text-xs rounded bg-ds-error hover:bg-ds-error-hover text-white"
             onClick={onToggleSuspect}
           >
             {isSuspect ? t('suspect.unpin') : t('suspect.pin')}

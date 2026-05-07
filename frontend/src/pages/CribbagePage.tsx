@@ -523,7 +523,7 @@ function CribbagePageContent() {
                       role="status"
                       aria-live="polite"
                       data-testid="cb-auto-go-notice"
-                      className="px-3 py-1.5 rounded bg-ds-info/15 border border-ds-info text-ds-info text-sm"
+                      className="px-3 py-1.5 rounded bg-ds-surface border border-ds-info text-ds-text-primary text-sm"
                     >
                       {t('autoGoNotice')}
                     </div>
