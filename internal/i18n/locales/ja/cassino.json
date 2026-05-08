@@ -6,5 +6,21 @@
   "helpNext": "  n                        次のラウンドを開始する",
   "helpLog": "  log | l                  棋譜を表示",
   "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetRule": "  sr <rule> <0|1>          ルール切替 (sr list で一覧表示)"
+  "helpSetRule": "  sr <rule> <0|1>          ルール切替 (sr list で一覧表示)",
+  "playerLine": "{{name}}: 手札{{hand}}枚 / 捕獲{{captured}}枚 / スイープ{{sweep}} / 累計{{total}}点",
+  "tableLine": "場: {{cards}}",
+  "tableEmpty": "場: なし",
+  "buildsHeader": "[ビルド]",
+  "buildLine": "  #{{idx}} (値{{value}}, owner:{{owner}}, multi:{{multi}}): {{cards}}",
+  "humanActionLine": "あなたの行動: {{text}}",
+  "cpuActionsHeader": "[CPUの行動]",
+  "cpuActionLine": "  {{name}}: {{text}}",
+  "gameEnd": "ゲーム終了！",
+  "scoreEntry": "  {{name}}: {{score}}点",
+  "promptCurrentTurn": "手番: {{name}}",
+  "promptHelp": "t <hand> <tbl...> で捕獲 / b <hand> <value> <tbl...> でビルド / tr <hand> で場に置く",
+  "actionTake": "捕獲 played={{played}} captured={{count}}枚{{suffix}}",
+  "actionTakeSweepSuffix": " (スイープ!)",
+  "actionBuild": "ビルド値{{value}} (played={{played}})",
+  "actionTrail": "場に置く {{played}}"
 }

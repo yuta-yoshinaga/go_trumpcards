@@ -6,5 +6,21 @@
   "helpNext": "  n                        start next round",
   "helpLog": "  log | l                  show action log",
   "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetRule": "  sr <rule> <0|1>          toggle local rule (sr list to show all)"
+  "helpSetRule": "  sr <rule> <0|1>          toggle local rule (sr list to show all)",
+  "playerLine": "{{name}}: hand {{hand}} / captured {{captured}} / sweeps {{sweep}} / total {{total}}",
+  "tableLine": "Table: {{cards}}",
+  "tableEmpty": "Table: empty",
+  "buildsHeader": "[Builds]",
+  "buildLine": "  #{{idx}} (value {{value}}, owner: {{owner}}, multi: {{multi}}): {{cards}}",
+  "humanActionLine": "Your action: {{text}}",
+  "cpuActionsHeader": "[CPU actions]",
+  "cpuActionLine": "  {{name}}: {{text}}",
+  "gameEnd": "Game over!",
+  "scoreEntry": "  {{name}}: {{score}}",
+  "promptCurrentTurn": "{{name}} to act",
+  "promptHelp": "t <hand> <tbl...> to take / b <hand> <value> <tbl...> to build / tr <hand> to trail",
+  "actionTake": "take played={{played}} captured={{count}}{{suffix}}",
+  "actionTakeSweepSuffix": " (sweep!)",
+  "actionBuild": "build value {{value}} (played={{played}})",
+  "actionTrail": "trail {{played}}"
 }

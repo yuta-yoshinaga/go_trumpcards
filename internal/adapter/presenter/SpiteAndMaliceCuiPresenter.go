@@ -1,128 +1,153 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// SpiteAndMaliceCuiPresenter Spite & Malice CUI プレゼンター
+// SpiteAndMaliceCuiPresenter renders the Spite and Malice CUI view.
 type SpiteAndMaliceCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *SpiteAndMaliceCuiPresenter) Output(g interfaces.SpiteAndMaliceGame, lastErr error) string {
-	return buildCuiOutput("Spite and Malice (スパイト・アンド・マリス)", func(b *strings.Builder) {
-		// ファウンデーション
+	return buildCuiOutput(i18n.T("spiteandmalice.helpTitle"), func(b *strings.Builder) {
+		// Foundations
 		foundations := g.GetFoundations()
+		maxStr := strconv.Itoa(domain.SpiteAndMaliceFoundationMax)
 		for i := range domain.SpiteAndMaliceFoundationCnt {
 			pile := foundations[i]
-			fmt.Fprintf(b, "[F%d] ", i)
+			b.WriteString(i18n.Tf("spiteandmalice.foundationLabel", "idx", strconv.Itoa(i)))
 			if len(pile) == 0 {
-				b.WriteString("(empty)")
+				b.WriteString(i18n.T("spiteandmalice.foundationEmpty"))
 			} else {
 				top := pile[len(pile)-1]
-				fmt.Fprintf(b, "%s (%d/%d)", cuiCardStr(top), len(pile), domain.SpiteAndMaliceFoundationMax)
+				b.WriteString(i18n.Tf("spiteandmalice.foundationFilled",
+					"card", cuiCardStr(top),
+					"count", strconv.Itoa(len(pile)),
+					"max", maxStr))
 			}
 			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")
 
-		// 各プレイヤーの状態
+		// Per-player state
 		for i := range domain.SpiteAndMalicePlayerCnt {
 			pl := g.GetPlayer(i)
 			if pl == nil {
 				continue
 			}
-			label := "人間"
+			label := i18n.T("spiteandmalice.labelHuman")
 			if pl.GetIsCpu() {
-				label = "CPU"
+				label = i18n.T("spiteandmalice.labelCpu")
 			}
-			fmt.Fprintf(b, "[P%d %s] ", i, label)
-			// goal top と残枚数
+			b.WriteString(i18n.Tf("spiteandmalice.playerHeader",
+				"idx", strconv.Itoa(i),
+				"label", label))
 			if top := pl.GoalTop(); top != nil {
-				fmt.Fprintf(b, "ゴール: %s (残 %d)", cuiCardStr(top), pl.GoalSize())
+				b.WriteString(i18n.Tf("spiteandmalice.goalLine",
+					"card", cuiCardStr(top),
+					"count", strconv.Itoa(pl.GoalSize())))
 			} else {
-				b.WriteString("ゴール: (empty)")
+				b.WriteString(i18n.T("spiteandmalice.goalEmpty"))
 			}
 			b.WriteString("\n")
 
-			// 手札 (人間プレイヤーのみ表示。CPU の手札は伏せて枚数だけ出す)
+			// Hand (face-up only for the human; CPU shows count only)
 			hand := pl.GetHand()
 			if !pl.GetIsCpu() {
-				b.WriteString("  手札: ")
+				b.WriteString(i18n.T("spiteandmalice.humanHandLabel"))
 				if len(hand) == 0 {
-					b.WriteString("(empty)")
+					b.WriteString(i18n.T("spiteandmalice.humanHandEmpty"))
 				} else {
 					parts := make([]string, len(hand))
 					for k, c := range hand {
-						parts[k] = fmt.Sprintf("%d:%s", k, cuiCardStr(c))
+						parts[k] = i18n.Tf("spiteandmalice.humanHandEntry",
+							"idx", strconv.Itoa(k),
+							"card", cuiCardStr(c))
 					}
 					b.WriteString(strings.Join(parts, " "))
 				}
 				b.WriteString("\n")
 			} else {
-				fmt.Fprintf(b, "  手札: %d枚\n", len(hand))
+				b.WriteString(i18n.Tf("spiteandmalice.cpuHandLine",
+					"count", strconv.Itoa(len(hand))) + "\n")
 			}
 
-			// サイドパイル
+			// Side piles
 			for s := range domain.SpiteAndMaliceSideCnt {
 				side := pl.GetSide(s)
-				fmt.Fprintf(b, "  [S%d] ", s)
+				b.WriteString(i18n.Tf("spiteandmalice.sideLabel", "idx", strconv.Itoa(s)))
 				if len(side) == 0 {
-					b.WriteString("(empty)")
+					b.WriteString(i18n.T("spiteandmalice.sideEmpty"))
 				} else {
 					top := side[len(side)-1]
-					fmt.Fprintf(b, "%s (%d枚)", cuiCardStr(top), len(side))
+					b.WriteString(i18n.Tf("spiteandmalice.sideFilled",
+						"card", cuiCardStr(top),
+						"count", strconv.Itoa(len(side))))
 				}
 				b.WriteString("\n")
 			}
 		}
 		b.WriteString("----------\n")
 
-		// ストック
-		fmt.Fprintf(b, "ストック: %d枚 / 完成: %d枚\n", g.GetStockSize(), g.GetCompletedSize())
+		// Stock + completed
+		b.WriteString(i18n.Tf("spiteandmalice.stockLine",
+			"stock", strconv.Itoa(g.GetStockSize()),
+			"completed", strconv.Itoa(g.GetCompletedSize())) + "\n")
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
+		movesStr := strconv.Itoa(g.GetMoveCount())
 		switch g.GetPhase() {
 		case domain.SpiteAndMalicePhasePlaying:
-			fmt.Fprintf(b, "ターン: %d (手数 %d)\n", g.GetCurrent(), g.GetMoveCount())
+			b.WriteString(i18n.Tf("spiteandmalice.turnLine",
+				"idx", strconv.Itoa(g.GetCurrent()),
+				"moves", movesStr) + "\n")
 		case domain.SpiteAndMalicePhaseGameOver:
 			if g.GetWinner() == domain.SpiteAndMaliceHumanIdx {
-				fmt.Fprintf(b, "%s 手数: %d\n", color.Green("あなたの勝ち！"), g.GetMoveCount())
+				b.WriteString(color.Green(i18n.T("spiteandmalice.winHuman")) + " " +
+					i18n.Tf("cuiSolitaireMoves", "count", movesStr) + "\n")
 			} else {
-				fmt.Fprintf(b, "%s 手数: %d\n", color.Red("CPU の勝ち"), g.GetMoveCount())
+				b.WriteString(color.Red(i18n.T("spiteandmalice.winCpu")) + " " +
+					i18n.Tf("cuiSolitaireMoves", "count", movesStr) + "\n")
 			}
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current Spite and Malice hint.
 func (p *SpiteAndMaliceCuiPresenter) HintOutput(g interfaces.SpiteAndMaliceGame) string {
 	hint := g.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("cuiHintNone") + "\n"
 	}
 	if hint.Discard {
-		return fmt.Sprintf("ヒント: 手札%d をサイド%d にディスカード\n", hint.Index, hint.FoundationIdx)
+		return i18n.Tf("spiteandmalice.hintDiscard",
+			"idx", strconv.Itoa(hint.Index),
+			"foundation", strconv.Itoa(hint.FoundationIdx)) + "\n"
 	}
 	switch hint.Source {
 	case domain.SpiteAndMaliceSourceGoal:
-		return fmt.Sprintf("ヒント: ゴール → ファウンデーション%d\n", hint.FoundationIdx)
+		return i18n.Tf("spiteandmalice.hintGoal",
+			"foundation", strconv.Itoa(hint.FoundationIdx)) + "\n"
 	case domain.SpiteAndMaliceSourceHand:
-		return fmt.Sprintf("ヒント: 手札%d → ファウンデーション%d\n", hint.Index, hint.FoundationIdx)
+		return i18n.Tf("spiteandmalice.hintHand",
+			"idx", strconv.Itoa(hint.Index),
+			"foundation", strconv.Itoa(hint.FoundationIdx)) + "\n"
 	case domain.SpiteAndMaliceSourceSide:
-		return fmt.Sprintf("ヒント: サイド%d → ファウンデーション%d\n", hint.Index, hint.FoundationIdx)
+		return i18n.Tf("spiteandmalice.hintSide",
+			"idx", strconv.Itoa(hint.Index),
+			"foundation", strconv.Itoa(hint.FoundationIdx)) + "\n"
 	}
-	return "ヒントはありません。\n"
+	return i18n.T("cuiHintNone") + "\n"
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *SpiteAndMaliceCuiPresenter) ActionLogOutput(g interfaces.SpiteAndMaliceGame) string {
 	if g.GetPhase() == domain.SpiteAndMalicePhasePlaying {
 		return actionLogToText(nil)

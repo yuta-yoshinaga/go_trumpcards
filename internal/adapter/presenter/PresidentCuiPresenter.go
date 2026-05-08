@@ -1,12 +1,13 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // presidentPlayerStr returns the display string for a single President player.
@@ -14,23 +15,24 @@ func presidentPlayerStr(player *domain.PresidentPlayer, i int) string {
 	var b strings.Builder
 	b.WriteString(cuiPlayerName(player, i))
 	if player.GetIsFinished() {
-		fmt.Fprintf(&b, ": 上がり (ランク: %s)\n", presidentRankName(player.GetRank()))
+		b.WriteString(i18n.Tf("president.playerFinished",
+			"rank", presidentRankName(player.GetRank())) + "\n")
 	} else {
-		fmt.Fprintf(&b, ": %d枚\n", player.GetCardsSize())
+		b.WriteString(i18n.Tf("president.playerHand",
+			"count", strconv.Itoa(player.GetCardsSize())) + "\n")
 		if player.GetIsHuman() {
-			b.WriteString(cuiIndexedCardListStr(player))
-			b.WriteString("\n")
+			b.WriteString(cuiIndexedCardListStr(player) + "\n")
 		}
 	}
 	return b.String()
 }
 
-// PresidentCuiPresenter プレジデントCUIプレゼンタークラス
+// PresidentCuiPresenter renders the President / Scum CUI view.
 type PresidentCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *PresidentCuiPresenter) Output(pg interfaces.PresidentGame, lastErr error) string {
-	return buildCuiOutput("President (プレジデント)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("president.helpTitle"), func(b *strings.Builder) {
 		for i := 0; i < pg.GetPlayerCnt(); i++ {
 			b.WriteString(presidentPlayerStr(pg.GetPlayer(i), i))
 		}
@@ -38,78 +40,78 @@ func (p *PresidentCuiPresenter) Output(pg interfaces.PresidentGame, lastErr erro
 		b.WriteString("----------\n")
 
 		if pg.GetRevolutionActive() {
-			b.WriteString(color.BoldYellow("【革命中】") + "2が最弱、3が最強\n")
+			b.WriteString(color.BoldYellow(i18n.T("president.revolutionLabel")) +
+				i18n.T("president.revolutionSuffix") + "\n")
 		}
 
-		// カード交換記録
-		exchangeActions := pg.GetExchangeActions()
-		if len(exchangeActions) > 0 {
-			b.WriteString(color.Bold("[カード交換]") + "\n")
+		// Card exchange records
+		if exchangeActions := pg.GetExchangeActions(); len(exchangeActions) > 0 {
+			b.WriteString(color.Bold(i18n.T("president.exchangesHeader")) + "\n")
 			for _, ex := range exchangeActions {
-				fmt.Fprintf(b, "%s → %s: %s\n",
-					cuiPlayerName(pg.GetPlayer(ex.FromPlayerIdx), ex.FromPlayerIdx),
-					cuiPlayerName(pg.GetPlayer(ex.ToPlayerIdx), ex.ToPlayerIdx),
-					cuiCardSliceStr(ex.Cards))
+				b.WriteString(i18n.Tf("president.exchangeLine",
+					"from", cuiPlayerName(pg.GetPlayer(ex.FromPlayerIdx), ex.FromPlayerIdx),
+					"to", cuiPlayerName(pg.GetPlayer(ex.ToPlayerIdx), ex.ToPlayerIdx),
+					"cards", cuiCardSliceStr(ex.Cards)) + "\n")
 			}
 		}
 
-		// 場のカード
-		tableCards := pg.GetTableCards()
-		if len(tableCards) > 0 {
+		// Table cards
+		if tableCards := pg.GetTableCards(); len(tableCards) > 0 {
 			lastPlayIdx := pg.GetLastPlayPlayerIdx()
-			fmt.Fprintf(b, "場: %s (出したプレイヤー: %s)\n",
-				cuiCardSliceStr(tableCards),
-				cuiPlayerName(pg.GetPlayer(lastPlayIdx), lastPlayIdx))
+			b.WriteString(i18n.Tf("president.tableLine",
+				"cards", cuiCardSliceStr(tableCards),
+				"name", cuiPlayerName(pg.GetPlayer(lastPlayIdx), lastPlayIdx)) + "\n")
 		} else {
-			b.WriteString("場: なし (誰でも出せます)\n")
+			b.WriteString(i18n.T("president.tableEmpty") + "\n")
 		}
 
-		// 人間の前の行動
-		humanAction := pg.GetHumanAction()
-		if humanAction != nil {
+		// Last human action
+		if humanAction := pg.GetHumanAction(); humanAction != nil {
+			actName := cuiPlayerName(pg.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx)
 			if len(humanAction.PlayedCards) == 0 {
-				fmt.Fprintf(b, "%sがパスしました\n", cuiPlayerName(pg.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx))
+				b.WriteString(i18n.Tf("president.actionPass", "name", actName) + "\n")
 			} else {
-				fmt.Fprintf(b, "%sが %s を出しました\n",
-					cuiPlayerName(pg.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx),
-					cuiCardSliceStr(humanAction.PlayedCards))
+				b.WriteString(i18n.Tf("president.actionPlay",
+					"name", actName,
+					"cards", cuiCardSliceStr(humanAction.PlayedCards)) + "\n")
 			}
 		}
 
-		// CPUの行動履歴
-		cpuActions := pg.GetCpuActions()
-		if len(cpuActions) > 0 {
-			b.WriteString(color.Bold("[CPUの行動]") + "\n")
+		// CPU action history
+		if cpuActions := pg.GetCpuActions(); len(cpuActions) > 0 {
+			b.WriteString(color.Bold(i18n.T("president.cpuActionsHeader")) + "\n")
 			for _, action := range cpuActions {
-				actPlayerName := cuiPlayerName(pg.GetPlayer(action.PlayerIdx), action.PlayerIdx)
+				actName := cuiPlayerName(pg.GetPlayer(action.PlayerIdx), action.PlayerIdx)
 				if len(action.PlayedCards) == 0 {
-					fmt.Fprintf(b, "%sがパスしました\n", actPlayerName)
+					b.WriteString(i18n.Tf("president.actionPass", "name", actName) + "\n")
 				} else {
-					fmt.Fprintf(b, "%sが %s を出しました\n", actPlayerName, cuiCardSliceStr(action.PlayedCards))
+					b.WriteString(i18n.Tf("president.actionPlay",
+						"name", actName,
+						"cards", cuiCardSliceStr(action.PlayedCards)) + "\n")
 				}
 			}
 		}
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		if pg.GetGameEndFlag() {
-			b.WriteString("ゲーム終了！\n")
+			b.WriteString(i18n.T("president.gameEnd") + "\n")
 			for i := 0; i < pg.GetPlayerCnt(); i++ {
 				player := pg.GetPlayer(i)
-				fmt.Fprintf(b, "  %s: %s\n", cuiPlayerName(pg.GetPlayer(i), i), presidentRankName(player.GetRank()))
+				b.WriteString(i18n.Tf("president.rankEntry",
+					"name", cuiPlayerName(pg.GetPlayer(i), i),
+					"rank", presidentRankName(player.GetRank())) + "\n")
 			}
-		} else {
-			currentTurn := pg.GetCurrentTurn()
-			currentName := cuiPlayerName(pg.GetPlayer(currentTurn), currentTurn)
-			fmt.Fprintf(b, "手番: %s\n", currentName)
-			b.WriteString("p [インデックス...] でカードを出す / p でパス\n")
+			return
 		}
+		currentTurn := pg.GetCurrentTurn()
+		b.WriteString(i18n.Tf("president.promptCurrentTurn",
+			"name", cuiPlayerName(pg.GetPlayer(currentTurn), currentTurn)) + "\n")
+		b.WriteString(i18n.T("president.promptPlayHelp") + "\n")
 	})
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *PresidentCuiPresenter) ActionLogOutput(pg interfaces.PresidentGame) string {
 	return actionLogOutputText(pg)
 }

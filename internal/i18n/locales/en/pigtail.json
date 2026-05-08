@@ -1,4 +1,14 @@
 {
   "helpTitle": "Pig's Tail",
-  "helpAction": "  d, draw               draw from circle"
+  "helpAction": "  d, draw               draw from circle",
+  "header": "Stock: {{stock}} / center: {{center}}",
+  "topCardLine": "Center top: {{card}}",
+  "playerLine": "{{name}}: {{cards}} cards",
+  "cpuActionsHeader": "[CPU actions]",
+  "cpuActionPenalty": "{{name}} drew → penalty! Picks up {{count}} cards",
+  "cpuActionSafe": "{{name}} drew → safe",
+  "gameEndPrefix": "Game over! ",
+  "gameEndLoser": "{{name}} loses!",
+  "gameEndCardSuffix": " ({{count}} cards)",
+  "promptCurrentTurn": "{{name}} to act (draw to pull from stock)"
 }
