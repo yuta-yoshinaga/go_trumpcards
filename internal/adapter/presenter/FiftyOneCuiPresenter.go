@@ -56,9 +56,7 @@ func (p *FiftyOneCuiPresenter) Output(fo interfaces.FiftyOneGame, lastErr error)
 
 		b.WriteString("----------\n")
 
-		if lastErr != nil {
-			b.WriteString(i18n.Tf("fiftyone.errorLine", "msg", lastErr.Error()) + "\n")
-		}
+		cuiErrorBlock(b, lastErr)
 
 		if fo.GetGameEndFlag() {
 			b.WriteString(i18n.T("fiftyone.gameEndHeader") + "\n")
