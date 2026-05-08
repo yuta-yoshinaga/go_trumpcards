@@ -1,68 +1,73 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // euchrePlayerStr returns the display string for a single Euchre player.
 func euchrePlayerStr(player *domain.EuchrePlayer, i int) string {
 	var b strings.Builder
-	name := cuiPlayerName(player, i)
-	fmt.Fprintf(&b, "%s: チーム%d 獲得%dトリック %d枚\n",
-		name,
-		player.GetTeam(),
-		player.GetTrickCount(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("euchre.playerLine",
+		"name", cuiPlayerName(player, i),
+		"team", strconv.Itoa(player.GetTeam()),
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"cards", strconv.Itoa(player.GetCardsSize()),
+	))
+	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player))
-		b.WriteString("\n")
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
 
-// EuchreCuiPresenter ユーカーCUIプレゼンタークラス
+// EuchreCuiPresenter renders the Euchre CUI view.
 type EuchreCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *EuchreCuiPresenter) Output(e interfaces.EuchreGame, lastErr error) string {
-	return buildCuiOutput("Euchre (ユーカー)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  トリック: %d\n", e.GetRoundNumber(), e.GetTrickNumber())
-		fmt.Fprintf(b, "ディーラー: %s\n", cuiPlayerName(e.GetPlayer(e.GetDealerIdx()), e.GetDealerIdx()))
+	return buildCuiOutput(i18n.T("euchre.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("euchre.header",
+			"round", strconv.Itoa(e.GetRoundNumber()),
+			"trick", strconv.Itoa(e.GetTrickNumber())) + "\n")
+		dealerIdx := e.GetDealerIdx()
+		b.WriteString(i18n.Tf("euchre.dealer",
+			"name", cuiPlayerName(e.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
-		trumpSuit := e.GetTrumpSuit()
-		if trumpSuit > 0 {
-			fmt.Fprintf(b, "切り札: %s (メイカー: チーム%d)\n", cuiSuitName(trumpSuit), e.GetMakerTeam())
+		if trumpSuit := e.GetTrumpSuit(); trumpSuit > 0 {
+			b.WriteString(i18n.Tf("euchre.trumpLine",
+				"suit", cuiSuitName(trumpSuit),
+				"team", strconv.Itoa(e.GetMakerTeam())) + "\n")
 		} else {
-			b.WriteString("切り札: 未決定\n")
+			b.WriteString(i18n.T("euchre.trumpUndecided") + "\n")
 		}
 
-		faceUpCard := e.GetFaceUpCard()
-		if faceUpCard != nil {
-			fmt.Fprintf(b, "表向きカード: %s\n", cuiCardStr(faceUpCard))
+		if faceUpCard := e.GetFaceUpCard(); faceUpCard != nil {
+			b.WriteString(i18n.Tf("euchre.faceUpCard", "card", cuiCardStr(faceUpCard)) + "\n")
 		}
 
 		if e.GetGoingAlone() {
 			aloneIdx := e.GetGoingAlonePlayerIdx()
-			fmt.Fprintf(b, "ゴーアローン: %s\n", cuiPlayerName(e.GetPlayer(aloneIdx), aloneIdx))
+			b.WriteString(i18n.Tf("euchre.goingAlone",
+				"name", cuiPlayerName(e.GetPlayer(aloneIdx), aloneIdx)) + "\n")
 		}
 
-		// チームスコア
-		fmt.Fprintf(b, "チーム0: %d点  チーム1: %d点\n", e.GetTeamScore(0), e.GetTeamScore(1))
+		b.WriteString(i18n.Tf("euchre.teamScoreLine",
+			"t0", strconv.Itoa(e.GetTeamScore(0)),
+			"t1", strconv.Itoa(e.GetTeamScore(1))) + "\n")
 
-		// プレイヤー情報
 		for i := 0; i < e.GetPlayerCnt(); i++ {
 			b.WriteString(euchrePlayerStr(e.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
 
-		// 現在のトリック
+		// Current trick
 		trick := e.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
 			func(tc *domain.EuchreTrickCard) int { return tc.PlayerIdx },
@@ -72,84 +77,95 @@ func (p *EuchreCuiPresenter) Output(e interfaces.EuchreGame, lastErr error) stri
 
 		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
+		// Game state
 		if e.GetGameEndFlag() {
-			winnerTeam := e.GetWinnerTeam()
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(fmt.Sprintf("チーム%dの勝利です！", winnerTeam)))
-		} else {
-			phase := e.GetPhase()
-			switch phase {
-			case domain.EuchrePhasePickUp:
-				bidIdx := e.GetBidPlayerIdx()
-				player := e.GetPlayer(bidIdx)
-				fmt.Fprintf(b, "ピックアップフェーズ: %sの番\n", cuiPlayerName(player, bidIdx))
-				b.WriteString("o (order up) / oa (order up alone) / pa (pass)\n")
-			case domain.EuchrePhaseCallTrump:
-				bidIdx := e.GetBidPlayerIdx()
-				player := e.GetPlayer(bidIdx)
-				fmt.Fprintf(b, "コールトランプフェーズ: %sの番\n", cuiPlayerName(player, bidIdx))
-				b.WriteString("c <suit> (call) / ca <suit> (call alone) / pa (pass)\n")
-			case domain.EuchrePhaseDiscard:
-				b.WriteString("ディスカードフェーズ\n")
-				b.WriteString("d <i> (discard)\n")
-			case domain.EuchrePhasePlay:
-				currentIdx := e.GetCurrentPlayerIdx()
-				player := e.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("p <i> (play)\n")
-			case domain.EuchrePhaseTrickEnd:
-				b.WriteString("トリック終了\n")
-				b.WriteString("n (next trick)\n")
-			case domain.EuchrePhaseRoundEnd:
-				b.WriteString("ラウンド終了\n")
-				b.WriteString("nr (next round)\n")
-			}
+			banner := i18n.Tf("euchre.gameEnd", "team", strconv.Itoa(e.GetWinnerTeam()))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		switch e.GetPhase() {
+		case domain.EuchrePhasePickUp:
+			bidIdx := e.GetBidPlayerIdx()
+			b.WriteString(i18n.Tf("euchre.promptPickup",
+				"name", cuiPlayerName(e.GetPlayer(bidIdx), bidIdx)) + "\n")
+			b.WriteString(i18n.T("euchre.promptPickupHelp") + "\n")
+		case domain.EuchrePhaseCallTrump:
+			bidIdx := e.GetBidPlayerIdx()
+			b.WriteString(i18n.Tf("euchre.promptCallTrump",
+				"name", cuiPlayerName(e.GetPlayer(bidIdx), bidIdx)) + "\n")
+			b.WriteString(i18n.T("euchre.promptCallTrumpHelp") + "\n")
+		case domain.EuchrePhaseDiscard:
+			b.WriteString(i18n.T("euchre.promptDiscard") + "\n")
+			b.WriteString(i18n.T("euchre.promptDiscardHelp") + "\n")
+		case domain.EuchrePhasePlay:
+			currentIdx := e.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("euchre.promptCurrentPlayer",
+				"name", cuiPlayerName(e.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("euchre.promptPlayHelp") + "\n")
+		case domain.EuchrePhaseTrickEnd:
+			b.WriteString(i18n.T("euchre.promptTrickEnd") + "\n")
+			b.WriteString(i18n.T("euchre.promptTrickEndHelp") + "\n")
+		case domain.EuchrePhaseRoundEnd:
+			b.WriteString(i18n.T("euchre.promptRoundEnd") + "\n")
+			b.WriteString(i18n.T("euchre.promptRoundEndHelp") + "\n")
 		}
 	})
 }
 
-// HintOutput ヒント情報を出力する
+// HintOutput emits the current Euchre hint.
 func (p *EuchreCuiPresenter) HintOutput(e interfaces.EuchreGame) string {
 	hint := e.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("euchre.hintNone") + "\n"
 	}
+	reason := euchreHintReasonStr(hint.Reason)
 	if hint.OrderUp != nil {
 		if *hint.OrderUp {
-			alone := ""
+			key := "euchre.hintOrderUp"
 			if hint.GoAlone != nil && *hint.GoAlone {
-				alone = " (ゴーアローン)"
+				key = "euchre.hintOrderUpAlone"
 			}
-			return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: オーダーアップ%s (%s)]", alone, euchreHintReasonStr(hint.Reason))))
+			return color.Yellow(i18n.Tf(key, "reason", reason)) + "\n"
 		}
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: パス (%s)]", euchreHintReasonStr(hint.Reason))))
+		return color.Yellow(i18n.Tf("euchre.hintPass", "reason", reason)) + "\n"
 	}
 	if hint.Suit != nil {
-		alone := ""
+		key := "euchre.hintCallSuit"
 		if hint.GoAlone != nil && *hint.GoAlone {
-			alone = " (ゴーアローン)"
+			key = "euchre.hintCallSuitAlone"
 		}
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: %sをコール%s (%s)]", cuiSuitName(*hint.Suit), alone, euchreHintReasonStr(hint.Reason))))
+		return color.Yellow(i18n.Tf(key,
+			"suit", cuiSuitName(*hint.Suit),
+			"reason", reason)) + "\n"
 	}
 	if hint.CardIndex == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("euchre.hintNone") + "\n"
 	}
 	player := e.GetPlayer(0)
 	card := player.GetCard(*hint.CardIndex)
-	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), euchreHintReasonStr(hint.Reason))))
+	return color.Yellow(i18n.Tf("euchre.hintCard",
+		"idx", strconv.Itoa(*hint.CardIndex),
+		"card", cuiCardStr(card),
+		"reason", reason)) + "\n"
 }
 
-// euchreHintReasons はEuchre固有のヒント理由翻訳
-var euchreHintReasons = map[string]string{
-	"discard_weakest": "最弱カードを捨てる",
+// euchreHintReasonKeys maps Euchre-specific hint-reason identifiers to their
+// i18n keys. Reasons not listed here fall through to cui_common via
+// lookupHintReason.
+var euchreHintReasonKeys = map[string]string{
+	"discard_weakest": "euchre.hintReasonDiscardWeakest",
 }
 
-// euchreHintReasonStr ヒント理由を日本語に変換する
+// euchreHintReasonStr resolves a reason via the per-game map first, then the
+// shared (cui_common) layer.
 func euchreHintReasonStr(reason string) string {
-	return lookupHintReason(reason, euchreHintReasons)
+	if key, ok := euchreHintReasonKeys[reason]; ok {
+		return i18n.T(key)
+	}
+	return lookupHintReason(reason, nil)
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *EuchreCuiPresenter) ActionLogOutput(e interfaces.EuchreGame) string {
 	return actionLogOutputText(e)
 }

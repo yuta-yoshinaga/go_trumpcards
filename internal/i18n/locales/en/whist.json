@@ -4,5 +4,19 @@
   "helpNext": "  n                    next trick",
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-  "helpSetLimit": "  sl <n>               point limit"
+  "helpSetLimit": "  sl <n>               point limit",
+  "header": "Round: {{round}}  Trick: {{trick}}",
+  "trumpLine": "Trump: {{suit}}",
+  "teamScoreLine": "Team scores: Team 0={{t0}}  Team 1={{t1}}",
+  "playerLine": "{{name}} (Team {{team}}): tricks={{tricks}} cumulative={{cum}} round={{round}} cards={{cards}}",
+  "gameEnd": "Game over! Team {{team}} wins!",
+  "promptCurrentPlayer": "{{name}} to play",
+  "promptPlay": "play <idx>: play a card",
+  "promptTrickEnd": "Trick complete",
+  "promptTrickEndHelp": "next: advance to next trick",
+  "promptRoundEnd": "Round complete",
+  "promptRoundEndHelp": "nr / nextround: advance to next round",
+  "hintNone": "No hint available.",
+  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintReasonTrumpCut": "cut with trump"
 }
