@@ -1,15 +1,15 @@
 {
   "helpTitle": "5-card Draw Poker (ポーカー)",
-  "helpBet": "  b [amount]           bet (e.g. b 20)",
-  "helpCall": "  c                    call",
-  "helpRaise": "  ra [amount]          raise (e.g. ra 30)",
-  "helpCheck": "  ck                   check",
-  "helpFold": "  f                    fold",
-  "helpAllIn": "  a                    all-in",
-  "helpExchange": "  e [0-4]              exchange cards (e.g. e 0 2 4)",
-  "helpStand": "  s                    stand (no exchange)",
-  "helpBettingLimit": "  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
-  "helpLowball": "  lw                   toggle 2-7 Lowball mode",
+  "helpBet": "  b [amount]           ベット (例: b 20)",
+  "helpCall": "  c                    コール",
+  "helpRaise": "  ra [amount]          レイズ (例: ra 30)",
+  "helpCheck": "  ck                   チェック",
+  "helpFold": "  f                    フォールド",
+  "helpAllIn": "  a                    オールイン",
+  "helpExchange": "  e [0-4]              カード交換 (例: e 0 2 4)",
+  "helpStand": "  s                    交換しない",
+  "helpBettingLimit": "  bl [0-2]             ベッティングリミット (0=Fixed, 1=PotLimit, 2=NoLimit)",
+  "helpLowball": "  lw                   2-7ローボールモード切替",
   "outputTitle": "5-Card Draw Poker",
   "outputTitleLowball": "5-Card Draw Poker [2-7 Lowball]",
   "dealerLine": "ディーラー: Player {{idx}}",
@@ -34,5 +34,6 @@
   "resultKickers": " (キッカー: {{kickers}})",
   "wonAmount": " → {{total}}チップ獲得",
   "gameEnd": "ゲーム終了",
-  "drawOddsHeader": "[ドローオッズ]"
+  "drawOddsHeader": "[ドローオッズ]",
+  "drawOddsLine": "  {{name}}: {{prob}}% ({{count}}/{{total}})"
 }

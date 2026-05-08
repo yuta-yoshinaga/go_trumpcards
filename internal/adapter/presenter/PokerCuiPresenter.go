@@ -157,7 +157,11 @@ func (pcp *PokerCuiPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr err
 	oddsBuilder.WriteString("==========\n")
 	oddsBuilder.WriteString(color.Bold(i18n.T("poker.drawOddsHeader")) + "\n")
 	for _, o := range odds {
-		fmt.Fprintf(&oddsBuilder, "  %s: %.2f%% (%d/%d)\n", o.HandName, o.Probability*100, o.Count, o.Total)
+		oddsBuilder.WriteString(i18n.Tf("poker.drawOddsLine",
+			"name", o.HandName,
+			"prob", fmt.Sprintf("%.2f", o.Probability*100),
+			"count", strconv.Itoa(o.Count),
+			"total", strconv.Itoa(o.Total)) + "\n")
 	}
 	return base + oddsBuilder.String()
 }

@@ -34,5 +34,6 @@
   "resultKickers": " (kickers: {{kickers}})",
   "wonAmount": " → won {{total}} chips",
   "gameEnd": "Game over",
-  "drawOddsHeader": "[Draw odds]"
+  "drawOddsHeader": "[Draw odds]",
+  "drawOddsLine": "  {{name}}: {{prob}}% ({{count}}/{{total}})"
 }
