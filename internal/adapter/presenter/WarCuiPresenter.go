@@ -2,61 +2,68 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// WarCuiPresenter 戦争CUIプレゼンタークラス
+// WarCuiPresenter renders the War CUI view.
 type WarCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *WarCuiPresenter) Output(w interfaces.WarGame, lastErr error) string {
-	return buildCuiOutput("War (戦争)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("war.helpTitle"), func(b *strings.Builder) {
 		cpu := w.GetPlayer(1)
 		human := w.GetPlayer(0)
 
-		fmt.Fprintf(b, "CPU: 山札%d枚 / 捨札%d枚 (計%d枚)\n",
-			cpu.GetDrawPileSize(), cpu.GetDiscardPileSize(), cpu.TotalCards())
+		b.WriteString(i18n.Tf("war.cpuStats",
+			"draw", strconv.Itoa(cpu.GetDrawPileSize()),
+			"discard", strconv.Itoa(cpu.GetDiscardPileSize()),
+			"total", strconv.Itoa(cpu.TotalCards())) + "\n")
 
 		b.WriteString("----------\n")
-		b.WriteString(color.Bold("[場札]") + " ")
+		b.WriteString(color.Bold(i18n.T("war.boardLabel")) + " ")
 		if c := w.GetCpuRevealed(); c != nil {
-			fmt.Fprintf(b, "CPU: %s  ", cuiCardStr(c))
+			b.WriteString(i18n.Tf("war.boardCpu", "card", cuiCardStr(c)) + "  ")
 		} else {
-			b.WriteString("CPU: --  ")
+			b.WriteString(i18n.T("war.boardCpuEmpty") + "  ")
 		}
 		if c := w.GetPlayerRevealed(); c != nil {
-			fmt.Fprintf(b, "あなた: %s", cuiCardStr(c))
+			b.WriteString(i18n.Tf("war.boardHuman", "card", cuiCardStr(c)))
 		} else {
-			b.WriteString("あなた: --")
+			b.WriteString(i18n.T("war.boardHumanEmpty"))
 		}
-		fmt.Fprintf(b, "  (場に%d枚)\n", w.GetWarPotSize())
+		b.WriteString(i18n.Tf("war.boardPot",
+			"count", strconv.Itoa(w.GetWarPotSize())) + "\n")
 		b.WriteString("----------\n")
 
-		fmt.Fprintf(b, "あなた: 山札%d枚 / 捨札%d枚 (計%d枚)\n",
-			human.GetDrawPileSize(), human.GetDiscardPileSize(), human.TotalCards())
+		b.WriteString(i18n.Tf("war.humanStats",
+			"draw", strconv.Itoa(human.GetDrawPileSize()),
+			"discard", strconv.Itoa(human.GetDiscardPileSize()),
+			"total", strconv.Itoa(human.TotalCards())) + "\n")
 
 		switch w.GetPhase() {
 		case domain.WarPhaseReveal:
-			b.WriteString("step コマンドで次の1枚をめくります。\n")
+			b.WriteString(i18n.T("war.promptReveal") + "\n")
 		case domain.WarPhaseResolved:
 			if w.GetLastWinnerIdx() == 0 {
-				b.WriteString(color.Green("あなたがラウンドに勝利！ step で回収します。\n"))
+				b.WriteString(color.Green(i18n.T("war.promptResolvedHuman")) + "\n")
 			} else {
-				b.WriteString(color.Red("CPUがラウンドに勝利... step で回収します。\n"))
+				b.WriteString(color.Red(i18n.T("war.promptResolvedCpu")) + "\n")
 			}
 		case domain.WarPhaseWarBury:
-			b.WriteString(color.Yellow("戦争発生！ step で伏せ札と表札を出します。\n"))
+			b.WriteString(color.Yellow(i18n.T("war.promptWarBury")) + "\n")
 		}
 
 		if w.GetGameEndFlag() {
 			if w.GetWinnerIdx() == 0 {
-				b.WriteString(color.Green("あなたの勝ちです！\n"))
+				b.WriteString(color.Green(i18n.T("war.gameWinHuman")) + "\n")
 			} else {
-				b.WriteString(color.Red("CPUの勝ちです...\n"))
+				b.WriteString(color.Red(i18n.T("war.gameWinCpu")) + "\n")
 			}
 		}
 
@@ -66,7 +73,7 @@ func (p *WarCuiPresenter) Output(w interfaces.WarGame, lastErr error) string {
 	})
 }
 
-// ActionLogOutput 棋譜を文字列出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *WarCuiPresenter) ActionLogOutput(w interfaces.WarGame) string {
 	return actionLogOutputText(w)
 }

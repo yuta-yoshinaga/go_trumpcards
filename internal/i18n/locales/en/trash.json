@@ -13,5 +13,17 @@
   "gameOverLose": "CPU wins. Moves: {{moveCount}}",
   "errSlotFilled": "That slot is already filled",
   "errInvalidPosition": "Position must be between 1 and 10",
-  "errNotWildPhase": "You cannot place a wild right now"
+  "errNotWildPhase": "You cannot place a wild right now",
+  "playerLabelHuman": "You",
+  "playerLabelCpu": "CPU",
+  "playerLabelTurnSuffix": " (turn)",
+  "playerLineHeader": "{{label}}:",
+  "slotFaceUp": "[{{idx}} {{card}}] ",
+  "slotFaceDown": "[{{idx}}  ? ] ",
+  "stockLine": "Stock: {{stock}}   Discard: {{discard}}",
+  "stockTop": " (top: {{card}})",
+  "pending": "Pending: {{card}}",
+  "promptAwaitWild": "Place the wild (p <pos>)",
+  "winHuman": "You win!",
+  "winCpu": "CPU wins"
 }

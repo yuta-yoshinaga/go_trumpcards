@@ -3,5 +3,13 @@
   "helpPlay": "  p <card> <pile>      play card (card=hand index, pile=center pile index)",
   "helpFlip": "  f                    flip center cards (when stuck)",
   "helpHint": "  h                    show hint",
-  "helpSetDifficulty": "  sd <level>           CPU difficulty (0=Easy, 1=Normal, 2=Hard)"
+  "helpSetDifficulty": "  sd <level>           CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "cpuStats": "CPU: hand {{hand}} / deck {{draw}}",
+  "humanStats": "You: hand {{hand}} / deck {{draw}}",
+  "centerLabel": "[Center]",
+  "centerCard": "[{{idx}}] {{card}} ",
+  "hintLine": "[Hint] play card [{{ci}}] on center pile [{{pi}}]",
+  "promptStuck": "Stuck. Use flip to flip the center cards.",
+  "winHuman": "You win!",
+  "winCpu": "CPU wins..."
 }

@@ -2,5 +2,19 @@
   "helpTitle": "War (戦争)",
   "helpStep": "  s                    flip next card / resolve round / resolve war",
   "helpAutoPlay": "  a                    auto play until the game ends",
-  "helpSetMax": "  sm <n>               set MaxRounds (10-10000) and reset"
+  "helpSetMax": "  sm <n>               set MaxRounds (10-10000) and reset",
+  "cpuStats": "CPU: deck {{draw}} / discard {{discard}} (total {{total}})",
+  "humanStats": "You: deck {{draw}} / discard {{discard}} (total {{total}})",
+  "boardLabel": "[Board]",
+  "boardCpu": "CPU: {{card}}",
+  "boardCpuEmpty": "CPU: --",
+  "boardHuman": "You: {{card}}",
+  "boardHumanEmpty": "You: --",
+  "boardPot": "  ({{count}} on table)",
+  "promptReveal": "Use step to flip the next card.",
+  "promptResolvedHuman": "You won the round! step to collect.",
+  "promptResolvedCpu": "CPU won the round... step to collect.",
+  "promptWarBury": "War declared! step to lay down face-down + face-up cards.",
+  "gameWinHuman": "You win!",
+  "gameWinCpu": "CPU wins..."
 }
