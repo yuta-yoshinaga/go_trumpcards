@@ -138,6 +138,45 @@ func TestPyramidCuiPresenterHintOutput_WastePair(t *testing.T) {
 	assert.Contains(t, result, "ウェイスト+ピラミッド")
 }
 
+func TestPyramidCuiPresenterHintOutput_UnknownTypeFallsThrough(t *testing.T) {
+	pg := new(interfaces.MockPyramidGame)
+	pg.On("GetHint").Return(&domain.PyramidHint{Type: "???"})
+
+	p := &PyramidCuiPresenter{}
+	result := p.HintOutput(pg)
+	assert.Contains(t, result, "不明")
+}
+
+func TestPyramidCuiPresenterOutput_StalemateAndNonEmptyWaste(t *testing.T) {
+	pg := setupPyramidCuiMock()
+	pg.ExpectedCalls = nil
+	pg.On("GetPhase").Return(domain.PyramidPhasePlaying).Maybe()
+	pg.On("GetMoveCount").Return(7).Maybe()
+	pg.On("GetStockCount").Return(0).Maybe()
+	// Non-nil waste with one card exercises the wasteCard branch.
+	pg.On("GetWaste").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 7, false),
+	}).Maybe()
+	pg.On("IsStalemate").Return(true).Maybe()
+
+	var pyramid [domain.PyramidRowCnt][]*domain.PyramidCard
+	for row := range domain.PyramidRowCnt {
+		pyramid[row] = make([]*domain.PyramidCard, row+1)
+		for col := range row + 1 {
+			pyramid[row][col] = &domain.PyramidCard{
+				Card:    domain.NewCard(domain.CardDesignSpade, 1, false),
+				Removed: false,
+			}
+		}
+	}
+	pg.On("GetPyramid").Return(pyramid).Maybe()
+
+	p := &PyramidCuiPresenter{}
+	result := p.Output(pg, nil)
+	assert.Contains(t, result, "手詰まりです")
+	assert.Contains(t, result, "Waste: ")
+}
+
 func TestPyramidCuiPresenterActionLogOutput(t *testing.T) {
 	pg := new(interfaces.MockPyramidGame)
 	pg.On("GetPhase").Return(domain.PyramidPhasePlaying)
