@@ -2,36 +2,38 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// FreeCellCuiPresenter フリーセルCUIプレゼンタークラス
+// FreeCellCuiPresenter renders the FreeCell Solitaire CUI view.
 type FreeCellCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *FreeCellCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error) string {
-	return buildCuiOutput("FreeCell (フリーセル)", func(b *strings.Builder) {
-		// フリーセル
-		b.WriteString("FreeCells: ")
+	return buildCuiOutput(i18n.T("freecell.helpTitle"), func(b *strings.Builder) {
+		// Free cells
+		b.WriteString(i18n.T("freecell.freeCellHeader"))
 		freeCells := f.GetFreeCells()
 		for i := 0; i < domain.FreeCellCellCnt; i++ {
 			if i != 0 {
 				b.WriteString(" | ")
 			}
 			if freeCells[i] == nil {
-				b.WriteString("[空]")
+				b.WriteString(i18n.T("cuiEmptyCol"))
 			} else {
 				b.WriteString(cuiCardStr(freeCells[i]))
 			}
 		}
 		b.WriteString("\n")
 
-		// ファンデーション
-		b.WriteString("Foundation: ")
+		// Foundation
+		b.WriteString(i18n.T("freecell.foundationHeader"))
 		foundation := f.GetFoundation()
 		for i := 0; i < domain.FreeCellFoundationCnt; i++ {
 			if i != 0 {
@@ -39,23 +41,22 @@ func (p *FreeCellCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 			}
 			pile := foundation[i]
 			if len(pile) == 0 {
-				b.WriteString("[空]")
+				b.WriteString(i18n.T("cuiEmptyCol"))
 			} else {
-				topCard := pile[len(pile)-1]
-				b.WriteString(cuiCardStr(topCard))
+				b.WriteString(cuiCardStr(pile[len(pile)-1]))
 			}
 		}
 		b.WriteString("\n")
 
 		b.WriteString("----------\n")
 
-		// タブロー
+		// Tableau
 		tableau := f.GetTableau()
 		for col := 0; col < domain.FreeCellTableauCnt; col++ {
 			colCards := tableau[col]
-			fmt.Fprintf(b, "列%d:", col)
+			b.WriteString(i18n.Tf("freecell.columnLabel", "col", strconv.Itoa(col)))
 			if len(colCards) == 0 {
-				b.WriteString(" [空]")
+				b.WriteString(" " + i18n.T("cuiEmptyCol"))
 			} else {
 				for j, c := range colCards {
 					fmt.Fprintf(b, " [%d]%s", j, cuiCardStr(c))
@@ -66,62 +67,55 @@ func (p *FreeCellCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 
 		b.WriteString("----------\n")
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
-		phase := f.GetPhase()
-		switch phase {
+		switch f.GetPhase() {
 		case domain.FreeCellPhasePlaying:
 			if f.IsStalemate() {
-				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
-			fmt.Fprintf(b, "手数: %d\n", f.GetMoveCount())
+			b.WriteString(i18n.Tf("cuiSolitaireMoves",
+				"count", strconv.Itoa(f.GetMoveCount())) + "\n")
 		case domain.FreeCellPhaseGameClear:
-			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), f.GetMoveCount())
+			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(f.GetMoveCount())) + "\n")
 		case domain.FreeCellPhaseGameOver:
-			b.WriteString(color.Red("ゲームオーバー") + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current FreeCell hint.
 func (p *FreeCellCuiPresenter) HintOutput(f interfaces.FreeCellGame) string {
 	hint := f.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("cuiHintNone") + "\n"
 	}
-	return fmt.Sprintf("ヒント: %s", freeCellHintStr(hint)) + "\n"
-}
-
-// ActionLogOutput 棋譜をテキスト出力
-func (p *FreeCellCuiPresenter) ActionLogOutput(f interfaces.FreeCellGame) string {
-	phase := f.GetPhase()
-	if phase == domain.FreeCellPhasePlaying {
-		return actionLogToText(nil)
-	}
-	return actionLogToText(f.GetActionLog())
-}
-
-// freeCellHintStr ヒントを文字列に変換
-func freeCellHintStr(hint *domain.FreeCellHint) string {
 	var from string
 	switch hint.FromZone {
 	case "tableau":
-		from = fmt.Sprintf("タブロー列%d[%d]", hint.FromCol, hint.CardIndex)
+		from = i18n.Tf("freecell.hintFromTableau",
+			"col", strconv.Itoa(hint.FromCol),
+			"idx", strconv.Itoa(hint.CardIndex))
 	case "freecell":
-		from = fmt.Sprintf("フリーセル%d", hint.FromCol)
+		from = i18n.Tf("freecell.hintFromFreeCell", "col", strconv.Itoa(hint.FromCol))
 	}
 	var to string
 	switch hint.ToZone {
 	case "foundation":
-		to = "ファンデーション"
+		to = i18n.T("freecell.hintToFoundation")
 	case "tableau":
-		to = fmt.Sprintf("タブロー列%d", hint.ToCol)
+		to = i18n.Tf("freecell.hintToTableau", "col", strconv.Itoa(hint.ToCol))
 	case "freecell":
-		to = fmt.Sprintf("フリーセル%d", hint.ToCol)
+		to = i18n.Tf("freecell.hintToFreeCell", "col", strconv.Itoa(hint.ToCol))
 	}
-	return fmt.Sprintf("%s → %s", from, to)
+	return i18n.Tf("freecell.hintLine", "from", from, "to", to) + "\n"
+}
+
+// ActionLogOutput emits the action-log transcript as plain text.
+func (p *FreeCellCuiPresenter) ActionLogOutput(f interfaces.FreeCellGame) string {
+	if f.GetPhase() == domain.FreeCellPhasePlaying {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(f.GetActionLog())
 }

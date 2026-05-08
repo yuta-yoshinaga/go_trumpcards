@@ -93,6 +93,22 @@ func TestYukonCuiPresenter_Output(t *testing.T) {
 		result := p.Output(yg, nil)
 		assert.Contains(t, result, "ゲームオーバー")
 	})
+
+	t.Run("foundation with cards", func(t *testing.T) {
+		yg := new(interfaces.MockYukonGame)
+		yg.On("GetPhase").Return(domain.YukonPhasePlaying).Maybe()
+		yg.On("GetMoveCount").Return(0).Maybe()
+		yg.On("IsStalemate").Return(false).Maybe()
+		var tableau [domain.YukonTableauCnt][]*domain.KlondikeTableauCard
+		yg.On("GetTableau").Return(tableau).Maybe()
+		var foundation [domain.YukonFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		yg.On("GetFoundation").Return(foundation).Maybe()
+
+		p := new(YukonCuiPresenter)
+		result := p.Output(yg, nil)
+		assert.Contains(t, result, "SPADE 1")
+	})
 }
 
 func TestYukonCuiPresenter_HintOutput(t *testing.T) {
