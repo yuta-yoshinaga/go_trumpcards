@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -67,9 +66,7 @@ func (p *SlapjackCuiPresenter) Output(g interfaces.SlapjackGame, lastErr error) 
 			}
 		}
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s %s\n", color.Red("[エラー]"), lastErr.Error())
-		}
+		cuiErrorBlock(b, lastErr)
 	})
 }
 

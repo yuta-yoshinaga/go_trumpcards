@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -67,9 +66,7 @@ func (p *WarCuiPresenter) Output(w interfaces.WarGame, lastErr error) string {
 			}
 		}
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s %s\n", color.Red("[エラー]"), lastErr.Error())
-		}
+		cuiErrorBlock(b, lastErr)
 	})
 }
 

@@ -40,7 +40,6 @@ func TestSpeedCuiPresenter_Output(t *testing.T) {
 	t.Run("shows error", func(t *testing.T) {
 		s := setupSpeedWebTest()
 		result := p.Output(s, errors.New("bad play"))
-		assert.Contains(t, result, "[エラー]")
 		assert.Contains(t, result, "bad play")
 	})
 

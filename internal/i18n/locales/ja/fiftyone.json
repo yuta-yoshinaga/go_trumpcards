@@ -13,7 +13,6 @@
   "tableHeader": "場札: ",
   "tableCard": "[{{idx}}]{{card}}",
   "stopCalled": "⚠ {{name}} がストップ宣言！",
-  "errorLine": "[エラー] {{msg}}",
   "gameEndHeader": "=== ゲーム終了 ===",
   "scoreEntry": "  {{name}}: {{score}}点",
   "winHuman": "あなたの勝ち！",

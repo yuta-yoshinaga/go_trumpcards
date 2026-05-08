@@ -39,7 +39,6 @@ func TestSlapjackCuiPresenter_Output(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		g := setupSlapjackTest()
 		result := p.Output(g, errors.New("oops"))
-		assert.Contains(t, result, "[エラー]")
 		assert.Contains(t, result, "oops")
 	})
 
