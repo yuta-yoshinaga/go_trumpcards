@@ -110,10 +110,10 @@ func (p *SpiteAndMaliceCuiPresenter) Output(g interfaces.SpiteAndMaliceGame, las
 				"moves", movesStr) + "\n")
 		case domain.SpiteAndMalicePhaseGameOver:
 			if g.GetWinner() == domain.SpiteAndMaliceHumanIdx {
-				b.WriteString(color.Green(i18n.T("spiteandmalice.winHuman")) + " " +
+				b.WriteString(color.Green(i18n.T("spiteandmalice.winHuman")) +
 					i18n.Tf("cuiSolitaireMoves", "count", movesStr) + "\n")
 			} else {
-				b.WriteString(color.Red(i18n.T("spiteandmalice.winCpu")) + " " +
+				b.WriteString(color.Red(i18n.T("spiteandmalice.winCpu")) +
 					i18n.Tf("cuiSolitaireMoves", "count", movesStr) + "\n")
 			}
 		}

@@ -7,7 +7,7 @@
   "helpSetRule": "  sr <rule> <0|1>      toggle local rule (sr list to show all)",
   "playerFinished": ": finished (rank: {{rank}})",
   "playerHand": ": {{count}} cards",
-  "revolutionLabel": "[Revolution]",
+  "revolutionLabel": "[Revolution] ",
   "revolutionSuffix": "2 is weakest, 3 is strongest",
   "exchangesHeader": "[Card exchanges]",
   "exchangeLine": "{{from}} → {{to}}: {{cards}}",

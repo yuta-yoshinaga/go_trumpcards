@@ -76,6 +76,34 @@ func TestDurakCuiPresenter_Output(t *testing.T) {
 		result := p.Output(d, nil)
 		assert.Contains(t, result, "テーブル")
 	})
+
+	t.Run("defend phase shows banner", func(t *testing.T) {
+		d := setupGame()
+		d.SetPhase(domain.DurakPhaseDefend)
+		result := p.Output(d, nil)
+		assert.Contains(t, result, "防御")
+	})
+
+	t.Run("defended pair on table", func(t *testing.T) {
+		d := setupGame()
+		d.SetTablePairs([]*domain.DurakTablePair{
+			{
+				Attack:  domain.NewCard(domain.CardDesignSpade, 7, false),
+				Defense: domain.NewCard(domain.CardDesignSpade, 8, false),
+			},
+		})
+		result := p.Output(d, nil)
+		assert.Contains(t, result, "SPADE 7")
+		assert.Contains(t, result, "SPADE 8")
+	})
+
+	t.Run("finished player rendered", func(t *testing.T) {
+		d := setupGame()
+		// Mark CPU 1 as finished — exercises durakPlayerStr's finished branch.
+		d.GetPlayer(1).SetIsFinished(true)
+		result := p.Output(d, nil)
+		assert.Contains(t, result, "上がり")
+	})
 }
 
 func TestDurakCuiPresenter_ActionLogOutput(t *testing.T) {

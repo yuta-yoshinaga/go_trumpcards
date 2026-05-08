@@ -9,6 +9,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func makePresidentPlayersForPresenter() []*domain.PresidentPlayer {
@@ -112,11 +113,13 @@ func TestPresidentCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "パス")
 	})
 
-	t.Run("game end rendered", func(t *testing.T) {
+	// Game-end + rank-line rendering is exercised through the mock since
+	// the real President domain has no SetGameEndFlag. The mock lets us
+	// drive each rank value (1-4) plus an out-of-range value through
+	// presidentRankName via the gameEnd loop.
+	t.Run("game end with all four ranks + unknown rank", func(t *testing.T) {
+		m := new(interfaces.MockPresidentGame)
 		players := makePresidentPlayersForPresenter()
-		pg := domain.NewPresident(domain.NewTrumpCards(0), players, domain.DefaultPresidentConfig())
-		// Complete game: 1 player has cards, others finish
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 		players[0].SetRank(1)
 		players[0].SetIsFinished(true)
 		players[1].SetRank(2)
@@ -125,24 +128,46 @@ func TestPresidentCuiPresenter_Output(t *testing.T) {
 		players[2].SetIsFinished(true)
 		players[3].SetRank(4)
 		players[3].SetIsFinished(true)
-		// Force gameEndFlag via PlayerPlay or set directly via internals not available;
-		// use `Reset`+`manual end` approach: directly play and finish.
-		pg.SetCurrentTurn(0)
-		// Use the testhelper to end the game
-		_ = pg
-		// The game end flag isn't settable; so instead just test rank name function
-		assert.Equal(t, "大統領", presenterPresidentRankName(1))
-	})
-}
 
-// helper to indirectly test presidentRankName via exported path (skipped: unexported)
-// This is a workaround — we'll indirectly test via Output when the game ends.
-func presenterPresidentRankName(rank int) string {
-	names := map[int]string{1: "大統領", 2: "副大統領", 3: "副スカム", 4: "スカム"}
-	if v, ok := names[rank]; ok {
-		return v
-	}
-	return "不明"
+		m.On("GetPlayerCnt").Return(4)
+		for i := range 4 {
+			m.On("GetPlayer", i).Return(players[i])
+		}
+		m.On("GetRevolutionActive").Return(false)
+		m.On("GetExchangeActions").Return(([]*domain.PresidentExchangeAction)(nil))
+		m.On("GetTableCards").Return(([]*domain.Card)(nil))
+		m.On("GetHumanAction").Return((*domain.PresidentCpuAction)(nil))
+		m.On("GetCpuActions").Return(([]*domain.PresidentCpuAction)(nil))
+		m.On("GetGameEndFlag").Return(true)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ゲーム終了！")
+		assert.Contains(t, result, "大統領")
+		assert.Contains(t, result, "副大統領")
+		assert.Contains(t, result, "副スカム")
+		assert.Contains(t, result, "スカム")
+	})
+
+	t.Run("rank entry with out-of-range rank shows unknown label", func(t *testing.T) {
+		m := new(interfaces.MockPresidentGame)
+		players := makePresidentPlayersForPresenter()
+		// Single finished player with rank 0 — exercises the default branch
+		// of presidentRankName which the other test does not.
+		players[0].SetRank(0)
+		players[0].SetIsFinished(true)
+
+		m.On("GetPlayerCnt").Return(1)
+		m.On("GetPlayer", 0).Return(players[0])
+		m.On("GetRevolutionActive").Return(false)
+		m.On("GetExchangeActions").Return(([]*domain.PresidentExchangeAction)(nil))
+		m.On("GetTableCards").Return(([]*domain.Card)(nil))
+		m.On("GetHumanAction").Return((*domain.PresidentCpuAction)(nil))
+		m.On("GetCpuActions").Return(([]*domain.PresidentCpuAction)(nil))
+		m.On("GetGameEndFlag").Return(true)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "不明")
+	})
 }
 
 func TestPresidentCuiPresenter_ActionLogOutput(t *testing.T) {
