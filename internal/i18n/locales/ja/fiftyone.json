@@ -5,5 +5,18 @@
   "helpStop": "  stop                 ストップを宣言",
   "helpSetDifficulty": "  sd <0-2>             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
-  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+  "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+  "outputTitle": "Fifty-one (フィフティワン)",
+  "humanScoreLine": " (スコア: {{score}})",
+  "cpuScoreLine": ": {{count}}枚 (スコア: {{score}})",
+  "scoreUnknown": "?",
+  "tableHeader": "場札: ",
+  "tableCard": "[{{idx}}]{{card}}",
+  "stopCalled": "⚠ {{name}} がストップ宣言！",
+  "errorLine": "[エラー] {{msg}}",
+  "gameEndHeader": "=== ゲーム終了 ===",
+  "scoreEntry": "  {{name}}: {{score}}点",
+  "winHuman": "あなたの勝ち！",
+  "winCpu": "CPU {{idx}}の勝ち！",
+  "promptHumanTurn": "あなたのターン: p <手札番号> <場札番号> / a (全交換) / stop"
 }

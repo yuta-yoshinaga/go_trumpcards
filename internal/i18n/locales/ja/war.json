@@ -2,5 +2,19 @@
   "helpTitle": "War (戦争)",
   "helpStep": "  s                    次の1枚をめくる / ラウンドを解決 / 戦争を解決",
   "helpAutoPlay": "  a                    決着まで自動で進める",
-  "helpSetMax": "  sm <n>               MaxRounds (10-10000) を設定してリセット"
+  "helpSetMax": "  sm <n>               MaxRounds (10-10000) を設定してリセット",
+  "cpuStats": "CPU: 山札{{draw}}枚 / 捨札{{discard}}枚 (計{{total}}枚)",
+  "humanStats": "あなた: 山札{{draw}}枚 / 捨札{{discard}}枚 (計{{total}}枚)",
+  "boardLabel": "[場札]",
+  "boardCpu": "CPU: {{card}}",
+  "boardCpuEmpty": "CPU: --",
+  "boardHuman": "あなた: {{card}}",
+  "boardHumanEmpty": "あなた: --",
+  "boardPot": "  (場に{{count}}枚)",
+  "promptReveal": "step コマンドで次の1枚をめくります。",
+  "promptResolvedHuman": "あなたがラウンドに勝利！ step で回収します。",
+  "promptResolvedCpu": "CPUがラウンドに勝利... step で回収します。",
+  "promptWarBury": "戦争発生！ step で伏せ札と表札を出します。",
+  "gameWinHuman": "あなたの勝ちです！",
+  "gameWinCpu": "CPUの勝ちです..."
 }

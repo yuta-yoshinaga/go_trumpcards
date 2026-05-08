@@ -2,61 +2,68 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// SlapjackCuiPresenter スラップジャック CUI プレゼンター
+// SlapjackCuiPresenter renders the Slapjack CUI view.
 type SlapjackCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *SlapjackCuiPresenter) Output(g interfaces.SlapjackGame, lastErr error) string {
-	return buildCuiOutput("Slapjack (スラップジャック)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("slapjack.helpTitle"), func(b *strings.Builder) {
 		cpu := g.GetPlayer(1)
 		human := g.GetPlayer(0)
 
-		fmt.Fprintf(b, "CPU: ストック%d枚\n", cpu.GetStockSize())
+		b.WriteString(i18n.Tf("slapjack.cpuStockLine",
+			"count", strconv.Itoa(cpu.GetStockSize())) + "\n")
 		b.WriteString("----------\n")
-		b.WriteString(color.Bold("[場札]") + " ")
+		b.WriteString(color.Bold(i18n.T("slapjack.boardLabel")) + " ")
+		centerSize := strconv.Itoa(g.GetCenterPileSize())
 		if c := g.GetTopCard(); c != nil {
-			fmt.Fprintf(b, "%s  (場に%d枚)\n", cuiCardStr(c), g.GetCenterPileSize())
+			b.WriteString(i18n.Tf("slapjack.boardCard",
+				"card", cuiCardStr(c),
+				"count", centerSize) + "\n")
 		} else {
-			fmt.Fprintf(b, "--  (場に%d枚)\n", g.GetCenterPileSize())
+			b.WriteString(i18n.Tf("slapjack.boardEmpty", "count", centerSize) + "\n")
 		}
 		b.WriteString("----------\n")
-		fmt.Fprintf(b, "あなた: ストック%d枚\n", human.GetStockSize())
+		b.WriteString(i18n.Tf("slapjack.humanStockLine",
+			"count", strconv.Itoa(human.GetStockSize())) + "\n")
 
 		if g.IsTopJack() {
-			b.WriteString(color.Yellow("J が場に出ました！ j (slap) で叩いてください\n"))
+			b.WriteString(color.Yellow(i18n.T("slapjack.promptJackOnTop")) + "\n")
 		} else if g.GetCurrentTurnIdx() == 0 {
-			b.WriteString("あなたの番です。s (step) でカードをめくってください\n")
+			b.WriteString(i18n.T("slapjack.promptHumanTurn") + "\n")
 		} else {
-			b.WriteString("CPU の番です。tick で進めるか、待ってください\n")
+			b.WriteString(i18n.T("slapjack.promptCpuTurn") + "\n")
 		}
 
 		switch g.GetLastEvent().Kind {
 		case domain.SlapjackEventSlapCorrect:
 			if g.GetLastEvent().PlayerIdx == 0 {
-				b.WriteString(color.Green("あなたが正しくスラップ! 場札を獲得\n"))
+				b.WriteString(color.Green(i18n.T("slapjack.slapCorrectHuman")) + "\n")
 			} else {
-				b.WriteString(color.Red("CPU が先にスラップ... 場札を奪われた\n"))
+				b.WriteString(color.Red(i18n.T("slapjack.slapCorrectCpu")) + "\n")
 			}
 		case domain.SlapjackEventSlapWrong:
 			if g.GetLastEvent().PlayerIdx == 0 {
-				b.WriteString(color.Red("誤スラップ！ 1 枚 CPU に渡しました\n"))
+				b.WriteString(color.Red(i18n.T("slapjack.slapWrongHuman")) + "\n")
 			} else {
-				b.WriteString(color.Green("CPU が誤スラップ。1 枚もらいました\n"))
+				b.WriteString(color.Green(i18n.T("slapjack.slapWrongCpu")) + "\n")
 			}
 		}
 
 		if g.GetGameEndFlag() {
 			if g.GetWinnerIdx() == 0 {
-				b.WriteString(color.Green("あなたの勝ちです！\n"))
+				b.WriteString(color.Green(i18n.T("slapjack.winHuman")) + "\n")
 			} else {
-				b.WriteString(color.Red("CPUの勝ちです...\n"))
+				b.WriteString(color.Red(i18n.T("slapjack.winCpu")) + "\n")
 			}
 		}
 
@@ -66,7 +73,7 @@ func (p *SlapjackCuiPresenter) Output(g interfaces.SlapjackGame, lastErr error) 
 	})
 }
 
-// ActionLogOutput 棋譜を文字列出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *SlapjackCuiPresenter) ActionLogOutput(g interfaces.SlapjackGame) string {
 	return actionLogOutputText(g)
 }

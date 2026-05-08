@@ -5,5 +5,19 @@
   "helpTick": "  tick                 advance CPU by one tick",
   "helpSetDifficulty": "  sd <n>               set CPU difficulty (0=Easy, 1=Normal, 2=Hard) and reset",
   "labelHuman": "You",
-  "labelCpu": "CPU"
+  "labelCpu": "CPU",
+  "cpuStockLine": "CPU: stock {{count}}",
+  "humanStockLine": "You: stock {{count}}",
+  "boardLabel": "[Board]",
+  "boardCard": "{{card}}  ({{count}} on table)",
+  "boardEmpty": "--  ({{count}} on table)",
+  "promptJackOnTop": "Jack is up! Slap with j (slap)",
+  "promptHumanTurn": "Your turn. s (step) to flip a card",
+  "promptCpuTurn": "CPU's turn. Use tick to advance or wait",
+  "slapCorrectHuman": "Nice slap! You take the pile",
+  "slapCorrectCpu": "CPU slapped first... they take the pile",
+  "slapWrongHuman": "Wrong slap! You give one card to CPU",
+  "slapWrongCpu": "CPU mis-slapped. You receive one card",
+  "winHuman": "You win!",
+  "winCpu": "CPU wins..."
 }

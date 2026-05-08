@@ -91,7 +91,7 @@ func TestFiftyOneCuiPresenter_Output_Error(t *testing.T) {
 	m := setupFiftyOneMock()
 
 	result := p.Output(m, errors.New("invalid index"))
-	assert.Contains(t, result, "Error:")
+	assert.Contains(t, result, "[エラー]")
 	assert.Contains(t, result, "invalid index")
 }
 
