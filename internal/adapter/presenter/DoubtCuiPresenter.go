@@ -2,135 +2,137 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // doubtPlayerStr returns the display string for a single Doubt player.
 func doubtPlayerStr(player *domain.DoubtPlayer, i int) string {
 	var b strings.Builder
-	b.WriteString(cuiPlayerName(player, i))
+	name := cuiPlayerName(player, i)
 	if player.GetIsFinished() {
-		b.WriteString(": 上がり\n")
-	} else {
-		fmt.Fprintf(&b, ": %d枚\n", player.GetCardsSize())
-		if player.GetIsHuman() {
-			b.WriteString(cuiIndexedCardListStr(player))
-			b.WriteString("\n")
-		}
+		b.WriteString(i18n.Tf("doubt.playerLineFinished", "name", name) + "\n")
+		return b.String()
+	}
+	b.WriteString(i18n.Tf("doubt.playerLine",
+		"name", name,
+		"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
+	if player.GetIsHuman() {
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
 
-// DoubtCuiPresenter ダウトCUIプレゼンタークラス
+// DoubtCuiPresenter renders the Doubt CUI view.
 type DoubtCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string {
-	return buildCuiOutput("Doubt (ダウト)", func(b *strings.Builder) {
-		// プレイヤー情報
+	return buildCuiOutput(i18n.T("doubt.helpTitle"), func(b *strings.Builder) {
+		// Players
 		for i := 0; i < d.GetPlayerCnt(); i++ {
 			b.WriteString(doubtPlayerStr(d.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
-		fmt.Fprintf(b, "テーブル: %d枚\n", d.GetTableCardCount())
+		b.WriteString(i18n.Tf("doubt.tableLine",
+			"count", strconv.Itoa(d.GetTableCardCount())) + "\n")
 
-		// 最後のプレイ情報
-		lastAction := d.GetLastAction()
-		if lastAction != nil {
-			fmt.Fprintf(b, "%s %sが「%d」を%d枚出しました\n",
-				color.Bold("[最後のプレイ]"),
-				cuiPlayerName(d.GetPlayer(lastAction.PlayerIdx), lastAction.PlayerIdx),
-				lastAction.ClaimedValue,
-				lastAction.CardCount,
-			)
+		// Last play
+		if lastAction := d.GetLastAction(); lastAction != nil {
+			b.WriteString(color.Bold(i18n.T("doubt.lastActionLabel")) + " ")
+			b.WriteString(i18n.Tf("doubt.lastActionLine",
+				"name", cuiPlayerName(d.GetPlayer(lastAction.PlayerIdx), lastAction.PlayerIdx),
+				"value", strconv.Itoa(lastAction.ClaimedValue),
+				"count", strconv.Itoa(lastAction.CardCount)) + "\n")
 		}
 
-		// ダウト結果
-		lastResult := d.GetLastDoubtResult()
-		if lastResult != nil {
+		// Doubt result
+		if lastResult := d.GetLastDoubtResult(); lastResult != nil {
 			doubterName := cuiPlayerName(d.GetPlayer(lastResult.DoubterIdx), lastResult.DoubterIdx)
 			cardPlayerName := cuiPlayerName(d.GetPlayer(lastResult.CardPlayerIdx), lastResult.CardPlayerIdx)
 			loserName := cuiPlayerName(d.GetPlayer(lastResult.LoserIdx), lastResult.LoserIdx)
+			b.WriteString(color.Bold(i18n.T("doubt.doubtLabel")) + " ")
+			b.WriteString(i18n.Tf("doubt.doubtResultLeft",
+				"doubter", doubterName,
+				"cardPlayer", cardPlayerName) + " → ")
 			if lastResult.WasLying {
-				fmt.Fprintf(b, "%s %sが%sをダウト → %s %sが%d枚引き取りました\n",
-					color.Bold("[ダウト]"), doubterName, cardPlayerName, color.Green("嘘つき！"), loserName, lastResult.CardCount)
+				b.WriteString(color.Green(i18n.T("doubt.verdictLying")))
 			} else {
-				fmt.Fprintf(b, "%s %sが%sをダウト → %s %sが%d枚引き取りました\n",
-					color.Bold("[ダウト]"), doubterName, cardPlayerName, color.Red("正直者！"), loserName, lastResult.CardCount)
+				b.WriteString(color.Red(i18n.T("doubt.verdictHonest")))
 			}
+			b.WriteString(" " + i18n.Tf("doubt.doubtResultRight",
+				"loser", loserName,
+				"count", strconv.Itoa(lastResult.CardCount)) + "\n")
 			if lastResult.DiscardedCount > 0 {
-				fmt.Fprintf(b, "  (%d枚がゲームから除外されました)\n", lastResult.DiscardedCount)
+				b.WriteString(i18n.Tf("doubt.doubtDiscard",
+					"count", strconv.Itoa(lastResult.DiscardedCount)) + "\n")
 			}
-			// 公開されたカード
 			if len(lastResult.RevealedCards) > 0 {
-				fmt.Fprintf(b, "  公開カード: %s\n", cuiCardSliceStr(lastResult.RevealedCards))
+				b.WriteString(i18n.Tf("doubt.doubtRevealed",
+					"cards", cuiCardSliceStr(lastResult.RevealedCards)) + "\n")
 			}
 		}
 
-		// 人間の行動履歴
-		humanAction := d.GetHumanAction()
-		if humanAction != nil {
-			fmt.Fprintf(b, "[あなたの行動] 「%d」を%d枚出しました\n",
-				humanAction.ClaimedValue, humanAction.CardCount)
+		// Human action history
+		if humanAction := d.GetHumanAction(); humanAction != nil {
+			b.WriteString(i18n.Tf("doubt.humanActionLine",
+				"value", strconv.Itoa(humanAction.ClaimedValue),
+				"count", strconv.Itoa(humanAction.CardCount)) + "\n")
 		}
 
-		// CPUの行動履歴
-		cpuActions := d.GetCpuActions()
-		if len(cpuActions) > 0 {
-			b.WriteString(color.Bold("[CPUの行動]") + "\n")
+		// CPU action history
+		if cpuActions := d.GetCpuActions(); len(cpuActions) > 0 {
+			b.WriteString(color.Bold(i18n.T("doubt.cpuActionsHeader")) + "\n")
 			for _, action := range cpuActions {
-				fmt.Fprintf(b, "%sが「%d」を%d枚出しました\n",
-					cuiPlayerName(d.GetPlayer(action.PlayerIdx), action.PlayerIdx),
-					action.ClaimedValue,
-					action.CardCount,
-				)
+				b.WriteString(i18n.Tf("doubt.cpuActionLine",
+					"name", cuiPlayerName(d.GetPlayer(action.PlayerIdx), action.PlayerIdx),
+					"value", strconv.Itoa(action.ClaimedValue),
+					"count", strconv.Itoa(action.CardCount)) + "\n")
 			}
 		}
 
-		// メタAI状態
+		// Meta AI status
 		if profile := d.GetHumanProfile(); profile != nil {
-			fmt.Fprintf(b, "[メタAI] 適応中 (ゲーム数: %d, ブラフ率: %.0f%%, ダウト正解率: %.0f%%)\n",
-				profile.GamesPlayed,
-				profile.BluffRate(1)*100,
-				profile.DoubtAccuracy()*100,
-			)
+			b.WriteString(i18n.Tf("doubt.metaAILine",
+				"games", strconv.Itoa(profile.GamesPlayed),
+				"bluff", fmt.Sprintf("%.0f", profile.BluffRate(1)*100),
+				"accuracy", fmt.Sprintf("%.0f", profile.DoubtAccuracy()*100)) + "\n")
 		}
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
+		// Game state
 		if d.GetGameEndFlag() {
 			winnerIdx := d.GetWinnerIdx()
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(d.GetPlayer(winnerIdx), winnerIdx)+"の勝利です！"))
-		} else {
-			currentTurn := d.GetCurrentTurn()
-			phase := d.GetPhase()
-			if phase == domain.DoubtPhaseDoubt {
-				lastAct := d.GetLastAction()
-				if lastAct != nil {
-					fmt.Fprintf(b, "ダウトフェーズ: %sのプレイにダウトしますか？\n",
-						cuiPlayerName(d.GetPlayer(lastAct.PlayerIdx), lastAct.PlayerIdx))
-				} else {
-					b.WriteString("ダウトフェーズ\n")
-				}
-				b.WriteString("d <idx...>・・・ダウト / s・・・スキップ\n")
-			} else {
-				fmt.Fprintf(b, "手番: %s\n", cuiPlayerName(d.GetPlayer(currentTurn), currentTurn))
-				b.WriteString("p <値> <idx...>・・・カードを出す\n")
-			}
+			banner := i18n.Tf("doubt.gameEnd",
+				"name", cuiPlayerName(d.GetPlayer(winnerIdx), winnerIdx))
+			b.WriteString(color.Green(banner) + "\n")
+			return
 		}
+		currentTurn := d.GetCurrentTurn()
+		if d.GetPhase() == domain.DoubtPhaseDoubt {
+			if lastAct := d.GetLastAction(); lastAct != nil {
+				b.WriteString(i18n.Tf("doubt.promptDoubtPhase",
+					"name", cuiPlayerName(d.GetPlayer(lastAct.PlayerIdx), lastAct.PlayerIdx)) + "\n")
+			} else {
+				b.WriteString(i18n.T("doubt.promptDoubtPhaseGeneric") + "\n")
+			}
+			b.WriteString(i18n.T("doubt.promptDoubtHelp") + "\n")
+			return
+		}
+		b.WriteString(i18n.Tf("doubt.promptCurrentPlayer",
+			"name", cuiPlayerName(d.GetPlayer(currentTurn), currentTurn)) + "\n")
+		b.WriteString(i18n.T("doubt.promptPlayHelp") + "\n")
 	})
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *DoubtCuiPresenter) ActionLogOutput(d interfaces.DoubtGame) string {
 	return actionLogOutputText(d)
 }

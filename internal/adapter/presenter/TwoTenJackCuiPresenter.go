@@ -1,31 +1,31 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // twoTenJackPlayerStr returns the display string for a single TwoTenJack player.
 func twoTenJackPlayerStr(player *domain.TwoTenJackPlayer, i int) string {
 	var b strings.Builder
-	name := cuiPlayerName(player, i)
 	team := i % 2
-	fmt.Fprintf(&b, "%s (チーム%d): 獲得%dトリック 点札%d点 累積%d点 ラウンド%d点 %d枚\n",
-		name,
-		team,
-		player.GetTrickCount(),
-		player.GetCapturedPointCards(),
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("twotenjack.playerLine",
+		"name", cuiPlayerName(player, i),
+		"team", strconv.Itoa(team),
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"points", strconv.Itoa(player.GetCapturedPointCards()),
+		"cum", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"cards", strconv.Itoa(player.GetCardsSize()),
+	))
+	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player))
-		b.WriteString("\n")
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
@@ -42,17 +42,21 @@ func twoTenJackSuitLabel(suit int) string {
 	case domain.CardDesignDiamond:
 		return "DIAMOND"
 	}
-	return "未宣言"
+	return i18n.T("twotenjack.trumpUnset")
 }
 
-// TwoTenJackCuiPresenter ツーテンジャックCUIプレゼンタークラス
+// TwoTenJackCuiPresenter renders the Two Ten Jack CUI view.
 type TwoTenJackCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *TwoTenJackCuiPresenter) Output(s interfaces.TwoTenJackGame, lastErr error) string {
-	return buildCuiOutput("Two Ten Jack (ツーテンジャック)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  トリック: %d\n", s.GetRoundNumber(), s.GetTrickNumber())
-		fmt.Fprintf(b, "トランプ: %s  宣言者: %d\n", twoTenJackSuitLabel(s.GetTrumpSuit()), s.GetDeclarerIdx())
+	return buildCuiOutput(i18n.T("twotenjack.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("twotenjack.header",
+			"round", strconv.Itoa(s.GetRoundNumber()),
+			"trick", strconv.Itoa(s.GetTrickNumber())) + "\n")
+		b.WriteString(i18n.Tf("twotenjack.trumpLine",
+			"suit", twoTenJackSuitLabel(s.GetTrumpSuit()),
+			"declarer", strconv.Itoa(s.GetDeclarerIdx())) + "\n")
 
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			b.WriteString(twoTenJackPlayerStr(s.GetPlayer(i), i))
@@ -70,64 +74,75 @@ func (p *TwoTenJackCuiPresenter) Output(s interfaces.TwoTenJackGame, lastErr err
 		cuiErrorBlock(b, lastErr)
 
 		if s.GetGameEndFlag() {
-			team := s.GetWinnerTeam()
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(fmt.Sprintf("チーム%dの勝利です！", team)))
-		} else {
-			phase := s.GetPhase()
-			switch phase {
-			case domain.TwoTenJackPhaseDeclare:
-				declIdx := s.GetDeclarerIdx()
-				player := s.GetPlayer(declIdx)
-				fmt.Fprintf(b, "宣言フェーズ: %sの番\n", cuiPlayerName(player, declIdx))
-				b.WriteString("d <s>・・・トランプ宣言 (1=S, 2=C, 3=H, 4=D)\n")
-			case domain.TwoTenJackPhasePlay:
-				currentIdx := s.GetCurrentPlayerIdx()
-				player := s.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("play <idx>・・・カードを出す\n")
-			case domain.TwoTenJackPhaseTrickEnd:
-				b.WriteString("トリック終了\n")
-				b.WriteString("next・・・次のトリックへ\n")
-			case domain.TwoTenJackPhaseRoundEnd:
-				b.WriteString("ラウンド終了\n")
-				b.WriteString("nr / nextround・・・次のラウンドへ\n")
-			}
+			banner := i18n.Tf("twotenjack.gameEnd", "team", strconv.Itoa(s.GetWinnerTeam()))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		switch s.GetPhase() {
+		case domain.TwoTenJackPhaseDeclare:
+			declIdx := s.GetDeclarerIdx()
+			b.WriteString(i18n.Tf("twotenjack.promptDeclare",
+				"name", cuiPlayerName(s.GetPlayer(declIdx), declIdx)) + "\n")
+			b.WriteString(i18n.T("twotenjack.promptDeclareHelp") + "\n")
+		case domain.TwoTenJackPhasePlay:
+			currentIdx := s.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("twotenjack.promptCurrentPlayer",
+				"name", cuiPlayerName(s.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("twotenjack.promptPlay") + "\n")
+		case domain.TwoTenJackPhaseTrickEnd:
+			b.WriteString(i18n.T("twotenjack.promptTrickEnd") + "\n")
+			b.WriteString(i18n.T("twotenjack.promptTrickEndHelp") + "\n")
+		case domain.TwoTenJackPhaseRoundEnd:
+			b.WriteString(i18n.T("twotenjack.promptRoundEnd") + "\n")
+			b.WriteString(i18n.T("twotenjack.promptRoundEndHelp") + "\n")
 		}
 	})
 }
 
-// HintOutput ヒント情報を出力する
+// HintOutput emits the current Two Ten Jack hint.
 func (p *TwoTenJackCuiPresenter) HintOutput(s interfaces.TwoTenJackGame) string {
 	hint := s.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("twotenjack.hintNone") + "\n"
 	}
+	reason := twoTenJackHintReasonStr(hint.Reason)
 	if hint.TrumpSuit != nil {
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: トランプ %s を推奨 (%s)]", twoTenJackSuitLabel(*hint.TrumpSuit), twoTenJackHintReasonStr(hint.Reason))))
+		return color.Yellow(i18n.Tf("twotenjack.hintTrump",
+			"suit", twoTenJackSuitLabel(*hint.TrumpSuit),
+			"reason", reason)) + "\n"
 	}
 	if hint.CardIndex == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("twotenjack.hintNone") + "\n"
 	}
 	player := s.GetPlayer(0)
 	card := player.GetCard(*hint.CardIndex)
-	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), twoTenJackHintReasonStr(hint.Reason))))
+	return color.Yellow(i18n.Tf("twotenjack.hintCard",
+		"idx", strconv.Itoa(*hint.CardIndex),
+		"card", cuiCardStr(card),
+		"reason", reason)) + "\n"
 }
 
-// twoTenJackHintReasons はTwoTenJack固有のヒント理由翻訳
-var twoTenJackHintReasons = map[string]string{
-	"strategic_trump": "長いスートを宣言",
-	"lead":            "リード",
-	"follow_suit":     "リードスートに追随",
-	"trump_cut":       "トランプでカット",
-	"discard":         "不要カードを捨てる",
+// twoTenJackHintReasonKeys maps Two Ten Jack-specific hint-reason identifiers
+// to their i18n keys. Reasons not listed here fall through to cui_common via
+// lookupHintReason.
+var twoTenJackHintReasonKeys = map[string]string{
+	"strategic_trump": "twotenjack.hintReasonStrategicTrump",
+	"lead":            "twotenjack.hintReasonLead",
+	"follow_suit":     "twotenjack.hintReasonFollowSuit",
+	"trump_cut":       "twotenjack.hintReasonTrumpCut",
+	"discard":         "twotenjack.hintReasonDiscard",
 }
 
-// twoTenJackHintReasonStr ヒント理由を日本語に変換する
+// twoTenJackHintReasonStr resolves a reason via the per-game map first, then
+// the shared (cui_common) layer.
 func twoTenJackHintReasonStr(reason string) string {
-	return lookupHintReason(reason, twoTenJackHintReasons)
+	if key, ok := twoTenJackHintReasonKeys[reason]; ok {
+		return i18n.T(key)
+	}
+	return lookupHintReason(reason, nil)
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *TwoTenJackCuiPresenter) ActionLogOutput(s interfaces.TwoTenJackGame) string {
 	return actionLogOutputText(s)
 }
