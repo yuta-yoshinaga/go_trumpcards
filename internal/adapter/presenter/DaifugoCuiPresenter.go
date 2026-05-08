@@ -16,14 +16,11 @@ func daifugoPlayerStr(player *domain.DaifugoPlayer, i int) string {
 	var b strings.Builder
 	b.WriteString(cuiPlayerName(player, i))
 	if player.GetIsFinished() {
-		b.WriteString(i18n.Tf("daifugo.playerFinished", "rank", daifugoRankName(player.GetRank())))
-		b.WriteString("\n")
+		b.WriteString(i18n.Tf("daifugo.playerFinished", "rank", daifugoRankName(player.GetRank())) + "\n")
 	} else {
-		b.WriteString(i18n.Tf("daifugo.playerCardCount", "count", strconv.Itoa(player.GetCardsSize())))
-		b.WriteString("\n")
+		b.WriteString(i18n.Tf("daifugo.playerCardCount", "count", strconv.Itoa(player.GetCardsSize())) + "\n")
 		if player.GetIsHuman() {
-			b.WriteString(cuiIndexedCardListStr(player))
-			b.WriteString("\n")
+			b.WriteString(cuiIndexedCardListStr(player) + "\n")
 		}
 	}
 	return b.String()

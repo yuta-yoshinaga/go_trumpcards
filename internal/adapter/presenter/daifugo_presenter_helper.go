@@ -28,8 +28,8 @@ func daifugoRankName(rank int) string {
 	}
 }
 
-// daifugoSuitName は大富豪のスート縛りに使用するスート名の文字列を返します。
-// 4つの標準スート以外には空文字列 "" を返します。
+// daifugoSuitName returns the suit name for the locked-suit banner, or
+// empty string for unrecognized suit values.
 func daifugoSuitName(suit int) string {
 	switch suit {
 	case domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond:
