@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // daifugoPlayerStr returns the display string for a single Daifugo player.
@@ -14,56 +16,57 @@ func daifugoPlayerStr(player *domain.DaifugoPlayer, i int) string {
 	var b strings.Builder
 	b.WriteString(cuiPlayerName(player, i))
 	if player.GetIsFinished() {
-		fmt.Fprintf(&b, ": 上がり (ランク: %s)\n", daifugoRankName(player.GetRank()))
+		b.WriteString(i18n.Tf("daifugo.playerFinished", "rank", daifugoRankName(player.GetRank())) + "\n")
 	} else {
-		fmt.Fprintf(&b, ": %d枚\n", player.GetCardsSize())
+		b.WriteString(i18n.Tf("daifugo.playerCardCount", "count", strconv.Itoa(player.GetCardsSize())) + "\n")
 		if player.GetIsHuman() {
-			b.WriteString(cuiIndexedCardListStr(player))
-			b.WriteString("\n")
+			b.WriteString(cuiIndexedCardListStr(player) + "\n")
 		}
 	}
 	return b.String()
 }
 
-// DaifugoCuiPresenter 大富豪CUIプレゼンタークラス
+// DaifugoCuiPresenter renders the Daifugo CUI view.
 type DaifugoCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) string {
-	return buildCuiOutput("Daifugo (大富豪)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("daifugo.helpTitle"), func(b *strings.Builder) {
 		for i := 0; i < dg.GetPlayerCnt(); i++ {
 			b.WriteString(daifugoPlayerStr(dg.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
 
-		// ローカルルール状態
+		// Local rule status
 		if dg.GetRevolutionActive() {
-			b.WriteString(color.BoldYellow("【革命中】") + "2が最弱、3が最強\n")
+			b.WriteString(color.BoldYellow(i18n.T("daifugo.ruleRevolution")) + "\n")
 		}
 		if dg.GetElevenBackActive() {
-			b.WriteString(color.BoldYellow("【11バック】") + "強さが逆転中\n")
+			b.WriteString(color.BoldYellow(i18n.T("daifugo.ruleElevenBack")) + "\n")
 		}
 		if dg.GetSuitLocked() {
-			fmt.Fprintf(b, "%s%s\n", color.BoldYellow("【スート縛り】"), cuiSuitName(dg.GetLockedSuit()))
+			fmt.Fprintf(b, "%s%s\n",
+				color.BoldYellow(i18n.T("daifugo.ruleSuitLockedPrefix")),
+				cuiSuitName(dg.GetLockedSuit()))
 		}
 		if dg.GetTableIsSequence() {
-			b.WriteString(color.BoldYellow("【階段】") + "\n")
+			b.WriteString(color.BoldYellow(i18n.T("daifugo.ruleSequence")) + "\n")
 		}
 		if dg.GetReverseDirection() {
-			b.WriteString(color.BoldYellow("【9リバース】") + "\n")
+			b.WriteString(color.BoldYellow(i18n.T("daifugo.ruleNineReverse")) + "\n")
 		}
 		if dg.GetNumberLocked() {
-			b.WriteString(color.BoldYellow("【連番縛り】") + "\n")
+			b.WriteString(color.BoldYellow(i18n.T("daifugo.ruleNumberLocked")) + "\n")
 		}
 		if dg.GetSequenceLocked() {
-			b.WriteString(color.BoldYellow("【階段縛り】") + "\n")
+			b.WriteString(color.BoldYellow(i18n.T("daifugo.ruleSequenceLocked")) + "\n")
 		}
 
-		// カード交換記録
+		// Card exchanges
 		exchangeActions := dg.GetExchangeActions()
 		if len(exchangeActions) > 0 {
-			b.WriteString(color.Bold("[カード交換]") + "\n")
+			b.WriteString(color.Bold(i18n.T("daifugo.exchangesHeader")) + "\n")
 			for _, ex := range exchangeActions {
 				fmt.Fprintf(b, "%s → %s: %s\n",
 					cuiPlayerName(dg.GetPlayer(ex.FromPlayerIdx), ex.FromPlayerIdx),
@@ -72,77 +75,82 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 			}
 		}
 
-		// 場のカード
+		// Table cards
 		tableCards := dg.GetTableCards()
 		if len(tableCards) > 0 {
 			lastPlayIdx := dg.GetLastPlayPlayerIdx()
-			fmt.Fprintf(b, "場: %s (出したプレイヤー: %s)\n",
-				cuiCardSliceStr(tableCards),
-				cuiPlayerName(dg.GetPlayer(lastPlayIdx), lastPlayIdx))
+			b.WriteString(i18n.Tf("daifugo.tableLine",
+				"cards", cuiCardSliceStr(tableCards),
+				"name", cuiPlayerName(dg.GetPlayer(lastPlayIdx), lastPlayIdx)) + "\n")
 		} else {
-			b.WriteString("場: なし (誰でも出せます)\n")
+			b.WriteString(i18n.T("daifugo.tableEmpty") + "\n")
 		}
 
-		// 人間の前の行動
+		// Human's previous action
 		humanAction := dg.GetHumanAction()
 		if humanAction != nil {
+			actName := cuiPlayerName(dg.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx)
 			if len(humanAction.PlayedCards) == 0 {
-				fmt.Fprintf(b, "%sがパスしました\n", cuiPlayerName(dg.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx))
+				b.WriteString(i18n.Tf("daifugo.actionPassed", "name", actName) + "\n")
 			} else {
-				fmt.Fprintf(b, "%sが %s を出しました\n",
-					cuiPlayerName(dg.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx),
-					cuiCardSliceStr(humanAction.PlayedCards))
+				b.WriteString(i18n.Tf("daifugo.actionPlayed",
+					"name", actName,
+					"cards", cuiCardSliceStr(humanAction.PlayedCards)) + "\n")
 			}
 		}
 
-		// CPUの行動履歴を表示
+		// CPU action history
 		cpuActions := dg.GetCpuActions()
 		if len(cpuActions) > 0 {
-			b.WriteString(color.Bold("[CPUの行動]") + "\n")
+			b.WriteString(color.Bold(i18n.T("daifugo.cpuActionsHeader")) + "\n")
 			for _, action := range cpuActions {
 				actPlayerName := cuiPlayerName(dg.GetPlayer(action.PlayerIdx), action.PlayerIdx)
 				if len(action.PlayedCards) == 0 {
-					fmt.Fprintf(b, "%sがパスしました\n", actPlayerName)
+					b.WriteString(i18n.Tf("daifugo.actionPassed", "name", actPlayerName) + "\n")
 				} else {
-					fmt.Fprintf(b, "%sが %s を出しました\n", actPlayerName, cuiCardSliceStr(action.PlayedCards))
+					b.WriteString(i18n.Tf("daifugo.actionPlayed",
+						"name", actPlayerName,
+						"cards", cuiCardSliceStr(action.PlayedCards)) + "\n")
 				}
 			}
 		}
 
-		// エラーメッセージ
 		if lastErr != nil {
 			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
 		}
 
 		if dg.GetGameEndFlag() {
-			b.WriteString("ゲーム終了！\n")
+			b.WriteString(i18n.T("daifugo.gameEnd") + "\n")
 			for i := 0; i < dg.GetPlayerCnt(); i++ {
 				player := dg.GetPlayer(i)
 				penalty := ""
 				if player.GetIllegalFinishPenalty() {
-					penalty = " [反則上がり]"
+					penalty = i18n.T("daifugo.penaltyIllegalFinish")
 				}
-				fmt.Fprintf(b, "  %s: %s%s\n", cuiPlayerName(dg.GetPlayer(i), i), daifugoRankName(player.GetRank()), penalty)
+				b.WriteString(i18n.Tf("daifugo.playerRankLine",
+					"name", cuiPlayerName(dg.GetPlayer(i), i),
+					"rank", daifugoRankName(player.GetRank()),
+					"penalty", penalty) + "\n")
 			}
-		} else {
-			currentTurn := dg.GetCurrentTurn()
-			currentName := cuiPlayerName(dg.GetPlayer(currentTurn), currentTurn)
-			fmt.Fprintf(b, "手番: %s\n", currentName)
-			switch dg.GetPendingActionType() {
-			case domain.DaifugoPendingSevenPass:
-				b.WriteString("【7渡し】渡すカードを選択してください (p [インデックス])\n")
-			case domain.DaifugoPendingTenDiscard:
-				b.WriteString("【10捨て】捨てるカードを選択してください (p [インデックス])\n")
-			case domain.DaifugoPendingQueenBomber:
-				b.WriteString("【12ボンバー】除去するカードの数字を入力してください (p [1-13])\n")
-			default:
-				b.WriteString("p [インデックス...] でカードを出す / p でパス\n")
-			}
+			return
+		}
+		currentTurn := dg.GetCurrentTurn()
+		currentName := cuiPlayerName(dg.GetPlayer(currentTurn), currentTurn)
+		b.WriteString(i18n.Tf("daifugo.turnLine", "name", currentName) + "\n")
+		switch dg.GetPendingActionType() {
+		case domain.DaifugoPendingSevenPass:
+			b.WriteString(i18n.T("daifugo.promptSevenPass") + "\n")
+		case domain.DaifugoPendingTenDiscard:
+			b.WriteString(i18n.T("daifugo.promptTenDiscard") + "\n")
+		case domain.DaifugoPendingQueenBomber:
+			b.WriteString(i18n.T("daifugo.promptQueenBomber") + "\n")
+		default:
+			b.WriteString(i18n.T("daifugo.promptPlay") + "\n")
 		}
 	})
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *DaifugoCuiPresenter) ActionLogOutput(dg interfaces.DaifugoGame) string {
 	return actionLogOutputText(dg)
 }
