@@ -22,7 +22,7 @@
   "invalidLevelHand": "無効なハンド数です: {{val}}。1以上の数値を入力してください。",
   "tableSizeRequired": "テーブルサイズが必要です (4, 6, または 9)。",
   "invalidTableSize": "無効なテーブルサイズです: {{val}}。4, 6, または 9 を入力してください。",
-  "outputTitle": "テキサスホールデム",
+  "outputTitle": "Texas Hold'em",
   "tournamentLine": "トーナメント ハンド#{{hand}} SB:{{sb}} BB:{{bb}} (レベルアップ:{{levelup}}ハンド毎)",
   "rebuyLine": "リバイ: {{chips}}チップ (最大{{max}}回, {{period}}ハンド目まで)",
   "addonLine": "アドオン: {{chips}}チップ ({{after}}ハンド目に提供)",
