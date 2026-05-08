@@ -17,5 +17,11 @@
   "cuiHintTrumpCut": "切り札でカット",
   "cuiHintStrategicBid": "戦略的なビッド",
   "cuiHintStrongHand": "強い手札",
-  "cuiHintWeakHand": "弱い手札"
+  "cuiHintWeakHand": "弱い手札",
+  "cuiHintNone": "ヒントはありません。",
+  "cuiSolitaireStalemate": "手詰まりです",
+  "cuiSolitaireGameClear": "ゲームクリア！",
+  "cuiSolitaireGameOver": "ゲームオーバー",
+  "cuiSolitaireMoves": "手数: {{count}}",
+  "cuiEmptyCol": "[空]"
 }

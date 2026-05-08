@@ -5,5 +5,9 @@
   "helpMoveShorthand": "  m <col> <col>        最上段移動 (省略形)",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
-  "helpAutoComplete": "  ac                   auto-complete"
+  "helpAutoComplete": "  ac                   auto-complete",
+  "header": "Completed: {{completed}}/{{total}} | Stock: {{stock}}枚 | Score: {{score}}",
+  "columnLabel": "列{{col}}:",
+  "gameClearLine": "ゲームクリア！ 手数: {{moves}} スコア: {{score}}",
+  "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}"
 }

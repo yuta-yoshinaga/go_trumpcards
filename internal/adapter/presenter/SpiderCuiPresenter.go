@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // spiderColumnStr returns the display string for a Spider tableau column.
@@ -22,27 +24,27 @@ func spiderColumnStr(colCards []*domain.SpiderTableauCard) string {
 	return strings.Join(parts, " ")
 }
 
-// SpiderCuiPresenter スパイダーソリティアCUIプレゼンタークラス
+// SpiderCuiPresenter renders the Spider Solitaire CUI view.
 type SpiderCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *SpiderCuiPresenter) Output(s interfaces.SpiderGame, lastErr error) string {
-	return buildCuiOutput("Spider Solitaire (スパイダーソリティア)", func(b *strings.Builder) {
-		// 完成スート数
-		fmt.Fprintf(b, "Completed: %d/%d", s.GetCompletedSuits(), domain.SpiderFoundationCnt)
-		fmt.Fprintf(b, " | Stock: %d枚", s.GetStockCount())
-		fmt.Fprintf(b, " | Score: %d", s.GetScore())
-		b.WriteString("\n")
+	return buildCuiOutput(i18n.T("spider.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("spider.header",
+			"completed", strconv.Itoa(s.GetCompletedSuits()),
+			"total", strconv.Itoa(domain.SpiderFoundationCnt),
+			"stock", strconv.Itoa(s.GetStockCount()),
+			"score", strconv.Itoa(s.GetScore())) + "\n")
 
 		b.WriteString("----------\n")
 
-		// タブロー
+		// Tableau
 		tableau := s.GetTableau()
 		for col := range domain.SpiderTableauCnt {
 			colCards := tableau[col]
-			fmt.Fprintf(b, "列%d:", col)
+			b.WriteString(i18n.Tf("spider.columnLabel", "col", strconv.Itoa(col)))
 			if len(colCards) == 0 {
-				b.WriteString(" [空]")
+				b.WriteString(" " + i18n.T("cuiEmptyCol"))
 			} else {
 				b.WriteString(spiderColumnStr(colCards))
 			}
@@ -51,40 +53,40 @@ func (p *SpiderCuiPresenter) Output(s interfaces.SpiderGame, lastErr error) stri
 
 		b.WriteString("----------\n")
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
-		phase := s.GetPhase()
-		switch phase {
+		switch s.GetPhase() {
 		case domain.SpiderPhasePlaying:
 			if s.IsStalemate() {
-				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
-			fmt.Fprintf(b, "手数: %d\n", s.GetMoveCount())
+			b.WriteString(i18n.Tf("cuiSolitaireMoves",
+				"count", strconv.Itoa(s.GetMoveCount())) + "\n")
 		case domain.SpiderPhaseGameClear:
-			fmt.Fprintf(b, "%s 手数: %d スコア: %d\n", color.Green("ゲームクリア！"), s.GetMoveCount(), s.GetScore())
+			b.WriteString(color.Green(i18n.Tf("spider.gameClearLine",
+				"moves", strconv.Itoa(s.GetMoveCount()),
+				"score", strconv.Itoa(s.GetScore()))) + "\n")
 		case domain.SpiderPhaseGameOver:
-			b.WriteString(color.Red("ゲームオーバー") + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current Spider hint.
 func (p *SpiderCuiPresenter) HintOutput(s interfaces.SpiderGame) string {
 	hint := s.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("cuiHintNone") + "\n"
 	}
-	return fmt.Sprintf("ヒント: タブロー列%d[%d] → タブロー列%d\n", hint.FromCol, hint.CardIndex, hint.ToCol)
+	return i18n.Tf("spider.hintLine",
+		"fromCol", strconv.Itoa(hint.FromCol),
+		"idx", strconv.Itoa(hint.CardIndex),
+		"toCol", strconv.Itoa(hint.ToCol)) + "\n"
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *SpiderCuiPresenter) ActionLogOutput(s interfaces.SpiderGame) string {
-	phase := s.GetPhase()
-	if phase == domain.SpiderPhasePlaying {
+	if s.GetPhase() == domain.SpiderPhasePlaying {
 		return actionLogToText(nil)
 	}
 	return actionLogToText(s.GetActionLog())

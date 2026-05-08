@@ -17,5 +17,11 @@
   "cuiHintTrumpCut": "Cut with a trump",
   "cuiHintStrategicBid": "Make a strategic bid",
   "cuiHintStrongHand": "Strong hand",
-  "cuiHintWeakHand": "Weak hand"
+  "cuiHintWeakHand": "Weak hand",
+  "cuiHintNone": "No hint available.",
+  "cuiSolitaireStalemate": "Stalemate",
+  "cuiSolitaireGameClear": "Game clear!",
+  "cuiSolitaireGameOver": "Game over",
+  "cuiSolitaireMoves": "Moves: {{count}}",
+  "cuiEmptyCol": "[empty]"
 }
