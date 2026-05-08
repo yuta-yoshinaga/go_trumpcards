@@ -11,7 +11,6 @@
   "cpuAskSuccess": "[CPU] {{asker}} → {{target}}: ランク {{rank}} → {{count}}枚もらった",
   "cpuAskFail": "[CPU] {{asker}} → {{target}}: ランク {{rank}} → Go Fish!",
   "cpuBookFormed": "[CPU] {{asker}}: ブック完成！ ランク {{rank}}",
-  "errorLine": "Error: {{msg}}",
   "winHuman": "ゲーム終了！ あなたの勝ち！",
   "winCpu": "ゲーム終了！ CPU {{idx}}の勝ち！",
   "scoreEntry": "  {{name}}: {{count}}ブック",

@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -91,9 +90,9 @@ func (p *EgyptianRatscrewCuiPresenter) Output(g interfaces.EgyptianRatscrewGame,
 			default:
 				b.WriteString(color.Red(i18n.T("egyptianratscrew.winCpu")) + "\n")
 			}
-		} else if lastErr != nil {
+		} else {
 			// Game over takes precedence; otherwise show the error.
-			fmt.Fprintf(b, "%s %s\n", color.Red("[エラー]"), lastErr.Error())
+			cuiErrorBlock(b, lastErr)
 		}
 	})
 }

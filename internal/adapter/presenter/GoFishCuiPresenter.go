@@ -85,9 +85,7 @@ func (p *GoFishCuiPresenter) Output(gf interfaces.GoFishGame, lastErr error) str
 
 		b.WriteString("----------\n")
 
-		if lastErr != nil {
-			b.WriteString(i18n.Tf("gofish.errorLine", "msg", lastErr.Error()) + "\n")
-		}
+		cuiErrorBlock(b, lastErr)
 
 		if gf.GetGameEndFlag() {
 			winnerIdx := gf.GetWinnerIdx()
