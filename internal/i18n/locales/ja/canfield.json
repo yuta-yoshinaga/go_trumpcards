@@ -19,5 +19,19 @@
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "hintAvailable": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "baseRank": "Base rank: {{rank}}",
+  "foundationHeader": "Foundation: ",
+  "reserveLine": "Reserve: {{count}}枚 (top: {{card}})",
+  "reserveEmpty": "Reserve: [空]",
+  "stockLine": "Stock: {{count}}枚",
+  "wasteCard": " | Waste: {{card}}",
+  "wasteEmpty": " | Waste: [空]",
+  "columnLabel": "列{{col}}:",
+  "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
+  "hintFromReserve": "リザーブ",
+  "hintFromWaste": "ウェイスト",
+  "hintToFoundation": "ファンデーション",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}"
 }

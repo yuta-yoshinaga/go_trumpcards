@@ -10,5 +10,14 @@
   "helpFoundation": "  f <col>              move tableau to foundation (shorthand)",
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
-  "helpAutoComplete": "  ac                   auto-complete"
+  "helpAutoComplete": "  ac                   auto-complete",
+  "freeCellHeader": "FreeCells: ",
+  "foundationHeader": "Foundation: ",
+  "columnLabel": "Column {{col}}:",
+  "hintFromTableau": "tableau column {{col}}[{{idx}}]",
+  "hintFromFreeCell": "free cell {{col}}",
+  "hintToFoundation": "foundation",
+  "hintToTableau": "tableau column {{col}}",
+  "hintToFreeCell": "free cell {{col}}",
+  "hintLine": "Hint: {{from}} → {{to}}"
 }
