@@ -80,16 +80,26 @@ var globalNamespaces = map[string]bool{
 	"cui_common": true,
 }
 
+// loadTranslations reads every *.json file under locales/<lang>/ and merges
+// the entries into a single map. Per-game files are namespaced as
+// "<file>.<key>"; files in globalNamespaces (common, cui_common) are merged
+// flat so their keys are reusable across the codebase.
 func loadTranslations(fsys fs.FS, lang string) map[string]string {
 	result := map[string]string{}
-	// Adding a file here that should be merged into the global namespace
-	// (no "<file>." key prefix) requires also adding it to globalNamespaces
-	// above. The two declarations are companions: this slice picks the file
-	// up at all, and the map decides whether its keys are prefixed.
-	files := []string{"common", "cui_common", "blackjack", "poker", "oldmaid", "daifugo", "sevens", "doubt", "holdem", "omaha", "omahahilo", "shortdeck", "hearts", "memory", "klondike", "freecell", "baccarat", "spades", "crazyeights", "ginrummy", "spider", "napoleon", "indianpoker", "videopoker", "euchre", "pyramid", "cribbage", "tripeaks", "threecard", "ohhell", "pineapple", "crazypineapple", "speed", "pigtail", "sevencardstud", "clocksolitaire", "twotenjack", "caribbeanstud", "texasholdembonus", "war", "canfield", "fiftyone", "yukon", "whist", "pageone", "reddog", "razz", "badugi", "scorpion", "accordion", "trash", "spanish21", "skat", "shithead", "nertz", "slapjack", "egyptianratscrew", "tonk", "casinowar", "pinochle", "pitch", "bridge", "pokersquares", "calculation", "bakersdozen", "golf", "russiansolitaire", "fortythieves", "gofish", "canasta", "sevenbridge", "durak", "president", "cassino", "spiteandmalice"}
-	for _, file := range files {
-		path := "locales/" + lang + "/" + file + ".json"
-		data, err := fs.ReadFile(fsys, path)
+	entries, err := fs.ReadDir(fsys, "locales/"+lang)
+	if err != nil {
+		return result
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if !strings.HasSuffix(name, ".json") {
+			continue
+		}
+		file := strings.TrimSuffix(name, ".json")
+		data, err := fs.ReadFile(fsys, "locales/"+lang+"/"+name)
 		if err != nil {
 			continue
 		}
