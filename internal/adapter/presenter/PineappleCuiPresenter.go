@@ -24,7 +24,7 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 	var b strings.Builder
 
 	b.WriteString("==========\n")
-	b.WriteString("Pineapple Poker\n")
+	b.WriteString(i18n.T("pineapple.helpTitle") + "\n")
 	b.WriteString("==========\n")
 
 	cfg := p.GetConfig()
@@ -78,9 +78,9 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 		}
 
 		if player.GetFolded() {
-			b.WriteString(" " + color.BoldYellow(i18n.T("pineapple.playerFolded")))
+			b.WriteString(color.BoldYellow(i18n.T("pineapple.playerFolded")))
 		} else if player.GetAllIn() {
-			b.WriteString(" " + color.BoldYellow(i18n.T("pineapple.playerAllIn")))
+			b.WriteString(color.BoldYellow(i18n.T("pineapple.playerAllIn")))
 		}
 
 		if player.GetCurrentBet() > 0 {
@@ -98,9 +98,11 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 		b.WriteString("----------\n")
 		b.WriteString(color.Bold(i18n.T("pineapple.cpuActionsHeader")) + "\n")
 		for _, action := range cpuActions {
-			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, cuiBettingActionName(action.Action))
+			b.WriteString(i18n.Tf("pineapple.cpuActionLine",
+				"idx", strconv.Itoa(action.PlayerIdx),
+				"action", cuiBettingActionName(action.Action)))
 			if action.Amount > 0 {
-				fmt.Fprintf(&b, " (%d)", action.Amount)
+				b.WriteString(i18n.Tf("pineapple.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))
 			}
 			b.WriteString("\n")
 		}
@@ -126,9 +128,12 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 			case r.Mucked:
 				b.WriteString(i18n.Tf("pineapple.resultMucked", "name", name))
 			case r.HandName != "":
-				fmt.Fprintf(&b, "  %s: %s%s", name, r.HandName, kickers)
+				b.WriteString(i18n.Tf("pineapple.resultHand",
+					"name", name,
+					"hand", r.HandName,
+					"kickers", kickers))
 			default:
-				fmt.Fprintf(&b, "  %s", name)
+				b.WriteString(i18n.Tf("pineapple.resultName", "name", name))
 			}
 			if r.WonAmount > 0 {
 				b.WriteString(i18n.Tf("pineapple.wonAmount", "total", strconv.Itoa(r.WonAmount)))
