@@ -1,60 +1,61 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // spadesPlayerStr returns the display string for a single Spades player.
 func spadesPlayerStr(player *domain.SpadesPlayer, i int) string {
 	var b strings.Builder
-	name := cuiPlayerName(player, i)
-	bidStr := "未ビッド"
+	bidStr := i18n.T("spades.bidPending")
 	if player.GetBid() >= 0 {
-		bidStr = fmt.Sprintf("%d", player.GetBid())
+		bidStr = strconv.Itoa(player.GetBid())
 	}
-	fmt.Fprintf(&b, "%s: ビッド=%s 獲得%dトリック バッグ%d 累積%d点 ラウンド%d点 %d枚\n",
-		name,
-		bidStr,
-		player.GetTrickCount(),
-		player.GetBags(),
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("spades.playerLine",
+		"name", cuiPlayerName(player, i),
+		"bid", bidStr,
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"bags", strconv.Itoa(player.GetBags()),
+		"cum", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"cards", strconv.Itoa(player.GetCardsSize()),
+	))
+	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player))
-		b.WriteString("\n")
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
 
-// SpadesCuiPresenter スペードCUIプレゼンタークラス
+// SpadesCuiPresenter renders the Spades CUI view.
 type SpadesCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *SpadesCuiPresenter) Output(s interfaces.SpadesGame, lastErr error) string {
-	return buildCuiOutput("Spades (スペード)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  トリック: %d\n", s.GetRoundNumber(), s.GetTrickNumber())
+	return buildCuiOutput(i18n.T("spades.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("spades.round",
+			"round", strconv.Itoa(s.GetRoundNumber()),
+			"trick", strconv.Itoa(s.GetTrickNumber())) + "\n")
 
 		if s.GetSpadesBroken() {
-			b.WriteString("スペードブレイク: あり\n")
+			b.WriteString(i18n.T("spades.spadesBrokenYes") + "\n")
 		} else {
-			b.WriteString("スペードブレイク: なし\n")
+			b.WriteString(i18n.T("spades.spadesBrokenNo") + "\n")
 		}
 
-		// プレイヤー情報
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			b.WriteString(spadesPlayerStr(s.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
 
-		// 現在のトリック
+		// Current trick
 		trick := s.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
 			func(tc *domain.SpadesTrickCard) int { return tc.PlayerIdx },
@@ -64,63 +65,74 @@ func (p *SpadesCuiPresenter) Output(s interfaces.SpadesGame, lastErr error) stri
 
 		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
+		// Game state
 		if s.GetGameEndFlag() {
 			winnerIdx := s.GetWinnerIdx()
 			player := s.GetPlayer(winnerIdx)
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(player, winnerIdx)+"の勝利です！"))
-		} else {
-			phase := s.GetPhase()
-			switch phase {
-			case domain.SpadesPhaseBid:
-				bidIdx := s.GetBidPlayerIdx()
-				player := s.GetPlayer(bidIdx)
-				fmt.Fprintf(b, "ビッドフェーズ: %sの番\n", cuiPlayerName(player, bidIdx))
-				b.WriteString("b <n>・・・ビッドを宣言 (0=ニル, 1-13)\n")
-			case domain.SpadesPhasePlay:
-				currentIdx := s.GetCurrentPlayerIdx()
-				player := s.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("play <idx>・・・カードを出す\n")
-			case domain.SpadesPhaseTrickEnd:
-				b.WriteString("トリック終了\n")
-				b.WriteString("next・・・次のトリックへ\n")
-			case domain.SpadesPhaseRoundEnd:
-				b.WriteString("ラウンド終了\n")
-				b.WriteString("nr / nextround・・・次のラウンドへ\n")
-			}
+			banner := i18n.Tf("spades.gameEnd", "name", cuiPlayerName(player, winnerIdx))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		switch s.GetPhase() {
+		case domain.SpadesPhaseBid:
+			bidIdx := s.GetBidPlayerIdx()
+			b.WriteString(i18n.Tf("spades.promptBid",
+				"name", cuiPlayerName(s.GetPlayer(bidIdx), bidIdx)) + "\n")
+			b.WriteString(i18n.T("spades.promptBidHelp") + "\n")
+		case domain.SpadesPhasePlay:
+			currentIdx := s.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("spades.promptPlay",
+				"name", cuiPlayerName(s.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("spades.promptPlayHelp") + "\n")
+		case domain.SpadesPhaseTrickEnd:
+			b.WriteString(i18n.T("spades.promptTrickEnd") + "\n")
+			b.WriteString(i18n.T("spades.promptTrickEndHelp") + "\n")
+		case domain.SpadesPhaseRoundEnd:
+			b.WriteString(i18n.T("spades.promptRoundEnd") + "\n")
+			b.WriteString(i18n.T("spades.promptRoundEndHelp") + "\n")
 		}
 	})
 }
 
-// HintOutput ヒント情報を出力する
+// HintOutput emits the current Spades hint.
 func (p *SpadesCuiPresenter) HintOutput(s interfaces.SpadesGame) string {
 	hint := s.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("spades.hintNone") + "\n"
 	}
+	reason := spadesHintReasonStr(hint.Reason)
 	if hint.Bid != nil {
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: ビッド %d を推奨 (%s)]", *hint.Bid, spadesHintReasonStr(hint.Reason))))
+		return color.Yellow(i18n.Tf("spades.hintBid",
+			"bid", strconv.Itoa(*hint.Bid),
+			"reason", reason)) + "\n"
 	}
 	if hint.CardIndex == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("spades.hintNone") + "\n"
 	}
-	player := s.GetPlayer(0)
-	card := player.GetCard(*hint.CardIndex)
-	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), spadesHintReasonStr(hint.Reason))))
+	card := s.GetPlayer(0).GetCard(*hint.CardIndex)
+	return color.Yellow(i18n.Tf("spades.hintCard",
+		"idx", strconv.Itoa(*hint.CardIndex),
+		"card", cuiCardStr(card),
+		"reason", reason)) + "\n"
 }
 
-// spadesHintReasons はSpades固有のヒント理由翻訳
-var spadesHintReasons = map[string]string{
-	"trump_cut": "スペードでカット",
+// spadesHintReasonKeys maps Spades-specific hint-reason identifiers to
+// their i18n keys. Reasons not in this map fall through to
+// lookupHintReason → cui_common.
+var spadesHintReasonKeys = map[string]string{
+	"trump_cut": "spades.hintReasonTrumpCut",
 }
 
-// spadesHintReasonStr ヒント理由を日本語に変換する
+// spadesHintReasonStr resolves a reason via the per-game map first, then
+// the shared (cui_common) layer.
 func spadesHintReasonStr(reason string) string {
-	return lookupHintReason(reason, spadesHintReasons)
+	if key, ok := spadesHintReasonKeys[reason]; ok {
+		return i18n.T(key)
+	}
+	return lookupHintReason(reason, nil)
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *SpadesCuiPresenter) ActionLogOutput(s interfaces.SpadesGame) string {
 	return actionLogOutputText(s)
 }
