@@ -1,6 +1,9 @@
 package i18n
 
 import (
+	"encoding/json"
+	"io/fs"
+	"strings"
 	"testing"
 	"testing/fstest"
 
@@ -69,9 +72,8 @@ func TestLoadTranslations_AutoDiscovery(t *testing.T) {
 
 // TestLoadTranslations_AllExistingLocaleFilesResolve guards against the
 // pre-refactor failure mode (locale file present on disk but not in the
-// hand-maintained slice). With auto-discovery this list is dynamic, so
-// the test just sanity-checks that every JSON file embedded by the
-// `//go:embed` directives produces at least one key in the loaded map.
+// hand-maintained slice). For every embedded *.json, at least one of
+// that file's own keys must appear in the loaded translation map.
 func TestLoadTranslations_AllExistingLocaleFilesResolve(t *testing.T) {
 	for _, lang := range []string{"ja", "en"} {
 		entries, err := localesFS.ReadDir("locales/" + lang)
@@ -79,38 +81,37 @@ func TestLoadTranslations_AllExistingLocaleFilesResolve(t *testing.T) {
 		loaded := loadTranslations(localesFS, lang)
 
 		for _, entry := range entries {
-			if entry.IsDir() {
+			if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".json") {
 				continue
 			}
-			name := entry.Name()
-			if !endsWithJSON(name) {
-				continue
-			}
-			file := name[:len(name)-len(".json")]
-			// Either the file is global-namespaced (cui_common, common)
-			// or its keys appear under the file.* prefix. Either way at
-			// least one key must be in the loaded map for the file to
-			// have contributed.
-			assert.True(t, hasFileContribution(loaded, file),
-				"locale file %s/%s loaded zero keys — auto-discovery regression?", lang, name)
+			file := strings.TrimSuffix(entry.Name(), ".json")
+			assert.True(t, hasFileContribution(localesFS, loaded, lang, file),
+				"locale file %s/%s loaded zero keys — auto-discovery regression?",
+				lang, entry.Name())
 		}
 	}
 }
 
-func endsWithJSON(name string) bool {
-	const suffix = ".json"
-	return len(name) >= len(suffix) && name[len(name)-len(suffix):] == suffix
-}
-
-func hasFileContribution(loaded map[string]string, file string) bool {
-	if globalNamespaces[file] {
-		// Global namespaces don't include the file prefix; just verify
-		// the map is non-empty as a coarse signal.
-		return len(loaded) > 0
+// hasFileContribution checks whether any of the keys defined in
+// locales/<lang>/<file>.json actually made it into `loaded`. This proves
+// the file's own contents are visible (not merely that some other file
+// happened to load), which is what TestLoadTranslations_AllExistingLocaleFilesResolve
+// guards against.
+func hasFileContribution(fsys fs.FS, loaded map[string]string, lang, file string) bool {
+	data, err := fs.ReadFile(fsys, "locales/"+lang+"/"+file+".json")
+	if err != nil {
+		return false
 	}
-	prefix := file + "."
-	for k := range loaded {
-		if len(k) > len(prefix) && k[:len(prefix)] == prefix {
+	var m map[string]string
+	if err := json.Unmarshal(data, &m); err != nil {
+		return false
+	}
+	for k := range m {
+		key := k
+		if !globalNamespaces[file] {
+			key = file + "." + k
+		}
+		if _, ok := loaded[key]; ok {
 			return true
 		}
 	}

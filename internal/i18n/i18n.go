@@ -84,12 +84,6 @@ var globalNamespaces = map[string]bool{
 // the entries into a single map. Per-game files are namespaced as
 // "<file>.<key>"; files in globalNamespaces (common, cui_common) are merged
 // flat so their keys are reusable across the codebase.
-//
-// Discovery is automatic via fs.ReadDir over the embedded locales tree —
-// dropping a new locales/<lang>/<game>.json on disk is sufficient to
-// register it. The previous hand-maintained slice repeatedly drifted out
-// of sync with the on-disk files (eleven latent bugs caught in #1699
-// Phase 3 alone), so the slice is gone for good.
 func loadTranslations(fsys fs.FS, lang string) map[string]string {
 	result := map[string]string{}
 	entries, err := fs.ReadDir(fsys, "locales/"+lang)
