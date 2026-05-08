@@ -6,5 +6,14 @@
   "helpRemoveWaste": "  rm w <row> <col>          ウェイスト+ピラミッドのペア除去",
   "helpRemoveWasteKing": "  rm w                      ウェイストのキングを除去",
   "helpGiveUp": "  g                        ギブアップ",
-  "helpHint": "  h                        ヒント"
+  "helpHint": "  h                        ヒント",
+  "tableauCard": "({{row}},{{col}}){{card}}",
+  "stockLine": "Stock: {{count}}枚",
+  "wasteCard": " | Waste: {{card}}",
+  "wasteEmpty": " | Waste: [空]",
+  "hintKing": "ヒント: キング除去: ({{row}},{{col}})",
+  "hintPair": "ヒント: ペア除去: ({{row1}},{{col1}})+({{row2}},{{col2}})",
+  "hintWasteKing": "ヒント: ウェイストのキング除去",
+  "hintWastePair": "ヒント: ウェイスト+ピラミッド({{row}},{{col}})",
+  "hintUnknown": "ヒント: 不明"
 }

@@ -17,5 +17,15 @@
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "hintAvailable": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "foundationLabel": "[F{{idx}} {{step}}] ",
+  "foundationEmpty": "(empty)",
+  "foundationFilled": "{{card}} ({{count}}/{{max}})",
+  "wasteLabel": "[W{{idx}}] ",
+  "wasteEmpty": "(empty)",
+  "wasteFilled": "{{card}} ({{count}}枚)",
+  "stockLine": "ストック: {{count}}枚",
+  "stockNext": " 次のカード: {{card}}",
+  "hintStock": "ヒント: ストック → ファンデーション{{foundation}}",
+  "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}"
 }

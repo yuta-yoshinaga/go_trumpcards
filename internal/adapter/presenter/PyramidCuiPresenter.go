@@ -1,26 +1,26 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// PyramidCuiPresenter ピラミッドCUIプレゼンタークラス
+// PyramidCuiPresenter renders the Pyramid Solitaire CUI view.
 type PyramidCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) string {
 	const pyramidIndent = "  "
 	const pyramidRemovedPlaceholder = "    "
-	return buildCuiOutput("Pyramid (ピラミッド)", func(b *strings.Builder) {
-		// ピラミッド表示
+	return buildCuiOutput(i18n.T("pyramid.helpTitle"), func(b *strings.Builder) {
+		// Pyramid layout (triangular)
 		pyramid := p.GetPyramid()
 		for row := range domain.PyramidRowCnt {
-			// インデント（三角形の形にする）
 			indent := strings.Repeat(pyramidIndent, domain.PyramidRowCnt-1-row)
 			b.WriteString(indent)
 			for col := range row + 1 {
@@ -31,7 +31,10 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 				if pc.Removed {
 					b.WriteString(pyramidRemovedPlaceholder)
 				} else {
-					fmt.Fprintf(b, "(%d,%d)%s", row, col, cuiCardStr(pc.Card))
+					b.WriteString(i18n.Tf("pyramid.tableauCard",
+						"row", strconv.Itoa(row),
+						"col", strconv.Itoa(col),
+						"card", cuiCardStr(pc.Card)))
 				}
 			}
 			b.WriteString("\n")
@@ -39,69 +42,70 @@ func (pr *PyramidCuiPresenter) Output(p interfaces.PyramidGame, lastErr error) s
 
 		b.WriteString("----------\n")
 
-		// ストックとウェイスト
-		fmt.Fprintf(b, "Stock: %d枚", p.GetStockCount())
+		// Stock + waste
+		b.WriteString(i18n.Tf("pyramid.stockLine",
+			"count", strconv.Itoa(p.GetStockCount())))
 		waste := p.GetWaste()
 		if len(waste) > 0 {
-			fmt.Fprintf(b, " | Waste: %s", cuiCardStr(waste[len(waste)-1]))
+			b.WriteString(i18n.Tf("pyramid.wasteCard",
+				"card", cuiCardStr(waste[len(waste)-1])))
 		} else {
-			b.WriteString(" | Waste: [空]")
+			b.WriteString(i18n.T("pyramid.wasteEmpty"))
 		}
 		b.WriteString("\n")
 
 		b.WriteString("----------\n")
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
-		phase := p.GetPhase()
-		switch phase {
+		switch p.GetPhase() {
 		case domain.PyramidPhasePlaying:
 			if p.IsStalemate() {
-				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
-			fmt.Fprintf(b, "手数: %d\n", p.GetMoveCount())
+			b.WriteString(i18n.Tf("cuiSolitaireMoves",
+				"count", strconv.Itoa(p.GetMoveCount())) + "\n")
 		case domain.PyramidPhaseGameClear:
-			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), p.GetMoveCount())
+			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(p.GetMoveCount())) + "\n")
 		case domain.PyramidPhaseGameOver:
-			b.WriteString(color.Red("ゲームオーバー") + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current Pyramid hint.
 func (pr *PyramidCuiPresenter) HintOutput(p interfaces.PyramidGame) string {
 	hint := p.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("cuiHintNone") + "\n"
 	}
-	return fmt.Sprintf("ヒント: %s\n", pyramidHintStr(hint))
+	switch hint.Type {
+	case "king":
+		return i18n.Tf("pyramid.hintKing",
+			"row", strconv.Itoa(hint.Row1),
+			"col", strconv.Itoa(hint.Col1)) + "\n"
+	case "pair":
+		return i18n.Tf("pyramid.hintPair",
+			"row1", strconv.Itoa(hint.Row1),
+			"col1", strconv.Itoa(hint.Col1),
+			"row2", strconv.Itoa(hint.Row2),
+			"col2", strconv.Itoa(hint.Col2)) + "\n"
+	case "waste_king":
+		return i18n.T("pyramid.hintWasteKing") + "\n"
+	case "waste_pair":
+		return i18n.Tf("pyramid.hintWastePair",
+			"row", strconv.Itoa(hint.Row1),
+			"col", strconv.Itoa(hint.Col1)) + "\n"
+	default:
+		return i18n.T("pyramid.hintUnknown") + "\n"
+	}
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (pr *PyramidCuiPresenter) ActionLogOutput(p interfaces.PyramidGame) string {
-	phase := p.GetPhase()
-	if phase == domain.PyramidPhasePlaying {
+	if p.GetPhase() == domain.PyramidPhasePlaying {
 		return actionLogToText(nil)
 	}
 	return actionLogToText(p.GetActionLog())
-}
-
-// pyramidHintStr ヒントを文字列に変換
-func pyramidHintStr(hint *domain.PyramidHint) string {
-	switch hint.Type {
-	case "king":
-		return fmt.Sprintf("キング除去: (%d,%d)", hint.Row1, hint.Col1)
-	case "pair":
-		return fmt.Sprintf("ペア除去: (%d,%d)+(%d,%d)", hint.Row1, hint.Col1, hint.Row2, hint.Col2)
-	case "waste_king":
-		return "ウェイストのキング除去"
-	case "waste_pair":
-		return fmt.Sprintf("ウェイスト+ピラミッド(%d,%d)", hint.Row1, hint.Col1)
-	default:
-		return "不明"
-	}
 }

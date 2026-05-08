@@ -15,5 +15,11 @@
   "gameOver": "ゲームオーバー",
   "stalemate": "手詰まりです",
   "hintAvailable": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "foundationHeader": "Foundation: ",
+  "columnLabel": "列{{col}}:",
+  "hintFrom": "タブロー列{{col}}[{{idx}}]",
+  "hintToFoundation": "ファンデーション",
+  "hintToTableau": "タブロー列{{col}}",
+  "hintLine": "ヒント: {{from}} → {{to}}"
 }

@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // bakersDozenColumnStr returns the display string for a BakersDozen tableau column.
@@ -18,14 +20,14 @@ func bakersDozenColumnStr(colCards []*domain.BakersDozenTableauCard) string {
 	return strings.Join(parts, " ")
 }
 
-// BakersDozenCuiPresenter ベーカーズダズンCUIプレゼンタークラス
+// BakersDozenCuiPresenter renders the Baker's Dozen Solitaire CUI view.
 type BakersDozenCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *BakersDozenCuiPresenter) Output(bd interfaces.BakersDozenGame, lastErr error) string {
-	return buildCuiOutput("Baker's Dozen (ベーカーズ・ダズン)", func(b *strings.Builder) {
-		// ファンデーション
-		b.WriteString("Foundation: ")
+	return buildCuiOutput(i18n.T("bakersdozen.helpTitle"), func(b *strings.Builder) {
+		// Foundation
+		b.WriteString(i18n.T("bakersdozen.foundationHeader"))
 		foundation := bd.GetFoundation()
 		for i := range domain.BakersDozenFoundationCnt {
 			if i != 0 {
@@ -33,23 +35,22 @@ func (p *BakersDozenCuiPresenter) Output(bd interfaces.BakersDozenGame, lastErr 
 			}
 			pile := foundation[i]
 			if len(pile) == 0 {
-				b.WriteString("[空]")
+				b.WriteString(i18n.T("cuiEmptyCol"))
 			} else {
-				topCard := pile[len(pile)-1]
-				b.WriteString(cuiCardStr(topCard))
+				b.WriteString(cuiCardStr(pile[len(pile)-1]))
 			}
 		}
 		b.WriteString("\n")
 
 		b.WriteString("----------\n")
 
-		// タブロー
+		// Tableau
 		tableau := bd.GetTableau()
 		for col := range domain.BakersDozenTableauCnt {
 			colCards := tableau[col]
-			fmt.Fprintf(b, "列%d:", col)
+			b.WriteString(i18n.Tf("bakersdozen.columnLabel", "col", strconv.Itoa(col)))
 			if len(colCards) == 0 {
-				b.WriteString(" [空]")
+				b.WriteString(" " + i18n.T("cuiEmptyCol"))
 			} else {
 				b.WriteString(bakersDozenColumnStr(colCards))
 			}
@@ -58,53 +59,46 @@ func (p *BakersDozenCuiPresenter) Output(bd interfaces.BakersDozenGame, lastErr 
 
 		b.WriteString("----------\n")
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
-		phase := bd.GetPhase()
-		switch phase {
+		switch bd.GetPhase() {
 		case domain.BakersDozenPhasePlaying:
 			if bd.IsStalemate() {
-				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
-			fmt.Fprintf(b, "手数: %d\n", bd.GetMoveCount())
+			b.WriteString(i18n.Tf("cuiSolitaireMoves",
+				"count", strconv.Itoa(bd.GetMoveCount())) + "\n")
 		case domain.BakersDozenPhaseGameClear:
-			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), bd.GetMoveCount())
+			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(bd.GetMoveCount())) + "\n")
 		case domain.BakersDozenPhaseGameOver:
-			b.WriteString(color.Red("ゲームオーバー") + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current Baker's Dozen hint.
 func (p *BakersDozenCuiPresenter) HintOutput(bd interfaces.BakersDozenGame) string {
 	hint := bd.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("cuiHintNone") + "\n"
 	}
-	return fmt.Sprintf("ヒント: %s", bakersDozenHintStr(hint)) + "\n"
+	from := i18n.Tf("bakersdozen.hintFrom",
+		"col", strconv.Itoa(hint.FromCol),
+		"idx", strconv.Itoa(hint.CardIndex))
+	var to string
+	if hint.ToZone == "foundation" {
+		to = i18n.T("bakersdozen.hintToFoundation")
+	} else {
+		to = i18n.Tf("bakersdozen.hintToTableau", "col", strconv.Itoa(hint.ToCol))
+	}
+	return i18n.Tf("bakersdozen.hintLine", "from", from, "to", to) + "\n"
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *BakersDozenCuiPresenter) ActionLogOutput(bd interfaces.BakersDozenGame) string {
-	phase := bd.GetPhase()
-	if phase == domain.BakersDozenPhasePlaying {
+	if bd.GetPhase() == domain.BakersDozenPhasePlaying {
 		return actionLogToText(nil)
 	}
 	return actionLogToText(bd.GetActionLog())
-}
-
-// bakersDozenHintStr ヒントを文字列に変換
-func bakersDozenHintStr(hint *domain.BakersDozenHint) string {
-	from := fmt.Sprintf("タブロー列%d[%d]", hint.FromCol, hint.CardIndex)
-	var to string
-	if hint.ToZone == "foundation" {
-		to = "ファンデーション"
-	} else {
-		to = fmt.Sprintf("タブロー列%d", hint.ToCol)
-	}
-	return fmt.Sprintf("%s → %s", from, to)
 }
