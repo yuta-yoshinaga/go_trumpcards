@@ -1,32 +1,39 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
+
+// pitchBidStr renders the bid column for the player line.
+func pitchBidStr(bid int) string {
+	switch {
+	case bid == 0:
+		return i18n.T("pitch.bidPass")
+	case bid > 0:
+		return strconv.Itoa(bid)
+	default:
+		return i18n.T("pitch.bidPending")
+	}
+}
 
 // pitchPlayerStr returns the display string for a single Pitch player.
 func pitchPlayerStr(player *domain.PitchPlayer, i int) string {
 	var b strings.Builder
-	name := cuiPlayerName(player, i)
-	bidStr := "未ビッド"
-	if player.GetBid() == 0 {
-		bidStr = "pass"
-	} else if player.GetBid() > 0 {
-		bidStr = fmt.Sprintf("%d", player.GetBid())
-	}
-	fmt.Fprintf(&b, "%s: ビッド=%s 獲得%dトリック 累積%d点 ラウンド%d点 %d枚\n",
-		name,
-		bidStr,
-		player.GetTrickCount(),
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("pitch.playerLine",
+		"name", cuiPlayerName(player, i),
+		"bid", pitchBidStr(player.GetBid()),
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"cum", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"cards", strconv.Itoa(player.GetCardsSize()),
+	))
+	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player))
 		b.WriteString("\n")
@@ -34,7 +41,8 @@ func pitchPlayerStr(player *domain.PitchPlayer, i int) string {
 	return b.String()
 }
 
-// pitchSuitName Pitch CUI 用のスート名 (絵文字)
+// pitchSuitName renders the trump suit using a Unicode glyph. Returns the
+// localized "(undecided)" placeholder when no trump has been chosen yet.
 func pitchSuitName(suit int) string {
 	switch suit {
 	case domain.CardDesignSpade:
@@ -46,32 +54,35 @@ func pitchSuitName(suit int) string {
 	case domain.CardDesignDiamond:
 		return "♦"
 	}
-	return "(未確定)"
+	return i18n.T("pitch.trumpUndecided")
 }
 
-// PitchCuiPresenter ピッチCUIプレゼンタークラス
+// PitchCuiPresenter renders the Pitch CUI view.
 type PitchCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *PitchCuiPresenter) Output(s interfaces.PitchGame, lastErr error) string {
-	return buildCuiOutput("Pitch (ピッチ)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  トリック: %d  親: %s\n",
-			s.GetRoundNumber(), s.GetTrickNumber(), cuiPlayerName(s.GetPlayer(s.GetDealerIdx()), s.GetDealerIdx()))
-		fmt.Fprintf(b, "ビッド: %d  トランプ: %s\n",
-			s.GetCurrentBid(), pitchSuitName(s.GetTrumpSuit()))
+	return buildCuiOutput(i18n.T("pitch.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("pitch.header",
+			"round", strconv.Itoa(s.GetRoundNumber()),
+			"trick", strconv.Itoa(s.GetTrickNumber()),
+			"dealer", cuiPlayerName(s.GetPlayer(s.GetDealerIdx()), s.GetDealerIdx())) + "\n")
+		b.WriteString(i18n.Tf("pitch.bidLine",
+			"bid", strconv.Itoa(s.GetCurrentBid()),
+			"suit", pitchSuitName(s.GetTrumpSuit())) + "\n")
 		if s.GetBidWinnerIdx() >= 0 {
-			fmt.Fprintf(b, "ビッド勝者: %s\n",
-				cuiPlayerName(s.GetPlayer(s.GetBidWinnerIdx()), s.GetBidWinnerIdx()))
+			b.WriteString(i18n.Tf("pitch.bidWinner",
+				"name", cuiPlayerName(s.GetPlayer(s.GetBidWinnerIdx()), s.GetBidWinnerIdx())) + "\n")
 		}
 
-		// プレイヤー情報
+		// Player rows
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			b.WriteString(pitchPlayerStr(s.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
 
-		// 現在のトリック
+		// Current trick
 		trick := s.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
 			func(tc *domain.PitchTrickCard) int { return tc.PlayerIdx },
@@ -81,50 +92,49 @@ func (p *PitchCuiPresenter) Output(s interfaces.PitchGame, lastErr error) string
 
 		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
+		// Game state
 		if s.GetGameEndFlag() {
 			winnerIdx := s.GetWinnerIdx()
-			player := s.GetPlayer(winnerIdx)
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(player, winnerIdx)+"の勝利です！"))
-		} else {
-			phase := s.GetPhase()
-			switch phase {
-			case domain.PitchPhaseBid:
-				bidIdx := s.GetBidPlayerIdx()
-				player := s.GetPlayer(bidIdx)
-				fmt.Fprintf(b, "ビッドフェーズ: %sの番\n", cuiPlayerName(player, bidIdx))
-				b.WriteString("b <n>・・・ビッドを宣言 (0=pass, 2-4)\n")
-			case domain.PitchPhasePlay:
-				currentIdx := s.GetCurrentPlayerIdx()
-				player := s.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("play <idx>・・・カードを出す\n")
-			case domain.PitchPhaseTrickEnd:
-				b.WriteString("トリック終了\n")
-				b.WriteString("next・・・次のトリックへ\n")
-			case domain.PitchPhaseRoundEnd:
-				b.WriteString("ラウンド終了\n")
-				b.WriteString("nr / nextround・・・次のラウンドへ\n")
-			}
+			banner := i18n.Tf("pitch.gameEnd",
+				"name", cuiPlayerName(s.GetPlayer(winnerIdx), winnerIdx))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		switch s.GetPhase() {
+		case domain.PitchPhaseBid:
+			bidIdx := s.GetBidPlayerIdx()
+			b.WriteString(i18n.Tf("pitch.promptBid",
+				"name", cuiPlayerName(s.GetPlayer(bidIdx), bidIdx)) + "\n")
+			b.WriteString(i18n.T("pitch.promptBidHelp") + "\n")
+		case domain.PitchPhasePlay:
+			currentIdx := s.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("pitch.promptPlay",
+				"name", cuiPlayerName(s.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("pitch.promptPlayHelp") + "\n")
+		case domain.PitchPhaseTrickEnd:
+			b.WriteString(i18n.T("pitch.promptTrickEnd") + "\n")
+			b.WriteString(i18n.T("pitch.promptTrickEndHelp") + "\n")
+		case domain.PitchPhaseRoundEnd:
+			b.WriteString(i18n.T("pitch.promptRoundEnd") + "\n")
+			b.WriteString(i18n.T("pitch.promptRoundEndHelp") + "\n")
 		}
 	})
 }
 
-// HintOutput ヒント情報を出力する
+// HintOutput emits the current Pitch hint.
 func (p *PitchCuiPresenter) HintOutput(s interfaces.PitchGame) string {
 	hint := s.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("pitch.hintNone") + "\n"
 	}
+	reason := pitchHintReasonStr(hint.Reason)
 	if hint.Bid != nil {
-		bidStr := "pass"
-		if *hint.Bid > 0 {
-			bidStr = fmt.Sprintf("%d", *hint.Bid)
-		}
-		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: ビッド %s を推奨 (%s)]", bidStr, pitchHintReasonStr(hint.Reason))))
+		return color.Yellow(i18n.Tf("pitch.hintBid",
+			"bid", pitchBidStr(*hint.Bid),
+			"reason", reason)) + "\n"
 	}
 	if hint.CardIndex == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("pitch.hintNone") + "\n"
 	}
 	humanIdx := -1
 	for i := 0; i < s.GetPlayerCnt(); i++ {
@@ -134,27 +144,35 @@ func (p *PitchCuiPresenter) HintOutput(s interfaces.PitchGame) string {
 		}
 	}
 	if humanIdx < 0 {
-		return "ヒントはありません。\n"
+		return i18n.T("pitch.hintNone") + "\n"
 	}
-	player := s.GetPlayer(humanIdx)
-	card := player.GetCard(*hint.CardIndex)
-	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), pitchHintReasonStr(hint.Reason))))
+	card := s.GetPlayer(humanIdx).GetCard(*hint.CardIndex)
+	return color.Yellow(i18n.Tf("pitch.hintCard",
+		"idx", strconv.Itoa(*hint.CardIndex),
+		"card", cuiCardStr(card),
+		"reason", reason)) + "\n"
 }
 
-// pitchHintReasons はPitch固有のヒント理由翻訳
-var pitchHintReasons = map[string]string{
-	"set_trump_lead": "リードでトランプを宣言",
-	"trump_cut":      "トランプでカット",
-	"bid_strong":     "強い手札なので入札",
-	"bid_pass":       "弱い手札なのでパス",
+// pitchHintReasonKeys maps Pitch-specific hint-reason identifiers to their
+// i18n keys. Reasons not in this map fall through to lookupHintReason →
+// cui_common.
+var pitchHintReasonKeys = map[string]string{
+	"set_trump_lead": "pitch.hintReasonSetTrumpLead",
+	"trump_cut":      "pitch.hintReasonTrumpCut",
+	"bid_strong":     "pitch.hintReasonBidStrong",
+	"bid_pass":       "pitch.hintReasonBidPass",
 }
 
-// pitchHintReasonStr ヒント理由を日本語に変換する
+// pitchHintReasonStr resolves a reason via the per-game map first, then
+// the shared (cui_common) layer.
 func pitchHintReasonStr(reason string) string {
-	return lookupHintReason(reason, pitchHintReasons)
+	if key, ok := pitchHintReasonKeys[reason]; ok {
+		return i18n.T(key)
+	}
+	return lookupHintReason(reason, nil)
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *PitchCuiPresenter) ActionLogOutput(s interfaces.PitchGame) string {
 	return actionLogOutputText(s)
 }
