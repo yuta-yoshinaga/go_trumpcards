@@ -15,5 +15,9 @@
   "gameOver": "ゲームオーバー",
   "stalemate": "手詰まりです",
   "hintAvailable": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "header": "完成スーツ: {{completed}}/{{total}} | 山札: {{stock}}枚",
+  "columnLabel": "列{{col}}:",
+  "hintDeal": "ヒント: d でストックから配ってください",
+  "hintLine": "ヒント: タブロー列{{fromCol}}[{{idx}}] → タブロー列{{toCol}}"
 }

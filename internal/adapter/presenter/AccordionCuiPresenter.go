@@ -1,22 +1,23 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// AccordionCuiPresenter アコーディオンCUIプレゼンタークラス
+// AccordionCuiPresenter renders the Accordion CUI view.
 type AccordionCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *AccordionCuiPresenter) Output(a interfaces.AccordionGame, lastErr error) string {
-	return buildCuiOutput("Accordion (アコーディオン)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "残りパイル: %d", a.GetPileCount())
-		b.WriteString("\n")
+	return buildCuiOutput(i18n.T("accordion.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("accordion.header",
+			"count", strconv.Itoa(a.GetPileCount())) + "\n")
 		b.WriteString("----------\n")
 
 		piles := a.GetPiles()
@@ -25,11 +26,15 @@ func (p *AccordionCuiPresenter) Output(a interfaces.AccordionGame, lastErr error
 				continue
 			}
 			top := pile[len(pile)-1]
-			// [idx] 表示カード (山の厚さ)
 			if len(pile) == 1 {
-				fmt.Fprintf(b, "[%d]%s ", i, cuiCardStr(top))
+				b.WriteString(i18n.Tf("accordion.pileSingle",
+					"idx", strconv.Itoa(i),
+					"card", cuiCardStr(top)))
 			} else {
-				fmt.Fprintf(b, "[%d]%s(+%d) ", i, cuiCardStr(top), len(pile)-1)
+				b.WriteString(i18n.Tf("accordion.pileStack",
+					"idx", strconv.Itoa(i),
+					"card", cuiCardStr(top),
+					"count", strconv.Itoa(len(pile)-1)))
 			}
 			if (i+1)%8 == 0 {
 				b.WriteString("\n")
@@ -37,34 +42,36 @@ func (p *AccordionCuiPresenter) Output(a interfaces.AccordionGame, lastErr error
 		}
 		b.WriteString("\n----------\n")
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		switch a.GetPhase() {
 		case domain.AccordionPhasePlaying:
 			if a.IsStalemate() {
-				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
-			fmt.Fprintf(b, "手数: %d\n", a.GetMoveCount())
+			b.WriteString(i18n.Tf("cuiSolitaireMoves",
+				"count", strconv.Itoa(a.GetMoveCount())) + "\n")
 		case domain.AccordionPhaseGameClear:
-			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), a.GetMoveCount())
+			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(a.GetMoveCount())) + "\n")
 		case domain.AccordionPhaseGameOver:
-			b.WriteString(color.Red("ゲームオーバー") + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current Accordion hint.
 func (p *AccordionCuiPresenter) HintOutput(a interfaces.AccordionGame) string {
 	hint := a.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("cuiHintNone") + "\n"
 	}
-	return fmt.Sprintf("ヒント: パイル%d → パイル%d\n", hint.FromIdx, hint.ToIdx)
+	return i18n.Tf("accordion.hintLine",
+		"from", strconv.Itoa(hint.FromIdx),
+		"to", strconv.Itoa(hint.ToIdx)) + "\n"
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *AccordionCuiPresenter) ActionLogOutput(a interfaces.AccordionGame) string {
 	if a.GetPhase() == domain.AccordionPhasePlaying {
 		return actionLogToText(nil)

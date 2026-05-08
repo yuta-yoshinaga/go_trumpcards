@@ -1,64 +1,70 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// PokerSquaresCuiPresenter はポーカー・スクエアズの CUI プレゼンター。
+// PokerSquaresCuiPresenter renders the Poker Squares CUI view.
 type PokerSquaresCuiPresenter struct{}
 
-// Output はゲーム状態を文字列で出力する。
+// Output renders the current game state for the active locale (#1699).
 func (pr *PokerSquaresCuiPresenter) Output(p interfaces.PokerSquaresGame, lastErr error) string {
-	return buildCuiOutput("Poker Squares (ポーカー・スクエアズ)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("pokersquares.helpTitle"), func(b *strings.Builder) {
 		board := p.GetBoard()
 		for r := range domain.PokerSquaresGridSize {
 			for c := range domain.PokerSquaresGridSize {
 				if c > 0 {
 					b.WriteString(" | ")
 				}
-				card := board[r][c]
-				if card == nil {
-					fmt.Fprintf(b, "(%d,%d) .....", r, c)
+				rs := strconv.Itoa(r)
+				cs := strconv.Itoa(c)
+				if card := board[r][c]; card == nil {
+					b.WriteString(i18n.Tf("pokersquares.cellEmpty", "r", rs, "c", cs))
 				} else {
-					fmt.Fprintf(b, "(%d,%d) %s", r, c, cuiCardStr(card))
+					b.WriteString(i18n.Tf("pokersquares.cellCard",
+						"r", rs, "c", cs, "card", cuiCardStr(card)))
 				}
 			}
-			fmt.Fprintf(b, "   => row score: %d\n", p.RowScore(r))
+			b.WriteString(i18n.Tf("pokersquares.rowScore",
+				"score", strconv.Itoa(p.RowScore(r))) + "\n")
 		}
 		b.WriteString("----------\n")
+
 		colParts := make([]string, domain.PokerSquaresGridSize)
 		for i := range domain.PokerSquaresGridSize {
-			colParts[i] = fmt.Sprintf("col%d=%d", i, p.ColScore(i))
+			colParts[i] = i18n.Tf("pokersquares.colScore",
+				"idx", strconv.Itoa(i),
+				"score", strconv.Itoa(p.ColScore(i)))
 		}
-		fmt.Fprintf(b, "%s\n", strings.Join(colParts, " "))
+		b.WriteString(strings.Join(colParts, " ") + "\n")
 		b.WriteString("----------\n")
 
 		if cc := p.GetCurrentCard(); cc != nil {
-			fmt.Fprintf(b, "Current card: %s\n", cuiCardStr(cc))
+			b.WriteString(i18n.Tf("pokersquares.currentCard", "card", cuiCardStr(cc)) + "\n")
 		} else {
-			b.WriteString("Current card: (none)\n")
+			b.WriteString(i18n.T("pokersquares.currentCardNone") + "\n")
 		}
-		fmt.Fprintf(b, "Placed: %d/%d  Total score: %d\n",
-			p.GetPlacedCount(), domain.PokerSquaresTotalCells, p.TotalScore())
+		b.WriteString(i18n.Tf("pokersquares.placedLine",
+			"placed", strconv.Itoa(p.GetPlacedCount()),
+			"total", strconv.Itoa(domain.PokerSquaresTotalCells),
+			"score", strconv.Itoa(p.TotalScore())) + "\n")
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
-		switch p.GetPhase() {
-		case domain.PokerSquaresPhasePlaying:
-			// nothing extra
-		case domain.PokerSquaresPhaseComplete:
-			fmt.Fprintf(b, "%s 合計得点: %d\n", color.Green("ゲーム終了"), p.TotalScore())
+		cuiErrorBlock(b, lastErr)
+
+		if p.GetPhase() == domain.PokerSquaresPhaseComplete {
+			b.WriteString(color.Green(i18n.Tf("pokersquares.gameComplete",
+				"score", strconv.Itoa(p.TotalScore()))) + "\n")
 		}
 	})
 }
 
-// ActionLogOutput は棋譜をテキスト出力する。
+// ActionLogOutput emits the action-log transcript as plain text.
 func (pr *PokerSquaresCuiPresenter) ActionLogOutput(p interfaces.PokerSquaresGame) string {
 	if p.GetPhase() == domain.PokerSquaresPhasePlaying {
 		return actionLogToText(nil)

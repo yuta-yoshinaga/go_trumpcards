@@ -35,7 +35,7 @@ func TestScorpionCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(sg, nil)
 		assert.Contains(t, result, "Scorpion")
-		assert.Contains(t, result, "Completed")
+		assert.Contains(t, result, "完成スーツ")
 		assert.Contains(t, result, "列0:")
 	})
 

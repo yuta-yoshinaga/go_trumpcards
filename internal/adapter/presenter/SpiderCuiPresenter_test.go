@@ -45,9 +45,9 @@ func TestSpiderCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(sg, nil)
 		assert.Contains(t, result, "Spider Solitaire")
-		assert.Contains(t, result, "Completed: 0/8")
-		assert.Contains(t, result, "Stock: 50枚")
-		assert.Contains(t, result, "Score: 500")
+		assert.Contains(t, result, "完成スーツ: 0/8")
+		assert.Contains(t, result, "山札: 50枚")
+		assert.Contains(t, result, "スコア: 500")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 	})

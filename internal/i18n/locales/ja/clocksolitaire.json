@@ -1,5 +1,14 @@
 {
   "helpTitle": "Clock Solitaire (クロックソリティア)",
   "helpStep": "  s                        ステップ（次のカードをめくる）",
-  "helpAutoPlay": "  a                        オートプレイ（全ステップ実行）"
+  "helpAutoPlay": "  a                        オートプレイ（全ステップ実行）",
+  "hourLabel": "[{{label}}時]",
+  "centerLabel": "[中央K]",
+  "pileFootnote": " ({{up}}/{{total}})",
+  "currentCard": "手持ち: {{card}}",
+  "stepLine": "ステップ: {{count}}",
+  "gameClearLine": "ゲームクリア！ ステップ数: {{count}}",
+  "gameOverLine": "ゲームオーバー ステップ数: {{count}}",
+  "actionLogTitle": "Clock Solitaire Action Log",
+  "actionLogEntry": "[{{turn}}] {{detail}}"
 }
