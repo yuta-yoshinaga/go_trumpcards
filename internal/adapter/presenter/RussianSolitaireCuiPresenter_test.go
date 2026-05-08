@@ -93,6 +93,23 @@ func TestRussianSolitaireCuiPresenter_Output(t *testing.T) {
 		result := p.Output(rg, nil)
 		assert.Contains(t, result, "ゲームオーバー")
 	})
+
+	t.Run("foundation with cards", func(t *testing.T) {
+		rg := new(interfaces.MockRussianSolitaireGame)
+		rg.On("GetPhase").Return(domain.RussianSolitairePhasePlaying).Maybe()
+		rg.On("GetMoveCount").Return(0).Maybe()
+		rg.On("IsStalemate").Return(false).Maybe()
+		var tableau [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard
+		rg.On("GetTableau").Return(tableau).Maybe()
+		// Stack a single card on foundation[0] to exercise the non-empty branch.
+		var foundation [domain.RussianSolitaireFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		rg.On("GetFoundation").Return(foundation).Maybe()
+
+		p := new(RussianSolitaireCuiPresenter)
+		result := p.Output(rg, nil)
+		assert.Contains(t, result, "SPADE 1")
+	})
 }
 
 func TestRussianSolitaireCuiPresenter_HintOutput(t *testing.T) {

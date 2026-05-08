@@ -3,5 +3,12 @@
   "helpDraw": "  d                        draw from stock",
   "helpRemove": "  rm <row> <col>            remove card",
   "helpGiveUp": "  g                        give up",
-  "helpHint": "  h                        hint"
+  "helpHint": "  h                        hint",
+  "tableauCard": "({{row}},{{col}}){{card}}",
+  "stockLine": "Stock: {{count}}",
+  "wasteCard": " | Waste: {{card}}",
+  "wasteEmpty": " | Waste: [empty]",
+  "hintRemove": "Hint: remove ({{row}},{{col}})",
+  "hintDraw": "Hint: draw from stock",
+  "hintUnknown": "Hint: unknown"
 }

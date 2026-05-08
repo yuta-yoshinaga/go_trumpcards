@@ -1,23 +1,24 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// GolfCuiPresenter ゴルフソリティアCUIプレゼンタークラス
+// GolfCuiPresenter renders the Golf Solitaire CUI view.
 type GolfCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string {
-	return buildCuiOutput("Golf (ゴルフ)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("golf.helpTitle"), func(b *strings.Builder) {
 		layout := g.GetLayout()
 
-		// タブロー表示 (行ごとに7列分のカードを表示)
+		// Tableau (each row prints 7 columns)
 		for row := range domain.GolfRowCnt {
 			for col := range domain.GolfColCnt {
 				if col > 0 {
@@ -27,9 +28,11 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 				if gc == nil || gc.Removed {
 					b.WriteString("    ")
 				} else if g.IsExposed(col, row) {
-					fmt.Fprintf(b, "(%d)%s", col, cuiCardStr(gc.Card))
+					b.WriteString(i18n.Tf("golf.exposedCard",
+						"col", strconv.Itoa(col),
+						"card", cuiCardStr(gc.Card)))
 				} else {
-					fmt.Fprintf(b, "   %s", cuiCardStr(gc.Card))
+					b.WriteString("   " + cuiCardStr(gc.Card))
 				}
 			}
 			b.WriteString("\n")
@@ -37,65 +40,58 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 
 		b.WriteString("----------\n")
 
-		// ストックとウェイスト
-		fmt.Fprintf(b, "Stock: %d枚", g.GetStockCount())
+		// Stock + waste
+		b.WriteString(i18n.Tf("golf.stockLine",
+			"count", strconv.Itoa(g.GetStockCount())))
 		waste := g.GetWaste()
 		if len(waste) > 0 {
-			fmt.Fprintf(b, " | Waste: %s", cuiCardStr(waste[len(waste)-1]))
+			b.WriteString(i18n.Tf("golf.wasteCard",
+				"card", cuiCardStr(waste[len(waste)-1])))
 		} else {
-			b.WriteString(" | Waste: [空]")
+			b.WriteString(i18n.T("golf.wasteEmpty"))
 		}
 		b.WriteString("\n")
 
 		b.WriteString("----------\n")
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
-		phase := g.GetPhase()
-		switch phase {
+		switch g.GetPhase() {
 		case domain.GolfPhasePlaying:
 			if g.IsStalemate() {
-				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
 			}
-			fmt.Fprintf(b, "手数: %d\n", g.GetMoveCount())
+			b.WriteString(i18n.Tf("cuiSolitaireMoves",
+				"count", strconv.Itoa(g.GetMoveCount())) + "\n")
 		case domain.GolfPhaseGameClear:
-			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), g.GetMoveCount())
+			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
 		case domain.GolfPhaseGameOver:
-			b.WriteString(color.Red("ゲームオーバー") + "\n")
+			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current Golf hint.
 func (pr *GolfCuiPresenter) HintOutput(g interfaces.GolfGame) string {
 	hint := g.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("cuiHintNone") + "\n"
 	}
-	return fmt.Sprintf("ヒント: %s\n", golfHintStr(hint))
+	switch hint.Type {
+	case "remove":
+		return i18n.Tf("golf.hintRemove", "col", strconv.Itoa(hint.Col)) + "\n"
+	case "draw":
+		return i18n.T("golf.hintDraw") + "\n"
+	default:
+		return i18n.T("golf.hintUnknown") + "\n"
+	}
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (pr *GolfCuiPresenter) ActionLogOutput(g interfaces.GolfGame) string {
-	phase := g.GetPhase()
-	if phase == domain.GolfPhasePlaying {
+	if g.GetPhase() == domain.GolfPhasePlaying {
 		return actionLogToText(nil)
 	}
 	return actionLogToText(g.GetActionLog())
-}
-
-// golfHintStr ヒントを文字列に変換
-func golfHintStr(hint *domain.GolfHint) string {
-	switch hint.Type {
-	case "remove":
-		return fmt.Sprintf("カード除去: 列%d", hint.Col)
-	case "draw":
-		return "ストックからカードを引いてください"
-	default:
-		return "不明"
-	}
 }
