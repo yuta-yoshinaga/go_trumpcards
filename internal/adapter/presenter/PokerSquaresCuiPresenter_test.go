@@ -31,8 +31,8 @@ func TestPokerSquaresCuiPresenter_Output_Playing(t *testing.T) {
 	p := &PokerSquaresCuiPresenter{}
 	out := p.Output(pg, nil)
 	assert.Contains(t, out, "Poker Squares")
-	assert.Contains(t, out, "Current card:")
-	assert.Contains(t, out, "Placed: 0/25")
+	assert.Contains(t, out, "手持ちカード:")
+	assert.Contains(t, out, "配置済み: 0/25")
 }
 
 func TestPokerSquaresCuiPresenter_Output_Complete(t *testing.T) {

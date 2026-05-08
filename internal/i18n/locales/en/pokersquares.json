@@ -7,5 +7,5 @@
   "currentCard": "Current card: {{card}}",
   "currentCardNone": "Current card: (none)",
   "placedLine": "Placed: {{placed}}/{{total}}  Total score: {{score}}",
-  "gameComplete": "Game over. Total score: {{score}}"
+  "gameComplete": "Game complete! Total score: {{score}}"
 }
