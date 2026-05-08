@@ -42,7 +42,9 @@ func (p *FiftyOneCuiPresenter) Output(fo interfaces.FiftyOneGame, lastErr error)
 			if i > 0 {
 				b.WriteString("  ")
 			}
-			b.WriteString("[" + strconv.Itoa(i) + "]" + cuiCardStr(c))
+			b.WriteString(i18n.Tf("fiftyone.tableCard",
+				"idx", strconv.Itoa(i),
+				"card", cuiCardStr(c)))
 		}
 		b.WriteString("\n")
 

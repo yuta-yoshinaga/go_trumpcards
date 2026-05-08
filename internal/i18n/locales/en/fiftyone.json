@@ -11,6 +11,7 @@
   "cpuScoreLine": ": {{count}} cards (score: {{score}})",
   "scoreUnknown": "?",
   "tableHeader": "Table: ",
+  "tableCard": "[{{idx}}]{{card}}",
   "stopCalled": "⚠ {{name}} called stop!",
   "errorLine": "Error: {{msg}}",
   "gameEndHeader": "=== Game over ===",

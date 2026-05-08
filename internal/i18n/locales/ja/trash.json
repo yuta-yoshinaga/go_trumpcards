@@ -21,7 +21,7 @@
   "slotFaceUp": "[{{idx}} {{card}}] ",
   "slotFaceDown": "[{{idx}}  ? ] ",
   "stockLine": "山札: {{stock}}   捨て札: {{discard}}",
-  "stockTop": " (top: {{card}})",
+  "stockTop": " (上: {{card}})",
   "pending": "ペンディング: {{card}}",
   "promptAwaitWild": "ワイルドを配置してください (p <位置>)",
   "winHuman": "あなたの勝ち！",
