@@ -1,92 +1,98 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// CassinoCuiPresenter カシノ CUI プレゼンタークラス。
+// CassinoCuiPresenter renders the Cassino CUI view.
 type CassinoCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力。
+// Output renders the current game state for the active locale (#1699).
 func (p *CassinoCuiPresenter) Output(cg interfaces.CassinoGame, lastErr error) string {
-	return buildCuiOutput("Cassino (カッシーノ)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("cassino.helpTitle"), func(b *strings.Builder) {
 		for i := 0; i < cg.GetPlayerCnt(); i++ {
 			b.WriteString(cassinoPlayerStr(cg.GetPlayer(i), i))
 		}
 		b.WriteString("----------\n")
 
-		tableCards := cg.GetTableCards()
-		if len(tableCards) > 0 {
-			fmt.Fprintf(b, "場: %s\n", cuiCardSliceStr(tableCards))
+		if tableCards := cg.GetTableCards(); len(tableCards) > 0 {
+			b.WriteString(i18n.Tf("cassino.tableLine",
+				"cards", cuiCardSliceStr(tableCards)) + "\n")
 		} else {
-			b.WriteString("場: なし\n")
+			b.WriteString(i18n.T("cassino.tableEmpty") + "\n")
 		}
 
-		// ビルド
-		builds := cg.GetBuilds()
-		if len(builds) > 0 {
-			b.WriteString(color.Bold("[ビルド]") + "\n")
+		// Builds
+		if builds := cg.GetBuilds(); len(builds) > 0 {
+			b.WriteString(color.Bold(i18n.T("cassino.buildsHeader")) + "\n")
 			for i, build := range builds {
-				fmt.Fprintf(b, "  #%d (値%d, owner:%s, multi:%v): ", i, build.Value, cuiPlayerName(cg.GetPlayer(build.OwnerIdx), build.OwnerIdx), build.IsMulti)
+				groupParts := make([]string, len(build.Groups))
 				for gi, g := range build.Groups {
-					if gi > 0 {
-						b.WriteString(" | ")
-					}
-					b.WriteString(cuiCardSliceStr(g))
+					groupParts[gi] = cuiCardSliceStr(g)
 				}
-				b.WriteString("\n")
+				b.WriteString(i18n.Tf("cassino.buildLine",
+					"idx", strconv.Itoa(i),
+					"value", strconv.Itoa(build.Value),
+					"owner", cuiPlayerName(cg.GetPlayer(build.OwnerIdx), build.OwnerIdx),
+					"multi", strconv.FormatBool(build.IsMulti),
+					"cards", strings.Join(groupParts, " | ")) + "\n")
 			}
 		}
 
-		// 人間アクション
+		// Human action
 		if ha := cg.GetHumanAction(); ha != nil {
-			fmt.Fprintf(b, "あなたの行動: %s\n", cassinoActionStr(ha))
+			b.WriteString(i18n.Tf("cassino.humanActionLine",
+				"text", cassinoActionStr(ha)) + "\n")
 		}
-		// CPU アクション履歴
-		cpu := cg.GetCpuActions()
-		if len(cpu) > 0 {
-			b.WriteString(color.Bold("[CPUの行動]") + "\n")
+		// CPU action history
+		if cpu := cg.GetCpuActions(); len(cpu) > 0 {
+			b.WriteString(color.Bold(i18n.T("cassino.cpuActionsHeader")) + "\n")
 			for _, a := range cpu {
-				fmt.Fprintf(b, "  %s: %s\n", cuiPlayerName(cg.GetPlayer(a.PlayerIdx), a.PlayerIdx), cassinoActionStr(a))
+				b.WriteString(i18n.Tf("cassino.cpuActionLine",
+					"name", cuiPlayerName(cg.GetPlayer(a.PlayerIdx), a.PlayerIdx),
+					"text", cassinoActionStr(a)) + "\n")
 			}
 		}
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		if cg.GetGameEndFlag() {
-			b.WriteString("ゲーム終了！\n")
+			b.WriteString(i18n.T("cassino.gameEnd") + "\n")
 			for i := 0; i < cg.GetPlayerCnt(); i++ {
 				pl := cg.GetPlayer(i)
 				if pl == nil {
 					continue
 				}
-				fmt.Fprintf(b, "  %s: %d点\n", cuiPlayerName(pl, i), pl.GetTotalScore())
+				b.WriteString(i18n.Tf("cassino.scoreEntry",
+					"name", cuiPlayerName(pl, i),
+					"score", strconv.Itoa(pl.GetTotalScore())) + "\n")
 			}
-		} else {
-			currentTurn := cg.GetCurrentTurn()
-			currentName := cuiPlayerName(cg.GetPlayer(currentTurn), currentTurn)
-			fmt.Fprintf(b, "手番: %s\n", currentName)
-			b.WriteString("t <hand> <tbl...> で捕獲 / b <hand> <value> <tbl...> でビルド / tr <hand> で場に置く\n")
+			return
 		}
+		currentTurn := cg.GetCurrentTurn()
+		b.WriteString(i18n.Tf("cassino.promptCurrentTurn",
+			"name", cuiPlayerName(cg.GetPlayer(currentTurn), currentTurn)) + "\n")
+		b.WriteString(i18n.T("cassino.promptHelp") + "\n")
 	})
 }
 
 // cassinoPlayerStr returns the display string for a single Cassino player.
 func cassinoPlayerStr(player *domain.CassinoPlayer, i int) string {
 	var b strings.Builder
-	b.WriteString(cuiPlayerName(player, i))
-	fmt.Fprintf(&b, ": 手札%d枚 / 捕獲%d枚 / スイープ%d / 累計%d点\n",
-		player.GetCardsSize(), player.CapturedCount(), player.GetSweepCount(), player.GetTotalScore())
+	b.WriteString(i18n.Tf("cassino.playerLine",
+		"name", cuiPlayerName(player, i),
+		"hand", strconv.Itoa(player.GetCardsSize()),
+		"captured", strconv.Itoa(player.CapturedCount()),
+		"sweep", strconv.Itoa(player.GetSweepCount()),
+		"total", strconv.Itoa(player.GetTotalScore())) + "\n")
 	if player.GetIsHuman() {
-		b.WriteString(cuiIndexedCardListStr(player))
-		b.WriteString("\n")
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
@@ -100,14 +106,19 @@ func cassinoActionStr(a *domain.CassinoAction) string {
 	case domain.CassinoActionTake:
 		suffix := ""
 		if a.IsSweep {
-			suffix = " (スイープ!)"
+			suffix = i18n.T("cassino.actionTakeSweepSuffix")
 		}
-		return fmt.Sprintf("捕獲 played=%s captured=%d枚%s",
-			cassinoCardShort(a.PlayedCard), len(a.CapturedCards), suffix)
+		return i18n.Tf("cassino.actionTake",
+			"played", cassinoCardShort(a.PlayedCard),
+			"count", strconv.Itoa(len(a.CapturedCards)),
+			"suffix", suffix)
 	case domain.CassinoActionBuild:
-		return fmt.Sprintf("ビルド値%d (played=%s)", a.BuildValue, cassinoCardShort(a.PlayedCard))
+		return i18n.Tf("cassino.actionBuild",
+			"value", strconv.Itoa(a.BuildValue),
+			"played", cassinoCardShort(a.PlayedCard))
 	case domain.CassinoActionTrail:
-		return fmt.Sprintf("場に置く %s", cassinoCardShort(a.PlayedCard))
+		return i18n.Tf("cassino.actionTrail",
+			"played", cassinoCardShort(a.PlayedCard))
 	default:
 		return string(a.Type)
 	}
@@ -121,7 +132,7 @@ func cassinoCardShort(c *domain.Card) string {
 	return cuiCardSliceStr([]*domain.Card{c})
 }
 
-// ActionLogOutput 棋譜をテキスト出力。
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *CassinoCuiPresenter) ActionLogOutput(cg interfaces.CassinoGame) string {
 	return actionLogOutputText(cg)
 }

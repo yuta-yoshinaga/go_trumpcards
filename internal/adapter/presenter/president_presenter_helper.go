@@ -1,18 +1,20 @@
 package presenter
 
-// presidentRankName は President のプレイヤーランク (1-4) に対応する日本語名を返します。
-// 範囲外のランクには「不明」を返します。
+import "github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+
+// presidentRankName resolves a President player rank (1-4) to its localized
+// label. Out-of-range ranks return the "unknown" label.
 func presidentRankName(rank int) string {
 	switch rank {
 	case 1:
-		return "大統領"
+		return i18n.T("president.rankPresident")
 	case 2:
-		return "副大統領"
+		return i18n.T("president.rankVicePresident")
 	case 3:
-		return "副スカム"
+		return i18n.T("president.rankViceScum")
 	case 4:
-		return "スカム"
+		return i18n.T("president.rankScum")
 	default:
-		return "不明"
+		return i18n.T("president.rankUnknown")
 	}
 }

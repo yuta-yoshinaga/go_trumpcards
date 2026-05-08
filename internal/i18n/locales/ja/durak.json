@@ -1,3 +1,25 @@
 {
-  "helpTitle": "Durak (ドゥラーク)"
+  "helpTitle": "Durak (ドゥラーク)",
+  "helpAttack": "  a <idx,...>          攻撃カードを出す",
+  "helpDefend": "  d <idx,...>          防御カードを出す",
+  "helpTake": "  take                 場札を引き取る",
+  "helpEnd": "  end                  攻撃終了 (ビート)",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "trumpLine": "切り札: {{suit}}",
+  "trumpBottom": " (底: {{card}})",
+  "stockLine": "  山札: {{stock}}枚",
+  "labelAttacker": " [攻撃]",
+  "labelDefender": " [防御]",
+  "playerFinished": ": 上がり",
+  "playerHand": ": {{count}}枚",
+  "tableHeader": "テーブル:",
+  "tableEmpty": "テーブル: (空)",
+  "tablePairDefended": "  {{idx}}: {{attack}} ← {{defense}}",
+  "tablePairOpen": "  {{idx}}: {{attack}} ← ?",
+  "phaseAttack": "フェーズ: 攻撃",
+  "phaseDefend": "フェーズ: 防御",
+  "phaseGameEnd": "フェーズ: ゲーム終了",
+  "gameEndDraw": "引き分け！",
+  "gameEndHumanLost": "あなたがドゥラーク（負け）です！",
+  "gameEndCpuLost": "CPU {{idx}} がドゥラーク（負け）です！"
 }
