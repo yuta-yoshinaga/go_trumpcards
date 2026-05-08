@@ -1,7 +1,7 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -10,28 +10,34 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// NertzCuiPresenter Nertz / Pounce CUI プレゼンター
+// NertzCuiPresenter renders the Nertz / Pounce CUI view.
 type NertzCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *NertzCuiPresenter) Output(g interfaces.NertzGame, lastErr error) string {
-	return buildCuiOutput("Nertz / Pounce (ナーツ / パウンス)", func(b *strings.Builder) {
-		// ファウンデーション (共有)
-		fmt.Fprintf(b, "ラウンド %d / 手数 %d\n", g.GetRoundNo(), g.GetMoveCount())
-		b.WriteString("[Foundations]\n")
+	return buildCuiOutput(i18n.T("nertz.helpTitle"), func(b *strings.Builder) {
+		// Shared foundations
+		b.WriteString(i18n.Tf("nertz.header",
+			"round", strconv.Itoa(g.GetRoundNo()),
+			"moves", strconv.Itoa(g.GetMoveCount())) + "\n")
+		b.WriteString(i18n.T("nertz.foundationsHeader") + "\n")
 		founds := g.GetFoundations()
+		maxStr := strconv.Itoa(domain.NertzFoundationMax)
 		for i, f := range founds {
-			fmt.Fprintf(b, "  F%d ", i)
+			b.WriteString(i18n.Tf("nertz.foundationLabel", "idx", strconv.Itoa(i)))
 			if f == nil || f.IsEmpty() {
-				b.WriteString("(empty)")
+				b.WriteString(i18n.T("nertz.foundationEmpty"))
 			} else {
-				fmt.Fprintf(b, "%s (%d/%d)", cuiCardStr(f.Top()), f.Size(), domain.NertzFoundationMax)
+				b.WriteString(i18n.Tf("nertz.foundationFilled",
+					"card", cuiCardStr(f.Top()),
+					"count", strconv.Itoa(f.Size()),
+					"max", maxStr))
 			}
 			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")
 
-		// 各プレイヤー
+		// Per-player
 		for i, pl := range g.GetPlayers() {
 			if pl == nil {
 				continue
@@ -40,20 +46,27 @@ func (p *NertzCuiPresenter) Output(g interfaces.NertzGame, lastErr error) string
 			if pl.GetIsCpu() {
 				label = i18n.T("nertz.labelCpu")
 			}
-			fmt.Fprintf(b, "[P%d %s %s] スコア: %d\n", i, label, pl.GetName(), pl.GetScore())
-			// ナッツパイル
-			top := pl.NertzTop()
-			if top != nil {
-				fmt.Fprintf(b, "  ナッツ: %s (残 %d)\n", cuiCardStr(top), pl.NertzSize())
+			b.WriteString(i18n.Tf("nertz.playerLine",
+				"idx", strconv.Itoa(i),
+				"label", label,
+				"name", pl.GetName(),
+				"score", strconv.Itoa(pl.GetScore())) + "\n")
+
+			// Nertz pile
+			if top := pl.NertzTop(); top != nil {
+				b.WriteString(i18n.Tf("nertz.nertzLine",
+					"card", cuiCardStr(top),
+					"count", strconv.Itoa(pl.NertzSize())) + "\n")
 			} else {
-				b.WriteString("  ナッツ: (empty)\n")
+				b.WriteString(i18n.T("nertz.nertzEmpty") + "\n")
 			}
-			// タブロー (4列)
+
+			// Tableau (4 columns)
 			for c := range domain.NertzTableauCnt {
 				col := pl.GetTableauColumn(c)
-				fmt.Fprintf(b, "  T%d: ", c)
+				b.WriteString(i18n.Tf("nertz.tableauLine", "idx", strconv.Itoa(c)))
 				if len(col) == 0 {
-					b.WriteString("(empty)")
+					b.WriteString(i18n.T("nertz.tableauEmpty"))
 				} else {
 					parts := make([]string, len(col))
 					for k, tc := range col {
@@ -63,49 +76,53 @@ func (p *NertzCuiPresenter) Output(g interfaces.NertzGame, lastErr error) string
 				}
 				b.WriteString("\n")
 			}
-			// ウェイスト / ストック
+
+			// Waste / stock
+			stockStr := strconv.Itoa(pl.StockSize())
 			if w := pl.WasteTop(); w != nil {
-				fmt.Fprintf(b, "  ウェイスト: %s (%d枚)  ストック: %d枚\n", cuiCardStr(w), pl.WasteSize(), pl.StockSize())
+				b.WriteString(i18n.Tf("nertz.wasteLine",
+					"card", cuiCardStr(w),
+					"count", strconv.Itoa(pl.WasteSize()),
+					"stock", stockStr) + "\n")
 			} else {
-				fmt.Fprintf(b, "  ウェイスト: (empty)  ストック: %d枚\n", pl.StockSize())
+				b.WriteString(i18n.Tf("nertz.wasteEmpty", "stock", stockStr) + "\n")
 			}
 		}
 		b.WriteString("----------\n")
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		switch g.GetPhase() {
 		case domain.NertzPhasePlaying:
-			b.WriteString("プレイ中\n")
+			b.WriteString(i18n.T("nertz.playing") + "\n")
 		case domain.NertzPhaseRoundEnd:
-			fmt.Fprintf(b, "%s\n", color.Yellow(fmt.Sprintf("ラウンド終了 (勝者: P%d)", g.GetWinnerIdx())))
+			banner := i18n.Tf("nertz.roundEnd", "winner", strconv.Itoa(g.GetWinnerIdx()))
+			b.WriteString(color.Yellow(banner) + "\n")
 		case domain.NertzPhaseGameEnd:
 			if g.GetMatchWinner() == 0 {
-				fmt.Fprintf(b, "%s\n", color.Green("あなたの勝ち！"))
+				b.WriteString(color.Green(i18n.T("nertz.win")) + "\n")
 			} else {
-				fmt.Fprintf(b, "%s\n", color.Red(fmt.Sprintf("プレイヤー%dの勝ち", g.GetMatchWinner())))
+				b.WriteString(color.Red(i18n.Tf("nertz.lose",
+					"winner", strconv.Itoa(g.GetMatchWinner()))) + "\n")
 			}
 		}
 	})
 }
 
-// HintOutput ヒントを文字列出力
+// HintOutput emits the current Nertz hint.
 func (p *NertzCuiPresenter) HintOutput(g interfaces.NertzGame) string {
 	hint := g.GetHint()
 	if hint == nil {
-		return "ヒントはありません。\n"
+		return i18n.T("nertz.noHint") + "\n"
 	}
 	from := nertzHintZoneLabel(hint.FromZone, hint.FromCol, hint.CardIndex)
 	to := nertzHintZoneLabel(hint.ToZone, hint.ToCol, -1)
-	return fmt.Sprintf("ヒント: %s → %s\n", from, to)
+	return i18n.Tf("nertz.hintLine", "from", from, "to", to) + "\n"
 }
 
-// ActionLogOutput 棋譜をテキスト出力。
-// プレイ中はログを空にする — リアルタイム進行中に CPU の狙いを露出させない
-// ため、ラウンド/マッチ終了後にのみ完全ログを返す (Web 側と同じ運用 / PR
-// #1528 レビュー指摘)。
+// ActionLogOutput emits the action-log transcript as plain text. The log is
+// suppressed during play so the CPU's strategy isn't leaked in real time
+// (matches the Web presenter — see PR #1528 review).
 func (p *NertzCuiPresenter) ActionLogOutput(g interfaces.NertzGame) string {
 	if g.GetPhase() == domain.NertzPhasePlaying {
 		return actionLogToText(nil)
@@ -113,20 +130,22 @@ func (p *NertzCuiPresenter) ActionLogOutput(g interfaces.NertzGame) string {
 	return actionLogToText(g.GetActionLog())
 }
 
-// nertzHintZoneLabel ヒントゾーンを日本語ラベルに変換する。
+// nertzHintZoneLabel converts a hint zone identifier into a human label.
 func nertzHintZoneLabel(zone string, col, idx int) string {
 	switch zone {
 	case "nertz":
-		return "ナッツ"
+		return i18n.T("nertz.zoneNertz")
 	case "waste":
-		return "ウェイスト"
+		return i18n.T("nertz.zoneWaste")
 	case "tableau":
 		if idx >= 0 {
-			return fmt.Sprintf("タブロー%d(idx=%d)", col, idx)
+			return i18n.Tf("nertz.zoneTableauWithIdx",
+				"col", strconv.Itoa(col),
+				"idx", strconv.Itoa(idx))
 		}
-		return fmt.Sprintf("タブロー%d", col)
+		return i18n.Tf("nertz.zoneTableau", "col", strconv.Itoa(col))
 	case "foundation":
-		return fmt.Sprintf("ファウンデーション%d", col)
+		return i18n.Tf("nertz.zoneFoundation", "col", strconv.Itoa(col))
 	}
 	return zone
 }

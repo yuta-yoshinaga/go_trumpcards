@@ -1,77 +1,77 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // canastaPlayerStr returns the display string for a single Canasta player.
 func canastaPlayerStr(player *domain.CanastaPlayer, i int, showCards bool) string {
 	var b strings.Builder
-	name := cuiPlayerName(player, i)
-	fmt.Fprintf(&b, "%s: 累積%d点 ラウンド%d点 %d枚",
-		name,
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("canasta.playerLine",
+		"name", cuiPlayerName(player, i),
+		"cum", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"cards", strconv.Itoa(player.GetCardsSize())))
 	if len(player.GetRed3s()) > 0 {
-		fmt.Fprintf(&b, " 赤3: %d枚", len(player.GetRed3s()))
+		b.WriteString(i18n.Tf("canasta.playerRed3s",
+			"count", strconv.Itoa(len(player.GetRed3s()))))
 	}
 	if player.HasCanasta() {
-		b.WriteString(" ★カナスタ")
+		b.WriteString(i18n.T("canasta.playerCanastaTag"))
 	}
 	b.WriteString("\n")
 
-	// メルド表示
+	// Melds
 	for _, m := range player.GetMelds() {
-		meldType := "ミックス"
+		meldType := i18n.T("canasta.meldTypeMixed")
 		if m.IsNatural {
-			meldType = "ナチュラル"
+			meldType = i18n.T("canasta.meldTypeNatural")
 		}
 		if m.IsCanasta() {
-			meldType += "カナスタ"
+			meldType += i18n.T("canasta.meldTypeCanastaSuffix")
 		}
-		fmt.Fprintf(&b, "  メルド[%s]: ", meldType)
+		cardStrs := make([]string, len(m.Cards))
 		for j, c := range m.Cards {
-			if j > 0 {
-				b.WriteString(", ")
-			}
-			b.WriteString(cuiCardStr(c))
+			cardStrs[j] = cuiCardStr(c)
 		}
-		b.WriteString("\n")
+		b.WriteString(i18n.Tf("canasta.meldLine",
+			"type", meldType,
+			"cards", strings.Join(cardStrs, ", ")) + "\n")
 	}
 
 	if showCards && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player))
-		b.WriteString("\n")
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
 
-// CanastaCuiPresenter カナスタCUIプレゼンタークラス
+// CanastaCuiPresenter renders the Canasta CUI view.
 type CanastaCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *CanastaCuiPresenter) Output(g interfaces.CanastaGame, lastErr error) string {
-	return buildCuiOutput("Canasta (カナスタ)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  山札: %d枚  廃棄山: %d枚", g.GetRoundNumber(), g.GetDrawPileCount(), g.GetDiscardPileCount())
+	return buildCuiOutput(i18n.T("canasta.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("canasta.header",
+			"round", strconv.Itoa(g.GetRoundNumber()),
+			"stock", strconv.Itoa(g.GetDrawPileCount()),
+			"discard", strconv.Itoa(g.GetDiscardPileCount())))
 		if g.GetIsFrozen() {
-			b.WriteString(" [フリーズ]")
+			b.WriteString(i18n.T("canasta.frozenTag"))
 		}
 		b.WriteString("\n")
 
-		// 捨て札トップ
-		top := g.GetDiscardTop()
-		if top != nil {
-			fmt.Fprintf(b, "捨て札: %s\n", cuiCardStr(top))
+		// Top of discard
+		if top := g.GetDiscardTop(); top != nil {
+			b.WriteString(i18n.Tf("canasta.discardLine", "card", cuiCardStr(top)) + "\n")
 		}
 
-		// プレイヤー情報
+		// Players
 		phase := g.GetPhase()
 		showAllCards := phase == domain.CanastaPhaseRoundEnd || phase == domain.CanastaPhaseGameEnd
 		for i := 0; i < g.GetPlayerCnt(); i++ {
@@ -82,45 +82,42 @@ func (p *CanastaCuiPresenter) Output(g interfaces.CanastaGame, lastErr error) st
 
 		b.WriteString("----------\n")
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
 		if g.GetGameEndFlag() {
 			winnerIdx := g.GetWinnerIdx()
-			player := g.GetPlayer(winnerIdx)
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(player, winnerIdx)+"の勝利です！"))
-		} else {
-			switch phase {
-			case domain.CanastaPhaseDraw:
-				currentIdx := g.GetCurrentPlayerIdx()
-				player := g.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s (ドローフェーズ)\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("ds・・・山札から引く\n")
-				b.WriteString("dd <idx,idx>・・・捨て札の山を取る (ナチュラルペアのインデックス)\n")
-			case domain.CanastaPhaseMeld:
-				currentIdx := g.GetCurrentPlayerIdx()
-				player := g.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s (メルドフェーズ)\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("m <idx,idx,idx;idx,idx,idx>・・・メルドを出す (;でグループ区切り)\n")
-				b.WriteString("sm・・・メルドせずにスキップ\n")
-			case domain.CanastaPhaseDiscard:
-				currentIdx := g.GetCurrentPlayerIdx()
-				player := g.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s (ディスカードフェーズ)\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("d <idx>・・・カードを捨てる\n")
-				b.WriteString("go・・・上がる (カナスタが必要)\n")
-			case domain.CanastaPhaseRoundEnd:
-				b.WriteString("ラウンド終了\n")
-				b.WriteString("nr / nextround・・・次のラウンドへ\n")
-			}
+			banner := i18n.Tf("canasta.gameEnd",
+				"name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		switch phase {
+		case domain.CanastaPhaseDraw:
+			currentIdx := g.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("canasta.promptDraw",
+				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("canasta.promptDrawHelpStock") + "\n")
+			b.WriteString(i18n.T("canasta.promptDrawHelpDiscard") + "\n")
+		case domain.CanastaPhaseMeld:
+			currentIdx := g.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("canasta.promptMeld",
+				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("canasta.promptMeldHelp") + "\n")
+			b.WriteString(i18n.T("canasta.promptSkipMeld") + "\n")
+		case domain.CanastaPhaseDiscard:
+			currentIdx := g.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("canasta.promptDiscard",
+				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("canasta.promptDiscardHelp") + "\n")
+			b.WriteString(i18n.T("canasta.promptGoOutHelp") + "\n")
+		case domain.CanastaPhaseRoundEnd:
+			b.WriteString(i18n.T("canasta.promptRoundEnd") + "\n")
+			b.WriteString(i18n.T("canasta.promptRoundEndHelp") + "\n")
 		}
 	})
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *CanastaCuiPresenter) ActionLogOutput(g interfaces.CanastaGame) string {
 	return actionLogOutputText(g)
 }

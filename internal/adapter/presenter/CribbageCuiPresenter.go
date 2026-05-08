@@ -1,68 +1,67 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // cribbagePlayerStr returns the display string for a single Cribbage player.
 func cribbagePlayerStr(player *domain.CribbagePlayer, i int, dealerIdx int) string {
 	var b strings.Builder
-	name := cuiPlayerName(player, i)
 	dealerMark := ""
 	if i == dealerIdx {
-		dealerMark = " [D]"
+		dealerMark = i18n.T("cribbage.dealerMark")
 	}
-	fmt.Fprintf(&b, "%s%s: 累積%d点 ラウンド%d点 %d枚\n",
-		name,
-		dealerMark,
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("cribbage.playerLine",
+		"name", cuiPlayerName(player, i),
+		"dealerMark", dealerMark,
+		"cum", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player))
-		b.WriteString("\n")
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
 
-// CribbageCuiPresenter クリベッジCUIプレゼンタークラス
+// CribbageCuiPresenter renders the Cribbage CUI view.
 type CribbageCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *CribbageCuiPresenter) Output(g interfaces.CribbageGame, lastErr error) string {
-	return buildCuiOutput("Cribbage (クリベッジ)", func(b *strings.Builder) {
-		fmt.Fprintf(b, "ラウンド: %d  ディーラー: Player%d\n", g.GetRoundNumber(), g.GetDealerIdx())
+	return buildCuiOutput(i18n.T("cribbage.helpTitle"), func(b *strings.Builder) {
+		b.WriteString(i18n.Tf("cribbage.header",
+			"round", strconv.Itoa(g.GetRoundNumber()),
+			"dealer", strconv.Itoa(g.GetDealerIdx())) + "\n")
 
-		// スターターカード
-		starter := g.GetStarter()
-		if starter != nil {
-			fmt.Fprintf(b, "スターター: %s\n", cuiCardStr(starter))
+		// Starter card
+		if starter := g.GetStarter(); starter != nil {
+			b.WriteString(i18n.Tf("cribbage.starterLine",
+				"card", cuiCardStr(starter)) + "\n")
 		}
 
-		// ペギング情報
+		// Pegging info
 		phase := g.GetPhase()
 		if phase == domain.CribbagePhasePegging {
-			fmt.Fprintf(b, "ペギング合計: %d/31\n", g.GetPegCount())
+			b.WriteString(i18n.Tf("cribbage.peggingTotal",
+				"count", strconv.Itoa(g.GetPegCount())) + "\n")
 			pegCards := g.GetPegPlayedCards()
 			if len(pegCards) > 0 {
-				b.WriteString("出されたカード: ")
+				cardStrs := make([]string, len(pegCards))
 				for i, c := range pegCards {
-					if i > 0 {
-						b.WriteString(", ")
-					}
-					b.WriteString(cuiCardStr(c))
+					cardStrs[i] = cuiCardStr(c)
 				}
-				b.WriteString("\n")
+				b.WriteString(i18n.Tf("cribbage.peggingCards",
+					"cards", strings.Join(cardStrs, ", ")) + "\n")
 			}
 		}
 
-		// プレイヤー情報
+		// Players
 		for i := range domain.CribbagePlayerCnt {
 			player := g.GetPlayer(i)
 			if player != nil {
@@ -72,55 +71,63 @@ func (p *CribbageCuiPresenter) Output(g interfaces.CribbageGame, lastErr error) 
 
 		b.WriteString("----------\n")
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
-		// ゲーム状態
 		if g.GetGameEndFlag() {
 			winnerIdx := g.GetWinnerIdx()
-			player := g.GetPlayer(winnerIdx)
-			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(player, winnerIdx)+"の勝利です！"))
-		} else {
-			switch phase {
-			case domain.CribbagePhaseDiscard:
-				currentIdx := g.GetCurrentPlayerIdx()
-				player := g.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s (ディスカードフェーズ)\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("d <idx,idx>・・・クリブに2枚捨てる\n")
-			case domain.CribbagePhasePegging:
-				currentIdx := g.GetCurrentPlayerIdx()
-				player := g.GetPlayer(currentIdx)
-				fmt.Fprintf(b, "手番: %s (ペギングフェーズ)\n", cuiPlayerName(player, currentIdx))
-				b.WriteString("p <idx>・・・カードを出す\n")
-				b.WriteString("go・・・Goを宣言する\n")
-			case domain.CribbagePhaseShow:
-				b.WriteString("ショーフェーズ\n")
-				p.writeShowDetails(b, g)
-				b.WriteString("sn / shownext・・・次のスコア計算\n")
-			case domain.CribbagePhaseRoundEnd:
-				b.WriteString("ラウンド終了\n")
-				p.writeShowDetails(b, g)
-				b.WriteString("nr / nextround・・・次のラウンドへ\n")
-			}
+			banner := i18n.Tf("cribbage.gameEnd",
+				"name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx))
+			b.WriteString(color.Green(banner) + "\n")
+			return
+		}
+		switch phase {
+		case domain.CribbagePhaseDiscard:
+			currentIdx := g.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("cribbage.promptDiscard",
+				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("cribbage.promptDiscardHelp") + "\n")
+		case domain.CribbagePhasePegging:
+			currentIdx := g.GetCurrentPlayerIdx()
+			b.WriteString(i18n.Tf("cribbage.promptPegging",
+				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
+			b.WriteString(i18n.T("cribbage.promptPeggingHelp") + "\n")
+			b.WriteString(i18n.T("cribbage.promptPeggingGo") + "\n")
+		case domain.CribbagePhaseShow:
+			b.WriteString(i18n.T("cribbage.promptShow") + "\n")
+			p.writeShowDetails(b, g)
+			b.WriteString(i18n.T("cribbage.promptShowHelp") + "\n")
+		case domain.CribbagePhaseRoundEnd:
+			b.WriteString(i18n.T("cribbage.promptRoundEnd") + "\n")
+			p.writeShowDetails(b, g)
+			b.WriteString(i18n.T("cribbage.promptRoundEndHelp") + "\n")
 		}
 	})
 }
 
-// writeShowDetails ショーフェーズのスコア詳細を表示
+// writeShowDetails prints score detail lines for the show phase.
 func (p *CribbageCuiPresenter) writeShowDetails(b *strings.Builder, g interfaces.CribbageGame) {
 	details := g.GetHandScoreDetails()
-	labels := [3]string{"非ディーラー手札", "ディーラー手札", "クリブ"}
+	labelKeys := [3]string{
+		"cribbage.showLabelPone",
+		"cribbage.showLabelDealer",
+		"cribbage.showLabelCrib",
+	}
 	for i, d := range details {
-		if d != nil {
-			fmt.Fprintf(b, "  %s: %d点 (15s=%d, ペア=%d, ラン=%d, フラッシュ=%d, ノブ=%d)\n",
-				labels[i], d.Total, d.Fifteens, d.Pairs, d.Runs, d.Flush, d.Nobs)
+		if d == nil {
+			continue
 		}
+		b.WriteString(i18n.Tf("cribbage.showDetailLine",
+			"label", i18n.T(labelKeys[i]),
+			"total", strconv.Itoa(d.Total),
+			"fifteens", strconv.Itoa(d.Fifteens),
+			"pairs", strconv.Itoa(d.Pairs),
+			"runs", strconv.Itoa(d.Runs),
+			"flush", strconv.Itoa(d.Flush),
+			"nobs", strconv.Itoa(d.Nobs)) + "\n")
 	}
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *CribbageCuiPresenter) ActionLogOutput(g interfaces.CribbageGame) string {
 	return actionLogOutputText(g)
 }
