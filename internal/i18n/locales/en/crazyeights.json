@@ -6,5 +6,17 @@
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               point limit",
-  "promptSuit": "Choose a suit (1=♠, 2=♣, 3=♥, 4=♦):"
+  "promptSuit": "Choose a suit (1=♠, 2=♣, 3=♥, 4=♦):",
+  "header": "Round: {{round}}  Stock: {{stock}}",
+  "discardLine": "Discard: {{card}}",
+  "chosenSuit": " (chosen suit: {{suit}})",
+  "playerLine": "{{name}}: cumulative {{cum}} round {{round}} cards {{cards}}",
+  "gameEnd": "Game over! {{name}} wins!",
+  "promptCurrentPlayer": "{{name}} to play",
+  "promptPlayHelp": "play <idx>: play a card",
+  "promptDrawHelp": "draw: draw a card",
+  "promptChooseSuit": "Choose-suit phase",
+  "promptChooseSuitHelp": "suit <1-4>: choose suit (1=♠, 2=♣, 3=♥, 4=♦)",
+  "promptRoundEnd": "Round complete",
+  "promptRoundEndHelp": "nr / nextround: advance to next round"
 }

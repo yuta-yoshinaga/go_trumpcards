@@ -1,0 +1,20 @@
+{
+  "helpTitle": "Go Fish (ゴーフィッシュ)",
+  "helpAsk": "  ask <相手番号> <ランク>  ランクを要求",
+  "helpSetDifficulty": "  sd [0-2]            CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "outputTitle": "Go Fish (ゴーフィッシュ)",
+  "playerLine": "{{name}}: {{cards}}枚, ブック: {{books}}",
+  "deckLine": "山札: {{count}}枚",
+  "askSuccess": "{{asker}} が {{target}} にランク {{rank}} を要求 → {{count}}枚もらった！",
+  "askFail": "{{asker}} が {{target}} にランク {{rank}} を要求 → Go Fish!",
+  "bookFormed": "ブック完成！ ランク {{rank}}",
+  "cpuAskSuccess": "[CPU] {{asker}} → {{target}}: ランク {{rank}} → {{count}}枚もらった",
+  "cpuAskFail": "[CPU] {{asker}} → {{target}}: ランク {{rank}} → Go Fish!",
+  "cpuBookFormed": "[CPU] {{asker}}: ブック完成！ ランク {{rank}}",
+  "errorLine": "Error: {{msg}}",
+  "winHuman": "ゲーム終了！ あなたの勝ち！",
+  "winCpu": "ゲーム終了！ CPU {{idx}}の勝ち！",
+  "scoreEntry": "  {{name}}: {{count}}ブック",
+  "promptCurrentTurn": "{{name}}のターン",
+  "promptHumanHelp": "ask <相手番号> <ランク> で要求"
+}

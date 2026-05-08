@@ -1,99 +1,119 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // goFishPlayerStr returns the display string for a single GoFish player.
 func goFishPlayerStr(player *domain.GoFishPlayer, i int) string {
 	var b strings.Builder
-	b.WriteString(cuiPlayerName(player, i))
-	fmt.Fprintf(&b, ": %d枚, ブック: %d\n", player.GetCardsSize(), player.GetBookCount())
+	b.WriteString(i18n.Tf("gofish.playerLine",
+		"name", cuiPlayerName(player, i),
+		"cards", strconv.Itoa(player.GetCardsSize()),
+		"books", strconv.Itoa(player.GetBookCount())) + "\n")
 	if player.GetIsHuman() {
-		b.WriteString(cuiIndexedCardListStr(player))
-		b.WriteString("\n")
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
 
-// GoFishCuiPresenter Go FishCUIプレゼンタークラス
+// GoFishCuiPresenter renders the Go Fish CUI view.
 type GoFishCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *GoFishCuiPresenter) Output(gf interfaces.GoFishGame, lastErr error) string {
-	return buildCuiOutput("Go Fish (ゴーフィッシュ)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("gofish.outputTitle"), func(b *strings.Builder) {
 		for i := 0; i < gf.GetPlayerCnt(); i++ {
 			b.WriteString(goFishPlayerStr(gf.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
-		fmt.Fprintf(b, "山札: %d枚\n", gf.GetDeckRemaining())
+		b.WriteString(i18n.Tf("gofish.deckLine",
+			"count", strconv.Itoa(gf.GetDeckRemaining())) + "\n")
 
-		// 最後の要求結果
+		// Last ask result
 		if gf.GetLastAskPlayerIdx() >= 0 {
 			askerName := cuiPlayerName(gf.GetPlayer(gf.GetLastAskPlayerIdx()), gf.GetLastAskPlayerIdx())
 			targetName := cuiPlayerName(gf.GetPlayer(gf.GetLastAskTargetIdx()), gf.GetLastAskTargetIdx())
+			rankStr := strconv.Itoa(gf.GetLastAskRank())
 			if gf.GetLastAskSuccess() {
-				fmt.Fprintf(b, "%s が %s にランク %d を要求 → %d枚もらった！\n",
-					askerName, targetName, gf.GetLastAskRank(), len(gf.GetLastCardsReceived()))
+				b.WriteString(i18n.Tf("gofish.askSuccess",
+					"asker", askerName,
+					"target", targetName,
+					"rank", rankStr,
+					"count", strconv.Itoa(len(gf.GetLastCardsReceived()))) + "\n")
 			} else {
-				fmt.Fprintf(b, "%s が %s にランク %d を要求 → Go Fish!\n",
-					askerName, targetName, gf.GetLastAskRank())
+				b.WriteString(i18n.Tf("gofish.askFail",
+					"asker", askerName,
+					"target", targetName,
+					"rank", rankStr) + "\n")
 			}
 			if gf.GetLastBookFormed() {
-				fmt.Fprintf(b, "ブック完成！ ランク %d\n", gf.GetLastBookRank())
+				b.WriteString(i18n.Tf("gofish.bookFormed",
+					"rank", strconv.Itoa(gf.GetLastBookRank())) + "\n")
 			}
 		}
 
-		// CPU行動履歴
+		// CPU action history
 		for _, action := range gf.GetCpuActions() {
 			askerName := cuiPlayerName(gf.GetPlayer(action.AskPlayerIdx), action.AskPlayerIdx)
 			targetName := cuiPlayerName(gf.GetPlayer(action.AskTargetIdx), action.AskTargetIdx)
+			rankStr := strconv.Itoa(action.AskRank)
 			if action.Success {
-				fmt.Fprintf(b, "[CPU] %s → %s: ランク %d → %d枚もらった\n",
-					askerName, targetName, action.AskRank, action.CardsReceived)
+				b.WriteString(i18n.Tf("gofish.cpuAskSuccess",
+					"asker", askerName,
+					"target", targetName,
+					"rank", rankStr,
+					"count", strconv.Itoa(action.CardsReceived)) + "\n")
 			} else {
-				fmt.Fprintf(b, "[CPU] %s → %s: ランク %d → Go Fish!\n",
-					askerName, targetName, action.AskRank)
+				b.WriteString(i18n.Tf("gofish.cpuAskFail",
+					"asker", askerName,
+					"target", targetName,
+					"rank", rankStr) + "\n")
 			}
 			if action.BookFormed {
-				fmt.Fprintf(b, "[CPU] %s: ブック完成！ ランク %d\n", askerName, action.BookRank)
+				b.WriteString(i18n.Tf("gofish.cpuBookFormed",
+					"asker", askerName,
+					"rank", strconv.Itoa(action.BookRank)) + "\n")
 			}
 		}
 
 		b.WriteString("----------\n")
 
 		if lastErr != nil {
-			b.WriteString("Error: " + lastErr.Error() + "\n")
+			b.WriteString(i18n.Tf("gofish.errorLine", "msg", lastErr.Error()) + "\n")
 		}
 
 		if gf.GetGameEndFlag() {
 			winnerIdx := gf.GetWinnerIdx()
 			winner := gf.GetPlayer(winnerIdx)
 			if winner != nil && winner.GetIsHuman() {
-				b.WriteString("ゲーム終了！ あなたの勝ち！\n")
+				b.WriteString(i18n.T("gofish.winHuman") + "\n")
 			} else {
-				fmt.Fprintf(b, "ゲーム終了！ CPU %dの勝ち！\n", winnerIdx)
+				b.WriteString(i18n.Tf("gofish.winCpu",
+					"idx", strconv.Itoa(winnerIdx)) + "\n")
 			}
 			for i := 0; i < gf.GetPlayerCnt(); i++ {
-				name := cuiPlayerName(gf.GetPlayer(i), i)
-				fmt.Fprintf(b, "  %s: %dブック\n", name, gf.GetPlayer(i).GetBookCount())
+				b.WriteString(i18n.Tf("gofish.scoreEntry",
+					"name", cuiPlayerName(gf.GetPlayer(i), i),
+					"count", strconv.Itoa(gf.GetPlayer(i).GetBookCount())) + "\n")
 			}
-		} else {
-			turnName := cuiPlayerName(gf.GetPlayer(gf.GetCurrentTurn()), gf.GetCurrentTurn())
-			fmt.Fprintf(b, "%sのターン\n", turnName)
-			if gf.IsHumanTurn() {
-				b.WriteString("ask <相手番号> <ランク> で要求\n")
-			}
+			return
+		}
+		turnName := cuiPlayerName(gf.GetPlayer(gf.GetCurrentTurn()), gf.GetCurrentTurn())
+		b.WriteString(i18n.Tf("gofish.promptCurrentTurn", "name", turnName) + "\n")
+		if gf.IsHumanTurn() {
+			b.WriteString(i18n.T("gofish.promptHumanHelp") + "\n")
 		}
 	})
 }
 
-// ActionLogOutput 棋譜を文字列出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *GoFishCuiPresenter) ActionLogOutput(gf interfaces.GoFishGame) string {
 	return actionLogOutputText(gf)
 }

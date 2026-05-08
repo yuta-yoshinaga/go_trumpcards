@@ -2,39 +2,42 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // oldMaidPlayerStr returns the display string for a single OldMaid player.
 func oldMaidPlayerStr(player *domain.OldMaidPlayer, i int) string {
 	var b strings.Builder
-	b.WriteString(cuiPlayerName(player, i))
+	name := cuiPlayerName(player, i)
 	if player.GetIsFinished() {
-		b.WriteString(": 上がり\n")
-	} else {
-		fmt.Fprintf(&b, ": %d枚\n", player.GetCardsSize())
-		if player.GetIsHuman() {
-			b.WriteString(cuiIndexedCardListStr(player))
-			b.WriteString("\n")
-		}
+		b.WriteString(i18n.Tf("oldmaid.playerLineFinished", "name", name) + "\n")
+		return b.String()
+	}
+	b.WriteString(i18n.Tf("oldmaid.playerLine",
+		"name", name,
+		"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
+	if player.GetIsHuman() {
+		b.WriteString(cuiIndexedCardListStr(player) + "\n")
 	}
 	return b.String()
 }
 
-// OldMaidCuiPresenter ババ抜きCUIプレゼンタークラス
+// OldMaidCuiPresenter renders the Old Maid CUI view.
 type OldMaidCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) string {
-	title := "Old Maid (ババ抜き)"
+	titleKey := "oldmaid.outputTitleNormal"
 	if om.GetConfig().Mode == domain.OldMaidModeJijiNuki {
-		title = "Old Maid (ジジ抜き)"
+		titleKey = "oldmaid.outputTitleJijiNuki"
 	}
-	return buildCuiOutput(title, func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T(titleKey), func(b *strings.Builder) {
 		for i := 0; i < om.GetPlayerCnt(); i++ {
 			b.WriteString(oldMaidPlayerStr(om.GetPlayer(i), i))
 		}
@@ -45,96 +48,106 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 			drawPlayerIdx := om.GetLastDrawPlayerIdx()
 			drawFromIdx := om.GetLastDrawFromIdx()
 			discarded := om.GetLastDiscardedPairs()
-			drawPlayerName := cuiPlayerName(om.GetPlayer(drawPlayerIdx), drawPlayerIdx)
-			drawFromName := cuiPlayerName(om.GetPlayer(drawFromIdx), drawFromIdx)
+			drawer := cuiPlayerName(om.GetPlayer(drawPlayerIdx), drawPlayerIdx)
+			from := cuiPlayerName(om.GetPlayer(drawFromIdx), drawFromIdx)
 			drawnCard := om.GetLastDrawCard()
 			drawPlayer := om.GetPlayer(drawPlayerIdx)
-			fmt.Fprintf(b, "%sが%sから1枚引きました", drawPlayerName, drawFromName)
+			b.WriteString(i18n.Tf("oldmaid.drawAction",
+				"drawer", drawer, "from", from))
 			// Only reveal drawn card for human players to preserve CPU game fairness
 			if drawnCard != nil && drawPlayer != nil && drawPlayer.GetIsHuman() {
-				fmt.Fprintf(b, " (%s)", cuiCardStr(drawnCard))
+				b.WriteString(i18n.Tf("oldmaid.drawActionWithCard",
+					"card", cuiCardStr(drawnCard)))
 			}
 			if discarded > 0 {
-				fmt.Fprintf(b, "。%d組捨てました", discarded)
+				b.WriteString(i18n.Tf("oldmaid.drawActionDiscard",
+					"count", strconv.Itoa(discarded)))
 			}
 			b.WriteString("\n")
 		}
 
-		// CPUの行動履歴を表示
+		// CPU action history
 		cpuActions := om.GetCpuActions()
 		if len(cpuActions) > 0 {
-			b.WriteString(color.Bold("[CPUの行動]") + "\n")
+			b.WriteString(color.Bold(i18n.T("oldmaid.cpuActionsHeader")) + "\n")
 			for _, action := range cpuActions {
-				actPlayerName := cuiPlayerName(om.GetPlayer(action.DrawPlayerIdx), action.DrawPlayerIdx)
-				actFromName := cuiPlayerName(om.GetPlayer(action.DrawFromIdx), action.DrawFromIdx)
-				fmt.Fprintf(b, "%sが%sから1枚引きました", actPlayerName, actFromName)
+				drawer := cuiPlayerName(om.GetPlayer(action.DrawPlayerIdx), action.DrawPlayerIdx)
+				from := cuiPlayerName(om.GetPlayer(action.DrawFromIdx), action.DrawFromIdx)
+				b.WriteString(i18n.Tf("oldmaid.drawAction",
+					"drawer", drawer, "from", from))
 				// CPU drawn card is intentionally hidden to preserve game fairness
 				if action.DiscardedPairs > 0 {
-					fmt.Fprintf(b, "。%d組捨てました", action.DiscardedPairs)
+					b.WriteString(i18n.Tf("oldmaid.drawActionDiscard",
+						"count", strconv.Itoa(action.DiscardedPairs)))
 				}
 				b.WriteString("\n")
 			}
 		}
 
-		// 引き履歴
+		// Draw history
 		drawHistory := om.GetDrawHistory()
 		if len(drawHistory) > 0 {
-			b.WriteString(color.Bold("[引き履歴]") + "\n")
+			b.WriteString(color.Bold(i18n.T("oldmaid.drawHistoryHeader")) + "\n")
 			for i, entry := range drawHistory {
-				drawerName := cuiPlayerName(om.GetPlayer(entry.DrawPlayerIdx), entry.DrawPlayerIdx)
-				fromName := cuiPlayerName(om.GetPlayer(entry.DrawFromIdx), entry.DrawFromIdx)
-				fmt.Fprintf(b, "%d. %sが%sから引いた", i+1, drawerName, fromName)
+				drawer := cuiPlayerName(om.GetPlayer(entry.DrawPlayerIdx), entry.DrawPlayerIdx)
+				from := cuiPlayerName(om.GetPlayer(entry.DrawFromIdx), entry.DrawFromIdx)
+				b.WriteString(i18n.Tf("oldmaid.drawHistoryEntry",
+					"idx", strconv.Itoa(i+1),
+					"drawer", drawer,
+					"from", from))
 				if entry.DiscardedPairs > 0 {
-					fmt.Fprintf(b, " (%d組捨て)", entry.DiscardedPairs)
+					b.WriteString(i18n.Tf("oldmaid.drawHistoryDiscard",
+						"count", strconv.Itoa(entry.DiscardedPairs)))
 				}
 				if entry.DrawerFinished {
-					fmt.Fprintf(b, " [%s上がり]", drawerName)
+					b.WriteString(i18n.Tf("oldmaid.drawHistoryFinished", "name", drawer))
 				}
 				if entry.TargetFinished {
-					fmt.Fprintf(b, " [%s上がり]", fromName)
+					b.WriteString(i18n.Tf("oldmaid.drawHistoryFinished", "name", from))
 				}
 				b.WriteString("\n")
 			}
 		}
 
-		// メタAI状態
+		// Meta AI status
 		if profile := om.GetHumanProfile(); profile != nil {
-			fmt.Fprintf(b, "[メタAI] 適応中 (ゲーム数: %d, 端ピック率: %.0f%%)\n",
-				profile.GamesPlayed,
-				(profile.PickRate(0)+profile.PickRate(2))*100,
-			)
+			rate := (profile.PickRate(0) + profile.PickRate(2)) * 100
+			b.WriteString(i18n.Tf("oldmaid.metaAILine",
+				"games", strconv.Itoa(profile.GamesPlayed),
+				"rate", fmt.Sprintf("%.0f", rate)) + "\n")
 		}
 
-		// エラーメッセージ
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		if om.GetGameEndFlag() {
 			loserIdx := om.GetLoserIdx()
 			if loserIdx >= 0 {
 				loserName := cuiPlayerName(om.GetPlayer(loserIdx), loserIdx)
-				gameEndLine := fmt.Sprintf("ゲーム終了！ %s", color.Red(loserName+"の負け！"))
+				gameEndLine := i18n.T("oldmaid.gameEndPrefix") +
+					color.Red(i18n.Tf("oldmaid.gameEndLoser", "name", loserName))
 				if om.GetConfig().Mode == domain.OldMaidModeJijiNuki && om.GetRemovedCard() != nil {
-					gameEndLine += fmt.Sprintf("（除外カード: %s）", cuiCardStr(om.GetRemovedCard()))
+					gameEndLine += i18n.Tf("oldmaid.gameEndJijiNukiSuffix",
+						"card", cuiCardStr(om.GetRemovedCard()))
 				}
-				fmt.Fprintf(b, "%s\n", gameEndLine)
+				b.WriteString(gameEndLine + "\n")
 			}
+			return
+		}
+		currentTurn := om.GetCurrentTurn()
+		currentName := cuiPlayerName(om.GetPlayer(currentTurn), currentTurn)
+		targetIdx := om.GetNextDrawTargetIdx()
+		if targetIdx >= 0 {
+			targetName := cuiPlayerName(om.GetPlayer(targetIdx), targetIdx)
+			b.WriteString(i18n.Tf("oldmaid.promptCurrentTurnWithTarget",
+				"name", currentName,
+				"target", targetName) + "\n")
 		} else {
-			currentTurn := om.GetCurrentTurn()
-			currentName := cuiPlayerName(om.GetPlayer(currentTurn), currentTurn)
-			targetIdx := om.GetNextDrawTargetIdx()
-			if targetIdx >= 0 {
-				targetName := cuiPlayerName(om.GetPlayer(targetIdx), targetIdx)
-				fmt.Fprintf(b, "手番: %s → %sから引きます\n", currentName, targetName)
-			} else {
-				fmt.Fprintf(b, "手番: %s\n", currentName)
-			}
+			b.WriteString(i18n.Tf("oldmaid.promptCurrentTurn", "name", currentName) + "\n")
 		}
 	})
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *OldMaidCuiPresenter) ActionLogOutput(om interfaces.OldMaidGame) string {
 	return actionLogOutputText(om)
 }

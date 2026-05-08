@@ -1,54 +1,56 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // shitheadPlayerStr returns the display string for a single Shithead player.
 func shitheadPlayerStr(player *domain.ShitheadPlayer, idx int, currentTurn int) string {
 	var b strings.Builder
 	name := cuiPlayerName(player, idx)
-	b.WriteString(name)
+	turnSuffix := ""
 	if idx == currentTurn {
-		b.WriteString(" ← turn")
+		turnSuffix = i18n.T("shithead.playerTurnSuffix")
 	}
 	if player.GetIsFinished() {
-		fmt.Fprintf(&b, " [上がり rank=%d]", player.GetRank())
-		b.WriteString("\n")
+		b.WriteString(name + turnSuffix)
+		b.WriteString(i18n.Tf("shithead.playerFinished",
+			"rank", strconv.Itoa(player.GetRank())) + "\n")
 		return b.String()
 	}
-	fmt.Fprintf(&b, ": 手札%d / 表%d / 裏%d\n",
-		player.GetCardsSize(), player.GetFaceUpSize(), player.GetFaceDownSize())
+	b.WriteString(i18n.Tf("shithead.playerLine",
+		"name", name+turnSuffix,
+		"hand", strconv.Itoa(player.GetCardsSize()),
+		"up", strconv.Itoa(player.GetFaceUpSize()),
+		"down", strconv.Itoa(player.GetFaceDownSize())) + "\n")
 	if player.GetIsHuman() {
 		if player.GetCardsSize() > 0 {
-			b.WriteString("  hand:    ")
-			b.WriteString(cuiIndexedCardListStr(player))
-			b.WriteString("\n")
+			b.WriteString(i18n.T("shithead.handLabel"))
+			b.WriteString(cuiIndexedCardListStr(player) + "\n")
 		}
 		if player.GetFaceUpSize() > 0 {
-			b.WriteString("  faceup:  ")
-			b.WriteString(cuiCardSliceStr(player.GetFaceUpCards()))
-			b.WriteString("\n")
+			b.WriteString(i18n.T("shithead.faceupLabel"))
+			b.WriteString(cuiCardSliceStr(player.GetFaceUpCards()) + "\n")
 		}
 	} else if player.GetFaceUpSize() > 0 {
-		b.WriteString("  faceup:  ")
-		b.WriteString(cuiCardSliceStr(player.GetFaceUpCards()))
-		b.WriteString("\n")
+		b.WriteString(i18n.T("shithead.faceupLabel"))
+		b.WriteString(cuiCardSliceStr(player.GetFaceUpCards()) + "\n")
 	}
 	return b.String()
 }
 
-// ShitheadCuiPresenter シットヘッドCUIプレゼンタークラス
+// ShitheadCuiPresenter renders the Shithead CUI view.
 type ShitheadCuiPresenter struct{}
 
-// Output ゲーム状態を文字列出力
+// Output renders the current game state for the active locale (#1699).
 func (p *ShitheadCuiPresenter) Output(sg interfaces.ShitheadGame, lastErr error) string {
-	return buildCuiOutput("Shithead (シットヘッド / カーマ)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("shithead.outputTitle"), func(b *strings.Builder) {
 		currentTurn := sg.GetCurrentTurn()
 		for i := 0; i < sg.GetPlayerCnt(); i++ {
 			b.WriteString(shitheadPlayerStr(sg.GetPlayer(i), i, currentTurn))
@@ -56,56 +58,61 @@ func (p *ShitheadCuiPresenter) Output(sg interfaces.ShitheadGame, lastErr error)
 
 		b.WriteString("----------\n")
 
-		// 場札
+		// Discard pile + stock
 		discard := sg.GetDiscardPile()
 		if len(discard) > 0 {
-			fmt.Fprintf(b, "場札: %s\n", cuiCardSliceStr(discard))
+			b.WriteString(i18n.Tf("shithead.discardLine",
+				"cards", cuiCardSliceStr(discard)) + "\n")
 		} else {
-			b.WriteString("場札: なし\n")
+			b.WriteString(i18n.T("shithead.discardEmpty") + "\n")
 		}
-		fmt.Fprintf(b, "山札: %d 枚\n", sg.GetStockSize())
+		b.WriteString(i18n.Tf("shithead.stockLine",
+			"count", strconv.Itoa(sg.GetStockSize())) + "\n")
 		if sg.GetSevenActive() {
-			b.WriteString(color.BoldYellow("【7発動中】次は7以下のカードしか出せません\n"))
+			b.WriteString(color.BoldYellow(i18n.T("shithead.noticeSeven")) + "\n")
 		}
 		if sg.GetSkipNext() {
-			b.WriteString(color.BoldYellow("【次プレイヤースキップ】\n"))
+			b.WriteString(color.BoldYellow(i18n.T("shithead.noticeSkip")) + "\n")
 		}
 
-		// 人間の前の行動
+		// Last human action
 		if humanAction := sg.GetHumanAction(); humanAction != nil {
 			b.WriteString(formatShitheadAction(sg, humanAction))
 		}
 
-		// CPUの行動履歴
+		// CPU action history
 		cpuActions := sg.GetCpuActions()
 		if len(cpuActions) > 0 {
-			b.WriteString(color.Bold("[CPUの行動]\n"))
+			b.WriteString(color.Bold(i18n.T("shithead.cpuActionsHeader")) + "\n")
 			for _, action := range cpuActions {
 				b.WriteString(formatShitheadAction(sg, action))
 			}
 		}
 
-		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
-		}
+		cuiErrorBlock(b, lastErr)
 
 		if sg.GetGameEndFlag() {
-			b.WriteString("ゲーム終了！\n")
+			b.WriteString(i18n.T("shithead.gameEnd") + "\n")
 			for i := 0; i < sg.GetPlayerCnt(); i++ {
 				player := sg.GetPlayer(i)
 				rank := player.GetRank()
 				suffix := ""
 				if rank == sg.GetPlayerCnt() {
-					suffix = " (Shithead!)"
+					suffix = i18n.T("shithead.rankShithead")
 				}
-				fmt.Fprintf(b, "  %s: rank=%d%s\n", cuiPlayerName(player, i), rank, suffix)
+				b.WriteString(i18n.Tf("shithead.rankLine",
+					"name", cuiPlayerName(player, i),
+					"rank", strconv.Itoa(rank),
+					"suffix", suffix) + "\n")
 			}
-		} else {
-			source := sg.CurrentSource()
-			currentName := cuiPlayerName(sg.GetPlayer(currentTurn), currentTurn)
-			fmt.Fprintf(b, "手番: %s (出すソース: %s)\n", currentName, source)
-			b.WriteString("p [インデックス...] でカードを出す / p で場札を引き取る\n")
+			return
 		}
+		source := sg.CurrentSource()
+		currentName := cuiPlayerName(sg.GetPlayer(currentTurn), currentTurn)
+		b.WriteString(i18n.Tf("shithead.promptCurrentTurn",
+			"name", currentName,
+			"source", source) + "\n")
+		b.WriteString(i18n.T("shithead.promptPlayHelp") + "\n")
 	})
 }
 
@@ -113,20 +120,23 @@ func (p *ShitheadCuiPresenter) Output(sg interfaces.ShitheadGame, lastErr error)
 func formatShitheadAction(sg interfaces.ShitheadGame, action *domain.ShitheadCpuAction) string {
 	name := cuiPlayerName(sg.GetPlayer(action.PlayerIdx), action.PlayerIdx)
 	if action.Pickup {
-		return fmt.Sprintf("%s が場札を引き取りました\n", name)
+		return i18n.Tf("shithead.actionPickup", "name", name) + "\n"
 	}
-	cards := cuiCardSliceStr(action.PlayedCards)
 	suffix := ""
 	if action.Burned {
-		suffix += " (場札焼却!)"
+		suffix += i18n.T("shithead.actionSuffixBurned")
 	}
 	if action.Skipped {
-		suffix += " (次プレイヤーをスキップ)"
+		suffix += i18n.T("shithead.actionSuffixSkipped")
 	}
-	return fmt.Sprintf("%s が %s を出しました [%s]%s\n", name, cards, action.Source, suffix)
+	return i18n.Tf("shithead.actionPlay",
+		"name", name,
+		"cards", cuiCardSliceStr(action.PlayedCards),
+		"source", action.Source,
+		"suffix", suffix) + "\n"
 }
 
-// ActionLogOutput 棋譜をテキスト出力
+// ActionLogOutput emits the action-log transcript as plain text.
 func (p *ShitheadCuiPresenter) ActionLogOutput(sg interfaces.ShitheadGame) string {
 	return actionLogOutputText(sg)
 }

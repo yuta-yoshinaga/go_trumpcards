@@ -1,0 +1,20 @@
+{
+  "helpTitle": "Go Fish",
+  "helpAsk": "  ask <opponent> <rank>  ask for a rank",
+  "helpSetDifficulty": "  sd [0-2]            CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "outputTitle": "Go Fish",
+  "playerLine": "{{name}}: {{cards}} cards, books: {{books}}",
+  "deckLine": "Deck: {{count}}",
+  "askSuccess": "{{asker}} asked {{target}} for rank {{rank}} → received {{count}} card(s)!",
+  "askFail": "{{asker}} asked {{target}} for rank {{rank}} → Go Fish!",
+  "bookFormed": "Book completed! Rank {{rank}}",
+  "cpuAskSuccess": "[CPU] {{asker}} → {{target}}: rank {{rank}} → received {{count}}",
+  "cpuAskFail": "[CPU] {{asker}} → {{target}}: rank {{rank}} → Go Fish!",
+  "cpuBookFormed": "[CPU] {{asker}}: book completed! Rank {{rank}}",
+  "errorLine": "Error: {{msg}}",
+  "winHuman": "Game over! You win!",
+  "winCpu": "Game over! CPU {{idx}} wins!",
+  "scoreEntry": "  {{name}}: {{count}} book(s)",
+  "promptCurrentTurn": "{{name}}'s turn",
+  "promptHumanHelp": "ask <opponent> <rank> to request"
+}
