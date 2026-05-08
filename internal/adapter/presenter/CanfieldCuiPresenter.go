@@ -33,7 +33,7 @@ func (p *CanfieldCuiPresenter) Output(c interfaces.CanfieldGame, lastErr error) 
 		// Foundation
 		b.WriteString(i18n.T("canfield.foundationHeader"))
 		foundation := c.GetFoundation()
-		for i := 0; i < domain.CanfieldFoundationCnt; i++ {
+		for i := range domain.CanfieldFoundationCnt {
 			if i != 0 {
 				b.WriteString(" | ")
 			}
@@ -69,7 +69,7 @@ func (p *CanfieldCuiPresenter) Output(c interfaces.CanfieldGame, lastErr error) 
 
 		// Tableau
 		tableau := c.GetTableau()
-		for col := 0; col < domain.CanfieldTableauCnt; col++ {
+		for col := range domain.CanfieldTableauCnt {
 			colCards := tableau[col]
 			b.WriteString(i18n.Tf("canfield.columnLabel", "col", strconv.Itoa(col)))
 			if len(colCards) == 0 {
