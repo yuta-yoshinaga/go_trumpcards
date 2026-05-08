@@ -6,5 +6,17 @@
   "helpNextRound": "  nr                   次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetLimit": "  sl <n>               ポイント上限",
-  "promptSuit": "スートを選択してください (1=♠, 2=♣, 3=♥, 4=♦):"
+  "promptSuit": "スートを選択してください (1=♠, 2=♣, 3=♥, 4=♦):",
+  "header": "ラウンド: {{round}}  山札: {{stock}}枚",
+  "discardLine": "捨て札: {{card}}",
+  "chosenSuit": " (指定スート: {{suit}})",
+  "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
+  "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
+  "promptCurrentPlayer": "手番: {{name}}",
+  "promptPlayHelp": "play <idx>・・・カードを出す",
+  "promptDrawHelp": "draw・・・カードを引く",
+  "promptChooseSuit": "スート選択フェーズ",
+  "promptChooseSuitHelp": "suit <1-4>・・・スートを選択 (1=♠, 2=♣, 3=♥, 4=♦)",
+  "promptRoundEnd": "ラウンド終了",
+  "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ"
 }
