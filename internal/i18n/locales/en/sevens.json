@@ -22,6 +22,7 @@
   "ruleEndStop": "[end-stop]",
   "ruleNoConsecutiveJokers": "[no consecutive jokers]",
   "boardLabel": "Board:",
+  "boardSuitRange": "  {{suit}}: {{min}}-{{max}}",
   "cpuActionsLabel": "[CPU actions]",
   "gameEnd": "Game over!",
   "rankLine": "  {{name}}: rank {{rank}}",

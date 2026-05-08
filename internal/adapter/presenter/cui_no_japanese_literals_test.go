@@ -87,14 +87,20 @@ func TestNoJapaneseStringLiteralsInCuiPresenters(t *testing.T) {
 	t.Error(b.String())
 }
 
-// containsJapanese reports whether s contains hiragana, katakana, or CJK
-// ideographs. Half-width katakana (U+FF65-U+FF9F) is included.
+// containsJapanese reports whether s contains hiragana, katakana, CJK
+// punctuation, or CJK ideographs. Half-width katakana
+// (U+FF65–U+FF9F) is included; full-width ASCII (U+FF01–U+FF60) is
+// intentionally not — it overlaps with intentional decorative
+// punctuation in some game-output contexts and isn't strictly
+// "Japanese content."
 func containsJapanese(s string) bool {
 	for _, r := range s {
 		switch {
+		case r >= 0x3000 && r <= 0x303F: // CJK Symbols and Punctuation (、 。 「 」 　 …)
+			return true
 		case r >= 0x3041 && r <= 0x309F: // hiragana
 			return true
-		case r >= 0x30A0 && r <= 0x30FF: // katakana
+		case r >= 0x30A0 && r <= 0x30FF: // katakana (incl. ・ U+30FB)
 			return true
 		case r >= 0xFF65 && r <= 0xFF9F: // half-width katakana
 			return true
