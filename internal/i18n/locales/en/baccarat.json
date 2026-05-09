@@ -1,4 +1,21 @@
 {
   "helpTitle": "Baccarat",
-  "helpBet": "  b <amount> <type>    bet (type: 0=Player, 1=Banker, 2=Tie)"
+  "helpBet": "  b <amount> <type>    bet (type: 0=Player, 1=Banker, 2=Tie)",
+  "chipsLine": "chips: {{chips}}",
+  "phaseLine": "phase: {{phase}}",
+  "valueLine": "value: {{value}}",
+  "playerHeader": "PLAYER",
+  "bankerHeader": "BANKER",
+  "phaseBet": "BET",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "betTypePlayer": "PLAYER",
+  "betTypeBanker": "BANKER",
+  "betTypeTie": "TIE",
+  "betTypeUnknown": "UNKNOWN",
+  "betLine": "bet: {{amount}} on {{type}}",
+  "playerWins": "Player wins!",
+  "bankerWins": "Banker wins!",
+  "tie": "Tie!",
+  "payoutLine": "payout: {{payout}}"
 }

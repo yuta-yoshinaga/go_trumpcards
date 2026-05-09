@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // BaccaratCuiPresenter バカラCUIプレゼンタークラス
@@ -18,14 +20,13 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "chips: %d\n", b.GetChips())
-	fmt.Fprintf(&sb, "phase: %s\n", bp.phaseStr(b.GetPhase()))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.chipsLine", "chips", strconv.Itoa(b.GetChips())))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.phaseLine", "phase", bp.phaseStr(b.GetPhase())))
 
-	// プレイヤーハンド
 	playerHand := b.GetPlayerHand()
 	if len(playerHand) > 0 {
-		sb.WriteString("--- " + color.Bold("PLAYER") + " ---\n")
-		fmt.Fprintf(&sb, "value: %d\n", b.GetPlayerHandValue())
+		sb.WriteString("--- " + color.Bold(i18n.T("baccarat.playerHeader")) + " ---\n")
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.valueLine", "value", strconv.Itoa(b.GetPlayerHandValue())))
 		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
 			parts[i] = cuiCardStr(card)
@@ -34,11 +35,10 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 		sb.WriteString("\n")
 	}
 
-	// バンカーハンド
 	bankerHand := b.GetBankerHand()
 	if len(bankerHand) > 0 {
-		sb.WriteString("--- " + color.Bold("BANKER") + " ---\n")
-		fmt.Fprintf(&sb, "value: %d\n", b.GetBankerHandValue())
+		sb.WriteString("--- " + color.Bold(i18n.T("baccarat.bankerHeader")) + " ---\n")
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.valueLine", "value", strconv.Itoa(b.GetBankerHandValue())))
 		parts := make([]string, len(bankerHand))
 		for i, card := range bankerHand {
 			parts[i] = cuiCardStr(card)
@@ -49,24 +49,25 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 
 	sb.WriteString("----------\n")
 
-	// エラーメッセージ
 	if lastErr != nil {
 		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
 	}
 
-	// ゲーム結果
 	if b.GetGameEndFlag() {
-		fmt.Fprintf(&sb, "bet: %d on %s\n", b.GetBetAmount(), bp.betTypeStr(b.GetBetType()))
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.betLine",
+			"amount", strconv.Itoa(b.GetBetAmount()),
+			"type", bp.betTypeStr(b.GetBetType()),
+		))
 		switch b.GetResult() {
 		case domain.GameResultWin:
-			sb.WriteString(color.Green("Player wins!") + "\n")
+			sb.WriteString(color.Green(i18n.T("baccarat.playerWins")) + "\n")
 		case domain.GameResultLose:
-			sb.WriteString(color.Red("Banker wins!") + "\n")
+			sb.WriteString(color.Red(i18n.T("baccarat.bankerWins")) + "\n")
 		case domain.GameResultDraw:
-			sb.WriteString(color.Yellow("Tie!") + "\n")
+			sb.WriteString(color.Yellow(i18n.T("baccarat.tie")) + "\n")
 		default:
 		}
-		fmt.Fprintf(&sb, "payout: %d\n", b.GetPayout())
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.payoutLine", "payout", strconv.Itoa(b.GetPayout())))
 		sb.WriteString("----------\n")
 	}
 
@@ -82,11 +83,11 @@ func (bp *BaccaratCuiPresenter) ActionLogOutput(b interfaces.BaccaratGame) strin
 func (bp *BaccaratCuiPresenter) phaseStr(phase int) string {
 	switch phase {
 	case domain.BaccaratPhaseBet:
-		return "BET"
+		return i18n.T("baccarat.phaseBet")
 	case domain.BaccaratPhaseEnd:
-		return "END"
+		return i18n.T("baccarat.phaseEnd")
 	default:
-		return "UNKNOWN"
+		return i18n.T("baccarat.phaseUnknown")
 	}
 }
 
@@ -94,12 +95,12 @@ func (bp *BaccaratCuiPresenter) phaseStr(phase int) string {
 func (bp *BaccaratCuiPresenter) betTypeStr(betType int) string {
 	switch betType {
 	case domain.BaccaratBetPlayer:
-		return "PLAYER"
+		return i18n.T("baccarat.betTypePlayer")
 	case domain.BaccaratBetBanker:
-		return "BANKER"
+		return i18n.T("baccarat.betTypeBanker")
 	case domain.BaccaratBetTie:
-		return "TIE"
+		return i18n.T("baccarat.betTypeTie")
 	default:
-		return "UNKNOWN"
+		return i18n.T("baccarat.betTypeUnknown")
 	}
 }
