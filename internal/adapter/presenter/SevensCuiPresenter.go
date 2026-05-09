@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -120,74 +119,76 @@ func (p *SevensCuiPresenter) ActionLogOutput(s interfaces.SevensGame) string {
 
 // Output renders the current game state for the active locale (#1699).
 func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) string {
-	var b strings.Builder
-
-	b.WriteString("==========\n")
-	b.WriteString(i18n.T("sevens.helpTitle") + "\n")
 	config := s.GetConfig()
-	sevensRuleLabels(&b, &config)
-	b.WriteString("==========\n")
 
-	for i := 0; i < s.GetPlayerCnt(); i++ {
-		b.WriteString(sevensPlayerStr(s.GetPlayer(i), i))
+	// The original output put rule badges between the title and the mid-divider
+	// (inside the header block). buildCuiOutput appends "\n" after the title, so
+	// we splice the rules in right after the title and trim the trailing "\n"
+	// that sevensRuleLabels adds, to avoid a blank line before the mid-divider.
+	title := i18n.T("sevens.helpTitle")
+	var rb strings.Builder
+	sevensRuleLabels(&rb, &config)
+	if rules := strings.TrimRight(rb.String(), "\n"); rules != "" {
+		title = title + "\n" + rules
 	}
 
-	b.WriteString("----------\n")
-
-	// Board state
-	b.WriteString(i18n.T("sevens.boardLabel") + "\n")
-	suits := []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond}
-	suitNames := []string{"SPADE", "CLOVER", "HEART", "DIAMOND"}
-	mins := s.GetTableMinVals()
-	maxs := s.GetTableMaxVals()
-	for i, suit := range suits {
-		b.WriteString(i18n.Tf("sevens.boardSuitRange",
-			"suit", suitNames[i],
-			"min", strconv.Itoa(mins[suit]),
-			"max", strconv.Itoa(maxs[suit])) + "\n")
-	}
-
-	// Human's previous action
-	humanAction := s.GetHumanAction()
-	if humanAction != nil {
-		b.WriteString(sevensActionStr(cuiPlayerName(s.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx), humanAction))
-	}
-
-	// CPU action history
-	cpuActions := s.GetCpuActions()
-	if len(cpuActions) > 0 {
-		b.WriteString(color.Bold(i18n.T("sevens.cpuActionsLabel")) + "\n")
-		for _, action := range cpuActions {
-			actPlayerName := cuiPlayerName(s.GetPlayer(action.PlayerIdx), action.PlayerIdx)
-			b.WriteString(sevensActionStr(actPlayerName, action))
-		}
-	}
-
-	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
-	}
-
-	if s.GetGameEndFlag() {
-		b.WriteString(i18n.T("sevens.gameEnd") + "\n")
+	return buildCuiOutput(title, func(b *strings.Builder) {
 		for i := 0; i < s.GetPlayerCnt(); i++ {
-			player := s.GetPlayer(i)
-			if player == nil {
-				continue
-			}
-			b.WriteString(i18n.Tf("sevens.rankLine",
-				"name", cuiPlayerName(player, i),
-				"rank", strconv.Itoa(player.GetRank())) + "\n")
+			b.WriteString(sevensPlayerStr(s.GetPlayer(i), i))
 		}
-	} else {
-		currentTurn := s.GetCurrentTurn()
-		currentName := cuiPlayerName(s.GetPlayer(currentTurn), currentTurn)
-		b.WriteString(i18n.Tf("sevens.turnLine", "name", currentName) + "\n")
-		b.WriteString(i18n.T("sevens.playHint") + "\n")
-		if config.JokerCount > 0 {
-			b.WriteString(i18n.T("sevens.jokerHint") + "\n")
-		}
-	}
 
-	b.WriteString("==========\n")
-	return b.String()
+		b.WriteString("----------\n")
+
+		// Board state
+		b.WriteString(i18n.T("sevens.boardLabel") + "\n")
+		suits := []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond}
+		suitNames := []string{"SPADE", "CLOVER", "HEART", "DIAMOND"}
+		mins := s.GetTableMinVals()
+		maxs := s.GetTableMaxVals()
+		for i, suit := range suits {
+			b.WriteString(i18n.Tf("sevens.boardSuitRange",
+				"suit", suitNames[i],
+				"min", strconv.Itoa(mins[suit]),
+				"max", strconv.Itoa(maxs[suit])) + "\n")
+		}
+
+		// Human's previous action
+		humanAction := s.GetHumanAction()
+		if humanAction != nil {
+			b.WriteString(sevensActionStr(cuiPlayerName(s.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx), humanAction))
+		}
+
+		// CPU action history
+		cpuActions := s.GetCpuActions()
+		if len(cpuActions) > 0 {
+			b.WriteString(color.Bold(i18n.T("sevens.cpuActionsLabel")) + "\n")
+			for _, action := range cpuActions {
+				actPlayerName := cuiPlayerName(s.GetPlayer(action.PlayerIdx), action.PlayerIdx)
+				b.WriteString(sevensActionStr(actPlayerName, action))
+			}
+		}
+
+		cuiErrorBlock(b, lastErr)
+
+		if s.GetGameEndFlag() {
+			b.WriteString(i18n.T("sevens.gameEnd") + "\n")
+			for i := 0; i < s.GetPlayerCnt(); i++ {
+				player := s.GetPlayer(i)
+				if player == nil {
+					continue
+				}
+				b.WriteString(i18n.Tf("sevens.rankLine",
+					"name", cuiPlayerName(player, i),
+					"rank", strconv.Itoa(player.GetRank())) + "\n")
+			}
+		} else {
+			currentTurn := s.GetCurrentTurn()
+			currentName := cuiPlayerName(s.GetPlayer(currentTurn), currentTurn)
+			b.WriteString(i18n.Tf("sevens.turnLine", "name", currentName) + "\n")
+			b.WriteString(i18n.T("sevens.playHint") + "\n")
+			if config.JokerCount > 0 {
+				b.WriteString(i18n.T("sevens.jokerHint") + "\n")
+			}
+		}
+	})
 }
