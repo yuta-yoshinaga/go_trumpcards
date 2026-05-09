@@ -20,8 +20,8 @@ func (pp *PaiGowCuiPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("paigow.chipsLine", "chips", strconv.Itoa(pg.GetChips())))
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("paigow.phaseLine", "phase", pp.phaseStr(pg.GetPhase())))
+	sb.WriteString(i18n.Tf("paigow.chipsLine", "chips", strconv.Itoa(pg.GetChips())) + "\n")
+	sb.WriteString(i18n.Tf("paigow.phaseLine", "phase", pp.phaseStr(pg.GetPhase())) + "\n")
 
 	playerCards := pg.GetPlayerCards()
 	if len(playerCards) > 0 {
@@ -38,56 +38,56 @@ func (pp *PaiGowCuiPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 	if pg.GetPhase() == domain.PaiGowPhaseEnd {
 		highHand := pg.GetPlayerHighHand()
 		if len(highHand) > 0 {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("paigow.highLine",
+			sb.WriteString(i18n.Tf("paigow.highLine",
 				"cards", cuiCardSliceStr(highHand),
 				"rank", pp.highHandRankStr(pg.GetPlayerHighRank()),
-			))
+			) + "\n")
 		}
 		lowHand := pg.GetPlayerLowHand()
 		if len(lowHand) > 0 {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("paigow.lowLine",
+			sb.WriteString(i18n.Tf("paigow.lowLine",
 				"cards", cuiCardSliceStr(lowHand),
 				"rank", pp.lowHandRankStr(pg.GetPlayerLowRank()),
-			))
+			) + "\n")
 		}
 
 		sb.WriteString("--- " + color.Bold(i18n.T("paigow.dealerHeader")) + " ---\n")
 		dealerHigh := pg.GetDealerHighHand()
 		if len(dealerHigh) > 0 {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("paigow.highLine",
+			sb.WriteString(i18n.Tf("paigow.highLine",
 				"cards", cuiCardSliceStr(dealerHigh),
 				"rank", pp.highHandRankStr(pg.GetDealerHighRank()),
-			))
+			) + "\n")
 		}
 		dealerLow := pg.GetDealerLowHand()
 		if len(dealerLow) > 0 {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("paigow.lowLine",
+			sb.WriteString(i18n.Tf("paigow.lowLine",
 				"cards", cuiCardSliceStr(dealerLow),
 				"rank", pp.lowHandRankStr(pg.GetDealerLowRank()),
-			))
+			) + "\n")
 		}
 	}
 
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
+		sb.WriteString(color.Red(lastErr.Error()) + "\n")
 	}
 
 	if pg.GetGameEndFlag() {
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("paigow.betLine", "bet", strconv.Itoa(pg.GetBet())))
+		sb.WriteString(i18n.Tf("paigow.betLine", "bet", strconv.Itoa(pg.GetBet())) + "\n")
 		switch pg.GetResult() {
 		case domain.GameResultWin:
 			sb.WriteString(color.Green(i18n.T("paigow.playerWins")) + "\n")
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("paigow.payoutWithCommissionLine",
+			sb.WriteString(i18n.Tf("paigow.payoutWithCommissionLine",
 				"payout", strconv.Itoa(pg.GetPayout()),
 				"commission", strconv.Itoa(pg.GetCommission()),
-			))
+			) + "\n")
 		case domain.GameResultLose:
 			sb.WriteString(color.Red(i18n.T("paigow.dealerWins")) + "\n")
 		case domain.GameResultDraw:
 			sb.WriteString(color.Yellow(i18n.T("paigow.push")) + "\n")
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("paigow.payoutLine", "payout", strconv.Itoa(pg.GetPayout())))
+			sb.WriteString(i18n.Tf("paigow.payoutLine", "payout", strconv.Itoa(pg.GetPayout())) + "\n")
 		default:
 		}
 		sb.WriteString("----------\n")
