@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -20,15 +19,15 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("threecard.chipsLine", "chips", strconv.Itoa(tc.GetChips())))
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("threecard.phaseLine", "phase", tp.phaseStr(tc.GetPhase())))
+	sb.WriteString(i18n.Tf("threecard.chipsLine", "chips", strconv.Itoa(tc.GetChips())) + "\n")
+	sb.WriteString(i18n.Tf("threecard.phaseLine", "phase", tp.phaseStr(tc.GetPhase())) + "\n")
 
 	playerHand := tc.GetPlayerHand()
 	if len(playerHand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("threecard.playerHeader")) + " ---\n")
 		rank := tc.GetPlayerHandRank()
 		if rank > 0 && rank < len(domain.ThreeCardHandNames) {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("threecard.handLine", "hand", domain.ThreeCardHandNames[rank]))
+			sb.WriteString(i18n.Tf("threecard.handLine", "hand", domain.ThreeCardHandNames[rank]) + "\n")
 		}
 		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
@@ -43,7 +42,7 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 		sb.WriteString("--- " + color.Bold(i18n.T("threecard.dealerHeader")) + " ---\n")
 		rank := tc.GetDealerHandRank()
 		if rank > 0 && rank < len(domain.ThreeCardHandNames) {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("threecard.handLine", "hand", domain.ThreeCardHandNames[rank]))
+			sb.WriteString(i18n.Tf("threecard.handLine", "hand", domain.ThreeCardHandNames[rank]) + "\n")
 		}
 		if tc.GetDealerQualified() {
 			sb.WriteString(i18n.T("threecard.qualified") + "\n")
@@ -61,13 +60,13 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
+		sb.WriteString(color.Red(lastErr.Error()) + "\n")
 	}
 
 	if tc.GetGameEndFlag() {
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("threecard.anteLine", "ante", strconv.Itoa(tc.GetAnteBet())))
+		sb.WriteString(i18n.Tf("threecard.anteLine", "ante", strconv.Itoa(tc.GetAnteBet())) + "\n")
 		if tc.GetPlayBet() > 0 {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("threecard.playLine", "play", strconv.Itoa(tc.GetPlayBet())))
+			sb.WriteString(i18n.Tf("threecard.playLine", "play", strconv.Itoa(tc.GetPlayBet())) + "\n")
 		}
 		switch tc.GetResult() {
 		case domain.GameResultWin:
@@ -82,7 +81,7 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 			sb.WriteString(color.Yellow(i18n.T("threecard.push")) + "\n")
 		default:
 		}
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("threecard.totalPayoutLine", "payout", strconv.Itoa(tc.GetTotalPayout())))
+		sb.WriteString(i18n.Tf("threecard.totalPayoutLine", "payout", strconv.Itoa(tc.GetTotalPayout())) + "\n")
 		sb.WriteString("----------\n")
 	}
 
