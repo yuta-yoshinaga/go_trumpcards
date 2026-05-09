@@ -1,0 +1,35 @@
+{
+  "title": "ドラゴンタイガー",
+  "betGuide": "ドラゴン / タイガー / タイ のいずれかにベット — 高いランクが勝ち（A=最弱、K=最強）",
+  "label": {
+    "chips": "チップ",
+    "bet": "ベット",
+    "dragon": "ドラゴン",
+    "tiger": "タイガー",
+    "bigRoad": "履歴 (Big Road)"
+  },
+  "button": {
+    "betDragon": "ドラゴン",
+    "betTiger": "タイガー",
+    "betTie": "タイ (8:1)",
+    "reset": "リセット",
+    "clearHistory": "履歴クリア"
+  },
+  "phase": {
+    "bet": "ベット",
+    "end": "結果"
+  },
+  "result": {
+    "dragonWins": "ドラゴンの勝ち",
+    "tigerWins": "タイガーの勝ち",
+    "tieWin": "タイ (タイベット的中)",
+    "tieRefund": "タイ (ベット額の半分を返還)"
+  },
+  "payout": {
+    "total": "払戻し"
+  },
+  "tutorial": {
+    "betButtons": "ドラゴン・タイガー・タイのいずれかを選んでベット",
+    "results": "結果と Big Road（履歴）が表示されます"
+  }
+}

@@ -22,6 +22,7 @@ import cribbage from '../../../docs/manual/cui/cribbage.md?raw';
 import daifugo from '../../../docs/manual/cui/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/cui/deuceswild.md?raw';
 import doubt from '../../../docs/manual/cui/doubt.md?raw';
+import dragontiger from '../../../docs/manual/cui/dragontiger.md?raw';
 import durak from '../../../docs/manual/cui/durak.md?raw';
 import egyptianratscrew from '../../../docs/manual/cui/egyptianratscrew.md?raw';
 import euchre from '../../../docs/manual/cui/euchre.md?raw';
@@ -98,6 +99,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/daifugo': daifugo,
   '/deuceswild': deuceswild,
   '/doubt': doubt,
+  '/dragontiger': dragontiger,
   '/bakersdozen': bakersdozen,
   '/durak': durak,
   '/egyptianratscrew': egyptianratscrew,

@@ -21,6 +21,7 @@ import type {
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  DragonTigerResponse,
   DurakConfigInput,
   DurakResponse,
   EgyptianRatscrewResponse,
@@ -173,6 +174,7 @@ const workerUrl: Record<string, string> = {
   egyptianratscrew: WORKER_CLASSIC,
   bakersdozen: WORKER_SOLO,
   tonk: WORKER_CLASSIC,
+  dragontiger: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1471,6 +1473,12 @@ export const casinowarApi = createBetAmountApi<CasinoWarResponse, 'reset' | 'bet
   'casinowar',
 );
 
+/** API client for the Dragon Tiger /dragontiger/exec endpoint. */
+export const dragontigerApi = {
+  exec: (command: 'reset' | 'bet' | 'clear' | 'log', amount?: number, betType?: number) =>
+    gameExec<DragonTigerResponse>('dragontiger', { command, amount, betType }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1549,6 +1557,7 @@ const games = [
   'tonk',
   'casinowar',
   'pitch',
+  'dragontiger',
 ] as const;
 type Game = (typeof games)[number];
 

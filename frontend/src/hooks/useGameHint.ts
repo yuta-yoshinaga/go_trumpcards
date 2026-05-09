@@ -16,6 +16,7 @@ import type {
   CribbageResponse,
   DaifugoResponse,
   DoubtResponse,
+  DragonTigerResponse,
   DurakResponse,
   EgyptianRatscrewResponse,
   EuchreResponse,
@@ -86,6 +87,7 @@ import { getCribbageHint } from '../utils/hints/cribbageHint';
 import { getDaifugoHint } from '../utils/hints/daifugoHint';
 import { getDeucesWildHint } from '../utils/hints/deuceswildHint';
 import { getDoubtHint } from '../utils/hints/doubtHint';
+import { getDragontigerHint } from '../utils/hints/dragontigerHint';
 import { getDurakHint } from '../utils/hints/durakHint';
 import { getEgyptianRatscrewHint } from '../utils/hints/egyptianratscrewHint';
 import { getEuchreHint } from '../utils/hints/euchreHint';
@@ -202,6 +204,7 @@ const hintFactories = {
   letitride: (s) => getLetitrideHint(s as LetItRideResponse),
   reddog: (s) => getReddogHint(s as RedDogResponse),
   casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
+  dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),

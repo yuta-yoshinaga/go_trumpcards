@@ -21,6 +21,7 @@ import cribbage from '../../../docs/manual/web/cribbage.md?raw';
 import daifugo from '../../../docs/manual/web/daifugo.md?raw';
 import deuceswild from '../../../docs/manual/web/deuceswild.md?raw';
 import doubt from '../../../docs/manual/web/doubt.md?raw';
+import dragontiger from '../../../docs/manual/web/dragontiger.md?raw';
 import durak from '../../../docs/manual/web/durak.md?raw';
 import egyptianratscrew from '../../../docs/manual/web/egyptianratscrew.md?raw';
 import euchre from '../../../docs/manual/web/euchre.md?raw';
@@ -97,6 +98,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/daifugo': daifugo,
   '/deuceswild': deuceswild,
   '/doubt': doubt,
+  '/dragontiger': dragontiger,
   '/durak': durak,
   '/bakersdozen': bakersdozen,
   '/egyptianratscrew': egyptianratscrew,

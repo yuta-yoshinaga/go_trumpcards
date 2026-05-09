@@ -1245,6 +1245,16 @@ var gameRegistry = []GameRegistryEntry{
 				SettingKeys:       []string{"pitch.helpSetDifficulty", "pitch.helpSetLimit"},
 			})
 	}},
+	{Name: "dragontiger", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewDragonTigerCuiController(usecase.NewDragonTigerInteractor(
+				domain.NewDefaultDragonTiger(), new(presenter.DragonTigerCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey:          "dragontiger.helpTitle",
+				CommandKeys:       []string{"dragontiger.helpBet", "dragontiger.helpClear"},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
