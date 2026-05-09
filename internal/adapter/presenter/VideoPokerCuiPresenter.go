@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // VideoPokerCuiPresenter ビデオポーカーCUIプレゼンタークラス
@@ -18,19 +20,19 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "chips: %d\n", vp.GetChips())
-	fmt.Fprintf(&sb, "phase: %s\n", vpp.phaseStr(vp.GetPhase()))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("videopoker.chipsLine", "chips", strconv.Itoa(vp.GetChips())))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("videopoker.phaseLine", "phase", vpp.phaseStr(vp.GetPhase())))
 
-	// ハンド表示
 	hand := vp.GetHand()
 	if len(hand) > 0 {
-		sb.WriteString("--- HAND ---\n")
+		sb.WriteString(i18n.T("videopoker.handHeader") + "\n")
 		held := vp.GetHeldIndices()
+		holdLabel := i18n.T("videopoker.holdLabel")
 		parts := make([]string, len(hand))
 		for i, card := range hand {
 			s := cuiCardStr(card)
 			if held[i] {
-				s += " [HOLD]"
+				s += " " + holdLabel
 			}
 			parts[i] = s
 		}
@@ -40,20 +42,18 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 
 	sb.WriteString("----------\n")
 
-	// エラーメッセージ
 	if lastErr != nil {
 		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
 	}
 
-	// ゲーム結果
 	if vp.GetGameEndFlag() {
-		fmt.Fprintf(&sb, "bet: %d coin(s)\n", vp.GetBetAmount())
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("videopoker.betLine", "bet", strconv.Itoa(vp.GetBetAmount())))
 		if vp.GetResult() == domain.GameResultWin {
-			fmt.Fprintf(&sb, "%s\n", color.Green(vp.GetHandName()+"! You win!"))
+			fmt.Fprintf(&sb, "%s\n", color.Green(i18n.Tf("videopoker.winLine", "handName", vp.GetHandName())))
 		} else {
-			sb.WriteString(color.Red("No winning hand.") + "\n")
+			sb.WriteString(color.Red(i18n.T("videopoker.noWin")) + "\n")
 		}
-		fmt.Fprintf(&sb, "payout: %d\n", vp.GetPayout())
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("videopoker.payoutLine", "payout", strconv.Itoa(vp.GetPayout())))
 		sb.WriteString("----------\n")
 	}
 
@@ -69,12 +69,12 @@ func (vpp *VideoPokerCuiPresenter) ActionLogOutput(vp interfaces.VideoPokerGame)
 func (vpp *VideoPokerCuiPresenter) phaseStr(phase int) string {
 	switch phase {
 	case domain.VideoPokerPhaseBet:
-		return "BET"
+		return i18n.T("videopoker.phaseBet")
 	case domain.VideoPokerPhaseDraw:
-		return "DRAW"
+		return i18n.T("videopoker.phaseDraw")
 	case domain.VideoPokerPhaseResult:
-		return "RESULT"
+		return i18n.T("videopoker.phaseResult")
 	default:
-		return "UNKNOWN"
+		return i18n.T("videopoker.phaseUnknown")
 	}
 }
