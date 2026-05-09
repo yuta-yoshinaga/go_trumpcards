@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -21,156 +20,148 @@ func (p *HoldemCuiPresenter) ActionLogOutput(h interfaces.HoldemGame) string {
 
 // Output renders the current game state for the active locale (#1699).
 func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) string {
-	var b strings.Builder
-
-	b.WriteString("==========\n")
-	b.WriteString(i18n.T("holdem.outputTitle") + "\n")
-	b.WriteString("==========\n")
-
-	cfg := h.GetConfig()
-	if cfg.TournamentMode {
-		b.WriteString(i18n.Tf("holdem.tournamentLine",
-			"hand", strconv.Itoa(h.GetHandCount()),
-			"sb", strconv.Itoa(cfg.SmallBlind),
-			"bb", strconv.Itoa(cfg.BigBlind),
-			"levelup", strconv.Itoa(cfg.BlindLevelHands)) + "\n")
-		if cfg.RebuyEnabled {
-			b.WriteString(i18n.Tf("holdem.rebuyLine",
-				"chips", strconv.Itoa(cfg.RebuyChips),
-				"max", strconv.Itoa(cfg.RebuyMaxCount),
-				"period", strconv.Itoa(cfg.RebuyPeriodHands)) + "\n")
-		}
-		if cfg.AddonEnabled {
-			b.WriteString(i18n.Tf("holdem.addonLine",
-				"chips", strconv.Itoa(cfg.AddonChips),
-				"after", strconv.Itoa(cfg.AddonAfterHand)) + "\n")
-		}
-	}
-
-	b.WriteString(i18n.Tf("holdem.tableMax", "n", strconv.Itoa(h.GetPlayerCnt())) + "\n")
-	b.WriteString(i18n.Tf("holdem.dealerLine", "idx", strconv.Itoa(h.GetDealerIdx())) + "\n")
-
-	cc := h.GetCommunityCards()
-	if len(cc) == 0 {
-		b.WriteString(i18n.T("holdem.communityNone") + "\n")
-	} else {
-		b.WriteString(i18n.Tf("holdem.communityCards", "cards", cuiCardSliceStrEmoji(cc)) + "\n")
-	}
-
-	b.WriteString(i18n.Tf("holdem.potLine", "pot", strconv.Itoa(h.GetPot())) + "\n")
-
-	if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
-		b.WriteString(i18n.Tf("holdem.limitLine", "name", domain.BettingLimitNames[cfg.BettingLimit]) + "\n")
-	}
-
-	b.WriteString("----------\n")
-	for i := 0; i < h.GetPlayerCnt(); i++ {
-		player := h.GetPlayer(i)
-		b.WriteString(cuiPlayerNameWithStyle(player, i))
-		b.WriteString(i18n.Tf("holdem.playerChips", "chips", strconv.Itoa(player.GetChips())))
-
-		if player.GetTotalHands() > 0 {
-			b.WriteString(i18n.Tf("holdem.playerStats",
-				"vpip", strconv.Itoa(player.GetVPIP()),
-				"pfr", strconv.Itoa(player.GetPFR()),
-				"tb", strconv.Itoa(player.GetThreeBet()),
-				"af", player.GetAFDisplay()))
-		}
-
-		if player.GetFolded() {
-			b.WriteString(color.BoldYellow(i18n.T("holdem.playerFolded")))
-		} else if player.GetAllIn() {
-			b.WriteString(color.BoldYellow(i18n.T("holdem.playerAllIn")))
-		}
-
-		if player.GetCurrentBet() > 0 {
-			b.WriteString(i18n.Tf("holdem.playerBet", "bet", strconv.Itoa(player.GetCurrentBet())))
-		}
-		b.WriteString("\n")
-
-		if player.GetIsHuman() && !player.GetFolded() {
-			b.WriteString(i18n.Tf("holdem.humanHand", "cards", cuiCardListStrEmoji(player)) + "\n")
-		}
-	}
-
-	cpuActions := h.GetCpuActions()
-	if len(cpuActions) > 0 {
-		b.WriteString("----------\n")
-		b.WriteString(color.Bold(i18n.T("holdem.cpuActionsHeader")) + "\n")
-		for _, action := range cpuActions {
-			b.WriteString(i18n.Tf("holdem.cpuActionLine",
-				"idx", strconv.Itoa(action.PlayerIdx),
-				"action", cuiBettingActionName(action.Action)))
-			if action.Amount > 0 {
-				b.WriteString(i18n.Tf("holdem.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))
-			}
-			b.WriteString("\n")
-		}
-	}
-
-	results := h.GetRoundResults()
-	if len(results) > 0 && (h.GetPhase() == domain.HoldemPhaseEnd || h.GetPhase() == domain.HoldemPhaseShowdown) {
-		b.WriteString("==========\n")
-		b.WriteString(color.Bold(i18n.T("holdem.resultsHeader")) + "\n")
-		for _, r := range results {
-			name := cuiPlayerName(h.GetPlayer(r.PlayerIdx), r.PlayerIdx)
-			kickers := ""
-			if ks := domain.FormatKickers(r.Kickers); ks != "" {
-				kickers = i18n.Tf("holdem.resultKickers", "kickers", ks)
-			}
-			switch {
-			case r.Mucked:
-				b.WriteString(i18n.Tf("holdem.resultMucked", "name", name))
-			case r.HandName != "":
-				b.WriteString(i18n.Tf("holdem.resultHand",
-					"name", name,
-					"hand", r.HandName,
-					"kickers", kickers))
-			default:
-				b.WriteString(i18n.Tf("holdem.resultName", "name", name))
-			}
-			if r.WonAmount > 0 {
-				b.WriteString(i18n.Tf("holdem.wonAmount", "total", strconv.Itoa(r.WonAmount)))
-			}
-			b.WriteString("\n")
-		}
-	}
-
-	if h.IsMuckAvailable() {
-		b.WriteString("----------\n")
-		b.WriteString(i18n.T("holdem.muckPrompt") + "\n")
-	}
-
-	if h.GetPhase() == domain.HoldemPhaseRebuy {
-		b.WriteString("----------\n")
-		switch h.GetRebuyPhaseType() {
-		case domain.HoldemRebuyPhaseRebuy:
-			rebuyCounts := h.GetRebuyCounts()
-			humanIdx := -1
-			for i := 0; i < h.GetPlayerCnt(); i++ {
-				if h.GetPlayer(i).GetIsHuman() {
-					humanIdx = i
-					break
-				}
-			}
-			if humanIdx >= 0 {
-				b.WriteString(i18n.Tf("holdem.rebuyPrompt",
+	return buildCuiOutput(i18n.T("holdem.outputTitle"), func(b *strings.Builder) {
+		cfg := h.GetConfig()
+		if cfg.TournamentMode {
+			b.WriteString(i18n.Tf("holdem.tournamentLine",
+				"hand", strconv.Itoa(h.GetHandCount()),
+				"sb", strconv.Itoa(cfg.SmallBlind),
+				"bb", strconv.Itoa(cfg.BigBlind),
+				"levelup", strconv.Itoa(cfg.BlindLevelHands)) + "\n")
+			if cfg.RebuyEnabled {
+				b.WriteString(i18n.Tf("holdem.rebuyLine",
 					"chips", strconv.Itoa(cfg.RebuyChips),
-					"used", strconv.Itoa(rebuyCounts[humanIdx]),
-					"max", strconv.Itoa(cfg.RebuyMaxCount)) + "\n")
+					"max", strconv.Itoa(cfg.RebuyMaxCount),
+					"period", strconv.Itoa(cfg.RebuyPeriodHands)) + "\n")
 			}
-		case domain.HoldemRebuyPhaseAddon:
-			b.WriteString(i18n.Tf("holdem.addonPrompt", "chips", strconv.Itoa(cfg.AddonChips)) + "\n")
+			if cfg.AddonEnabled {
+				b.WriteString(i18n.Tf("holdem.addonLine",
+					"chips", strconv.Itoa(cfg.AddonChips),
+					"after", strconv.Itoa(cfg.AddonAfterHand)) + "\n")
+			}
 		}
-	}
 
-	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
-	}
+		b.WriteString(i18n.Tf("holdem.tableMax", "n", strconv.Itoa(h.GetPlayerCnt())) + "\n")
+		b.WriteString(i18n.Tf("holdem.dealerLine", "idx", strconv.Itoa(h.GetDealerIdx())) + "\n")
 
-	if h.GetGameEndFlag() {
-		b.WriteString(i18n.T("holdem.gameEnd") + "\n")
-	}
+		cc := h.GetCommunityCards()
+		if len(cc) == 0 {
+			b.WriteString(i18n.T("holdem.communityNone") + "\n")
+		} else {
+			b.WriteString(i18n.Tf("holdem.communityCards", "cards", cuiCardSliceStrEmoji(cc)) + "\n")
+		}
 
-	return b.String()
+		b.WriteString(i18n.Tf("holdem.potLine", "pot", strconv.Itoa(h.GetPot())) + "\n")
+
+		if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
+			b.WriteString(i18n.Tf("holdem.limitLine", "name", domain.BettingLimitNames[cfg.BettingLimit]) + "\n")
+		}
+
+		b.WriteString("----------\n")
+		for i := 0; i < h.GetPlayerCnt(); i++ {
+			player := h.GetPlayer(i)
+			b.WriteString(cuiPlayerNameWithStyle(player, i))
+			b.WriteString(i18n.Tf("holdem.playerChips", "chips", strconv.Itoa(player.GetChips())))
+
+			if player.GetTotalHands() > 0 {
+				b.WriteString(i18n.Tf("holdem.playerStats",
+					"vpip", strconv.Itoa(player.GetVPIP()),
+					"pfr", strconv.Itoa(player.GetPFR()),
+					"tb", strconv.Itoa(player.GetThreeBet()),
+					"af", player.GetAFDisplay()))
+			}
+
+			if player.GetFolded() {
+				b.WriteString(color.BoldYellow(i18n.T("holdem.playerFolded")))
+			} else if player.GetAllIn() {
+				b.WriteString(color.BoldYellow(i18n.T("holdem.playerAllIn")))
+			}
+
+			if player.GetCurrentBet() > 0 {
+				b.WriteString(i18n.Tf("holdem.playerBet", "bet", strconv.Itoa(player.GetCurrentBet())))
+			}
+			b.WriteString("\n")
+
+			if player.GetIsHuman() && !player.GetFolded() {
+				b.WriteString(i18n.Tf("holdem.humanHand", "cards", cuiCardListStrEmoji(player)) + "\n")
+			}
+		}
+
+		cpuActions := h.GetCpuActions()
+		if len(cpuActions) > 0 {
+			b.WriteString("----------\n")
+			b.WriteString(color.Bold(i18n.T("holdem.cpuActionsHeader")) + "\n")
+			for _, action := range cpuActions {
+				b.WriteString(i18n.Tf("holdem.cpuActionLine",
+					"idx", strconv.Itoa(action.PlayerIdx),
+					"action", cuiBettingActionName(action.Action)))
+				if action.Amount > 0 {
+					b.WriteString(i18n.Tf("holdem.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))
+				}
+				b.WriteString("\n")
+			}
+		}
+
+		results := h.GetRoundResults()
+		if len(results) > 0 && (h.GetPhase() == domain.HoldemPhaseEnd || h.GetPhase() == domain.HoldemPhaseShowdown) {
+			b.WriteString("==========\n")
+			b.WriteString(color.Bold(i18n.T("holdem.resultsHeader")) + "\n")
+			for _, r := range results {
+				name := cuiPlayerName(h.GetPlayer(r.PlayerIdx), r.PlayerIdx)
+				kickers := ""
+				if ks := domain.FormatKickers(r.Kickers); ks != "" {
+					kickers = i18n.Tf("holdem.resultKickers", "kickers", ks)
+				}
+				switch {
+				case r.Mucked:
+					b.WriteString(i18n.Tf("holdem.resultMucked", "name", name))
+				case r.HandName != "":
+					b.WriteString(i18n.Tf("holdem.resultHand",
+						"name", name,
+						"hand", r.HandName,
+						"kickers", kickers))
+				default:
+					b.WriteString(i18n.Tf("holdem.resultName", "name", name))
+				}
+				if r.WonAmount > 0 {
+					b.WriteString(i18n.Tf("holdem.wonAmount", "total", strconv.Itoa(r.WonAmount)))
+				}
+				b.WriteString("\n")
+			}
+		}
+
+		if h.IsMuckAvailable() {
+			b.WriteString("----------\n")
+			b.WriteString(i18n.T("holdem.muckPrompt") + "\n")
+		}
+
+		if h.GetPhase() == domain.HoldemPhaseRebuy {
+			b.WriteString("----------\n")
+			switch h.GetRebuyPhaseType() {
+			case domain.HoldemRebuyPhaseRebuy:
+				rebuyCounts := h.GetRebuyCounts()
+				humanIdx := -1
+				for i := 0; i < h.GetPlayerCnt(); i++ {
+					if h.GetPlayer(i).GetIsHuman() {
+						humanIdx = i
+						break
+					}
+				}
+				if humanIdx >= 0 {
+					b.WriteString(i18n.Tf("holdem.rebuyPrompt",
+						"chips", strconv.Itoa(cfg.RebuyChips),
+						"used", strconv.Itoa(rebuyCounts[humanIdx]),
+						"max", strconv.Itoa(cfg.RebuyMaxCount)) + "\n")
+				}
+			case domain.HoldemRebuyPhaseAddon:
+				b.WriteString(i18n.Tf("holdem.addonPrompt", "chips", strconv.Itoa(cfg.AddonChips)) + "\n")
+			}
+		}
+
+		cuiErrorBlock(b, lastErr)
+
+		if h.GetGameEndFlag() {
+			b.WriteString(i18n.T("holdem.gameEnd") + "\n")
+		}
+	})
 }
