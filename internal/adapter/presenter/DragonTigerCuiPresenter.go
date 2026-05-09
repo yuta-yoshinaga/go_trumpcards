@@ -40,13 +40,27 @@ func (dp *DragonTigerCuiPresenter) Output(dt interfaces.DragonTigerGame, lastErr
 		cuiErrorBlock(b, lastErr)
 
 		if dt.GetGameEndFlag() {
+			// Color is player-centric: green when the player's bet wins,
+			// red when it loses. The result message itself names the game-side
+			// winner (Dragon / Tiger) regardless of which side the player took.
+			betType := dt.GetBetType()
 			switch dt.GetResult() {
-			case domain.GameResultWin:
-				b.WriteString(color.Green(i18n.T("dragontiger.dragonWins")) + "\n")
-			case domain.GameResultLose:
-				b.WriteString(color.Red(i18n.T("dragontiger.tigerWins")) + "\n")
+			case domain.GameResultWin: // Dragon wins
+				msg := i18n.T("dragontiger.dragonWins")
+				if betType == domain.DragonTigerBetDragon {
+					b.WriteString(color.Green(msg) + "\n")
+				} else {
+					b.WriteString(color.Red(msg) + "\n")
+				}
+			case domain.GameResultLose: // Tiger wins
+				msg := i18n.T("dragontiger.tigerWins")
+				if betType == domain.DragonTigerBetTiger {
+					b.WriteString(color.Green(msg) + "\n")
+				} else {
+					b.WriteString(color.Red(msg) + "\n")
+				}
 			case domain.GameResultDraw:
-				if dt.GetBetType() == domain.DragonTigerBetTie {
+				if betType == domain.DragonTigerBetTie {
 					b.WriteString(color.Green(i18n.T("dragontiger.tieWin")) + "\n")
 				} else {
 					b.WriteString(color.Yellow(i18n.T("dragontiger.tieRefund")) + "\n")

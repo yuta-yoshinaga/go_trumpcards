@@ -103,7 +103,7 @@ function DragonTigerPageContent() {
       phaseName={phaseName}
       gamePath="/dragontiger"
       gameEndFlag={isEndPhase}
-      winShow={isEndPhase && state.result === 1 && state.betType === DragonTigerBetType.DRAGON}
+      winShow={isEndPhase && state.payout > state.betAmount}
       onCelebrate={() => playSound('winFanfare')}
       loading={loading}
       confirmOpen={confirmOpen}

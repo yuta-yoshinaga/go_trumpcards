@@ -73,6 +73,53 @@ func TestDragonTigerCuiPresenter_Output_TigerWins(t *testing.T) {
 	assert.Contains(t, result, "タイガーの勝ち")
 }
 
+// Regression coverage for the gemini/Claude review: the result message color
+// must reflect the player's outcome, not the game-side winner. Player bet
+// Tiger and Tiger wins → green, even though the underlying GameResult is Lose.
+func TestDragonTigerCuiPresenter_Output_TigerWinsOnTigerBet_Green(t *testing.T) {
+	p := new(DragonTigerCuiPresenter)
+	m := new(interfaces.MockDragonTigerGame)
+	m.On("GetChips").Return(1100).Maybe()
+	m.On("GetPhase").Return(domain.DragonTigerPhaseEnd).Maybe()
+	m.On("GetDragonCard").Return(domain.NewCard(domain.CardDesignSpade, 3, false)).Maybe()
+	m.On("GetTigerCard").Return(domain.NewCard(domain.CardDesignHeart, 13, false)).Maybe()
+	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetBetAmount").Return(100).Maybe()
+	m.On("GetBetType").Return(domain.DragonTigerBetTiger).Maybe()
+	m.On("GetResult").Return(domain.GameResultLose).Maybe()
+	m.On("GetPayout").Return(200).Maybe()
+	m.On("GetHistory").Return([]int{domain.DragonTigerResultTiger}).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "タイガーの勝ち")
+	// ANSI green = \x1b[32m. Bare-color check is brittle if the codebase
+	// ever swaps to no-color mode in tests, so we verify the green prefix
+	// appears near the "タイガーの勝ち" marker and not the red prefix.
+	assert.NotContains(t, result, "\x1b[31mタイガーの勝ち", "Player bet Tiger and won — must not be red")
+}
+
+// Inverse: player bet Dragon and Dragon wins → green; player bet Tiger and
+// Dragon wins → red. Asserts the Dragon-bet-on-Dragon-win path stays green
+// after the refactor.
+func TestDragonTigerCuiPresenter_Output_DragonWinsOnTigerBet_Red(t *testing.T) {
+	p := new(DragonTigerCuiPresenter)
+	m := new(interfaces.MockDragonTigerGame)
+	m.On("GetChips").Return(900).Maybe()
+	m.On("GetPhase").Return(domain.DragonTigerPhaseEnd).Maybe()
+	m.On("GetDragonCard").Return(domain.NewCard(domain.CardDesignSpade, 13, false)).Maybe()
+	m.On("GetTigerCard").Return(domain.NewCard(domain.CardDesignHeart, 5, false)).Maybe()
+	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetBetAmount").Return(100).Maybe()
+	m.On("GetBetType").Return(domain.DragonTigerBetTiger).Maybe()
+	m.On("GetResult").Return(domain.GameResultWin).Maybe()
+	m.On("GetPayout").Return(0).Maybe()
+	m.On("GetHistory").Return([]int{domain.DragonTigerResultDragon}).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "ドラゴンの勝ち")
+	assert.NotContains(t, result, "\x1b[32mドラゴンの勝ち", "Player bet Tiger but Dragon won — must not be green")
+}
+
 func TestDragonTigerCuiPresenter_Output_Tie_RefundOnDragonBet(t *testing.T) {
 	p := new(DragonTigerCuiPresenter)
 	m := new(interfaces.MockDragonTigerGame)
