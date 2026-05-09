@@ -7,6 +7,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // skatPlayerStr returns the display string for a single Skat player.
@@ -43,7 +44,7 @@ type SkatCuiPresenter struct{}
 
 // Output renders the game state as a CUI string.
 func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
-	return buildCuiOutput("Skat (スカート)", func(b *strings.Builder) {
+	return buildCuiOutput(i18n.T("skat.helpTitle"), func(b *strings.Builder) {
 		fmt.Fprintf(b, "Round: %d  Trick: %d  Dealer: %d (Fore=%d / Mid=%d / Rear=%d)\n",
 			s.GetRoundNumber(), s.GetTrickNumber(), s.GetDealerIdx(),
 			s.GetForehandIdx(), s.GetMiddlehandIdx(), s.GetRearhandIdx())
@@ -86,10 +87,10 @@ func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 				name := cuiPlayerName(s.GetPlayer(actor), actor)
 				fmt.Fprintf(b, "Bidding: %s's turn\n", name)
 			}
-			b.WriteString("b 0/1 ・・・pass (0) or accept the active bid step (1)\n")
+			b.WriteString("b 0/1 - pass (0) or accept the active bid step (1)\n")
 		case domain.SkatPhaseSkatPickup:
 			b.WriteString("Skat pickup: declarer decides\n")
-			b.WriteString("ps 0/1 ・・・decline (0) or pick up the skat (1)\n")
+			b.WriteString("ps 0/1 - decline (0) or pick up the skat (1)\n")
 		case domain.SkatPhaseDiscard:
 			b.WriteString("Discard 2 cards into the skat\n")
 			b.WriteString("d <i> <j>\n")

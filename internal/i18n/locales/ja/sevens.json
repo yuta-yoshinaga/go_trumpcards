@@ -22,6 +22,7 @@
   "ruleEndStop": "[片側ストップ]",
   "ruleNoConsecutiveJokers": "[ジョーカー連続禁止]",
   "boardLabel": "ボード:",
+  "boardSuitRange": "  {{suit}}: {{min}}〜{{max}}",
   "cpuActionsLabel": "[CPUの行動]",
   "gameEnd": "ゲーム終了！",
   "rankLine": "  {{name}}: {{rank}}位",

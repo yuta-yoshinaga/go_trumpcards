@@ -141,7 +141,10 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	mins := s.GetTableMinVals()
 	maxs := s.GetTableMaxVals()
 	for i, suit := range suits {
-		fmt.Fprintf(&b, "  %s: %d〜%d\n", suitNames[i], mins[suit], maxs[suit])
+		b.WriteString(i18n.Tf("sevens.boardSuitRange",
+			"suit", suitNames[i],
+			"min", strconv.Itoa(mins[suit]),
+			"max", strconv.Itoa(maxs[suit])) + "\n")
 	}
 
 	// Human's previous action
