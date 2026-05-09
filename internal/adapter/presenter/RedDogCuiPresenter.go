@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // RedDogCuiPresenter レッドドッグCUIプレゼンタークラス
@@ -17,22 +19,22 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "chips: %d\n", rd.GetChips())
-	fmt.Fprintf(&sb, "phase: %s\n", rp.phaseStr(rd.GetPhase()))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("reddog.chipsLine", "chips", strconv.Itoa(rd.GetChips())))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("reddog.phaseLine", "phase", rp.phaseStr(rd.GetPhase())))
 	if rd.GetAnte() > 0 {
-		fmt.Fprintf(&sb, "ante: %d", rd.GetAnte())
+		sb.WriteString(i18n.Tf("reddog.anteLine", "ante", strconv.Itoa(rd.GetAnte())))
 		if rd.GetRaise() > 0 {
-			fmt.Fprintf(&sb, "  raise: %d", rd.GetRaise())
+			sb.WriteString(i18n.Tf("reddog.raiseInline", "raise", strconv.Itoa(rd.GetRaise())))
 		}
 		sb.WriteString("\n")
 	}
 	if rd.GetPhase() == domain.RedDogPhaseSpreadDecision || rd.GetPhase() == domain.RedDogPhaseEnd {
-		fmt.Fprintf(&sb, "spread: %d\n", rd.GetSpread())
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("reddog.spreadLine", "spread", strconv.Itoa(rd.GetSpread())))
 	}
 
 	initial := rd.GetInitialCards()
 	if len(initial) > 0 {
-		sb.WriteString("--- " + color.Bold("INITIAL") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("reddog.initialHeader")) + " ---\n")
 		parts := make([]string, len(initial))
 		for i, c := range initial {
 			parts[i] = cuiCardStr(c)
@@ -42,7 +44,7 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	}
 
 	if rd.GetThirdCard() != nil {
-		sb.WriteString("--- " + color.Bold("THIRD") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("reddog.thirdHeader")) + " ---\n")
 		sb.WriteString(cuiCardStr(rd.GetThirdCard()))
 		sb.WriteString("\n")
 	}
@@ -56,13 +58,13 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	if rd.GetGameEndFlag() {
 		switch rd.GetResult() {
 		case domain.GameResultWin:
-			sb.WriteString(color.Green("Player wins!") + "\n")
+			sb.WriteString(color.Green(i18n.T("reddog.playerWins")) + "\n")
 		case domain.GameResultLose:
-			sb.WriteString(color.Red("Player loses.") + "\n")
+			sb.WriteString(color.Red(i18n.T("reddog.playerLoses")) + "\n")
 		default:
-			sb.WriteString(color.Yellow("Push.") + "\n")
+			sb.WriteString(color.Yellow(i18n.T("reddog.push")) + "\n")
 		}
-		fmt.Fprintf(&sb, "total payout: %d\n", rd.GetTotalPayout())
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("reddog.totalPayoutLine", "payout", strconv.Itoa(rd.GetTotalPayout())))
 		sb.WriteString("----------\n")
 	}
 
@@ -78,16 +80,16 @@ func (rp *RedDogCuiPresenter) ActionLogOutput(rd interfaces.RedDogGame) string {
 func (rp *RedDogCuiPresenter) phaseStr(phase int) string {
 	switch phase {
 	case domain.RedDogPhaseBet:
-		return "BET"
+		return i18n.T("reddog.phaseBet")
 	case domain.RedDogPhaseInitialDealt:
-		return "INITIAL DEALT"
+		return i18n.T("reddog.phaseInitialDealt")
 	case domain.RedDogPhaseSpreadDecision:
-		return "SPREAD DECISION"
+		return i18n.T("reddog.phaseSpreadDecision")
 	case domain.RedDogPhasePairThird:
-		return "PAIR THIRD"
+		return i18n.T("reddog.phasePairThird")
 	case domain.RedDogPhaseEnd:
-		return "END"
+		return i18n.T("reddog.phaseEnd")
 	default:
-		return "UNKNOWN"
+		return i18n.T("reddog.phaseUnknown")
 	}
 }
