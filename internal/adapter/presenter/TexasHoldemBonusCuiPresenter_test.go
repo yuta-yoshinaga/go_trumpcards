@@ -40,8 +40,8 @@ func TestTexasHoldemBonusCuiPresenter_Output_BetPhase(t *testing.T) {
 	setupTexasHoldemBonusCuiMockDefaults(m)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "chips: 1000")
-	assert.Contains(t, result, "phase: BET")
+	assert.Contains(t, result, "チップ: 1000")
+	assert.Contains(t, result, "フェーズ: BET")
 }
 
 func TestTexasHoldemBonusCuiPresenter_Output_PreFlopPhase(t *testing.T) {
@@ -75,7 +75,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_PreFlopPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: PRE-FLOP")
+	assert.Contains(t, result, "フェーズ: PRE-FLOP")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "DEALER")
 	// Dealer cards hidden in pre-flop
@@ -117,7 +117,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_FlopPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: FLOP")
+	assert.Contains(t, result, "フェーズ: FLOP")
 	assert.Contains(t, result, "BOARD")
 }
 
@@ -158,9 +158,9 @@ func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: END")
-	assert.Contains(t, result, "Player wins!")
-	assert.Contains(t, result, "total payout: 600")
+	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "プレイヤーの勝ち")
+	assert.Contains(t, result, "合計払戻し: 600")
 }
 
 func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_Fold(t *testing.T) {
@@ -194,7 +194,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_Fold(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Player folded.")
+	assert.Contains(t, result, "プレイヤーがフォールド")
 }
 
 func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_Push(t *testing.T) {
@@ -234,7 +234,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_Push(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Push!")
+	assert.Contains(t, result, "プッシュ")
 }
 
 func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_DealerWins(t *testing.T) {
@@ -274,7 +274,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_DealerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Dealer wins!")
+	assert.Contains(t, result, "ディーラーの勝ち")
 }
 
 func TestTexasHoldemBonusCuiPresenter_Output_Error(t *testing.T) {
@@ -307,5 +307,5 @@ func TestTexasHoldemBonusCuiPresenter_PhaseStr_Unknown(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: UNKNOWN")
+	assert.Contains(t, result, "フェーズ: UNKNOWN")
 }
