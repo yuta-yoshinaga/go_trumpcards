@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -20,13 +19,13 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.chipsLine", "chips", strconv.Itoa(b.GetChips())))
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.phaseLine", "phase", bp.phaseStr(b.GetPhase())))
+	sb.WriteString(i18n.Tf("baccarat.chipsLine", "chips", strconv.Itoa(b.GetChips())) + "\n")
+	sb.WriteString(i18n.Tf("baccarat.phaseLine", "phase", bp.phaseStr(b.GetPhase())) + "\n")
 
 	playerHand := b.GetPlayerHand()
 	if len(playerHand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("baccarat.playerHeader")) + " ---\n")
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.valueLine", "value", strconv.Itoa(b.GetPlayerHandValue())))
+		sb.WriteString(i18n.Tf("baccarat.valueLine", "value", strconv.Itoa(b.GetPlayerHandValue())) + "\n")
 		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
 			parts[i] = cuiCardStr(card)
@@ -38,7 +37,7 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	bankerHand := b.GetBankerHand()
 	if len(bankerHand) > 0 {
 		sb.WriteString("--- " + color.Bold(i18n.T("baccarat.bankerHeader")) + " ---\n")
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.valueLine", "value", strconv.Itoa(b.GetBankerHandValue())))
+		sb.WriteString(i18n.Tf("baccarat.valueLine", "value", strconv.Itoa(b.GetBankerHandValue())) + "\n")
 		parts := make([]string, len(bankerHand))
 		for i, card := range bankerHand {
 			parts[i] = cuiCardStr(card)
@@ -50,14 +49,14 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
+		sb.WriteString(color.Red(lastErr.Error()) + "\n")
 	}
 
 	if b.GetGameEndFlag() {
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.betLine",
+		sb.WriteString(i18n.Tf("baccarat.betLine",
 			"amount", strconv.Itoa(b.GetBetAmount()),
 			"type", bp.betTypeStr(b.GetBetType()),
-		))
+		) + "\n")
 		switch b.GetResult() {
 		case domain.GameResultWin:
 			sb.WriteString(color.Green(i18n.T("baccarat.playerWins")) + "\n")
@@ -67,7 +66,7 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 			sb.WriteString(color.Yellow(i18n.T("baccarat.tie")) + "\n")
 		default:
 		}
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("baccarat.payoutLine", "payout", strconv.Itoa(b.GetPayout())))
+		sb.WriteString(i18n.Tf("baccarat.payoutLine", "payout", strconv.Itoa(b.GetPayout())) + "\n")
 		sb.WriteString("----------\n")
 	}
 
