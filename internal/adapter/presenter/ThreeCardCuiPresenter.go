@@ -1,12 +1,13 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // ThreeCardCuiPresenter スリーカードポーカーCUIプレゼンタークラス
@@ -18,16 +19,15 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "chips: %d\n", tc.GetChips())
-	fmt.Fprintf(&sb, "phase: %s\n", tp.phaseStr(tc.GetPhase()))
+	sb.WriteString(i18n.Tf("threecard.chipsLine", "chips", strconv.Itoa(tc.GetChips())) + "\n")
+	sb.WriteString(i18n.Tf("threecard.phaseLine", "phase", tp.phaseStr(tc.GetPhase())) + "\n")
 
-	// プレイヤーハンド
 	playerHand := tc.GetPlayerHand()
 	if len(playerHand) > 0 {
-		sb.WriteString("--- " + color.Bold("PLAYER") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("threecard.playerHeader")) + " ---\n")
 		rank := tc.GetPlayerHandRank()
 		if rank > 0 && rank < len(domain.ThreeCardHandNames) {
-			fmt.Fprintf(&sb, "hand: %s\n", domain.ThreeCardHandNames[rank])
+			sb.WriteString(i18n.Tf("threecard.handLine", "hand", domain.ThreeCardHandNames[rank]) + "\n")
 		}
 		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
@@ -37,18 +37,17 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 		sb.WriteString("\n")
 	}
 
-	// ディーラーハンド（ENDフェーズのみ表示）
 	dealerHand := tc.GetDealerHand()
 	if len(dealerHand) > 0 && tc.GetPhase() == domain.ThreeCardPhaseEnd {
-		sb.WriteString("--- " + color.Bold("DEALER") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("threecard.dealerHeader")) + " ---\n")
 		rank := tc.GetDealerHandRank()
 		if rank > 0 && rank < len(domain.ThreeCardHandNames) {
-			fmt.Fprintf(&sb, "hand: %s\n", domain.ThreeCardHandNames[rank])
+			sb.WriteString(i18n.Tf("threecard.handLine", "hand", domain.ThreeCardHandNames[rank]) + "\n")
 		}
 		if tc.GetDealerQualified() {
-			sb.WriteString("(Qualified)\n")
+			sb.WriteString(i18n.T("threecard.qualified") + "\n")
 		} else {
-			sb.WriteString("(Not Qualified)\n")
+			sb.WriteString(i18n.T("threecard.notQualified") + "\n")
 		}
 		parts := make([]string, len(dealerHand))
 		for i, card := range dealerHand {
@@ -60,31 +59,29 @@ func (tp *ThreeCardCuiPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 
 	sb.WriteString("----------\n")
 
-	// エラーメッセージ
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
+		sb.WriteString(color.Red(lastErr.Error()) + "\n")
 	}
 
-	// ゲーム結果
 	if tc.GetGameEndFlag() {
-		fmt.Fprintf(&sb, "ante: %d\n", tc.GetAnteBet())
+		sb.WriteString(i18n.Tf("threecard.anteLine", "ante", strconv.Itoa(tc.GetAnteBet())) + "\n")
 		if tc.GetPlayBet() > 0 {
-			fmt.Fprintf(&sb, "play: %d\n", tc.GetPlayBet())
+			sb.WriteString(i18n.Tf("threecard.playLine", "play", strconv.Itoa(tc.GetPlayBet())) + "\n")
 		}
 		switch tc.GetResult() {
 		case domain.GameResultWin:
-			sb.WriteString(color.Green("Player wins!") + "\n")
+			sb.WriteString(color.Green(i18n.T("threecard.playerWins")) + "\n")
 		case domain.GameResultLose:
 			if tc.GetPlayBet() == 0 {
-				sb.WriteString(color.Red("Player folded.") + "\n")
+				sb.WriteString(color.Red(i18n.T("threecard.playerFolded")) + "\n")
 			} else {
-				sb.WriteString(color.Red("Dealer wins!") + "\n")
+				sb.WriteString(color.Red(i18n.T("threecard.dealerWins")) + "\n")
 			}
 		case domain.GameResultDraw:
-			sb.WriteString(color.Yellow("Push!") + "\n")
+			sb.WriteString(color.Yellow(i18n.T("threecard.push")) + "\n")
 		default:
 		}
-		fmt.Fprintf(&sb, "total payout: %d\n", tc.GetTotalPayout())
+		sb.WriteString(i18n.Tf("threecard.totalPayoutLine", "payout", strconv.Itoa(tc.GetTotalPayout())) + "\n")
 		sb.WriteString("----------\n")
 	}
 
@@ -100,12 +97,12 @@ func (tp *ThreeCardCuiPresenter) ActionLogOutput(tc interfaces.ThreeCardGame) st
 func (tp *ThreeCardCuiPresenter) phaseStr(phase int) string {
 	switch phase {
 	case domain.ThreeCardPhaseBet:
-		return "BET"
+		return i18n.T("threecard.phaseBet")
 	case domain.ThreeCardPhaseAction:
-		return "ACTION"
+		return i18n.T("threecard.phaseAction")
 	case domain.ThreeCardPhaseEnd:
-		return "END"
+		return i18n.T("threecard.phaseEnd")
 	default:
-		return "UNKNOWN"
+		return i18n.T("threecard.phaseUnknown")
 	}
 }
