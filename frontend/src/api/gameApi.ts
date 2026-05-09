@@ -6,6 +6,7 @@ import type {
   BakersDozenMoveZone,
   BakersDozenResponse,
   BlackJackResponse,
+  BlackJackSwitchResponse,
   BridgeResponse,
   CalculationMoveZone,
   CalculationResponse,
@@ -175,6 +176,7 @@ const workerUrl: Record<string, string> = {
   bakersdozen: WORKER_SOLO,
   tonk: WORKER_CLASSIC,
   dragontiger: WORKER_CASINO,
+  blackjackswitch: WORKER_CASINO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1479,6 +1481,12 @@ export const dragontigerApi = {
     gameExec<DragonTigerResponse>('dragontiger', { command, amount, betType }),
 };
 
+/** API client for the Blackjack Switch /blackjackswitch/exec endpoint. */
+export const blackjackswitchApi = {
+  exec: (command: 'reset' | 'bet' | 'switch' | 'keep' | 'hit' | 'stand' | 'doubledown' | 'log', amount?: number) =>
+    gameExec<BlackJackSwitchResponse>('blackjackswitch', { command, amount }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1558,6 +1566,7 @@ const games = [
   'casinowar',
   'pitch',
   'dragontiger',
+  'blackjackswitch',
 ] as const;
 type Game = (typeof games)[number];
 

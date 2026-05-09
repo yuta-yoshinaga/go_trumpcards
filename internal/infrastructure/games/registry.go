@@ -164,6 +164,7 @@ var registry = []*Game{
 	{Name: "casinowar", Category: CategoryCasino, Description: "Casino War (カジノウォー)"},
 	{Name: "pitch", Category: CategoryClassic, Description: "Pitch / Setback (ピッチ / セットバック)"},
 	{Name: "dragontiger", Category: CategoryCasino, Description: "Dragon Tiger (ドラゴンタイガー)"},
+	{Name: "blackjackswitch", Category: CategoryCasino, Description: "Blackjack Switch (ブラックジャック・スイッチ)"},
 }
 
 // All returns a value-level copy of the registry in canonical order.

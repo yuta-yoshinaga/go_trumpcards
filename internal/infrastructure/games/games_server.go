@@ -403,4 +403,9 @@ func init() {
 			return usecase.NewDragonTigerInteractor(domain.NewDefaultDragonTiger(), new(presenter.DragonTigerWebPresenter))
 		},
 		controller.NewDragonTigerWebController)
+	BindWebControllerFor("blackjackswitch",
+		func() usecase.BlackJackSwitchInteractorIF {
+			return usecase.NewBlackJackSwitchInteractor(domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchWebPresenter))
+		},
+		controller.NewBlackJackSwitchWebController)
 }

@@ -5,6 +5,7 @@ import type {
   BadugiResponse,
   BakersDozenResponse,
   BlackJackResponse,
+  BlackJackSwitchResponse,
   CalculationResponse,
   CanastaResponse,
   CanfieldResponse,
@@ -74,6 +75,7 @@ import { getBaccaratHint } from '../utils/hints/baccaratHint';
 import { getBadugiHint } from '../utils/hints/badugiHint';
 import { getBakersdozenHint } from '../utils/hints/bakersdozenHint';
 import { getBlackjackHint } from '../utils/hints/blackjackHint';
+import { getBlackjackswitchHint } from '../utils/hints/blackjackswitchHint';
 import { getCalculationHint } from '../utils/hints/calculationHint';
 import { getCanastaHint } from '../utils/hints/canastaHint';
 import { getCanfieldHint } from '../utils/hints/canfieldHint';
@@ -205,6 +207,7 @@ const hintFactories = {
   reddog: (s) => getReddogHint(s as RedDogResponse),
   casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
   dragontiger: (s) => getDragontigerHint(s as DragonTigerResponse),
+  blackjackswitch: (s) => getBlackjackswitchHint(s as BlackJackSwitchResponse),
   war: (s) => getWarHint(s as WarResponse),
   whist: (s) => getWhistHint(s as WhistResponse),
   yukon: (s) => getYukonHint(s as YukonResponse),

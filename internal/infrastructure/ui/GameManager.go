@@ -1255,6 +1255,23 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "blackjackswitch", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewBlackJackSwitchCuiController(usecase.NewBlackJackSwitchInteractor(
+				domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "blackjackswitch.helpTitle",
+				CommandKeys: []string{
+					"blackjackswitch.helpBet",
+					"blackjackswitch.helpSwitch",
+					"blackjackswitch.helpKeep",
+					"blackjackswitch.helpHit",
+					"blackjackswitch.helpStand",
+					"blackjackswitch.helpDoubleDown",
+				},
+				ExtraCommandLines: []string{"  log                  action log"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.
