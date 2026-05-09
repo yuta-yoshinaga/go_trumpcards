@@ -29,8 +29,8 @@ func TestVideoPokerCuiPresenter_Output_BetPhase(t *testing.T) {
 	setupVideoPokerCuiMockDefaults(m)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "chips: 1000")
-	assert.Contains(t, result, "phase: BET")
+	assert.Contains(t, result, "チップ: 1000")
+	assert.Contains(t, result, "フェーズ: ベット")
 }
 
 func TestVideoPokerCuiPresenter_Output_DrawPhase_WithHand(t *testing.T) {
@@ -55,9 +55,9 @@ func TestVideoPokerCuiPresenter_Output_DrawPhase_WithHand(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: DRAW")
-	assert.Contains(t, result, "[HOLD]")
-	assert.Contains(t, result, "HAND")
+	assert.Contains(t, result, "フェーズ: ドロー")
+	assert.Contains(t, result, "[ホールド]")
+	assert.Contains(t, result, "手札")
 }
 
 func TestVideoPokerCuiPresenter_Output_ResultPhase_Win(t *testing.T) {
@@ -82,9 +82,9 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: RESULT")
-	assert.Contains(t, result, "Four of a Kind! You win!")
-	assert.Contains(t, result, "payout: 25")
+	assert.Contains(t, result, "フェーズ: リザルト")
+	assert.Contains(t, result, "Four of a Kind! あなたの勝利です！")
+	assert.Contains(t, result, "払戻し: 25")
 }
 
 func TestVideoPokerCuiPresenter_Output_ResultPhase_Lose(t *testing.T) {
@@ -109,8 +109,8 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Lose(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "No winning hand.")
-	assert.Contains(t, result, "payout: 0")
+	assert.Contains(t, result, "役なし。")
+	assert.Contains(t, result, "払戻し: 0")
 }
 
 func TestVideoPokerCuiPresenter_Output_Error(t *testing.T) {
@@ -124,10 +124,10 @@ func TestVideoPokerCuiPresenter_Output_Error(t *testing.T) {
 
 func TestVideoPokerCuiPresenter_phaseStr(t *testing.T) {
 	p := new(VideoPokerCuiPresenter)
-	assert.Equal(t, "BET", p.phaseStr(domain.VideoPokerPhaseBet))
-	assert.Equal(t, "DRAW", p.phaseStr(domain.VideoPokerPhaseDraw))
-	assert.Equal(t, "RESULT", p.phaseStr(domain.VideoPokerPhaseResult))
-	assert.Equal(t, "UNKNOWN", p.phaseStr(99))
+	assert.Equal(t, "ベット", p.phaseStr(domain.VideoPokerPhaseBet))
+	assert.Equal(t, "ドロー", p.phaseStr(domain.VideoPokerPhaseDraw))
+	assert.Equal(t, "リザルト", p.phaseStr(domain.VideoPokerPhaseResult))
+	assert.Equal(t, "不明", p.phaseStr(99))
 }
 
 func TestVideoPokerCuiPresenter_ActionLogOutput(t *testing.T) {

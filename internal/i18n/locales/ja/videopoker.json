@@ -1,5 +1,17 @@
 {
   "helpTitle": "Video Poker (ビデオポーカー)",
   "helpBet": "  b <coins>            1〜5コインを賭けてディール",
-  "helpHold": "  h [0 1 2 3 4]       ホールドするカードのインデックス (空 = 全てホールド)"
+  "helpHold": "  h [0 1 2 3 4]       ホールドするカードのインデックス (空 = 全てホールド)",
+  "chipsLine": "チップ: {{chips}}",
+  "phaseLine": "フェーズ: {{phase}}",
+  "phaseBet": "ベット",
+  "phaseDraw": "ドロー",
+  "phaseResult": "リザルト",
+  "phaseUnknown": "不明",
+  "handHeader": "--- 手札 ---",
+  "holdLabel": "[ホールド]",
+  "betLine": "ベット: {{bet}} コイン",
+  "winLine": "{{handName}}! あなたの勝利です！",
+  "noWin": "役なし。",
+  "payoutLine": "払戻し: {{payout}}"
 }
