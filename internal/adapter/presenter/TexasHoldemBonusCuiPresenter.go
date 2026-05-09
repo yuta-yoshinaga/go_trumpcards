@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // TexasHoldemBonusCuiPresenter テキサスホールデムボーナスポーカーCUIプレゼンタークラス
@@ -17,11 +19,11 @@ func (tp *TexasHoldemBonusCuiPresenter) Output(g interfaces.TexasHoldemBonusGame
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "chips: %d\n", g.GetChips())
-	fmt.Fprintf(&sb, "phase: %s\n", tp.phaseStr(g.GetPhase()))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.chipsLine", "chips", strconv.Itoa(g.GetChips())))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.phaseLine", "phase", tp.phaseStr(g.GetPhase())))
 
 	if community := g.GetCommunity(); len(community) > 0 {
-		sb.WriteString("--- " + color.Bold("BOARD") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("texasholdembonus.boardHeader")) + " ---\n")
 		parts := make([]string, len(community))
 		for i, card := range community {
 			parts[i] = cuiCardStr(card)
@@ -31,11 +33,11 @@ func (tp *TexasHoldemBonusCuiPresenter) Output(g interfaces.TexasHoldemBonusGame
 	}
 
 	if playerHand := g.GetPlayerHand(); len(playerHand) > 0 {
-		sb.WriteString("--- " + color.Bold("PLAYER") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("texasholdembonus.playerHeader")) + " ---\n")
 		if g.GetPhase() == domain.TexasHoldemBonusPhaseEnd {
 			rank := g.GetPlayerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "hand: %s\n", domain.PokerHandNames[rank])
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.handLine", "hand", domain.PokerHandNames[rank]))
 			}
 		}
 		parts := make([]string, len(playerHand))
@@ -47,11 +49,11 @@ func (tp *TexasHoldemBonusCuiPresenter) Output(g interfaces.TexasHoldemBonusGame
 	}
 
 	if dealerHand := g.GetDealerHand(); len(dealerHand) > 0 {
-		sb.WriteString("--- " + color.Bold("DEALER") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("texasholdembonus.dealerHeader")) + " ---\n")
 		if g.GetPhase() == domain.TexasHoldemBonusPhaseEnd {
 			rank := g.GetDealerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "hand: %s\n", domain.PokerHandNames[rank])
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.handLine", "hand", domain.PokerHandNames[rank]))
 			}
 			parts := make([]string, len(dealerHand))
 			for i, card := range dealerHand {
@@ -76,27 +78,27 @@ func (tp *TexasHoldemBonusCuiPresenter) Output(g interfaces.TexasHoldemBonusGame
 	}
 
 	if g.GetGameEndFlag() {
-		fmt.Fprintf(&sb, "ante: %d\n", g.GetAnteBet())
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.anteLine", "ante", strconv.Itoa(g.GetAnteBet())))
 		if g.GetBonusBet() > 0 {
-			fmt.Fprintf(&sb, "bonus: %d\n", g.GetBonusBet())
+			fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.bonusLine", "bonus", strconv.Itoa(g.GetBonusBet())))
 		}
 		if play := g.GetTotalPlayBet(); play > 0 {
-			fmt.Fprintf(&sb, "play bets: %d\n", play)
+			fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.playBetsLine", "play", strconv.Itoa(play)))
 		}
 		switch g.GetResult() {
 		case domain.GameResultWin:
-			sb.WriteString(color.Green("Player wins!") + "\n")
+			sb.WriteString(color.Green(i18n.T("texasholdembonus.playerWins")) + "\n")
 		case domain.GameResultLose:
 			if g.GetTotalPlayBet() == 0 {
-				sb.WriteString(color.Red("Player folded.") + "\n")
+				sb.WriteString(color.Red(i18n.T("texasholdembonus.playerFolded")) + "\n")
 			} else {
-				sb.WriteString(color.Red("Dealer wins!") + "\n")
+				sb.WriteString(color.Red(i18n.T("texasholdembonus.dealerWins")) + "\n")
 			}
 		case domain.GameResultDraw:
-			sb.WriteString(color.Yellow("Push!") + "\n")
+			sb.WriteString(color.Yellow(i18n.T("texasholdembonus.push")) + "\n")
 		default:
 		}
-		fmt.Fprintf(&sb, "total payout: %d\n", g.GetTotalPayout())
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.totalPayoutLine", "payout", strconv.Itoa(g.GetTotalPayout())))
 		sb.WriteString("----------\n")
 	}
 
@@ -112,16 +114,16 @@ func (tp *TexasHoldemBonusCuiPresenter) ActionLogOutput(g interfaces.TexasHoldem
 func (tp *TexasHoldemBonusCuiPresenter) phaseStr(phase int) string {
 	switch phase {
 	case domain.TexasHoldemBonusPhaseBet:
-		return "BET"
+		return i18n.T("texasholdembonus.phaseBet")
 	case domain.TexasHoldemBonusPhasePreFlop:
-		return "PRE-FLOP"
+		return i18n.T("texasholdembonus.phasePreFlop")
 	case domain.TexasHoldemBonusPhaseFlop:
-		return "FLOP"
+		return i18n.T("texasholdembonus.phaseFlop")
 	case domain.TexasHoldemBonusPhaseTurn:
-		return "TURN"
+		return i18n.T("texasholdembonus.phaseTurn")
 	case domain.TexasHoldemBonusPhaseEnd:
-		return "END"
+		return i18n.T("texasholdembonus.phaseEnd")
 	default:
-		return "UNKNOWN"
+		return i18n.T("texasholdembonus.phaseUnknown")
 	}
 }
