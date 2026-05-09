@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // CasinoWarCuiPresenter カジノウォーCUIプレゼンタークラス
@@ -17,28 +19,28 @@ func (cp *CasinoWarCuiPresenter) Output(cw interfaces.CasinoWarGame, lastErr err
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "chips: %d\n", cw.GetChips())
-	fmt.Fprintf(&sb, "phase: %s\n", cp.phaseStr(cw.GetPhase()))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.chipsLine", "chips", strconv.Itoa(cw.GetChips())))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.phaseLine", "phase", cp.phaseStr(cw.GetPhase())))
 	if cw.GetAnte() > 0 {
-		fmt.Fprintf(&sb, "ante: %d", cw.GetAnte())
+		sb.WriteString(i18n.Tf("casinowar.anteLine", "ante", strconv.Itoa(cw.GetAnte())))
 		if cw.GetWarBet() > 0 {
-			fmt.Fprintf(&sb, "  warBet: %d", cw.GetWarBet())
+			sb.WriteString(i18n.Tf("casinowar.warBetInline", "warBet", strconv.Itoa(cw.GetWarBet())))
 		}
 		sb.WriteString("\n")
 	}
 
 	if pc, dc := cw.GetPlayerCard(), cw.GetDealerCard(); pc != nil || dc != nil {
-		sb.WriteString("--- " + color.Bold("INITIAL") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("casinowar.initialHeader")) + " ---\n")
 		if pc != nil {
-			fmt.Fprintf(&sb, "player: %s\n", cuiCardStr(pc))
+			fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.playerLine", "card", cuiCardStr(pc)))
 		}
 		if dc != nil {
-			fmt.Fprintf(&sb, "dealer: %s\n", cuiCardStr(dc))
+			fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.dealerLine", "card", cuiCardStr(dc)))
 		}
 	}
 
 	if burn := cw.GetBurnCards(); len(burn) > 0 {
-		sb.WriteString("--- " + color.Bold("BURN") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("casinowar.burnHeader")) + " ---\n")
 		parts := make([]string, len(burn))
 		for i, c := range burn {
 			parts[i] = cuiCardStr(c)
@@ -48,12 +50,12 @@ func (cp *CasinoWarCuiPresenter) Output(cw interfaces.CasinoWarGame, lastErr err
 	}
 
 	if pw, dw := cw.GetPlayerWarCard(), cw.GetDealerWarCard(); pw != nil || dw != nil {
-		sb.WriteString("--- " + color.Bold("WAR") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("casinowar.warHeader")) + " ---\n")
 		if pw != nil {
-			fmt.Fprintf(&sb, "player: %s\n", cuiCardStr(pw))
+			fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.playerLine", "card", cuiCardStr(pw)))
 		}
 		if dw != nil {
-			fmt.Fprintf(&sb, "dealer: %s\n", cuiCardStr(dw))
+			fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.dealerLine", "card", cuiCardStr(dw)))
 		}
 	}
 
@@ -66,13 +68,13 @@ func (cp *CasinoWarCuiPresenter) Output(cw interfaces.CasinoWarGame, lastErr err
 	if cw.GetGameEndFlag() {
 		switch cw.GetResult() {
 		case domain.GameResultWin:
-			sb.WriteString(color.Green("Player wins!") + "\n")
+			sb.WriteString(color.Green(i18n.T("casinowar.playerWins")) + "\n")
 		case domain.GameResultLose:
-			sb.WriteString(color.Red("Player loses.") + "\n")
+			sb.WriteString(color.Red(i18n.T("casinowar.playerLoses")) + "\n")
 		default:
-			sb.WriteString(color.Yellow("Push.") + "\n")
+			sb.WriteString(color.Yellow(i18n.T("casinowar.push")) + "\n")
 		}
-		fmt.Fprintf(&sb, "total payout: %d\n", cw.GetTotalPayout())
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.totalPayoutLine", "payout", strconv.Itoa(cw.GetTotalPayout())))
 		sb.WriteString("----------\n")
 	}
 
@@ -88,16 +90,16 @@ func (cp *CasinoWarCuiPresenter) ActionLogOutput(cw interfaces.CasinoWarGame) st
 func (cp *CasinoWarCuiPresenter) phaseStr(phase int) string {
 	switch phase {
 	case domain.CasinoWarPhaseBet:
-		return "BET"
+		return i18n.T("casinowar.phaseBet")
 	case domain.CasinoWarPhaseInitialDealt:
-		return "INITIAL DEALT"
+		return i18n.T("casinowar.phaseInitialDealt")
 	case domain.CasinoWarPhaseTieDecision:
-		return "TIE DECISION"
+		return i18n.T("casinowar.phaseTieDecision")
 	case domain.CasinoWarPhaseWarDealt:
-		return "WAR DEALT"
+		return i18n.T("casinowar.phaseWarDealt")
 	case domain.CasinoWarPhaseEnd:
-		return "END"
+		return i18n.T("casinowar.phaseEnd")
 	default:
-		return "UNKNOWN"
+		return i18n.T("casinowar.phaseUnknown")
 	}
 }
