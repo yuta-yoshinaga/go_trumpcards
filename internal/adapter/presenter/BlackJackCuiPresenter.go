@@ -74,10 +74,10 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 
 	config := bj.GetConfig()
 	if config.DealerHitsSoft17 {
-		b.WriteString(i18n.T("blackjack.ruleH17") + "\n")
+		fmt.Fprintf(&b, "%s\n", i18n.T("blackjack.ruleH17"))
 	}
 	if !config.DoubleAfterSplit {
-		b.WriteString(i18n.T("blackjack.ruleNoDAS") + "\n")
+		fmt.Fprintf(&b, "%s\n", i18n.T("blackjack.ruleNoDAS"))
 	}
 	if config.DeckPenetration != 0 && config.DeckPenetration != domain.BJDefaultPenetration {
 		fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.rulePenetration", "percent", strconv.Itoa(config.DeckPenetration)))
@@ -160,7 +160,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.insuranceBetLine", "bet", strconv.Itoa(bj.GetInsuranceBet())))
 	}
 	if bj.IsInsuranceAvailable() && bj.GetPhase() == domain.BJPhaseInsurance {
-		b.WriteString(i18n.T("blackjack.insuranceAvailable") + "\n")
+		fmt.Fprintf(&b, "%s\n", i18n.T("blackjack.insuranceAvailable"))
 	}
 
 	sideBetResults := bj.GetSideBetResults()
