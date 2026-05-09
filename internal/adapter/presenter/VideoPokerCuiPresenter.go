@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -20,8 +19,8 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("videopoker.chipsLine", "chips", strconv.Itoa(vp.GetChips())))
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("videopoker.phaseLine", "phase", vpp.phaseStr(vp.GetPhase())))
+	sb.WriteString(i18n.Tf("videopoker.chipsLine", "chips", strconv.Itoa(vp.GetChips())) + "\n")
+	sb.WriteString(i18n.Tf("videopoker.phaseLine", "phase", vpp.phaseStr(vp.GetPhase())) + "\n")
 
 	hand := vp.GetHand()
 	if len(hand) > 0 {
@@ -43,17 +42,17 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
+		sb.WriteString(color.Red(lastErr.Error()) + "\n")
 	}
 
 	if vp.GetGameEndFlag() {
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("videopoker.betLine", "bet", strconv.Itoa(vp.GetBetAmount())))
+		sb.WriteString(i18n.Tf("videopoker.betLine", "bet", strconv.Itoa(vp.GetBetAmount())) + "\n")
 		if vp.GetResult() == domain.GameResultWin {
-			fmt.Fprintf(&sb, "%s\n", color.Green(i18n.Tf("videopoker.winLine", "handName", vp.GetHandName())))
+			sb.WriteString(color.Green(i18n.Tf("videopoker.winLine", "handName", vp.GetHandName())) + "\n")
 		} else {
 			sb.WriteString(color.Red(i18n.T("videopoker.noWin")) + "\n")
 		}
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("videopoker.payoutLine", "payout", strconv.Itoa(vp.GetPayout())))
+		sb.WriteString(i18n.Tf("videopoker.payoutLine", "payout", strconv.Itoa(vp.GetPayout())) + "\n")
 		sb.WriteString("----------\n")
 	}
 
