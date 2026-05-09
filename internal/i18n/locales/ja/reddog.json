@@ -2,5 +2,22 @@
   "helpTitle": "Red Dog (レッドドッグ) コマンド",
   "helpBet": "  b <金額>             ベット (アンテを賭けて2枚配る)",
   "helpRaise": "  raise <金額>         レイズ (最大アンテと同額)",
-  "helpStay": "  s                    ステイ (レイズせず3枚目を引く)"
+  "helpStay": "  s                    ステイ (レイズせず3枚目を引く)",
+  "chipsLine": "チップ: {{chips}}",
+  "phaseLine": "フェーズ: {{phase}}",
+  "anteLine": "アンテ: {{ante}}",
+  "raiseInline": "  レイズ: {{raise}}",
+  "spreadLine": "スプレッド: {{spread}}",
+  "initialHeader": "INITIAL",
+  "thirdHeader": "THIRD",
+  "phaseBet": "BET",
+  "phaseInitialDealt": "INITIAL DEALT",
+  "phaseSpreadDecision": "SPREAD DECISION",
+  "phasePairThird": "PAIR THIRD",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "playerWins": "プレイヤーの勝ち！",
+  "playerLoses": "プレイヤーの負け。",
+  "push": "プッシュ。",
+  "totalPayoutLine": "合計払戻し: {{payout}}"
 }

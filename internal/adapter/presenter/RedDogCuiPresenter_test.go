@@ -30,7 +30,7 @@ func TestRedDogCuiPresenter_Output_BetPhase(t *testing.T) {
 	setupRedDogCuiMockDefaults(m)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "chips: 1000")
+	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "BET")
 }
 
@@ -63,8 +63,8 @@ func TestRedDogCuiPresenter_Output_SpreadDecision(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "SPREAD DECISION")
 	assert.Contains(t, result, "INITIAL")
-	assert.Contains(t, result, "spread: 4")
-	assert.Contains(t, result, "ante: 100")
+	assert.Contains(t, result, "スプレッド: 4")
+	assert.Contains(t, result, "アンテ: 100")
 }
 
 func TestRedDogCuiPresenter_Output_EndWin(t *testing.T) {
@@ -87,10 +87,10 @@ func TestRedDogCuiPresenter_Output_EndWin(t *testing.T) {
 	m.On("GetTotalPayout").Return(400)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Player wins")
+	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "THIRD")
-	assert.Contains(t, result, "raise: 100")
-	assert.Contains(t, result, "total payout: 400")
+	assert.Contains(t, result, "レイズ: 100")
+	assert.Contains(t, result, "合計払戻し: 400")
 }
 
 func TestRedDogCuiPresenter_Output_EndLose(t *testing.T) {
@@ -109,7 +109,7 @@ func TestRedDogCuiPresenter_Output_EndLose(t *testing.T) {
 	m2.On("GetResult").Return(domain.GameResultLose)
 	m2.On("GetTotalPayout").Return(0)
 	result := p.Output(m2, nil)
-	assert.Contains(t, result, "Player loses")
+	assert.Contains(t, result, "プレイヤーの負け")
 }
 
 func TestRedDogCuiPresenter_Output_EndPush(t *testing.T) {
@@ -126,7 +126,7 @@ func TestRedDogCuiPresenter_Output_EndPush(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultDraw)
 	m.On("GetTotalPayout").Return(100)
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Push")
+	assert.Contains(t, result, "プッシュ")
 }
 
 func TestRedDogCuiPresenter_PhaseStr_AllBranches(t *testing.T) {
