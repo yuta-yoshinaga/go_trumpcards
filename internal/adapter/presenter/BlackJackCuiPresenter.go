@@ -8,25 +8,26 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // bjHandStatusStr returns space-prefixed hand status tags like " [DD] [BUST]".
 func bjHandStatusStr(hand *domain.BlackJackHand) string {
 	var parts []string
 	if hand.IsDoubled() {
-		parts = append(parts, color.BoldYellow("[DD]"))
+		parts = append(parts, color.BoldYellow(i18n.T("blackjack.handStatusDD")))
 	}
 	if hand.IsBusted() {
-		parts = append(parts, color.BoldYellow("[BUST]"))
+		parts = append(parts, color.BoldYellow(i18n.T("blackjack.handStatusBust")))
 	}
 	if hand.IsStood() {
-		parts = append(parts, color.BoldYellow("[STAND]"))
+		parts = append(parts, color.BoldYellow(i18n.T("blackjack.handStatusStand")))
 	}
 	if hand.IsBlackJack() {
-		parts = append(parts, color.BoldYellow("[BJ]"))
+		parts = append(parts, color.BoldYellow(i18n.T("blackjack.handStatusBJ")))
 	}
 	if hand.IsSurrendered() {
-		parts = append(parts, color.BoldYellow("[SURRENDER]"))
+		parts = append(parts, color.BoldYellow(i18n.T("blackjack.handStatusSurrender")))
 	}
 	if len(parts) == 0 {
 		return ""
@@ -37,16 +38,16 @@ func bjHandStatusStr(hand *domain.BlackJackHand) string {
 // bjMultiHandResultStr returns the result string for multi-hand games.
 func bjMultiHandResultStr(bj interfaces.BlackJackGame, handCount int) string {
 	var b strings.Builder
-	for i := 0; i < handCount; i++ {
+	for i := range handCount {
 		result := bj.GameJudgmentForHand(i)
-		fmt.Fprintf(&b, "hand %d: ", i+1)
+		b.WriteString(i18n.Tf("blackjack.multiHandResultPrefix", "idx", strconv.Itoa(i+1)))
 		switch result {
 		case domain.GameResultDraw:
-			b.WriteString(color.Yellow("It is a draw."))
+			b.WriteString(color.Yellow(i18n.T("blackjack.resultDraw")))
 		case domain.GameResultWin:
-			b.WriteString(color.Green("You are the winner."))
+			b.WriteString(color.Green(i18n.T("blackjack.resultWin")))
 		case domain.GameResultLose:
-			b.WriteString(color.Red("It is your loss."))
+			b.WriteString(color.Red(i18n.T("blackjack.resultLose")))
 		}
 		b.WriteString("\n")
 	}
@@ -65,39 +66,45 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 
 	b.WriteString("----------\n")
 
-	// チップ情報
-	fmt.Fprintf(&b, "chips: player=%d dealer=%d decks=%d\n", player.GetChips(), dealer.GetChips(), bj.GetDeckCount())
+	fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.chipsLine",
+		"player", strconv.Itoa(player.GetChips()),
+		"dealer", strconv.Itoa(dealer.GetChips()),
+		"decks", strconv.Itoa(bj.GetDeckCount()),
+	))
 
-	// 設定情報
 	config := bj.GetConfig()
 	if config.DealerHitsSoft17 {
-		b.WriteString("rule: H17 (Dealer hits soft 17)\n")
+		b.WriteString(i18n.T("blackjack.ruleH17") + "\n")
 	}
 	if !config.DoubleAfterSplit {
-		b.WriteString("rule: No DAS (No double after split)\n")
+		b.WriteString(i18n.T("blackjack.ruleNoDAS") + "\n")
 	}
 	if config.DeckPenetration != 0 && config.DeckPenetration != domain.BJDefaultPenetration {
-		fmt.Fprintf(&b, "rule: Penetration %d%%\n", config.DeckPenetration)
+		fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.rulePenetration", "percent", strconv.Itoa(config.DeckPenetration)))
 	}
 	if config.CountingEnabled {
 		sysName := countingSystemName(config.CountingSystem)
 		if domain.IsBalancedCountingSystem(config.CountingSystem) {
-			fmt.Fprintf(&b, "count (%s): RC=%d TC=%.1f\n", sysName, bj.GetRunningCount(), bj.GetTrueCount())
+			fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.countWithTrueCount",
+				"system", sysName,
+				"rc", strconv.Itoa(bj.GetRunningCount()),
+				"tc", fmt.Sprintf("%.1f", bj.GetTrueCount()),
+			))
 		} else {
-			fmt.Fprintf(&b, "count (%s): RC=%d TC=N/A\n", sysName, bj.GetRunningCount())
+			fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.countNoTrueCount",
+				"system", sysName,
+				"rc", strconv.Itoa(bj.GetRunningCount()),
+			))
 		}
 	}
 
-	// マルチハンド情報
 	if bj.GetMultiHandCount() > 1 {
-		fmt.Fprintf(&b, "multi-hand: %d hands\n", bj.GetMultiHandCount())
+		fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.multiHandLine", "count", strconv.Itoa(bj.GetMultiHandCount())))
 	}
 
-	// フェーズ情報
-	fmt.Fprintf(&b, "phase: %s\n", bjp.phaseStr(bj.GetPhase()))
+	fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.phaseLine", "phase", bjp.phaseStr(bj.GetPhase())))
 
-	// dealer
-	b.WriteString(color.Bold("dealer") + " score ")
+	b.WriteString(color.Bold(i18n.T("blackjack.dealerLabel")) + i18n.T("blackjack.scoreSuffix"))
 	if bj.GetGameEndFlag() {
 		fmt.Fprintf(&b, "%d\n", dealer.GetScore())
 		b.WriteString(cuiCardListStr(dealer))
@@ -110,61 +117,76 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	}
 	b.WriteString("----------\n")
 
-	// player hands
 	hands := bj.GetPlayerHands()
 	for i, hand := range hands {
-		prefix := color.Bold("player")
+		prefix := color.Bold(i18n.T("blackjack.playerLabel"))
 		if len(hands) > 1 {
-			prefix = color.Bold("hand " + strconv.Itoa(i+1))
+			prefix = color.Bold(i18n.Tf("blackjack.handLabel", "idx", strconv.Itoa(i+1)))
 		}
 		if i == bj.GetCurrentHandIdx() && !bj.GetGameEndFlag() {
-			prefix += " (*)"
+			prefix += i18n.T("blackjack.currentHandMarker")
 		}
-		fmt.Fprintf(&b, "%s score %d bet=%d%s\n", prefix, hand.GetScore(), hand.GetBet(), bjHandStatusStr(hand))
+		fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.playerHandLine",
+			"prefix", prefix,
+			"score", strconv.Itoa(hand.GetScore()),
+			"bet", strconv.Itoa(hand.GetBet()),
+			"status", bjHandStatusStr(hand),
+		))
 		b.WriteString(cuiCardListStr(hand))
 		b.WriteString("\n")
 	}
 
-	// CPUプレイヤー
 	cpuPlayers := bj.GetCpuPlayers()
 	for cpuIdx, cpu := range cpuPlayers {
+		cpuName := color.Bold(i18n.Tf("blackjack.cpuLabel", "idx", strconv.Itoa(cpuIdx+1)))
 		if cpu.GetInsuranceBet() > 0 {
-			fmt.Fprintf(&b, "--- %s (chips: %d, insurance: %d) ---\n", color.Bold(fmt.Sprintf("CPU %d", cpuIdx+1)), cpu.GetPlayer().GetChips(), cpu.GetInsuranceBet())
+			fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.cpuHeaderWithInsurance",
+				"name", cpuName,
+				"chips", strconv.Itoa(cpu.GetPlayer().GetChips()),
+				"insurance", strconv.Itoa(cpu.GetInsuranceBet()),
+			))
 		} else {
-			fmt.Fprintf(&b, "--- %s (chips: %d) ---\n", color.Bold(fmt.Sprintf("CPU %d", cpuIdx+1)), cpu.GetPlayer().GetChips())
+			fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.cpuHeader",
+				"name", cpuName,
+				"chips", strconv.Itoa(cpu.GetPlayer().GetChips()),
+			))
 		}
 		writeBJCpuHands(&b, bj, cpuIdx, cpu)
 	}
 
 	b.WriteString("----------\n")
 
-	// インシュランス情報
 	if bj.GetInsuranceBet() > 0 {
-		fmt.Fprintf(&b, "insurance bet: %d\n", bj.GetInsuranceBet())
+		fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.insuranceBetLine", "bet", strconv.Itoa(bj.GetInsuranceBet())))
 	}
 	if bj.IsInsuranceAvailable() && bj.GetPhase() == domain.BJPhaseInsurance {
-		b.WriteString("Insurance available!\n")
+		b.WriteString(i18n.T("blackjack.insuranceAvailable") + "\n")
 	}
 
-	// サイドベット情報
 	sideBetResults := bj.GetSideBetResults()
 	for _, r := range sideBetResults {
 		if r.Payout > 0 {
-			fmt.Fprintf(&b, "side bet [%s]: %s WIN +%d (bet=%d)\n", r.BetTypeName(), r.ResultName, r.Payout, r.BetAmount)
+			fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.sideBetWin",
+				"type", r.BetTypeName(),
+				"result", r.ResultName,
+				"payout", strconv.Itoa(r.Payout),
+				"bet", strconv.Itoa(r.BetAmount),
+			))
 		} else {
-			fmt.Fprintf(&b, "side bet [%s]: LOSE -%d\n", r.BetTypeName(), r.BetAmount)
+			fmt.Fprintf(&b, "%s\n", i18n.Tf("blackjack.sideBetLose",
+				"type", r.BetTypeName(),
+				"bet", strconv.Itoa(r.BetAmount),
+			))
 		}
 	}
 
-	// ヒント情報
 	if bj.IsHintEnabled() {
 		suggestion := bj.GetBasicStrategySuggestion()
 		if suggestion != domain.BJSuggestNone {
-			fmt.Fprintf(&b, "%s\n", color.Yellow("[HINT: "+bjp.suggestionStr(suggestion)+"]"))
+			fmt.Fprintf(&b, "%s\n", color.Yellow(i18n.Tf("blackjack.hintLine", "action", bjp.suggestionStr(suggestion))))
 		}
 	}
 
-	// エラーメッセージ（ベット失敗等）
 	if lastErr != nil {
 		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
 	}
@@ -175,11 +197,11 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		} else {
 			switch bj.GameJudgment() {
 			case domain.GameResultDraw:
-				b.WriteString(color.Yellow("It is a draw.") + "\n")
+				b.WriteString(color.Yellow(i18n.T("blackjack.resultDraw")) + "\n")
 			case domain.GameResultWin:
-				b.WriteString(color.Green("You are the winner.") + "\n")
+				b.WriteString(color.Green(i18n.T("blackjack.resultWin")) + "\n")
 			case domain.GameResultLose:
-				b.WriteString(color.Red("It is your loss.") + "\n")
+				b.WriteString(color.Red(i18n.T("blackjack.resultLose")) + "\n")
 			}
 		}
 		b.WriteString("\n----------\n")
@@ -190,11 +212,18 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 // writeBJCpuHands CPUハンド一覧を出力
 func writeBJCpuHands(b *strings.Builder, bj interfaces.BlackJackGame, cpuIdx int, cpu *domain.BlackJackCpuSeat) {
 	for hi, hand := range cpu.GetHands() {
-		prefix := fmt.Sprintf("CPU %d", cpuIdx+1)
+		var prefix string
 		if len(cpu.GetHands()) > 1 {
-			prefix = fmt.Sprintf("CPU %d hand %d", cpuIdx+1, hi+1)
+			prefix = i18n.Tf("blackjack.cpuHandLabel", "cpu", strconv.Itoa(cpuIdx+1), "idx", strconv.Itoa(hi+1))
+		} else {
+			prefix = i18n.Tf("blackjack.cpuLabel", "idx", strconv.Itoa(cpuIdx+1))
 		}
-		fmt.Fprintf(b, "%s score %d bet=%d%s\n", prefix, hand.GetScore(), hand.GetBet(), bjHandStatusStr(hand))
+		fmt.Fprintf(b, "%s\n", i18n.Tf("blackjack.cpuLine",
+			"prefix", prefix,
+			"score", strconv.Itoa(hand.GetScore()),
+			"bet", strconv.Itoa(hand.GetBet()),
+			"status", bjHandStatusStr(hand),
+		))
 		if bj.GetGameEndFlag() || bj.GetPhase() != domain.BJPhaseBet {
 			b.WriteString(cuiCardListStr(hand))
 			b.WriteString("\n")
@@ -211,19 +240,19 @@ func (bjp *BlackJackCuiPresenter) ActionLogOutput(bj interfaces.BlackJackGame) s
 func (bjp *BlackJackCuiPresenter) phaseStr(phase int) string {
 	switch phase {
 	case domain.BJPhaseBet:
-		return "BET"
+		return i18n.T("blackjack.phaseBet")
 	case domain.BJPhaseDeal:
-		return "DEAL"
+		return i18n.T("blackjack.phaseDeal")
 	case domain.BJPhaseInsurance:
-		return "INSURANCE"
+		return i18n.T("blackjack.phaseInsurance")
 	case domain.BJPhaseAction:
-		return "ACTION"
+		return i18n.T("blackjack.phaseAction")
 	case domain.BJPhaseEnd:
-		return "END"
+		return i18n.T("blackjack.phaseEnd")
 	case domain.BJPhaseEarlySurrender:
-		return "EARLY SURRENDER"
+		return i18n.T("blackjack.phaseEarlySurrender")
 	default:
-		return "UNKNOWN"
+		return i18n.T("blackjack.phaseUnknown")
 	}
 }
 
@@ -231,13 +260,13 @@ func (bjp *BlackJackCuiPresenter) phaseStr(phase int) string {
 func countingSystemName(system int) string {
 	switch system {
 	case domain.BJCountingKO:
-		return "KO"
+		return i18n.T("blackjack.countingKO")
 	case domain.BJCountingZen:
-		return "Zen Count"
+		return i18n.T("blackjack.countingZen")
 	case domain.BJCountingOmegaII:
-		return "Omega II"
+		return i18n.T("blackjack.countingOmegaII")
 	default:
-		return "Hi-Lo"
+		return i18n.T("blackjack.countingHiLo")
 	}
 }
 
@@ -245,19 +274,19 @@ func countingSystemName(system int) string {
 func (bjp *BlackJackCuiPresenter) suggestionStr(s domain.BJSuggestedAction) string {
 	switch s {
 	case domain.BJSuggestHit:
-		return "HIT"
+		return i18n.T("blackjack.suggestHit")
 	case domain.BJSuggestStand:
-		return "STAND"
+		return i18n.T("blackjack.suggestStand")
 	case domain.BJSuggestDouble:
-		return "DOUBLE"
+		return i18n.T("blackjack.suggestDouble")
 	case domain.BJSuggestDoubleStand:
-		return "DOUBLE"
+		return i18n.T("blackjack.suggestDouble")
 	case domain.BJSuggestSplit:
-		return "SPLIT"
+		return i18n.T("blackjack.suggestSplit")
 	case domain.BJSuggestSurrender:
-		return "SURRENDER"
+		return i18n.T("blackjack.suggestSurrender")
 	case domain.BJSuggestDeclineInsurance:
-		return "DECLINE INSURANCE"
+		return i18n.T("blackjack.suggestDeclineInsurance")
 	default:
 		return ""
 	}
