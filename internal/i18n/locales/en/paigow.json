@@ -1,5 +1,23 @@
 {
   "helpTitle": "Pai Gow Poker",
   "helpBet": "  b <amount>           bet",
-  "helpSet": "  s <idx1> <idx2>      set low hand (choose 2 card indices)"
+  "helpSet": "  s <idx1> <idx2>      set low hand (choose 2 card indices)",
+  "chipsLine": "chips: {{chips}}",
+  "phaseLine": "phase: {{phase}}",
+  "cardsLabel": "cards: ",
+  "highLine": "  high: {{cards}} ({{rank}})",
+  "lowLine": "  low:  {{cards}} ({{rank}})",
+  "playerHeader": "PLAYER",
+  "dealerHeader": "DEALER",
+  "phaseBet": "BET",
+  "phaseSetHands": "SET HANDS",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "rankUnknown": "Unknown",
+  "betLine": "bet: {{bet}}",
+  "playerWins": "Player wins!",
+  "dealerWins": "Dealer wins!",
+  "push": "Push!",
+  "payoutLine": "payout: {{payout}}",
+  "payoutWithCommissionLine": "payout: {{payout}} (commission: {{commission}})"
 }
