@@ -30,7 +30,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 
 const DT_TUTORIAL_STEPS: TutorialStep[] = [];
 
-const DRAGONTIGER_CLI_HELP = '';
+const DRAGONTIGER_CLI_HELP: string[] = [];
 
 /** Stub CLI parser — Dragon Tiger doesn't ship CLI commands yet (per checklist item 11 minimum). */
 function parseDragonTigerCommand(): { error: string } {
