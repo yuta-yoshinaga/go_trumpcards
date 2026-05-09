@@ -2,11 +2,13 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // LetItRideCuiPresenter レット・イット・ライドCUIプレゼンタークラス
@@ -18,20 +20,23 @@ func (lp *LetItRideCuiPresenter) Output(lir interfaces.LetItRideGame, lastErr er
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "chips: %d\n", lir.GetChips())
-	fmt.Fprintf(&sb, "phase: %s\n", lp.phaseStr(lir.GetPhase()))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("letitride.chipsLine", "chips", strconv.Itoa(lir.GetChips())))
+	fmt.Fprintf(&sb, "%s\n", i18n.Tf("letitride.phaseLine", "phase", lp.phaseStr(lir.GetPhase())))
 
 	if lir.GetBetAmount() > 0 {
-		fmt.Fprintf(&sb, "bet: %d x %d active\n", lir.GetBetAmount(), lp.activeBetCount(lir))
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("letitride.betLine",
+			"amount", strconv.Itoa(lir.GetBetAmount()),
+			"active", strconv.Itoa(lp.activeBetCount(lir)),
+		))
 	}
 
 	playerHand := lir.GetPlayerHand()
 	if len(playerHand) > 0 {
-		sb.WriteString("--- " + color.Bold("PLAYER") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("letitride.playerHeader")) + " ---\n")
 		if lir.GetPhase() == domain.LetItRidePhaseEnd {
 			rank := lir.GetHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "hand: %s\n", domain.PokerHandNames[rank])
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf("letitride.handLine", "hand", domain.PokerHandNames[rank]))
 			}
 		}
 		parts := make([]string, len(playerHand))
@@ -44,7 +49,7 @@ func (lp *LetItRideCuiPresenter) Output(lir interfaces.LetItRideGame, lastErr er
 
 	communityCards := lir.GetCommunityCards()
 	if len(communityCards) > 0 {
-		sb.WriteString("--- " + color.Bold("COMMUNITY") + " ---\n")
+		sb.WriteString("--- " + color.Bold(i18n.T("letitride.communityHeader")) + " ---\n")
 		parts := make([]string, len(communityCards))
 		switch lir.GetPhase() {
 		case domain.LetItRidePhaseBet, domain.LetItRidePhaseFirstDecision:
@@ -72,18 +77,19 @@ func (lp *LetItRideCuiPresenter) Output(lir interfaces.LetItRideGame, lastErr er
 	}
 
 	if lir.GetGameEndFlag() {
-		fmt.Fprintf(&sb, "bet1: %s  bet2: %s  bet3: %s\n",
-			lp.betStatusStr(lir.GetBet1Active()),
-			lp.betStatusStr(lir.GetBet2Active()),
-			lp.betStatusStr(lir.GetBet3Active()))
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("letitride.betsLine",
+			"bet1", lp.betStatusStr(lir.GetBet1Active()),
+			"bet2", lp.betStatusStr(lir.GetBet2Active()),
+			"bet3", lp.betStatusStr(lir.GetBet3Active()),
+		))
 		switch lir.GetResult() {
 		case domain.GameResultWin:
-			sb.WriteString(color.Green("Player wins!") + "\n")
+			sb.WriteString(color.Green(i18n.T("letitride.playerWins")) + "\n")
 		case domain.GameResultLose:
-			sb.WriteString(color.Red("Player loses.") + "\n")
+			sb.WriteString(color.Red(i18n.T("letitride.playerLoses")) + "\n")
 		default:
 		}
-		fmt.Fprintf(&sb, "total payout: %d\n", lir.GetTotalPayout())
+		fmt.Fprintf(&sb, "%s\n", i18n.Tf("letitride.totalPayoutLine", "payout", strconv.Itoa(lir.GetTotalPayout())))
 		sb.WriteString("----------\n")
 	}
 
@@ -99,24 +105,24 @@ func (lp *LetItRideCuiPresenter) ActionLogOutput(lir interfaces.LetItRideGame) s
 func (lp *LetItRideCuiPresenter) phaseStr(phase int) string {
 	switch phase {
 	case domain.LetItRidePhaseBet:
-		return "BET"
+		return i18n.T("letitride.phaseBet")
 	case domain.LetItRidePhaseFirstDecision:
-		return "FIRST DECISION"
+		return i18n.T("letitride.phaseFirstDecision")
 	case domain.LetItRidePhaseSecondDecision:
-		return "SECOND DECISION"
+		return i18n.T("letitride.phaseSecondDecision")
 	case domain.LetItRidePhaseEnd:
-		return "END"
+		return i18n.T("letitride.phaseEnd")
 	default:
-		return "UNKNOWN"
+		return i18n.T("letitride.phaseUnknown")
 	}
 }
 
 // betStatusStr ベット状態文字列
 func (lp *LetItRideCuiPresenter) betStatusStr(active bool) string {
 	if active {
-		return color.Green("RIDE")
+		return color.Green(i18n.T("letitride.betStatusRide"))
 	}
-	return color.Yellow("PULL")
+	return color.Yellow(i18n.T("letitride.betStatusPull"))
 }
 
 // activeBetCount アクティブベット数
