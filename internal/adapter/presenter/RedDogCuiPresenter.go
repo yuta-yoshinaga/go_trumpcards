@@ -19,8 +19,8 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("reddog.chipsLine", "chips", strconv.Itoa(rd.GetChips())))
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("reddog.phaseLine", "phase", rp.phaseStr(rd.GetPhase())))
+	sb.WriteString(i18n.Tf("reddog.chipsLine", "chips", strconv.Itoa(rd.GetChips())) + "\n")
+	sb.WriteString(i18n.Tf("reddog.phaseLine", "phase", rp.phaseStr(rd.GetPhase())) + "\n")
 	if rd.GetAnte() > 0 {
 		sb.WriteString(i18n.Tf("reddog.anteLine", "ante", strconv.Itoa(rd.GetAnte())))
 		if rd.GetRaise() > 0 {
@@ -29,7 +29,7 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 		sb.WriteString("\n")
 	}
 	if rd.GetPhase() == domain.RedDogPhaseSpreadDecision || rd.GetPhase() == domain.RedDogPhaseEnd {
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("reddog.spreadLine", "spread", strconv.Itoa(rd.GetSpread())))
+		sb.WriteString(i18n.Tf("reddog.spreadLine", "spread", strconv.Itoa(rd.GetSpread())) + "\n")
 	}
 
 	initial := rd.GetInitialCards()
@@ -64,7 +64,7 @@ func (rp *RedDogCuiPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 		default:
 			sb.WriteString(color.Yellow(i18n.T("reddog.push")) + "\n")
 		}
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("reddog.totalPayoutLine", "payout", strconv.Itoa(rd.GetTotalPayout())))
+		sb.WriteString(i18n.Tf("reddog.totalPayoutLine", "payout", strconv.Itoa(rd.GetTotalPayout())) + "\n")
 		sb.WriteString("----------\n")
 	}
 
