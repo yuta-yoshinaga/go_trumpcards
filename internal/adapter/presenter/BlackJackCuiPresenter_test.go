@@ -40,8 +40,8 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		bj := domain.NewBlackJack(tc, player, dealer)
 		bj.Reset()
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "chips: player=1000 dealer=1000")
-		assert.Contains(t, output, "phase: BET")
+		assert.Contains(t, output, "チップ: プレイヤー=1000 ディーラー=1000")
+		assert.Contains(t, output, "フェーズ: BET")
 	})
 	t.Run("success Output action phase", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -59,8 +59,8 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseAction)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "phase: ACTION")
-		assert.Contains(t, output, "bet=100")
+		assert.Contains(t, output, "フェーズ: ACTION")
+		assert.Contains(t, output, "ベット=100")
 		assert.Contains(t, output, "SPADE 5")
 	})
 	t.Run("success Output end phase lose", func(t *testing.T) {
@@ -82,8 +82,8 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 		_ = bj.PlayerStand()
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "It is your loss.")
-		assert.Contains(t, output, "phase: END")
+		assert.Contains(t, output, "あなたの負けです")
+		assert.Contains(t, output, "フェーズ: END")
 	})
 	t.Run("success Output end phase draw", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -102,7 +102,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 		_ = bj.PlayerStand()
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "It is a draw.")
+		assert.Contains(t, output, "引き分けです")
 	})
 	t.Run("success Output end phase win", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -122,7 +122,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 		_ = bj.PlayerStand()
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "You are the winner.")
+		assert.Contains(t, output, "あなたの勝ちです")
 	})
 	t.Run("success Output insurance phase", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -140,8 +140,8 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		bj.SetPhase(domain.BJPhaseInsurance)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "phase: INSURANCE")
-		assert.Contains(t, output, "Insurance available!")
+		assert.Contains(t, output, "フェーズ: INSURANCE")
+		assert.Contains(t, output, "インシュランス可能")
 	})
 	t.Run("success Output doubled and busted flags", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -200,7 +200,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseInsurance)
 		_ = bj.PlayerInsurance() // cost = 50
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "insurance bet: 50")
+		assert.Contains(t, output, "インシュランスベット: 50")
 	})
 	t.Run("success Output multi-hand results", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -222,14 +222,14 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		hand1.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 		hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		// We need to add hand1 via split... but that's hard. Let's just check that
-		// multi-hand display works by using the prefix "hand 1", "hand 2"
+		// multi-hand display works by using the prefix "ハンド 1", "ハンド 2"
 		// For this test, just verify single hand path works
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
 		bj.SetPhase(domain.BJPhaseEnd)
 		output := tbp.Output(bj, nil)
-		// Single hand, so no "hand 1" prefix
-		assert.NotContains(t, output, "hand 1")
+		// Single hand, so no "ハンド 1" prefix
+		assert.NotContains(t, output, "ハンド 1")
 	})
 	t.Run("success Output error message via lastErr", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
@@ -248,7 +248,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		bj.Reset()
 		output := tbp.Output(bj, nil)
 		// In bet phase, dealer has no cards - should not crash
-		assert.True(t, strings.Contains(output, "dealer score"))
+		assert.True(t, strings.Contains(output, "ディーラー スコア"))
 	})
 	t.Run("success Output nil error produces no error line", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
@@ -268,13 +268,13 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseEnd)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "phase: END")
+		assert.Contains(t, output, "フェーズ: END")
 	})
 	t.Run("success phaseStr unknown phase", func(t *testing.T) {
 		bj, _ := setupBJCuiTest(1000, 1000)
 		bj.SetPhase(999)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "phase: UNKNOWN")
+		assert.Contains(t, output, "フェーズ: UNKNOWN")
 	})
 	t.Run("success Output multi-hand split game end all results", func(t *testing.T) {
 		bj, dealer := setupBJCuiTest(800, 1000)
@@ -295,10 +295,10 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		bj.SetPhase(domain.BJPhaseEnd)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "hand 1")
-		assert.Contains(t, output, "hand 2")
-		assert.Contains(t, output, "It is a draw.")
-		assert.Contains(t, output, "It is your loss.")
+		assert.Contains(t, output, "ハンド 1")
+		assert.Contains(t, output, "ハンド 2")
+		assert.Contains(t, output, "引き分けです")
+		assert.Contains(t, output, "あなたの負けです")
 	})
 	t.Run("success Output multi-hand current hand marker during non-end", func(t *testing.T) {
 		bj, dealer := setupBJCuiTest(800, 1000)
@@ -316,9 +316,9 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 		output := tbp.Output(bj, nil)
 		// currentHandIdx is 0, so hand 1 should have (*) marker
-		assert.Contains(t, output, "hand 1 (*)")
-		assert.Contains(t, output, "hand 2")
-		assert.NotContains(t, output, "hand 2 (*)")
+		assert.Contains(t, output, "ハンド 1 (*)")
+		assert.Contains(t, output, "ハンド 2")
+		assert.NotContains(t, output, "ハンド 2 (*)")
 	})
 	t.Run("success Output multi-hand split game end with win", func(t *testing.T) {
 		bj, dealer := setupBJCuiTest(800, 1000)
@@ -338,8 +338,8 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		bj.SetPhase(domain.BJPhaseEnd)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "You are the winner.")
-		assert.Contains(t, output, "It is a draw.")
+		assert.Contains(t, output, "あなたの勝ちです")
+		assert.Contains(t, output, "引き分けです")
 	})
 	t.Run("success phaseStr BJPhaseDeal", func(t *testing.T) {
 		bj, dealer := setupBJCuiTest(900, 1000)
@@ -351,7 +351,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseDeal)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "phase: DEAL")
+		assert.Contains(t, output, "フェーズ: DEAL")
 	})
 }
 
@@ -413,7 +413,7 @@ func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
 	t.Run("decks shown in chip info", func(t *testing.T) {
 		bj, _ := setupBJCuiTest(1000, 1000)
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "decks=1")
+		assert.Contains(t, output, "デッキ=1")
 	})
 }
 
@@ -428,7 +428,7 @@ func TestBlackJackCuiPresenter_H17Display(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 0, CountingEnabled: false})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "rule: H17 (Dealer hits soft 17)")
+		assert.Contains(t, output, "ルール: H17 (ディーラーはソフト17でヒット)")
 	})
 
 	t.Run("H17 rule not displayed when DealerHitsSoft17 is false", func(t *testing.T) {
@@ -436,7 +436,7 @@ func TestBlackJackCuiPresenter_H17Display(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.NotContains(t, output, "rule: H17")
+		assert.NotContains(t, output, "ルール: H17")
 	})
 }
 
@@ -451,7 +451,7 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingHiLo})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "count (Hi-Lo): RC=")
+		assert.Contains(t, output, "カウント (Hi-Lo): RC=")
 		assert.Contains(t, output, "TC=")
 		assert.NotContains(t, output, "TC=N/A")
 	})
@@ -461,7 +461,7 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingKO})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "count (KO): RC=")
+		assert.Contains(t, output, "カウント (KO): RC=")
 		assert.Contains(t, output, "TC=N/A")
 	})
 
@@ -470,7 +470,7 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingZen})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "count (Zen Count): RC=")
+		assert.Contains(t, output, "カウント (Zen Count): RC=")
 		assert.Contains(t, output, "TC=")
 		assert.NotContains(t, output, "TC=N/A")
 	})
@@ -480,7 +480,7 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingOmegaII})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "count (Omega II): RC=")
+		assert.Contains(t, output, "カウント (Omega II): RC=")
 		assert.Contains(t, output, "TC=")
 		assert.NotContains(t, output, "TC=N/A")
 	})
@@ -490,7 +490,7 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.NotContains(t, output, "count (")
+		assert.NotContains(t, output, "カウント (")
 	})
 }
 
@@ -505,7 +505,7 @@ func TestBlackJackCuiPresenter_DASDisplay(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: false})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "rule: No DAS (No double after split)")
+		assert.Contains(t, output, "ルール: No DAS (スプリット後のダブルダウン不可)")
 	})
 
 	t.Run("No DAS rule not displayed when DoubleAfterSplit is true", func(t *testing.T) {
@@ -513,7 +513,7 @@ func TestBlackJackCuiPresenter_DASDisplay(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.NotContains(t, output, "rule: No DAS")
+		assert.NotContains(t, output, "ルール: No DAS")
 	})
 }
 
@@ -541,7 +541,7 @@ func TestBlackJackCuiPresenter_CpuPlayerDisplay(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 		output := bjp.Output(bj, nil)
 		assert.Contains(t, output, "CPU 1")
-		assert.Contains(t, output, "chips:")
+		assert.Contains(t, output, "チップ:")
 	})
 
 	t.Run("no CPU player displayed when cpuPlayerCount is 0", func(t *testing.T) {
@@ -719,9 +719,9 @@ func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseAction)
 		output := bjp.Output(bj, nil)
-		// Multi-hand prefix: "CPU 1 hand 1" and "CPU 1 hand 2"
-		assert.Contains(t, output, "CPU 1 hand 1")
-		assert.Contains(t, output, "CPU 1 hand 2")
+		// Multi-hand prefix: "CPU 1 ハンド 1" and "CPU 1 ハンド 2"
+		assert.Contains(t, output, "CPU 1 ハンド 1")
+		assert.Contains(t, output, "CPU 1 ハンド 2")
 		// Cards should be displayed (comma-separated)
 		assert.Contains(t, output, "SPADE 8")
 		assert.Contains(t, output, "CLOVER 10")
@@ -781,10 +781,10 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 		output := bjp.Output(bj, nil)
 		results := bj.GetSideBetResults()
 		if len(results) > 0 && results[0].Payout > 0 {
-			assert.Contains(t, output, "side bet [Perfect Pairs]:")
+			assert.Contains(t, output, "サイドベット [Perfect Pairs]:")
 			assert.Contains(t, output, "WIN")
 		} else if len(results) > 0 {
-			assert.Contains(t, output, "side bet [Perfect Pairs]:")
+			assert.Contains(t, output, "サイドベット [Perfect Pairs]:")
 			assert.Contains(t, output, "LOSE")
 		}
 	})
@@ -807,10 +807,10 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 		output := bjp.Output(bj, nil)
 		results := bj.GetSideBetResults()
 		if len(results) > 0 && results[0].Payout > 0 {
-			assert.Contains(t, output, "side bet [21+3]:")
+			assert.Contains(t, output, "サイドベット [21+3]:")
 			assert.Contains(t, output, "WIN")
 		} else if len(results) > 0 {
-			assert.Contains(t, output, "side bet [21+3]:")
+			assert.Contains(t, output, "サイドベット [21+3]:")
 			assert.Contains(t, output, "LOSE")
 		}
 	})
@@ -825,7 +825,7 @@ func TestBlackJackCuiPresenter_Penetration50(t *testing.T) {
 	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 50, DoubleAfterSplit: true})
 	bj.Reset()
 	output := bjp.Output(bj, nil)
-	assert.Contains(t, output, "rule: Penetration 50%")
+	assert.Contains(t, output, "ルール: ペネトレーション 50%")
 }
 
 func TestBlackJackCuiPresenter_Penetration75(t *testing.T) {
@@ -837,7 +837,7 @@ func TestBlackJackCuiPresenter_Penetration75(t *testing.T) {
 	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 75, DoubleAfterSplit: true})
 	bj.Reset()
 	output := bjp.Output(bj, nil)
-	assert.NotContains(t, output, "Penetration")
+	assert.NotContains(t, output, "ペネトレーション")
 }
 
 func TestBlackJackCuiPresenter_Penetration0(t *testing.T) {
@@ -849,7 +849,7 @@ func TestBlackJackCuiPresenter_Penetration0(t *testing.T) {
 	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 0, DoubleAfterSplit: true})
 	bj.Reset()
 	output := bjp.Output(bj, nil)
-	assert.NotContains(t, output, "Penetration")
+	assert.NotContains(t, output, "ペネトレーション")
 }
 
 func TestBlackJackCuiPresenter_MultiHand(t *testing.T) {
@@ -865,7 +865,7 @@ func TestBlackJackCuiPresenter_MultiHand(t *testing.T) {
 		err := bj.PlayerBet(100, 0, 0, 2)
 		assert.NoError(t, err)
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "multi-hand: 2 hands")
+		assert.Contains(t, output, "マルチハンド: 2 ハンド")
 	})
 
 	t.Run("multi-hand count not shown when 1", func(t *testing.T) {
@@ -874,7 +874,7 @@ func TestBlackJackCuiPresenter_MultiHand(t *testing.T) {
 		err := bj.PlayerBet(100, 0, 0, 1)
 		assert.NoError(t, err)
 		output := bjp.Output(bj, nil)
-		assert.NotContains(t, output, "multi-hand:")
+		assert.NotContains(t, output, "マルチハンド:")
 	})
 }
 
@@ -901,7 +901,7 @@ func TestBlackJackCuiPresenter_CpuInsuranceBet(t *testing.T) {
 		cpuPlayers[0].SetInsuranceBet(50)
 		bj.SetPhase(domain.BJPhaseAction)
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "insurance: 50")
+		assert.Contains(t, output, "インシュランス: 50")
 	})
 
 	t.Run("CPU without insurance bet does not show insurance info", func(t *testing.T) {
@@ -920,7 +920,7 @@ func TestBlackJackCuiPresenter_CpuInsuranceBet(t *testing.T) {
 		cpuHand.SetBet(100)
 		bj.SetPhase(domain.BJPhaseAction)
 		output := bjp.Output(bj, nil)
-		assert.NotContains(t, output, "insurance:")
+		assert.NotContains(t, output, "インシュランス:")
 	})
 }
 
@@ -938,7 +938,7 @@ func TestBlackJackCuiPresenter_EarlySurrenderPhase(t *testing.T) {
 	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
 	bj.SetPhase(domain.BJPhaseEarlySurrender)
 	output := bjp.Output(bj, nil)
-	assert.Contains(t, output, "phase: EARLY SURRENDER")
+	assert.Contains(t, output, "フェーズ: EARLY SURRENDER")
 }
 
 func TestBlackJackCuiPresenter_ActionLogOutput(t *testing.T) {
