@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -21,163 +20,155 @@ func (p *SevenCardStudCuiPresenter) ActionLogOutput(s interfaces.SevenCardStudGa
 
 // Output renders the current game state for the active locale (#1699).
 func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastErr error) string {
-	var b strings.Builder
+	return buildCuiOutput(i18n.T("sevencardstud.outputTitle"), func(b *strings.Builder) {
+		cfg := s.GetConfig()
+		if cfg.TournamentMode {
+			b.WriteString(i18n.Tf("sevencardstud.tournamentLine",
+				"hand", strconv.Itoa(s.GetHandCount()),
+				"ante", strconv.Itoa(cfg.Ante),
+				"bringIn", strconv.Itoa(cfg.BringIn),
+				"levelup", strconv.Itoa(cfg.AnteLevelHands)) + "\n")
+			if cfg.RebuyEnabled {
+				b.WriteString(i18n.Tf("sevencardstud.rebuyLine",
+					"chips", strconv.Itoa(cfg.RebuyChips),
+					"max", strconv.Itoa(cfg.RebuyMaxCount),
+					"period", strconv.Itoa(cfg.RebuyPeriodHands)) + "\n")
+			}
+			if cfg.AddonEnabled {
+				b.WriteString(i18n.Tf("sevencardstud.addonLine",
+					"chips", strconv.Itoa(cfg.AddonChips),
+					"after", strconv.Itoa(cfg.AddonAfterHand)) + "\n")
+			}
+		}
 
-	b.WriteString("==========\n")
-	b.WriteString(i18n.T("sevencardstud.outputTitle") + "\n")
-	b.WriteString("==========\n")
+		b.WriteString(i18n.Tf("sevencardstud.tableMax", "n", strconv.Itoa(s.GetPlayerCnt())) + "\n")
+		b.WriteString(i18n.Tf("sevencardstud.dealerLine", "idx", strconv.Itoa(s.GetDealerIdx())) + "\n")
 
-	cfg := s.GetConfig()
-	if cfg.TournamentMode {
-		b.WriteString(i18n.Tf("sevencardstud.tournamentLine",
-			"hand", strconv.Itoa(s.GetHandCount()),
+		b.WriteString(i18n.Tf("sevencardstud.anteLine",
 			"ante", strconv.Itoa(cfg.Ante),
 			"bringIn", strconv.Itoa(cfg.BringIn),
-			"levelup", strconv.Itoa(cfg.AnteLevelHands)) + "\n")
-		if cfg.RebuyEnabled {
-			b.WriteString(i18n.Tf("sevencardstud.rebuyLine",
-				"chips", strconv.Itoa(cfg.RebuyChips),
-				"max", strconv.Itoa(cfg.RebuyMaxCount),
-				"period", strconv.Itoa(cfg.RebuyPeriodHands)) + "\n")
-		}
-		if cfg.AddonEnabled {
-			b.WriteString(i18n.Tf("sevencardstud.addonLine",
-				"chips", strconv.Itoa(cfg.AddonChips),
-				"after", strconv.Itoa(cfg.AddonAfterHand)) + "\n")
-		}
-	}
+			"small", strconv.Itoa(cfg.SmallBet),
+			"big", strconv.Itoa(cfg.BigBet)) + "\n")
 
-	b.WriteString(i18n.Tf("sevencardstud.tableMax", "n", strconv.Itoa(s.GetPlayerCnt())) + "\n")
-	b.WriteString(i18n.Tf("sevencardstud.dealerLine", "idx", strconv.Itoa(s.GetDealerIdx())) + "\n")
+		b.WriteString(i18n.Tf("sevencardstud.potLine", "pot", strconv.Itoa(s.GetPot())) + "\n")
 
-	b.WriteString(i18n.Tf("sevencardstud.anteLine",
-		"ante", strconv.Itoa(cfg.Ante),
-		"bringIn", strconv.Itoa(cfg.BringIn),
-		"small", strconv.Itoa(cfg.SmallBet),
-		"big", strconv.Itoa(cfg.BigBet)) + "\n")
-
-	b.WriteString(i18n.Tf("sevencardstud.potLine", "pot", strconv.Itoa(s.GetPot())) + "\n")
-
-	if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
-		b.WriteString(i18n.Tf("sevencardstud.limitLine", "name", domain.BettingLimitNames[cfg.BettingLimit]) + "\n")
-	}
-
-	b.WriteString("----------\n")
-	for i := 0; i < s.GetPlayerCnt(); i++ {
-		player := s.GetPlayer(i)
-		b.WriteString(cuiPlayerNameWithStyle(player, i))
-		b.WriteString(i18n.Tf("sevencardstud.playerChips", "chips", strconv.Itoa(player.GetChips())))
-
-		if player.GetTotalHands() > 0 {
-			b.WriteString(i18n.Tf("sevencardstud.playerStats",
-				"vpip", strconv.Itoa(player.GetVPIP()),
-				"pfr", strconv.Itoa(player.GetPFR()),
-				"tb", strconv.Itoa(player.GetThreeBet()),
-				"af", player.GetAFDisplay()))
+		if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
+			b.WriteString(i18n.Tf("sevencardstud.limitLine", "name", domain.BettingLimitNames[cfg.BettingLimit]) + "\n")
 		}
 
-		if player.GetFolded() {
-			b.WriteString(color.BoldYellow(i18n.T("sevencardstud.playerFolded")))
-		} else if player.GetAllIn() {
-			b.WriteString(color.BoldYellow(i18n.T("sevencardstud.playerAllIn")))
-		}
-
-		if player.GetCurrentBet() > 0 {
-			b.WriteString(i18n.Tf("sevencardstud.playerBet", "bet", strconv.Itoa(player.GetCurrentBet())))
-		}
-		b.WriteString("\n")
-
-		// Door cards (face up — visible to all players)
-		if doorCards := player.GetDoorCards(); len(doorCards) > 0 {
-			b.WriteString(i18n.Tf("sevencardstud.doorCards", "cards", cuiCardSliceStrEmoji(doorCards)) + "\n")
-		}
-
-		// Hole cards (face down — only the human sees them)
-		if player.GetIsHuman() && !player.GetFolded() {
-			if holeCards := player.GetHoleCards(); len(holeCards) > 0 {
-				b.WriteString(i18n.Tf("sevencardstud.holeCards", "cards", cuiCardSliceStrEmoji(holeCards)) + "\n")
-			}
-		}
-	}
-
-	cpuActions := s.GetCpuActions()
-	if len(cpuActions) > 0 {
 		b.WriteString("----------\n")
-		b.WriteString(color.Bold(i18n.T("sevencardstud.cpuActionsHeader")) + "\n")
-		for _, action := range cpuActions {
-			b.WriteString(i18n.Tf("sevencardstud.cpuActionLine",
-				"idx", strconv.Itoa(action.PlayerIdx),
-				"action", cuiBettingActionName(action.Action)))
-			if action.Amount > 0 {
-				b.WriteString(i18n.Tf("sevencardstud.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))
+		for i := 0; i < s.GetPlayerCnt(); i++ {
+			player := s.GetPlayer(i)
+			b.WriteString(cuiPlayerNameWithStyle(player, i))
+			b.WriteString(i18n.Tf("sevencardstud.playerChips", "chips", strconv.Itoa(player.GetChips())))
+
+			if player.GetTotalHands() > 0 {
+				b.WriteString(i18n.Tf("sevencardstud.playerStats",
+					"vpip", strconv.Itoa(player.GetVPIP()),
+					"pfr", strconv.Itoa(player.GetPFR()),
+					"tb", strconv.Itoa(player.GetThreeBet()),
+					"af", player.GetAFDisplay()))
+			}
+
+			if player.GetFolded() {
+				b.WriteString(color.BoldYellow(i18n.T("sevencardstud.playerFolded")))
+			} else if player.GetAllIn() {
+				b.WriteString(color.BoldYellow(i18n.T("sevencardstud.playerAllIn")))
+			}
+
+			if player.GetCurrentBet() > 0 {
+				b.WriteString(i18n.Tf("sevencardstud.playerBet", "bet", strconv.Itoa(player.GetCurrentBet())))
 			}
 			b.WriteString("\n")
-		}
-	}
 
-	results := s.GetRoundResults()
-	if len(results) > 0 && (s.GetPhase() == domain.SevenCardStudPhaseEnd || s.GetPhase() == domain.SevenCardStudPhaseShowdown) {
-		b.WriteString("==========\n")
-		b.WriteString(color.Bold(i18n.T("sevencardstud.resultsHeader")) + "\n")
-		for _, r := range results {
-			name := cuiPlayerName(s.GetPlayer(r.PlayerIdx), r.PlayerIdx)
-			kickers := ""
-			if ks := domain.FormatKickers(r.Kickers); ks != "" {
-				kickers = i18n.Tf("sevencardstud.resultKickers", "kickers", ks)
+			// Door cards (face up — visible to all players)
+			if doorCards := player.GetDoorCards(); len(doorCards) > 0 {
+				b.WriteString(i18n.Tf("sevencardstud.doorCards", "cards", cuiCardSliceStrEmoji(doorCards)) + "\n")
 			}
-			switch {
-			case r.Mucked:
-				b.WriteString(i18n.Tf("sevencardstud.resultMucked", "name", name))
-			case r.HandName != "":
-				b.WriteString(i18n.Tf("sevencardstud.resultHand",
-					"name", name,
-					"hand", r.HandName,
-					"kickers", kickers))
-			default:
-				b.WriteString(i18n.Tf("sevencardstud.resultName", "name", name))
-			}
-			if r.WonAmount > 0 {
-				b.WriteString(i18n.Tf("sevencardstud.wonAmount", "total", strconv.Itoa(r.WonAmount)))
-			}
-			b.WriteString("\n")
-		}
-	}
 
-	if s.IsMuckAvailable() {
-		b.WriteString("----------\n")
-		b.WriteString(i18n.T("sevencardstud.muckPrompt") + "\n")
-	}
-
-	if s.GetPhase() == domain.SevenCardStudPhaseRebuy {
-		b.WriteString("----------\n")
-		switch s.GetRebuyPhaseType() {
-		case domain.SevenCardStudRebuyPhaseRebuy:
-			rebuyCounts := s.GetRebuyCounts()
-			humanIdx := -1
-			for i := 0; i < s.GetPlayerCnt(); i++ {
-				if s.GetPlayer(i).GetIsHuman() {
-					humanIdx = i
-					break
+			// Hole cards (face down — only the human sees them)
+			if player.GetIsHuman() && !player.GetFolded() {
+				if holeCards := player.GetHoleCards(); len(holeCards) > 0 {
+					b.WriteString(i18n.Tf("sevencardstud.holeCards", "cards", cuiCardSliceStrEmoji(holeCards)) + "\n")
 				}
 			}
-			if humanIdx >= 0 {
-				b.WriteString(i18n.Tf("sevencardstud.rebuyPrompt",
-					"chips", strconv.Itoa(cfg.RebuyChips),
-					"used", strconv.Itoa(rebuyCounts[humanIdx]),
-					"max", strconv.Itoa(cfg.RebuyMaxCount)) + "\n")
-			}
-		case domain.SevenCardStudRebuyPhaseAddon:
-			b.WriteString(i18n.Tf("sevencardstud.addonPrompt", "chips", strconv.Itoa(cfg.AddonChips)) + "\n")
 		}
-	}
 
-	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
-	}
+		cpuActions := s.GetCpuActions()
+		if len(cpuActions) > 0 {
+			b.WriteString("----------\n")
+			b.WriteString(color.Bold(i18n.T("sevencardstud.cpuActionsHeader")) + "\n")
+			for _, action := range cpuActions {
+				b.WriteString(i18n.Tf("sevencardstud.cpuActionLine",
+					"idx", strconv.Itoa(action.PlayerIdx),
+					"action", cuiBettingActionName(action.Action)))
+				if action.Amount > 0 {
+					b.WriteString(i18n.Tf("sevencardstud.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))
+				}
+				b.WriteString("\n")
+			}
+		}
 
-	if s.GetGameEndFlag() {
-		b.WriteString(i18n.T("sevencardstud.gameEnd") + "\n")
-	}
+		results := s.GetRoundResults()
+		if len(results) > 0 && (s.GetPhase() == domain.SevenCardStudPhaseEnd || s.GetPhase() == domain.SevenCardStudPhaseShowdown) {
+			b.WriteString("==========\n")
+			b.WriteString(color.Bold(i18n.T("sevencardstud.resultsHeader")) + "\n")
+			for _, r := range results {
+				name := cuiPlayerName(s.GetPlayer(r.PlayerIdx), r.PlayerIdx)
+				kickers := ""
+				if ks := domain.FormatKickers(r.Kickers); ks != "" {
+					kickers = i18n.Tf("sevencardstud.resultKickers", "kickers", ks)
+				}
+				switch {
+				case r.Mucked:
+					b.WriteString(i18n.Tf("sevencardstud.resultMucked", "name", name))
+				case r.HandName != "":
+					b.WriteString(i18n.Tf("sevencardstud.resultHand",
+						"name", name,
+						"hand", r.HandName,
+						"kickers", kickers))
+				default:
+					b.WriteString(i18n.Tf("sevencardstud.resultName", "name", name))
+				}
+				if r.WonAmount > 0 {
+					b.WriteString(i18n.Tf("sevencardstud.wonAmount", "total", strconv.Itoa(r.WonAmount)))
+				}
+				b.WriteString("\n")
+			}
+		}
 
-	return b.String()
+		if s.IsMuckAvailable() {
+			b.WriteString("----------\n")
+			b.WriteString(i18n.T("sevencardstud.muckPrompt") + "\n")
+		}
+
+		if s.GetPhase() == domain.SevenCardStudPhaseRebuy {
+			b.WriteString("----------\n")
+			switch s.GetRebuyPhaseType() {
+			case domain.SevenCardStudRebuyPhaseRebuy:
+				rebuyCounts := s.GetRebuyCounts()
+				humanIdx := -1
+				for i := 0; i < s.GetPlayerCnt(); i++ {
+					if s.GetPlayer(i).GetIsHuman() {
+						humanIdx = i
+						break
+					}
+				}
+				if humanIdx >= 0 {
+					b.WriteString(i18n.Tf("sevencardstud.rebuyPrompt",
+						"chips", strconv.Itoa(cfg.RebuyChips),
+						"used", strconv.Itoa(rebuyCounts[humanIdx]),
+						"max", strconv.Itoa(cfg.RebuyMaxCount)) + "\n")
+				}
+			case domain.SevenCardStudRebuyPhaseAddon:
+				b.WriteString(i18n.Tf("sevencardstud.addonPrompt", "chips", strconv.Itoa(cfg.AddonChips)) + "\n")
+			}
+		}
+
+		cuiErrorBlock(b, lastErr)
+
+		if s.GetGameEndFlag() {
+			b.WriteString(i18n.T("sevencardstud.gameEnd") + "\n")
+		}
+	})
 }
