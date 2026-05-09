@@ -35,8 +35,8 @@ func TestCaribbeanStudCuiPresenter_Output_BetPhase(t *testing.T) {
 	setupCaribbeanStudCuiMockDefaults(m)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "chips: 1000")
-	assert.Contains(t, result, "phase: BET")
+	assert.Contains(t, result, "チップ: 1000")
+	assert.Contains(t, result, "フェーズ: BET")
 }
 
 func TestCaribbeanStudCuiPresenter_Output_ActionPhase(t *testing.T) {
@@ -73,7 +73,7 @@ func TestCaribbeanStudCuiPresenter_Output_ActionPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: ACTION")
+	assert.Contains(t, result, "フェーズ: ACTION")
 	assert.Contains(t, result, "PLAYER")
 	// First dealer card is visible
 	assert.Contains(t, result, "DEALER")
@@ -116,11 +116,11 @@ func TestCaribbeanStudCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: END")
-	assert.Contains(t, result, "Player wins!")
+	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "DEALER")
 	assert.Contains(t, result, "(Qualified)")
-	assert.Contains(t, result, "total payout: 1000")
+	assert.Contains(t, result, "合計払戻し: 1000")
 }
 
 func TestCaribbeanStudCuiPresenter_Output_EndPhase_Fold(t *testing.T) {
@@ -157,7 +157,7 @@ func TestCaribbeanStudCuiPresenter_Output_EndPhase_Fold(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Player folded.")
+	assert.Contains(t, result, "プレイヤーがフォールド")
 }
 
 func TestCaribbeanStudCuiPresenter_Output_Error(t *testing.T) {
