@@ -2,5 +2,22 @@
   "helpTitle": "Let It Ride",
   "helpBet": "  b <amount>           bet (places 3 equal bets)",
   "helpPull": "  p                    pull (withdraw current bet)",
-  "helpLetItRide": "  l                    let it ride (keep current bet)"
+  "helpLetItRide": "  l                    let it ride (keep current bet)",
+  "chipsLine": "chips: {{chips}}",
+  "phaseLine": "phase: {{phase}}",
+  "betLine": "bet: {{amount}} x {{active}} active",
+  "handLine": "hand: {{hand}}",
+  "betsLine": "bet1: {{bet1}}  bet2: {{bet2}}  bet3: {{bet3}}",
+  "playerHeader": "PLAYER",
+  "communityHeader": "COMMUNITY",
+  "phaseBet": "BET",
+  "phaseFirstDecision": "FIRST DECISION",
+  "phaseSecondDecision": "SECOND DECISION",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "betStatusRide": "RIDE",
+  "betStatusPull": "PULL",
+  "playerWins": "Player wins!",
+  "playerLoses": "Player loses.",
+  "totalPayoutLine": "total payout: {{payout}}"
 }

@@ -36,7 +36,7 @@ func TestLetItRideCuiPresenter_Output_BetPhase(t *testing.T) {
 	setupLetItRideCuiMockDefaults(m)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "chips: 1000")
+	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "BET")
 }
 
@@ -134,8 +134,8 @@ func TestLetItRideCuiPresenter_Output_EndPhase_Win(t *testing.T) {
 	m.On("GetTotalPayout").Return(900)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Player wins!")
-	assert.Contains(t, result, "total payout: 900")
+	assert.Contains(t, result, "プレイヤーの勝ち！")
+	assert.Contains(t, result, "合計払戻し: 900")
 }
 
 func TestLetItRideCuiPresenter_Output_EndPhase_Loss(t *testing.T) {
@@ -156,7 +156,7 @@ func TestLetItRideCuiPresenter_Output_EndPhase_Loss(t *testing.T) {
 	m.On("GetTotalPayout").Return(0)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Player loses.")
+	assert.Contains(t, result, "プレイヤーの負け。")
 }
 
 func TestLetItRideCuiPresenter_Output_UnknownPhase(t *testing.T) {
