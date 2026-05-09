@@ -34,8 +34,8 @@ func TestBaccaratCuiPresenter_Output_BetPhase(t *testing.T) {
 	setupBaccaratCuiMockDefaults(m)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "chips: 1000")
-	assert.Contains(t, result, "phase: BET")
+	assert.Contains(t, result, "チップ: 1000")
+	assert.Contains(t, result, "フェーズ: BET")
 }
 
 func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
@@ -64,11 +64,11 @@ func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "phase: END")
+	assert.Contains(t, result, "フェーズ: END")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "BANKER")
-	assert.Contains(t, result, "Player wins!")
-	assert.Contains(t, result, "payout: 200")
+	assert.Contains(t, result, "プレイヤーの勝ち")
+	assert.Contains(t, result, "払戻し: 200")
 	assert.Contains(t, result, "SPADE 9")
 }
 
@@ -96,7 +96,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_BankerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Banker wins!")
+	assert.Contains(t, result, "バンカーの勝ち")
 	assert.Contains(t, result, "BANKER")
 }
 
@@ -124,7 +124,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_Tie(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "Tie!")
+	assert.Contains(t, result, "タイ")
 	assert.Contains(t, result, "TIE")
 }
 
@@ -174,7 +174,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_UnknownResult(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "payout: 0")
+	assert.Contains(t, result, "払戻し: 0")
 }
 
 func TestBaccaratCuiPresenter_Output_UnknownBetType(t *testing.T) {

@@ -1,4 +1,21 @@
 {
   "helpTitle": "Baccarat (バカラ)",
-  "helpBet": "  b <amount> <type>    bet (type: 0=Player, 1=Banker, 2=Tie)"
+  "helpBet": "  b <amount> <type>    bet (type: 0=Player, 1=Banker, 2=Tie)",
+  "chipsLine": "チップ: {{chips}}",
+  "phaseLine": "フェーズ: {{phase}}",
+  "valueLine": "値: {{value}}",
+  "playerHeader": "PLAYER",
+  "bankerHeader": "BANKER",
+  "phaseBet": "BET",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "betTypePlayer": "PLAYER",
+  "betTypeBanker": "BANKER",
+  "betTypeTie": "TIE",
+  "betTypeUnknown": "UNKNOWN",
+  "betLine": "ベット: {{amount}} ({{type}})",
+  "playerWins": "プレイヤーの勝ち！",
+  "bankerWins": "バンカーの勝ち！",
+  "tie": "タイ！",
+  "payoutLine": "払戻し: {{payout}}"
 }
