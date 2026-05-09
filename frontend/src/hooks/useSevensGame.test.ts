@@ -139,3 +139,56 @@ describe('useSevensGame onSuccess replay skip', () => {
     expect(runReplaySpy).not.toHaveBeenCalled();
   });
 });
+
+describe('useSevensGame config (#1700: useGameConfig)', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    // Skip the actual replay so onSuccess settles synchronously (config is
+    // set before runReplay is awaited; waiting on config alone is enough).
+    vi.spyOn(gameReplay, 'runReplay').mockResolvedValue(undefined);
+    mockExec.mockResolvedValue(baseState);
+  });
+
+  it('exposes the default config on first render', async () => {
+    const { result } = renderHook(() => useSevensGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.config).toBeDefined());
+    expect(result.current.config.tunnelEnabled).toBe(false);
+    expect(result.current.config.jokerCount).toBe(0);
+    expect(result.current.config.maxPasses).toBe(5);
+  });
+
+  it('toggles a boolean config field via handleToggle', async () => {
+    const { result } = renderHook(() => useSevensGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.config).toBeDefined());
+    act(() => result.current.handleToggle('tunnelEnabled', true));
+    expect(result.current.config.tunnelEnabled).toBe(true);
+  });
+
+  it('updates a numeric config field via handleConfigChange', async () => {
+    const { result } = renderHook(() => useSevensGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.config).toBeDefined());
+    act(() => result.current.handleConfigChange('jokerCount', '2'));
+    expect(result.current.config.jokerCount).toBe(2);
+  });
+
+  it('translates server jokerReclaimEnabled / endStopEnabled into local jokerReclaim / endStop', async () => {
+    const { result } = renderHook(() => useSevensGame(), { wrapper: createWrapper() });
+    // Wait for the initial mount-triggered reset to settle on the default
+    // (jokerReclaim=false) before queueing the once-mock.
+    await waitFor(() => expect(result.current.config.jokerReclaim).toBe(false));
+
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      config: {
+        ...baseState.config,
+        jokerReclaimEnabled: true,
+        endStopEnabled: true,
+      },
+    });
+    act(() => {
+      result.current.exec('reset');
+    });
+    await waitFor(() => expect(result.current.config.jokerReclaim).toBe(true));
+    expect(result.current.config.endStop).toBe(true);
+  });
+});

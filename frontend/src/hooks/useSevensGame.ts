@@ -1,9 +1,29 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { sevensApi } from '../api/gameApi';
+import { type SevensConfigInput, sevensApi } from '../api/gameApi';
 import type { SevensAction, SevensResponse } from '../types/card';
 import { buildReplayStates } from '../utils/replayBuilder';
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
+import { useGameConfig } from './useGameConfig';
+
+/**
+ * Local config state shape for the Sevens settings panel. Mirrors the
+ * SevensConfigInput API shape (with all fields required) so handleManualReset
+ * can pass `config` straight to the api call without per-field plumbing.
+ */
+export type SevensConfigState = Required<SevensConfigInput>;
+
+const DEFAULT_SEVENS_CONFIG: SevensConfigState = {
+  tunnelEnabled: false,
+  tunnelSkipWidth: 0,
+  jokerCount: 0,
+  cpuStrategy: 0,
+  maxPasses: 5,
+  noJokerFinish: false,
+  jokerReclaim: false,
+  endStop: false,
+  jokerConsecutiveBanned: false,
+};
 
 function computeTableMinVals(tablePlaced: number[]): number[] {
   const result = [0, 0, 0, 0, 0];
@@ -74,37 +94,38 @@ function buildSevensReplayStates(finalState: SevensResponse): SevensResponse[] {
 /** Hook that manages Sevens game state, joker placement, configuration, and CPU replay. */
 export function useSevensGame() {
   const [jokerCardIdx, setJokerCardIdx] = useState<number | null>(null);
-  const [cfgTunnel, setCfgTunnel] = useState(false);
-  const [cfgTunnelSkipWidth, setCfgTunnelSkipWidth] = useState(0);
-  const [cfgJokerCount, setCfgJokerCount] = useState(0);
-  const [cfgCpuStrategy, setCfgCpuStrategy] = useState(0);
-  const [cfgMaxPasses, setCfgMaxPasses] = useState(5);
-  const [cfgNoJokerFinish, setCfgNoJokerFinish] = useState(false);
-  const [cfgJokerReclaim, setCfgJokerReclaim] = useState(false);
-  const [cfgEndStop, setCfgEndStop] = useState(false);
-  const [cfgJokerConsBan, setCfgJokerConsBan] = useState(false);
+  const { config, setConfig, handleConfigChange, handleToggle } =
+    useGameConfig<SevensConfigState>(DEFAULT_SEVENS_CONFIG);
   const [displayState, setDisplayState] = useState<SevensResponse | null>(null);
 
   const lastReplayedActionsRef = useRef<SevensResponse['cpuActions']>(undefined);
 
-  const onSuccess = useCallback(async (res: SevensResponse) => {
-    setJokerCardIdx(null);
-    setCfgTunnel(res.config.tunnelEnabled);
-    setCfgTunnelSkipWidth(res.config.tunnelSkipWidth);
-    setCfgJokerCount(res.config.jokerCount);
-    setCfgCpuStrategy(res.config.cpuStrategy);
-    setCfgMaxPasses(res.config.maxPasses);
-    setCfgNoJokerFinish(res.config.noJokerFinish);
-    setCfgJokerReclaim(res.config.jokerReclaimEnabled);
-    setCfgEndStop(res.config.endStopEnabled);
-    setCfgJokerConsBan(res.config.jokerConsecutiveBanned);
-    if (shouldSkipReplay(res.cpuActions ?? [], lastReplayedActionsRef, res, setDisplayState)) {
-      return;
-    }
-    await runReplay(res, setDisplayState, {
-      buildReplayStates: buildSevensReplayStates,
-    });
-  }, []);
+  const onSuccess = useCallback(
+    async (res: SevensResponse) => {
+      setJokerCardIdx(null);
+      // Server response uses jokerReclaimEnabled / endStopEnabled, but the API
+      // request uses jokerReclaim / endStop — translate while writing into
+      // local state so handleManualReset can pass `config` straight to the api.
+      setConfig({
+        tunnelEnabled: res.config.tunnelEnabled,
+        tunnelSkipWidth: res.config.tunnelSkipWidth,
+        jokerCount: res.config.jokerCount,
+        cpuStrategy: res.config.cpuStrategy,
+        maxPasses: res.config.maxPasses,
+        noJokerFinish: res.config.noJokerFinish,
+        jokerReclaim: res.config.jokerReclaimEnabled,
+        endStop: res.config.endStopEnabled,
+        jokerConsecutiveBanned: res.config.jokerConsecutiveBanned,
+      });
+      if (shouldSkipReplay(res.cpuActions ?? [], lastReplayedActionsRef, res, setDisplayState)) {
+        return;
+      }
+      await runReplay(res, setDisplayState, {
+        buildReplayStates: buildSevensReplayStates,
+      });
+    },
+    [setConfig],
+  );
 
   const { loading, error, exec, retry } = useGameApi(sevensApi.exec, { onSuccess });
 
@@ -139,24 +160,9 @@ export function useSevensGame() {
     exec,
     jokerCardIdx,
     setJokerCardIdx,
-    cfgTunnel,
-    setCfgTunnel,
-    cfgTunnelSkipWidth,
-    setCfgTunnelSkipWidth,
-    cfgJokerCount,
-    setCfgJokerCount,
-    cfgCpuStrategy,
-    setCfgCpuStrategy,
-    cfgMaxPasses,
-    setCfgMaxPasses,
-    cfgNoJokerFinish,
-    setCfgNoJokerFinish,
-    cfgJokerReclaim,
-    setCfgJokerReclaim,
-    cfgEndStop,
-    setCfgEndStop,
-    cfgJokerConsBan,
-    setCfgJokerConsBan,
+    config,
+    handleConfigChange,
+    handleToggle,
     handleCardPlay,
     handleJokerPlace,
     retry,
