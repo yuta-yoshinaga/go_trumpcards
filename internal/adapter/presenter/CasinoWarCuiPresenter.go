@@ -1,7 +1,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -19,8 +18,8 @@ func (cp *CasinoWarCuiPresenter) Output(cw interfaces.CasinoWarGame, lastErr err
 	var sb strings.Builder
 
 	sb.WriteString("----------\n")
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.chipsLine", "chips", strconv.Itoa(cw.GetChips())))
-	fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.phaseLine", "phase", cp.phaseStr(cw.GetPhase())))
+	sb.WriteString(i18n.Tf("casinowar.chipsLine", "chips", strconv.Itoa(cw.GetChips())) + "\n")
+	sb.WriteString(i18n.Tf("casinowar.phaseLine", "phase", cp.phaseStr(cw.GetPhase())) + "\n")
 	if cw.GetAnte() > 0 {
 		sb.WriteString(i18n.Tf("casinowar.anteLine", "ante", strconv.Itoa(cw.GetAnte())))
 		if cw.GetWarBet() > 0 {
@@ -32,10 +31,10 @@ func (cp *CasinoWarCuiPresenter) Output(cw interfaces.CasinoWarGame, lastErr err
 	if pc, dc := cw.GetPlayerCard(), cw.GetDealerCard(); pc != nil || dc != nil {
 		sb.WriteString("--- " + color.Bold(i18n.T("casinowar.initialHeader")) + " ---\n")
 		if pc != nil {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.playerLine", "card", cuiCardStr(pc)))
+			sb.WriteString(i18n.Tf("casinowar.playerLine", "card", cuiCardStr(pc)) + "\n")
 		}
 		if dc != nil {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.dealerLine", "card", cuiCardStr(dc)))
+			sb.WriteString(i18n.Tf("casinowar.dealerLine", "card", cuiCardStr(dc)) + "\n")
 		}
 	}
 
@@ -52,17 +51,17 @@ func (cp *CasinoWarCuiPresenter) Output(cw interfaces.CasinoWarGame, lastErr err
 	if pw, dw := cw.GetPlayerWarCard(), cw.GetDealerWarCard(); pw != nil || dw != nil {
 		sb.WriteString("--- " + color.Bold(i18n.T("casinowar.warHeader")) + " ---\n")
 		if pw != nil {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.playerLine", "card", cuiCardStr(pw)))
+			sb.WriteString(i18n.Tf("casinowar.playerLine", "card", cuiCardStr(pw)) + "\n")
 		}
 		if dw != nil {
-			fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.dealerLine", "card", cuiCardStr(dw)))
+			sb.WriteString(i18n.Tf("casinowar.dealerLine", "card", cuiCardStr(dw)) + "\n")
 		}
 	}
 
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
+		sb.WriteString(color.Red(lastErr.Error()) + "\n")
 	}
 
 	if cw.GetGameEndFlag() {
@@ -74,7 +73,7 @@ func (cp *CasinoWarCuiPresenter) Output(cw interfaces.CasinoWarGame, lastErr err
 		default:
 			sb.WriteString(color.Yellow(i18n.T("casinowar.push")) + "\n")
 		}
-		fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinowar.totalPayoutLine", "payout", strconv.Itoa(cw.GetTotalPayout())))
+		sb.WriteString(i18n.Tf("casinowar.totalPayoutLine", "payout", strconv.Itoa(cw.GetTotalPayout())) + "\n")
 		sb.WriteString("----------\n")
 	}
 
