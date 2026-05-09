@@ -20,6 +20,7 @@ export type GameKey =
   | 'letitride'
   | 'reddog'
   | 'casinowar'
+  | 'dragontiger'
   // Poker
   | 'poker'
   | 'holdem'
@@ -122,6 +123,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   letitride: CASINO,
   reddog: CASINO,
   casinowar: CASINO,
+  dragontiger: CASINO,
   // Poker
   poker: POKER,
   holdem: POKER,

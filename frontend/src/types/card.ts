@@ -2998,6 +2998,27 @@ export interface CasinoWarResponse {
   messageParams?: Record<string, string>;
 }
 
+/** Dragon Tiger game state response. Bet types: 0=Dragon, 1=Tiger, 2=Tie. */
+export interface DragonTigerResponse {
+  /** Card dealt to the Dragon slot. */
+  dragonCard?: Card;
+  /** Card dealt to the Tiger slot. */
+  tigerCard?: Card;
+  phase: number;
+  chips: number;
+  betAmount: number;
+  /** 0=Dragon, 1=Tiger, 2=Tie */
+  betType: number;
+  /** Domain GameResult: 1=Win (Dragon), 2=Lose (Tiger), 3=Draw (Tie) */
+  result: number;
+  payout: number;
+  /** Big Road history. 0=Dragon, 1=Tiger, 2=Tie. */
+  history: number[];
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
 /** President player data. */
 export interface PresidentPlayerData {
   id: number;

@@ -1,0 +1,35 @@
+{
+  "title": "Dragon Tiger",
+  "betGuide": "Bet on Dragon, Tiger, or Tie — higher rank wins (A=lowest, K=highest)",
+  "label": {
+    "chips": "Chips",
+    "bet": "Bet",
+    "dragon": "Dragon",
+    "tiger": "Tiger",
+    "bigRoad": "History (Big Road)"
+  },
+  "button": {
+    "betDragon": "Dragon",
+    "betTiger": "Tiger",
+    "betTie": "Tie (8:1)",
+    "reset": "Reset",
+    "clearHistory": "Clear history"
+  },
+  "phase": {
+    "bet": "BET",
+    "end": "RESULT"
+  },
+  "result": {
+    "dragonWins": "Dragon wins",
+    "tigerWins": "Tiger wins",
+    "tieWin": "Tie (Tie bet wins)",
+    "tieRefund": "Tie (half bet refunded)"
+  },
+  "payout": {
+    "total": "Payout"
+  },
+  "tutorial": {
+    "betButtons": "Pick Dragon, Tiger, or Tie and place your bet",
+    "results": "The result and Big Road history are shown here"
+  }
+}

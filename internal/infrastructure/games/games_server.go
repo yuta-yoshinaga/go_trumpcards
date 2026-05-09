@@ -398,4 +398,9 @@ func init() {
 			return usecase.NewPitchInteractor(domain.NewDefaultPitch(), new(presenter.PitchWebPresenter))
 		},
 		controller.NewPitchWebController)
+	BindWebControllerFor("dragontiger",
+		func() usecase.DragonTigerInteractorIF {
+			return usecase.NewDragonTigerInteractor(domain.NewDefaultDragonTiger(), new(presenter.DragonTigerWebPresenter))
+		},
+		controller.NewDragonTigerWebController)
 }

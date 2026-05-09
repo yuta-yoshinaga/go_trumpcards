@@ -1,0 +1,23 @@
+{
+  "helpTitle": "Dragon Tiger (ドラゴンタイガー)",
+  "helpBet": "  b <amount> <d|t|e>   ベット (d=ドラゴン, t=タイガー, e=タイ)",
+  "helpClear": "  clear                罫線履歴をクリア",
+  "outputTitle": "Dragon Tiger (ドラゴンタイガー)",
+  "chipsLine": "チップ: {{chips}}",
+  "phaseLine": "フェーズ: {{phase}}",
+  "betLine": "ベット: {{amount}} ({{type}})",
+  "dragonLine": "ドラゴン: {{card}}",
+  "tigerLine": "タイガー: {{card}}",
+  "phaseBet": "BET",
+  "phaseEnd": "END",
+  "phaseUnknown": "UNKNOWN",
+  "betTypeDragon": "DRAGON",
+  "betTypeTiger": "TIGER",
+  "betTypeTie": "TIE",
+  "betTypeUnknown": "UNKNOWN",
+  "dragonWins": "ドラゴンの勝ち！",
+  "tigerWins": "タイガーの勝ち！",
+  "tieWin": "タイ！タイベット的中！",
+  "tieRefund": "タイ。ベット額の半分を返還します。",
+  "payoutLine": "払戻し: {{payout}}"
+}

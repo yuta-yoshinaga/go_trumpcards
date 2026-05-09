@@ -581,6 +581,26 @@ export const CasinoWarPhase = {
   END: 5,
 } as const;
 
+/** Dragon Tiger phase constants (sync: internal/domain/DragonTiger.go). */
+export const DragonTigerPhase = {
+  BET: 1,
+  END: 2,
+} as const;
+
+/** Dragon Tiger bet-type constants (sync: internal/domain/DragonTiger.go). */
+export const DragonTigerBetType = {
+  DRAGON: 0,
+  TIGER: 1,
+  TIE: 2,
+} as const;
+
+/** Dragon Tiger Big Road history values (sync: internal/domain/DragonTiger.go). */
+export const DragonTigerHistoryResult = {
+  DRAGON: 0,
+  TIGER: 1,
+  TIE: 2,
+} as const;
+
 /** Nertz / Pounce phase constants (sync: internal/domain/Nertz.go). */
 export const NertzPhase = {
   IDLE: 0,
