@@ -311,6 +311,34 @@ func TestBlackJackSwitch_PayoutsRule_BustLoses(t *testing.T) {
 	assert.Equal(t, startChips+200, bs.GetPlayer().GetChips())
 }
 
+// TestBlackJackSwitch_DealerSkipsDrawWhenAllHandsBust は、両ハンドが既にバスト
+// している場合、ディーラーは追加で引かずホールカードを開けるだけで終局すること
+// を確認する（標準BJと同じ挙動）。
+func TestBlackJackSwitch_DealerSkipsDrawWhenAllHandsBust(t *testing.T) {
+	bs := NewDefaultBlackJackSwitch()
+	setSwitchHandsForTest(t, bs, 100,
+		[]*Card{NewCard(CardDesignSpade, 10, true), NewCard(CardDesignSpade, 10, true), NewCard(CardDesignSpade, 5, true)}, // 25 bust
+		[]*Card{NewCard(CardDesignHeart, 10, true), NewCard(CardDesignHeart, 9, true), NewCard(CardDesignHeart, 5, true)},  // 24 bust
+	)
+	bs.GetHands()[0].SetBusted(true)
+	bs.GetHands()[1].SetBusted(true)
+	// Dealer 12 — would normally draw to 17+ if reached.
+	bs.GetDealer().AddCard(NewCard(CardDesignClover, 5, true))
+	bs.GetDealer().AddCard(NewCard(CardDesignClover, 7, true))
+	bs.SetPhase(BJSwitchPhaseAction)
+	startChips := bs.GetPlayer().GetChips()
+
+	bs.dealerPlay()
+
+	// Dealer must not have drawn extra cards.
+	assert.Equal(t, 2, bs.GetDealer().GetCardsSize())
+	assert.Equal(t, BJSwitchPhaseEnd, bs.GetPhase())
+	assert.True(t, bs.GetGameEndFlag())
+	assert.Equal(t, GameResultLose, bs.GetHandResults()[0])
+	assert.Equal(t, GameResultLose, bs.GetHandResults()[1])
+	assert.Equal(t, startChips, bs.GetPlayer().GetChips()) // both bets forfeited
+}
+
 func TestBlackJackSwitch_OverallResult(t *testing.T) {
 	cases := []struct {
 		name string

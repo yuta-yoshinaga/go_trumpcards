@@ -82,16 +82,18 @@ func (bp *BlackJackSwitchWebPresenter) ActionLogOutput(g interfaces.BlackJackSwi
 }
 
 // blackJackSwitchEndMessage は終了時の表示メッセージと i18n キーを返す。
+// dealerPushed22 はバナーで別途表示されるため、トップレベルメッセージは
+// 常にプレイヤーから見た総合結果を反映する（ナチュラル21がディーラー22に勝つ
+// ようなケースで「全プッシュ」と誤認されないようにする）。
 func blackJackSwitchEndMessage(g interfaces.BlackJackSwitchGame) (string, string) {
-	if g.IsDealerPushed22() {
-		return "Dealer 22: hands pushed.", "blackjackswitch.result.dealer22Push"
-	}
 	switch g.GetOverallResult() {
 	case domain.GameResultWin:
 		return "You win!", "blackjackswitch.result.overallWin"
 	case domain.GameResultLose:
 		return "You lose.", "blackjackswitch.result.overallLose"
-	default:
-		return "Push.", "blackjackswitch.result.overallDraw"
 	}
+	if g.IsDealerPushed22() {
+		return "Dealer 22: hands pushed.", "blackjackswitch.result.dealer22Push"
+	}
+	return "Push.", "blackjackswitch.result.overallDraw"
 }

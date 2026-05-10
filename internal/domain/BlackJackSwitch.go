@@ -61,9 +61,12 @@ func NewBlackJackSwitch(tc *TrumpCards, player, dealer *BlackJackPlayer) *BlackJ
 	}
 }
 
+// BJSwitchDeckCount は標準的なテーブルに合わせたシューのデッキ数。
+const BJSwitchDeckCount = 6
+
 // NewDefaultBlackJackSwitch デフォルト設定のブラックジャック・スイッチを生成。
 func NewDefaultBlackJackSwitch() *BlackJackSwitch {
-	bs := NewBlackJackSwitch(NewTrumpCards(0), NewBlackJackPlayer(), NewBlackJackPlayer())
+	bs := NewBlackJackSwitch(NewTrumpCardsWithDecks(BJSwitchDeckCount, 0), NewBlackJackPlayer(), NewBlackJackPlayer())
 	bs.player.SetChips(BJSwitchDefaultChips)
 	bs.dealer.SetChips(BJSwitchDefaultChips)
 	return bs
@@ -97,13 +100,9 @@ func (bs *BlackJackSwitch) Reset() {
 	}
 	bs.player.Reset()
 	bs.dealer.Reset()
-	if bs.trumpCards == nil {
-		bs.trumpCards = NewTrumpCards(0)
-	} else {
-		// シューを毎ラウンド再構築（簡略化）。標準BJのようなペネトレーション
-		// 制御は変種の本質ではないため省略する。
-		bs.trumpCards = NewTrumpCards(0)
-	}
+	// シューを毎ラウンド再構築（簡略化）。標準BJのようなペネトレーション
+	// 制御は変種の本質ではないため省略する。
+	bs.trumpCards = NewTrumpCardsWithDecks(BJSwitchDeckCount, 0)
 	bs.trumpCards.Shuffle()
 }
 
@@ -168,8 +167,8 @@ func (bs *BlackJackSwitch) PlayerSwitch() error {
 	}
 	c0 := bs.hands[0].GetCard(1)
 	c1 := bs.hands[1].GetCard(1)
-	bs.hands[0] = newHandFromCards(bs.hands[0].GetBet(), bs.hands[0].GetCard(0), c1)
-	bs.hands[1] = newHandFromCards(bs.hands[1].GetBet(), bs.hands[1].GetCard(0), c0)
+	bs.hands[0].SetCard(1, c1)
+	bs.hands[1].SetCard(1, c0)
 	bs.switched = true
 	bs.appendLog(0, "switch", "switch second cards", []*Card{c0, c1})
 	return bs.beginActionPhase()
@@ -182,15 +181,6 @@ func (bs *BlackJackSwitch) PlayerKeep() error {
 	}
 	bs.appendLog(0, "keep", "keep current hands", nil)
 	return bs.beginActionPhase()
-}
-
-// newHandFromCards は2枚のカードと既存のベット額からハンドを生成する。
-func newHandFromCards(bet int, c1, c2 *Card) *BlackJackHand {
-	h := NewBlackJackHand()
-	h.SetBet(bet)
-	h.AddCard(c1)
-	h.AddCard(c2)
-	return h
 }
 
 // beginActionPhase はナチュラルBJを自動スタンドし、アクションフェーズへ進む。

@@ -31,6 +31,9 @@ const BJSWITCH_TUTORIAL_STEPS: TutorialStep[] = [];
 
 const BJSWITCH_CLI_HELP: string[] = [];
 
+// Mirrors the backend BJSwitchMaxBet (per-hand cap in internal/domain/BlackJackSwitch.go).
+const BJSWITCH_MAX_BET = 10000;
+
 /** Stub CLI parser — Blackjack Switch ships GUI-only for now (#1669 minimum). */
 function parseBlackjackSwitchCommand(): { error: string } {
   return { error: 'CLI commands are not yet implemented for Blackjack Switch.' };
@@ -224,7 +227,7 @@ function BlackJackSwitchPageContent() {
                   label={t('label.bet')}
                   value={betAmount}
                   onChange={setBetAmount}
-                  max={Math.floor(state.chips / 2)}
+                  max={Math.min(Math.floor(state.chips / 2), BJSWITCH_MAX_BET)}
                 />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
