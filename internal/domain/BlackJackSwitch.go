@@ -319,7 +319,7 @@ func (bs *BlackJackSwitch) dealerPlayCards() {
 			bs.appendLog(-1, "dealerstand", "dealer stand", nil)
 			break
 		}
-		if score == 17 && !(BJSwitchDealerHitsSoft17 && bs.dealer.IsSoft()) {
+		if score == 17 && (!BJSwitchDealerHitsSoft17 || !bs.dealer.IsSoft()) {
 			bs.appendLog(-1, "dealerstand", "dealer stand", nil)
 			break
 		}

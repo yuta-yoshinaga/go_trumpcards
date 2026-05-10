@@ -4,7 +4,7 @@ import { blackjackswitchApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BlackJackSwitchResponse } from '../types/card';
-import { BlackJackSwitchPhase } from '../types/phases';
+import { BlackJackSwitchPhase, BlackJackSwitchResult } from '../types/phases';
 import { BlackJackSwitchPage } from './BlackJackSwitchPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -165,6 +165,67 @@ describe('BlackJackSwitchPage', () => {
 
   it('renders the payout breakdown in END phase', async () => {
     mockApi.mockResolvedValue(dealer22EndState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('payout-breakdown')).toBeInTheDocument();
+  });
+
+  it('clicks Switch and posts the switch command', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByRole('button', { name: /Switch|スイッチ/ });
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('switch'));
+  });
+
+  it('clicks Keep and posts the keep command', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const btn = await screen.findByRole('button', { name: /Keep|そのまま/ });
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('keep'));
+  });
+
+  it('clicks Hit and posts the hit command', async () => {
+    mockApi.mockResolvedValue(actionState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /Hit|ヒット/ }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('hit'));
+  });
+
+  it('clicks Stand and posts the stand command', async () => {
+    mockApi.mockResolvedValue(actionState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /Stand|スタンド/ }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('stand'));
+  });
+
+  it('clicks Double Down and posts the doubledown command', async () => {
+    mockApi.mockResolvedValue(actionState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /Double Down|ダブルダウン/ }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('doubledown'));
+  });
+
+  it('renders WIN result keys in END phase', async () => {
+    mockApi.mockResolvedValue({
+      ...dealer22EndState,
+      dealerPushed22: false,
+      hands: switchState.hands.map((h) => ({ ...h, stood: true, result: BlackJackSwitchResult.WIN, payout: 200 })),
+      overallResult: BlackJackSwitchResult.WIN,
+      totalPayout: 400,
+    });
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('payout-breakdown')).toBeInTheDocument();
+  });
+
+  it('renders LOSE result keys in END phase', async () => {
+    mockApi.mockResolvedValue({
+      ...dealer22EndState,
+      dealerPushed22: false,
+      hands: switchState.hands.map((h) => ({ ...h, busted: true, result: BlackJackSwitchResult.LOSE, payout: 0 })),
+      overallResult: BlackJackSwitchResult.LOSE,
+      totalPayout: 0,
+    });
     renderWithProviders(<BlackJackSwitchPage />);
     expect(await screen.findByTestId('payout-breakdown')).toBeInTheDocument();
   });
