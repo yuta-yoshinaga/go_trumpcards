@@ -16,6 +16,7 @@ import caribbeanstud from '../../../docs/manual/web/caribbeanstud.md?raw';
 import casinowar from '../../../docs/manual/web/casinowar.md?raw';
 import cassino from '../../../docs/manual/web/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/web/clocksolitaire.md?raw';
+import contractrummy from '../../../docs/manual/web/contractrummy.md?raw';
 import crazyeights from '../../../docs/manual/web/crazyeights.md?raw';
 import crazypineapple from '../../../docs/manual/web/crazypineapple.md?raw';
 import cribbage from '../../../docs/manual/web/cribbage.md?raw';
@@ -132,6 +133,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/poker': poker,
   '/pokersquares': pokersquares,
   '/montecarlo': montecarlo,
+  '/contractrummy': contractrummy,
   '/pyramid': pyramid,
   '/razz': razz,
   '/badugi': badugi,

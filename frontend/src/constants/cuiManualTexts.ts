@@ -17,6 +17,7 @@ import caribbeanstud from '../../../docs/manual/cui/caribbeanstud.md?raw';
 import casinowar from '../../../docs/manual/cui/casinowar.md?raw';
 import cassino from '../../../docs/manual/cui/cassino.md?raw';
 import clocksolitaire from '../../../docs/manual/cui/clocksolitaire.md?raw';
+import contractrummy from '../../../docs/manual/cui/contractrummy.md?raw';
 import crazyeights from '../../../docs/manual/cui/crazyeights.md?raw';
 import crazypineapple from '../../../docs/manual/cui/crazypineapple.md?raw';
 import cribbage from '../../../docs/manual/cui/cribbage.md?raw';
@@ -95,6 +96,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/casinowar': casinowar,
   '/texasholdembonus': texasholdembonus,
   '/clocksolitaire': clocksolitaire,
+  '/contractrummy': contractrummy,
   '/crazyeights': crazyeights,
   '/cribbage': cribbage,
   '/daifugo': daifugo,

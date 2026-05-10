@@ -1288,6 +1288,24 @@ var gameRegistry = []GameRegistryEntry{
 				},
 			})
 	}},
+	{Name: "contractrummy", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewContractRummyCuiController(usecase.NewContractRummyInteractor(
+				domain.NewDefaultContractRummy(), new(presenter.ContractRummyCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "contractrummy.helpTitle",
+				CommandKeys: []string{
+					"contractrummy.helpDrawStock",
+					"contractrummy.helpDrawDiscard",
+					"contractrummy.helpMeldContract",
+					"contractrummy.helpMeldExtra",
+					"contractrummy.helpLayoff",
+					"contractrummy.helpDiscard",
+					"contractrummy.helpNextRound",
+				},
+				SettingKeys: []string{"contractrummy.helpSetDifficulty", "contractrummy.helpSetPenalty"},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

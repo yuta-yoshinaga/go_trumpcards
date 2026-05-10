@@ -170,6 +170,8 @@ tags:
     description: Blackjack Switch (ブラックジャック・スイッチ) game - blackjack variant where the player plays two hands and may swap the second card between them; in return, naturals pay 1:1 and a dealer 22 is a push (not a bust)
   - name: montecarlo
     description: Monte Carlo Solitaire (モンテカルロ・ソリティア) game - 5x5 grid solitaire; remove 8-direction adjacent same-rank pairs, then deal to compress the board top-left and refill from the stock; clear all 52 cards to win
+  - name: contractrummy
+    description: Contract Rummy (コントラクトラミー) game - 3-player rummy (1 human + 2 CPU) over 7 progressive rounds; each round has a fixed contract (sets / runs) the player must lay before going out; lowest cumulative penalty across rounds wins
 
 paths:
   /blackjack/exec:
@@ -7779,6 +7781,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MonteCarloResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /contractrummy/exec:
+    post:
+      tags:
+        - contractrummy
+      summary: Execute a Contract Rummy game command
+      description: |
+        Send a command to advance the Contract Rummy (コントラクトラミー) game
+        session identified by `sessionId`. 3 players (1 human + 2 CPU) play
+        7 progressive rounds. Each round has a fixed contract — a list of
+        slots (set of N or run of N) the player must lay down before being
+        able to lay off, lay extra melds, or go out by emptying their hand.
+        Lowest cumulative penalty across rounds wins.
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Draw      | `0`   | Draw from stock or take the discard top |
+        | Play      | `1`   | Optional meld / layoff / extra, then discard |
+        | RoundEnd  | `2`   | Round finished, awaiting `nextround` |
+        | GameEnd   | `3`   | Game finished after round 7 |
+
+        | Command          | Aliases       | Description |
+        |------------------|---------------|-------------|
+        | `reset`          | `r`           | Start / restart a game |
+        | `drawstock`      | `ds`          | Draw a card from the stock |
+        | `drawdiscard`    | `dd`          | Take the top of the discard pile |
+        | `meldcontract`   | `mc`          | Lay down the round contract (`indicesPerSlot` required) |
+        | `meldextra`      | `me`          | Lay an extra meld after the contract is met (`cardIndices` required) |
+        | `layoff`         | `lo`          | Add one card to an existing meld (`targetPlayerIdx`, `meldIdx`, `cardIndex` required) |
+        | `discard`        | `d`           | Discard one card to end the turn (`cardIndex` required) |
+        | `nextround`      | `nr`          | Advance to the next round |
+        | `log`            | `l`           | View action log |
+      operationId: contractrummyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContractRummyRequest'
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractRummyResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
@@ -17180,6 +17230,158 @@ components:
           description: True when no remove pair exists and `deal` cannot change the board.
         hint:
           $ref: '#/components/schemas/MonteCarloHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    ContractRummyRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Game command. Accepted values include `reset`, `drawstock`, `drawdiscard`, `meldcontract`, `meldextra`, `layoff`, `discard`, `nextround`, `log`, plus their short aliases.
+          enum: [r, reset, ds, drawstock, dd, drawdiscard, mc, meldcontract, me, meldextra, lo, layoff, d, discard, nr, nextround, log, l]
+          example: drawstock
+        cardIndex:
+          type: integer
+          description: Index in the human player's hand (used by `discard` and `layoff`).
+        cardIndices:
+          type: array
+          description: Indices in the human player's hand (used by `meldextra`).
+          items:
+            type: integer
+        indicesPerSlot:
+          type: array
+          description: Outer index = contract slot; inner array = card indices to fill that slot. Used by `meldcontract`.
+          items:
+            type: array
+            items:
+              type: integer
+        targetPlayerIdx:
+          type: integer
+          description: Target player index for `layoff`.
+        meldIdx:
+          type: integer
+          description: Target meld index on the target player for `layoff`.
+        config:
+          type: object
+          description: Optional config to apply on `reset`.
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: 0=Easy, 1=Normal, 2=Hard.
+            failContractPenalty:
+              type: integer
+              description: Extra penalty added when a player ends a round without meeting the contract.
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    ContractRummyContractSlot:
+      type: object
+      description: One slot of the round contract.
+      properties:
+        kind:
+          type: integer
+          description: 0=set (same rank), 1=run (same suit consecutive).
+        size:
+          type: integer
+          description: Number of cards required to fill this slot.
+
+    ContractRummyMeld:
+      type: object
+      description: A meld laid on the table.
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+
+    ContractRummyPlayerOutput:
+      type: object
+      description: Player state for Contract Rummy.
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        melds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContractRummyMeld'
+        contractMet:
+          type: boolean
+        roundScore:
+          type: integer
+        cumulativeScore:
+          type: integer
+
+    ContractRummyResponse:
+      type: object
+      description: Current state of the Contract Rummy game.
+      required:
+        - players
+        - phase
+        - roundNumber
+        - totalRounds
+        - currentPlayerIdx
+        - drawPileCount
+        - gameEndFlag
+        - winnerIdx
+        - roundWinnerIdx
+        - contractSlots
+        - config
+        - message
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContractRummyPlayerOutput'
+        phase:
+          type: integer
+          description: 0=Draw, 1=Play, 2=RoundEnd, 3=GameEnd.
+        roundNumber:
+          type: integer
+        totalRounds:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        roundWinnerIdx:
+          type: integer
+        contractSlots:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContractRummyContractSlot'
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            failContractPenalty:
+              type: integer
         message:
           type: string
         messageCode:
