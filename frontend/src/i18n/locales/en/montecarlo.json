@@ -1,0 +1,36 @@
+{
+  "title": "Monte Carlo Solitaire",
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "label": {
+    "stockCount": "Stock",
+    "removedCount": "Removed",
+    "dealCount": "Deals",
+    "selectFirst": "Select the first card",
+    "selectSecond": "Select an adjacent same-rank card",
+    "stalemate": "No moves available",
+    "win": "All 52 cards removed!",
+    "loss": "Game Over"
+  },
+  "button": {
+    "deal": "Deal",
+    "reset": "Reset",
+    "undo": "Undo",
+    "giveup": "Give Up",
+    "hint": "Hint"
+  },
+  "tutorial": {
+    "board": "From the 5x5 grid, pick two adjacent (orthogonal or diagonal) cards of the same rank to remove them.",
+    "remove": "Tap the first card, then tap an adjacent same-rank card. Both cells become empty.",
+    "deal": "When no pair is visible, press Deal to compress the board to the top-left and fill empties from the stock.",
+    "win": "Remove all 52 cards to clear the game. If the stock is empty and no pairs remain, it's game over."
+  },
+  "hint": {
+    "removePair": "Remove ({{r1}},{{c1}}) and ({{r2}},{{c2}})",
+    "deal": "Press Deal to compress the board",
+    "none": "No suggested move available"
+  }
+}

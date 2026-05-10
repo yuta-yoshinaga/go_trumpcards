@@ -1,7 +1,7 @@
 //go:build js && wasm
 
 // Package solo binds the Cloudflare Worker KV-backed handlers for the
-// 16 solitaire and rummy variants. A worker main must blank-import this
+// 17 solitaire and rummy variants. A worker main must blank-import this
 // package so the init below runs before games.RegisterCategory is called.
 package solo
 
@@ -182,4 +182,12 @@ func init() {
 			return usecase.RestoreBakersDozenInteractor(data, new(presenter.BakersDozenWebPresenter))
 		},
 		controller.NewBakersDozenWebControllerWithProvider)
+	games.RegisterKVGame("montecarlo", games.CategorySolo,
+		func() usecase.MonteCarloInteractorIF {
+			return usecase.NewMonteCarloInteractor(domain.NewDefaultMonteCarlo(), new(presenter.MonteCarloWebPresenter))
+		},
+		func(data []byte) (usecase.MonteCarloInteractorIF, error) {
+			return usecase.RestoreMonteCarloInteractor(data, new(presenter.MonteCarloWebPresenter))
+		},
+		controller.NewMonteCarloWebControllerWithProvider)
 }

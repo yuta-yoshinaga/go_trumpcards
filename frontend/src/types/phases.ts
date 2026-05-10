@@ -556,6 +556,13 @@ export const PokerSquaresPhase = {
   COMPLETE: 1,
 } as const;
 
+/** Monte Carlo Solitaire phase constants (sync: internal/domain/MonteCarlo.go). */
+export const MonteCarloPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 export const LetItRidePhase = {
   BET: 1,
   FIRST_DECISION: 2,

@@ -31,6 +31,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MonteCarloResponse,
   NapoleonResponse,
   NertzResponse,
   OhHellResponse,
@@ -104,6 +105,7 @@ import { getJokerPokerHint } from '../utils/hints/jokerpokerHint';
 import { getKlondikeHint } from '../utils/hints/klondikeHint';
 import { getLetitrideHint } from '../utils/hints/letitrideHint';
 import { getMemoryHint } from '../utils/hints/memoryHint';
+import { getMonteCarloHint } from '../utils/hints/montecarloHint';
 import { getNapoleonHint } from '../utils/hints/napoleonHint';
 import { getNertzHint } from '../utils/hints/nertzHint';
 import { getOhHellHint } from '../utils/hints/ohhellHint';
@@ -203,6 +205,7 @@ const hintFactories = {
   pageone: (s) => getPageOneHint(s as PageOneResponse),
   pigtail: (s) => getPigstailHint(s as PigsTailResponse),
   pokersquares: (s) => getPokersquaresHint(s as PokerSquaresResponse),
+  montecarlo: (s) => getMonteCarloHint(s as MonteCarloResponse),
   letitride: (s) => getLetitrideHint(s as LetItRideResponse),
   reddog: (s) => getReddogHint(s as RedDogResponse),
   casinowar: (s) => getCasinowarHint(s as CasinoWarResponse),
