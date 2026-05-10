@@ -18,7 +18,6 @@ import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/but
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, ContractRummyContractSlot, ContractRummyResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
 
 /** Phase identifiers for Contract Rummy. */
 const CR_PHASE = {
@@ -204,7 +203,7 @@ function ContractRummyPageContent() {
         {state.discardTop && (
           <span className="flex items-center gap-2">
             {t('discardLabel')}:
-            <AnimatedCard card={state.discardTop} cardWidth={cardWidth} alt={cardAlt(state.discardTop)} showFront />
+            <AnimatedCard card={state.discardTop} width={cardWidth} />
           </span>
         )}
       </section>
@@ -245,13 +244,7 @@ function ContractRummyPageContent() {
                     }`}
                   >
                     {m.cards.map((c, ci) => (
-                      <AnimatedCard
-                        key={`${p.id}-${mi}-${ci}`}
-                        card={c}
-                        cardWidth={cardWidth * 0.6}
-                        alt={cardAlt(c)}
-                        showFront
-                      />
+                      <AnimatedCard key={`${p.id}-${mi}-${ci}`} card={c} width={cardWidth * 0.6} />
                     ))}
                   </button>
                 ))}
@@ -285,7 +278,7 @@ function ContractRummyPageContent() {
                     isInSlot ? 'opacity-40' : ''
                   }`}
                 >
-                  <AnimatedCard card={c} cardWidth={cardWidth} alt={cardAlt(c)} showFront />
+                  <AnimatedCard card={c} width={cardWidth} />
                 </button>
               );
             })}
