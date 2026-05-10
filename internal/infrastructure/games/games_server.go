@@ -408,4 +408,9 @@ func init() {
 			return usecase.NewBlackJackSwitchInteractor(domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchWebPresenter))
 		},
 		controller.NewBlackJackSwitchWebController)
+	BindWebControllerFor("montecarlo",
+		func() usecase.MonteCarloInteractorIF {
+			return usecase.NewMonteCarloInteractor(domain.NewDefaultMonteCarlo(), new(presenter.MonteCarloWebPresenter))
+		},
+		controller.NewMonteCarloWebController)
 }

@@ -1272,6 +1272,22 @@ var gameRegistry = []GameRegistryEntry{
 				ExtraCommandLines: []string{"  log                  action log"},
 			})
 	}},
+	{Name: "montecarlo", NewCui: func() cuiGame {
+		return cuiEntry(
+			controller.NewMonteCarloCuiController(usecase.NewMonteCarloInteractor(
+				domain.NewDefaultMonteCarlo(), new(presenter.MonteCarloCuiPresenter))),
+			CuiHelpSpec{
+				TitleKey: "montecarlo.helpTitle",
+				CommandKeys: []string{
+					"montecarlo.helpRemove",
+					"montecarlo.helpDeal",
+					"montecarlo.helpUndo",
+					"montecarlo.helpHint",
+					"montecarlo.helpGiveup",
+					"montecarlo.helpLog",
+				},
+			})
+	}},
 }
 
 // GameRegistry returns a copy of the game registry for external use.

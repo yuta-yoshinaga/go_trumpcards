@@ -87,6 +87,7 @@ export type GameKey =
   | 'scorpion'
   | 'accordion'
   | 'pokersquares'
+  | 'montecarlo'
   | 'calculation'
   // Counting/Rummy
   | 'ginrummy'
@@ -191,6 +192,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   scorpion: CASINO,
   accordion: CASINO,
   pokersquares: CASINO,
+  montecarlo: CASINO,
   calculation: CASINO,
   // Counting/Rummy
   ginrummy: BLUE,

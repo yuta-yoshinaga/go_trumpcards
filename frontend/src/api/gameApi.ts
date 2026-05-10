@@ -40,6 +40,7 @@ import type {
   KlondikeResponse,
   LetItRideResponse,
   MemoryResponse,
+  MonteCarloResponse,
   NapoleonResponse,
   NertzConfig as NertzConfigType,
   NertzMoveZone,
@@ -177,6 +178,7 @@ const workerUrl: Record<string, string> = {
   tonk: WORKER_CLASSIC,
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
+  montecarlo: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1487,6 +1489,17 @@ export const blackjackswitchApi = {
     gameExec<BlackJackSwitchResponse>('blackjackswitch', { command, amount }),
 };
 
+/** API client for the Monte Carlo Solitaire /montecarlo/exec endpoint. */
+export const montecarloApi = {
+  exec: (
+    command: 'reset' | 'remove' | 'deal' | 'undo' | 'giveup' | 'hint' | 'log',
+    fromR?: number,
+    fromC?: number,
+    toR?: number,
+    toC?: number,
+  ) => gameExec<MonteCarloResponse>('montecarlo', { command, fromR, fromC, toR, toC }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1567,6 +1580,7 @@ const games = [
   'pitch',
   'dragontiger',
   'blackjackswitch',
+  'montecarlo',
 ] as const;
 type Game = (typeof games)[number];
 

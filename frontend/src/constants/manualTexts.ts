@@ -39,6 +39,7 @@ import jokerpoker from '../../../docs/manual/web/jokerpoker.md?raw';
 import klondike from '../../../docs/manual/web/klondike.md?raw';
 import letitride from '../../../docs/manual/web/letitride.md?raw';
 import memory from '../../../docs/manual/web/memory.md?raw';
+import montecarlo from '../../../docs/manual/web/montecarlo.md?raw';
 import napoleon from '../../../docs/manual/web/napoleon.md?raw';
 import nertz from '../../../docs/manual/web/nertz.md?raw';
 import ohhell from '../../../docs/manual/web/ohhell.md?raw';
@@ -130,6 +131,7 @@ export const manualTexts: Readonly<Record<string, string>> = {
   '/pinochle': pinochle,
   '/poker': poker,
   '/pokersquares': pokersquares,
+  '/montecarlo': montecarlo,
   '/pyramid': pyramid,
   '/razz': razz,
   '/badugi': badugi,
