@@ -601,6 +601,21 @@ export const DragonTigerHistoryResult = {
   TIE: 2,
 } as const;
 
+/** Blackjack Switch phase constants (sync: internal/domain/BlackJackSwitch.go). */
+export const BlackJackSwitchPhase = {
+  BET: 1,
+  SWITCH: 2,
+  ACTION: 3,
+  END: 4,
+} as const;
+
+/** Blackjack Switch domain GameResult values (sync: internal/domain/BlackJack.go). */
+export const BlackJackSwitchResult = {
+  WIN: 1,
+  DRAW: 0,
+  LOSE: -1,
+} as const;
+
 /** Nertz / Pounce phase constants (sync: internal/domain/Nertz.go). */
 export const NertzPhase = {
   IDLE: 0,

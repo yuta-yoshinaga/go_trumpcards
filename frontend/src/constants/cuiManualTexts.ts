@@ -8,6 +8,7 @@ import baccarat from '../../../docs/manual/cui/baccarat.md?raw';
 import badugi from '../../../docs/manual/cui/badugi.md?raw';
 import bakersdozen from '../../../docs/manual/cui/bakersdozen.md?raw';
 import blackjack from '../../../docs/manual/cui/blackjack.md?raw';
+import blackjackswitch from '../../../docs/manual/cui/blackjackswitch.md?raw';
 import bridge from '../../../docs/manual/cui/bridge.md?raw';
 import calculation from '../../../docs/manual/cui/calculation.md?raw';
 import canasta from '../../../docs/manual/cui/canasta.md?raw';
@@ -100,6 +101,7 @@ export const cuiManualTexts: Readonly<Record<string, string>> = {
   '/deuceswild': deuceswild,
   '/doubt': doubt,
   '/dragontiger': dragontiger,
+  '/blackjackswitch': blackjackswitch,
   '/bakersdozen': bakersdozen,
   '/durak': durak,
   '/egyptianratscrew': egyptianratscrew,

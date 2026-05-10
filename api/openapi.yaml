@@ -166,6 +166,8 @@ tags:
     description: Pitch / Setback (ピッチ / セットバック) game - 4-player single-handed Auction Pitch trick-taking; bid 0/2/3/4 then compete for High/Low/Jack/Game points (4 max); set back on a missed bid
   - name: dragontiger
     description: Dragon Tiger (ドラゴンタイガー) game - simple 1-on-1 high-card showdown; Dragon vs Tiger (Aces low, Kings high), 1:1 on win, half refund on tie for Dragon/Tiger bets, 8:1 on tie for the Tie bet
+  - name: blackjackswitch
+    description: Blackjack Switch (ブラックジャック・スイッチ) game - blackjack variant where the player plays two hands and may swap the second card between them; in return, naturals pay 1:1 and a dealer 22 is a push (not a bust)
 
 paths:
   /blackjack/exec:
@@ -7638,6 +7640,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DragonTigerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /blackjackswitch/exec:
+    post:
+      tags:
+        - blackjackswitch
+      summary: Execute a Blackjack Switch game command
+      description: |
+        Send a command to advance the Blackjack Switch (ブラックジャック・スイッチ)
+        game session identified by `sessionId`. The player is dealt two hands
+        and may swap the second card between them. In return, naturals pay 1:1
+        (not 3:2) and a dealer 22 is treated as a push for any non-natural hand.
+
+        | Phase  | Value | Description |
+        |--------|-------|-------------|
+        | Bet    | `1`   | Place bet (per hand; total cost is 2x amount) |
+        | Switch | `2`   | Choose to switch the second cards between hands |
+        | Action | `3`   | Hit / stand / double down on each hand in turn |
+        | End    | `4`   | Round complete |
+
+        | Command       | Aliases | Description |
+        |---------------|---------|-------------|
+        | `reset`       | `r`     | Start / restart a game |
+        | `bet`         | `b`     | Place a bet (requires `amount`; total cost = amount * 2) |
+        | `switch`      | `sw`    | Swap second cards between hands |
+        | `keep`        | `k`     | Keep current hands and proceed to action |
+        | `hit`         | `h`     | Hit the current hand |
+        | `stand`       | `s`     | Stand the current hand |
+        | `doubledown`  | `dd`    | Double down on the current hand (requires 2 cards) |
+        | `log`         | —       | View action log |
+      operationId: blackjackswitchExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlackJackSwitchRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 100 per hand (total 200)
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+              switch:
+                summary: Swap second cards
+                value:
+                  command: switch
+                  sessionId: my-session-001
+              hit:
+                summary: Hit the current hand
+                value:
+                  command: hit
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlackJackSwitchResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
@@ -16199,6 +16268,107 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template.
+
+    # -------------------------------------------------------------------------
+    # Blackjack Switch (ブラックジャック・スイッチ)
+    # -------------------------------------------------------------------------
+    BlackJackSwitchRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, switch, sw, keep, k, hit, h, stand, s, doubledown, dd, log, l]
+          description: Game command to execute.
+        amount:
+          type: integer
+          description: Bet amount per hand (required for `bet`). Total cost is amount * 2.
+          example: 100
+        sessionId:
+          type: string
+          description: Session identifier for game state persistence.
+
+    BlackJackSwitchHand:
+      type: object
+      properties:
+        cards:
+          type: array
+          description: Cards in the hand. Null entries are face-down placeholders.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Card'
+              - type: "null"
+        score:
+          type: integer
+          description: Best blackjack score for this hand (Aces 1 or 11).
+        bet:
+          type: integer
+          description: Bet amount on this hand (doubles after a successful double-down).
+        stood:
+          type: boolean
+        doubled:
+          type: boolean
+        busted:
+          type: boolean
+        isBJ:
+          type: boolean
+          description: True if the hand is a 2-card 21 (natural). Pays 1:1 in this variant.
+        result:
+          type: integer
+          description: "Per-hand domain.GameResult: 1=Win, 0=Draw, -1=Lose. Set after End phase."
+        payout:
+          type: integer
+          description: Per-hand payout including stake return.
+
+    BlackJackSwitchResponse:
+      type: object
+      properties:
+        hands:
+          type: array
+          description: Always two hands; the player may switch their second cards in the Switch phase.
+          items:
+            $ref: '#/components/schemas/BlackJackSwitchHand'
+        dealerCards:
+          type: array
+          description: Dealer's cards. The hole card (index 1) is null until the round ends.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Card'
+              - type: "null"
+        dealerScore:
+          type: integer
+          description: Visible dealer score (up-card only mid-round; full score at end).
+        phase:
+          type: integer
+          description: "Current game phase: 1=Bet, 2=Switch, 3=Action, 4=End."
+        currentHandIdx:
+          type: integer
+          description: Index of the player hand currently acting (during Action phase).
+        chips:
+          type: integer
+          description: Player's chip balance.
+        switched:
+          type: boolean
+          description: True when the player exercised the switch this round.
+        dealerPushed22:
+          type: boolean
+          description: True when the dealer ended on 22 (push rule, not natural BJ).
+        overallResult:
+          type: integer
+          description: "Aggregate of hand results: 1=net win, 0=draw, -1=net loss."
+        totalPayout:
+          type: integer
+          description: Sum of per-hand payouts.
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
 
     # -------------------------------------------------------------------------
     # Pitch / Setback (ピッチ / セットバック)

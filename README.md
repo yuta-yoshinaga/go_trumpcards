@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した77種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した79種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -97,6 +97,7 @@ Go + Clean Architecture で実装した77種類のトランプゲーム。CLI �
 | カジノウォー (Casino War) | `casinowar` | [CUI](docs/manual/cui/casinowar.md) / [Web](docs/manual/web/casinowar.md) |
 | ピッチ / セットバック (Pitch / Setback) | `pitch` | [CUI](docs/manual/cui/pitch.md) / [Web](docs/manual/web/pitch.md) |
 | ドラゴンタイガー (Dragon Tiger) | `dragontiger` | [CUI](docs/manual/cui/dragontiger.md) / [Web](docs/manual/web/dragontiger.md) |
+| ブラックジャック・スイッチ (Blackjack Switch) | `blackjackswitch` | [CUI](docs/manual/cui/blackjackswitch.md) / [Web](docs/manual/web/blackjackswitch.md) |
 
 ## Demo
 
