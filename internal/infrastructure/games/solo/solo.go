@@ -190,4 +190,12 @@ func init() {
 			return usecase.RestoreMonteCarloInteractor(data, new(presenter.MonteCarloWebPresenter))
 		},
 		controller.NewMonteCarloWebControllerWithProvider)
+	games.RegisterKVGame("contractrummy", games.CategorySolo,
+		func() usecase.ContractRummyInteractorIF {
+			return usecase.NewContractRummyInteractor(domain.NewDefaultContractRummy(), new(presenter.ContractRummyWebPresenter))
+		},
+		func(data []byte) (usecase.ContractRummyInteractorIF, error) {
+			return usecase.RestoreContractRummyInteractor(data, new(presenter.ContractRummyWebPresenter))
+		},
+		controller.NewContractRummyWebControllerWithProvider)
 }

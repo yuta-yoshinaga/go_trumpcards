@@ -16,6 +16,7 @@ import type {
   CasinoWarResponse,
   CassinoResponse,
   ClockSolitaireResponse,
+  ContractRummyResponse,
   CrazyEightsResponse,
   CribbageResponse,
   DaifugoConfigInput,
@@ -179,6 +180,7 @@ const workerUrl: Record<string, string> = {
   dragontiger: WORKER_CASINO,
   blackjackswitch: WORKER_CASINO,
   montecarlo: WORKER_SOLO,
+  contractrummy: WORKER_SOLO,
 };
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -1500,6 +1502,30 @@ export const montecarloApi = {
   ) => gameExec<MonteCarloResponse>('montecarlo', { command, fromR, fromC, toR, toC }),
 };
 
+/** API client for the Contract Rummy /contractrummy/exec endpoint. */
+export const contractrummyApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'drawstock'
+      | 'drawdiscard'
+      | 'meldcontract'
+      | 'meldextra'
+      | 'layoff'
+      | 'discard'
+      | 'nextround'
+      | 'log',
+    params?: {
+      cardIndex?: number;
+      cardIndices?: number[];
+      indicesPerSlot?: number[][];
+      targetPlayerIdx?: number;
+      meldIdx?: number;
+      config?: { cpuDifficulty?: number; failContractPenalty?: number };
+    },
+  ) => gameExec<ContractRummyResponse>('contractrummy', { command, ...(params ?? {}) }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -1581,6 +1607,7 @@ const games = [
   'dragontiger',
   'blackjackswitch',
   'montecarlo',
+  'contractrummy',
 ] as const;
 type Game = (typeof games)[number];
 

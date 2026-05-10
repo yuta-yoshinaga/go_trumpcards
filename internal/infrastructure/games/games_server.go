@@ -413,4 +413,9 @@ func init() {
 			return usecase.NewMonteCarloInteractor(domain.NewDefaultMonteCarlo(), new(presenter.MonteCarloWebPresenter))
 		},
 		controller.NewMonteCarloWebController)
+	BindWebControllerFor("contractrummy",
+		func() usecase.ContractRummyInteractorIF {
+			return usecase.NewContractRummyInteractor(domain.NewDefaultContractRummy(), new(presenter.ContractRummyWebPresenter))
+		},
+		controller.NewContractRummyWebController)
 }
