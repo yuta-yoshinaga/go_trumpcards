@@ -471,7 +471,7 @@ func (g *ContractRummy) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) err
 
 	card := current.GetCard(cardIndex)
 	meld := target.GetMeld(meldIdx)
-	if !canAddToMeld(meld, card) {
+	if !canAddToContractRummyMeld(meld, card) {
 		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%s はそのメルドに追加できません", cardStr(card)))
 	}
 	target.AddCardToMeld(meldIdx, card)
@@ -682,7 +682,7 @@ func (g *ContractRummy) findLayoffTargetFor(card *Card) int {
 			continue
 		}
 		for mi := 0; mi < g.players[pi].GetMeldCount(); mi++ {
-			if canAddToMeld(g.players[pi].GetMeld(mi), card) {
+			if canAddToContractRummyMeld(g.players[pi].GetMeld(mi), card) {
 				return mi
 			}
 		}
@@ -697,7 +697,7 @@ func (g *ContractRummy) locateLayoffTarget(card *Card) (int, int, bool) {
 			continue
 		}
 		for mi := 0; mi < g.players[pi].GetMeldCount(); mi++ {
-			if canAddToMeld(g.players[pi].GetMeld(mi), card) {
+			if canAddToContractRummyMeld(g.players[pi].GetMeld(mi), card) {
 				return pi, mi, true
 			}
 		}
@@ -714,7 +714,7 @@ func (g *ContractRummy) finishRound(winnerIdx int) {
 
 	for i := range g.players {
 		penalty := 0
-		if i != winnerIdx || winnerIdx < 0 {
+		if winnerIdx < 0 || i != winnerIdx {
 			for k := 0; k < g.players[i].GetCardsSize(); k++ {
 				penalty += contractRummyCardPenalty(g.players[i].GetCard(k))
 			}
@@ -910,21 +910,24 @@ func contractSlotLabel(slot ContractSlot) string {
 	return fmt.Sprintf("Run of %d", slot.Size)
 }
 
-// ValidateContractSlot cards がスロットの条件（種別・枚数・組み合わせ）を満たすか
+// ValidateContractSlot cards がスロットの条件（種別・枚数・組み合わせ）を満たすか。
+// セットは同ランクのみを要求し、スートの重複は許容する（2 デッキ運用の標準ルール）。
 func ValidateContractSlot(slot ContractSlot, cards []*Card) bool {
 	if len(cards) != slot.Size {
 		return false
 	}
 	switch slot.Kind {
 	case ContractSlotSet:
-		return isSet(cards) && allDistinctSuits(cards)
+		return isSet(cards)
 	case ContractSlotRun:
 		return isRun(cards)
 	}
 	return false
 }
 
-// isRun cards が同スートの連続するランかを判定する
+// isRun cards が同スートの連続するランかを判定する。
+// Ace は low (A-2-3) または high (J-Q-K-A) のどちらでも有効だが、
+// 同一の run の中でラップアラウンド (K-A-2) は不可。
 func isRun(cards []*Card) bool {
 	if len(cards) < 3 {
 		return false
@@ -942,7 +945,33 @@ func isRun(cards []*Card) bool {
 		seen[c.GetValue()] = true
 		values = append(values, c.GetValue())
 	}
-	sort.Ints(values)
+	for _, variant := range aceVariants(values) {
+		if isConsecutive(variant) {
+			return true
+		}
+	}
+	return false
+}
+
+// aceVariants は与えられた値リストから Ace-low と (該当時のみ) Ace-high の
+// 候補を返す。値リストはコピーされソートされる。
+func aceVariants(values []int) [][]int {
+	low := make([]int, len(values))
+	copy(low, values)
+	sort.Ints(low)
+	out := [][]int{low}
+	if len(low) > 0 && low[0] == 1 {
+		high := make([]int, 0, len(low))
+		high = append(high, low[1:]...)
+		high = append(high, 14)
+		sort.Ints(high)
+		out = append(out, high)
+	}
+	return out
+}
+
+// isConsecutive はソート済みの整数列が 1 ずつ増加していれば true を返す。
+func isConsecutive(values []int) bool {
 	for i := 1; i < len(values); i++ {
 		if values[i] != values[i-1]+1 {
 			return false
@@ -951,12 +980,51 @@ func isRun(cards []*Card) bool {
 	return true
 }
 
-// IsContractRummyMeld cards が有効な追加メルド（セット 3+ または ラン 3+）か判定する
+// canAddToContractRummyMeld は ContractRummy 用のレイオフ可否判定。
+// GinRummy 系の canAddToMeld との違いは:
+//   - セットでのスート重複を許容する（2 デッキ運用の標準）
+//   - ラン末尾に Ace を継ぎ足せる（K-high の上に A を置ける）
+func canAddToContractRummyMeld(meld []*Card, card *Card) bool {
+	if len(meld) == 0 || card == nil {
+		return false
+	}
+	if isSet(meld) {
+		// 2 デッキでは同ランクなら何枚でも追加可能（実質上限なし）。
+		return card.GetValue() == meld[0].GetValue()
+	}
+	// ラン: 同スートで両端のいずれかに連続するか、または K の隣に Ace を置けるか。
+	if card.GetDesign() != meld[0].GetDesign() {
+		return false
+	}
+	minVal, maxVal := meld[0].GetValue(), meld[0].GetValue()
+	for _, m := range meld[1:] {
+		if m.GetValue() < minVal {
+			minVal = m.GetValue()
+		}
+		if m.GetValue() > maxVal {
+			maxVal = m.GetValue()
+		}
+	}
+	v := card.GetValue()
+	if v == minVal-1 || v == maxVal+1 {
+		return true
+	}
+	// Ace-high: K (13) の上に A (1) を継げる。
+	if v == 1 && maxVal == 13 {
+		return true
+	}
+	// Ace-low の最下段に 2 を伸ばす場合の対称ケース: 既に Ace から始まっていれば minVal=1 で
+	// 上の 1 ライナーがカバーするので追加処理は不要。
+	return false
+}
+
+// IsContractRummyMeld cards が有効な追加メルド（セット 3+ または ラン 3+）か判定する。
+// 2 デッキ運用に合わせ、セットでのスート重複は許容する。
 func IsContractRummyMeld(cards []*Card) bool {
 	if len(cards) < ContractRummySetSize {
 		return false
 	}
-	if isSet(cards) && allDistinctSuits(cards) && len(cards) <= 4 {
+	if isSet(cards) {
 		return true
 	}
 	return isRun(cards)
@@ -985,21 +1053,19 @@ func scoreContractProgress(contract Contract, cards []*Card) int {
 		for _, c := range cards {
 			byRank[c.GetValue()]++
 		}
-		// rank ごとの 3 枚以上揃っている数を加算（最大 setSlots 個まで）
+		// rank ごとに 3 枚揃った組数を加算（2 デッキでは同一ランク 6 枚で 2 セット可能）。
 		hits := 0
 		for _, n := range byRank {
-			if n >= 3 {
-				hits++
-			}
+			hits += n / 3
 		}
 		if hits > setSlots {
 			hits = setSlots
 		}
 		score += hits * 10
-		// 部分点: 同ランク 2 枚ペアもカウント
+		// 部分点: 同ランク 2 枚ペアもカウント（次のドローで 3 枚目を狙える）。
 		pairs := 0
 		for _, n := range byRank {
-			if n == 2 {
+			if n%3 == 2 {
 				pairs++
 			}
 		}
@@ -1012,19 +1078,7 @@ func scoreContractProgress(contract Contract, cards []*Card) int {
 		}
 		hits := 0
 		for _, vals := range bySuit {
-			sort.Ints(vals)
-			run := 1
-			best := 1
-			for i := 1; i < len(vals); i++ {
-				if vals[i] == vals[i-1]+1 {
-					run++
-					if run > best {
-						best = run
-					}
-				} else if vals[i] != vals[i-1] {
-					run = 1
-				}
-			}
+			best := longestRun(vals)
 			if best >= 4 {
 				hits++
 			}
@@ -1035,6 +1089,36 @@ func scoreContractProgress(contract Contract, cards []*Card) int {
 		score += hits * 10
 	}
 	return score
+}
+
+// longestRun は与えられた値スライスから、Ace-low と Ace-high の両方を試した上での
+// 最長連続部分列の長さを返す。重複値は連続を切らないが伸ばさない。空入力では 0。
+func longestRun(vals []int) int {
+	if len(vals) == 0 {
+		return 0
+	}
+	best := 0
+	for _, variant := range aceVariants(vals) {
+		if len(variant) == 0 {
+			continue
+		}
+		run := 1
+		local := 1
+		for i := 1; i < len(variant); i++ {
+			if variant[i] == variant[i-1]+1 {
+				run++
+				if run > local {
+					local = run
+				}
+			} else if variant[i] != variant[i-1] {
+				run = 1
+			}
+		}
+		if local > best {
+			best = local
+		}
+	}
+	return best
 }
 
 // FindContractMeld 与えられたカード集合がコントラクトを満たせるか判定し、満たすなら
@@ -1098,30 +1182,15 @@ func findSetCandidates(size int, cards []*Card, used []bool) [][]int {
 	}
 	var result [][]int
 	for _, idxs := range byRank {
-		// 同ランク内で異なるスートを選ぶ size 個の組み合わせ
-		// 簡易実装: 異なるスートのインデックスを順に拾う
-		bySuit := make(map[int]int)
-		for _, idx := range idxs {
-			suit := cards[idx].GetDesign()
-			if _, ok := bySuit[suit]; !ok {
-				bySuit[suit] = idx
-			}
-		}
-		if len(bySuit) < size {
+		if len(idxs) < size {
 			continue
 		}
-		suitKeys := make([]int, 0, len(bySuit))
-		for s := range bySuit {
-			suitKeys = append(suitKeys, s)
-		}
-		sort.Ints(suitKeys)
-		// size 個ぶんの組み合わせを列挙
-		combos := chooseIntCombinations(suitKeys, size)
-		for _, combo := range combos {
-			pick := make([]int, 0, size)
-			for _, suit := range combo {
-				pick = append(pick, bySuit[suit])
-			}
+		sort.Ints(idxs)
+		// 2 デッキ運用ではスート重複を許容するので、同ランク内のインデックスから
+		// 順に size 個ぶんの組み合わせを列挙する。
+		for _, combo := range chooseIntCombinations(idxs, size) {
+			pick := make([]int, len(combo))
+			copy(pick, combo)
 			result = append(result, pick)
 		}
 	}
@@ -1151,24 +1220,63 @@ func findRunCandidates(size int, cards []*Card, used []bool) [][]int {
 		for v := range byVal {
 			values = append(values, v)
 		}
-		sort.Ints(values)
-		// 連続した size 枚を探す
-		for start := 0; start+size <= len(values); start++ {
-			ok := true
-			for k := 1; k < size; k++ {
-				if values[start+k] != values[start+k-1]+1 {
-					ok = false
-					break
+		// Ace-low と Ace-high の双方を試す。Ace-high バリアントでは値 14 を
+		// byVal[1] のインデックスへ解決する。
+		hasAce := false
+		for _, v := range values {
+			if v == 1 {
+				hasAce = true
+				break
+			}
+		}
+		seen := make(map[int]bool)
+		appendRunsFrom := func(sorted []int, lookup func(int) int) {
+			for start := 0; start+size <= len(sorted); start++ {
+				ok := true
+				for k := 1; k < size; k++ {
+					if sorted[start+k] != sorted[start+k-1]+1 {
+						ok = false
+						break
+					}
+				}
+				if !ok {
+					continue
+				}
+				pick := make([]int, 0, size)
+				key := 0
+				for k := 0; k < size; k++ {
+					idx := lookup(sorted[start+k])
+					pick = append(pick, idx)
+					key = key*1031 + idx
+				}
+				if !seen[key] {
+					seen[key] = true
+					result = append(result, pick)
 				}
 			}
-			if !ok {
-				continue
+		}
+		// Ace-low バリアント: 値そのままで lookup 可能。
+		low := make([]int, len(values))
+		copy(low, values)
+		sort.Ints(low)
+		appendRunsFrom(low, func(v int) int { return byVal[v] })
+		// Ace-high バリアント: 値 1 を 14 にマップして再ソートし、14→Ace を解決する。
+		if hasAce {
+			high := make([]int, 0, len(values))
+			for _, v := range values {
+				if v == 1 {
+					high = append(high, 14)
+				} else {
+					high = append(high, v)
+				}
 			}
-			pick := make([]int, 0, size)
-			for k := 0; k < size; k++ {
-				pick = append(pick, byVal[values[start+k]])
-			}
-			result = append(result, pick)
+			sort.Ints(high)
+			appendRunsFrom(high, func(v int) int {
+				if v == 14 {
+					return byVal[1]
+				}
+				return byVal[v]
+			})
 		}
 	}
 	return result
@@ -1198,7 +1306,9 @@ func chooseIntCombinations(items []int, k int) [][]int {
 	return result
 }
 
-// findExtraMeld 残った手札からセット (3) またはラン (3+) を 1 つ見つけて返す
+// findExtraMeld 残った手札からセット (3+) またはラン (3+) を 1 つ見つけて返す。
+// 2 デッキ運用ではセットのスート重複を許容するため、同ランクが 3 枚集まれば即セット成立とみなす。
+// ランは Ace-low / Ace-high の双方を考慮する。
 func findExtraMeld(cards []*Card) []*Card {
 	// セット
 	byRank := make(map[int][]*Card)
@@ -1206,21 +1316,9 @@ func findExtraMeld(cards []*Card) []*Card {
 		byRank[c.GetValue()] = append(byRank[c.GetValue()], c)
 	}
 	for _, group := range byRank {
-		// 異なるスート 3 枚を選ぶ
-		bySuit := make(map[int]*Card)
-		for _, c := range group {
-			if _, ok := bySuit[c.GetDesign()]; !ok {
-				bySuit[c.GetDesign()] = c
-			}
-		}
-		if len(bySuit) >= 3 {
-			pick := make([]*Card, 0, 3)
-			for _, c := range bySuit {
-				pick = append(pick, c)
-				if len(pick) == 3 {
-					break
-				}
-			}
+		if len(group) >= 3 {
+			pick := make([]*Card, 3)
+			copy(pick, group[:3])
 			return pick
 		}
 	}
@@ -1239,11 +1337,50 @@ func findExtraMeld(cards []*Card) []*Card {
 		for v := range byVal {
 			values = append(values, v)
 		}
-		sort.Ints(values)
-		for start := 0; start+3 <= len(values); start++ {
-			if values[start+1] == values[start]+1 && values[start+2] == values[start+1]+1 {
-				return []*Card{byVal[values[start]], byVal[values[start+1]], byVal[values[start+2]]}
+		// Ace-low
+		low := make([]int, len(values))
+		copy(low, values)
+		sort.Ints(low)
+		if pick := pickRunOf3(low, func(v int) *Card { return byVal[v] }); pick != nil {
+			return pick
+		}
+		// Ace-high (Ace を 14 として再走査)
+		hasAce := false
+		for _, v := range values {
+			if v == 1 {
+				hasAce = true
+				break
 			}
+		}
+		if hasAce {
+			high := make([]int, 0, len(values))
+			for _, v := range values {
+				if v == 1 {
+					high = append(high, 14)
+				} else {
+					high = append(high, v)
+				}
+			}
+			sort.Ints(high)
+			if pick := pickRunOf3(high, func(v int) *Card {
+				if v == 14 {
+					return byVal[1]
+				}
+				return byVal[v]
+			}); pick != nil {
+				return pick
+			}
+		}
+	}
+	return nil
+}
+
+// pickRunOf3 はソート済みの値スライスから連続する 3 枚を見つけ、
+// lookup で各値に対応するカードへ解決して返す。見つからなければ nil。
+func pickRunOf3(sorted []int, lookup func(int) *Card) []*Card {
+	for start := 0; start+3 <= len(sorted); start++ {
+		if sorted[start+1] == sorted[start]+1 && sorted[start+2] == sorted[start+1]+1 {
+			return []*Card{lookup(sorted[start]), lookup(sorted[start+1]), lookup(sorted[start+2])}
 		}
 	}
 	return nil

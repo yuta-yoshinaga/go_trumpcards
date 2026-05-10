@@ -597,7 +597,11 @@ func TestValidateContractSlot_Variants(t *testing.T) {
 	}{
 		{"valid set", setSlot, []*Card{crCard(0, 5), crCard(1, 5), crCard(2, 5)}, true},
 		{"set wrong size", setSlot, []*Card{crCard(0, 5), crCard(1, 5)}, false},
-		{"set duplicate suit", setSlot, []*Card{crCard(0, 5), crCard(0, 5), crCard(2, 5)}, false},
+		// 2 デッキ運用ではスート重複を許容するため、同ランクなら 3 枚で成立
+		{"set with duplicate suit (2-deck)", setSlot, []*Card{crCard(0, 5), crCard(0, 5), crCard(2, 5)}, true},
+		{"set wrong rank", setSlot, []*Card{crCard(0, 5), crCard(1, 6), crCard(2, 5)}, false},
+		// Ace-high run
+		{"valid Ace-high run", runSlot, []*Card{crCard(0, 11), crCard(0, 12), crCard(0, 13), crCard(0, 1)}, true},
 		{"valid run", runSlot, []*Card{crCard(0, 2), crCard(0, 3), crCard(0, 4), crCard(0, 5)}, true},
 		{"run wrong suit", runSlot, []*Card{crCard(0, 2), crCard(1, 3), crCard(0, 4), crCard(0, 5)}, false},
 		{"run not consecutive", runSlot, []*Card{crCard(0, 2), crCard(0, 3), crCard(0, 5), crCard(0, 6)}, false},
@@ -623,7 +627,12 @@ func TestIsContractRummyMeld_Cases(t *testing.T) {
 		{"too small", []*Card{crCard(0, 5), crCard(1, 5)}, false},
 		{"run of 3", []*Card{crCard(0, 5), crCard(0, 6), crCard(0, 7)}, true},
 		{"run of 5", []*Card{crCard(0, 5), crCard(0, 6), crCard(0, 7), crCard(0, 8), crCard(0, 9)}, true},
-		{"invalid", []*Card{crCard(0, 5), crCard(0, 5), crCard(0, 5)}, false}, // same suit/value duplicate
+		{"run J-Q-K-A (Ace high)", []*Card{crCard(0, 11), crCard(0, 12), crCard(0, 13), crCard(0, 1)}, true},
+		{"run A-2-3 (Ace low)", []*Card{crCard(0, 1), crCard(0, 2), crCard(0, 3)}, true},
+		// 2 デッキでは同スート同ランクの重複を許容（同ランクなのでセット成立）
+		{"set with duplicate suit (2-deck)", []*Card{crCard(0, 5), crCard(0, 5), crCard(1, 5)}, true},
+		{"invalid mixed", []*Card{crCard(0, 5), crCard(0, 6), crCard(2, 8)}, false},
+		{"wraparound K-A-2 not allowed", []*Card{crCard(0, 13), crCard(0, 1), crCard(0, 2)}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -803,6 +812,189 @@ func TestContractRummy_PlayerNameFallback(t *testing.T) {
 	}
 	if got := g.playerName(99); got == "" {
 		t.Error("playerName(99) should return non-empty fallback")
+	}
+}
+
+func TestContractRummy_CanAddToContractRummyMeld(t *testing.T) {
+	tests := []struct {
+		name string
+		meld []*Card
+		card *Card
+		want bool
+	}{
+		{"empty meld", nil, crCard(0, 5), false},
+		{"nil card", []*Card{crCard(0, 5), crCard(1, 5), crCard(2, 5)}, nil, false},
+		{"set: same rank, any suit allowed (2-deck)", []*Card{crCard(0, 5), crCard(1, 5), crCard(2, 5)}, crCard(0, 5), true},
+		{"set: different rank rejected", []*Card{crCard(0, 5), crCard(1, 5), crCard(2, 5)}, crCard(0, 6), false},
+		{"run: extend low end", []*Card{crCard(0, 5), crCard(0, 6), crCard(0, 7)}, crCard(0, 4), true},
+		{"run: extend high end", []*Card{crCard(0, 5), crCard(0, 6), crCard(0, 7)}, crCard(0, 8), true},
+		{"run: wrong suit rejected", []*Card{crCard(0, 5), crCard(0, 6), crCard(0, 7)}, crCard(1, 8), false},
+		{"run: gap rejected", []*Card{crCard(0, 5), crCard(0, 6), crCard(0, 7)}, crCard(0, 9), false},
+		{"run: Ace-high on K-end", []*Card{crCard(0, 11), crCard(0, 12), crCard(0, 13)}, crCard(0, 1), true},
+		{"run: Ace-low extension", []*Card{crCard(0, 2), crCard(0, 3), crCard(0, 4)}, crCard(0, 1), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := canAddToContractRummyMeld(tt.meld, tt.card); got != tt.want {
+				t.Errorf("canAddToContractRummyMeld(%s) = %v, want %v", tt.name, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestContractRummy_AceHighRun_Round3CpuPlanning(t *testing.T) {
+	// Verify FindContractMeld can pick a J-Q-K-A run for round 3 (2 runs of 4).
+	contract := ContractForRound(3)
+	cards := []*Card{
+		crCard(0, 11), crCard(0, 12), crCard(0, 13), crCard(0, 1), // ♠ J-Q-K-A
+		crCard(1, 2), crCard(1, 3), crCard(1, 4), crCard(1, 5), // ♥ 2-3-4-5
+		crCard(2, 8),
+	}
+	groups, ok := FindContractMeld(contract, cards)
+	if !ok {
+		t.Fatal("expected J-Q-K-A + 2-3-4-5 to satisfy R3 contract")
+	}
+	if len(groups) != 2 {
+		t.Errorf("expected 2 groups, got %d", len(groups))
+	}
+}
+
+func TestContractRummy_FindExtraMeld_AceHigh(t *testing.T) {
+	cards := []*Card{
+		crCard(0, 11), crCard(0, 12), crCard(0, 13), crCard(0, 1), // ♠ J-Q-K-A
+		crCard(1, 7),
+	}
+	got := findExtraMeld(cards)
+	if got == nil {
+		t.Fatal("expected an extra meld of size >=3 from J-Q-K-A")
+	}
+	if len(got) < 3 {
+		t.Errorf("expected meld len >= 3, got %d", len(got))
+	}
+}
+
+func TestContractRummy_FindExtraMeld_DuplicateSuitSet(t *testing.T) {
+	// Two ♠5s + one ♥5 — duplicate-suit set is allowed in 2-deck game.
+	cards := []*Card{crCard(0, 5), crCard(0, 5), crCard(1, 5), crCard(2, 7)}
+	got := findExtraMeld(cards)
+	if got == nil {
+		t.Fatal("expected duplicate-suit set to be valid in 2-deck game")
+	}
+	if len(got) != 3 {
+		t.Errorf("expected size 3, got %d", len(got))
+	}
+}
+
+func TestContractRummy_LongestRun_AceHigh(t *testing.T) {
+	// Ace alone should yield 1; J-Q-K-A should yield 4 (Ace-high path).
+	if got := longestRun([]int{11, 12, 13, 1}); got != 4 {
+		t.Errorf("longestRun(J,Q,K,A) = %d, want 4", got)
+	}
+	// A-2-3 should yield 3 (Ace-low path).
+	if got := longestRun([]int{1, 2, 3}); got != 3 {
+		t.Errorf("longestRun(A,2,3) = %d, want 3", got)
+	}
+	// Disjoint: 2-3 and 7-8-9 -> 3.
+	if got := longestRun([]int{2, 3, 7, 8, 9}); got != 3 {
+		t.Errorf("longestRun(2,3,7,8,9) = %d, want 3", got)
+	}
+	// Empty -> 0.
+	if got := longestRun(nil); got != 0 {
+		t.Errorf("longestRun(nil) = %d, want 0", got)
+	}
+	// Duplicates do not extend the run.
+	if got := longestRun([]int{5, 5, 6}); got != 2 {
+		t.Errorf("longestRun(5,5,6) = %d, want 2", got)
+	}
+}
+
+func TestContractRummy_AceVariants(t *testing.T) {
+	// No Ace -> single variant.
+	got := aceVariants([]int{2, 5, 3})
+	if len(got) != 1 {
+		t.Fatalf("expected 1 variant, got %d", len(got))
+	}
+	if got[0][0] != 2 || got[0][1] != 3 || got[0][2] != 5 {
+		t.Errorf("expected sorted, got %v", got[0])
+	}
+	// Ace -> 2 variants (low + high).
+	got = aceVariants([]int{1, 12, 13})
+	if len(got) != 2 {
+		t.Fatalf("expected 2 variants, got %d", len(got))
+	}
+	// Empty -> 1 variant (empty).
+	got = aceVariants(nil)
+	if len(got) != 1 {
+		t.Fatalf("expected 1 variant for empty, got %d", len(got))
+	}
+}
+
+func TestContractRummy_PickRunOf3(t *testing.T) {
+	cardLookup := func(v int) *Card { return crCard(0, v) }
+	got := pickRunOf3([]int{5, 6, 7}, cardLookup)
+	if len(got) != 3 {
+		t.Fatalf("expected 3 cards, got %d", len(got))
+	}
+	if got := pickRunOf3([]int{5, 7, 9}, cardLookup); got != nil {
+		t.Errorf("expected nil for non-consecutive")
+	}
+	if got := pickRunOf3([]int{5}, cardLookup); got != nil {
+		t.Errorf("expected nil for short")
+	}
+}
+
+func TestContractRummy_ScoreContractProgress_DoubleSet(t *testing.T) {
+	contract := Contract{Slots: []ContractSlot{
+		{Kind: ContractSlotSet, Size: 3},
+		{Kind: ContractSlotSet, Size: 3},
+	}}
+	// Six 5s should count as 2 sets, capped to setSlots=2.
+	cards := []*Card{
+		crCard(0, 5), crCard(1, 5), crCard(2, 5),
+		crCard(0, 5), crCard(1, 5), crCard(2, 5),
+		crCard(3, 9),
+	}
+	got := scoreContractProgress(contract, cards)
+	if got < 20 {
+		t.Errorf("expected at least 20 (2 sets * 10), got %d", got)
+	}
+}
+
+func TestContractRummy_CpuFullRound_Smoke(t *testing.T) {
+	g := NewDefaultContractRummy()
+	g.Reset()
+	// Drive the CPUs through a few turns; just assert no panic and progress.
+	g.SetCurrentPlayerIdx(1) // start with CPU
+	for i := 0; i < 50 && !g.GetGameEndFlag(); i++ {
+		if g.IsHumanTurn() || g.GetPhase() == ContractRummyPhaseRoundEnd {
+			break
+		}
+		g.CpuPlay()
+	}
+}
+
+func TestContractRummy_CpuShouldTakeDiscard_HardLayoff(t *testing.T) {
+	g := helperContractRummyHand(t)
+	g.SetCurrentPlayerIdx(1)
+	cfg := g.GetConfig()
+	cfg.CpuDifficulty = ContractRummyCpuDifficultyHard
+	g.SetConfig(cfg)
+	cpu := g.GetPlayer(1)
+	cpu.SetContractMet(true)
+	cpu.AppendMeld([]*Card{crCard(0, 5), crCard(1, 5), crCard(2, 5)})
+	g.SetDiscardPile([]*Card{crCard(3, 5)})
+	if !g.cpuShouldTakeDiscard(crCard(3, 5)) {
+		t.Error("Hard CPU with completed contract should take a layoff-able discard")
+	}
+}
+
+func TestContractRummy_CpuShouldTakeDiscard_NoLayoff(t *testing.T) {
+	g := helperContractRummyHand(t)
+	g.SetCurrentPlayerIdx(1)
+	cpu := g.GetPlayer(1)
+	cpu.SetContractMet(true) // already opened, no layoff target available
+	if g.cpuShouldTakeDiscard(crCard(3, 5)) {
+		t.Error("Opened CPU with no layoff target should not take discard")
 	}
 }
 

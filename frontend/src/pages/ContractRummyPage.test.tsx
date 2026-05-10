@@ -133,4 +133,121 @@ describe('ContractRummyPage', () => {
     renderWithProviders(<ContractRummyPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /Next round|次のラウンドへ/ })).toBeInTheDocument());
   });
+
+  it('invokes drawdiscard when the discard button is clicked', async () => {
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Take discard|捨て札を取る/ })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Take discard|捨て札を取る/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
+  });
+
+  it('lets the human stage cards into a contract slot and submit it', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add to slot|スロットに追加/ })).toBeInTheDocument());
+
+    // Select first three cards (the three 5s) by clicking their hand buttons.
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+    fireEvent.click(cardButtons[2]);
+
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+
+    // Stage second slot (next three buttons should be Ks).
+    fireEvent.click(cardButtons[3]);
+    fireEvent.click(cardButtons[4]);
+    fireEvent.click(cardButtons[5]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+
+    fireEvent.click(screen.getByRole('button', { name: /Submit contract|コントラクトを場に出す/ }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'meldcontract',
+        expect.objectContaining({ indicesPerSlot: expect.any(Array) }),
+      ),
+    );
+  });
+
+  it('undoing a slot pop returns the cards to the hand', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add to slot|スロットに追加/ })).toBeInTheDocument());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+    fireEvent.click(cardButtons[2]);
+    fireEvent.click(screen.getByRole('button', { name: /Add to slot|スロットに追加/ }));
+
+    const undoBtn = screen.getByRole('button', { name: /Undo last slot|最後のスロットを取り消す/ });
+    expect(undoBtn).not.toBeDisabled();
+    fireEvent.click(undoBtn);
+    // After undo, the undo button is disabled again (no slots staged).
+    expect(undoBtn).toBeDisabled();
+  });
+
+  it('toggles a card off when clicked twice', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Add to slot|スロットに追加/ })).toBeInTheDocument());
+
+    const addSlot = screen.getByRole('button', { name: /Add to slot|スロットに追加/ });
+    expect(addSlot).toBeDisabled();
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    fireEvent.click(cardButtons[0]);
+    expect(addSlot).not.toBeDisabled();
+    fireEvent.click(cardButtons[0]); // toggle off
+    expect(addSlot).toBeDisabled();
+  });
+
+  it('shows discard button after card is selected in play phase', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Discard card|カードを捨てる/ })).toBeInTheDocument(),
+    );
+
+    const discardBtn = screen.getByRole('button', { name: /Discard card|カードを捨てる/ });
+    expect(discardBtn).toBeDisabled(); // no card selected
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    fireEvent.click(cardButtons[0]);
+    expect(discardBtn).not.toBeDisabled();
+    fireEvent.click(discardBtn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndex: 0 }));
+  });
+
+  it('shows extra-meld + layoff buttons when contract is met', async () => {
+    const metState: ContractRummyResponse = {
+      ...playState,
+      players: [
+        {
+          ...playState.players[0],
+          contractMet: true,
+          melds: [{ cards: [card('SPADE', 5), card('HEART', 5), card('DIAMOND', 5)] }],
+        },
+        playState.players[1],
+        playState.players[2],
+      ],
+    };
+    mockExec.mockResolvedValue(metState);
+    renderWithProviders(<ContractRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Lay extra meld|追加メルド/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /Lay off|レイオフ/ })).toBeInTheDocument();
+  });
+
+  it('shows winner banner at game end', async () => {
+    const endState: ContractRummyResponse = {
+      ...drawState,
+      phase: 3,
+      gameEndFlag: true,
+      winnerIdx: 0,
+    };
+    mockExec.mockResolvedValue(endState);
+    renderWithProviders(<ContractRummyPage />);
+    // Reset becomes "Next Game" at game end.
+    await waitFor(() => expect(screen.getByRole('button', { name: /Next Game|次のゲーム/ })).toBeInTheDocument());
+  });
 });
